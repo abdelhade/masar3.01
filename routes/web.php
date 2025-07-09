@@ -34,6 +34,7 @@ use App\Http\Controllers\{
     ContractController,
     AttendanceController,
     AttendanceProcessingController,
+    ReportController
 };
 
 // test for dashboard
@@ -118,5 +119,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/create', [InventoryStartBalanceController::class, 'create'])->name('inventory-start-balance.create');
     Route::post('/store', [InventoryStartBalanceController::class, 'store'])->name('inventory-start-balance.store');
     Route::post('/update-opening-balance', [InventoryStartBalanceController::class, 'updateOpeningBalance'])->name('inventory-start-balance.update-opening-balance');
+
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/overall', [ReportController::class, 'overall'])->name('reports.overall');
+
 });
 require __DIR__ . '/auth.php';

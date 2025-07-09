@@ -1,8 +1,8 @@
 @extends('admin.dashboard')
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('Journals'),
-        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Journals')]],
+        'title' => __('vouchers'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('vouchers')]],
     ])
 
 
@@ -14,7 +14,7 @@
         @endif
         <div class="card-header">
 
-            <a href="{{ route('multi-journals.create') }}" type="button" class="btn btn-primary">{{ __('Add New') }}
+            <a href="{{ route('multi-vouchers.create') }}" type="button" class="btn btn-primary">{{ __('Add New') }}
                 <i class="fas fa-plus me-2"></i>
             </a>
         </div>
@@ -59,10 +59,10 @@
                                 <td>{{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
                                 <td x-show="columns[16]">
                                     <button>
-                                        <a href="{{ route('multi-journals.edit', $multi) }}"
+                                        <a href="{{ route('multi-vouchers.edit', $multi) }}"
                                             class="text-primary font-16"><i class="las la-eye"></i></a>
                                     </button>
-                                    <form action="{{ route('multi-journals.destroy', $multi->id) }}" method="POST"
+                                    <form action="{{ route('multi-vouchers.destroy', $multi->id) }}" method="POST"
                                         style="display:inline;">
                                         @csrf
                                         @method('DELETE')

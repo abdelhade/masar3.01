@@ -1411,7 +1411,7 @@ class AccHeadSeeder extends Seeder
                 'parent_id' => 0,
                 'nature' => 1,
                 'kind' => 2,
-                'is_basic' => 1,
+                'is_basic' => 0,
                 'employees_expensses' => 1,
                 'start_balance' => 0.000,
                 'credit' => 0.000,

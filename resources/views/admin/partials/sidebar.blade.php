@@ -3,8 +3,7 @@
     <div class="menu-content h-100" data-simplebar>
         <ul class="metismenu left-sidenav-menu">
 
-            <!-- عنوان -->
-            <li class="menu-label my-2"><a href="{{route('home')}}">{{ __('MASAR FOR TECNOLOGY') }}</a></li>
+            <!-- عنوان النظام -->
             <li class="menu-label my-2"><a href="{{ route('home') }}">{{ __('MASAR FOR TECNOLOGY') }}</a></li>
 
             <!-- البيانات الأساسية -->
@@ -17,95 +16,93 @@
                     </span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
-
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'client']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'client']) }}">
                             <i class="ti-control-record"></i>{{ __('العملاء') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'supplier']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'supplier']) }}">
                             <i class="ti-control-record"></i>{{ __('الموردين') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'fund']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'fund']) }}">
                             <i class="ti-control-record"></i>{{ __('الصناديق') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'bank']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'bank']) }}">
                             <i class="ti-control-record"></i>{{ __('البنوك') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'employee']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'employee']) }}">
                             <i class="ti-control-record"></i>{{ __('الموظفين') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'store']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'store']) }}">
                             <i class="ti-control-record"></i>{{ __('المخازن') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'expense']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'expense']) }}">
                             <i class="ti-control-record"></i>{{ __('المصروفات') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'revenue']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'revenue']) }}">
                             <i class="ti-control-record"></i>{{ __('الايرادات') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'creditor']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'creditor']) }}">
                             <i class="ti-control-record"></i>{{ __('دائنين متنوعين') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'depitor']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'depitor']) }}">
                             <i class="ti-control-record"></i>{{ __('مدينين متنوعين') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'partner']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'partner']) }}">
                             <i class="ti-control-record"></i>{{ __('الشركاء') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'current-partner']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'current-partner']) }}">
                             <i class="ti-control-record"></i>{{ __(' جارى الشركاء') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'asset']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'asset']) }}">
                             <i class="ti-control-record"></i>{{ __('الأصول الثابتة') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'rentable']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.index', ['type' => 'rentable']) }}">
                             <i class="ti-control-record"></i>{{ __('الأصول القابلة للتأجير') }}
                         </a>
                     </li>
-
                 </ul>
             </li>
 
-            <!-- الأصناف-->
+            <!-- الأصناف -->
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="box" style="color:#1cc88a" class="align-self-center menu-icon"></i>
@@ -113,7 +110,6 @@
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
-
                     <li class="nav-item">
                         <a class="nav-link font-family-cairo fw-bold" href="{{ route('units.index') }}">
                             <i class="ti-control-record"></i>{{ __('الوحدات') }}
@@ -136,6 +132,7 @@
                 </ul>
             </li>
 
+            <!-- الخصومات -->
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="percent" style="color:#f6c23e" class="align-self-center menu-icon"></i>
@@ -144,103 +141,98 @@
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('discounts.index', ['type' => 30]) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('discounts.index', ['type' => 30]) }}">
                             <i class="ti-control-record"></i>{{ __('قائمة الخصومات المسموح بها') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('discounts.index', ['type' => 31]) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('discounts.index', ['type' => 31]) }}">
                             <i class="ti-control-record"></i>{{ __('قائمة الخصومات المكتسبة') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('discounts.create', ['type' => 30, 'q' => md5(30)]) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('discounts.create', ['type' => 30, 'q' => md5(30)]) }}">
                             <i class="ti-control-record"></i>{{ __('خصم مسموح به') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('discounts.create', ['type' => 31, 'q' => md5(31)]) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('discounts.create', ['type' => 31, 'q' => md5(31)]) }}">
                             <i class="ti-control-record"></i>{{ __('خصم مكتسب') }}
                         </a>
                     </li>
                 </ul>
             </li>
 
-            <li class="li-main">
-                <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
+            <!-- التصنيع -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('manufacturing.create') }}">
+                    <i data-feather="tool" style="color:#36b9cc" class="align-self-center menu-icon"></i>
                     <span>{{ __('التصنيع') }}</span>
-                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
-                <ul class="sub-menu mm-collapse" aria-expanded="false">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('manufacturing.create') }}">
-                            <i class="ti-control-record"></i>{{ __('فاتورة تصنيع') }}
-                        </a>
-                    </li>
-                </ul>
             </li>
 
+            <!-- الصلاحيات -->
             <li class="li-main">
                 <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
+                    <i data-feather="lock" style="color:#e74a3b" class="align-self-center menu-icon"></i>
                     <span>{{ __('الصلاحيات') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('roles.index', ['type' => 30]) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('roles.index', ['type' => 30]) }}">
                             <i class="ti-control-record"></i>{{ __('الادوار') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('users.index', ['type' => 31]) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('users.index', ['type' => 31]) }}">
                             <i class="ti-control-record"></i>{{ __('المدراء') }}
                         </a>
                     </li>
                 </ul>
             </li>
 
+            <!-- CRM -->
             <li class="li-main">
                 <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
+                    <i data-feather="users" style="color:#4e73df" class="align-self-center menu-icon"></i>
                     <span>{{ __('CRM') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('clients.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('clients.index') }}">
                             <i class="ti-control-record"></i>{{ __('العملاء') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('chance-sources.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('chance-sources.index') }}">
                             <i class="ti-control-record"></i>{{ __('مصدر الفرص ') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('client-contacts.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('client-contacts.index') }}">
                             <i class="ti-control-record"></i>{{ __('جهات اتصال الشركات ') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('lead-status.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('lead-status.index') }}">
                             <i class="ti-control-record"></i>{{ __('حالات الفرص ') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('leads.board') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('leads.board') }}">
                             <i class="ti-control-record"></i>{{ __(' الفرص ') }}
                         </a>
                     </li>
-
                 </ul>
             </li>
 
+            <!-- أقسام الفواتير -->
             @php
                 $sections = [
                     'ادارة المبيعات' => [
@@ -268,16 +260,15 @@
             @foreach ($sections as $sectionTitle => $items)
                 <li class="li-main">
                     <a href="javascript:void(0);">
-                        <i data-feather="shopping-cart" style="color:#e74a3b"
-                            class="align-self-center menu-icon"></i>
+                        <i data-feather="shopping-cart" style="color:#e74a3b" class="align-self-center menu-icon"></i>
                         <span>{{ __($sectionTitle) }}</span>
                         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                     </a>
                     <ul class="sub-menu mm-collapse" aria-expanded="false">
                         @foreach ($items as $type => $label)
                             <li class="nav-item">
-                                <a class="nav-link"
-                                    href="{{ url('/invoices/create?type=' . $type . '&q=' . md5($type)) }}">
+                                <a class="nav-link font-family-cairo fw-bold"
+                                   href="{{ route('invoices.create', ['type' => $type, 'q' => md5($type)]) }}">
                                     <i class="ti-control-record"></i>
                                     {{ __($label) }}
                                 </a>
@@ -296,34 +287,32 @@
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
                             <i class="ti-control-record"></i>{{ __('سند قبض') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
                             <i class="ti-control-record"></i>{{ __('سند دفع') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('vouchers.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('vouchers.index') }}">
                             <i class="ti-control-record"></i>{{ __('السندات') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
                             <i class="ti-control-record"></i>{{ __('سند دفع متعدد') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
                             <i class="ti-control-record"></i>{{ __('احتساب الثابت للموظفين') }}
                         </a>
                     </li>
-
                 </ul>
             </li>
 
@@ -336,144 +325,119 @@
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('transfers.create', ['type' => 'cash_to_cash']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('transfers.create', ['type' => 'cash_to_cash']) }}">
                             <i class="ti-control-record"></i>{{ __('تحويل نقدية من صندوق لصندوق') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('transfers.create', ['type' => 'cash_to_bank']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('transfers.create', ['type' => 'cash_to_bank']) }}">
                             <i class="ti-control-record"></i>{{ __('تحويل نقدية من صندوق لبنك') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('transfers.create', ['type' => 'bank_to_cash']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('transfers.create', ['type' => 'bank_to_cash']) }}">
                             <i class="ti-control-record"></i>{{ __('تحويل من بنك لصندوق') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('transfers.create', ['type' => 'bank_to_bank']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('transfers.create', ['type' => 'bank_to_bank']) }}">
                             <i class="ti-control-record"></i>{{ __('تحويل من بنك لبنك') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('transfers.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('transfers.index') }}">
                             <i class="ti-control-record"></i>{{ __('التحويلات النقدية') }}
                         </a>
                     </li>
                 </ul>
             </li>
 
-
-            <!-- رواتب الموظفين  -->
+            <!-- رواتب الموظفين -->
             <li class="li-main">
                 <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
                     <i data-feather="user-check" style="color:#17a2b8" class="align-self-center menu-icon"></i>
                     <span>{{ __('رواتب الموظفين') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'extra_calc']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'extra_calc']) }}">
                             <i class="ti-control-record"></i>{{ __('احتساب الاضافي للموظفين') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'discount_calc']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'discount_calc']) }}">
                             <i class="ti-control-record"></i>{{ __('احتساب خصم للموظفين') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'insurance_calc']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'insurance_calc']) }}">
                             <i class="ti-control-record"></i>{{ __('احتساب تأمينات') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'tax_calc']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'tax_calc']) }}">
                             <i class="ti-control-record"></i>{{ __('احتساب ضريبة دخل') }}
                         </a>
                     </li>
-
                 </ul>
             </li>
 
-
-
-            {{-- الاستحقاقات --}}
+            <!-- الاستحقاقات -->
             <li class="li-main">
                 <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
                     <i data-feather="clock" style="color:#6f42c1" class="align-self-center menu-icon"></i>
                     <span>{{ __('الاستحقاقات') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
                             <i class="ti-control-record"></i>{{ __('سند قبض متعدد') }}
                         </a>
                     </li>
 
-
-
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'contract']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'contract']) }}">
                             <i class="ti-control-record"></i>{{ __('اتفاقية خدمة') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'accured_expense']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'accured_expense']) }}">
                             <i class="ti-control-record"></i>{{ __('مصروفات مستحقة') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'accured_income']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'accured_income']) }}">
                             <i class="ti-control-record"></i>{{ __('ايرادات مستحقة') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'bank_commission']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'bank_commission']) }}">
                             <i class="ti-control-record"></i>{{ __('احتساب عمولة بنكية') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'sales_contract']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'sales_contract']) }}">
                             <i class="ti-control-record"></i>{{ __('عقد بيع') }}
                         </a>
                     </li>
 
-
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'partner_profit_sharing']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'partner_profit_sharing']) }}">
                             <i class="ti-control-record"></i>{{ __('توزيع الارباح علي الشركاء') }}
                         </a>
                     </li>
-
-
                 </ul>
             </li>
 
-            
-            <!-- عمليات الاصول  -->
-            <li class="li-main">
-                <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
-
-            <!-- عمليات الاصول  -->
+            <!-- عمليات الاصول -->
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="hard-drive" style="color:#e83e8c" class="align-self-center menu-icon"></i>
@@ -481,43 +445,39 @@
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
-
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'depreciation']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'depreciation']) }}">
                             <i class="ti-control-record"></i>{{ __(' اهلاك الاصل') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'sell_asset']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'sell_asset']) }}">
                             <i class="ti-control-record"></i>{{ __('بيع الاصول') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'buy_asset']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'buy_asset']) }}">
                             <i class="ti-control-record"></i>{{ __('شراء اصل') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'increase_asset_value']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'increase_asset_value']) }}">
                             <i class="ti-control-record"></i>{{ __('زيادة في قيمة الاصل') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{{ route('multi-vouchers.create', ['type' => 'decrease_asset_value']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-vouchers.create', ['type' => 'decrease_asset_value']) }}">
                             <i class="ti-control-record"></i>{{ __('نقص في قيمة الاصل') }}
                         </a>
                     </li>
-
                 </ul>
             </li>
 
-            {{-- ادارة الحسابات --}}
+            <!-- ادارة الحسابات -->
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="bar-chart-2" style="color:#007bff" class="align-self-center menu-icon"></i>
@@ -526,47 +486,46 @@
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('journals.create', ['type' => 'basic_journal']) }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('journals.create', ['type' => 'basic_journal']) }}">
                             <i class="ti-control-record"></i>{{ __('قيد يومية') }}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-journals.create') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-journals.create') }}">
                             <i class="ti-control-record"></i>{{ __('قيد يومية متعدد') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('journals.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('journals.index') }}">
                             <i class="ti-control-record"></i>{{ __('قيود اليومية _عمليات_') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('multi-journals.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('multi-journals.index') }}">
                             <i class="ti-control-record"></i>{{ __('قيود اليومية المتعددة _عمليات_') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('journal-summery') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('journal-summery') }}">
                             <i class="ti-control-record"></i>{{ __('قيود اليومية - حسابات') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('inventory-balance.index') }}">
+                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('inventory-balance.index') }}">
                             <i class="ti-control-record"></i>{{ __('تسجيل الارصده الافتتاحيه للمخازن') }}
                         </a>
                     </li>
-
-
                 </ul>
             </li>
-            {{-- المشاريع --}}
+
+            <!-- المشاريع -->
             <li class="li-main">
                 <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
+                    <i data-feather="clipboard" style="color:#6610f2" class="align-self-center menu-icon"></i>
                     <span>{{ __('إدارة المشاريع') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
@@ -578,10 +537,11 @@
                     </li>
                 </ul>
             </li>
-            {{-- الموارد البشرية --}}
+
+            <!-- الموارد البشرية -->
             <li class="li-main">
                 <a href="javascript: void(0);">
-                    <i data-feather="grid" class="align-self-center menu-icon"></i>
+                    <i data-feather="users" style="color:#6f42c1" class="align-self-center menu-icon"></i>
                     <span>{{ __('الموارد البشرية') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
@@ -652,7 +612,7 @@
                             </li>
                         </ul>
                     </li>
-                    {{-- العقود --}}
+                    <!-- العقود -->
                     <li class="nav-item has-submenu">
                         <a class="nav-link font-family-cairo fw-bold" href="javascript: void(0);">
                             <i class="ti-control-record"></i>{{ __('العقود') }}
@@ -671,7 +631,7 @@
                             </li>
                         </ul>
                     </li>
-                    {{-- الحضور والانصراف --}}
+                    <!-- الحضور والانصراف -->
                     <li class="nav-item has-submenu">
                         <a class="nav-link font-family-cairo fw-bold" href="javascript: void(0);">
                             <i class="ti-control-record"></i>{{ __('الحضور والانصراف') }}
@@ -692,7 +652,6 @@
                     </li>
                 </ul>
             </li>
-            
         </ul>
     </div>
 </div>
