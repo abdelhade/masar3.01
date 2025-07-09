@@ -1,5 +1,4 @@
 @extends('admin.dashboard')
-
 @section('content')
     <div class="content-wrapper">
         <section class="content">
@@ -42,21 +41,6 @@
                         @enderror
                     </div>
 
-                    {{-- <div class="col-lg-2">
-                        <label class="form-label" style="font-size: 1em;">تاريخ بداية المدة</label>
-                        <input type="date" name="periodStart" id="periodStart"
-                            class="form-control form-control-sm @error('periodStart') is-invalid @enderror"
-                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
-                            value="{{ old('periodStart', $periodStart) }}">
-                        @error('periodStart')
-                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                        @enderror
-                    </div> --}}
-                    <div class="col-lg-2">
-                        <button type="button" id="refresh_data" class="btn btn-primary" style="margin-top: 25px;">
-                            <i class="fas fa-refresh"></i> تحديث البيانات
-                        </button>
-                    </div>
                 </div>
 
                 <div class="row mt-4">
@@ -146,9 +130,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = Array.from(document.querySelectorAll('.new-balance-input'));
             if (!inputs.length) return;
-
             inputs[0].focus();
-
             // التنقل بين الحقول بالـ Enter
             inputs.forEach((input, idx) => {
                 input.addEventListener('keydown', function(e) {
@@ -163,25 +145,21 @@
                     }
                 });
             });
-
             // حساب كمية التسوية عند تغيير الرصيد الجديد
             document.querySelectorAll('.new-balance-input').forEach(input => {
                 input.addEventListener('input', function() {
                     calculateAdjustmentQty(this);
                 });
             });
-
             // تحديث التكلفة عند تغيير الوحدة
             document.querySelectorAll('.unit-select').forEach(select => {
                 select.addEventListener('change', function() {
                     updateCost(this);
                 });
             });
-
-            // تحديث البيانات عند تغيير المخزن أو الشريك
-            document.getElementById('refresh_data').addEventListener('click', function() {
-                refreshItemsData();
-            });
+        });
+        document.getElementById('store_select').addEventListener('change', function() {
+            refreshItemsData();
         });
 
         function calculateAdjustmentQty(input) {
@@ -203,14 +181,11 @@
 
         function refreshItemsData() {
             const storeId = $('#store_select').val();
-            const partnerId = $('#partner_select').val();
-
             $.ajax({
                 url: "{{ route('inventory-start-balance.update-opening-balance') }}",
                 method: 'POST',
                 data: {
                     store_id: storeId,
-                    partner_id: partnerId,
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
@@ -223,7 +198,6 @@
 
         function updateItemsTable(itemList) {
             const tableBody = document.getElementById('items_table_body');
-
             // تحديث الرصيد الحالي لكل صنف
             itemList.forEach(item => {
                 const row = tableBody.querySelector(`tr[data-item-id="${item.id}"]`);

@@ -15,14 +15,16 @@ class InventoryStartBalanceController extends Controller
         return view('inventory-start-balance.index');
     }
 
-    public function create()
+    public function create(Request $request)
     {
+
         $stors =  AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '123%')
             ->select('id', 'aname')
             ->get();
 
+        $storeId = $request->input('store_id', $stors->first()->id ?? null);
 
         $partners = cache()->remember('partners', 60 * 60, function () {
             return AccHead::where('isdeleted', 0)
@@ -33,9 +35,8 @@ class InventoryStartBalanceController extends Controller
         });
         $itemList = Item::with('units')
             ->get()
-            ->map(function ($item) {
-
-                $openingBalance = $this->calculateItemOpeningBalance($item->id);
+            ->map(function ($item) use ($storeId) {
+                $openingBalance = $this->calculateItemOpeningBalance($item->id, $storeId);
                 $item->opening_balance = $openingBalance;
                 return $item;
             });
@@ -45,29 +46,28 @@ class InventoryStartBalanceController extends Controller
 
     private function calculateItemOpeningBalance($itemId, $storeId = null, $partnerId = null)
     {
-        $query = OperationItems::where('item_id', $itemId)->where('pro_tybe', 60)->value('qty_in');
+        $query = OperationItems::where('item_id', $itemId)
+            ->where('pro_tybe', 60);
+
         if ($storeId) {
             $query->where('detail_store', $storeId);
         }
-        if ($partnerId) {
-            // تحتاج لتحديد كيفية ربط الشريك بالعمليات
-            // $query->where('partner_id', $partnerId);
-        }
-        return $query;
+
+        return $query->sum('qty_in'); // <-- رجع المجموع بدل أول قيمة
     }
 
     public function updateOpeningBalance(Request $request)
     {
         $storeId = $request->input('store_id');
-        $partnerId = $request->input('partner_id');
+
         $itemList = Item::with('units')
             ->get()
-            ->map(function ($item) use ($storeId, $partnerId) {
-                $openingBalance = $this->calculateItemOpeningBalance($item->id, $storeId, $partnerId);
+            ->map(function ($item) use ($storeId) {
+                $openingBalance = $this->calculateItemOpeningBalance($item->id, $storeId);
                 $item->opening_balance = $openingBalance;
-
                 return $item;
             });
+
         return response()->json([
             'success' => true,
             'itemList' => $itemList
@@ -76,15 +76,14 @@ class InventoryStartBalanceController extends Controller
 
     public function store(Request $request)
     {
-        // $request->validate([
-        //     'store_id' => 'nullable|exists:acc_head,id',
-        //     'partner_id' => 'nullable|exists:acc_head,id',
-        //     // 'periodStart' => 'required|date',
-        //     'new_opening_balance' => 'required|array',
-        //     'adjustment_qty' => 'required|array',
-        //     'unit_ids' => 'required|array'
-        // ]);
-        // dd($request->store_id);
+        $request->validate([
+            'store_id' => 'nullable|exists:acc_head,id',
+            'partner_id' => 'nullable|exists:acc_head,id',
+            // 'periodStart' => 'required|date',
+            'new_opening_balance' => 'required|array',
+            'adjustment_qty' => 'required|array',
+            'unit_ids' => 'required|array'
+        ]);
         try {
             DB::beginTransaction();
             $storeId = $request->store_id;
@@ -107,6 +106,7 @@ class InventoryStartBalanceController extends Controller
                     'is_journal' => 1,
                     'info' => 'رصيد افتتاحي للأصناف',
                 ]
+
             );
 
             $totalAmount = 0;
@@ -132,6 +132,7 @@ class InventoryStartBalanceController extends Controller
                             [
                                 'pro_tybe' => 60,
                                 'item_id' => $itemId,
+                                'detail_store' => $storeId, // إضافة هذا السطر
                                 'pro_id' => $operHead->id,
                             ],
                             [
