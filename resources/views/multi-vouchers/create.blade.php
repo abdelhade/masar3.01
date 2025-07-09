@@ -139,7 +139,7 @@
                         <div class="col-md-9">
                             <div class="form-group">
                                 <label>البيان</label>
-                                <input name="details" type="text" class="form-control frst">
+                                <input name="details" required type="text" class="form-control frst">
                             </div>
                         </div>
                     </div>

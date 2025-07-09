@@ -45,9 +45,32 @@ class OperHead extends Model
     {
         return $this->belongsTo(AccHead::class, 'user');
     }
+    // في App\Models\OperHead
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user');
+    }
 
     public function operationItems()
     {
         return $this->hasMany(OperationItems::class, 'pro_id');
+    }
+    // app/Models/OperHead.php
+
+    public function journalHead()
+    {
+        return $this->hasOne(JournalHead::class, 'op_id');
+    }
+
+    public function journalDetails()
+    {
+        return $this->hasManyThrough(
+            JournalDetail::class,
+            JournalHead::class,
+            'op_id', // Foreign key on JournalHead table
+            'journal_id', // Foreign key on JournalDetail table
+            'id', // Local key on OperHead table
+            'id' // Local key on JournalHead table
+        );
     }
 }
