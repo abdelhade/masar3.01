@@ -5,6 +5,8 @@ use App\Models\Item;
 use App\Models\Price;
 use App\Models\Note;
 use App\Helpers\ItemViewModel;
+use App\Models\AccHead;
+use App\Models\OperationItems;
 
 new class extends Component {
     public $items;
@@ -13,11 +15,14 @@ new class extends Component {
     public $priceTypes;
     public $noteTypes;
     public $search = '';
+    public $warehouses;
+    public $selectedWarehouse = null;        
 
     public function mount()
     {
         $this->priceTypes = Price::all()->pluck('name', 'id');
         $this->noteTypes = Note::all()->pluck('name', 'id');
+        $this->warehouses = AccHead::where('is_stock', 1)->get();
         $this->loadItems();
     }
 
@@ -65,7 +70,7 @@ new class extends Component {
         }
 
         $selectedUnitId = $this->selectedUnit[$itemId];
-        $viewModel = new ItemViewModel($item, $selectedUnitId);
+        $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
 
         $unitSalePricesData = [];
         if ($selectedUnitId) {
@@ -115,9 +120,20 @@ new class extends Component {
 
     public function delete($itemId)
     {
-        // Add your delete logic here
-        // Item::find($itemId)->delete();
-        // Refresh items or remove from collections
+        // check if the item is used in any operation
+        $operationItems = OperationItems::where('item_id', $itemId)->get();
+        if ($operationItems->count() > 0) {
+            session()->flash('error', 'لا يمكن حذف الصنف لأنه مستخدم في عمليات أخرى');
+            return;
+        }
+        Item::find($itemId)->delete();
+        // refresh the items
+        $this->loadItems();
+    }
+
+    public function updatedSelectedWarehouse()
+    {
+        $this->loadItems();
     }
 }; ?>
 
@@ -141,14 +157,25 @@ new class extends Component {
         @endif
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('Add New') }}
-                        <i class="fas fa-plus me-2"></i>
-                    </a>
+                    <div class="w-25">
+                        <select class="form-select font-family-cairo fw-bold font-14"
+                            wire:model.live="selectedWarehouse" style="min-width: 105px;">
+                            <option value="">كل المخازن</option>
+                            @foreach ($this->warehouses as $warehouse)
+                                <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="w-25">
                         <input type="text" wire:model.live.debounce.300ms="search"
                             class="form-control font-family-cairo" placeholder="بحث بالاسم أو الكود أو الباركود...">
                     </div>
+                </div>
+                <div class="card-header">
+                    <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+                        {{ __('Add New') }}
+                        <i class="fas fa-plus me-2"></i>
+                    </a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

@@ -316,7 +316,7 @@ new class extends Component {
                                 <label for="name" class="form-label font-family-cairo fw-bold">اسم
                                     الصنف</label>
                                 <input type="text" wire:model="item.name"
-                                    class="form-control font-family-cairo fw-bold" id="name" x-ref="nameInput">
+                                    class="form-control font-family-cairo fw-bold frst" id="name" x-ref="nameInput">
                                 @error('item.name')
                                     <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
                                 @enderror
@@ -400,6 +400,7 @@ new class extends Component {
                                                     wire:model="unitRows.{{ $index }}.u_val"
                                                     wire:change="updateUnitCost({{ $index }})"
                                                     class="form-control font-family-cairo fw-bold" min="1"
+                                                    step="0.0001"
                                                     placeholder="1" style="min-width: 150px;">
                                                 @error("unitRows.{$index}.u_val")
                                                     <span

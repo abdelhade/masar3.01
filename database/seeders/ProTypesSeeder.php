@@ -77,7 +77,6 @@ class ProTypesSeeder extends Seeder
             ['id' => 59, 'pname' => 'free_manufacturing', 'ptext' => 'تصنيع حر', 'ptype' => 'تصنيع'],
             ['id' => 60, 'pname' => 'inventory_start_balance', 'ptext' => 'تسجيل الارصده الافتتاحيه للمخازن', 'ptype' => 'ارصده افتتاحيه'],
             ['id' => 61, 'pname' => 'accounts_start_balance', 'ptext' => 'تسجيل الارصده الافتتاحيه للحسابات', 'ptype' => 'ارصده افتتاحيه للحسابات'],
-            ['id' => 61, 'pname' => 'accounts_strat_balance', 'ptext' => 'تسجيل الارصده الافتتاحيه للحسابات', 'ptype' => 'ارصده افتتاحيه'],
 
 
         ];

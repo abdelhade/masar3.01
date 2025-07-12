@@ -7,6 +7,9 @@ use App\Models\OperHead;
 use App\Models\JournalHead;
 use App\Models\JournalDetail;
 use Modules\Settings\Models\PublicSetting;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 new class extends Component {
     public $accounts;
@@ -52,156 +55,179 @@ new class extends Component {
 
     public function loadData()
     {
-        $this->accounts = collect();
-        foreach ($this->accountsTypes as $typePattern) {
-            $this->accounts = $this->accounts->merge(AccHead::where('code', 'like', $typePattern)->where('is_basic', 0)->get());
-        }
+        $this->accounts = AccHead::where(function ($query) {
+            foreach ($this->accountsTypes as $typePattern) {
+                $query->orWhere('code', 'like', $typePattern);
+            }
+        })->where('is_basic', 0)->get();
 
         foreach ($this->accounts as $account) {
             $this->current_accounts_opening_balance[$account->id] = (float) $account->start_balance;
             if (!Str::startsWith($account->code, '221') && !Str::startsWith($account->code, '123')) {
                 $this->new_accounts_opening_balance[$account->id] = null;
             }
-            // $this->adjustment[$account->id] = (float) 0.0;
         }
     }
 
     public function updateStartBalance()
     {
-        if (
-            empty(
-                array_filter($this->new_accounts_opening_balance, function ($value) {
-                    return !is_null($value);
-                })
-            )
-        ) {
+        $newBalances = array_filter($this->new_accounts_opening_balance, fn($value) => !is_null($value));
+
+        if (empty($newBalances)) {
             session()->flash('error', 'لم يتم إدخال بيانات للتحديث');
             return;
         }
+
         try {
             DB::beginTransaction();
-            foreach ($this->new_accounts_opening_balance as $accountId => $newBalance) {
-                if ($newBalance != null) {
-                    $account = AccHead::find($accountId);
-                    $accountOldStartBalance = $account->start_balance;
-                    $account->start_balance = $newBalance;
-                    $account->save();
-                    if ($account->parent_id != null || $account->parent_id != 0) {
-                        $this->updateParentBalance($account, $accountOldStartBalance, $newBalance);
-                    }
+
+            $accounts = AccHead::findMany(array_keys($newBalances));
+
+            foreach ($accounts as $account) {
+                $newBalance = $newBalances[$account->id];
+                $oldBalance = $account->start_balance;
+
+                $account->start_balance = $newBalance;
+                $account->save();
+
+                if ($account->parent_id) {
+                    $this->updateParentBalance($account, $oldBalance, $newBalance);
                 }
             }
+
             $this->updateCapitalBalance();
-            $this->createOperationAndJournal();
+            $this->createOperationAndJournal($newBalances);
+
             $this->loadData();
             session()->flash('success', 'تم تحديث الرصيد بنجاح');
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'حدث خطأ ما أثناء تحديث الرصيد');
+            Log::error('Error updating start balance', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            session()->flash('error', 'حدث خطأ ما أثناء تحديث الرصيد: ' . $e->getMessage());
         }
     }
 
     public function updateParentBalance($account, $accountOldStartBalance, $newBalance)
     {
-        $parent = AccHead::findorFail($account->parent_id);
-        $parent->start_balance = $parent->start_balance - $accountOldStartBalance + $newBalance;
-        $parent->save();
-        if ($parent->parent_id != null || $parent->parent_id != 0) {
-            $this->updateParentBalance($parent, $accountOldStartBalance, $newBalance);
+        if (!$account->parent_id) {
+            return;
         }
-
+        $parent = AccHead::find($account->parent_id);
+        if ($parent) {
+            $parent->start_balance = $parent->start_balance - $accountOldStartBalance + $newBalance;
+            $parent->save();
+            if ($parent->parent_id) {
+                $this->updateParentBalance($parent, $accountOldStartBalance, $newBalance);
+            }
+        }
     }
 
     public function updateCapitalBalance()
     {
-        $accounts = collect();
-        foreach ($this->capitalAccountsTypes as $capitalAccountType) {
-            $accounts = $accounts->merge(AccHead::where('code', 'like', $capitalAccountType)->where('is_basic', 0)->get());
-        }
-        $balance = $accounts->sum('start_balance');
-        $BasicCapitalAccount = AccHead::where('code', '=', '2211')->first();
-        $BasicCapitalAccountOldStartBalance = $BasicCapitalAccount->start_balance;
-        $BasicCapitalAccount->update(['start_balance' => -$balance]);
-        $BasicCapitalAccount->save();
-        $this->updateParentBalance($BasicCapitalAccount, $BasicCapitalAccountOldStartBalance, -$balance);
+        $accounts = AccHead::where(function ($query) {
+            foreach ($this->capitalAccountsTypes as $capitalAccountType) {
+                $query->orWhere('code', 'like', $capitalAccountType);
+            }
+        })->where('is_basic', 0)->get();
 
+        $balance = $accounts->sum('start_balance') * -1;
+        $basicCapitalAccount = AccHead::where('code', '=', '2211')->first();
+
+        if ($basicCapitalAccount) {
+            $oldBalance = $basicCapitalAccount->start_balance;
+            $basicCapitalAccount->start_balance = $balance;
+            $basicCapitalAccount->save();
+            if ($basicCapitalAccount->parent_id) {
+                $this->updateParentBalance($basicCapitalAccount, $oldBalance, $balance);
+            }
+        }
     }
 
-    public function createOperationAndJournal()
+    public function createOperationAndJournal(array $newBalances)
     {
-        //create operation
+        $startDate = PublicSetting::where('key', 'start_date')->value('value');
+        $userId = Auth::id();
+
         $oper = OperHead::updateOrCreate(
             ['pro_type' => 61],
             [
-            'is_journal' => 1,
-            'journal_type' => 1,
-            'info' => 'تسجيل الارصده الافتتاحيه للحسابات',
-            'pro_date' => PublicSetting::where('key', 'start_date')->first()->value,
-            'user' => Auth::id(),
-            'pro_type' => 61,
-        ]);
-        //create journal
-        $existingJournal = JournalHead::where('pro_type', 61)->where('op_id', $oper->id)->first();
-
-        if ($existingJournal) {
-            $journalId = $existingJournal->journal_id;
-        } else {
-            $journalId = JournalHead::max('journal_id') + 1 ?? 1;
-        }
-        JournalHead::updateOrCreate(
-            ['journal_id' => $journalId, 'pro_type' => 61],
-            [
-                'journal_id' => $journalId,
-                'total' => array_sum($this->new_accounts_opening_balance),
-                'date' => PublicSetting::where('key', 'start_date')->first()->value,
-                'op_id' => $oper->id,
-                'pro_type' => 61,
-                'op2' => $oper->id,
-                'user' => Auth::id(),
+                'is_journal' => 1,
+                'journal_type' => 1,
+                'info' => 'تسجيل الارصده الافتتاحيه للحسابات',
+                'pro_date' => $startDate,
+                'user' => $userId,
             ],
         );
-        //create journal details
-        foreach ($this->new_accounts_opening_balance as $accountId => $newBalance) {
-            if ($newBalance != null) {
+
+        $journalId = JournalHead::where('pro_type', 61)->where('op_id', $oper->id)->value('journal_id') ?? JournalHead::max('journal_id') + 1;
+
+        $accounts = AccHead::where(function ($query) {
+            foreach ($this->capitalAccountsTypes as $capitalAccountType) {
+                $query->orWhere('code', 'like', $capitalAccountType);
+            }
+        })->where('is_basic', 0)->get();
+
+        $totalDebit = $accounts->where('start_balance', '>', 0)->sum('start_balance');
+        $totalCredit = $accounts->where('start_balance', '<', 0)->sum('start_balance');
+
+        $capitalAccount = AccHead::where('code', '=', '2211')->first();
+        if ($capitalAccount) {
+            $totalCredit += $capitalAccount->start_balance;
+        }
+
+        if (round($totalDebit, 2) == round(-$totalCredit, 2)) {
+            JournalHead::updateOrCreate(
+                ['journal_id' => $journalId, 'pro_type' => 61],
+                [
+                    'op_id' => $oper->id,
+                    'total' => $totalDebit,
+                    'date' => $startDate,
+                    'op2' => $oper->id,
+                    'user' => $userId,
+                ],
+            );
+
+            foreach ($newBalances as $accountId => $newBalance) {
                 if ($newBalance > 0) {
                     JournalDetail::updateOrCreate(
-                        ['journal_id' => $journalId, 'credit' => 0, 'account_id' => $accountId],
-                        [
-                            'journal_id' => $journalId,
-                            'account_id' => $accountId,
-                            'debit' => $newBalance,
-                            'credit' => 0,
-                            'type' => 1,
-                            'op_id' => $oper->id,
-                        ],
+                        ['journal_id' => $journalId, 'account_id' => $accountId, 'op_id' => $oper->id],
+                        ['debit' => $newBalance, 'credit' => 0, 'type' => 1]
                     );
                 } elseif ($newBalance < 0) {
                     JournalDetail::updateOrCreate(
-                        ['journal_id' => $journalId, 'debit' => 0, 'account_id' => $accountId],
-                        [
-                            'journal_id' => $journalId,
-                            'account_id' => $accountId,
-                            'debit' => 0,
-                            'credit' => -$newBalance,
-                            'type' => 1,
-                            'op_id' => $oper->id,
-                        ],
+                        ['journal_id' => $journalId, 'account_id' => $accountId, 'op_id' => $oper->id],
+                        ['debit' => 0, 'credit' => -$newBalance, 'type' => 1]
                     );
+                } else {
+                    JournalDetail::where('journal_id', $journalId)->where('account_id', $accountId)->where('op_id', $oper->id)->delete();
                 }
             }
+
+            if ($capitalAccount) {
+                JournalDetail::updateOrCreate(
+                    ['journal_id' => $journalId, 'account_id' => $capitalAccount->id, 'op_id' => $oper->id],
+                    [
+                        'debit' => 0,
+                        'credit' => -$capitalAccount->start_balance,
+                        'type' => 1,
+                    ],
+                );
+            }
+            // delete the journal if the capital account balance is 0
+            if ($capitalAccount->start_balance == 0) {
+                // delete the journal details
+                JournalDetail::where('journal_id', $journalId)->where('op_id', $oper->id)->where('account_id', $capitalAccount->id)->delete();
+                JournalHead::where('journal_id', $journalId)->delete();
+            }
+        } else {
+            throw new \Exception('الحسابات المدينه لا تتساوي مع الحسابات الدائنه');
         }
-        JournalDetail::updateOrCreate(
-            ['journal_id' => $journalId, 'debit' => 0, 'account_id' => 2211],
-            [
-                'journal_id' => $journalId,
-                'account_id' => 2211,
-                'debit' => 0,
-                'credit' => array_sum($this->new_accounts_opening_balance),
-                'type' => 1,
-                'op_id' => $oper->id,
-            ],
-        );
     }
 }; ?>
 
@@ -250,10 +276,9 @@ new class extends Component {
                                     @if (!Str::startsWith($account->code, '221') && !Str::startsWith($account->code, '123'))
                                         <input type="number" step="0.01"
                                             wire:model.blur="new_accounts_opening_balance.{{ $account->id }}"
-                                            class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16
-                                        @if ($new_accounts_opening_balance[$account->id] < 0) text-danger @endif"
+                                            class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($new_accounts_opening_balance[$account->id] ?? 0) < 0) text-danger @endif"
                                             placeholder="رصيد اول المده الجديد" style="padding:2px;height:30px;"
-                                            @click="this.focus()" data-item-id="{{ $account->id }}">
+                                            x-on:keydown.enter.prevent>
                                         {{-- @else
                                         <p class="font-family-cairo fw-bold font-16 text-center">
                                             {{ $account->start_balance ?? 0 }}

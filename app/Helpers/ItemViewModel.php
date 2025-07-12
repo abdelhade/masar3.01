@@ -5,72 +5,91 @@ namespace App\Helpers;
 use App\Models\Item;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ItemViewModel
 {
     private $item;
     private $selectedUnitId;
+    private $selectedWarehouse;
+    private $baseQuantityCache = null;
 
-    public function __construct(Item $item, ?int $selectedUnitId)
+    public function __construct(?string $selectedWarehouse, Item $item, ?int $selectedUnitId)
     {
         $this->item = $item;
         $this->selectedUnitId = $selectedUnitId;
+        $this->selectedWarehouse = $selectedWarehouse;
     }
 
     public function getUnitOptions(): array
     {
-        return $this->item->units->map(function ($unit) {
-            return [
-                'value' => $unit->id,
-                'label' => $unit->name . ' [' . number_format($unit->pivot->u_val) . ']',
-            ];
-        })->toArray();
+        return $this->item->units->map(fn($unit) => [
+            'value' => $unit->id,
+            'label' => $unit->name . ' [' . number_format($unit->pivot->u_val) . ']',
+        ])->toArray();
     }
 
+    /**
+     * Get total quantity in base units (u_val = 1), cached per instance.
+     */
+    private function getTotalBaseQuantity(): float
+    {
+        if ($this->baseQuantityCache !== null) {
+            return $this->baseQuantityCache;
+        }
+
+        $query = DB::table('operation_items')
+            ->where('item_id', $this->item->id);
+
+        if (!empty($this->selectedWarehouse)) {
+            $query->where('detail_store', intval($this->selectedWarehouse));
+        }
+
+        $itemRows = $query->get();
+
+        $totalBaseQty = 0;
+        foreach ($itemRows as $row) {
+            $unit = $this->item->units->firstWhere('id', $row->unit_id);
+            $u_val = $unit->pivot->u_val ?? 1;
+            $qty = ($row->qty_in - $row->qty_out) * $u_val;
+            $totalBaseQty += $qty;
+        }
+
+        return $this->baseQuantityCache = $totalBaseQty;
+    }
+
+    /**
+     * Get the quantity in the selected unit (as float).
+     */
     public function getCurrentUnitQuantity(): float
     {
-        // if ($this->selectedStoreId === 'all') {
-        //     $currentQuantity = 0;
-        //     foreach ($this->item->stores as $store) {
-        //         $startQuantity = $store->pivot->start_quantity ?? 0;
-        //         $quantityIn = $store->pivot->quantity_in ?? 0;
-        //         $quantityOut = $store->pivot->quantity_out ?? 0;
-        //         $currentQuantity += $startQuantity + $quantityIn - $quantityOut;
+        $selectedUnit = $this->item->units->firstWhere('id', $this->selectedUnitId);
+        $selectedUVal = $selectedUnit->pivot->u_val ?? 1;
+        $totalBaseQty = $this->getTotalBaseQuantity();
 
-        //     }
-        //     return $currentQuantity;
-        // }
-
-        // foreach ($this->item->stores as $store) {
-        //     if ($store->id == $this->selectedStoreId) {
-        //         $startQuantity = $store->pivot->start_quantity ?? 0;
-        //         $quantityIn = $store->pivot->quantity_in ?? 0;
-        //         $quantityOut = $store->pivot->quantity_out ?? 0;
-        //         $currentQuantity += $startQuantity + $quantityIn - $quantityOut;
-        //     }
-        // }
-
-        $itemRows = DB::table('operation_items')->where('item_id', $this->item->id)->where('unit_id', $this->item->units->first()->pivot->u_val)->get();
-        $currentQuantity = $itemRows->sum('qty_in') - $itemRows->sum('qty_out');
-        return $currentQuantity;
+        return $selectedUVal > 0 ? $totalBaseQty / $selectedUVal : 0;
     }
 
+    /**
+     * Get formatted quantity for display (integer part and remainder in smaller unit).
+     */
     public function getFormattedQuantity(): array
     {
         $selectedUnit = $this->item->units->firstWhere('id', $this->selectedUnitId);
-        $baseUnitQuantity = $this->getCurrentUnitQuantity();
-        $unitValue = $selectedUnit->pivot->u_val ?? 1;
+        $selectedUVal = $selectedUnit->pivot->u_val ?? 1;
         $unitName = $selectedUnit->name ?? '';
-        $smallerUnitName = $this->item->units->firstWhere('pivot.u_val', 1)->name ?? 'Default Unit';
+        $smallerUnit = $this->item->units->firstWhere('pivot.u_val', 1);
+        $smallerUnitName = $smallerUnit->name ?? '';
 
-        $largerUnitQuantity = floor($baseUnitQuantity / $unitValue);
-        $remainderQuantity = $baseUnitQuantity % $unitValue;
-        // \dd($largerUnitQuantity, $remainderQuantity, $unitName, $smallerUnitName);
+        $totalBaseQty = $this->getTotalBaseQuantity();
+
+        $integer = $selectedUVal > 0 ? floor($totalBaseQty / $selectedUVal) : 0;
+        $remainder = $selectedUVal > 0 ? $totalBaseQty % $selectedUVal : 0;
 
         return [
             'quantity' => [
-                'integer' => $largerUnitQuantity,
-                'remainder' => $remainderQuantity
+                'integer' => $integer,
+                'remainder' => $remainder
             ],
             'unitName' => $unitName,
             'smallerUnitName' => $smallerUnitName,
@@ -79,12 +98,12 @@ class ItemViewModel
 
     public function getUnitBarcode(): array
     {
-        return $this->item->barcodes->where('unit_id', $this->selectedUnitId)->map(function ($barcode) {
-            return [
+        return $this->item->barcodes
+            ->where('unit_id', $this->selectedUnitId)
+            ->map(fn($barcode) => [
                 'id' => $barcode->id,
                 'barcode' => $barcode->barcode,
-            ];
-        })->toArray();
+            ])->toArray();
     }
 
     public function getUnitCostPrice(): float
@@ -100,19 +119,15 @@ class ItemViewModel
     public function getUnitSalePrices(): array
     {
         if (!$this->selectedUnitId) {
-            return []; // Return empty if no unit is selected
+            return [];
         }
         return $this->item->prices
-            ->where('pivot.unit_id', $this->selectedUnitId) // Filter by selected unit
-            ->mapWithKeys(function ($priceTypeModel) {
-                // $priceTypeModel is an instance of Price (the price type, e.g., "Retail", "Wholesale")
-                // $priceTypeModel->pivot contains the actual price for this item, for this unit, for this price type.
-                return [
-                    $priceTypeModel->id => [ // Key by PriceType ID
-                        'name' => $priceTypeModel->name, // Name of the price type
-                        'price' => $priceTypeModel->pivot->price, // Actual price value
-                    ]
-                ];
-            })->toArray();
+            ->where('pivot.unit_id', $this->selectedUnitId)
+            ->mapWithKeys(fn($priceTypeModel) => [
+                $priceTypeModel->id => [
+                    'name' => $priceTypeModel->name,
+                    'price' => $priceTypeModel->pivot->price,
+                ]
+            ])->toArray();
     }
 }
