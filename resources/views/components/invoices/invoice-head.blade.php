@@ -22,16 +22,14 @@
                     @endforeach
                 </select> --}}
 
-
                 <x-tom-select :options="collect($acc1List)
                     ->map(fn($acc1List) => ['value' => $acc1List->id, 'text' => $acc1List->aname])
-                    ->toArray()" wireModel="acc1_id" :search="true" placeholder="اختر عميل"
-                    :tomOptions="[
-                        'plugins' => [
-                            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
-                            'remove_button' => ['title' => 'إزالة المحدد'],
-                        ],
-                    ]" />
+                    ->toArray()" wireModel="acc1_id" :search="true" :tomOptions="[
+                    'plugins' => [
+                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                        'remove_button' => ['title' => 'إزالة المحدد'],
+                    ],
+                ]" />
                 @error('acc1_id')
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                 @enderror

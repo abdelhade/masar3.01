@@ -384,29 +384,31 @@ class CreateInvoiceForm extends Component
         // حساب الإجمالي الفرعي (مجموع القيم الفرعية لجميع الأصناف)
         $this->subtotal = collect($this->invoiceItems)->sum('sub_value');
 
+        $discountPercentage = (float) ($this->discount_percentage ?? 0);
+        $additionalPercentage = (float) ($this->additional_percentage ?? 0);
+
         // حساب قيمة الخصم إذا تم إدخال نسبة مئوية
-        if ($this->discount_percentage > 0) {
-            $this->discount_value = ($this->subtotal * $this->discount_percentage) / 100;
-        }
+        $this->discount_value = ($this->subtotal * $discountPercentage) / 100;
 
         // حساب المبلغ بعد الخصم
         $afterDiscount = round($this->subtotal - $this->discount_value, 2);
 
         // حساب قيمة الإضافي إذا تم إدخال نسبة مئوية
-        if ($this->additional_percentage > 0) {
-            $this->additional_value = ($afterDiscount * $this->additional_percentage) / 100;
-        }
+        $this->additional_value = ($this->subtotal *  $additionalPercentage) / 100;
 
         // حساب المبلغ النهائي
-        $this->total_after_additional = round($afterDiscount + $this->additional_value, 2);
+        $this->total_after_additional = round($this->subtotal - $this->discount_value + $this->additional_value, 2);
+
+        // $this->total_after_additional = round($afterDiscount + $this->additional_value, 2);
     }
 
     public function updatedDiscountPercentage()
     {
-        if ($this->discount_percentage >= 0) {
-            $this->discount_value = ($this->subtotal * $this->discount_percentage) / 100;
-            $this->calculateTotals();
-        }
+        // if ($this->discount_percentage >= 0) {
+        $discountPercentage = (float) ($this->discount_percentage ?? 0);
+        $this->discount_value = ($this->subtotal * $discountPercentage) / 100;
+        $this->calculateTotals();
+        // }
     }
 
     public function updatedDiscountValue()
@@ -419,11 +421,19 @@ class CreateInvoiceForm extends Component
 
     public function updatedAdditionalPercentage()
     {
-        if ($this->additional_percentage >= 0) {
-            $afterDiscount = $this->subtotal - $this->discount_value;
-            $this->additional_value = ($afterDiscount * $this->additional_percentage) / 100;
-            $this->calculateTotals();
-        }
+        // تحديث قيمة الإضافي عند تغيير النسبة المئوية (من الإجمالي الفرعي الأصلي)
+        // if ($this->additional_percentage >= 0) {
+        $additionalPercentage = (float) ($this->additional_percentage ?? 0);
+        $this->additional_value = ($this->subtotal * $additionalPercentage) / 100;
+        $this->calculateTotals();
+        // }
+        // $this->additional_value = ($this->subtotal * $this->additional_percentage) / 100;
+        // $this->calculateTotals();
+
+        //     $afterDiscount = $this->subtotal - $this->discount_value;
+        //     $this->additional_value = ($afterDiscount * $this->additional_percentage) / 100;
+        //     $this->calculateTotals();
+        // }
     }
 
     public function updatedAdditionalValue()
@@ -437,242 +447,230 @@ class CreateInvoiceForm extends Component
 
     public function saveForm()
     {
-        // dd($this->all());
-        $isJournal = in_array($this->type, [10, 11, 12, 13, 18, 19, 20, 21, 23]) ? 1 : 0;
-        $isManager = $isJournal ? 0 : 1;
-        $isReceipt = in_array($this->type, [10, 22, 13]); // سند قبض
-        $isPayment = in_array($this->type, [11, 12]); // سند دفع
+        try {
+            // dd($this->all());
+            $isJournal = in_array($this->type, [10, 11, 12, 13, 18, 19, 20, 21, 23]) ? 1 : 0;
+            $isManager = $isJournal ? 0 : 1;
+            $isReceipt = in_array($this->type, [10, 22, 13]); // سند قبض
+            $isPayment = in_array($this->type, [11, 12]); // سند دفع
 
-        $operation = OperHead::create([
-            'pro_id'         => $this->pro_id,
-            'pro_type'       => $this->type,
-            'acc1'           => $this->acc1_id,
-            'acc2'           => $this->acc2_id,
-            'emp_id'         => $this->emp_id,
-            'is_manager'     => $isManager,
-            'is_journal'     => $isJournal,
-            'is_stock'       => 1,
-            'pro_date'       => $this->pro_date,
-            'op2'            => 0,
-            'pro_value'      => $this->total_after_additional,
-            'fat_net'        => $this->total_after_additional,
-            'price_list'     => $this->selectedPriceType,
-            'accural_date'   => $this->accural_date,
-            'pro_serial'     => $this->serial_number,
-            'fat_disc_per'   => $this->discount_percentage,
-            'fat_disc'       => $this->discount_value,
-            'fat_plus_per'   => $this->additional_percentage,
-            'fat_plus'       => $this->additional_value,
-            'fat_total'      => $this->subtotal,
-            'info'           => $this->notes,
-        ]);
-
-        $totalProfit = 0;
-
-        foreach ($this->invoiceItems as $invoiceItem) {
-            $itemId    = $invoiceItem['item_id'];
-            $quantity  = $invoiceItem['quantity'];
-            $unitId    = $invoiceItem['unit_id'];
-            $price     = $invoiceItem['price'];
-            $subValue  = $invoiceItem['sub_value'] ?? $price * $quantity;
-            $discount  = $invoiceItem['discount'] ?? 0;
-            $itemCost  = Item::where('id', $itemId)->value('average_cost');
-
-            $qty_in = $qty_out = 0;
-            if (in_array($this->type, [11, 13, 20])) $qty_in = $quantity;
-            if (in_array($this->type, [10, 12, 18, 19])) $qty_out = $quantity;
-
-            if (in_array($this->type, [11, 20])) {
-                $oldQty = OperationItems::where('item_id', $itemId)
-                    ->where('is_stock', 1)
-                    ->selectRaw('SUM(qty_in - qty_out) as total')
-                    ->value('total') ?? 0;
-                $oldCost = Item::where('id', $itemId)->value('average_cost') ?? 0;
-                $newQty = $oldQty + $quantity;
-                $newCost = $newQty > 0 ? (($oldQty * $oldCost) + $subValue) / $newQty : $oldCost;
-                Item::where('id', $itemId)->update(['average_cost' => $newCost]);
-            }
-
-            if (in_array($this->type, [10, 12, 18, 19])) {
-                $discountItem = ($this->discount_value - $this->additional_value) * $subValue / $this->subtotal;
-                $itemCostTotal = $quantity * ($itemCost - $discountItem);
-                $profit = $subValue - $itemCostTotal;
-                $totalProfit += $profit;
-            } else {
-                $profit = 0;
-            }
-
-            OperationItems::create([
-                'pro_tybe'      => $this->type,
-                'detail_store'  => $this->acc2_id,
-                'pro_id'        => $operation->id,
-                'item_id'       => $itemId,
-                'unit_id'       => $unitId,
-                'qty_in'        => $qty_in,
-                'qty_out'       => $qty_out,
-                'item_price'    => $price,
-                'cost_price'    => $itemCost,
-                'item_discount' => $discount,
-                'detail_value'  => $subValue,
-                'notes'         => $invoiceItem['notes'] ?? null,
-                'is_stock'      => 1,
-                'profit'        => $profit,
+            $operation = OperHead::create([
+                'pro_id'         => $this->pro_id,
+                'pro_type'       => $this->type,
+                'acc1'           => $this->acc1_id,
+                'acc2'           => $this->acc2_id,
+                'emp_id'         => $this->emp_id,
+                'is_manager'     => $isManager,
+                'is_journal'     => $isJournal,
+                'is_stock'       => 1,
+                'pro_date'       => $this->pro_date,
+                'op2'            => 0,
+                'pro_value'      => $this->total_after_additional,
+                'fat_net'        => $this->total_after_additional,
+                'price_list'     => $this->selectedPriceType,
+                'accural_date'   => $this->accural_date,
+                'pro_serial'     => $this->serial_number,
+                'fat_disc_per'   => $this->discount_percentage,
+                'fat_disc'       => $this->discount_value,
+                'fat_plus_per'   => $this->additional_percentage,
+                'fat_plus'       => $this->additional_value,
+                'fat_total'      => $this->subtotal,
+                'info'           => $this->notes,
             ]);
-        }
 
-        $operation->update(['profit' => $totalProfit]);
+            $totalProfit = 0;
 
-        if ($isJournal) {
-            $journalId = JournalHead::max('journal_id') + 1;
-            $debit = $credit = null;
+            foreach ($this->invoiceItems as $invoiceItem) {
+                $itemId    = $invoiceItem['item_id'];
+                $quantity  = $invoiceItem['quantity'];
+                $unitId    = $invoiceItem['unit_id'];
+                $price     = $invoiceItem['price'];
+                $subValue  = $invoiceItem['sub_value'] ?? $price * $quantity;
+                $discount  = $invoiceItem['discount'] ?? 0;
+                $itemCost  = Item::where('id', $itemId)->value('average_cost');
 
-            //             public $titles = [
-            //     10 => 'فاتوره مبيعات',
-            //     11 => 'فاتورة مشتريات',
-            //     12 => 'مردود مبيعات',
-            //     13 => 'مردود مشتريات',
-            //     14 => 'امر بيع',
-            //     15 => 'امر شراء',
-            //     16 => 'عرض سعر لعميل',
-            //     17 => 'عرض سعر من مورد',
-            //     18 => 'فاتورة توالف',
-            //     19 => 'امر صرف',
-            //     20 => 'امر اضافة',
-            //     21 => 'تحويل من مخزن لمخزن',
-            //     22 => 'امر حجز',
-            // ];
-            switch ($this->type) {
-                case 10:
-                    $debit = $this->acc1_id;
-                    $credit = 93; // حساب المبيعات
-                    break;
-                case 11:
-                    $debit = 4111; // حساب  المشتريات
-                    $credit = $this->acc1_id;
-                    break;
-                case 12:
-                    $debit = 94; //حساب مردود المبيعات
-                    $credit = $this->acc1_id;
-                    break;
-                case 13:
-                    $debit = $this->acc1_id;
-                    $credit = 4112; // مردود مشتريات
-                    break;
-                case 18:
-                    $debit = $this->acc1_id;
-                    $credit = $this->acc2_id;
-                    break;
-                case 19:
-                    $debit = $this->acc1_id;
-                    $credit = $this->acc2_id;
-                    break;
-                case 20:
-                    $debit = $this->acc2_id;
-                    $credit = $this->acc1_id;
-                    break;
-                case 21:
-                    $debit = $this->acc1_id;
-                    $credit = $this->acc2_id;
-                    break;
-            }
+                $qty_in = $qty_out = 0;
+                if (in_array($this->type, [11, 13, 20])) $qty_in = $quantity;
+                if (in_array($this->type, [10, 12, 18, 19])) $qty_out = $quantity;
 
-            if ($debit) {
-                JournalDetail::create([
-                    'journal_id' => $journalId,
-                    'account_id' => $debit,
-                    'debit'      => $this->total_after_additional,
-                    'credit'     => 0,
-                    'type'       => 1,
-                    'info'       => $this->notes,
-                    'op_id'      => $operation->id,
-                    'isdeleted'  => 0,
+                if (in_array($this->type, [11, 20])) {
+                    $oldQty = OperationItems::where('item_id', $itemId)
+                        ->where('is_stock', 1)
+                        ->selectRaw('SUM(qty_in - qty_out) as total')
+                        ->value('total') ?? 0;
+                    $oldCost = Item::where('id', $itemId)->value('average_cost') ?? 0;
+                    $newQty = $oldQty + $quantity;
+                    $newCost = $newQty > 0 ? (($oldQty * $oldCost) + $subValue) / $newQty : $oldCost;
+                    Item::where('id', $itemId)->update(['average_cost' => $newCost]);
+                }
+
+                if (in_array($this->type, [10, 12, 18, 19])) {
+                    $discountItem = ($this->discount_value - $this->additional_value) * $subValue / $this->subtotal;
+                    $itemCostTotal = $quantity * ($itemCost - $discountItem);
+                    $profit = $subValue - $itemCostTotal;
+                    $totalProfit += $profit;
+                } else {
+                    $profit = 0;
+                }
+
+                OperationItems::create([
+                    'pro_tybe'      => $this->type,
+                    'detail_store'  => $this->acc2_id,
+                    'pro_id'        => $operation->id,
+                    'item_id'       => $itemId,
+                    'unit_id'       => $unitId,
+                    'qty_in'        => $qty_in,
+                    'qty_out'       => $qty_out,
+                    'item_price'    => $price,
+                    'cost_price'    => $itemCost,
+                    'item_discount' => $discount,
+                    'detail_value'  => $subValue,
+                    'notes'         => $invoiceItem['notes'] ?? null,
+                    'is_stock'      => 1,
+                    'profit'        => $profit,
                 ]);
             }
 
-            if ($credit) {
-                JournalDetail::create([
-                    'journal_id' => $journalId,
-                    'account_id' => $credit,
-                    'debit'      => 0,
-                    'credit'     => $this->total_after_additional,
-                    'type'       => 1,
-                    'info'       => $this->notes,
-                    'op_id'      => $operation->id,
-                    'isdeleted'  => 0,
-                ]);
-            }
+            $operation->update(['profit' => $totalProfit]);
 
-            JournalHead::create([
-                'journal_id' => $journalId,
-                'total'      => $this->total_after_additional,
-                'op2'        => $operation->id,
-                'op_id'      => $operation->id,
-                'pro_type'   => $this->type,
-                'date'       => $this->pro_date,
-                'details'    => $this->notes,
-                'user'       => Auth::id(),
-            ]);
-        }
-        if ($this->received_from_client > 0) {
-            // إنشاء سند قبض أو دفع
-            if ($isReceipt || $isPayment) {
-                $voucherValue = $this->received_from_client ?? $this->total_after_additional;
+            if ($isJournal) {
+                $journalId = JournalHead::max('journal_id') + 1;
+                $debit = $credit = null;
+                switch ($this->type) {
+                    case 10:
+                        $debit = $this->acc1_id;
+                        $credit = 93; // حساب المبيعات
+                        break;
+                    case 11:
+                        $debit = 4111; // حساب  المشتريات
+                        $credit = $this->acc1_id;
+                        break;
+                    case 12:
+                        $debit = 94; //حساب مردود المبيعات
+                        $credit = $this->acc1_id;
+                        break;
+                    case 13:
+                        $debit = $this->acc1_id;
+                        $credit = 4112; // مردود مشتريات
+                        break;
+                    case 18:
+                        $debit = $this->acc1_id;
+                        $credit = $this->acc2_id;
+                        break;
+                    case 19:
+                        $debit = $this->acc1_id;
+                        $credit = $this->acc2_id;
+                        break;
+                    case 20:
+                        $debit = $this->acc2_id;
+                        $credit = $this->acc1_id;
+                        break;
+                    case 21:
+                        $debit = $this->acc1_id;
+                        $credit = $this->acc2_id;
+                        break;
+                }
 
-                // Ensure cash_box_id is a valid integer, otherwise set to null or a default value (e.g., 0)
-                $cashBoxId = is_numeric($this->cash_box_id) && $this->cash_box_id > 0 ? (int)$this->cash_box_id : null;
+                if ($debit) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $debit,
+                        'debit'      => $this->total_after_additional,
+                        'credit'     => 0,
+                        'type'       => 1,
+                        'info'       => $this->notes,
+                        'op_id'      => $operation->id,
+                        'isdeleted'  => 0,
+                    ]);
+                }
 
-                $voucher = OperHead::create([
-                    'pro_id'     => $this->pro_id,
-                    'pro_type'   => $this->type,
-                    'acc1'       => $this->acc1_id,
-                    'acc2'       => $cashBoxId,
-                    'pro_value'  => $voucherValue,
-                    'pro_date'   => $this->pro_date,
-                    'info'       => 'سند آلي مرتبط بعملية رقم ' . $this->pro_id,
-                    'op2'        => $operation->id,
-                    'is_journal' => 1,
-                    'is_stock'   => 0,
-                ]);
-
-                $voucherJournalId = JournalHead::max('journal_id') + 1;
-
+                if ($credit) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $credit,
+                        'debit'      => 0,
+                        'credit'     => $this->total_after_additional,
+                        'type'       => 1,
+                        'info'       => $this->notes,
+                        'op_id'      => $operation->id,
+                        'isdeleted'  => 0,
+                    ]);
+                }
 
                 JournalHead::create([
-                    'journal_id' => $voucherJournalId,
-                    'total'      => $voucherValue,
-                    'op_id'      => $voucher->id,
+                    'journal_id' => $journalId,
+                    'total'      => $this->total_after_additional,
                     'op2'        => $operation->id,
+                    'op_id'      => $operation->id,
                     'pro_type'   => $this->type,
                     'date'       => $this->pro_date,
-                    'details'    => 'قيد سند ' . ($isReceipt ? 'قبض' : 'دفع') . ' آلي',
+                    'details'    => $this->notes,
                     'user'       => Auth::id(),
                 ]);
-
-                JournalDetail::create([
-                    'journal_id' => $voucherJournalId,
-                    'account_id' => $isReceipt ? $this->cash_box_id : $this->acc1_id,
-                    'debit'      => $voucherValue,
-                    'credit'     => 0,
-                    'type'       => 1,
-                    'info'       => 'سند ' . ($isReceipt ? 'قبض' : 'دفع'),
-                    'op_id'      => $voucher->id,
-                    'isdeleted'  => 0,
-                ]);
-
-                JournalDetail::create([
-                    'journal_id' => $voucherJournalId,
-                    'account_id' => $isReceipt ? $this->acc1_id : $this->cash_box_id,
-                    'debit'      => 0,
-                    'credit'     => $voucherValue,
-                    'type'       => 1,
-                    'info'       => 'سند ' . ($isReceipt ? 'قبض' : 'دفع'),
-                    'op_id'      => $voucher->id,
-                    'isdeleted'  => 0,
-                ]);
             }
+            if ($this->received_from_client > 0) {
+                // إنشاء سند قبض أو دفع
+                if ($isReceipt || $isPayment) {
+                    $voucherValue = $this->received_from_client ?? $this->total_after_additional;
+                    // Ensure cash_box_id is a valid integer, otherwise set to null or a default value (e.g., 0)
+                    $cashBoxId = is_numeric($this->cash_box_id) && $this->cash_box_id > 0 ? (int)$this->cash_box_id : null;
+
+                    $voucher = OperHead::create([
+                        'pro_id'     => $this->pro_id,
+                        'pro_type'   => $this->type,
+                        'acc1'       => $this->acc1_id,
+                        'acc2'       => $cashBoxId,
+                        'pro_value'  => $voucherValue,
+                        'pro_date'   => $this->pro_date,
+                        'info'       => 'سند آلي مرتبط بعملية رقم ' . $this->pro_id,
+                        'op2'        => $operation->id,
+                        'is_journal' => 1,
+                        'is_stock'   => 0,
+                    ]);
+
+                    $voucherJournalId = JournalHead::max('journal_id') + 1;
+                    JournalHead::create([
+                        'journal_id' => $voucherJournalId,
+                        'total'      => $voucherValue,
+                        'op_id'      => $voucher->id,
+                        'op2'        => $operation->id,
+                        'pro_type'   => $this->type,
+                        'date'       => $this->pro_date,
+                        'details'    => 'قيد سند ' . ($isReceipt ? 'قبض' : 'دفع') . ' آلي',
+                        'user'       => Auth::id(),
+                    ]);
+
+                    JournalDetail::create([
+                        'journal_id' => $voucherJournalId,
+                        'account_id' => $isReceipt ? $this->cash_box_id : $this->acc1_id,
+                        'debit'      => $voucherValue,
+                        'credit'     => 0,
+                        'type'       => 1,
+                        'info'       => 'سند ' . ($isReceipt ? 'قبض' : 'دفع'),
+                        'op_id'      => $voucher->id,
+                        'isdeleted'  => 0,
+                    ]);
+
+                    JournalDetail::create([
+                        'journal_id' => $voucherJournalId,
+                        'account_id' => $isReceipt ? $this->acc1_id : $this->cash_box_id,
+                        'debit'      => 0,
+                        'credit'     => $voucherValue,
+                        'type'       => 1,
+                        'info'       => 'سند ' . ($isReceipt ? 'قبض' : 'دفع'),
+                        'op_id'      => $voucher->id,
+                        'isdeleted'  => 0,
+                    ]);
+                }
+            }
+            Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
+            return redirect()->route('invoices.index');
+        } catch (\Exception $e) {
+            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
+
+            Alert::toast('حدث خطأ أثناء حفظ الفاتورة: ', 'error');
+            return back()->withInput();
         }
-        Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
-        return redirect()->route('invoices.index');
     }
 
 

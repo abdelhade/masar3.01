@@ -1,22 +1,22 @@
 @extends('admin.dashboard')
 @section('content')
+    @include('components.breadcrumb', [
+        'title' => __('تعديل الرصيد الافتتاحي للأصناف'),
+        'items' => [
+            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
+            ['label' => __('تعديل الرصيد الافتتاحي للأصناف')],
+        ],
+    ])
     <div class="content-wrapper">
         <section class="content">
             <form action="{{ route('inventory-balance.store') }}" method="POST">
                 @csrf
-                <div class="row">
-                    <div class="col-12">
-                        <h3 class="card-title fw-bold fs-2">تعديل الرصيد الافتتاحي للأصناف</h3>
-                    </div>
-                </div>
-
                 <div class="row">
                     <div class="col-lg-2">
                         <label class="form-label" style="font-size: 1em;">المخزن</label>
                         <select id="store_select" name="store_id"
                             class="form-control form-control-sm @error('store_id') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                            {{-- <option value="">اختر المخزن</option> --}}
                             @foreach ($stors as $store)
                                 <option value="{{ $store->id }}">{{ $store->aname }}</option>
                             @endforeach
@@ -31,7 +31,6 @@
                         <select id="partner_select" name="partner_id"
                             class="form-control form-control-sm @error('partner_id') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                            {{-- <option value="">اختر الشريك</option> --}}
                             @foreach ($partners as $partner)
                                 <option value="{{ $partner->id }}">{{ $partner->aname }}</option>
                             @endforeach

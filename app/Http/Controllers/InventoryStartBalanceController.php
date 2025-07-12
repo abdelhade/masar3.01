@@ -33,6 +33,7 @@ class InventoryStartBalanceController extends Controller
                 ->select('id', 'aname')
                 ->get();
         });
+
         $itemList = Item::with('units')
             ->get()
             ->map(function ($item) use ($storeId) {
@@ -106,9 +107,7 @@ class InventoryStartBalanceController extends Controller
                     'is_journal' => 1,
                     'info' => 'رصيد افتتاحي للأصناف',
                 ]
-
             );
-
             $totalAmount = 0;
             $processedItems = 0;
 

@@ -34,6 +34,7 @@ use App\Http\Controllers\{
     ContractController,
     AttendanceController,
     AttendanceProcessingController,
+    HomeController,
     ReportController
 };
 
@@ -79,13 +80,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('contract-types', ContractTypeController::class)->names('contract-types')->only('index');
     // 📁 Contracts
     Route::resource('contracts', ContractController::class)->names('contracts')->only('index');
-    // 📁 Attendances   
+    // 📁 Attendances
     Route::resource('attendances', AttendanceController::class)->names('attendances')->only('index');
     // 📁 Attendance Processing
     Route::resource('attendance-processing', AttendanceProcessingController::class)->names('attendance-processing')->only('index');
     // ############################################################################################################
     // 📁 Projects
-    Route::resource('projects', ProjectController::class)->names('projects')->only('index','create','edit');
+    Route::resource('projects', ProjectController::class)->names('projects')->only('index', 'create', 'edit');
 
     // 📁 Items & Units & Prices & Notes
     Route::resource('items', ItemController::class)->names('items')->only('index', 'create', 'edit');
@@ -124,6 +125,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/overall', [ReportController::class, 'overall'])->name('reports.overall');
-
+    Route::get('home', [HomeController::class, 'index'])->name('home.index');
 });
 require __DIR__ . '/auth.php';

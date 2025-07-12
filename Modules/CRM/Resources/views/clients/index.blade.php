@@ -6,7 +6,6 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-
             <a href="{{ route('clients.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                 اضافه جديده
                 <i class="fas fa-plus me-2"></i>
