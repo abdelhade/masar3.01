@@ -179,7 +179,7 @@ new class extends Component {
                 </div>
                 <div class="card-header">
                     <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('Add New') }}
+                        {{ __('Add New Item') }}
                         <i class="fas fa-plus me-2"></i>
                     </a>
                 </div>
