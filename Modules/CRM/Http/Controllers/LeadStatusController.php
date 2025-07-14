@@ -4,12 +4,16 @@ namespace Modules\CRM\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Modules\CRM\Models\LeadStatus;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\LeadStatusRequest;
 
 class LeadStatusController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view lead-status')->only(['index']);
+    }
     /**
      * Display a listing of the resource.
      */

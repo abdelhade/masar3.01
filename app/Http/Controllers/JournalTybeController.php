@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JournalTybe;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class JournalTybeController extends Controller
 {

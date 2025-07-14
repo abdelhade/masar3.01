@@ -4,9 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class ClientController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:عرض العملاء')->only(['index']);
+        $this->middleware('can:عرض تفاصيل عميل')->only(['show']);
+        $this->middleware('can:إنشاء العملاء')->only(['create', 'store']);
+        $this->middleware('can:تعديل العملاء')->only(['edit', 'update']);
+        $this->middleware('can:حذف العملاء')->only(['destroy']);
+    }
+
     // عرض جميع العملاء
     public function index()
     {

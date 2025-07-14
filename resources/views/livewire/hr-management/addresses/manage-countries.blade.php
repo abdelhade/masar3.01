@@ -41,7 +41,7 @@ new class extends Component {
     public function create()
     {
         $this->resetValidation();
-        $this->reset(['title','countryId']);
+        $this->reset(['title', 'countryId']);
         $this->isEdit = false;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -85,18 +85,25 @@ new class extends Component {
 <div style="font-family: 'Cairo', sans-serif; direction: rtl;">
     <div class="row">
         @if (session()->has('success'))
-            <div class="alert alert-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
+            <div class="alert alert-success" x-data="{ show: true }" x-show="show"
+                x-init="setTimeout(() => show = false, 3000)">
                 {{ session('success') }}
             </div>
         @endif
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('إضافة دولة') }}
-                        <i class="fas fa-plus me-2"></i>
-                    </button>
-                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto" style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
+                    @can('إنشاء الدول')
+                        <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                            {{ __('إضافة دولة') }}
+                            <i class="fas fa-plus me-2"></i>
+                        </button>
+                    @endcan
+                    @can('البحث عن الدول')
+                        <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
+                            style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
+                    @endcan
+
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -105,7 +112,10 @@ new class extends Component {
                                 <tr>
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
+                                    @can('إجراء العمليات على الدول')
+                                        <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
+                                    @endcan
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -113,20 +123,28 @@ new class extends Component {
                                     <tr>
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $country->title }}</td>
-                                        <td>
-                                            <a wire:click="edit({{ $country->id }})" class="btn btn-success btn-sm">
-                                                <i class="las la-edit fa-lg"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                    wire:click="delete({{ $country->id }})"
-                                                    onclick="confirm('هل أنت متأكد من حذف هذه الدولة؟') || event.stopImmediatePropagation()">
-                                                <i class="las la-trash fa-lg"></i>
-                                            </button>
-                                        </td>
+                                        @can('إجراء العمليات على الدول')
+                                            <td>
+                                                @can('تعديل الدول')
+                                                    <a wire:click="edit({{ $country->id }})" class="btn btn-success btn-sm">
+                                                        <i class="las la-edit fa-lg"></i>
+                                                    </a>
+                                                @endcan
+                                                @can('حذف الدول')
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        wire:click="delete({{ $country->id }})"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذه الدولة؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash fa-lg"></i>
+                                                    </button>
+                                                @endcan
+                                            </td>
+                                        @endcan
+
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center font-family-cairo fw-bold">{{ __('لا توجد دول.') }}</td>
+                                        <td colspan="3" class="text-center font-family-cairo fw-bold">
+                                            {{ __('لا توجد دول.') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -138,7 +156,8 @@ new class extends Component {
     </div>
 
     <!-- Modal (Create/Edit) -->
-    <div class="modal fade" wire:ignore.self id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade" wire:ignore.self id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel"
+        aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -151,14 +170,18 @@ new class extends Component {
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
                             <label for="title" class="form-label font-family-cairo fw-bold">{{ __('الاسم') }}</label>
-                            <input type="text" class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold" id="title" wire:model.defer="title" required>
+                            <input type="text"
+                                class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                id="title" wire:model.defer="title" required>
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('إلغاء') }}</button>
-                            <button type="submit" class="btn btn-primary">{{ $isEdit ? __('تحديث') : __('حفظ') }}</button>
+                            <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ __('إلغاء') }}</button>
+                            <button type="submit"
+                                class="btn btn-primary">{{ $isEdit ? __('تحديث') : __('حفظ') }}</button>
                         </div>
                     </form>
                 </div>
@@ -184,7 +207,7 @@ new class extends Component {
                 }
             });
 
-            modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.addEventListener('hidden.bs.modal', function () {
                 modalInstance = null;
             });
         });

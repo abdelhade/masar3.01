@@ -50,7 +50,7 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row form-control">
                     @include('components.invoices.invoice-item-table')
                 </div>
 

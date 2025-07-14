@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Price;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class PriceController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:عرض الأسعار')->only(['index']);
+        $this->middleware('can:إنشاء الأسعار')->only(['create', 'store']);
+        $this->middleware('can:تعديل الأسعار')->only(['edit', 'update']);
+        $this->middleware('can:حذف الأسعار')->only(['destroy']);
+    }
+
+
     // عرض جميع قوائم الأسعار
     public function index()
     {

@@ -1,11 +1,23 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\CostCenter;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class CostCenterController extends Controller
 {
+    // صلاحيات التكلفه
+    // public function __construct()
+    // {
+    //     $this->middleware('can:عرض - مراكز التكلفة')->only(['index']);
+    //     $this->middleware('can:عرض - تفاصيل مركز تكلفة')->only(['show']);
+    //     $this->middleware('can:إنشاء - مراكز التكلفة')->only(['create', 'store']);
+    //     $this->middleware('can:تعديل - مراكز التكلفة')->only(['edit', 'update']);
+    //     $this->middleware('can:حذف - مراكز التكلفة')->only(['destroy']);
+    // }
     public function index()
     {
         $centers = CostCenter::where('deleted', 0)->get();

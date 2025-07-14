@@ -9,9 +9,18 @@ use Modules\Authorization\Models\Role;
 use App\Http\Requests\StoreUserRequest;
 use Modules\Authorization\Models\Permission;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Routing\Controller;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        // $this->middleware('can:عرض العملاء')->only(['index']);
+        // $this->middleware('can:إنشاء العملاء')->only(['create', 'store']);
+        // $this->middleware('can:تعديل العملاء')->only(['update', 'edit']);
+        // $this->middleware('can:حذف العملاء')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

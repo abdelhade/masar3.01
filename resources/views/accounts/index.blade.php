@@ -62,9 +62,11 @@
 
                     <div class="col-md-3">
                         @if ($parentCode)
+                        @can('إضافةالعملاء')
                         <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary cake cake-fadeIn">
                             {{ __('إضافة حساب جديد') }}
                         </a>
+                        @endcan
                         @endif
                     </div>
 
@@ -101,7 +103,13 @@
                                     <th class="font-family-cairo fw-bold font-14">العنوان</th>
                                     <th class="font-family-cairo fw-bold font-14">التليفون</th>
                                     <th class="font-family-cairo fw-bold font-14">ID</th>
+                                  @canany([
+                                    'إضافة العملاء',
+                                    'حذف العملاء'
+                                  ])
+
                                     <th class="font-family-cairo fw-bold font-14">عمليات</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
@@ -121,10 +129,19 @@
                                     <td class="font-family-cairo fw-bold font-14">{{ $acc->address }}</td>
                                     <td class="font-family-cairo fw-bold font-14">{{ $acc->phone }}</td>
                                     <td class="font-family-cairo fw-bold font-14">{{ $acc->id }}</td>
+                                   @canany([
+                                    'إضافة العملاء',
+                                    'حذف العملاء'
+                                  ])
                                     <td x-show="">
+                                        @can('تعديل العملاء')
                                         <button>
                                             <a href="{{ route('accounts.edit', $acc->id) }}" class="text-primary font-16"><i class="las la-pen"></i></a>
-                                        </button>
+                                      </button>
+                                      @endcan
+                                      @can('حذف العملاء')
+                                          
+                                    
                                             <form action="{{ route('accounts.destroy', $acc->id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf
@@ -132,12 +149,15 @@
                                                 <button class="text-danger font-16" onclick="return confirm('هل أنت متأكد؟')">
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
+                                                  
                                             </form>
+                                            @endcan
                                     </td>
+                                    @endcanany
                                 </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot>
+                            {{-- <tfoot>
                                 <tr>
                                     <th class="font-family-cairo fw-bold font-14">#</th>
                                     <th class="font-family-cairo fw-bold font-14">الاسم</th>
@@ -147,7 +167,7 @@
                                     <th class="font-family-cairo fw-bold font-14">ID</th>
                                     <th class="font-family-cairo fw-bold font-14">عمليات</th>
                                 </tr>
-                            </tfoot>
+                            </tfoot> --}}
                         </table>
                     </div>
                 </div>

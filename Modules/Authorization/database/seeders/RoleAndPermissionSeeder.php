@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Authorization\database\seeders;
+namespace Modules\Authorization\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Models\Role;
@@ -10,66 +10,48 @@ class RoleAndPermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // حذف الكاش
-        // app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-
-        // لو حابب تعيد تعيين الجدول امسح التعليقات من هنا:
-        // Permission::truncate();
-        // Role::truncate();
-
-        // الصلاحيات مع تقسيم حسب الفئة (category)
         $groupedPermissions = [
-            'users' => [
-                'view users',
-                'create users',
-                'edit users',
-                'delete users',
-            ],
-            'roles' => [
-                'view roles',
-                'create roles',
-                'edit roles',
-                'delete roles',
-            ],
-            'products' => [
-                'view products',
-                'add products',
-                'edit products',
-                'delete products',
-            ],
-            'orders' => [
-                'view orders',
-                'create orders',
-                'edit orders',
-                'delete orders',
-            ],
-
-            'ففففف' => [
-                'vie5w orders',
-                'crea5te orders',
-                'edit5 orders',
-                'del5ete orders',
-            ],
+            'الصفحه الرئيسيه' => ['انشاء عمليات'],
+            'البيانات الاساسيه' => ['العملاء','الموردين','الصناديق','البنوك','الموظفين','المخازن','المصروفات','الايرادات','دائنين متنوعين','مدينين متنوعين','الشركاء','جارى الشركاء','الأصول الثابتة','الأصول القابلة للتأجير'],
+            'الاصناف' => ['الوحدات','المجموعات','التصنيفات','المواقع','الاماكن','الطباعة','المقاسات','الأسعار','الأصناف'],
+            'الخصومات' => ['قائمة الخصومات المسموح بها','قائمة الخصومات المكتسبة','خصم مسموح به','خصم مكتسب'],
+            'التصنيع' => ['فاتورة تصنيع'],
+            'الصلاحيات' => ['الادوار','المدراء'],
+            'CRM' => ['العملاء','مصدر الفرص','جهات اتصال الشركات','حالات الفرص','الفرص'],
+            'ادارة المبيعات' => ['فاتورة مبيعات','مردود مبيعات','أمر بيع','عرض سعر لعميل','أمر حجز'],
+            'اداره المشتريات' => ['فاتورة مشتريات','مردود مشتريات','أمر شراء','عرض سعر من مورد'],
+            'ادارة المخزون' => ['فاتورة تالف','أمر صرف','أمر إضافة','تحويل من مخزن لمخزن'],
+            'السندات' => ['سند قبض','سند دفع','السندات','سند دفع متعدد','احتساب الثابت للموظفين'],
+            'التحويلات النقدية' => ['تحويل نقدية من صندوق لصندوق','تحويل نقدية من صندوق لبنك','تحويل من بنك لصندوق','تحويل من بنك لبنك','التحويلات النقدية'],
+            'رواتب الموظفين' => ['احتساب الاضافي للموظفين','احتساب خصم للموظفين','احتساب تأمينات','احتساب ضريبة دخل'],
+            'الاستحقاقات' => ['سند قبض متعدد','اتفاقية خدمة','مصروفات مستحقة','ايرادات مستحقة','احتساب عمولة بنكية','عقد بيع','توزيع الارباح علي الشركا'],
+            'عمليات الاصول' => ['اهلاك الاصل','بيع الاصول','شراء اصل','زيادة في قيمة الاصل','نقص في قيمة الاصل'],
+            'ادارة الحسابات' => ['قيد يومية','قيد يوميه متعدد','قيود يومية عمليات','قيود يوميه عمليات متعدده','قيود يوميه حسابات','تسجيل الارصده الافتتاحيه للمخازن'],
+            'اداره المشاريع' => ['المشاريع'],
+            'الموارد البشريه' => ['الادارات والاقسام','الوظائف','الدول','المحافظات','المدن','المناطق','الورديات','الموظفين','المعدلات','معدلات اداء الموظفين','انواع العقود','العقود','البصمات','معالجه الحضور والانصرف'],
         ];
 
+        $actions = ['عرض', 'إضافة', 'تعديل', 'حذف', 'طباعة'];
+
         foreach ($groupedPermissions as $category => $permissions) {
-            foreach ($permissions as $permission) {
-                Permission::firstOrCreate(
-                    [
-                        'name' => $permission,
-                        'guard_name' => 'web',
-                        'category' => $category
-                    ]
-                );
+            foreach ($permissions as $basePermission) {
+                foreach ($actions as $action) {
+                    $fullName = "$action $basePermission";
+
+                    Permission::firstOrCreate(
+                        ['name' => $fullName, 'guard_name' => 'web'],
+                        ['category' => $category]
+                    );
+                }
             }
         }
 
-        // أدوار
         $adminRole = Role::firstOrCreate(['name' => 'admin'], ['guard_name' => 'web']);
         $userRole = Role::firstOrCreate(['name' => 'user'], ['guard_name' => 'web']);
 
-        // ربط صلاحيات بالأدوار
-        $adminRole->givePermissionTo(Permission::all());
-        $userRole->givePermissionTo(['view users']);
+        $adminRole->syncPermissions(Permission::all());
+
+        $userPermissions = Permission::where('name', 'like', 'عرض%')->pluck('name');
+        $userRole->syncPermissions($userPermissions);
     }
 }

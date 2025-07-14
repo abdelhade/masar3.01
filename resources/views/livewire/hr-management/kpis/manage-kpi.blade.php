@@ -21,10 +21,10 @@ new class extends Component {
     public function with(): array
     {
         return [
-            'kpis' => Kpi::where('name', 'like', '%'.$this->search.'%')
-                        ->orWhere('description', 'like', '%'.$this->search.'%')
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10),
+            'kpis' => Kpi::where('name', 'like', '%' . $this->search . '%')
+                ->orWhere('description', 'like', '%' . $this->search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10),
         ];
     }
 
@@ -32,9 +32,9 @@ new class extends Component {
     {
         if ($this->editing) {
             // $this->authorize('update', $this->editing);
-            
+
             $this->validate([
-                'name' => 'required|min:3|max:255|unique:kpis,name,'.$this->editing->id,
+                'name' => 'required|min:3|max:255|unique:kpis,name,' . $this->editing->id,
                 'description' => 'nullable|max:1000',
             ]);
 
@@ -46,7 +46,7 @@ new class extends Component {
             $this->dispatch('kpi-updated');
         } else {
             // $this->authorize('create', Kpi::class);
-            
+
             $validated = $this->validate();
 
             Kpi::create($validated);
@@ -60,7 +60,7 @@ new class extends Component {
     public function edit(Kpi $kpi): void
     {
         // $this->authorize('update', $kpi);
-        
+
         $this->editing = $kpi;
         $this->name = $kpi->name;
         $this->description = $kpi->description;
@@ -74,7 +74,7 @@ new class extends Component {
     public function delete(Kpi $kpi): void
     {
         // $this->authorize('delete', $kpi);
-        
+
         $kpi->delete();
         $this->dispatch('kpi-deleted');
     }
@@ -85,19 +85,23 @@ new class extends Component {
     <!-- Search and Create Button -->
     <div class="row mb-3">
         <div class="col-lg-3">
-            <div class="search-box">
-                <i class="fas fa-search search-icon"></i>
-                <div class="position-relative">
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="{{ __('Search KPIs...') }}">
-                    
+            @can('البحث عن المعدلات')
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <div class="position-relative">
+                        <input type="text" wire:model.live="search" class="form-control"
+                            placeholder="{{ __('Search KPIs...') }}">
+
+                    </div>
                 </div>
-            </div>
+            @endcan
+
             <div class="col-lg-6 mt-3">
-                {{-- @can('create', App\Models\Kpi::class) --}}
+                @can('إنشاء المعدلات')
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
                         <i class="fas fa-plus me-2"></i>{{ __('Add New KPI') }}
                     </button>
-                {{-- @endcan --}}
+                @endcan
             </div>
         </div>
     </div>
@@ -115,7 +119,10 @@ new class extends Component {
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Description') }}</th>
                                     <th>{{ __('Created At') }}</th>
-                                    <th>{{ __('Actions') }}</th>
+                                    @can('إجراء العمليات على المعدلات')
+                                        <th>{{ __('Actions') }}</th>
+                                    @endcan
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,18 +132,23 @@ new class extends Component {
                                         <td>{{ $kpi->name }}</td>
                                         <td>{{ $kpi->description }}</td>
                                         <td>{{ $kpi->created_at->format('Y-m-d') }}</td>
-                                        <td>
-                                            {{-- @can('update', $kpi) --}}
-                                                <button wire:click="edit({{ $kpi->id }})" class="btn btn-sm btn-info me-2" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            {{-- @endcan --}}
-                                            {{-- @can('delete', $kpi) --}}
-                                                <button wire:click="delete({{ $kpi->id }})" class="btn btn-sm btn-danger" onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            {{-- @endcan --}}
-                                        </td>
+                                        @can('إجراء العمليات على المعدلات')
+                                            <td>
+                                                @can('تعديل المعدلات')
+                                                    <button wire:click="edit({{ $kpi->id }})" class="btn btn-sm btn-info me-2"
+                                                        data-bs-toggle="modal" data-bs-target="#kpiFormModal">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                @endcan
+                                                @can('حذف المعدلات')
+                                                    <button wire:click="delete({{ $kpi->id }})" class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                @endcan
+                                            </td>
+                                        @endcan
+
                                     </tr>
                                 @empty
                                     <tr>
@@ -155,7 +167,8 @@ new class extends Component {
     </div>
 
     <!-- KPI Form Modal -->
-    <div class="modal fade" id="kpiFormModal" tabindex="-1" aria-labelledby="kpiFormModalLabel" aria-hidden="true" wire:ignore.self>
+    <div class="modal fade" id="kpiFormModal" tabindex="-1" aria-labelledby="kpiFormModalLabel" aria-hidden="true"
+        wire:ignore.self>
         <div class="modal-dialog">
             <div class="modal-content">
                 <form wire:submit="save">
@@ -167,22 +180,27 @@ new class extends Component {
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="name" class="form-control @error('name') is-invalid @enderror" id="name">
+                            <label for="name" class="form-label">{{ __('Name') }} <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" wire:model="name"
+                                class="form-control @error('name') is-invalid @enderror" id="name">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">{{ __('Description') }}</label>
-                            <textarea wire:model="description" class="form-control @error('description') is-invalid @enderror" id="description" rows="3"></textarea>
+                            <textarea wire:model="description"
+                                class="form-control @error('description') is-invalid @enderror" id="description"
+                                rows="3"></textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                         <button type="submit" class="btn btn-primary">
                             {{ $editing ? __('Update') : __('Create') }}
                         </button>
@@ -194,12 +212,14 @@ new class extends Component {
 
     <!-- Success Alert -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
                     {{ session('success') }}
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
         </div>
     </div>

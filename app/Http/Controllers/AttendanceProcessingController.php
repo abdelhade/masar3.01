@@ -3,13 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendanceProcessing;
+use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 
 class AttendanceProcessingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+
+        $this->middleware('can:عرض معالجه الحضور والانصراف')->only(['index']);
+        $this->middleware('can:إنشاء معالجة الحضور والانصراف')->only(['create', 'store']);
+        $this->middleware('can:تعديل معالجة الحضور والانصراف')->only(['update', 'edit']);
+        $this->middleware('can:حذف معالجة الحضور والانصراف')->only(['destroy']);
+    }
     public function index()
     {
         return view('hr-management.attendances.processing.manage-processing');

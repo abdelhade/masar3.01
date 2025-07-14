@@ -4,9 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Barcode;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class BarcodeController extends Controller
 {
+    // صلاحيات الباركود
+    public function __construct()
+    {
+        $this->middleware('can:عرض - رموز الشريط')->only(['index']);
+        $this->middleware('can:عرض - تفاصيل رمز شريط')->only(['show']);
+        $this->middleware('can:إنشاء - رموز الشريط')->only(['create', 'store']);
+        $this->middleware('can:تعديل - رموز الشريط')->only(['edit', 'update']);
+        $this->middleware('can:حذف - رموز الشريط')->only(['destroy']);
+    }
+
     // عرض جميع الرموز
     public function index()
     {

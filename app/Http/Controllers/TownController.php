@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Town;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class TownController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض المناطق')->only(['index']);
+        $this->middleware('can:إضافة المناطق')->only(['create', 'store']);
+        $this->middleware('can:تعديل المناطق')->only(['update', 'edit']);
+        $this->middleware('can:حذف المناطق')->only(['destroy']);
+    }
     public function index()
     {
         return view('hr-management.addresses.manage-towns');

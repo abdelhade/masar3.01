@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\EmployeeProduction;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class EmployeeProductionController extends Controller
 {

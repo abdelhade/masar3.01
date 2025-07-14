@@ -9,6 +9,16 @@ use Modules\Authorization\Models\Permission;
 
 class RoleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:عرض الصلاحيات')->only(['permissionsIndex']);
+        $this->middleware('can:عرض - الأدوار')->only(['index', 'show']);
+        $this->middleware('can:عرض - تفاصيل دور')->only(['show']);
+        $this->middleware('can:إنشاء - الأدوار')->only(['create', 'store']);
+        $this->middleware('can:تعديل - الأدوار')->only(['edit', 'update']);
+        $this->middleware('can:حذف - الأدوار')->only(['destroy']);
+    }
+
     public function index()
     {
         $roles = Role::withCount('permissions')->paginate(10);

@@ -6,9 +6,21 @@ use App\Models\{AccHead, OperHead, CostCenter, Voucher, JournalDetail, JournalHe
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Routing\Controller;
 
 class VoucherController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:عرض سند قبض')->only(['index', 'create', 'store']);
+        $this->middleware('can:عرض سند دفع')->only(['index', 'create', 'store']);
+        $this->middleware('can:عرض السندات')->only(['index', 'create', 'store']);
+        $this->middleware('can:عرض سند دفع متعدد')->only(['index', 'create', 'store']);
+        $this->middleware('can:عرض احتساب الثابت للموظفين')->only(['index', 'create', 'store']);
+    }
+
+
     public function index()
     {
         $vouchers = Voucher::whereIn('pro_type', [1, 2])

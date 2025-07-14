@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Operhead;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class OperHeadController  extends Controller
 {
@@ -12,7 +13,6 @@ class OperHeadController  extends Controller
         // $operheads = Operhead::all();
         $operheads = Operhead::with('type')->get();
         dd($operheads);
-
     }
 
     public function store(Request $request)

@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class ShiftController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض الورديات')->only(['index']);
+        $this->middleware('can:إضافة الورديات')->only(['create', 'store']);
+        $this->middleware('can:تعديل الورديات')->only(['update', 'edit']);
+        $this->middleware('can:حذف الورديات')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.shifts.manage-shifts');

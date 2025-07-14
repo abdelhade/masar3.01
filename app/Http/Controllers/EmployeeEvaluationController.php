@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee_Evaluation;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class EmployeeEvaluationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // public function __construct()
+    // {
+
+    //     $this->middleware('can:عرض معدلات')->only(['index']);
+    //     $this->middleware('can:إنشاء المعدلات')->only(['create', 'store']);
+    //     $this->middleware('can:تعديل المعدلات')->only(['update', 'edit']);
+    //     $this->middleware('can:حذف المناطق')->only(['destroy']);
+    // }
     public function index()
     {
         //

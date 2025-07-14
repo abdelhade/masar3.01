@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class ContractController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض العقود')->only(['index']);
+        $this->middleware('can:إنشاء العقود')->only(['create', 'store']);
+        $this->middleware('can:تعديل العقود')->only(['update', 'edit']);
+        $this->middleware('can:حذف العقود')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.contracts.contracts.manage-contracts');

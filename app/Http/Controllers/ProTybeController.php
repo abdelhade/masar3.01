@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProType;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class ProTybeController extends Controller
 {

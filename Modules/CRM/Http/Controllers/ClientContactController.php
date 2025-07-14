@@ -2,13 +2,19 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+
 use Modules\CRM\Http\Requests\CLientContactRequest;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Models\ClientContact;
+use Illuminate\Routing\Controller;
 
 class ClientContactController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:view client-contacts')->only(['index']);
+    }
 
     public function index()
     {

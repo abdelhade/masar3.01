@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Journaldetail;
 use App\Models\JournalHead;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class JournalDetailController extends Controller
 {

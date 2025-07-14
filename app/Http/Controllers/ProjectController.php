@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct()
+    {
+        $this->middleware('can:عرض المشاريع')->only(['index']);
+        $this->middleware('can:إضافة المشاريع')->only(['create', 'store']);
+        $this->middleware('can:تعديل المشاريع')->only(['update', 'edit']);
+        $this->middleware('can:حذف العملاء')->only(['destroy']); // ده خاص بالعملاء، هل تقصدي المشاريع؟
+    }
+
     public function index()
     {
         return view('projects.index');

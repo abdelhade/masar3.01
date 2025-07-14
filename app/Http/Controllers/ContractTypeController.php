@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\ContractType;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class ContractTypeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض أنواع العقود')->only(['index']);
+        $this->middleware('can:إنشاء أنواع العقود')->only(['create', 'store']);
+        $this->middleware('can:تعديل أنواع العقود')->only(['update', 'edit']);
+        $this->middleware('can:حذف أنواع العقود')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.contracts.types.manage-typs');

@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controller;
+
 use Illuminate\Http\Request;
 
 class CountryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض الدول')->only(['index']);
+        $this->middleware('can:إضافة الدول')->only(['create', 'store']);
+        $this->middleware('can:تعديل الدول')->only(['update', 'edit']);
+        $this->middleware('can:حذف الدول')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.addresses.manage-countries');

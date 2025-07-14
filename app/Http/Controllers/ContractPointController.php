@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ContractPoint;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
 
 class ContractPointController extends Controller
 {

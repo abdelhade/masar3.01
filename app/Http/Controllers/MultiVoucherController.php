@@ -12,9 +12,17 @@ use App\Models\ProType;
 use App\Models\OperHead;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class MultiVoucherController extends Controller
 {
+
+
+    public function __construct()
+    {
+        $this->middleware('can:عرض سند قبض متعدد')->only(['index']);
+        $this->middleware('can:إضافة سند قبض متعدد')->only(['create', 'store']);
+    }
 
     public function index()
     {

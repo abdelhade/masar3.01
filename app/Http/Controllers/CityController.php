@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class CityController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct()
+    {
+        $this->middleware('can:عرض المدن')->only(['index']);
+        $this->middleware('can:إنشاء المدن')->only(['create', 'store']);
+        $this->middleware('can:تعديل المدن')->only(['edit', 'update']);
+        $this->middleware('can:حذف المدن')->only(['destroy']);
+    }
     public function index()
     {
         return view('hr-management.addresses.manage-cities');

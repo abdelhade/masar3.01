@@ -7,11 +7,17 @@ use App\Models\JournalDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 
 class TransferController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('can:عرض التحويلات النقدية')->only(['index']);
+        $this->middleware('can:إضافة التحويلات النقدية')->only(['create', 'store']);
+    }
 
     public function index()
     {
@@ -339,7 +345,7 @@ class TransferController extends Controller
     public function show(string $request) {}
 
 
-  public function destroy(string $id)
+    public function destroy(string $id)
     {
         try {
             DB::beginTransaction();

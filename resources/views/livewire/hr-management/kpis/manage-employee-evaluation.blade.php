@@ -38,12 +38,12 @@ new class extends Component {
     public function with(): array
     {
         return [
-            'employees' => Employee::where('name', 'like', '%'.$this->search.'%')
+            'employees' => Employee::where('name', 'like', '%' . $this->search . '%')
                 ->get(),
             'evaluations' => Employee_Evaluation::with(['employee', 'kpis'])
-                ->when($this->search, function($query) {
-                    $query->whereHas('employee', function($q) {
-                        $q->where('name', 'like', '%'.$this->search.'%');
+                ->when($this->search, function ($query) {
+                    $query->whereHas('employee', function ($q) {
+                        $q->where('name', 'like', '%' . $this->search . '%');
                     });
                 })
                 ->latest()
@@ -60,7 +60,7 @@ new class extends Component {
 
     public function calculateFinalRating()
     {
-        $this->final_rating = match(true) {
+        $this->final_rating = match (true) {
             $this->total_score >= 60 => __('ممتاز'),
             $this->total_score >= 50 => __('جيد جدا'),
             $this->total_score >= 40 => __('جيد'),
@@ -73,12 +73,12 @@ new class extends Component {
     public function loadEmployeeDetails()
     {
         if ($this->employee_id) {
-            $employee = Employee::with('job','department')->find($this->employee_id);
+            $employee = Employee::with('job', 'department')->find($this->employee_id);
             if ($employee) {
                 $this->job_title = $employee->job?->title;
                 $this->department = $employee->department?->title;
             }
-        }else{
+        } else {
             $this->job_title = '';
             $this->department = '';
         }
@@ -175,7 +175,7 @@ new class extends Component {
         $evaluation = Employee_Evaluation::find($this->evaluationId);
         $evaluation->kpis()->detach();
         $evaluation->delete();
-        
+
         $this->showDeleteModal = false;
         session()->flash('message', __('تم حذف التقييم بنجاح'));
         $this->dispatch('hide-delete-modal');
@@ -207,14 +207,22 @@ new class extends Component {
     <!-- Search and Add New Button -->
     <div class="row mb-3">
         <div class="col-md-6">
-            <input type="text" wire:model.live="search" class="form-control" placeholder="{{ __('بحث...') }}">
-            <div class="col-md-6">
-                <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addEvaluationModal">
-                    {{ __('إضافة تقييم جديد') }}
-                </button>
-            </div>
+            @can('البحث عن معدلات أداء الموظفين')
+
+                <input type="text" wire:model.live="search" class="form-control" placeholder="{{ __('بحث...') }}">
+            @endcan
+
+            @can('إنشاء معدلات أداء الموظفين')
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal"
+                        data-bs-target="#addEvaluationModal">
+                        {{ __('إضافة تقييم جديد') }}
+                    </button>
+                </div>
+            @endcan
+
         </div>
-        
+
     </div>
 
     <!-- Evaluations Table -->
@@ -233,7 +241,10 @@ new class extends Component {
                                     <th>{{ __('المدير المباشر') }}</th>
                                     <th>{{ __('الدرجة الكلية') }}</th>
                                     <th>{{ __('التقدير') }}</th>
-                                    <th>{{ __('الإجراءات') }}</th>
+                                    @can('إجراء العمليات على معدلات أداء الموظفين')
+                                        <th>{{ __('الإجراءات') }}</th>
+                                    @endcan
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -246,14 +257,23 @@ new class extends Component {
                                         <td>{{ $evaluation->direct_manager }}</td>
                                         <td>{{ $evaluation->total_score }}</td>
                                         <td>{{ $evaluation->final_rating }}</td>
-                                        <td>
-                                            <button wire:click="edit({{ $evaluation->id }})" class="btn btn-sm btn-info">
-                                                {{ __('تعديل') }}
-                                            </button>
-                                            <button wire:click="confirmDelete({{ $evaluation->id }})" class="btn btn-sm btn-danger">
-                                                {{ __('حذف') }}
-                                            </button>
-                                        </td>
+                                        @can('إجراء العمليات على معدلات أداء الموظفين')
+                                            <td>
+                                                @can('تعديل معدلات أداء الموظفين')
+                                                    <button wire:click="edit({{ $evaluation->id }})" class="btn btn-sm btn-info">
+                                                        {{ __('تعديل') }}
+                                                    </button>
+                                                @endcan
+                                                @can('حذف معدلات أداء الموظفين')
+                                                    <button wire:click="confirmDelete({{ $evaluation->id }})"
+                                                        class="btn btn-sm btn-danger">
+                                                        {{ __('حذف') }}
+                                                    </button>
+                                                @endcan
+
+                                            </td>
+                                        @endcan
+
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -266,7 +286,8 @@ new class extends Component {
     </div>
 
     <!-- Add/Edit Evaluation Modal -->
-    <div class="modal fade" id="addEvaluationModal" tabindex="-1" wire:ignore.self data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="addEvaluationModal" tabindex="-1" wire:ignore.self data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -278,7 +299,8 @@ new class extends Component {
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('الموظف') }}</label>
-                                <select wire:model.live="employee_id" wire:change="loadEmployeeDetails" class="form-control">
+                                <select wire:model.live="employee_id" wire:change="loadEmployeeDetails"
+                                    class="form-control">
                                     <option value="">{{ __('اختر الموظف') }}</option>
                                     @foreach($employees as $employee)
                                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
@@ -316,7 +338,8 @@ new class extends Component {
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('فترة التقييم من') }}</label>
                                 <input type="date" wire:model="evaluation_period_from" class="form-control">
-                                @error('evaluation_period_from') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('evaluation_period_from') <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('فترة التقييم إلى') }}</label>
@@ -343,13 +366,10 @@ new class extends Component {
                                             <td>{{ $kpi->name }}</td>
                                             <td>{{ $kpi->description }}</td>
                                             <td>
-                                                <input type="number" 
-                                                    wire:model="scores.{{ $kpi->id }}" 
-                                                    wire:change="calculateTotalScore"
-                                                    class="form-control" 
-                                                    min="1" 
-                                                    max="5">
-                                                @error('scores.'.$kpi->id) <span class="text-danger">{{ $message }}</span> @enderror
+                                                <input type="number" wire:model="scores.{{ $kpi->id }}"
+                                                    wire:change="calculateTotalScore" class="form-control" min="1" max="5">
+                                                @error('scores.' . $kpi->id) <span class="text-danger">{{ $message }}</span>
+                                                @enderror
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control" wire:model="notes.{{ $kpi->id }}">
@@ -366,9 +386,10 @@ new class extends Component {
                                 </tfoot>
                             </table>
                         </div>
-                        
+
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('إغلاق') }}</button>
+                            <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ __('إغلاق') }}</button>
                             <button type="submit" class="btn btn-primary">{{ __('حفظ') }}</button>
                         </div>
                     </form>
@@ -378,7 +399,8 @@ new class extends Component {
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" wire:ignore.self data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="deleteModal" tabindex="-1" wire:ignore.self data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">

@@ -6,11 +6,13 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-
+            @can('إنشاء - الأدوار')
             <a href="{{ route('roles.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                 اضافه جديده
                 <i class="fas fa-plus me-2"></i>
-            </a>
+            </a>                
+            @endcan
+
             <br>
             <br>
             <div class="card">
@@ -22,7 +24,9 @@
                                     <th>#</th>
                                     <th>{{ __('الاسم') }}</th>
                                     <th>{{ __('عدد الصلاحيات') }}</th>
+                                    @can('عرض - الأدوار')
                                     <th>{{ __('العمليات') }}</th>
+                                   @endcan
                                 </tr>
                             </thead>
                             <tbody>
@@ -32,12 +36,16 @@
                                         <td>{{ $role->name }}</td>
                                         <td>{{ $role->permissions_count }}</td>
 
+                                    @can('عرض - الأدوار')
                                         <td>
+                                            @can('تعديل - الأدوار')
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('roles.edit', $role->id) }}">
                                                 <i class="las la-edit"></i>
-                                            </a>
+                                            </a>                                                
+                                            @endcan
 
+                                            @can('حذف - الأدوار')
                                             <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
@@ -46,8 +54,11 @@
                                                 <button type="submit" class="btn btn-danger btn-icon-square-sm">
                                                     <i class="las la-trash"></i>
                                                 </button>
-                                            </form>
+                                            </form>                                                
+                                            @endcan
+
                                         </td>
+                                        @endcan
                                     </tr>
                                 @empty
                                     <tr>

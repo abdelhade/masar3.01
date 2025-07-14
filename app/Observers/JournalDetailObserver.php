@@ -37,10 +37,9 @@ class JournalDetailObserver
                 $accHead->save();
             }
         } catch (\Throwable $e) {
-            // يمكنك تسجيل الخطأ في اللوج أو التعامل معه حسب الحاجة
-            Log::error('Failed to update AccHead balance for account ID: ' . $accountId, [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error(
+                'Failed to update AccHead balance for account ID: '
+            );
         }
     }
 }

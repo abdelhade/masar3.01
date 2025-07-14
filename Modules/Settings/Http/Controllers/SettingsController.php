@@ -3,10 +3,11 @@
 namespace Modules\Settings\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Modules\Settings\Models\Category;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Settings\Models\PublicSetting;
+use Illuminate\Routing\Controller;
+
 
 class SettingsController extends Controller
 {

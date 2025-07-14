@@ -13,10 +13,12 @@
     </div>
 @endif
                 <div class="card-header">
-
+                   @can('انشاء قيود اليوميه عمليات')
                     <a href="{{ route('journals.create') }}" type="button" class="btn btn-primary">{{ __('Add New') }}
                         <i class="fas fa-plus me-2"></i>
-                    </a>
+                    </a>                       
+                   @endcan
+
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -37,7 +39,10 @@
                                     <th>تم الانشاء في </th>
                                     <th>ملاحظات</th>
                                     <th>تم المراجعه</th>
-                                    <th class="text-end">العمليات</th>
+                                    @can('اجراء العمليات علي قيود اليوميه عمليات')
+                                    <th class="text-end">العمليات</th>                                        
+                                    @endcan
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,10 +62,14 @@
                                         <td>{{ $journal->created_at }}</td>
                                         <td>{{ $journal->info }}</td>
                                         <td>{{ $journal->confirmed ? 'نعم' : 'لا' }}</td>
+                                        @can('اجراء العمليات علي قيود اليوميه عمليات')
                                         <td x-show="columns[16]">
+                                            @can('تعديل قيود اليوميه عمليات')
                                         <button>
                                         <a href="{{ route('journals.edit', $journal) }}" class="text-primary font-16"><i class="las la-eye"></i></a>
-                                        </button>
+                                        </button>                                                
+                                            @endcan
+                                            @can('حذف قيود اليوميه عمليات')
                                             <form action="{{ route('journals.destroy', $journal->id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf
@@ -68,8 +77,12 @@
                                                 <button class="text-danger font-16" onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
-                                            </form>
-                                    </td>
+                                            </form>                                                
+                                            @endcan
+
+                                    </td>                                            
+                                        @endcan
+
                                     </tr>
                                 @endforeach
                             </tbody>

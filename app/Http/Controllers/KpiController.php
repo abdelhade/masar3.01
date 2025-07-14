@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Kpi;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
+
+
+
 class KpiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض المعدلات')->only(['index']);
+        $this->middleware('can:إنشاء المعدلات')->only(['create', 'store']);
+        $this->middleware('can:تعديل المعدلات')->only(['update', 'edit']);
+        $this->middleware('can:حذف المعدلات')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.kpis.manage-kpi');

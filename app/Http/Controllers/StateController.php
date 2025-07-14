@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class StateController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض المحافظات')->only(['index']);
+        $this->middleware('can:إضافة المحافظات')->only(['create', 'store']);
+        $this->middleware('can:تعديل المحافظات')->only(['update', 'edit']);
+        $this->middleware('can:حذف المحافظات')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.addresses.manage-states');

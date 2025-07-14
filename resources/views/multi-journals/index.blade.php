@@ -13,10 +13,11 @@
     </div>
 @endif
                 <div class="card-header">
-
+                   @can('انشاء قيود اليوميه عمليات')
                     <a href="{{ route('multi-journals.create') }}" type="button" class="btn btn-primary">{{ __('Add New') }}
                         <i class="fas fa-plus me-2"></i>
                     </a>
+                    @endcan
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -37,7 +38,9 @@
                                     <th>تم الانشاء في </th>
                                     <th>ملاحظات</th>
                                     <th>تم المراجعه</th>
+                                    @can('اجراء العمليات علي قيود اليوميه عمليات')
                                     <th class="text-end">العمليات</th>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,10 +60,14 @@
                                         <td>{{ $multi->created_at }}</td>
                                         <td>{{ $multi->info }}</td>
                                         <td>{{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
+                                    @can('اجراء العمليات علي قيود اليوميه عمليات')
                                         <td x-show="columns[16]">
+                                            @can('تعديل قيود اليوميه عمليات')
                                         <button>
                                         <a href="{{ route('multi-journals.edit', $multi) }}" class="text-primary font-16"><i class="las la-eye"></i></a>
                                         </button>
+                                        @endcan
+                                        @can('حذف قيود اليوميه عمليات')
                                             <form action="{{ route('multi-journals.destroy', $multi->id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf
@@ -69,7 +76,9 @@
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
                                             </form>
+                                        @endcan
                                     </td>
+                                    @endcan
                                     </tr>
                                 @endforeach
                             </tbody>

@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\EmployeesJob;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class EmployeesJobController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض الوظائف')->only(['index']);
+        $this->middleware('can:إضافة الوظائف')->only(['create', 'store']);
+        $this->middleware('can:تعديل الوظائف')->only(['edit', 'update']);
+        $this->middleware('can:حذف الوظائف')->only(['destroy']);
+        $this->middleware('can:طباعة الوظائف')->only(['print']); // لو في طباعة فعلًا
+    }
+
     public function index()
     {
         return view('hr-management.jobs.manage-jobs');

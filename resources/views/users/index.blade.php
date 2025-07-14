@@ -6,11 +6,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-
+            @can('إنشاء - العملاء')
             <a href="{{ route('users.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                 اضافه جديده
                 <i class="fas fa-plus me-2"></i>
             </a>
+            @endcan
             <br>
             <br>
             <div class="card">
@@ -24,7 +25,9 @@
                                     <th>{{ __('البريد الالكتروني ') }}</th>
                                     <th>{{ __('الصلاحيات') }}</th>
                                     <th>{{ __('تم الانشاء في ') }}</th>
-                                    <th>{{ __('العمليات') }}</th>
+                                    @can('عرض - تفاصيل دور')
+                                    <th>{{ __('العمليات') }}</th>                                        
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody>
@@ -35,13 +38,15 @@
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->permissions->count() }}</td>
                                         <td>{{ $user->created_at->format('Y-m-d') }}</td>
-
+                                        @can('عرض - تفاصيل دور')
                                         <td>
+                                            @can('تعديل - الأدوار')
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('users.edit', $user->id) }}">
                                                 <i class="las la-edit"></i>
                                             </a>
-
+                                            @endcan
+                                            @can('حذف - الأدوار')
                                             <form action="{{ route('users.destroy', $user->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
@@ -51,7 +56,9 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
+                                            @endcan
                                         </td>
+                                        @endcan
                                     </tr>
                                 @empty
                                     <tr>

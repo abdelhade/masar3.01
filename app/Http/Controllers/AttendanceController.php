@@ -3,13 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:عرض البصمات')->only(['index']);
+        $this->middleware('can:إضافة البصمات')->only(['create', 'store']);
+        $this->middleware('can:تعديل البصمات')->only(['edit', 'update']);
+        $this->middleware('can:حذف البصمات')->only(['destroy']);
+    }
+
     public function index()
     {
         return view('hr-management.attendances.attendance.index');

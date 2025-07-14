@@ -2,13 +2,20 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+
 use Modules\CRM\Models\ChanceSource;
 use Modules\CRM\Http\Requests\ChanceSourceRequest;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Routing\Controller;
 
 class ChanceSourceController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:view chance-sources')->only(['index']);
+    }
+
     public function index()
     {
         $chanceSources = ChanceSource::all();

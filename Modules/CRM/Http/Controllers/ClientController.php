@@ -3,13 +3,18 @@
 namespace Modules\CRM\Http\Controllers;
 
 use Modules\CRM\Models\CrmClient;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\CrmClientRequest;
+use Illuminate\Routing\Controller;
 
 class ClientController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:view clients crm')->only(['index']);
+    }
 
     public function index()
     {

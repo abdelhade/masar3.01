@@ -1,11 +1,18 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class UnitController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:عرض المجموعات')->only(['index']);
+    }
+
     public function index()
     {
         $units = Unit::all();

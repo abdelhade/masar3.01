@@ -7,10 +7,16 @@ use Modules\CRM\Models\Lead;
 use Modules\CRM\Models\LeadStatus;
 use App\Models\User;
 use Modules\CRM\Models\CrmClient;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
+
 
 class LeadController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:view crm leads board')->only(['board']);
+    }
 
     public function board()
     {
@@ -24,7 +30,6 @@ class LeadController extends Controller
 
 
         return view('crm::leads.board', compact('statuses', 'leads', 'clients', 'users'));
-
     }
 
     public function store(Request $request)

@@ -127,7 +127,7 @@ class EditInvoiceForm extends Component
 
         $map = [
             10 => ['acc1' => 'clientsAccounts',   'acc2' => 'stores'],
-            11 => ['acc1' => 'stores',            'acc2' => 'suppliersAccounts'],
+            11 => ['acc1' => 'suppliersAccounts', 'acc2' => 'stores'], // Fixed here
             12 => ['acc1' => 'stores',            'acc2' => 'clientsAccounts'],
             13 => ['acc1' => 'suppliersAccounts', 'acc2' => 'stores'],
             14 => ['acc1' => 'clientsAccounts',   'acc2' => 'stores'],
@@ -519,7 +519,6 @@ class EditInvoiceForm extends Component
                 if (in_array($this->type, [11, 20])) {
                     $oldQty = OperationItems::where('item_id', $itemId)
                         ->where('is_stock', 1)
-                        ->where('is_journal', 1)
                         ->selectRaw('SUM(qty_in - qty_out) as total')
                         ->value('total') ?? 0;
                     $oldCost = Item::where('id', $itemId)->value('average_cost') ?? 0;
