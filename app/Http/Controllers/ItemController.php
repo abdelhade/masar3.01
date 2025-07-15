@@ -10,7 +10,7 @@ class ItemController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:عرض - إدارة الحسابات')->only(['index', 'show']);
+        // $this->middleware('can:عرض - إدارة الحسابات')->only(['index']);
     }
     public function index()
     {

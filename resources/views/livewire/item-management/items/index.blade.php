@@ -296,11 +296,11 @@ new class extends Component {
 
 
                                             <td>
-                                                 @can('تعديل - الأصناف')
+                                                 @can('تعديل الأصناف')
                                                 <button type="button" class="btn btn-success btn-sm"
                                                     wire:click="edit({{ $itemId }})"><i class="las la-edit fa-lg"></i></button>
                                                 @endcan
-                                           @can('حذف - الأصناف')
+                                           @can('حذف الأصناف')
                                                 <button type="button" class="btn btn-danger btn-sm"
                                                     wire:click="delete({{ $itemId }})"
                                                     onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
