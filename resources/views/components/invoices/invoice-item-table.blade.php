@@ -123,12 +123,6 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="13" class="text-center">
-                                        <div class="alert alert-info py-3 mb-0"
-                                            style="font-size: 1.2rem; font-weight: 500;">
-                                            <i class="las la-info-circle me-2"></i>
-                                            لا توجد بيانات
-
                                     <td colspan="13">
                                         <div class="alert alert-info text-center mb-0">
                                             لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.

@@ -19,15 +19,6 @@
                                 </div>
                             </div>
 
-                            @if ($selectedItemData['code'])
-                                <div class="row mb-2">
-                                    <div class="col-5 fs-6">الكود:</div>
-                                    <div class="col-7">
-                                        <span class="badge bg-light text-dark">{{ $selectedItemData['code'] }}</span>
-                                    </div>
-                                </div>
-                            @endif
-
                             <div class="row mb-2">
                                 <div class="col-5 fs-6">المخزن:</div>
                                 <div class="col-7">
@@ -43,9 +34,7 @@
                                         {{ $selectedItemData['available_quantity_in_store'] }}</span>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-6 ps-3">
                             <div class="row mb-2">
                                 <div class="col-6 fs-6">الإجمالي في المخازن:</div>
                                 <div class="col-6">
@@ -54,6 +43,9 @@
                                     </span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="col-md-6 ps-3">
 
                             <div class="row mb-2">
                                 <div class="col-6 fs-6">الوحدة:</div>
@@ -75,7 +67,16 @@
                                 <div class="col-6 fs-6">سعر الشراء الأخير:</div>
                                 <div class="col-6 text-success">
                                     <span class="badge bg-light text-dark">
-                                        {{ number_format($selectedItemData['cost']) }} ج.م
+                                        {{ number_format($selectedItemData['price']) }} ج.م
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-6 fs-6">سعر الشراء المتوسط:</div>
+                                <div class="col-6 text-success">
+                                    <span class="badge bg-light text-dark">
+                                        {{ number_format($selectedItemData['average_cost']) }} ج.م
                                     </span>
                                 </div>
                             </div>

@@ -313,7 +313,9 @@ class EditInvoiceForm extends Component
         $itemId = $this->invoiceItems[$index]['item_id'];
         $item = $this->items->firstWhere('id', $itemId);
         if (! $item) return;
-        $vm = new ItemViewModel(null, $item);
+
+
+        $vm = new ItemViewModel(null, $item, $selectedUnitId = null);
         $opts = $vm->getUnitOptions();
         $unitsCollection = collect($opts)->map(fn($entry) => (object)[
             'id' => $entry['value'],

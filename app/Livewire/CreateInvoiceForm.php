@@ -181,7 +181,7 @@ class CreateInvoiceForm extends Component
             'selected_store_name' => $selectedStoreName,
             'unit_name' => $unitName,
             'price' => $price,
-            'cost' => $item->average_cost ?? 0,
+            'average_cost' => $item->average_cost ?? 0,
             'description' => $item->description ?? ''
         ];
     }
@@ -217,6 +217,7 @@ class CreateInvoiceForm extends Component
         $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
 
         $unitOptions = $vm->getUnitOptions();
+
         $availableUnits = collect($unitOptions)->map(function ($unit) {
             return (object) [
                 'id' => $unit['value'],
@@ -592,19 +593,28 @@ class CreateInvoiceForm extends Component
                 if (in_array($this->type, [11, 13, 20])) $qty_in = $quantity;
                 if (in_array($this->type, [10, 12, 18, 19])) $qty_out = $quantity;
 
-                if (in_array($this->type, [11, 20])) {
+                if (in_array($this->type, [11, 12, 20])) {
                     $oldQty = OperationItems::where('item_id', $itemId)
                         ->where('is_stock', 1)
                         ->selectRaw('SUM(qty_in - qty_out) as total')
                         ->value('total') ?? 0;
-                    $oldCost = Item::where('id', $itemId)->value('average_cost') ?? 0;
+                    $oldCost = $itemCost;
+
                     $newQty = $oldQty + $quantity;
-                    $newCost = $newQty > 0 ? (($oldQty * $oldCost) + $subValue) / $newQty : $oldCost;
+                    if ($oldQty == 0 && $oldCost == 0) {
+                        $newCost = $price; // استخدام سعر الوحدة إذا لم يكن هناك رصيد سابق
+                    } else {
+                        $newCost = $newQty > 0 ? (($oldQty * $oldCost) + $subValue) / $newQty : $oldCost;
+                    }
+
                     Item::where('id', $itemId)->update(['average_cost' => $newCost]);
                 }
 
+                // حساب الربح للمبيعات والمردودات
                 if (in_array($this->type, [10, 12, 18, 19])) {
-                    $discountItem = ($this->discount_value - $this->additional_value) * $subValue / $this->subtotal;
+                    $discountItem = $this->subtotal != 0
+                        ? ($this->discount_value - $this->additional_value) * $subValue / $this->subtotal
+                        : 0;
                     $itemCostTotal = $quantity * ($itemCost - $discountItem);
                     $profit = $subValue - $itemCostTotal;
                     $totalProfit += $profit;
