@@ -312,7 +312,7 @@ class EditInvoiceForm extends Component
 
         if (! $item) return;
 
-        $vm = new ItemViewModel($item, $selectedUnitId = null);
+        $vm = new ItemViewModel(null, $item, $selectedUnitId = null);
         $opts = $vm->getUnitOptions();
 
         $unitsCollection = collect($opts)->map(fn($entry) => (object)[
