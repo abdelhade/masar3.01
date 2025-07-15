@@ -128,7 +128,7 @@ new class extends Component {
             session()->flash('error', 'لا يمكن حذف الصنف لأنه مستخدم في عمليات أخرى');
             return;
         }
-        $item = Item::with('units', 'prices','notes','barcodes')->find($itemId);
+        $item = Item::with('units', 'prices', 'notes', 'barcodes')->find($itemId);
         $item->units()->detach();
         $item->prices()->detach();
         $item->notes()->detach();
@@ -158,43 +158,41 @@ new class extends Component {
     <div class="row">
         <div class="col-lg-12">
             @if (session()->has('success'))
-
-            <div class="alert alert-success font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session()->has('error'))
-            <div class="alert alert-danger font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
-                {{ session('error') }}
-            </div>
-        @endif
+                <div class="alert alert-success font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }"
+                    x-show="show" x-init="setTimeout(() => show = false, 3000)">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session()->has('error'))
+                <div class="alert alert-danger font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }"
+                    x-show="show" x-init="setTimeout(() => show = false, 3000)">
+                    {{ session('error') }}
+                </div>
+            @endif
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
 
                     @can('أنشاء - الأصناف')
-
-                    <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('Add New') }}
-                        <i class="fas fa-plus me-2"></i>
-                    </a>
+                        <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+                            {{ __('Add New') }}
+                            <i class="fas fa-plus me-2"></i>
+                        </a>
                     @endcan
-                     @can('بحث - الأصناف ')
+                    @can('بحث - الأصناف ')
 
-                    <div class="w-25">
-                        <select class="form-select font-family-cairo fw-bold font-14"
-                            wire:model.live="selectedWarehouse" style="min-width: 105px;">
-                            <option value="">كل المخازن</option>
-                            @foreach ($this->warehouses as $warehouse)
-                                <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="w-25">
-                        <input type="text" wire:model.live.debounce.300ms="search"
-                            class="form-control font-family-cairo" placeholder="بحث بالاسم أو الكود أو الباركود...">
-                    </div>
+                        <div class="w-25">
+                            <select class="form-select font-family-cairo fw-bold font-14"
+                                wire:model.live="selectedWarehouse" style="min-width: 105px;">
+                                <option value="">كل المخازن</option>
+                                @foreach ($this->warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="w-25">
+                            <input type="text" wire:model.live.debounce.300ms="search"
+                                class="form-control font-family-cairo" placeholder="بحث بالاسم أو الكود أو الباركود...">
+                        </div>
                     @endcan
                 </div>
                 <div class="card-header">
@@ -230,9 +228,12 @@ new class extends Component {
                                 @forelse ($displayItemData as $itemId => $itemData)
                                     @if (!empty($itemData))
                                         <tr wire:key="{{ $this->getComputedKey($itemId) }}">
-                                            <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
-                                            <td class="font-family-cairo text-center fw-bold">{{ $itemData['code'] }}</td>
-                                            <td class="font-family-cairo text-center fw-bold">{{ $itemData['name'] }}</td>
+                                            <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}
+                                            </td>
+                                            <td class="font-family-cairo text-center fw-bold">{{ $itemData['code'] }}
+                                            </td>
+                                            <td class="font-family-cairo text-center fw-bold">{{ $itemData['name'] }}
+                                            </td>
                                             <td class="font-family-cairo text-center fw-bold">
                                                 @if (!empty($itemData['unitOptions']))
                                                     <select class="form-select font-family-cairo fw-bold font-14"
@@ -296,24 +297,28 @@ new class extends Component {
 
 
                                             <td>
-                                                 @can('تعديل الأصناف')
-                                                <button type="button" class="btn btn-success btn-sm"
-                                                    wire:click="edit({{ $itemId }})"><i class="las la-edit fa-lg"></i></button>
+                                                @can('تعديل الأصناف')
+                                                    <button type="button" class="btn btn-success btn-sm"
+                                                        wire:click="edit({{ $itemId }})"
+                                                        title="تعديل الصنف">
+                                                        <i class="las la-edit fa-lg"></i>
+                                                    </button>
                                                 @endcan
-                                           @can('حذف الأصناف')
-                                                <button type="button" class="btn btn-danger btn-sm"
-                                                    wire:click="delete({{ $itemId }})"
-                                                    onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
-                                                    <i class="las la-trash fa-lg"></i>
-                                                </button>
-
                                                 {{-- view item movement --}}
                                                 <button type="button" class="btn btn-info btn-sm"
-                                                    wire:click="viewItemMovement({{ $itemId }}, {{ $selectedWarehouse }})">
-                                                    <i class="las la-eye fa-lg"></i>
+                                                    wire:click="viewItemMovement({{ $itemId }}, {{ $selectedWarehouse }})"
+                                                    title="عرض حركات الصنف">
+                                                    <i class="las la-chart-bar fa-lg"></i>
                                                 </button>
 
-                                            @endcan
+                                                @can('حذف الأصناف')
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        wire:click="delete({{ $itemId }})"
+                                                        title="حذف الصنف"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash fa-lg"></i>
+                                                    </button>
+                                                @endcan
 
                                             </td>
                                         </tr>
