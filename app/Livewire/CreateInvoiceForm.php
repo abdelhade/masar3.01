@@ -212,14 +212,14 @@ class CreateInvoiceForm extends Component
         $firstUnit = $item->units->first();
         $unitId = $firstUnit?->id;
 
-        $vm = new ItemViewModel($item, $unitId);
+        $vm = new ItemViewModel(null, $item, $unitId);
         $salePrices = $vm->getUnitSalePrices();
         $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
 
         // حساب السعر للوحدة الافتراضية
         $price = 0;
         if ($unitId && $this->selectedPriceType) {
-            $vm = new ItemViewModel($item, $unitId);
+            $vm = new ItemViewModel(null, $item, $unitId);
             $salePrices = $vm->getUnitSalePrices();
             $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
         }
@@ -293,7 +293,7 @@ class CreateInvoiceForm extends Component
         if (! $item) return;
 
         // إعداد الوحدات المتاحة
-        $vm = new ItemViewModel($item, null);
+        $vm = new ItemViewModel(null, $item);
         $opts = $vm->getUnitOptions();
 
         $unitsCollection = collect($opts)->map(fn($entry) => (object)[
@@ -327,7 +327,7 @@ class CreateInvoiceForm extends Component
         if (!$item) return;
 
         // حساب السعر للوحدة المختارة
-        $vm = new ItemViewModel($item, $unitId);
+        $vm = new ItemViewModel(null, $item, $unitId);
         $salePrices = $vm->getUnitSalePrices();
         $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
 

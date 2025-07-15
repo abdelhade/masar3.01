@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             NoteDetailsSeeder::class,
             UnitSeeder::class,
             PriceSeeder::class,
+            RoleAndPermissionSeeder::class,
             UserSeeder::class,
             DepartmentSeeder::class,
             CountrySeeder::class,
@@ -39,7 +40,6 @@ class DatabaseSeeder extends Seeder
             KpiSeeder::class,
             EmployeeSeeder::class,
             ContractTypeSeeder::class,
-            RoleAndPermissionSeeder::class,
             AttendanceSeeder::class,
         ]);
     }
