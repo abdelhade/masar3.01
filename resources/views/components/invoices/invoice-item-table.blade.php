@@ -62,7 +62,7 @@
                                     {{-- حقل السعر مع التنقل التلقائي --}}
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"
-                                            wire:model.blur="invoiceItems.{{ $index }}.price"
+                                            wire:model.live="invoiceItems.{{ $index }}.price"
                                             id="price_{{ $index }}" placeholder="السعر"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"
@@ -121,8 +121,10 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
-                                        لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
+                                    <td colspan="13">
+                                        <div class="alert alert-info text-center mb-0">
+                                            لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse

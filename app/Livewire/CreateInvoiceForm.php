@@ -7,7 +7,6 @@ use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
-use Illuminate\Support\Facades\Cache;
 use App\Models\{OperHead, JournalHead, JournalDetail, OperationItems, AccHead, Price, Item};
 
 class CreateInvoiceForm extends Component
@@ -86,7 +85,7 @@ class CreateInvoiceForm extends Component
         22 => 'امر حجز',
     ];
 
-    protected $listeners = ['addRow'];
+    // protected $listeners = ['addRow'];
 
     public function mount($type, $hash)
     {
@@ -94,7 +93,7 @@ class CreateInvoiceForm extends Component
         // إذا لم يكن الهاش مطابقًا لنوع الفاتورة، أوقف التنفيذ
         if ($hash !== md5($this->type)) abort(403, 'نوع الفاتورة غير صحيح');
 
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        // $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
 
         $this->nextProId = OperHead::max('pro_id') + 1 ?? 1;
         $this->pro_id = $this->nextProId;
@@ -149,13 +148,11 @@ class CreateInvoiceForm extends Component
 
     private function getAccountsByCode(string $code)
     {
-        return Cache::rememberForever("accounts_by_code_{$code}", function () use ($code) {
-            return AccHead::where('isdeleted', 0)
-                ->where('is_basic', 0)
-                ->where('code', 'like', $code)
-                ->select('id', 'aname')
-                ->get();
-        });
+        return AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', $code)
+            ->select('id', 'aname')
+            ->get();
     }
 
     public function updateSelectedItemData($item, $unitId, $price)
@@ -207,54 +204,17 @@ class CreateInvoiceForm extends Component
             ->take(5)->get();
     }
 
-    public function handleKeyDown()
-    {
-        $this->selectedResultIndex = min(
-            $this->selectedResultIndex + 1,
-            $this->searchResults->count() - 1
-        );
-    }
-
-    public function handleKeyUp()
-    {
-        $this->selectedResultIndex = max($this->selectedResultIndex - 1, -1);
-    }
-
-    public function handleEnter()
-    {
-        if ($this->selectedResultIndex >= 0) {
-            $item = $this->searchResults->get($this->selectedResultIndex);
-            $this->addItemFromSearch($item->id);
-        }
-    }
-
-    public function addRow()
-    {
-        $this->invoiceItems[] = [
-            'item_id' => '',
-            'unit_id' => '',
-            'quantity' => 1,
-            'price' => 0,
-            'sub_value' => 0,
-            'discount' => 0,
-            'available_units' => collect(),
-        ];
-
-        $this->dispatch('focus-quantity-field', rowIndex: count($this->invoiceItems) - 1);
-    }
-
     public function addItemFromSearch($itemId)
     {
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) return;
 
-        $availableUnits = $item->units->map(fn($unit) => (object)[
-            'id' => $unit->id,
-            'name' => $unit->name,
-        ]);
-
         $firstUnit = $item->units->first();
         $unitId = $firstUnit?->id;
+
+        $vm = new ItemViewModel($item, $unitId);
+        $salePrices = $vm->getUnitSalePrices();
+        $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
 
         // حساب السعر للوحدة الافتراضية
         $price = 0;
@@ -272,7 +232,7 @@ class CreateInvoiceForm extends Component
             'price' => $price,
             'sub_value' => $price * 1, // quantity * price
             'discount' => 0,
-            'available_units' => $availableUnits,
+            // 'available_units' => $availableUnits,
         ];
         $this->updateSelectedItemData($item, $unitId, $price);
 
@@ -422,6 +382,25 @@ class CreateInvoiceForm extends Component
             $this->calculateTotals();
         }
     }
+
+    public function updatedSelectedPriceType()
+    {
+        foreach ($this->invoiceItems as $index => $item) {
+            if ($item['item_id'] && $item['unit_id']) {
+                $this->updatePriceForUnit($index);
+            }
+        }
+        if ($this->currentSelectedItem) {
+            $index = array_search($this->currentSelectedItem, array_column($this->invoiceItems, 'item_id'));
+            if ($index !== false) {
+                $item = Item::with(['units', 'prices'])->find($this->currentSelectedItem);
+                $unitId = $this->invoiceItems[$index]['unit_id'];
+                $price = $this->invoiceItems[$index]['price'];
+                $this->updateSelectedItemData($item, $unitId, $price);
+            }
+        }
+    }
+
     public function calculateQuantityFromSubValue($index)
     {
         if (!isset($this->invoiceItems[$index])) return;
@@ -453,33 +432,6 @@ class CreateInvoiceForm extends Component
             $discount = (float) $item['discount'];
             $sub = ($qty * $price) - $discount;
             $this->invoiceItems[$index]['sub_value'] = round($sub, 2);
-        }
-    }
-
-    public function updatedSelectedPriceType()
-    {
-        foreach ($this->invoiceItems as $index => $item) {
-            if ($item['item_id'] && $item['unit_id']) {
-                $this->updatePriceForUser($index);
-            }
-        }
-    }
-
-    public function updatePriceForUser($index)
-    {
-        $itemId = $this->invoiceItems[$index]['item_id'] ?? null;
-        $unitId = $this->invoiceItems[$index]['unit_id'] ?? null;
-
-        if ($itemId && $unitId) {
-            $item = Item::with('units')->find($itemId);
-            $unit = $item?->units->where('id', $unitId)->first();
-
-            if ($unit) {
-                $priceType = $this->selectedPriceType ?? 'retail';
-                $price = $priceType === 'wholesale' ? $unit->wholesale_price : $unit->retail_price;
-
-                $this->invoiceItems[$index]['price'] = $price;
-            }
         }
     }
 
@@ -525,8 +477,30 @@ class CreateInvoiceForm extends Component
         }
     }
 
+    public function handleKeyDown()
+    {
+        $this->selectedResultIndex = min(
+            $this->selectedResultIndex + 1,
+            $this->searchResults->count() - 1
+        );
+    }
+
+    public function handleKeyUp()
+    {
+        $this->selectedResultIndex = max($this->selectedResultIndex - 1, -1);
+    }
+
+    public function handleEnter()
+    {
+        if ($this->selectedResultIndex >= 0) {
+            $item = $this->searchResults->get($this->selectedResultIndex);
+            $this->addItemFromSearch($item->id);
+        }
+    }
+
     public function saveForm()
     {
+        dd($this->all());
         if (empty($this->invoiceItems)) {
             Alert::toast('لا يمكن حفظ الفاتورة بدون أصناف.', 'error');
             return;
