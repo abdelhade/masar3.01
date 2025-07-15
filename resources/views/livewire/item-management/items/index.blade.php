@@ -16,7 +16,7 @@ new class extends Component {
     public $noteTypes;
     public $search = '';
     public $warehouses;
-    public $selectedWarehouse = null;        
+    public $selectedWarehouse = null;
 
     public function mount()
     {
@@ -90,9 +90,11 @@ new class extends Component {
             'quantityCost' => $viewModel->getQuantityCost(),
             'unitSalePrices' => $unitSalePricesData,
             'unitBarcodes' => $selectedUnitId ? $viewModel->getUnitBarcode() : [],
-            'itemNotes' => $item->notes->mapWithKeys(function ($note) {
-                return [$note->id => $note->pivot->note_detail_name];
-            })->all(),
+            'itemNotes' => $item->notes
+                ->mapWithKeys(function ($note) {
+                    return [$note->id => $note->pivot->note_detail_name];
+                })
+                ->all(),
         ];
     }
 
@@ -156,6 +158,7 @@ new class extends Component {
     <div class="row">
         <div class="col-lg-12">
             @if (session()->has('success'))
+
             <div class="alert alert-success font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
                 x-init="setTimeout(() => show = false, 3000)">
                 {{ session('success') }}
@@ -167,11 +170,11 @@ new class extends Component {
                 {{ session('error') }}
             </div>
         @endif
-            <div class="card"> 
+            <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
 
                     @can('أنشاء - الأصناف')
-                        
+
                     <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
                         {{ __('Add New') }}
                         <i class="fas fa-plus me-2"></i>
@@ -201,35 +204,36 @@ new class extends Component {
                     </a>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover table-bordered table-light">
-                            <thead>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">الكود</th>
-                                    <th class="font-family-cairo fw-bold">الاسم</th>
-                                    <th class="font-family-cairo fw-bold">الوحدات</th>
-                                    <th class="font-family-cairo fw-bold">الكميه</th>
-                                    <th class="font-family-cairo fw-bold">التكلفه</th>
-                                    <th class="font-family-cairo fw-bold">تكلفه الكميه</th>
+                                    <th class="font-family-cairo text-center fw-bold">#</th>
+                                    <th class="font-family-cairo text-center fw-bold">الكود</th>
+                                    <th class="font-family-cairo text-center fw-bold">الاسم</th>
+                                    <th class="font-family-cairo text-center fw-bold">الوحدات</th>
+                                    <th class="font-family-cairo text-center fw-bold">الكميه</th>
+                                    <th class="font-family-cairo text-center fw-bold">التكلفه</th>
+                                    <th class="font-family-cairo text-center fw-bold">تكلفه الكميه</th>
                                     @foreach ($this->priceTypes as $priceId => $priceName)
-                                        <th class="font-family-cairo fw-bold">{{ $priceName }}</th>
+                                        <th class="font-family-cairo text-center fw-bold">{{ $priceName }}</th>
                                     @endforeach
-                                    <th class="font-family-cairo fw-bold">الباركود</th>
+                                    <th class="font-family-cairo text-center fw-bold">الباركود</th>
                                     @foreach ($this->noteTypes as $noteId => $noteName)
-                                        <th class="font-family-cairo fw-bold">{{ $noteName }}</th>
+                                        <th class="font-family-cairo text-center fw-bold">{{ $noteName }}</th>
                                     @endforeach
-                                    <th class="font-family-cairo fw-bold">العمليات</th>
+                                    <th class="font-family-cairo text-center fw-bold">العمليات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($displayItemData as $itemId => $itemData)
                                     @if (!empty($itemData))
                                         <tr wire:key="{{ $this->getComputedKey($itemId) }}">
-                                            <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ $itemData['code'] }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ $itemData['name'] }}</td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
+                                            <td class="font-family-cairo text-center fw-bold">{{ $itemData['code'] }}</td>
+                                            <td class="font-family-cairo text-center fw-bold">{{ $itemData['name'] }}</td>
+                                            <td class="font-family-cairo text-center fw-bold">
                                                 @if (!empty($itemData['unitOptions']))
                                                     <select class="form-select font-family-cairo fw-bold font-14"
                                                         wire:model.live="selectedUnit.{{ $itemId }}"
@@ -247,7 +251,10 @@ new class extends Component {
                                             <td class="text-center fw-bold">
                                                 @php $fq = $itemData['formattedQuantity']; @endphp
                                                 {{ $fq['quantity']['integer'] }}
-                                                @if (isset($fq['quantity']['remainder']) && $fq['quantity']['remainder'] > 0 && $fq['unitName'] !== $fq['smallerUnitName'])
+                                                @if (isset($fq['quantity']['remainder']) &&
+                                                        $fq['quantity']['remainder'] > 0 &&
+                                                        $fq['unitName'] !== $fq['smallerUnitName']
+                                                )
                                                     [{{ $fq['quantity']['remainder'] }} {{ $fq['smallerUnitName'] }}]
                                                 @endif
                                             </td>
@@ -260,15 +267,14 @@ new class extends Component {
 
                                             {{-- Prices --}}
                                             @foreach ($this->priceTypes as $priceTypeId => $priceTypeName)
-                                                <td class="font-family-cairo fw-bold">
+                                                <td class="font-family-cairo text-center fw-bold">
                                                     {{ isset($itemData['unitSalePrices'][$priceTypeId]['price']) ? formatCurrency($itemData['unitSalePrices'][$priceTypeId]['price']) : 'N/A' }}
                                                 </td>
                                             @endforeach
 
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-family-cairo fw-bold text-center">
                                                 @if (!empty($itemData['unitBarcodes']))
-                                                    <select
-                                                        class="form-select font-family-cairo fw-bold font-14"
+                                                    <select class="form-select font-family-cairo fw-bold font-14"
                                                         style="min-width: 100px;">
                                                         @foreach ($itemData['unitBarcodes'] as $barcode)
                                                             <option value="{{ formatBarcode($barcode['barcode']) }}">
@@ -283,10 +289,11 @@ new class extends Component {
 
                                             {{-- Notes --}}
                                             @foreach ($this->noteTypes as $noteTypeId => $noteTypeName)
-                                                <td class="font-family-cairo fw-bold">
+                                                <td class="font-family-cairo fw-bold text-center">
                                                     {{ $itemData['itemNotes'][$noteTypeId] ?? '' }}
                                                 </td>
                                             @endforeach
+
 
                                             <td>
                                                  @can('تعديل الأصناف')

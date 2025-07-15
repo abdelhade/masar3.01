@@ -201,7 +201,7 @@
 
                                                     <div class="col-md-2">
                                                         <button wire:click="removeProduct({{ $index }})"
-                                                            style="font-size: 1em;" class="btn btn-danger">
+                                                            style="font-size: 1em;"  class="btn btn-danger btn-icon-square-sm">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
                                                     </div>
@@ -332,7 +332,7 @@
 
                                             <div class="col-md-1">
                                                 <button wire:click="removeRawMaterial({{ $index }})"
-                                                    class="btn btn-danger">
+                                                    class="btn btn-danger btn-icon-square-sm">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             </div>
@@ -389,7 +389,7 @@
 
                                                 <div class="flex items-end pb-1">
                                                     <button wire:click="removeExpense({{ $index }})"
-                                                        class="btn btn-danger btn-sm p-1 text-xs">
+                                                         class="btn btn-danger btn-icon-square-sm p-1 text-xs">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </div>

@@ -110,7 +110,11 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="received_from_client" style="font-size: 1em;">المبلغ المستلم من العميل</label>
+                    @if ($type == 11)
+                        <label for="received_from_client" style="font-size: 1em;">المبلغ المدفوع للمورد</label>
+                    @else
+                        <label for="received_from_client" style="font-size: 1em;">المبلغ المستلم من العميل</label>
+                    @endif
                     <input type="number" step="0.01" wire:model="received_from_client" wire:change="calculateTotals"
                         class="form-control form-control-sm" style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
                         min="0">

@@ -142,12 +142,12 @@ new class extends Component {
                 ];
 
                 if (!empty($unitRow['barcodes'])) {
-                foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode) {
-                    $barcodesToCreate[$barcodeIndex] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $barcode];
+                    foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode) {
+                        $barcodesToCreate[$barcodeIndex] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $barcode];
+                    }
+                } else {
+                    $barcodesToCreate[$unitRowIndex] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $this->item['code'] . $unitRowIndex + 1];
                 }
-            }else{
-                $barcodesToCreate[$unitRowIndex] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $this->item['code'] . $unitRowIndex + 1];
-            }
 
                 if (!empty($unitRow['prices'])) {
                     foreach ($unitRow['prices'] as $price_id => $price_value) {
@@ -321,10 +321,10 @@ new class extends Component {
                                 <i class="las la-plus"></i> إضافة وحدة جديدة
                             </button>
                         </div>
-                        <div class="table-responsive" style="max-width: 100%; overflow-x: scroll;">
-                            <table class="table table-striped table-hover table-bordered table-light"
-                                style="width: 1500px;">
-                                <thead>
+                        <div class="table-responsive" style="overflow-x: auto;">
+                            <table class="table table-striped mb-0" style="min-width: 1200px;">
+                                <thead class="table-light text-center align-middle">
+
                                     <tr>
                                         <th class="font-family-cairo fw-bold">الوحدة</th>
                                         <th class="font-family-cairo fw-bold">معامل التحويل</th>
@@ -405,7 +405,7 @@ new class extends Component {
                                                 @enderror
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-danger btn-md float-end"
+                                                <button type="button"  class="btn btn-danger btn-icon-square-sm float-end"
                                                     wire:click="removeUnitRow({{ $index }})">
                                                     <i class="far fa-trash-alt"></i>
                                                 </button>

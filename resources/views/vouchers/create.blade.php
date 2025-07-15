@@ -30,7 +30,7 @@
             @csrf
             <input type="hidden" name="pro_type" value="{{ $pro_type }}">
 
-            <div class="card card-info col-md-11 container">
+            <div class="card bg-white col-md-11 container">
                 <div class="card-header">
                     <h3 class="card-title">سند {{ $type === 'receipt' ? 'قبض' : 'دفع' }}</h3>
                 </div>
@@ -167,7 +167,7 @@
                         </div>
                     </div>
 
-                    <div class="text-center mt-3">
+                    <div class=" mt-3">
                         <button type="submit" class="btn btn-primary btn-lg">حفظ</button>
                     </div>
                 </div>

@@ -21,19 +21,19 @@
                         <table class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th>#</th>
-                                    <th>{{ __('تاريخ') }}</th>
-                                    <th>{{ __('تاريخ الاستحقاق') }}</th>
-                                    <th>{{ __('اسم العمليه') }}</th>
-                                    <th>{{ __('الحساب') }}</th>
-                                    <th>{{ __('الحساب المقابل') }}</th>
-                                    <th>{{ __('المخزن') }}</th>
-                                    <th>{{ __('الموظف') }}</th>
-                                    <th>{{ __('قيمة المليه') }}</th>
-                                    <th>{{ __('صافي العمليه') }}</th>
-                                    <th>{{ __('الربح') }}</th>
-                                    <th>{{ __('المستخدم') }}</th>
-                                    <th>{{ __('العمليات') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">#</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('تاريخ') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('تاريخ الاستحقاق') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('اسم العمليه') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('الحساب') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('الحساب المقابل') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('المخزن') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('الموظف') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('قيمة المليه') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('صافي العمليه') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('الربح') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('المستخدم') }}</th>
+                                    <th  class="font-family-cairo fw-bold font-14 text-center">{{ __('العمليات') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -88,13 +88,13 @@
                                             </div>
                                         </td>
                                     </tr>
-                                @empty
+                                 @empty
                                     <tr>
                                         <td colspan="13" class="text-center">
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات مضافة حتى الآن
+                                               لا توجد بيانات 
                                             </div>
                                         </td>
                                     </tr>

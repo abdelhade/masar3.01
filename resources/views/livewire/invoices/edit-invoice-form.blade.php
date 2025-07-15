@@ -129,16 +129,18 @@
                 {{-- جدول الأصناف --}}
                 <div class="row">
 
-                    <table class="table table-bordered">
-                        <thead>
+
+                    <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <thead class="table-light text-center align-middle">
+
                             <tr>
-                                <th>الصنف</th>
-                                <th>الوحدة</th>
-                                <th>الكمية</th>
-                                <th>السعر</th>
-                                <th>الخصم</th>
-                                <th>القيمة</th>
-                                <th class="text-center">إجراء</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">الصنف</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">الوحدة</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">الكمية</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">السعر</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">الخصم</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">القيمة</th>
+                                <th class="font-family-cairo fw-bold font-14 text-center">إجراء</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -149,7 +151,7 @@
                                             <tbody>
                                                 @forelse ($invoiceItems as $index => $row)
                                                     <tr wire:key="invoice-row-{{ $index }}">
-                                                        <td style="width: 18%">
+                                                        <td class="text-center" style="width: 18%">
                                                             <select
                                                                 wire:model.live="invoiceItems.{{ $index }}.item_id"
                                                                 wire:change="updateUnits({{ $index }})"
@@ -164,7 +166,7 @@
                                                             </select>
                                                         </td>
 
-                                                        <td style="width: 15%">
+                                                        <td class="text-center" style="width: 15%">
                                                             <select
                                                                 wire:model.live="invoiceItems.{{ $index }}.unit_id"
                                                                 wire:change="updatePriceForUnit({{ $index }})"
@@ -182,7 +184,7 @@
                                                             </select>
                                                         </td>
 
-                                                        <td style="width: 10%">
+                                                        <td class="text-center" style="width: 10%">
                                                             <input type="number" step="0.01" min="0"
                                                                 wire:model.blur="invoiceItems.{{ $index }}.quantity"
                                                                 id="quantity_{{ $index }}"
@@ -204,7 +206,7 @@
                                                                 @if ($is_disabled) disabled @endif>
                                                         </td>
 
-                                                        <td style="width: 15%">
+                                                        <td class="text-center" style="width: 15%">
                                                             <input type="number" step="0.01" min="0"
                                                                 wire:model.blur="invoiceItems.{{ $index }}.discount"
                                                                 id="discount_{{ $index }}" placeholder="الخصم"
@@ -220,7 +222,7 @@
                                                                 @if ($is_disabled) disabled @endif>
                                                         </td>
 
-                                                        <td style="width: 15%">
+                                                        <td class="text-center" style="width: 15%">
                                                             <input type="number" step="0.01" min="0"
                                                                 wire:model.blur="invoiceItems.{{ $index }}.sub_value"
                                                                 id="sub_value_{{ $index }}"
@@ -243,7 +245,7 @@
                                                         <td class="text-center" style="width: 10%">
                                                             <button type="button"
                                                                 wire:click="removeRow({{ $index }})"
-                                                                class="btn btn-danger btn-sm"
+                                                                class="btn btn-danger btn-icon-square-sm"
                                                                 @if ($is_disabled) disabled @endif
                                                                 onclick="return confirm('هل أنت متأكد من حذف هذا الصف؟')">
                                                                 <i class="fas fa-trash"></i>
@@ -252,8 +254,12 @@
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="7" class="text-center text-muted py-4">
-                                                            لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
+                                                        <td colspan="7" class="text-center">
+                                                            <div class="alert alert-info py-3 mb-0"
+                                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                                <i class="las la-info-circle me-2"></i>
+                                                                لا توجد بيانات
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 @endforelse
@@ -390,7 +396,7 @@
                 <div class="row mt-4">
                     <div class="col-12 text-left">
                         @if ($is_disabled)
-                            <button type="button" wire:click="enableEditing" class="btn btn-lg btn-warning">
+                            <button type="button" wire:click="enableEditing" class="btn btn-lg btn-success">
                                 <i class="fas fa-edit"></i> تعديل الفاتورة
                             </button>
                         @else

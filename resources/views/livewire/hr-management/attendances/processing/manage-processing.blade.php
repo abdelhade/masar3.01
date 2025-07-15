@@ -281,21 +281,22 @@ new class extends Component {
             <x-tom-select name="filter_employee" :options="$employees->map(fn($p) => ['value' => $p->id, 'text' => $p->name])->toArray()" wire:model.live.debounce.500ms="search_employee_name"
                 placeholder="{{ __('اختر الموظف') }}" :search="true" dir="rtl" class="font-family-cairo"
                 :multiple="false" :required="true" :syncOnModalOpen="true" :clearOnModalClose="true" :tomOptions="[
-        'plugins' => [
-            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
-            'remove_button' => ['title' => 'Remove all selected options'],
-        ],
-    ]" />
+                    'plugins' => [
+                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                        'remove_button' => ['title' => 'Remove all selected options'],
+                    ],
+                ]" />
         </div>
         <div class="col-md-3">
-            <x-tom-select name="filter_department" :options="$departments->map(fn($p) => ['value' => $p->id, 'text' => $p->title])->toArray()" wire:model.live.debounce.500ms="search_department_name"
-                placeholder="{{ __('اختر القسم') }}" :search="true" dir="rtl" class="font-family-cairo"
-                :multiple="false" :required="true" :syncOnModalOpen="true" :clearOnModalClose="true" :tomOptions="[
-        'plugins' => [
-            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
-            'remove_button' => ['title' => 'Remove all selected options'],
-        ],
-    ]" />
+            <x-tom-select name="filter_department" :options="$departments->map(fn($p) => ['value' => $p->id, 'text' => $p->title])->toArray()"
+                wire:model.live.debounce.500ms="search_department_name" placeholder="{{ __('اختر القسم') }}"
+                :search="true" dir="rtl" class="font-family-cairo" :multiple="false" :required="true"
+                :syncOnModalOpen="true" :clearOnModalClose="true" :tomOptions="[
+                    'plugins' => [
+                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                        'remove_button' => ['title' => 'Remove all selected options'],
+                    ],
+                ]" />
         </div>
         <div class="col-md-2">
             <input type="date" class="form-control font-family-cairo" wire:model.live="date_from"
@@ -322,11 +323,20 @@ new class extends Component {
                     <h5 class="mb-0 font-family-cairo fw-bold">{{ __('سجلات معالجة الحضور') }}</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table
-                            class="table table-striped table-hover table-bordered table-light text-center align-middle">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('#') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('من تاريخ') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('إلى تاريخ') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('نوع المعالجة') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('الموظف') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('القسم') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('ملاحظات') }}</th>
+                                    <th class="font-family-cairo fw-bold text-center">{{ __('الإجراءات') }}</th>
+
                                     <th>{{ __('#') }}</th>
                                     <th>{{ __('من تاريخ') }}</th>
                                     <th>{{ __('إلى تاريخ') }}</th>
@@ -343,10 +353,13 @@ new class extends Component {
                             <tbody>
                                 @forelse($processings as $processing)
                                     <tr>
-                                        <td>{{ $processing->id }}</td>
-                                        <td>{{ $processing->start_date->format('Y-m-d') }}</td>
-                                        <td>{{ $processing->end_date->format('Y-m-d') }}</td>
-                                        <td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $processing->id }}
+                                        </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $processing->start_date->format('Y-m-d') }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $processing->end_date->format('Y-m-d') }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
                                             @if ($processing->type == 'single')
                                                 {{ __('موظف واحد') }}
                                             @elseif($processing->type == 'multiple')
@@ -355,20 +368,39 @@ new class extends Component {
                                                 {{ __('قسم') }}
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
                                             @if ($processing->type == 'single')
                                                 {{ optional($processing->employee)->name ?? '--' }}
                                             @elseif($processing->type == 'multiple')
                                                 @foreach ($processing->details as $detail)
-                                                    <span class="badge bg-info m-1">{{ optional($detail->employee)->name }}</span>
+                                                    <span
+                                                        class="badge bg-info m-1">{{ optional($detail->employee)->name }}</span>
                                                 @endforeach
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
                                             @if ($processing->type == 'department' || $processing->type == 'single')
                                                 {{ optional($processing->department)->title ?? '--' }}
                                             @endif
                                         </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $processing->notes ?? '--' }}</td>
+                                            <td class="font-family-cairo fw-bold font-14 text-center">
+                                                <button class="btn btn-success me-1 font-family-cairo"
+                                                    wire:click="edit({{ $processing->id }})">{{ __('تعديل') }}</button>
+                                                <button class="btn btn-sm btn-danger font-family-cairo"
+                                                    wire:click="confirmDelete({{ $processing->id }})">{{ __('حذف') }}</button>
+                                            </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                                لا توجد بيانات
+                                            </div>
+
                                         <td>{{ $processing->notes ?? '--' }}</td>
                                         @can('إجراء العمليات على معالجة الحضور والانصراف')
                                             <td>
@@ -385,47 +417,48 @@ new class extends Component {
                                         @endcan
 
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="12" class="text-center font-family-cairo fw-bold">
-                                            {{ __('لا توجد سجلات معالجة حضور') }}
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $processings->links() }}
+                                    @empty
+                                        <tr>
+                                            <td colspan="12" class="text-center font-family-cairo fw-bold">
+                                                {{ __('لا توجد سجلات معالجة حضور') }}
+
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $processings->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    {{-- Create/Edit Modal --}}
-    @if ($showCreateModal || $showEditModal)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo">
-                            {{ $showCreateModal ? __('إضافة معالجة حضور') : __('تعديل معالجة حضور') }}
-                        </h5>
-                        <button type="button" class="btn-close"
-                            wire:click="$set('showCreateModal', false); $set('showEditModal', false)"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form wire:submit.prevent="{{ $showCreateModal ? 'store' : 'update' }}">
-                            <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('نوع المعالجة') }}</label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.processing_type" id="processing-type-select">
-                                    <option value="single">{{ __('موظف واحد') }}</option>
-                                    <option value="multiple">{{ __('عدة موظفين') }}</option>
-                                    <option value="department">{{ __('قسم') }}</option>
-                                </select>
-                            </div>
-                            <div class="mb-3" x-data="{
+        {{-- Create/Edit Modal --}}
+        @if ($showCreateModal || $showEditModal)
+            <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title font-family-cairo">
+                                {{ $showCreateModal ? __('إضافة معالجة حضور') : __('تعديل معالجة حضور') }}
+                            </h5>
+                            <button type="button" class="btn-close"
+                                wire:click="$set('showCreateModal', false); $set('showEditModal', false)"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form wire:submit.prevent="{{ $showCreateModal ? 'store' : 'update' }}">
+                                <div class="mb-3">
+                                    <label class="form-label font-family-cairo">{{ __('نوع المعالجة') }}</label>
+                                    <select class="form-select font-family-cairo fw-bold font-14"
+                                        wire:model.live="form.processing_type" id="processing-type-select">
+                                        <option value="single">{{ __('موظف واحد') }}</option>
+                                        <option value="multiple">{{ __('عدة موظفين') }}</option>
+                                        <option value="department">{{ __('قسم') }}</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3" x-data="{
                                     type: $wire.form.processing_type,
                                     initTomSelect() {
                                         this.$nextTick(() => {
@@ -438,130 +471,143 @@ new class extends Component {
                                     $wire.set('form.processing_type', value);
                                     initTomSelect();
                                 })">
-                                <template x-if="$wire.form.processing_type === 'single'">
-                                    <div x-init="initTomSelect()">
-                                        <label class="form-label font-family-cairo">{{ __('اختر الموظف') }}</label>
-                                        <x-tom-select id="employee-single-select" name="employee_id" :options="collect($employees)
-                ->map(
-                    fn($employee) => ['value' => $employee->id, 'text' => $employee->name],
-                )
-                ->toArray()" wireModel="form.employee_id"
-                                            placeholder="{{ __('اختر الموظف') }}" class="form-select font-family-cairo"
-                                            :allowEmptyOption="false" :search="true" :value="$form['employee_id'] ?? null" :tomOptions="[
-                'plugins' => [
-                    'dropdown_input' => [
-                        'class' => 'font-family-cairo fw-bold font-14',
-                    ],
-                    'remove_button' => ['title' => 'إزالة المحدد'],
-                ],
-            ]" />
-                                        @error('form.employee_id')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </template>
-                                <template x-if="$wire.form.processing_type === 'multiple'">
-                                    <div x-init="initTomSelect()">
-                                        <label class="form-label font-family-cairo">{{ __('اختر الموظفين') }}</label>
-                                        <x-tom-select id="employee-multi-select" name="employee_ids" :options="collect($employees)
-                ->map(
-                    fn($employee) => ['value' => $employee->id, 'text' => $employee->name],
-                )
-                ->toArray()" wireModel="form.employee_ids"
-                                            placeholder="{{ __('اختر الموظفين') }}" class="form-select font-family-cairo"
-                                            :multiple="true" :allowEmptyOption="false"
-                                           :search="true" :value="$form['employee_ids'] ?? []" :tomOptions="[
-                'plugins' => [
-                    'dropdown_input' => [
-                        'class' => 'font-family-cairo fw-bold font-14',
-                    ],
-                    'remove_button' => ['title' => 'إزالة المحدد'],
-                ],
-            ]" />
-                                        @error('form.employee_ids')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </template>
-                                <template x-if="$wire.form.processing_type === 'department'">
-                                    <div x-init="initTomSelect()">
-                                        <label class="form-label font-family-cairo">{{ __('اختر القسم') }}</label>
-                                        <x-tom-select id="department-select" name="department_id" :options="collect($departments)
-                ->map(
-                    fn($department) => [
-                        'value' => $department->id,
-                        'text' => $department->title,
-                    ],
-                )
-                ->toArray()"
-                                            wireModel="form.department_id" placeholder="{{ __('اختر القسم') }}"
-                                            class="form-select font-family-cairo" :allowEmptyOption="false" :search="true"
-                                            :value="$form['department_id'] ?? null" :tomOptions="[
-                'plugins' => [
-                    'dropdown_input' => [
-                        'class' => 'font-family-cairo fw-bold font-14',
-                    ],
-                    'remove_button' => ['title' => 'إزالة المحدد'],
-                ],
-            ]" />
-                                        @error('form.department_id')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </template>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('من تاريخ') }}</label>
-                                <input type="date" class="form-control font-family-cairo" wire:model.live="form.from_date">
-                                @error('form.from_date')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('إلى تاريخ') }}</label>
-                                <input type="date" class="form-control font-family-cairo" wire:model.live="form.to_date">
-                                @error('form.to_date')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('ملاحظات') }}</label>
-                                <textarea class="form-control font-family-cairo" wire:model.live="form.notes"></textarea>
-                                @error('form.notes')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary font-family-cairo"
-                                    wire:click="$set('showCreateModal', false); $set('showEditModal', false)">{{ __('إلغاء') }}</button>
-                                <button type="submit" class="btn btn-primary font-family-cairo">{{ __('حفظ') }}</button>
-                            </div>
-                        </form>
+                                    <template x-if="$wire.form.processing_type === 'single'">
+                                        <div x-init="initTomSelect()">
+                                            <label class="form-label font-family-cairo">{{ __('اختر الموظف') }}</label>
+                                            <x-tom-select id="employee-single-select" name="employee_id"
+                                                :options="collect($employees)
+                                                    ->map(
+                                                        fn($employee) => [
+                                                            'value' => $employee->id,
+                                                            'text' => $employee->name,
+                                                        ],
+                                                    )
+                                                    ->toArray()" wireModel="form.employee_id"
+                                                placeholder="{{ __('اختر الموظف') }}"
+                                                class="form-select font-family-cairo" :allowEmptyOption="false" :search="true"
+                                                :value="$form['employee_id'] ?? null" :tomOptions="[
+                                                    'plugins' => [
+                                                        'dropdown_input' => [
+                                                            'class' => 'font-family-cairo fw-bold font-14',
+                                                        ],
+                                                        'remove_button' => ['title' => 'إزالة المحدد'],
+                                                    ],
+                                                ]" />
+                                            @error('form.employee_id')
+                                                <span class="text-danger">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </template>
+                                    <template x-if="$wire.form.processing_type === 'multiple'">
+                                        <div x-init="initTomSelect()">
+                                            <label class="form-label font-family-cairo">{{ __('اختر الموظفين') }}</label>
+                                            <x-tom-select id="employee-multi-select" name="employee_ids"
+                                                :options="collect($employees)
+                                                    ->map(
+                                                        fn($employee) => [
+                                                            'value' => $employee->id,
+                                                            'text' => $employee->name,
+                                                        ],
+                                                    )
+                                                    ->toArray()" wireModel="form.employee_ids"
+                                                placeholder="{{ __('اختر الموظفين') }}"
+                                                class="form-select font-family-cairo" :multiple="true" :allowEmptyOption="false"
+                                                :search="true" :value="$form['employee_ids'] ?? []" :tomOptions="[
+                                                    'plugins' => [
+                                                        'dropdown_input' => [
+                                                            'class' => 'font-family-cairo fw-bold font-14',
+                                                        ],
+                                                        'remove_button' => ['title' => 'إزالة المحدد'],
+                                                    ],
+                                                ]" />
+                                            @error('form.employee_ids')
+                                                <span class="text-danger">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </template>
+                                    <template x-if="$wire.form.processing_type === 'department'">
+                                        <div x-init="initTomSelect()">
+                                            <label class="form-label font-family-cairo">{{ __('اختر القسم') }}</label>
+                                            <x-tom-select id="department-select" name="department_id" :options="collect($departments)
+                                                ->map(
+                                                    fn($department) => [
+                                                        'value' => $department->id,
+                                                        'text' => $department->title,
+                                                    ],
+                                                )
+                                                ->toArray()"
+                                                wireModel="form.department_id" placeholder="{{ __('اختر القسم') }}"
+                                                class="form-select font-family-cairo" :allowEmptyOption="false" :search="true"
+                                                :value="$form['department_id'] ?? null" :tomOptions="[
+                                                    'plugins' => [
+                                                        'dropdown_input' => [
+                                                            'class' => 'font-family-cairo fw-bold font-14',
+                                                        ],
+                                                        'remove_button' => ['title' => 'إزالة المحدد'],
+                                                    ],
+                                                ]" />
+                                            @error('form.department_id')
+                                                <span class="text-danger">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-family-cairo">{{ __('من تاريخ') }}</label>
+                                    <input type="date" class="form-control font-family-cairo"
+                                        wire:model.live="form.from_date">
+                                    @error('form.from_date')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-family-cairo">{{ __('إلى تاريخ') }}</label>
+                                    <input type="date" class="form-control font-family-cairo"
+                                        wire:model.live="form.to_date">
+                                    @error('form.to_date')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-family-cairo">{{ __('ملاحظات') }}</label>
+                                    <textarea class="form-control font-family-cairo" wire:model.live="form.notes"></textarea>
+                                    @error('form.notes')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary font-family-cairo"
+                                        wire:click="$set('showCreateModal', false); $set('showEditModal', false)">{{ __('إلغاء') }}</button>
+                                    <button type="submit"
+                                        class="btn btn-primary font-family-cairo">{{ __('حفظ') }}</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    @endif
-    {{-- Delete Modal --}}
-    @if ($showDeleteModal)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo">{{ __('تأكيد الحذف') }}</h5>
-                        <button type="button" class="btn-close" wire:click="$set('showDeleteModal', false)"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="font-family-cairo">{{ __('هل أنت متأكد من حذف هذا السجل؟') }}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary font-family-cairo"
-                            wire:click="$set('showDeleteModal', false)">{{ __('إلغاء') }}</button>
-                        <button type="button" class="btn btn-danger font-family-cairo"
-                            wire:click="delete">{{ __('حذف') }}</button>
+        @endif
+        {{-- Delete Modal --}}
+        @if ($showDeleteModal)
+            <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title font-family-cairo">{{ __('تأكيد الحذف') }}</h5>
+                            <button type="button" class="btn-close"
+                                wire:click="$set('showDeleteModal', false)"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="font-family-cairo">{{ __('هل أنت متأكد من حذف هذا السجل؟') }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary font-family-cairo"
+                                wire:click="$set('showDeleteModal', false)">{{ __('إلغاء') }}</button>
+                            <button type="button" class="btn btn-danger font-family-cairo"
+                                wire:click="delete">{{ __('حذف') }}</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    @endif
-</div>
+        @endif
+    </div>

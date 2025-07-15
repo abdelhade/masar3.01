@@ -14,7 +14,7 @@ class ItemViewModel
     private $selectedWarehouse;
     private $baseQuantityCache = null;
 
-    public function __construct(?string $selectedWarehouse, Item $item, ?int $selectedUnitId)
+    public function __construct(?string $selectedWarehouse = null, Item $item, ?int $selectedUnitId = null)
     {
         $this->item = $item;
         $this->selectedUnitId = $selectedUnitId;

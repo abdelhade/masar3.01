@@ -1,13 +1,14 @@
-<table class="table table-bordered">
-    <thead>
+<table class="table table-striped mb-0" style="min-width: 1200px;">
+    <thead class="table-light text-center align-middle">
+
         <tr>
-            <th>الصنف</th>
-            <th>الوحدة</th>
-            <th>الكمية</th>
-            <th>السعر</th>
-            <th>الخصم</th>
-            <th>القيمة</th>
-            <th class="text-center">إجراء</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">الصنف</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">الوحدة</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">الكمية</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">السعر</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">الخصم</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">القيمة</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">إجراء</th>
         </tr>
     </thead>
     <tbody>
@@ -62,7 +63,7 @@
                                     {{-- حقل السعر مع التنقل التلقائي --}}
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"
-                                            wire:model.blur="invoiceItems.{{ $index }}.price"
+                                            wire:model.live="invoiceItems.{{ $index }}.price"
                                             id="price_{{ $index }}" placeholder="السعر"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"
@@ -112,6 +113,7 @@
                                     {{-- زرّ الحذف --}}
                                     <td class="text-center" style="width: 10%; font-size: 1.2em;">
                                         <button type="button" wire:click="removeRow({{ $index }})"
+                                            class="btn btn-danger btn-icon-square-sm"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             class="btn btn btn-danger"
                                             onclick="return confirm('هل أنت متأكد من حذف هذا الصف؟')">
@@ -121,8 +123,16 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
-                                        لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
+                                    <td colspan="13" class="text-center">
+                                        <div class="alert alert-info py-3 mb-0"
+                                            style="font-size: 1.2rem; font-weight: 500;">
+                                            <i class="las la-info-circle me-2"></i>
+                                            لا توجد بيانات
+
+                                    <td colspan="13">
+                                        <div class="alert alert-info text-center mb-0">
+                                            لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse

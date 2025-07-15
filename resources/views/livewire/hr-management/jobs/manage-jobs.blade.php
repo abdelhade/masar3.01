@@ -93,29 +93,33 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
+
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('إنشاء الوظائف')
                     <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('Add Job') }}
+                        {{ __('اضافة وظيفة') }}
                         <i class="fas fa-plus me-2"></i>
-                    </button>                        
+                    </button>
                     @endcan
                     @can('البحث عن الوظائف')
-                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto" style="min-width:200px" placeholder="{{ __('Search by title...') }}">                        
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto" style="min-width:200px" placeholder="{{ __('Search by title...') }}">
                     @endcan
 
                 </div>
+            <div class="card">
+
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped mb-0">
                             <thead>
                                 <tr>
+
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">{{ __('title') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('Description') }}</th>
                                     @can('إجراء العمليات على الوظائف')
-                                    <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>                                        
+                                    <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
                                     @endcan
 
                                 </tr>
@@ -123,6 +127,7 @@ new class extends Component {
                             <tbody>
                                 @forelse ($jobs as $job)
                                     <tr>
+
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $job->title }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $job->description }}</td>
@@ -131,17 +136,17 @@ new class extends Component {
                                             @can('تعديل الوظائف')
                                             <a wire:click="edit({{ $job->id }})" class="btn btn-success btn-sm">
                                                 <i class="las la-edit fa-lg"></i>
-                                                </a>                                                
+                                                </a>
                                             @endcan
                                             @can('حذف الوظائف')
                                             <button type="button" class="btn btn-danger btn-sm"
                                                     wire:click="delete({{ $job->id }})"
                                                     onclick="confirm('هل أنت متأكد من حذف هذا الوظيفة؟') || event.stopImmediatePropagation()">
                                                 <i class="las la-trash fa-lg"></i>
-                                            </button>                                                
+                                            </button>
                                             @endcan
 
-                                        </td>                                            
+                                        </td>
                                         @endcan
 
                                     </tr>

@@ -270,7 +270,7 @@ class EditInvoiceForm extends Component
 
         $price = 0;
         if ($unitId && $this->selectedPriceType) {
-            $vm = new ItemViewModel($item, $unitId);
+            $vm = new ItemViewModel($item, $unitId, $selectedWarehouse = null);
             $salePrices = $vm->getUnitSalePrices();
             $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
         }
@@ -312,7 +312,7 @@ class EditInvoiceForm extends Component
 
         if (! $item) return;
 
-        $vm = new ItemViewModel($item, null);
+        $vm = new ItemViewModel($item, $selectedUnitId = null);
         $opts = $vm->getUnitOptions();
 
         $unitsCollection = collect($opts)->map(fn($entry) => (object)[

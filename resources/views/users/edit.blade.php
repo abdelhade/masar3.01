@@ -25,7 +25,7 @@
         </div>
 
         <div class="col-sm-10">
-            <form action="{{ route('users.update', $user->id) }}" method="POST">
+            <form action="{{ route('users.update', $user->id) }}" method="POST" class="bg-white card">
                 @csrf
                 @method('PUT')
                 <div class="tab-content" id="v-pills-tabContent">
@@ -33,8 +33,8 @@
                     {{-- البيانات الأساسية --}}
                     <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
                         aria-labelledby="v-pills-home-tab">
-                        <div class="card">
-                            <div class="card-body">
+                        <div class="card-body">
+                            <div class="">
                                 <div class="row">
                                     <div class="mb-3 col-md-4">
                                         <label>الاسم</label>
@@ -170,7 +170,7 @@
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="fas fa-save me-1"></i> حفظ التعديلات
                     </button>
-                    <a href="{{ route('users.index') }}" class="btn btn-danger">
+                    <a href="{{ route('users.index') }}" class="btn btn-danger m-1">
                         <i class="fas fa-times me-1"></i> رجوع
                     </a>
                 </div>

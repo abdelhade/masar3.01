@@ -26,7 +26,7 @@ new class extends Component {
     public function create()
     {
         $this->resetValidation();
-        $this->reset(['name','unitId']);
+        $this->reset(['name', 'unitId']);
         $this->isEdit = false;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -98,7 +98,12 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
+            <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
+                {{ __('Add New') }}
+                <i class="fas fa-plus me-2"></i>
+            </button>
             <div class="card">
+
                 <div class="card-header">
                     @can('انشاء - الوحدات')
                     <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
@@ -108,10 +113,12 @@ new class extends Component {
                     @endcan
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
+
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الكود</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
@@ -121,8 +128,9 @@ new class extends Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($units as $unit)
+                                @forelse ($units as $unit)
                                     <tr>
+
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $unit->code }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $unit->name }}</td>
@@ -134,14 +142,24 @@ new class extends Component {
                                             @can('حذف - الوحدات')
                                             <a wire:click="delete({{ $unit->id }})"
                                                 onclick="confirm('هل أنت متأكد من حذف هذه الوحدة؟') || event.stopImmediatePropagation()">
-                                                <i class="las la-trash-alt text-danger font-20"></i>
+                                                <i class="las la-trash-alt btn btn-danger font-20"></i>
                                             </a>
                                              @endcan
                                         </td>
                                     @endcan
 
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                                لا توجد بيانات
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -165,7 +183,8 @@ new class extends Component {
                     <form wire:submit="save">
                         <div class="mb-3">
                             <label for="name" class="form-label font-family-cairo fw-bold">الاسم</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
+                            <input type="text"
+                                class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
                                 id="name" wire:model="name">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>

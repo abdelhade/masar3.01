@@ -16,12 +16,12 @@
                 @csrf
                 @method('PUT')
 
-                <div class="card card-info col-md-12 container">
+                <div class="card bg-white col-md-12 container">
                     <div class="card-header">
                         <h3 class="card-title fw-bold fs-2">{{ $titles[$type] }}</h3>
                     </div>
 
-                    <div class="card-body">
+                    <div class="card-body  ">
                         <div class="row">
                             <input type="hidden" name="type" value="{{ $type }}">
 

@@ -395,25 +395,25 @@ new class extends Component {
                                 <i class="las la-plus"></i> إضافة وحدة جديدة
                             </button>
                         </div>
-                        <div class="table-responsive" style="max-width: 100%; overflow-x: scroll;">
-                            <table class="table table-striped table-hover table-bordered table-light"
-                                style="width: 1500px;">
-                                <thead>
+                        <div class="table-responsive" style="overflow-x: auto;">
+                            <table class="table table-striped mb-0" style="min-width: 1200px;">
+                                <thead class="table-light text-center align-middle">
+
                                     <tr>
-                                        <th class="font-family-cairo fw-bold">الوحدة</th>
-                                        <th class="font-family-cairo fw-bold">معامل التحويل</th>
-                                        <th class="font-family-cairo fw-bold">التكلفة</th>
+                                        <th class="font-family-cairo text-center fw-bold">الوحدة</th>
+                                        <th class="font-family-cairo text-center fw-bold">معامل التحويل</th>
+                                        <th class="font-family-cairo text-center fw-bold">التكلفة</th>
                                         @foreach ($prices as $price)
                                             <th class="font-family-cairo fw-bold">{{ $price->name }}</th>
                                         @endforeach
-                                        <th class="font-family-cairo fw-bold">باركود</th>
-                                        <th class="font-family-cairo fw-bold">XX</th>
+                                        <th class="font-family-cairo text-center fw-bold">باركود</th>
+                                        <th class="font-family-cairo text-center fw-bold">XX</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($unitRows as $index => $unitRow)
                                         <tr>
-                                            <td>
+                                            <td  class="font-family-cairo fw-bold font-14 text-center">
                                                 <select wire:model.live="unitRows.{{ $index }}.unit_id"
                                                     class="form-select font-family-cairo fw-bold font-14"
                                                     style="min-width: 100px; height: 50px;">
@@ -431,7 +431,7 @@ new class extends Component {
                                                         class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
                                                 @enderror
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <input type="number" onclick="this.select()"
                                                     wire:model="unitRows.{{ $index }}.u_val"
                                                     wire:keyup.debounce.300ms="updateUnitsCostAndPrices({{ $index }})"
@@ -454,7 +454,7 @@ new class extends Component {
                                                 @enderror
                                             </td>
                                             @foreach ($prices as $price)
-                                                <td>
+                                                <td class="text-center">
                                                     <input type="number" onclick="this.select()"
                                                         wire:model="unitRows.{{ $index }}.prices.{{ $price->id }}"
                                                         class="form-control font-family-cairo fw-bold"
@@ -465,7 +465,7 @@ new class extends Component {
                                                     @enderror
                                                 </td>
                                             @endforeach
-                                            <td class="d-flex flex-column gap-1 mt-4">
+                                            <td class="d-flex text-center flex-column gap-1 mt-4">
                                                 <input type="text" onclick="this.select()"
                                                     wire:model="unitRows.{{ $index }}.barcodes.{{ $index }}"
                                                     class="form-control font-family-cairo fw-bold"
@@ -481,8 +481,8 @@ new class extends Component {
                                                         class="text-danger font-family-cairo fw-bold font-12">{{ $message }}</span>
                                                 @enderror
                                             </td>
-                                            <td>
-                                                <button type="button" class="btn btn-danger btn-md float-end"
+                                            <td  class="font-family-cairo fw-bold font-14 text-center">
+                                                <button type="button" class="btn btn-danger btn-icon-square-sm float-end"
                                                     wire:click="removeUnitRow({{ $index }})">
                                                     <i class="far fa-trash-alt"></i>
                                                 </button>
@@ -527,6 +527,7 @@ new class extends Component {
                         <div class="d-flex align-items-center mb-2" wire:key="barcode-{{ $barcodeIndex }}">
                             <input type="text" class="form-control font-family-cairo fw-bold"
                                 wire:model="additionalBarcodes.{{ $barcodeIndex }}" placeholder="أدخل الباركود">
+
                             <button type="button" class="btn btn-danger btn-sm ms-2"
                                 wire:click="removeBarcodeField({{ $barcodeIndex }})">
                                 <i class="far fa-trash-alt"></i>

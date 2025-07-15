@@ -53,8 +53,7 @@ new class extends Component {
 
     public function loadShifts()
     {
-        $this->shifts = Shift::when($this->search, fn($q) => $q->where('notes', 'like', "%{$this->search}%"))
-            ->orderByDesc('id')->get();
+        $this->shifts = Shift::when($this->search, fn($q) => $q->where('notes', 'like', "%{$this->search}%"))->orderByDesc('id')->get();
     }
 
     public function updatedSearch()
@@ -111,6 +110,7 @@ new class extends Component {
         $this->loadShifts();
     }
 }; ?>
+
 
 <div class="container" style="direction: rtl; font-family: 'Cairo', sans-serif;">
     <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
@@ -181,15 +181,48 @@ new class extends Component {
                     @endcan
 
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6">{{ __('No shifts found.') }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($shifts as $shift)
+                    <tr>
+                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $shift->start_time }}</td>
+                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $shift->end_time }}</td>
+                        <td class="font-family-cairo fw-bold font-14 text-center">
+                            {{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
+                        <td class="font-family-cairo fw-bold font-14 text-center">
+                            @foreach (json_decode($shift->days, true) as $day)
+                                <span class="badge bg-info">{{ $weekDays[$day] ?? $day }}</span>
+                            @endforeach
+                        </td>
+                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $shift->notes }}</td>
+                        <td class="font-family-cairo fw-bold font-14 text-center">
+                            <button class="btn btn-success btn-icon-square-sm me-1"
+                                wire:click="edit({{ $shift->id }})">
+                                <i class="las la-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-icon-square-sm" wire:click="delete({{ $shift->id }})"
+                                onclick="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
+                                <i class="las la-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
+                                <i class="las la-info-circle me-2"></i>
+                                لا توجد بيانات
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
 
     <!-- Modal -->
+
     <div class="modal fade @if($showModal) show d-block @endif" tabindex="-1" style="background: rgba(0,0,0,0.5);"
         @if($showModal) aria-modal="true" role="dialog" @endif>
         <div class="modal-dialog">
@@ -203,45 +236,57 @@ new class extends Component {
                         <div class="mb-3">
                             <label class="form-label">{{ __('Start Time') }}</label>
                             <input type="time" class="form-control" wire:model.defer="start_time" required>
-                            @error('start_time') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('start_time')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">{{ __('End Time') }}</label>
                             <input type="time" class="form-control" wire:model.defer="end_time" required>
-                            @error('end_time') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('end_time')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">{{ __('Shift Type') }}</label>
                             <select class="form-select" wire:model.defer="shift_type" required>
                                 <option value="">{{ __('Select shift type') }}</option>
-                                @foreach($shiftTypes as $key => $label)
+                                @foreach ($shiftTypes as $key => $label)
                                     <option value="{{ $key }}">{{ $label }}</option>
                                 @endforeach
                             </select>
-                            @error('shift_type') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('shift_type')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">{{ __('Days') }}</label>
                             <div class="d-flex flex-wrap gap-2">
-                                @foreach($weekDays as $key => $label)
+                                @foreach ($weekDays as $key => $label)
                                     <div class="form-check me-3">
                                         <input class="form-check-input" type="checkbox" id="day_{{ $key }}"
                                             value="{{ $key }}" wire:model.defer="days">
+
                                         <label class="form-check-label" for="day_{{ $key }}">{{ $label }}</label>
                                     </div>
                                 @endforeach
                             </div>
-                            @error('days') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('days')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">{{ __('Notes') }}</label>
                             <textarea class="form-control" wire:model.defer="notes"></textarea>
-                            @error('notes') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('notes')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             wire:click="$set('showModal', false)">{{ __('Cancel') }}</button>
+
                         <button type="submit" class="btn btn-primary">{{ $isEdit ? __('Update') : __('Save') }}</button>
                     </div>
                 </form>

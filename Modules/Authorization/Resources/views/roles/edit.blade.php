@@ -10,7 +10,7 @@
         ],
     ])
 
-    <div class="container">
+    <div class="">
         <div class="card">
             <div class="card-body">
                 <form method="POST" action="{{ route('roles.update', $role->id) }}">

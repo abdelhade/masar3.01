@@ -83,6 +83,7 @@ new class extends Component {
 <div class="container-fluid">
 
     <!-- Search and Create Button -->
+
     <div class="row mb-3">
         <div class="col-lg-3">
             @can('البحث عن المعدلات')
@@ -104,16 +105,20 @@ new class extends Component {
                 @endcan
             </div>
         </div>
+
+
     </div>
 
     <!-- KPIs List -->
     <div class="row">
         <div class="col-12">
+
             <div class="card">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-0">
-                            <thead>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('Name') }}</th>
@@ -128,6 +133,30 @@ new class extends Component {
                             <tbody>
                                 @forelse($kpis as $kpi)
                                     <tr>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $kpi->id }}
+                                        </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $kpi->name }}
+                                        </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $kpi->description }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $kpi->created_at->format('Y-m-d') }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{-- @can('update', $kpi) --}}
+                                            <button wire:click="edit({{ $kpi->id }})"
+                                                class="btn btn-success btn-icon-square-sm me-2" data-bs-toggle="modal"
+                                                data-bs-target="#kpiFormModal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            {{-- @endcan --}}
+                                            {{-- @can('delete', $kpi) --}}
+                                            <button wire:click="delete({{ $kpi->id }})"
+                                                class="btn btn-danger btn-icon-square-sm"
+                                                onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {{-- @endcan --}}
+                                        </td>
                                         <td>{{ $kpi->id }}</td>
                                         <td>{{ $kpi->name }}</td>
                                         <td>{{ $kpi->description }}</td>
@@ -135,13 +164,15 @@ new class extends Component {
                                         @can('إجراء العمليات على المعدلات')
                                             <td>
                                                 @can('تعديل المعدلات')
-                                                    <button wire:click="edit({{ $kpi->id }})" class="btn btn-sm btn-info me-2"
-                                                        data-bs-toggle="modal" data-bs-target="#kpiFormModal">
+                                                    <button wire:click="edit({{ $kpi->id }})"
+                                                        class="btn btn-sm btn-info me-2" data-bs-toggle="modal"
+                                                        data-bs-target="#kpiFormModal">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                 @endcan
                                                 @can('حذف المعدلات')
-                                                    <button wire:click="delete({{ $kpi->id }})" class="btn btn-sm btn-danger"
+                                                    <button wire:click="delete({{ $kpi->id }})"
+                                                        class="btn btn-sm btn-danger"
                                                         onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -152,7 +183,13 @@ new class extends Component {
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">{{ __('No KPIs found') }}</td>
+                                        <td colspan="5" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                                لا توجد بيانات
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -190,8 +227,8 @@ new class extends Component {
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">{{ __('Description') }}</label>
-                            <textarea wire:model="description"
-                                class="form-control @error('description') is-invalid @enderror" id="description"
+
+                            <textarea wire:model="description" class="form-control @error('description') is-invalid @enderror" id="description"
                                 rows="3"></textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -226,25 +263,26 @@ new class extends Component {
 </div>
 
 @script
-<script>
-    $wire.on('kpi-created', () => {
-        bootstrap.Modal.getInstance(document.getElementById('kpiFormModal')).hide();
-        showToast('{{ __("KPI created successfully") }}');
-    });
+    <script>
+        $wire.on('kpi-created', () => {
+            bootstrap.Modal.getInstance(document.getElementById('kpiFormModal')).hide();
+            showToast('{{ __('KPI created successfully') }}');
+        });
 
-    $wire.on('kpi-updated', () => {
-        bootstrap.Modal.getInstance(document.getElementById('kpiFormModal')).hide();
-        showToast('{{ __("KPI updated successfully") }}');
-    });
+        $wire.on('kpi-updated', () => {
+            bootstrap.Modal.getInstance(document.getElementById('kpiFormModal')).hide();
+            showToast('{{ __('KPI updated successfully') }}');
+        });
 
-    $wire.on('kpi-deleted', () => {
-        showToast('{{ __("KPI deleted successfully") }}');
-    });
+        $wire.on('kpi-deleted', () => {
+            showToast('{{ __('KPI deleted successfully') }}');
+        });
 
-    function showToast(message) {
-        const toast = new bootstrap.Toast(document.getElementById('successToast'));
-        document.querySelector('#successToast .toast-body').textContent = message;
-        toast.show();
-    }
-</script>
+
+        function showToast(message) {
+            const toast = new bootstrap.Toast(document.getElementById('successToast'));
+            document.querySelector('#successToast .toast-body').textContent = message;
+            toast.show();
+        }
+    </script>
 @endscript

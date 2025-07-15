@@ -62,7 +62,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات مضافة حتى الآن
+                                               لا توجد بيانات 
                                             </div>
                                         </td>
                                     </tr>

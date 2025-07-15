@@ -1,6 +1,15 @@
 @extends('admin.dashboard')
 
 @section('content')
+    @include('components.breadcrumb', [
+        'title' => __('تعديل حساب'),
+        'items' => [
+            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
+            ['label' => __('العملاء'), 'url' => route('clients.index')],
+            ['label' => __('تعديل')],
+        ],
+    ])
+
     <div class="content-wrapper">
         <section class="content-header">
             <div class="container-fluid">
@@ -12,12 +21,13 @@
                         @method('PUT')
                         <input type="hidden" name="id" value="{{ $account->id }}">
                         <input type="hidden" name="q" value="{{ $parent }}">
+
                         <div class="card card-info">
                             <div class="card-header">
                                 <h3>تعديل حساب</h3>
                             </div>
-                            <div class="card-body">
 
+                            <div class="card-body">
                                 @if ($errors->any())
                                     <div class="alert alert-danger">
                                         <ul>
@@ -29,27 +39,26 @@
                                 @endif
 
                                 <div class="row">
-                                    <div class="col col-3">
+                                    <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="code">الكود</label><span class="text-danger">*</span>
+                                            <label for="code">الكود <span class="text-danger">*</span></label>
                                             <input required readonly class="form-control font-bold" type="text"
                                                 name="code" value="{{ $account->code }}" id="code">
                                         </div>
                                     </div>
-                                    <div class="col">
+
+                                    <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="aname">الاسم</label><span class="text-danger">*</span>
-                                            <input required class="form-control font-bold frst" type="text"
-                                                name="aname" value="{{ $account->aname }}" id="frst">
+                                            <label for="aname">الاسم <span class="text-danger">*</span></label>
+                                            <input required class="form-control font-bold" type="text" name="aname"
+                                                value="{{ $account->aname }}" id="frst">
                                             <div id="resaname"></div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="row">
-                                    <div class="col col-4">
+                                    <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="is_basic">نوع الحساب</label><span class="text-danger">*</span>
+                                            <label for="is_basic">نوع الحساب <span class="text-danger">*</span></label>
                                             <select class="form-control font-bold" name="is_basic" id="is_basic">
                                                 <option value="1" {{ $account->is_basic == 1 ? 'selected' : '' }}>اساسي
                                                 </option>
@@ -58,9 +67,12 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="parent_id">يتبع ل</label><span class="text-danger">*</span>
+                                            <label for="parent_id">يتبع ل <span class="text-danger">*</span></label>
                                             <select class="form-control font-bold" name="parent_id" id="parent_id">
                                                 @foreach ($resacs as $rowacs)
                                                     <option value="{{ $rowacs->id }}"
@@ -71,17 +83,16 @@
                                             </select>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="row">
-                                    <div class="col col-4">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="phone">تليفون</label>
                                             <input class="form-control font-bold" type="text" name="phone"
                                                 id="phone" value="{{ $account->phone }}">
                                         </div>
                                     </div>
-                                    <div class="col">
+
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="address">العنوان</label>
                                             <input class="form-control font-bold" type="text" name="address"
@@ -91,61 +102,55 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col">
-                                        <div class="row">
-                                            <div class="col">
-                                                <div class="form-group">
-                                                    <label for="is_stock">مخزون</label>
-                                                    <input type="checkbox" name="is_stock" id="is_stock"
-                                                        {{ $account->is_stock ? 'checked' : '' }}>
-                                                </div>
-                                            </div>
-                                            <div class="col">
-                                                <div class="form-group">
-                                                    <label for="secret">حساب سري</label>
-                                                    <input type="checkbox" name="secret" id="secret"
-                                                        {{ $account->secret ? 'checked' : '' }}>
-                                                </div>
-                                            </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="is_stock">مخزون</label><br>
+                                            <input type="checkbox" name="is_stock" id="is_stock"
+                                                {{ $account->is_stock ? 'checked' : '' }}>
                                         </div>
                                     </div>
 
-                                    <div class="col">
+                                    <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="is_fund">حساب صندوق</label>
+                                            <label for="secret">حساب سري</label><br>
+                                            <input type="checkbox" name="secret" id="secret"
+                                                {{ $account->secret ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="is_fund">حساب صندوق</label><br>
                                             <input type="checkbox" name="is_fund" id="is_fund"
                                                 {{ $account->is_fund ? 'checked' : '' }}>
                                         </div>
                                     </div>
 
-                                    <div class="col">
+                                    <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="rentable">أصل قابل للتأجير</label>
+                                            <label for="rentable">أصل قابل للتأجير</label><br>
                                             <input type="checkbox" name="rentable" id="rentable"
                                                 {{ $account->rentable ? 'checked' : '' }}>
                                         </div>
                                     </div>
-                                </div>
 
-                                @if ($parent == 44)
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label for="employees_expensses">حساب رواتب للموظفين </label>
-                                            <input type="checkbox" name="employees_expensses" id="employees_expensses"
-                                                {{ $account->employees_expensses ? 'checked' : '' }}>
+                                    @if ($parent == 44)
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="employees_expensses">حساب رواتب للموظفين</label><br>
+                                                <input type="checkbox" name="employees_expensses" id="employees_expensses"
+                                                    {{ $account->employees_expensses ? 'checked' : '' }}>
+                                            </div>
                                         </div>
-                                    </div>
-                                @endif
+                                    @endif
+                                </div>
                             </div>
+
                             <div class="card-footer">
-                                <div class="row">
-                                    <div class="col">
-                                        <button class="btn btn-success btn-block" type="submit">تحديث</button>
-                                    </div>
-                                    <div class="col">
-                                        <a href="{{ route('accounts.index') }}"
-                                            class="btn btn-secondary btn-block">رجوع</a>
-                                    </div>
+                                <div class="d-flex justify-content-start">
+                                    <button class="btn btn-success btn-block m-1" type="submit">تحديث</button>
+                                    <a href="{{ route('accounts.index') }}"
+                                        class="btn btn-secondary btn-block m-1">رجوع</a>
                                 </div>
                             </div>
                         </div>
@@ -155,7 +160,7 @@
         </section>
     </div>
 
-    {{-- <script>
+    <script>
         $(document).ready(function() {
             $('#frst').on('keyup', function() {
                 var itemId = $(this).val();
@@ -171,10 +176,10 @@
                     },
                     error: function() {
                         $('#resaname').html(
-                            "<p class='text-danger'>خطأ في التحقق من الاسم</p>");
+                        "<p class='text-danger'>خطأ في التحقق من الاسم</p>");
                     }
                 });
             });
         });
-    </script> --}}
+    </script>
 @endsection

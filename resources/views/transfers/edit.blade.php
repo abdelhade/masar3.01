@@ -162,7 +162,7 @@
                             <button class="btn btn-primary" type="submit">تأكيد</button>
                         </div>
                         <div class="col">
-                            <button class="btn btn-default" type="reset">مسح</button>
+                            <button class="btn btn-danger" type="reset">مسح</button>
                         </div>
                     </div>
                 </div>

@@ -101,10 +101,12 @@ new class extends Component {
                     @endcan
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
+
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
                                     @can('عرض - تفاصيل سعر')
@@ -114,7 +116,7 @@ new class extends Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($prices as $price)
+                                @forelse ($prices as $price)
                                     <tr>
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $price->name }}</td>
@@ -123,17 +125,28 @@ new class extends Component {
                                             @can('تعديل - الأسعار')
                                             <a wire:click="edit({{ $price->id }})"><i
                                                     class="las la-pen text-success font-20"></i></a>
-                                            @endcan      
+                                            @endcan
                                             @can('حذف - الأسعار')
                                             <a wire:click="delete({{ $price->id }})"
                                                 onclick="confirm('هل أنت متأكد من حذف هذا السعر؟') || event.stopImmediatePropagation()">
                                                 <i class="las la-trash-alt text-danger font-20"></i>
-                                            </a> 
-                                           @endcan  
+                                            </a>
+                                           @endcan
                                         </td>
                                     @endcan
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                                لا توجد بيانات
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+
                             </tbody>
                         </table>
                     </div>

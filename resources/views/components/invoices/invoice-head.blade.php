@@ -13,14 +13,6 @@
             {{-- الحساب المتغير acc1 --}}
             <div class="col-lg-2">
                 <label class="form-label" style="font-size: 1em;">{{ $acc1Role }} (acc1)</label>
-                {{--
-                <select wire:model="acc1_id"
-                    class="form-control form-control-sm scnd @error('acc1_id') is-invalid @enderror"
-                    style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                    @foreach ($acc1List as $acc)
-                        <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
-                    @endforeach
-                </select> --}}
 
                 <x-tom-select :options="collect($acc1List)
                     ->map(fn($acc1List) => ['value' => $acc1List->id, 'text' => $acc1List->aname])
@@ -39,7 +31,8 @@
             {{-- المخزن ثابت acc2 --}}
             <div class="col-lg-2">
                 <label class="form-label" style="font-size: 1em;">{{ $acc2Role }} (المخزن)</label>
-                <select wire:model.live="acc2_id" class="form-control form-control-sm @error('acc2_id') is-invalid @enderror"
+                <select wire:model.live="acc2_id"
+                    class="form-control form-control-sm @error('acc2_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
                     @foreach ($acc2List as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>

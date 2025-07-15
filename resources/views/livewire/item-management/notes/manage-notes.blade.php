@@ -157,10 +157,12 @@ new class extends Component {
                     @endcan
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
+
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
                                     @can('عرض - المجموعات')
@@ -171,6 +173,18 @@ new class extends Component {
                             <tbody>
                                 @foreach ($notes as $note)
                                     <tr>
+                                        <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-family-cairo text-center fw-bold">{{ $note->name }}</td>
+                                        <td class="text-center">
+                                            <a wire:click="edit({{ $note->id }})"><i
+                                                    class="las la-pen btn btn-success font-20"></i></a>
+                                            <a wire:click="createNoteDetails({{ $note->id }})"><i
+                                                    class="las la-eye btn btn-info font-20"></i></a>
+                                            <a wire:click="delete({{ $note->id }})"
+                                                onclick="confirm('هل أنت متأكد من حذف هذا السعر؟') || event.stopImmediatePropagation()">
+                                                <i class="las la-trash-alt btn btn-danger font-20"></i>
+                                            </a>
+                                        </td>
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $note->name }}</td>
                                         @can('عرض - المجموعات')
@@ -233,8 +247,8 @@ new class extends Component {
     </div>
 
     <!-- Note Details Modal -->
-    <div class="modal fade" wire:ignore.self id="noteDetailsModal" tabindex="-1" aria-labelledby="noteDetailsModalLabel"
-        aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade" wire:ignore.self id="noteDetailsModal" tabindex="-1"
+        aria-labelledby="noteDetailsModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -272,9 +286,9 @@ new class extends Component {
                             <tbody>
                                 @forelse ($noteDetails as $noteDetail)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $noteDetail->name }}</td>
-                                        <td>
+                                        <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-family-cairo text-center fw-bold">{{ $noteDetail->name }}</td>
+                                        <td class="text-center">
                                             <a wire:click="editNoteDetails({{ $noteDetail->id }})"><i
                                                     class="las la-pen text-success font-20"></i></a>
                                             <a wire:click="deleteNoteDetails({{ $noteDetail->id }})"
@@ -284,8 +298,15 @@ new class extends Component {
                                         </td>
                                     </tr>
                                 @empty
+
                                     <tr>
-                                        <td colspan="3" class="text-center font-family-cairo fw-bold">لا يوجد تفاصيل</td>
+                                        <td colspan="3" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                               لا توجد بيانات
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -305,7 +326,8 @@ new class extends Component {
             Livewire.on('showModal', () => {
                 if (modalElement) {
                     // Always get or create the instance for the specific modal
-                    modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                    modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(
+                        modalElement);
                     modalInstance.show();
                 }
             });
@@ -313,7 +335,8 @@ new class extends Component {
             Livewire.on('showNoteDetailsModal', () => {
                 if (noteDetailsModalElement) {
                     // Always get or create the instance for the specific modal
-                    modalInstance = bootstrap.Modal.getInstance(noteDetailsModalElement) || new bootstrap.Modal(noteDetailsModalElement);
+                    modalInstance = bootstrap.Modal.getInstance(noteDetailsModalElement) || new bootstrap
+                        .Modal(noteDetailsModalElement);
                     modalInstance.show();
                 }
             });

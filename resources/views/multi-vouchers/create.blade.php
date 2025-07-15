@@ -42,93 +42,75 @@
         }
     </style>
 
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <h1 class="cake cake-flash cake-delay-2s">نوع العملية: {{ $ptext }}</h1>
-            </div>
-            <div class="card-body">
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="h4 font-weight-bold mb-0">نوع العملية: {{ $ptext }}</h3>
+        </div>
+        <div class="card-body">
+
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form id="myForm" action="{{ route('multi-vouchers.store') }}" method="POST">
+                @csrf
+
+                <input type="hidden" name="pro_type" value="{{ $pro_type }}">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>رقم الفاتورة</label>
+                            <input type="text" name="pro_id" class="form-control" value="{{ $newProId }}" readonly>
+                        </div>
                     </div>
-                @endif
 
-                <form id="myForm" action="{{ route('multi-vouchers.store') }}" method="POST">
-                    @csrf
-
-                    <input type="hidden" name="pro_type" value="{{$pro_type}}">
-                    <div class="row">
-
-                        <div class="col-sm-1">
-                            <div class="form-group">
-                                <label>رقم الفاتورة</label>
-                                <input type="text" name="pro_id" class="form-control" value="{{ $newProId }}" readonly>
-                            </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>SN</label>
+                            <input type="text" name="pro_serial" class="form-control">
                         </div>
+                    </div>
 
-                        <div class="col-sm-1">
-                            <div class="form-group">
-                                <label>SN</label>
-                                <input type="text" name="pro_serial" class="form-control" value="">
-                            </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>التاريخ</label>
+                            <input type="date" name="pro_date" class="form-control" value="{{ now()->format('Y-m-d') }}">
                         </div>
+                    </div>
+                </div>
 
-                        <div class="col-sm-2">
-                            <div class="form-group">
-                                <label>التاريخ</label>
-                                <input type="date" name="pro_date" class="form-control"
-                                    value="{{ now()->format('Y-m-d') }}">
-                            </div>
-                        </div>
+                @php
+                    $account1_types = ['32', '40', '41', '46', '47', '50', '53', '55'];
+                    $account2_types = ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54'];
+                @endphp
 
-
-
-
-                        @php
-                            $account1_types = ['32', '40', '41', '46', '47', '50', '53', '55'];
-                            $account2_types = ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54'];
-                        @endphp
-
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label>الحساب</label>
-                                @if (in_array($pro_type, $account1_types))
-                                    <select name="acc1[]" class="form-control" required>
-                                        @foreach ($accounts1 as $acc1)
-                                            <option value="{{ $acc1->id }}">
-                                                {{ $acc1->code }} _ {{ $acc1->aname }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @elseif (in_array($pro_type, $account2_types))
-                                    <select name="acc2[]" class="form-control" required>
-                                        @foreach ($accounts2 as $acc2)
-                                            <option value="{{ $acc2->id }}">
-                                                {{ $acc2->code }} _ {{ $acc2->aname }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @endif
-
-                            </div>
-                        </div>
-
-
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label>الموظف</label>
-                                <select name="emp_id" class="form-control" required>
-                                    @foreach ($employees as $emp)
-                                        <option value="{{ $emp->id }}">
-                                            {{ $emp->code }} _ {{ $emp->aname }}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>الحساب</label>
+                            @if (in_array($pro_type, $account1_types))
+                                <select name="acc1[]" class="form-control" required>
+                                    @foreach ($accounts1 as $acc1)
+                                        <option value="{{ $acc1->id }}">{{ $acc1->code }} _ {{ $acc1->aname }}
                                         </option>
                                     @endforeach
                                 </select>
+                            @elseif (in_array($pro_type, $account2_types))
+                                <select name="acc2[]" class="form-control" required>
+                                    @foreach ($accounts2 as $acc2)
+                                        <option value="{{ $acc2->id }}">{{ $acc2->code }} _ {{ $acc2->aname }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+
                             </div>
                         </div>
 
@@ -144,68 +126,85 @@
                         </div>
                     </div>
 
-
-                    <div class="table-responsive mt-3">
-                        <table class="table table-bordered" id="entriesTable">
-                            <thead>
-                                <tr>
-                                    <th>المبلغ</th>
-                                    <th>الحساب</th>
-                                    <th>ملاحظات</th>
-                                    <th>إجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01"
-                                            value="0"></td>
-                                    <td>
-                                        @if (in_array($pro_type, $account2_types))
-                                            <select name="acc1[]" class="form-control" required>
-                                                <option value=""> __ اختر حساب __</option>
-                                                @foreach ($accounts1 as $acc1)
-                                                    <option value="{{ $acc1->id }}">
-                                                        {{ $acc1->code }} _ {{ $acc1->aname }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        @elseif (in_array($pro_type, $account1_types))
-                                            <select name="acc2[]" class="form-control" required>
-                                                <option value=""> __ اختر حساب __</option>
-                                                @foreach ($accounts2 as $acc2)
-                                                    <option value="{{ $acc2->id }}">
-                                                        {{ $acc2->code }} _ {{ $acc2->aname }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        @endif
-                                    </td>
-                                    <td><input type="text" name="note[]" class="form-control"></td>
-                                    <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div class="mt-2 text-right">
-                            <strong>إجمالي المبلغ: <span id="debitTotal">0.00</span></strong>
-                        </div>
-                        <button type="button" class="btn btn-success mt-2" id="addRow">إضافة سطر</button>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col">
-                            <div class="form-group">
-                                <label>ملاحظات عامة</label>
-                                <input type="text" name="info" class="form-control">
-                            </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>الموظف</label>
+                            <select name="emp_id" class="form-control" required>
+                                @foreach ($employees as $emp)
+                                    <option value="{{ $emp->id }}">{{ $emp->code }} _ {{ $emp->aname }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg btn-block mt-3">حفظ</button>
-                </form>
-            </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>البيان</label>
+                            <input name="details" type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table id="entriesTable" class="table table-striped table-bordered mb-0" style="min-width: 1200px;">
+                        <thead class="table-light text-center align-middle">
+                            <tr>
+                                <th>المبلغ</th>
+                                <th>الحساب</th>
+                                <th>ملاحظات</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01"
+                                        value="0"></td>
+                                <td>
+                                    @if (in_array($pro_type, $account2_types))
+                                        <select name="acc1[]" class="form-control" required>
+                                            <option value="">__ اختر حساب __</option>
+                                            @foreach ($accounts1 as $acc1)
+                                                <option value="{{ $acc1->id }}">{{ $acc1->code }} _
+                                                    {{ $acc1->aname }}</option>
+                                            @endforeach
+                                        </select>
+                                    @elseif (in_array($pro_type, $account1_types))
+                                        <select name="acc2[]" class="form-control" required>
+                                            <option value="">__ اختر حساب __</option>
+                                            @foreach ($accounts2 as $acc2)
+                                                <option value="{{ $acc2->id }}">{{ $acc2->code }} _
+                                                    {{ $acc2->aname }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                </td>
+                                <td><input type="text" name="note[]" class="form-control"></td>
+                                <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="mt-2 text-right">
+                        <strong>إجمالي المبلغ: <span id="debitTotal">0.00</span></strong>
+                    </div>
+                    <button type="button" class="btn btn-success mt-2" id="addRow">إضافة سطر</button>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>ملاحظات عامة</label>
+                            <input type="text" name="info" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block mt-3">حفظ</button>
+            </form>
         </div>
     </div>
+
     <script>
         document.getElementById('myForm').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {

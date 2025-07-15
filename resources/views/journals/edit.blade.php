@@ -22,7 +22,7 @@
                     @method('PUT')
 
                     <input type="hidden" name="pro_type" value="7">
-              
+
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
@@ -82,9 +82,10 @@
                     </div>
 
                     <!-- جدول الحسابات -->
-                    <div class="table-responsive">
-                        <table class="table table-hoverable table-bordered">
-                            <thead>
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
+
                                 <tr>
                                     <th width="15%">مدين</th>
                                     <th width="15%">دائن</th>
@@ -94,8 +95,9 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><input type="number" required name="debit" value="{{ old('debit', $journal->pro_value) }}"
-                                            class="form-control debit" step="0.01"></td>
+                                    <td><input type="number" required name="debit"
+                                            value="{{ old('debit', $journal->pro_value) }}" class="form-control debit"
+                                            step="0.01"></td>
                                     <td></td>
                                     <td>
                                         <select class="form-control" name="acc1" required>
@@ -115,8 +117,10 @@
                                 <tr>
                                     <td></td>
                                     <td>
-                                        <input type="number" name="credit" value="{{ old('debit', $journal->pro_value) }}"
-                                            class="form-control credit" step="0.01"></td>
+                                        <input type="number" name="credit"
+                                            value="{{ old('debit', $journal->pro_value) }}" class="form-control credit"
+                                            step="0.01">
+                                    </td>
                                     <td>
                                         <select class="form-control" name="acc2" required>
                                             <option value="">اختر حساب</option>
@@ -131,7 +135,8 @@
 
                                     <td>
                                         <input type="text" name="info3" class="form-control"
-                                            value="{{ old('info3', $journal->info3) }}"></td>
+                                            value="{{ old('info3', $journal->info3) }}">
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -179,51 +184,51 @@
 @endsection
 
 @section('scripts')
-<script>
-    $(function() {
-        // جمع المدين والدائن وعرض الفرق
-        function calculateTotals() {
-            let debitTotal = 0,
-                creditTotal = 0;
-            $('.debit').each(function() {
-                debitTotal += parseFloat($(this).val()) || 0;
-            });
-            $('.credit').each(function() {
-                creditTotal += parseFloat($(this).val()) || 0;
-            });
-            $('#debit_total').val(debitTotal.toFixed(2));
-            $('#credit_total').val(creditTotal.toFixed(2));
-            $('#difference').val((debitTotal - creditTotal).toFixed(2));
-        }
-        $('.debit, .credit').on('focusout', calculateTotals);
-
-        // منع الحفظ إذا لم يتوازن القيد
-        $('form').on('submit', function(e) {
-            if ($('#difference').val() != 0) {
-                alert('يجب أن يتوازن القيد (مدين = دائن)');
-                e.preventDefault();
+    <script>
+        $(function() {
+            // جمع المدين والدائن وعرض الفرق
+            function calculateTotals() {
+                let debitTotal = 0,
+                    creditTotal = 0;
+                $('.debit').each(function() {
+                    debitTotal += parseFloat($(this).val()) || 0;
+                });
+                $('.credit').each(function() {
+                    creditTotal += parseFloat($(this).val()) || 0;
+                });
+                $('#debit_total').val(debitTotal.toFixed(2));
+                $('#credit_total').val(creditTotal.toFixed(2));
+                $('#difference').val((debitTotal - creditTotal).toFixed(2));
             }
-        });
+            $('.debit, .credit').on('focusout', calculateTotals);
 
-        // منع تعبئة المدين والدائن في نفس الصف
-        function preventBoth(row) {
-            row.find('.debit').on('input', function() {
-                if (+this.value > 0) row.find('.credit').val('0.00');
-                calculateTotals();
+            // منع الحفظ إذا لم يتوازن القيد
+            $('form').on('submit', function(e) {
+                if ($('#difference').val() != 0) {
+                    alert('يجب أن يتوازن القيد (مدين = دائن)');
+                    e.preventDefault();
+                }
             });
-            row.find('.credit').on('input', function() {
-                if (+this.value > 0) row.find('.debit').val('0.00');
-                calculateTotals();
+
+            // منع تعبئة المدين والدائن في نفس الصف
+            function preventBoth(row) {
+                row.find('.debit').on('input', function() {
+                    if (+this.value > 0) row.find('.credit').val('0.00');
+                    calculateTotals();
+                });
+                row.find('.credit').on('input', function() {
+                    if (+this.value > 0) row.find('.debit').val('0.00');
+                    calculateTotals();
+                });
+            }
+
+            // تطبيق preventBoth على كل صف
+            $('table tbody tr').each(function() {
+                preventBoth($(this));
             });
-        }
 
-        // تطبيق preventBoth على كل صف
-        $('table tbody tr').each(function() {
-            preventBoth($(this));
+            // حساب الإجماليات عند تحميل الصفحة
+            calculateTotals();
         });
-
-        // حساب الإجماليات عند تحميل الصفحة
-        calculateTotals();
-    });
-</script>
+    </script>
 @endsection

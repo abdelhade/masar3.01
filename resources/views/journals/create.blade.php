@@ -1,159 +1,193 @@
 @extends('admin.dashboard')
 
 @section('content')
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <h1 class="cake cake-flash">قيد يومية</h1>
-            </div>
-            <div class="card-body">
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
 
-                <form id="myForm" action="{{ route('journals.store') }}" method="POST">
-                    @csrf
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
 
-                    <input type="text" hidden name="pro_type" value="7">
+    label {
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        display: inline-block;
+    }
 
+    .form-control {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.95rem;
+        border-radius: 0.4rem;
+    }
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-control">
-                                <label for="pro_date">التاريخ</label>
-                                <input type="date" class="form-control" name="pro_date"
-                                    value="{{ now()->format('Y-m-d') }}">
-                            </div>
-                        </div>
+    .card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
 
-                        <div class="col-md-2">
-                            <div class="form-control">
-                                <label for="pro_num">الرقم الدفتري</label>
-                                <input type="text" class="form-control" name="pro_num" value=""
-                                    placeholder="EX:7645">
-                            </div>
-                        </div>
+    .card-footer {
+        padding: 1.5rem 1rem;
+        text-align: center;
+    }
 
+   
+    .card {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
 
-                        <div class="col-md-4">
-                            <div class="form-control">
-                                <label for="emp_id">الموظف</label>
-                                <select class="form-control" name="emp_id" id="" required>
-                                    <option value="">اختر حساب</option>
-                                    @foreach ($employees as $emp)
-                                        <option value="{{ $emp->id }}">{{ $emp->code }} _
-                                            {{ $emp->aname }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+    .row + .row {
+        margin-top: 1rem;
+    }
 
-                        <div class="col-md-3">
-                            <div class="form-control">
-                                <label for="cost_center">مركز التكلفة</label>
-                                <select class="form-control" name="cost_center" id="" required>
-                                    <option value="">اختر مركز تكلفة</option>
-                                    @foreach ($cost_centers as $cost)
-                                        <option value="{{ $cost->id }}">{{ $cost->cname }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+    .table thead th {
+       
+        vertical-align: middle;
+        text-align: center;
+    }
 
+    .table td, .table th {
+        vertical-align: middle;
+    }
 
-                    </div>
+    .table input, .table select {
+        min-width: 100px;
+    }
+</style>
 
-
-                    <div class="row">
-                        <div class="col-md-9">
-                            <div class="form-control">
-                                <label for="details">بيان</label>
-                                <input name="details" type="text" name="details" class="form-control frst">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hoverable table-bordered" style="border: 0 solid white">
-                            <thead>
-                                <tr>
-                                    <th width="15%">مدين</th>
-                                    <th width="15%">دائن</th>
-                                    <th width="30%">الحساب</th>
-                                    <th width="40%">ملاحظات</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td><input type="number" required name="debit" placeholder="Debit" value="0.00"
-                                            class="form-control debit" id="debit" step="0.01"></td>
-                                    <td></td>
-                                    <td>
-                                        <select class="form-control select2 " name="acc1" id="" required>
-                                            <option value="">اختر حساب</option>
-                                            @foreach ($accounts as $acc)
-                                                <option value="{{ $acc->id }}">{{ $acc->code }} _
-                                                    {{ $acc->aname }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td><input type="text" name="info2" class="form-control" id=""></td>
-                                </tr>
-
-                                <tr>
-                                    <td></td>
-                                    <td><input type="number" name="credit" value="0.00" class="form-control credit"
-                                            id="credit" step="0.01"></td>
-                                    <td>
-
-                                        <select class="form-control" name="acc2" id="" required>
-                                            <option value="">اختر حساب</option>
-                                            @foreach ($accounts as $acc)
-                                                <option value="{{ $acc->id }}">{{ $acc->code }} _
-                                                    {{ $acc->aname }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td><input type="text" name="info3" class="form-control" id=""></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-control">
-                                <label for="">ملاحظات عامة</label>
-                                <input type="text" name="info" id="" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">حفظ</button>
-
-                </form>
-            </div>
+<div class="">
+    <div class="card mt-3">
+        <div class="card-header">
+            <h1 class="card-title">قيد يومية</h1>
         </div>
+        <div class="card-body">
 
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form id="myForm" action="{{ route('journals.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="pro_type" value="7">
+
+                {{-- بيانات القيد --}}
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>التاريخ</label>
+                        <input type="date" name="pro_date" class="form-control" value="{{ now()->format('Y-m-d') }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>الرقم الدفتري</label>
+                        <input type="text" name="pro_num" class="form-control" placeholder="EX:7645">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>الموظف</label>
+                        <select name="emp_id" class="form-control" required>
+                            <option value="">اختر موظف</option>
+                            @foreach ($employees as $emp)
+                                <option value="{{ $emp->id }}">{{ $emp->code }} - {{ $emp->aname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>مركز التكلفة</label>
+                        <select name="cost_center" class="form-control" required>
+                            <option value="">اختر مركز تكلفة</option>
+                            @foreach ($cost_centers as $cost)
+                                <option value="{{ $cost->id }}">{{ $cost->cname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>بيان</label>
+                        <input type="text" name="details" class="form-control">
+                    </div>
+                </div>
+
+                {{-- الجدول --}}
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th width="15%">مدين</th>
+                                <th width="15%">دائن</th>
+                                <th width="30%">الحساب</th>
+                                <th width="40%">ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="number" name="debit" class="form-control debit" id="debit" value="0.00" step="0.01" required>
+                                </td>
+                                <td></td>
+                                <td>
+                                    <select name="acc1" class="form-control" required>
+                                        <option value="">اختر حساب</option>
+                                        @foreach ($accounts as $acc)
+                                            <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->aname }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td><input type="text" name="info2" class="form-control"></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <input type="number" name="credit" class="form-control credit" id="credit" value="0.00" step="0.01">
+                                </td>
+                                <td>
+                                    <select name="acc2" class="form-control" required>
+                                        <option value="">اختر حساب</option>
+                                        @foreach ($accounts as $acc)
+                                            <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->aname }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td><input type="text" name="info3" class="form-control"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row my-4">
+                    <div class="col">
+                        <label>ملاحظات عامة</label>
+                        <input type="text" name="info" class="form-control">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-start">
+                    <button type="submit" class="btn btn-primary m-1">حفظ</button>
+                    <button type="reset" class="btn btn-danger m-1">إلغاء</button>
+                </div>
+
+            </form>
+        </div>
     </div>
+</div>
 
+<script>
+    document.getElementById("myForm").addEventListener("submit", function(e) {
+        const debit = +document.getElementById("debit").value;
+        const credit = +document.getElementById("credit").value;
 
-    <script>
-        document.getElementById("myForm").addEventListener("submit", function(e) {
-            const debit = +document.getElementById("debit").value;
-            const credit = +document.getElementById("credit").value;
+        if (debit !== credit) {
+            e.preventDefault();
+            alert("يجب أن تكون القيمة المدينة مساوية للقيمة الدائنة.");
+        }
+    });
+</script>
 
-            if (debit !== credit) {
-                e.preventDefault(); // منع الإرسال
-                alert("يجب أن تكون القيمة المدينة مساوية للقيمة الدائنة.");
-            }
-        });
-    </script>
 @endsection

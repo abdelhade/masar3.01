@@ -21,7 +21,7 @@
         <section class="content">
             <form action="{{ route('discounts.store') }}" method="post">
                 @csrf
-                <div class="card card-info col-md-12 container">
+                <div class="card bg-white col-md-12 container">
 
                     @php
                         $titles = [

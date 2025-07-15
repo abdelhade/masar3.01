@@ -9,10 +9,11 @@
     <div class="card">
 
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr class="journal_tr">
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table class="table table-striped mb-0" style="min-width: 1200px;">
+                    <thead class="table-light text-center align-middle">
+
+                        <tr class="journal_tr text-center">
                             <th>م</th>
                             <th>رقم القيد</th>
                             <th>مدين</th>
@@ -25,31 +26,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($journalHeads as $i => $head)
-                  
+                        @forelse ($journalHeads as $i => $head)
                             @foreach ($head->dets as $j => $detail)
                                 <tr class="">
                                     @if ($j == 0)
-                                        <td rowspan="{{ $head->dets->count() }}">{{ $i + 1 }}</td>
-                                        <td rowspan="{{ $head->dets->count() }}">{{ $head->journal_id }}</td>
+                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $i + 1 }}</td>
+                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->journal_id }}</td>
                                     @endif
 
-                                    <td>{{ $detail->debit }}</td>
-                                    <td>{{ $detail->credit }}</td>
-                                    <td>{{ $detail->accountHead->aname ?? '-' }}</td>
+                                    <td  class="font-family-cairo fw-bold font-14 text-center">{{ $detail->debit }}</td>
+                                    <td  class="font-family-cairo fw-bold font-14 text-center">{{ $detail->credit }}</td>
+                                    <td  class="font-family-cairo fw-bold font-14 text-center">{{ $detail->accountHead->aname ?? '-' }}</td>
 
                                     @if ($j == 0)
-                                        <td rowspan="{{ $head->dets->count() }}">{{ $head->details }}</td>
-                                        <td rowspan="{{ $head->dets->count() }}">{{ $head->oper->type->ptext }}</td>
-                                        <td rowspan="{{ $head->dets->count() }}">{{ $head->date }}</td>
+                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->details }}</td>
+                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->oper->type->ptext }}</td>
+                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->date }}</td>
                                     @endif
                                 </tr>
                             @endforeach
 
+                        @empty
                             <tr>
-                                <td colspan="8" style="background: #bcbcbc; height: 1px;"></td>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
+                                        <i class="las la-info-circle me-2"></i>
+                                        لا توجد بيانات
+                                    </div>
+                                </td>
                             </tr>
-                        @endforeach
+                        @endforelse
 
                     </tbody>
 

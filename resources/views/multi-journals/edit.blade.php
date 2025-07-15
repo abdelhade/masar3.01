@@ -56,14 +56,15 @@
             <hr>
             <h5>تفاصيل اليومية</h5>
 
-            <table class="table table-bordered" id="entries">
-                <thead>
+            <table class="table table-striped mb-0" style="min-width: 1200px;">
+                <thead class="table-light text-center align-middle">
+
                     <tr>
-                        <th>الحساب</th>
-                        <th>مدين</th>
-                        <th>دائن</th>
-                        <th>ملاحظة</th>
-                        <th>إجراء</th>
+                        <th  class="font-family-cairo fw-bold font-14 text-center">الحساب</th>
+                        <th  class="font-family-cairo fw-bold font-14 text-center">مدين</th>
+                        <th  class="font-family-cairo fw-bold font-14 text-center">دائن</th>
+                        <th  class="font-family-cairo fw-bold font-14 text-center">ملاحظة</th>
+                        <th  class="font-family-cairo fw-bold font-14 text-center">إجراء</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +85,7 @@
 
                     @foreach ($lines as $i => $line)
                         <tr>
-                            <td>
+                            <td class="text-center">
                                 <select name="account_id[]" class="form-control" required>
                                     <option value="">-- اختر --</option>
                                     @foreach ($accounts as $account)
@@ -94,12 +95,12 @@
                                     @endforeach
                                 </select>
                             </td>
-                            <td><input type="number" step="0.01" name="debit[]" class="form-control"
+                            <td class="text-center"><input type="number" step="0.01" name="debit[]" class="form-control"
                                     value="{{ $line['debit'] }}"></td>
-                            <td><input type="number" step="0.01" name="credit[]" class="form-control"
+                            <td class="text-center"><input type="number" step="0.01" name="credit[]" class="form-control"
                                     value="{{ $line['credit'] }}"></td>
-                            <td><input type="text" name="note[]" class="form-control" value="{{ $line['note'] }}"></td>
-                            <td><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
+                            <td class="text-center"><input type="text" name="note[]" class="form-control" value="{{ $line['note'] }}"></td>
+                            <td class="text-center"><button type="button"  class="btn btn-danger btn-icon-square-sm remove-row">✖</button></td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -121,7 +122,7 @@
             const table = document.querySelector('#entries tbody');
             const row = document.createElement('tr');
             row.innerHTML = `
-            <td>
+            <td class="text-center">
                 <select name="account_id[]" class="form-control" required>
                     <option value="">-- اختر --</option>
                     @foreach ($accounts as $account)
@@ -129,10 +130,10 @@
                     @endforeach
                 </select>
             </td>
-            <td><input type="number" step="0.01" name="debit[]" class="form-control" value="0"></td>
-            <td><input type="number" step="0.01" name="credit[]" class="form-control" value="0"></td>
-            <td><input type="text" name="note[]" class="form-control"></td>
-            <td><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
+            <td class="text-center"><input type="number" step="0.01" name="debit[]" class="form-control" value="0"></td>
+            <td class="text-center"><input type="number" step="0.01" name="credit[]" class="form-control" value="0"></td>
+            <td class="text-center"><input type="text" name="note[]" class="form-control"></td>
+            <td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
         `;
             table.appendChild(row);
         });
