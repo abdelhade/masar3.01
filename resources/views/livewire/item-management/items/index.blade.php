@@ -171,15 +171,7 @@ new class extends Component {
             @endif
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-
-                    @can('أنشاء - الأصناف')
-                        <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
-                            {{ __('Add New') }}
-                            <i class="fas fa-plus me-2"></i>
-                        </a>
-                    @endcan
-                    @can('بحث - الأصناف ')
-
+                    {{-- @can('بحث الأصناف ') --}}
                         <div class="w-25">
                             <select class="form-select font-family-cairo fw-bold font-14"
                                 wire:model.live="selectedWarehouse" style="min-width: 105px;">
@@ -193,7 +185,7 @@ new class extends Component {
                             <input type="text" wire:model.live.debounce.300ms="search"
                                 class="form-control font-family-cairo" placeholder="بحث بالاسم أو الكود أو الباركود...">
                         </div>
-                    @endcan
+                    {{-- @endcan --}}
                 </div>
                 <div class="card-header">
                     <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">

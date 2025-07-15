@@ -215,6 +215,7 @@ class CreateInvoiceForm extends Component
         $vm = new ItemViewModel(null, $item, $unitId);
         $salePrices = $vm->getUnitSalePrices();
         $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
+
         $unitOptions = $vm->getUnitOptions();
 
         $availableUnits = collect($unitOptions)->map(function ($unit) {
@@ -230,6 +231,7 @@ class CreateInvoiceForm extends Component
             $salePrices = $vm->getUnitSalePrices();
             $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
         }
+
 
         // إضافة الصنف مع البيانات الكاملة
         $this->invoiceItems[] = [

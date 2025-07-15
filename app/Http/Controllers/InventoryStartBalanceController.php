@@ -18,7 +18,6 @@ class InventoryStartBalanceController extends Controller
 
     public function create(Request $request)
     {
-
         $stors =  AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '123%')
@@ -42,6 +41,8 @@ class InventoryStartBalanceController extends Controller
                 $item->opening_balance = $openingBalance;
                 return $item;
             });
+
+        $periodStart = PublicSetting::where('key', 'start_date')->value('value') ?? now()->toDateString();
 
         return view('inventory-start-balance.create', get_defined_vars());
     }
