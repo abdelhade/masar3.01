@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Auth};
+use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\{DB, Auth};
 use App\Http\Requests\CreatDiscountRequest;
 use App\Models\{AccHead, OperHead, JournalHead, JournalDetail};
 

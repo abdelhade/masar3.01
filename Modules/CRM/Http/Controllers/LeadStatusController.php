@@ -12,7 +12,7 @@ class LeadStatusController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view lead-status')->only(['index']);
+        // $this->middleware('can:view lead-status')->only(['index']);
     }
     /**
      * Display a listing of the resource.

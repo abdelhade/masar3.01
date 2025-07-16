@@ -6,12 +6,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            @can('إنشاء - حالات الفرص')
+            {{-- @can('إنشاء - حالات الفرص') --}}
             <a href="{{ route('lead-status.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                 اضافه جديده
                 <i class="fas fa-plus me-2"></i>
             </a>
-            @endcan
+            {{-- @endcan --}}
             <br>
             <br>
             <div class="card">
@@ -25,7 +25,7 @@
                                     <th>{{ __('اللون') }}</th>
                                     <th>{{ __('الترتيب') }}</th>
                                     @can('عرض - تفاصيل حالة فرصة')
-                                    <th>{{ __('العمليات') }}</th>
+                                        <th>{{ __('العمليات') }}</th>
                                     @endcan
                                 </tr>
                             </thead>
@@ -43,27 +43,27 @@
                                             <span>{{ $chance->color }}</span>
                                         </td>
                                         <td>{{ $chance->order_column }}</td>
-                                    @can('عرض - تفاصيل حالة فرصة')
+                                        {{-- @can('عرض - تفاصيل حالة فرصة') --}}
                                         <td>
                                             @can('تعديل - حالات الفرص')
-                                            <a class="btn btn-success btn-icon-square-sm"
-                                                href="{{ route('lead-status.edit', $chance->id) }}">
-                                                <i class="las la-edit"></i>
-                                            </a>
+                                                <a class="btn btn-success btn-icon-square-sm"
+                                                    href="{{ route('lead-status.edit', $chance->id) }}">
+                                                    <i class="las la-edit"></i>
+                                                </a>
                                             @endcan
                                             @can('حذف - حالات الفرص')
-                                            <form action="{{ route('lead-status.destroy', $chance->id) }}" method="POST"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                    <i class="las la-trash"></i>
-                                                </button>
-                                            </form>
+                                                <form action="{{ route('lead-status.destroy', $chance->id) }}" method="POST"
+                                                    style="display:inline-block;"
+                                                    onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                        <i class="las la-trash"></i>
+                                                    </button>
+                                                </form>
                                             @endcan
                                         </td>
-                                        @endcan
+                                        {{-- @endcan --}}
                                     </tr>
                                 @empty
                                     <tr>

@@ -1,5 +1,4 @@
 <div>
-
     @extends('admin.dashboard')
 
     @section('content')

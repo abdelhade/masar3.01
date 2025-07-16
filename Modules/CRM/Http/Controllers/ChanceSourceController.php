@@ -13,7 +13,7 @@ class ChanceSourceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:view chance-sources')->only(['index']);
+        // $this->middleware('can:view chance-sources')->only(['index']);
     }
 
     public function index()

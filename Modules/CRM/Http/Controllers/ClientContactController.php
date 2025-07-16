@@ -13,7 +13,7 @@ class ClientContactController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:view client-contacts')->only(['index']);
+        // $this->middleware('can:view client-contacts')->only(['index']);
     }
 
     public function index()

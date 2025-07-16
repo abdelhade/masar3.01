@@ -46,180 +46,76 @@
                                     <th class="font-family-cairo fw-bold font-14 text-center">{{ __('العمليات') }}</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @forelse ($discounts as $discount)
-                                    <tr>
-                                         <td class="font-family-cairo fw-bold font-14 text-center">
-                                            {{ $loop->iteration }}</td>
-                                            <td class="font-family-cairo fw-bold font-14 text-center">
-                                                <span
-                                                    class="badge
-=======
-[]                                        <th class="font-family-cairo
-                                                    fw-bold font-14 text-center">#</th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('نوع الخصم') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">
-                                                {{ __('قيمة الخصم') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">
-                                                {{ __('تاريخ السند') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('رقم السند') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">
-                                                {{ __('الحساب المدين') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">
-                                                {{ __('الحساب الدائن') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('ملاحظات') }}
-                                            </th>
-                                            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('العمليات') }}
-                                            </th>
 
-                                            <th>#</th>
-                                            <th>{{ __('نوع الخصم') }}</th>
-                                            <th>{{ __('قيمة الخصم') }}</th>
-                                            <th>{{ __('تاريخ السند') }}</th>
-                                            <th>{{ __('رقم السند') }}</th>
-                                            <th>{{ __('الحساب المدين') }}</th>
-                                            <th>{{ __('الحساب الدائن') }}</th>
-                                            <th>{{ __('ملاحظات') }}</th>
-                                            @can('عرض - تفاصيل خصم مسموح')
-                                                <th>{{ __('العمليات') }}</th>
-                                            @endcan
-                                    </tr>
-                                    </thead>
                             <tbody>
                                 @forelse ($discounts as $discount)
                                     <tr>
                                         <td class="font-family-cairo fw-bold font-14 text-center">{{ $loop->iteration }}
                                         </td>
                                         <td class="font-family-cairo fw-bold font-14 text-center">
-                                            <span
-                                                class="badge
->>>>>>> 5f2364a225466f2348c438885efbd2c2b8a0669c
+                                            <span class="badge">
+
                                                 @if ($discount->acc1 == 91 || $discount->acc2 == 91)
-bg-success text-dark
-@elseif($discount->acc1 == 97 || $discount->acc2 == 97)
-bg-warning text-dark
-@else
-bg-secondary
-@endif
-                                                text-uppercase">
-                                                <<<<<<< HEAD @if ($discount->acc1 == 91 || $discount->acc2 == 91)
+                                                    bg-success text-dark
+                                                @elseif($discount->acc1 == 97 || $discount->acc2 == 97)
+                                                    bg-warning text-dark
+                                                @else
+                                                    bg-secondary
+                                                @endif
+                                                @if ($discount->acc1 == 91 || $discount->acc2 == 91)
                                                     خصم مسموح به
                                                 @elseif($discount->acc1 == 97 || $discount->acc2 == 97)
                                                     خصم مكتسب
                                                 @else
                                                     -
-                                @endif
-                                </span>
-                                </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ $discount->pro_value }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ \Carbon\Carbon::parse($discount->pro_date)->format('Y-m-d') }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ $discount->pro_id }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ $discount->acc1Head->aname ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ $discount->acc2Head->aname ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->info }}
-                                </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
-                                    <a href="{{ route('discounts.edit', ['discount' => $discount->id, 'type' => $discount->acc1 == 97 ? 31 : 30]) }}"
-                                        class="btn btn-success btn-icon-square-sm">
-                                        <i class="las la-edit"></i>
-                                    </a>
+                                                @endif
+                                            </span>
+                                        </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $discount->pro_value }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ \Carbon\Carbon::parse($discount->pro_date)->format('Y-m-d') }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $discount->pro_id }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $discount->acc1Head->aname ?? '-' }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            {{ $discount->acc2Head->aname ?? '-' }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->info }}
+                                        </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            <a href="{{ route('discounts.edit', ['discount' => $discount->id, 'type' => $discount->acc1 == 97 ? 31 : 30]) }}"
+                                                class="btn btn-success btn-icon-square-sm">
+                                                <i class="las la-edit"></i>
+                                            </a>
 
 
-                                    <form action="{{ route('discounts.destroy', $discount->id) }}" method="POST"
-                                        style="display:inline-block;" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                            <i class="las la-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="13" class="text-center">
-                                        <div class="alert alert-info py-3 mb-0"
-                                            style="font-size: 1.2rem; font-weight: 500;">
-                                            <i class="las la-info-circle me-2"></i>
-                                            لا توجد بيانات
-                                        </div>
-                                    </td>
-                                </tr>
+                                            <form action="{{ route('discounts.destroy', $discount->id) }}" method="POST"
+                                                style="display:inline-block;"
+                                                onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                    <i class="las la-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="13" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                                لا توجد بيانات
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @endforelse
                             </tbody>
-                        </table>
-                        =======
-                        @if ($discount->acc1 == 91 || $discount->acc2 == 91)
-                            خصم مسموح به
-                        @elseif($discount->acc1 == 97 || $discount->acc2 == 97)
-                            خصم مكتسب
-                        @else
-                            -
-                        @endif
-                        </span>
-                        </td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->pro_value }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">
-                            {{ \Carbon\Carbon::parse($discount->pro_date)->format('Y-m-d') }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->pro_id }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->acc1Head->aname ?? '-' }}
-                        </td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->acc2Head->aname ?? '-' }}
-                        </td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->info }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">
-                        <td>{{ $discount->pro_value }}</td>
-                        <td>{{ \Carbon\Carbon::parse($discount->pro_date)->format('Y-m-d') }}</td>
-                        <td>{{ $discount->pro_id }}</td>
-                        <td>{{ $discount->acc1Head->aname ?? '-' }}</td>
-                        <td>{{ $discount->acc2Head->aname ?? '-' }}</td>
-                        <td>{{ $discount->info }}</td>
-                        @can('عرض - تفاصيل خصم مسموح')
-                            <td>
-                                @can('تعديل - قائمة الخصومات المسموح بها')
-                                    <a href="{{ route('discounts.edit', ['discount' => $discount->id, 'type' => $discount->acc1 == 97 ? 31 : 30]) }}"
-                                        class="btn btn-success btn-icon-square-sm">
-                                        <i class="las la-edit"></i>
-                                    </a>
-                                @endcan
-                                @can('حذف - قائمة الخصومات المسموح بها')
-                                    <form action="{{ route('discounts.destroy', $discount->id) }}" method="POST"
-                                        style="display:inline-block;" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                            <i class="las la-trash"></i>
-                                        </button>
-                                    </form>
-                                @endcan
-                            </td>
-                        @endcan
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="13" class="text-center">
-                                <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
-                                    <i class="las la-info-circle me-2"></i>
-                                    لا توجد بيانات
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                        </tbody>
+
                         </table>
                     </div>
-                    >>>>>>> 5f2364a225466f2348c438885efbd2c2b8a0669c
                 </div>
             </div>
             @endif
