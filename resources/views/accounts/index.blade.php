@@ -84,91 +84,19 @@
                     <div class="col">
                         <input class="form-control form-control-lg frst" type="text" id="itmsearch"
                             placeholder="بحث بالكود | اسم الحساب | ID">
-                        <div class="card-body">
+                       
                             @if (session('success'))
                                 <div class="alert alert-success cake cake-zoomIn ">
                                     {{ session('success') }}
                                 </div>
                             @endif
                             @if (session('error'))
-                                <div class="alert alert-danger cake cake-zoomIn ">
+                                <div class="alert alert-danger cake cake-zoomIn">
                                     {{ session('error') }}
                                 </div>
                             @endif
-                            <div class="table-responsive">
-                                <table id="myTable" class="display table table-hover table-strippedtable-sortable"
-                                    data-page-length='50'>
-                                    <thead>
-                                        <tr>
-                                            <th class="font-family-cairo fw-bold font-14">#</th>
-                                            <th class="font-family-cairo fw-bold font-14">الاسم</th>
-                                            <th class="font-family-cairo fw-bold font-14">الرصيد</th>
-                                            <th class="font-family-cairo fw-bold font-14">العنوان</th>
-                                            <th class="font-family-cairo fw-bold font-14">التليفون</th>
-                                            <th class="font-family-cairo fw-bold font-14">ID</th>
-                                            @canany(['إضافة العملاء', 'حذف العملاء'])
-                                                <th class="font-family-cairo fw-bold font-14">عمليات</th>
-                                            @endcanany
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($accounts as $index => $acc)
-                                            <tr>
-                                                <td class="font-family-cairo fw-bold font-14">{{ $index + 1 }}</td>
-                                                <td class="font-family-cairo fw-bold font-14">
-                                                    <form action="" method="post">
-                                                        @csrf
-                                                        <input type="hidden" name="acc_id" value="{{ $acc->id }}">
-                                                        <button
-                                                            class="btn btn-light btn-block font-family-cairo fw-bold font-14"
-                                                            type="submit">
-                                                            {{ $acc->code }} - {{ $acc->aname }}
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                                <td class="font-family-cairo fw-bold font-14">{{ $acc->balance }}</td>
-                                                <td class="font-family-cairo fw-bold font-14">{{ $acc->address }}</td>
-                                                <td class="font-family-cairo fw-bold font-14">{{ $acc->phone }}</td>
-                                                <td class="font-family-cairo fw-bold font-14">{{ $acc->id }}</td>
-                                                @canany(['إضافة العملاء', 'حذف العملاء'])
-                                                    <td x-show="">
-                                                        @can('تعديل العملاء')
-                                                            <button>
-                                                                <a href="{{ route('accounts.edit', $acc->id) }}"
-                                                                    class="text-primary font-16"><i class="las la-pen"></i></a>
-                                                            </button>
-                                                        @endcan
-                                                        @can('حذف العملاء')
-                                                            <form action="{{ route('accounts.destroy', $acc->id) }}" method="POST"
-                                                                style="display:inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button class="text-danger font-16"
-                                                                    onclick="return confirm('هل أنت متأكد؟')">
-                                                                    <i class="las la-trash-alt"></i>
-                                                                </button>
 
-                                                            </form>
-                                                        @endcan
-                                                    </td>
-                                                @endcanany
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                    {{-- <tfoot>
-                                <tr>
-                                    <th class="font-family-cairo fw-bold font-14">#</th>
-                                    <th class="font-family-cairo fw-bold font-14">الاسم</th>
-                                    <th class="font-family-cairo fw-bold font-14">الرصيد</th>
-                                    <th class="font-family-cairo fw-bold font-14">العنوان</th>
-                                    <th class="font-family-cairo fw-bold font-14">التليفون</th>
-                                    <th class="font-family-cairo fw-bold font-14">ID</th>
-                                    <th class="font-family-cairo fw-bold font-14">عمليات</th>
-                                </tr>
-                            </tfoot> --}}
-                                </table>
-                            </div>
-                        </div>
+                       
                     </div>
 
                     <div class="card-body">
