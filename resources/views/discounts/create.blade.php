@@ -1,4 +1,3 @@
-```blade
 @extends('admin.dashboard')
 @section('content')
 
@@ -17,19 +16,20 @@
             ['label' => __('إنشاء خصم')],
         ],
     ])
-    <div class="content-wrapper">
-        <section class="content">
+
+    <div class="container-fluid px-0">
+        <section class="content" style="width:100%">
             <form action="{{ route('discounts.store') }}" method="post">
                 @csrf
-                <div class="card bg-white col-md-12 container">
 
-                    @php
-                        $titles = [
-                            30 => 'خصم مسموح به',
-                            31 => 'خصم مكتسب',
-                        ];
-                    @endphp
+                @php
+                    $titles = [
+                        30 => 'خصم مسموح به',
+                        31 => 'خصم مكتسب',
+                    ];
+                @endphp
 
+                <div class="card bg-white w-100" style="max-width: 100%;">
                     <div class="card-header">
                         <h3 class="card-title fw-bold fs-2">
                             {{ $titles[$type] }}
@@ -41,17 +41,13 @@
                             <input type="hidden" name="type" value="{{ $type }}">
 
                             @if ($type == 30)
-                                {{-- acc2 ثابت --}}
                                 <input type="hidden" name="acc2" value="{{ $acc2Fixed->id }}">
-                                {{-- acc1 = العملاء --}}
                                 <div class="col-lg-4">
                                     <label>الحساب المدين (acc1 - العملاء)</label>
-                                    <select name="acc1" id="acc1" class="form-control" required
-                                        onchange="updateBalance()">
+                                    <select name="acc1" id="acc1" class="form-control" required onchange="updateBalance()">
                                         @foreach ($clientsAccounts as $acc)
                                             <option value="{{ $acc->id }}" data-balance="{{ $acc->balance }}"
                                                 {{ $loop->first ? 'selected' : '' }}>
-
                                                 {{ $acc->aname }} (الرصيد: {{ number_format($acc->balance) }})
                                             </option>
                                         @endforeach
@@ -68,14 +64,12 @@
                                         <span id="balance-after-discount" class="fw-bold text-success">0</span>
                                     </div>
                                 </div>
+
                             @elseif ($type == 31)
-                                {{-- acc1 ثابت --}}
                                 <input type="hidden" name="acc1" value="{{ $acc1Fixed->id }}">
-                                {{-- acc2 = الموردين --}}
                                 <div class="col-lg-4">
                                     <label>الحساب الدائن (acc2 - الموردين)</label>
-                                    <select name="acc2" id="acc2" class="form-control" required
-                                        onchange="updateBalance()">
+                                    <select name="acc2" id="acc2" class="form-control" required onchange="updateBalance()">
                                         @foreach ($suppliers as $acc)
                                             <option value="{{ $acc->id }}" data-balance="{{ $acc->balance }}"
                                                 {{ $loop->first ? 'selected' : '' }}>
@@ -101,9 +95,7 @@
                                         value="{{ old('pro_date', \Carbon\Carbon::now()->format('Y-m-d')) }}"
                                         class="form-control @error('pro_date') is-invalid @enderror">
                                     @error('pro_date')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
+                                        <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                                     @enderror
                                 </div>
                             </div>
@@ -133,25 +125,22 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-8">
+                            <div class="col-lg-12">
                                 <div class="form-group">
                                     <label for="info">{{ __('ملاحظات') }}</label>
-                                    <textarea type="text" name="info" class="form-control @error('info') is-invalid @enderror"></textarea>
+                                    <textarea name="info" class="form-control @error('info') is-invalid @enderror"></textarea>
                                     @error('info')
                                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-sm-10 ">
+
+                            <div class="col-sm-10 mt-3">
                                 <button type="submit" class="btn btn-primary">تأكيد</button>
                                 <a href="{{ url()->previous() }}" class="btn btn-danger">إلغاء</a>
                             </div>
                         </div>
-
                     </div>
-
-
-
                 </div>
             </form>
         </section>
@@ -165,7 +154,6 @@
             const currentBalance = parseFloat(selectedOption.getAttribute('data-balance')) || 0;
 
             document.querySelector('#current-balance').textContent = currentBalance.toFixed(2);
-
             const balanceAfterDiscount = currentBalance - proValue;
             document.querySelector('#balance-after-discount').textContent = balanceAfterDiscount.toFixed(2);
 
@@ -175,7 +163,7 @@
                 document.querySelector('#balance-after-discount').classList.remove('text-danger');
             }
         }
+
         document.addEventListener('DOMContentLoaded', updateBalance);
     </script>
 @endsection
-```

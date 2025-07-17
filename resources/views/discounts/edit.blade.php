@@ -10,24 +10,24 @@
         ],
     ])
 
-    <div class="content-wrapper">
-        <section class="content">
+    <div class="container-fluid px-0">
+        <section class="content" style="width:100%">
             <form action="{{ route('discounts.update', $discount->id) }}" method="post">
                 @csrf
                 @method('PUT')
 
-                <div class="card bg-white col-md-12 container">
-
+                <div class="card bg-white w-100" style="max-width: 100%;">
                     <div class="m-3">
                         <h3 class="card-title fw-bold fs-2">{{ $titles[$type] }}</h3>
                     </div>
-                    <div class="card-body ">
+
+                    <div class="card-body">
                         <div class="row">
                             <input type="hidden" name="type" value="{{ $type }}">
 
                             @if ($type == 30)
                                 <input type="hidden" name="acc2" value="{{ $acc2Fixed->id }}">
-                                <div class="col-lg-4">
+                                <div class="col-lg-3">
                                     <label>الحساب المدين (acc1 - العملاء)</label>
                                     <select name="acc1" class="form-control" required>
                                         @foreach ($clientsAccounts as $acc)
@@ -39,7 +39,7 @@
                                 </div>
                             @elseif ($type == 31)
                                 <input type="hidden" name="acc1" value="{{ $acc1Fixed->id }}">
-                                <div class="col-lg-4">
+                                <div class="col-lg-3">
                                     <label>الحساب الدائن (acc2 - الموردين)</label>
                                     <select name="acc2" class="form-control" required>
                                         @foreach ($suppliers as $acc)
@@ -51,19 +51,17 @@
                                 </div>
                             @endif
 
-                            <div class="col-lg-4">
+                            <div class="col-lg-3">
                                 <label>التاريخ</label>
-                                <input type="date" name="pro_date" class="form-control"
-                                    value="{{ $discount->pro_date }}">
+                                <input type="date" name="pro_date" class="form-control" value="{{ $discount->pro_date }}">
                             </div>
 
-                            <div class="col-lg-4">
+                            <div class="col-lg-3">
                                 <label>رقم السند</label>
-                                <input type="number" name="pro_id" class="form-control" value="{{ $discount->pro_id }}"
-                                    readonly>
+                                <input type="number" name="pro_id" class="form-control" value="{{ $discount->pro_id }}" readonly>
                             </div>
 
-                            <div class="col-lg-4">
+                            <div class="col-lg-3">
                                 <div class="form-group">
                                     <label for="pro_value">{{ __('قيمة الخصم ') }}</label>
                                     <input type="number" name="pro_value" id="pro_value" step="0.01" min="0.01"
@@ -75,17 +73,17 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-8">
+                            <div class="col-lg-12">
                                 <label>ملاحظات</label>
                                 <textarea name="info" class="form-control">{{ $discount->info }}</textarea>
                             </div>
-                            <div class="col-sm-10">
-                                <button type="submit" class="btn btn-primary">تحديث </button>
+
+                            <div class="col-sm-10 mt-4">
+                                <button type="submit" class="btn btn-primary">تحديث</button>
                                 <a href="{{ route('discounts.index') }}" class="btn btn-danger">إلغاء</a>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </form>
         </section>

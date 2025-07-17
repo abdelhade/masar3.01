@@ -52,25 +52,24 @@
                                     <tr>
                                         <td class="font-family-cairo fw-bold font-14 text-center">{{ $loop->iteration }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
-                                            <span class="badge">
+                                        @php
+                                            $badgeClass = 'badge ';
+                                            if ($discount->acc1 == 91 || $discount->acc2 == 91) {
+                                                $badgeClass .= 'bg-success text-dark';
+                                                $badgeText = 'خصم مسموح به';
+                                            } elseif ($discount->acc1 == 97 || $discount->acc2 == 97) {
+                                                $badgeClass .= 'bg-warning text-dark';
+                                                $badgeText = 'خصم مكتسب';
+                                            } else {
+                                                $badgeClass .= 'bg-secondary';
+                                                $badgeText = '-';
+                                            }
+                                        @endphp
 
-                                                @if ($discount->acc1 == 91 || $discount->acc2 == 91)
-                                                    bg-success text-dark
-                                                @elseif($discount->acc1 == 97 || $discount->acc2 == 97)
-                                                    bg-warning text-dark
-                                                @else
-                                                    bg-secondary
-                                                @endif
-                                                @if ($discount->acc1 == 91 || $discount->acc2 == 91)
-                                                    خصم مسموح به
-                                                @elseif($discount->acc1 == 97 || $discount->acc2 == 97)
-                                                    خصم مكتسب
-                                                @else
-                                                    -
-                                                @endif
-                                            </span>
+                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                            <span class="{{ $badgeClass }}">{{ $badgeText }}</span>
                                         </td>
+
                                         <td class="font-family-cairo fw-bold font-14 text-center">
                                             {{ $discount->pro_value }}</td>
                                         <td class="font-family-cairo fw-bold font-14 text-center">
@@ -80,7 +79,8 @@
                                         <td class="font-family-cairo fw-bold font-14 text-center">
                                             {{ $discount->acc1Head->aname ?? '-' }}</td>
                                         <td class="font-family-cairo fw-bold font-14 text-center">
-                                            {{ $discount->acc2Head->aname ?? '-' }}</td>
+                                            {{ $discount->acc2Head->aname ?? '-' }} 
+                                        </td>
                                         <td class="font-family-cairo fw-bold font-14 text-center">{{ $discount->info }}
                                         </td>
                                         <td class="font-family-cairo fw-bold font-14 text-center">
