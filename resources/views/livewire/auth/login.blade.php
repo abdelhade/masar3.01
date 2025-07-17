@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('layouts.dastone-auth')] class extends Component {
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -20,16 +20,13 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     public bool $remember = false;
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function login(): void
     {
         $this->validate();
 
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -40,16 +37,12 @@ new #[Layout('components.layouts.auth')] class extends Component {
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        // $this->redirectIntended(default: route('admin.dashboard', absolute: false), navigate: true);
         $this->redirect(route('admin.dashboard'));
     }
 
-    /**
-     * Ensure the authentication request is not rate limited.
-     */
     protected function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -65,64 +58,96 @@ new #[Layout('components.layouts.auth')] class extends Component {
         ]);
     }
 
-    /**
-     * Get the authentication rate limiting throttle key.
-     */
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->email).'|'.request()->ip());
+        return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
     }
 }; ?>
 
-<div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+<!-- Log In page -->
+<div class="container">
+    <div class="row vh-100 d-flex justify-content-center">
+        <div class="col-12 align-self-center">
+            <div class="row">
+                <div class="col-lg-5 mx-auto">
+                    <div class="card">
+                        <div class="card-body p-0 auth-header-box">
+                            <div class="text-center p-3">
+                                <a href="{{ url('/') }}" class="logo logo-admin">
+                                    <img src="{{ asset('assets/images/logo-sm-dark.png') }}" height="50"
+                                        alt="logo" class="auth-logo">
+                                </a>
+                                <h4 class="mt-3 mb-1 fw-semibold text-white font-18">خلينا نبدأ مع مسار</h4>
+                                <p class="text-muted mb-0"> ... سجل الدخول </p>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="tab-content">
+                                <div class="tab-pane active p-3" id="LogIn_Tab" role="tabpanel">
+                                    <!-- Session Status -->
+                                    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+                                    <form wire:submit="login">
+                                        <!-- Email -->
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">البريد الالكتروني </label>
+                                            <div class="input-group">
+                                                <input type="email"
+                                                    class="form-control @error('email') is-invalid @enderror"
+                                                    wire:model="email" placeholder="email@example.com" required
+                                                    autofocus>
+                                            </div>
+                                            @error('email')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-    <form wire:submit="login" class="flex flex-col gap-6">
-        <!-- Email Address -->
-        <flux:input
-            wire:model="email"
-            :label="__('Email address')"
-            type="email"
-            required
-            autofocus
-            autocomplete="email"
-            placeholder="email@example.com"
-        />
+                                        <!-- Password -->
+                                        <div class="form-group mb-2">
+                                            <label class="form-label">كلمة المرور</label>
+                                            <div class="input-group">
+                                                <input type="password"
+                                                    class="form-control @error('password') is-invalid @enderror"
+                                                    wire:model="password" placeholder="ادخل كلمة المرور " required>
+                                            </div>
+                                            @error('password')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-        <!-- Password -->
-        <div class="relative">
-            <flux:input
-                wire:model="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                :placeholder="__('Password')"
-                viewable
-            />
+                                        <!-- Remember Me -->
+                                        <div class="form-group row my-3">
+                                            <div class="col-sm-6">
+                                                <div class="custom-control custom-switch switch-success">
+                                                    <input type="checkbox" class="custom-control-input" id="remember_me"
+                                                        wire:model="remember">
+                                                    <label class="custom-control-label" for="remember_me">تذكرني
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
 
-            @if (Route::has('password.request'))
-                <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
-                    {{ __('Forgot your password?') }}
-                </flux:link>
-            @endif
+                                        <!-- Submit Button -->
+                                        <div class="form-group mb-0 row">
+                                            <div class="col-12">
+                                                <button class="btn btn-primary w-100 waves-effect waves-light"
+                                                    type="submit">
+                                                    تسجيل الدخول <i class="fas fa-sign-in-alt ms-1"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body bg-light-alt text-center">
+                            <span class="text-muted d-none d-sm-inline-block">
+                                {{ config('app.name') }} © {{ date('Y') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" :label="__('Remember me')" />
-
-        <div class="flex items-center justify-end">
-            <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
-        </div>
-    </form>
-
-    @if (Route::has('register'))
-        <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
-            {{ __('Don\'t have an account?') }}
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
-        </div>
-    @endif
+    </div>
 </div>

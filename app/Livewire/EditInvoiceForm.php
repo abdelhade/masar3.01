@@ -68,7 +68,8 @@ class EditInvoiceForm extends Component
         'cost' => 0,
         'barcode' => '',
         'category' => '',
-        'description' => ''
+        'description' => '',
+        'average_cost' => ''
     ];
 
     public $titles = [
@@ -213,7 +214,7 @@ class EditInvoiceForm extends Component
             'selected_store_name' => $selectedStoreName,
             'unit_name' => $unitName,
             'price' => $price,
-            'cost' => $item->average_cost ?? 0,
+            'average_cost' => $item->average_cost ?? 0,
             'description' => $item->description ?? ''
         ];
     }

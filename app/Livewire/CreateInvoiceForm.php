@@ -173,6 +173,13 @@ class CreateInvoiceForm extends Component
 
         $selectedStoreName = AccHead::where('id', $this->acc2_id)->value('aname') ?? '';
 
+        // $lastCost = OperationItems::where('item_id', $item->id)
+        //     ->whereIn('pro_tybe', [11, 20])
+        //     ->where('is_stock', 1)
+        //     ->orderBy('created_at', 'desc')
+        //     ->value('item_price') ?? 0;
+        // $profit = $unitId ? ($price - ($item->average_cost ?? 0)) : 0;
+
         $this->selectedItemData = [
             'name' => $item->name,
             'code' => $item->code ?? '',

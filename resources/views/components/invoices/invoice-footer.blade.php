@@ -58,7 +58,7 @@
                                 <div class="col-6 fs-6">السعر:</div>
                                 <div class="col-6 text-primary fw-bold">
                                     <span class="badge bg-light text-dark">
-                                        {{ number_format($selectedItemData['price']) }} ج.م
+                                        {{ number_format($selectedItemData['price']) }}
                                     </span>
                                 </div>
                             </div>
@@ -67,7 +67,7 @@
                                 <div class="col-6 fs-6">سعر الشراء الأخير:</div>
                                 <div class="col-6 text-success">
                                     <span class="badge bg-light text-dark">
-                                        {{ number_format($selectedItemData['price']) }} ج.م
+                                        {{ number_format($selectedItemData['price']) }}
                                     </span>
                                 </div>
                             </div>
@@ -76,7 +76,7 @@
                                 <div class="col-6 fs-6">سعر الشراء المتوسط:</div>
                                 <div class="col-6 text-success">
                                     <span class="badge bg-light text-dark">
-                                        {{ number_format($selectedItemData['average_cost']) }} ج.م
+                                        {{ number_format($selectedItemData['average_cost']) }}
                                     </span>
                                 </div>
                             </div>
@@ -134,15 +134,15 @@
         <div class="card border-primary">
             <div class="card-body">
                 <div class="row mb-2">
-                    <div class="col-6 text-right font-weight-bold">الإجمالي الفرعي:</div>
-                    <div class="col-6 text-left text-primary">
-                        {{ number_format($subtotal) }} ج.م
+                    <div class="col-3 text-right font-weight-bold">الإجمالي الفرعي:</div>
+                    <div class="col-3 text-left text-primary">
+                        {{ number_format($subtotal) }}
                     </div>
                 </div>
 
                 {{-- الخصم --}}
                 <div class="row mb-2 align-items-center">
-                    <div class="col-3 text-right font-weight-bold">
+                    <div class="col-2 text-right font-weight-bold">
                         <label style="font-size: 0.95em;">الخصم %</label>
                     </div>
                     <div class="col-3">
@@ -156,7 +156,7 @@
                         </div>
                     </div>
 
-                    <div class="col-3 text-right font-weight-bold">
+                    <div class="col-2 text-right font-weight-bold">
                         <label for="discount_value" class="form-label" style="font-size: 0.95em;">قيمة
                             الخصم</label>
                     </div>
@@ -172,7 +172,7 @@
 
                 {{-- الإضافي (مثال: ضريبة) --}}
                 <div class="row mb-2 align-items-center">
-                    <div class="col-3 text-right font-weight-bold">
+                    <div class="col-2 text-right font-weight-bold">
                         <label style="font-size: 0.95em;">الاضافي %</label>
                     </div>
 
@@ -188,7 +188,7 @@
                         </div>
                     </div>
 
-                    <div class="col-3 text-right font-weight-bold">
+                    <div class="col-2 text-right font-weight-bold">
                         <label for="additional_value" class="form-label" style="font-size: 0.95em;">قيمة
                             الاضافي</label>
                     </div>
@@ -199,36 +199,52 @@
                             style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                             id="additional_value">
                     </div>
-
                 </div>
+
+
 
                 <hr>
 
                 {{-- الإجمالي النهائي --}}
                 <div class="row mb-2">
-                    <div class="col-6 text-right font-weight-bold">الإجمالي النهائي:</div>
-                    <div class="col-6 text-left font-weight-bold fs-5">
-                        {{ number_format($total_after_additional) }} ج.م
+                    <div class="col-3 text-right font-weight-bold">الإجمالي النهائي:</div>
+                    <div class="col-3 text-left font-weight-bold fs-5">
+                        {{ number_format($total_after_additional) }}
                     </div>
                 </div>
 
                 <div class="row mb-2">
-                    <div class="col-6 text-right font-weight-bold">المدفوع من العميل:</div>
-                    <div class="col-6 text-left font-weight-bold fs-5">
-                        {{ number_format($received_from_client) }} ج.م
+                    <div class="col-3 text-right font-weight-bold">المدفوع من العميل:</div>
+                    <div class="col-3 text-left font-weight-bold fs-5">
+                        {{ number_format($received_from_client) }}
+                    </div>
+
+                    <div class="col-3 text-left">
+                        <button type="submit" class="btn btn-lg btn-primary">
+                            <i class="fas fa-save"></i> حفظ الفاتورة
+                        </button>
+                    </div>
+
+                    <div class="col-3 text-left">
+                        <button type="button" class="btn btn-lg btn-warning" onclick="printInvoice()">
+                            <i class="fas fa-save"></i> حفظ وطباعه
+                        </button>
                     </div>
                 </div>
 
                 {{-- الباقي على العميل --}}
                 <div class="row">
-                    <div class="col-6 text-right font-weight-bold">الباقي:</div>
-                    <div class="col-6 text-left font-weight-bold text-danger">
+                    <div class="col-3 text-right font-weight-bold">الباقي:</div>
+                    <div class="col-3 text-left font-weight-bold text-danger">
                         @php
                             $remaining = $total_after_additional - $received_from_client;
                         @endphp
-                        {{ number_format(max($remaining, 0)) }} ج.م
+                        {{ number_format(max($remaining, 0)) }}
                     </div>
                 </div>
+
+
+
             </div>
         </div>
     </div>
