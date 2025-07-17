@@ -79,6 +79,7 @@ class InventoryStartBalanceController extends Controller
 
     public function store(Request $request)
     {
+        dd($request->all());
         $request->validate([
             'store_id' => 'nullable|exists:acc_head,id',
             'partner_id' => 'nullable|exists:acc_head,id',
