@@ -98,33 +98,29 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
-            <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
-                {{ __('Add New') }}
-                <i class="fas fa-plus me-2"></i>
-            </button>
+            {{-- @can('انشاء - الوحدات') --}}
+            
+                <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
+                    {{ __('Add New') }}
+                    <i class="fas fa-plus me-2"></i>
+                </button>
+            {{-- @endcan --}}
+
             <div class="card">
 
-                <div class="card-header">
-                    @can('انشاء - الوحدات')
-                    <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('Add New') }}
-                        <i class="fas fa-plus me-2"></i>
-                    </button>
-                    @endcan
-                </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
-                            <thead class="table-light text-center align-middle">
+                        <table class="table table-striped text-center  mb-0" style="min-width: 1200px;">
+                            <thead class="table-light align-middle">
 
                                 <tr>
 
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الكود</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
-                                    @can('عرض - تفاصيل وحدة')
-                                    <th class="font-family-cairo fw-bold">العمليات</th>
-                                    @endcan
+                                    {{-- @can('عرض - تفاصيل وحدة') --}}
+                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                    {{-- @endcan --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -134,19 +130,20 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $unit->code }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $unit->name }}</td>
-                                    @can('عرض - تفاصيل وحدة')
-                                        <td>
-                                            @can('تعديل - الوحدات')
-                                            <a wire:click="edit({{ $unit->id }})"><iclass="las la-pen text-success font-20"></i></a>
-                                            @endcan
-                                            @can('حذف - الوحدات')
-                                            <a wire:click="delete({{ $unit->id }})"
-                                                onclick="confirm('هل أنت متأكد من حذف هذه الوحدة؟') || event.stopImmediatePropagation()">
-                                                <i class="las la-trash-alt btn btn-danger font-20"></i>
-                                            </a>
-                                             @endcan
-                                        </td>
-                                    @endcan
+                                        {{-- @can('عرض - تفاصيل وحدة') --}}
+                                            <td>
+                                                {{-- @can('تعديل - الوحدات') --}}
+                                                    <a wire:click="edit({{ $unit->id }})" class="btn btn-icon-square-sm btn-success"><i
+                                                            class="las la-pen "></i></a>
+                                                {{-- @endcan
+                                                @can('حذف - الوحدات') --}}
+                                                    <a wire:click="delete({{ $unit->id }})" class="btn btn-icon-square-sm btn-danger"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذه الوحدة؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash-alt"></i>
+                                                    </a>
+                                                {{-- @endcan --}}
+                                            </td>
+                                        {{-- @endcan --}}
 
                                     </tr>
                                 @empty

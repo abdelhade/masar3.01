@@ -89,22 +89,18 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
+            @can('إنشاء - الأسعار')
+                <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                    {{ __('Add New') }}
+                    <i class="fas fa-plus me-2"></i>
+                </button>
+            @endcan
             <div class="card">
-                <div class="card-header">
-                    @can('إنشاء - الأسعار')
-                        <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                            {{ __('Add New') }}
-                            <i class="fas fa-plus me-2"></i>
-                        </button>
-                    @endcan
-                </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <table class="table table-striped mb-0 text-center" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
-
                                 <tr>
-
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
                                     {{-- @can('عرض - تفاصيل سعر') --}}
@@ -119,18 +115,18 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $price->name }}</td>
                                         {{-- @can('عرض - تفاصيل سعر') --}}
-                                            <td>
-                                                {{-- @can('تعديل - الأسعار') --}}
-                                                <a wire:click="edit({{ $price->id }})"><i
-                                                        class="las la-pen text-success font-20"></i></a>
-                                                {{-- @endcan
+                                        <td>
+                                            {{-- @can('تعديل - الأسعار') --}}
+                                            <a wire:click="edit({{ $price->id }})" class="btn btn-success btn-icon-square-sm"><i
+                                                    class="las la-pen"></i></a>
+                                            {{-- @endcan
                                             @can('حذف - الأسعار') --}}
-                                                <a wire:click="delete({{ $price->id }})"
-                                                    onclick="confirm('هل أنت متأكد من حذف هذا السعر؟') || event.stopImmediatePropagation()">
-                                                    <i class="las la-trash-alt text-danger font-20"></i>
-                                                </a>
-                                                {{-- @endcans --}}
-                                            </td>
+                                            <a wire:click="delete({{ $price->id }})" class="btn btn-danger btn-icon-square-sm"
+                                                onclick="confirm('هل أنت متأكد من حذف هذا السعر؟') || event.stopImmediatePropagation()">
+                                                <i class="las la-trash-alt "></i>
+                                            </a>
+                                            {{-- @endcans --}}
+                                        </td>
                                         {{-- @endcan --}}
                                     </tr>
                                 @empty
