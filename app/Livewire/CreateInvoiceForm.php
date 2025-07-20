@@ -688,8 +688,8 @@ class CreateInvoiceForm extends Component
                 $itemCost  = Item::where('id', $itemId)->value('average_cost');
 
                 $qty_in = $qty_out = 0;
-                if (in_array($this->type, [11, 13, 20])) $qty_in = $quantity;
-                if (in_array($this->type, [10, 12, 18, 19])) $qty_out = $quantity;
+                if (in_array($this->type, [11, 12, 13, 20])) $qty_in = $quantity;
+                if (in_array($this->type, [10, 18, 19])) $qty_out = $quantity;
 
                 if (in_array($this->type, [11, 12, 20])) {
                     $oldQty = OperationItems::where('item_id', $itemId)
@@ -890,7 +890,8 @@ class CreateInvoiceForm extends Component
         // dd($operationId);
         if ($operationId) {
             // إعادة التوجيه إلى صفحة الطباعة مع تمرير معرف الفاتورة فقط
-            return redirect()->route('invoice.print', ['operation_id' => $operationId]);
+            $printUrl = route('invoice.print', ['operation_id' => $operationId]);
+            $this->dispatch('open-print-window', ['url' => $printUrl]);
         }
     }
 
