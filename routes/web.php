@@ -96,7 +96,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('notes/{id}', [NoteController::class, 'noteDetails'])->name('notes.noteDetails');
     // 📁 Item Movement
     Route::get('item-movement/{itemId?}/{warehouseId?}', [ItemController::class, 'itemMovementReport'])->name('item-movement');
-   
+
 
 
     Route::resource('journals', JournalController::class)->names('journals');
@@ -105,6 +105,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class)->names('users');
     Route::resource('invoices', InvoiceController::class);
 
+    Route::get('/invoice/print/{operation_id}', [InvoiceController::class, 'print'])->name('invoice.print');
     Route::resource('invoices', InvoiceController::class)->names('invoices');
     Route::resource('transfers', TransferController::class)->names('transfers');
     Route::resource('discounts', DiscountController::class)->names('discounts');

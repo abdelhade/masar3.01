@@ -630,11 +630,11 @@ class CreateInvoiceForm extends Component
         ]);
 
         foreach ($this->invoiceItems as $index => $item) {
+
             $availableQty = OperationItems::where('item_id', $item['item_id'])
                 ->where('detail_store', $this->acc2_id)
                 ->selectRaw('SUM(qty_in - qty_out) as total')
                 ->value('total') ?? 0;
-
             if (in_array($this->type, [10, 12, 18, 19])) { // عمليات صرف
                 if ($availableQty < $item['quantity']) {
                     $itemName = Item::find($item['item_id'])->name;
@@ -875,11 +875,22 @@ class CreateInvoiceForm extends Component
                 }
             }
             Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
-            return redirect()->route('invoices.index');
+            return $operation->id;
         } catch (\Exception $e) {
             logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
             Alert::toast('حدث خطأ أثناء حفظ الفاتورة: ', 'error');
             return back()->withInput();
+        }
+    }
+
+    public function saveAndPrint()
+    {
+        // استدعاء دالة الحفظ وتخزين معرف الفاتورة
+        $operationId = $this->saveForm();
+        // dd($operationId);
+        if ($operationId) {
+            // إعادة التوجيه إلى صفحة الطباعة مع تمرير معرف الفاتورة فقط
+            return redirect()->route('invoice.print', ['operation_id' => $operationId]);
         }
     }
 

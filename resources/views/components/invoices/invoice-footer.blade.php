@@ -226,8 +226,12 @@
                     </div>
 
                     <div class="col-3 text-left">
-                        <button type="button" class="btn btn-lg btn-warning" onclick="printInvoice()">
-                            <i class="fas fa-save"></i> حفظ وطباعه
+                        <button type="button" class="btn btn-lg btn-warning" wire:click="saveAndPrint"
+                            wire:loading.attr="disabled">
+                            <span wire:loading wire:target="saveAndPrint">جارٍ الحفظ...</span>
+                            <span wire:loading.remove wire:target="saveAndPrint">
+                                <i class="fas fa-save"></i> حفظ وطباعة
+                            </span>
                         </button>
                     </div>
                 </div>

@@ -338,5 +338,20 @@
 
             addKeyboardListeners();
         });
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('open-print-window', (event) => {
+                const url = event.url;
+                console.log('JavaScript received print URL: ' + url);
+                const printWindow = window.open(url, '_blank');
+                if (printWindow) {
+                    printWindow.onload = function() {
+                        printWindow.print();
+                    };
+                } else {
+                    alert('يرجى السماح بفتح النوافذ المنبثقة في المتصفح للطباعة.');
+                }
+            });
+        });
     </script>
 @endpush
