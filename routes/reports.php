@@ -105,3 +105,8 @@ Route::get('/reports/general-cost-center-account-statement', [ReportController::
 
 // كشف حساب عام مع مركز تكلفة
 Route::get('/reports/general-account-statement-with-cost-center', [ReportController::class, 'generalAccountStatementWithCostCenter'])->name('reports.general-account-statement-with-cost-center');
+
+Route::get(
+    '/reports/get-items-max&min-quntity',
+    [ReportController::class, 'getItemsMaxMinQuantity']
+)->name('reports.get-items-max-min-quantity');

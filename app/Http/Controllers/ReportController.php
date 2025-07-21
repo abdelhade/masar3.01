@@ -74,7 +74,7 @@ class ReportController extends Controller
     public function generalBalanceSheet()
     {
         $asOfDate = request('as_of_date', now()->format('Y-m-d'));
-        
+
         // Get assets (accounts starting with 1)
         $assets = AccHead::where('code', 'like', '1%')
             ->where('isdeleted', 0)
@@ -109,7 +109,12 @@ class ReportController extends Controller
         $totalLiabilitiesEquity = $liabilities->sum('balance') + $equity->sum('balance');
 
         return view('reports.general-balance-sheet', compact(
-            'assets', 'liabilities', 'equity', 'totalAssets', 'totalLiabilitiesEquity', 'asOfDate'
+            'assets',
+            'liabilities',
+            'equity',
+            'totalAssets',
+            'totalLiabilitiesEquity',
+            'asOfDate'
         ));
     }
 
@@ -127,7 +132,7 @@ class ReportController extends Controller
             if ($selectedAccount) {
                 $fromDate = request('from_date');
                 $toDate = request('to_date');
-                
+
                 $movements = JournalDetail::where('account_id', $selectedAccount->id)
                     ->with(['head', 'costCenter'])
                     ->when($fromDate, function ($q) use ($fromDate) {
@@ -146,7 +151,11 @@ class ReportController extends Controller
         }
 
         return view('reports.general-account-statement', compact(
-            'accounts', 'selectedAccount', 'movements', 'openingBalance', 'closingBalance'
+            'accounts',
+            'selectedAccount',
+            'movements',
+            'openingBalance',
+            'closingBalance'
         ));
     }
 
@@ -157,7 +166,7 @@ class ReportController extends Controller
         $accountGroup = request('account_group');
 
         $query = AccHead::where('isdeleted', 0);
-        
+
         if ($accountGroup) {
             $query->where('code', 'like', $accountGroup . '%');
         }
@@ -166,7 +175,7 @@ class ReportController extends Controller
             $balance = $this->calculateAccountBalance($account->id, $asOfDate);
             $debit = $balance > 0 ? $balance : 0;
             $credit = $balance < 0 ? abs($balance) : 0;
-            
+
             $account->debit = $debit;
             $account->credit = $credit;
             $account->balance = $balance;
@@ -178,7 +187,11 @@ class ReportController extends Controller
         $totalBalance = $accountBalances->sum('balance');
 
         return view('reports.general-account-balances', compact(
-            'accountBalances', 'totalDebit', 'totalCredit', 'totalBalance', 'asOfDate'
+            'accountBalances',
+            'totalDebit',
+            'totalCredit',
+            'totalBalance',
+            'asOfDate'
         ));
     }
 
@@ -187,7 +200,7 @@ class ReportController extends Controller
     {
         $notes = Note::with('noteDetails')->get();
         $warehouses = AccHead::where('code', 'like', '%123')->where('isdeleted', 0)->get();
-        
+
         $inventoryBalances = Item::with(['units'])
             ->paginate(50)
             ->through(function ($item) {
@@ -204,8 +217,13 @@ class ReportController extends Controller
         $normalStockItems = $inventoryBalances->where('current_balance', '>', 'min_balance')->count();
 
         return view('reports.general-inventory-balances', compact(
-            'notes', 'warehouses', 'inventoryBalances', 'totalBalance', 
-            'totalItems', 'lowStockItems', 'normalStockItems'
+            'notes',
+            'warehouses',
+            'inventoryBalances',
+            'totalBalance',
+            'totalItems',
+            'lowStockItems',
+            'normalStockItems'
         ));
     }
 
@@ -240,8 +258,16 @@ class ReportController extends Controller
             ->where('current_balance', '<', 'max_balance')->count();
 
         return view('reports.general-inventory-balances-by-store', compact(
-            'warehouses', 'notes', 'selectedWarehouse', 'inventoryBalances',
-            'totalBalance', 'totalValue', 'totalItems', 'lowStockItems', 'highStockItems', 'normalStockItems'
+            'warehouses',
+            'notes',
+            'selectedWarehouse',
+            'inventoryBalances',
+            'totalBalance',
+            'totalValue',
+            'totalItems',
+            'lowStockItems',
+            'highStockItems',
+            'normalStockItems'
         ));
     }
 
@@ -288,8 +314,16 @@ class ReportController extends Controller
         $totalOperations = $movements->count();
 
         return view('reports.general-inventory-movements', compact(
-            'items', 'warehouses', 'notes', 'selectedItem', 'movements', 'currentBalance',
-            'totalIn', 'totalOut', 'netMovement', 'totalOperations'
+            'items',
+            'warehouses',
+            'notes',
+            'selectedItem',
+            'movements',
+            'currentBalance',
+            'totalIn',
+            'totalOut',
+            'netMovement',
+            'totalOperations'
         ));
     }
 
@@ -297,7 +331,7 @@ class ReportController extends Controller
     public function generalSalesDailyReport()
     {
         $customers = AccHead::where('code', 'like', '122%')->where('isdeleted', 0)->get();
-        
+
         $sales = OperHead::where('pro_type', 10) // Sales invoices
             ->with('acc1Head')
             ->when(request('from_date'), function ($q) {
@@ -320,8 +354,14 @@ class ReportController extends Controller
         $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
 
         return view('reports.general-sales-daily-report', compact(
-            'customers', 'sales', 'totalQuantity', 'totalSales', 'totalDiscount',
-            'totalNetSales', 'totalInvoices', 'averageInvoiceValue'
+            'customers',
+            'sales',
+            'totalQuantity',
+            'totalSales',
+            'totalDiscount',
+            'totalNetSales',
+            'totalInvoices',
+            'averageInvoiceValue'
         ));
     }
 
@@ -334,7 +374,7 @@ class ReportController extends Controller
 
         // Get sales data and group by the specified criteria
         $query = OperHead::where('pro_type', 10); // Sales invoices
-        
+
         if ($fromDate) {
             $query->whereDate('pro_date', '>=', $fromDate);
         }
@@ -371,9 +411,18 @@ class ReportController extends Controller
         $averageSales = $totalPeriods > 0 ? $grandTotalNetSales / $totalPeriods : 0;
 
         return view('reports.general-sales-total-report', compact(
-            'salesTotals', 'groupBy', 'grandTotalInvoices', 'grandTotalQuantity',
-            'grandTotalSales', 'grandTotalDiscount', 'grandTotalNetSales', 'grandAverageInvoice',
-            'totalPeriods', 'highestSales', 'lowestSales', 'averageSales'
+            'salesTotals',
+            'groupBy',
+            'grandTotalInvoices',
+            'grandTotalQuantity',
+            'grandTotalSales',
+            'grandTotalDiscount',
+            'grandTotalNetSales',
+            'grandAverageInvoice',
+            'totalPeriods',
+            'highestSales',
+            'lowestSales',
+            'averageSales'
         ));
     }
 
@@ -381,7 +430,7 @@ class ReportController extends Controller
     public function generalSalesItemsReport()
     {
         $categories = Category::all();
-        
+
         $query = OperationItems::whereHas('operation', function ($q) {
             $q->where('pro_type', 10); // Sales invoices
         })->with(['item', 'operation']);
@@ -413,8 +462,16 @@ class ReportController extends Controller
         $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
 
         return view('reports.general-sales-items-report', compact(
-            'categories', 'salesItems', 'totalQuantity', 'totalSales', 'averagePrice',
-            'totalInvoices', 'totalItems', 'topSellingItem', 'averageQuantityPerItem', 'averageSalesPerItem'
+            'categories',
+            'salesItems',
+            'totalQuantity',
+            'totalSales',
+            'averagePrice',
+            'totalInvoices',
+            'totalItems',
+            'topSellingItem',
+            'averageQuantityPerItem',
+            'averageSalesPerItem'
         ));
     }
 
@@ -422,7 +479,7 @@ class ReportController extends Controller
     public function generalPurchasesDailyReport()
     {
         $suppliers = AccHead::where('code', 'like', '211%')->where('isdeleted', 0)->get();
-        
+
         $purchases = OperHead::where('pro_type', 11) // Purchase invoices
             ->with('acc1Head')
             ->when(request('from_date'), function ($q) {
@@ -445,8 +502,14 @@ class ReportController extends Controller
         $averageInvoiceValue = $totalInvoices > 0 ? $totalNetPurchases / $totalInvoices : 0;
 
         return view('reports.general-purchases-daily-report', compact(
-            'suppliers', 'purchases', 'totalQuantity', 'totalPurchases', 'totalDiscount',
-            'totalNetPurchases', 'totalInvoices', 'averageInvoiceValue'
+            'suppliers',
+            'purchases',
+            'totalQuantity',
+            'totalPurchases',
+            'totalDiscount',
+            'totalNetPurchases',
+            'totalInvoices',
+            'averageInvoiceValue'
         ));
     }
 
@@ -459,7 +522,7 @@ class ReportController extends Controller
 
         // Get purchases data and group by the specified criteria
         $query = OperHead::where('pro_type', 11); // Purchase invoices
-        
+
         if ($fromDate) {
             $query->whereDate('pro_date', '>=', $fromDate);
         }
@@ -496,9 +559,18 @@ class ReportController extends Controller
         $averagePurchases = $totalPeriods > 0 ? $grandTotalNetPurchases / $totalPeriods : 0;
 
         return view('reports.general-purchases-total-report', compact(
-            'purchasesTotals', 'groupBy', 'grandTotalInvoices', 'grandTotalQuantity',
-            'grandTotalPurchases', 'grandTotalDiscount', 'grandTotalNetPurchases', 'grandAverageInvoice',
-            'totalPeriods', 'highestPurchases', 'lowestPurchases', 'averagePurchases'
+            'purchasesTotals',
+            'groupBy',
+            'grandTotalInvoices',
+            'grandTotalQuantity',
+            'grandTotalPurchases',
+            'grandTotalDiscount',
+            'grandTotalNetPurchases',
+            'grandAverageInvoice',
+            'totalPeriods',
+            'highestPurchases',
+            'lowestPurchases',
+            'averagePurchases'
         ));
     }
 
@@ -506,7 +578,7 @@ class ReportController extends Controller
     public function generalPurchasesItemsReport()
     {
         $categories = Category::all();
-        
+
         $query = OperationItems::whereHas('operation', function ($q) {
             $q->where('pro_type', 11); // Purchase invoices
         })->with(['item', 'operation']);
@@ -538,8 +610,16 @@ class ReportController extends Controller
         $averagePurchasesPerItem = $totalItems > 0 ? $totalPurchases / $totalItems : 0;
 
         return view('reports.general-purchases-items-report', compact(
-            'categories', 'purchasesItems', 'totalQuantity', 'totalPurchases', 'averagePrice',
-            'totalInvoices', 'totalItems', 'topPurchasedItem', 'averageQuantityPerItem', 'averagePurchasesPerItem'
+            'categories',
+            'purchasesItems',
+            'totalQuantity',
+            'totalPurchases',
+            'averagePrice',
+            'totalInvoices',
+            'totalItems',
+            'topPurchasedItem',
+            'averageQuantityPerItem',
+            'averagePurchasesPerItem'
         ));
     }
 
@@ -547,7 +627,7 @@ class ReportController extends Controller
     public function generalCustomersDailyReport()
     {
         $customers = AccHead::where('code', 'like', '122%')->where('isdeleted', 0)->get();
-        
+
         $query = JournalDetail::whereHas('account', function ($q) {
             $q->where('code', 'like', '122%'); // Customer accounts
         })->with(['account', 'journalHead']);
@@ -571,8 +651,13 @@ class ReportController extends Controller
         $totalTransactions = $customerTransactions->count();
 
         return view('reports.general-customers-daily-report', compact(
-            'customers', 'customerTransactions', 'totalAmount', 'totalSales',
-            'totalPayments', 'finalBalance', 'totalTransactions'
+            'customers',
+            'customerTransactions',
+            'totalAmount',
+            'totalSales',
+            'totalPayments',
+            'finalBalance',
+            'totalTransactions'
         ));
     }
 
@@ -619,9 +704,17 @@ class ReportController extends Controller
         $averageBalancePerCustomer = $totalCustomers > 0 ? $grandTotalBalance / $totalCustomers : 0;
 
         return view('reports.general-customers-total-report', compact(
-            'customerTotals', 'groupBy', 'grandTotalTransactions', 'grandTotalSales',
-            'grandTotalPayments', 'grandTotalBalance', 'grandAverageTransaction',
-            'totalCustomers', 'topCustomer', 'averageSalesPerCustomer', 'averageBalancePerCustomer'
+            'customerTotals',
+            'groupBy',
+            'grandTotalTransactions',
+            'grandTotalSales',
+            'grandTotalPayments',
+            'grandTotalBalance',
+            'grandAverageTransaction',
+            'totalCustomers',
+            'topCustomer',
+            'averageSalesPerCustomer',
+            'averageBalancePerCustomer'
         ));
     }
 
@@ -629,7 +722,7 @@ class ReportController extends Controller
     public function generalCustomersItemsReport()
     {
         $customers = AccHead::where('code', 'like', '122%')->where('isdeleted', 0)->get();
-        
+
         $query = OperationItems::whereHas('operation', function ($q) {
             $q->where('pro_type', 10); // Sales invoices
         })->with(['item', 'operation']);
@@ -666,8 +759,16 @@ class ReportController extends Controller
         $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
 
         return view('reports.general-customers-items-report', compact(
-            'customers', 'customerItems', 'totalQuantity', 'totalSales', 'averagePrice',
-            'totalInvoices', 'totalItems', 'topSellingItem', 'averageQuantityPerItem', 'averageSalesPerItem'
+            'customers',
+            'customerItems',
+            'totalQuantity',
+            'totalSales',
+            'averagePrice',
+            'totalInvoices',
+            'totalItems',
+            'topSellingItem',
+            'averageQuantityPerItem',
+            'averageSalesPerItem'
         ));
     }
 
@@ -675,7 +776,7 @@ class ReportController extends Controller
     public function generalSuppliersDailyReport()
     {
         $suppliers = AccHead::where('code', 'like', '211%')->where('isdeleted', 0)->get();
-        
+
         $query = JournalDetail::whereHas('account', function ($q) {
             $q->where('code', 'like', '211%'); // Supplier accounts
         })->with(['account', 'journalHead']);
@@ -699,8 +800,13 @@ class ReportController extends Controller
         $totalTransactions = $supplierTransactions->count();
 
         return view('reports.general-suppliers-daily-report', compact(
-            'suppliers', 'supplierTransactions', 'totalAmount', 'totalPurchases',
-            'totalPayments', 'finalBalance', 'totalTransactions'
+            'suppliers',
+            'supplierTransactions',
+            'totalAmount',
+            'totalPurchases',
+            'totalPayments',
+            'finalBalance',
+            'totalTransactions'
         ));
     }
 
@@ -747,9 +853,17 @@ class ReportController extends Controller
         $averageBalancePerSupplier = $totalSuppliers > 0 ? $grandTotalBalance / $totalSuppliers : 0;
 
         return view('reports.general-suppliers-total-report', compact(
-            'supplierTotals', 'groupBy', 'grandTotalTransactions', 'grandTotalPurchases',
-            'grandTotalPayments', 'grandTotalBalance', 'grandAverageTransaction',
-            'totalSuppliers', 'topSupplier', 'averagePurchasesPerSupplier', 'averageBalancePerSupplier'
+            'supplierTotals',
+            'groupBy',
+            'grandTotalTransactions',
+            'grandTotalPurchases',
+            'grandTotalPayments',
+            'grandTotalBalance',
+            'grandAverageTransaction',
+            'totalSuppliers',
+            'topSupplier',
+            'averagePurchasesPerSupplier',
+            'averageBalancePerSupplier'
         ));
     }
 
@@ -757,7 +871,7 @@ class ReportController extends Controller
     public function generalSuppliersItemsReport()
     {
         $suppliers = AccHead::where('code', 'like', '211%')->where('isdeleted', 0)->get();
-        
+
         $query = OperationItems::whereHas('operation', function ($q) {
             $q->where('pro_type', 11); // Purchase invoices
         })->with(['item', 'operation']);
@@ -794,8 +908,16 @@ class ReportController extends Controller
         $averagePurchasesPerItem = $totalItems > 0 ? $totalPurchases / $totalItems : 0;
 
         return view('reports.general-suppliers-items-report', compact(
-            'suppliers', 'supplierItems', 'totalQuantity', 'totalPurchases', 'averagePrice',
-            'totalInvoices', 'totalItems', 'topPurchasedItem', 'averageQuantityPerItem', 'averagePurchasesPerItem'
+            'suppliers',
+            'supplierItems',
+            'totalQuantity',
+            'totalPurchases',
+            'averagePrice',
+            'totalInvoices',
+            'totalItems',
+            'topPurchasedItem',
+            'averageQuantityPerItem',
+            'averagePurchasesPerItem'
         ));
     }
 
@@ -829,9 +951,17 @@ class ReportController extends Controller
         $netExpenses = $totalExpenses - $totalPayments;
 
         return view('reports.expenses-balance-report', compact(
-            'expenseCategories', 'costCenters', 'expenseBalances', 'totalExpenses',
-            'totalPayments', 'totalBalance', 'totalAccounts', 'highestExpense',
-            'averageExpensePerAccount', 'netExpenses', 'asOfDate'
+            'expenseCategories',
+            'costCenters',
+            'expenseBalances',
+            'totalExpenses',
+            'totalPayments',
+            'totalBalance',
+            'totalAccounts',
+            'highestExpense',
+            'averageExpensePerAccount',
+            'netExpenses',
+            'asOfDate'
         ));
     }
 
@@ -849,7 +979,7 @@ class ReportController extends Controller
             if ($selectedAccount) {
                 $fromDate = request('from_date');
                 $toDate = request('to_date');
-                
+
                 $expenseTransactions = JournalDetail::where('account_id', $selectedAccount->id)
                     ->with(['head', 'costCenter'])
                     ->when($fromDate, function ($q) use ($fromDate) {
@@ -867,7 +997,11 @@ class ReportController extends Controller
         }
 
         return view('reports.general-expenses-daily-report', compact(
-            'expenseAccounts', 'selectedAccount', 'expenseTransactions', 'openingBalance', 'closingBalance'
+            'expenseAccounts',
+            'selectedAccount',
+            'expenseTransactions',
+            'openingBalance',
+            'closingBalance'
         ));
     }
 
@@ -879,8 +1013,8 @@ class ReportController extends Controller
         $search = request('search');
 
         $costCenters = CostCenter::when($costCenterType, function ($q) use ($costCenterType) {
-                $q->where('type', $costCenterType);
-            })
+            $q->where('type', $costCenterType);
+        })
             ->when($search, function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%');
             })
@@ -900,8 +1034,14 @@ class ReportController extends Controller
         $averageCostPerCenter = $totalCostCenters > 0 ? $totalNetCost / $totalCostCenters : 0;
 
         return view('reports.general-cost-centers-list', compact(
-            'costCenters', 'totalExpenses', 'totalRevenues', 'totalNetCost',
-            'totalCostCenters', 'activeCostCenters', 'averageCostPerCenter', 'asOfDate'
+            'costCenters',
+            'totalExpenses',
+            'totalRevenues',
+            'totalNetCost',
+            'totalCostCenters',
+            'activeCostCenters',
+            'averageCostPerCenter',
+            'asOfDate'
         ));
     }
 
@@ -919,7 +1059,7 @@ class ReportController extends Controller
             if ($selectedCostCenter) {
                 $fromDate = request('from_date');
                 $toDate = request('to_date');
-                
+
                 $costCenterTransactions = JournalDetail::where('cost_center_id', $selectedCostCenter->id)
                     ->with(['head', 'accountHead'])
                     ->when($fromDate, function ($q) use ($fromDate) {
@@ -937,7 +1077,11 @@ class ReportController extends Controller
         }
 
         return view('reports.general-cost-center-account-statement', compact(
-            'costCenters', 'selectedCostCenter', 'costCenterTransactions', 'openingBalance', 'closingBalance'
+            'costCenters',
+            'selectedCostCenter',
+            'costCenterTransactions',
+            'openingBalance',
+            'closingBalance'
         ));
     }
 
@@ -958,7 +1102,7 @@ class ReportController extends Controller
                 $costCenterId = request('cost_center_id');
                 $fromDate = request('from_date');
                 $toDate = request('to_date');
-                
+
                 $query = JournalDetail::where('account_id', $selectedAccount->id)
                     ->with(['head', 'costCenter']);
 
@@ -1003,8 +1147,13 @@ class ReportController extends Controller
         }
 
         return view('reports.general-account-statement-with-cost-center', compact(
-            'accounts', 'costCenters', 'selectedAccount', 'accountTransactions',
-            'openingBalance', 'closingBalance', 'costCenterSummary'
+            'accounts',
+            'costCenters',
+            'selectedAccount',
+            'accountTransactions',
+            'openingBalance',
+            'closingBalance',
+            'costCenterSummary'
         ));
     }
 
@@ -1012,28 +1161,28 @@ class ReportController extends Controller
     private function calculateAccountBalance($accountId, $asOfDate = null)
     {
         $query = JournalDetail::where('account_id', $accountId);
-        
+
         if ($asOfDate) {
             $query->whereDate('crtime', '<=', $asOfDate);
         }
 
         $debits = $query->sum('debit');
         $credits = $query->sum('credit');
-        
+
         return $debits - $credits;
     }
 
     private function calculateItemBalance($itemId, $warehouseId = null)
     {
         $query = OperationItems::where('item_id', $itemId);
-        
+
         if ($warehouseId) {
             $query->where('detail_store', $warehouseId);
         }
 
         $qtyIn = $query->sum('qty_in');
         $qtyOut = $query->sum('qty_out');
-        
+
         return $qtyIn - $qtyOut;
     }
 
@@ -1080,7 +1229,7 @@ class ReportController extends Controller
 
         $debits = $query->sum('debit');
         $credits = $query->sum('credit');
-        
+
         return $debits - $credits;
     }
 
@@ -1112,7 +1261,13 @@ class ReportController extends Controller
         $totalBalance = $accountBalances->sum('balance');
 
         return view('reports.general-account-balances-by-store', compact(
-            'warehouses', 'selectedWarehouse', 'accountBalances', 'totalDebit', 'totalCredit', 'totalBalance', 'asOfDate'
+            'warehouses',
+            'selectedWarehouse',
+            'accountBalances',
+            'totalDebit',
+            'totalCredit',
+            'totalBalance',
+            'asOfDate'
         ));
     }
 
@@ -1120,7 +1275,7 @@ class ReportController extends Controller
     public function generalSalesReport()
     {
         $customers = AccHead::where('code', 'like', '122%')->where('isdeleted', 0)->get();
-        
+
         $sales = OperHead::where('pro_type', 10) // Sales invoices
             ->with('acc1Head')
             ->when(request('from_date'), function ($q) {
@@ -1143,8 +1298,14 @@ class ReportController extends Controller
         $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
 
         return view('reports.general-sales-report', compact(
-            'customers', 'sales', 'totalQuantity', 'totalSales', 'totalDiscount',
-            'totalNetSales', 'totalInvoices', 'averageInvoiceValue'
+            'customers',
+            'sales',
+            'totalQuantity',
+            'totalSales',
+            'totalDiscount',
+            'totalNetSales',
+            'totalInvoices',
+            'averageInvoiceValue'
         ));
     }
 
@@ -1152,7 +1313,7 @@ class ReportController extends Controller
     public function generalPurchasesReport()
     {
         $suppliers = AccHead::where('code', 'like', '211%')->where('isdeleted', 0)->get();
-        
+
         $purchases = OperHead::where('pro_type', 11) // Purchase invoices
             ->with('acc1Head')
             ->when(request('from_date'), function ($q) {
@@ -1175,8 +1336,14 @@ class ReportController extends Controller
         $averageInvoiceValue = $totalInvoices > 0 ? $totalNetPurchases / $totalInvoices : 0;
 
         return view('reports.general-purchases-report', compact(
-            'suppliers', 'purchases', 'totalQuantity', 'totalPurchases', 'totalDiscount',
-            'totalNetPurchases', 'totalInvoices', 'averageInvoiceValue'
+            'suppliers',
+            'purchases',
+            'totalQuantity',
+            'totalPurchases',
+            'totalDiscount',
+            'totalNetPurchases',
+            'totalInvoices',
+            'averageInvoiceValue'
         ));
     }
 
@@ -1184,21 +1351,21 @@ class ReportController extends Controller
     public function generalCustomersReport()
     {
         $customers = AccHead::where('code', 'like', '122%')->where('isdeleted', 0)->get();
-        
+
         $customerTransactions = JournalDetail::whereHas('account', function ($q) {
             $q->where('code', 'like', '122%'); // Customer accounts
         })->with(['account', 'journalHead'])
-        ->when(request('from_date'), function ($q) {
-            $q->whereDate('crtime', '>=', request('from_date'));
-        })
-        ->when(request('to_date'), function ($q) {
-            $q->whereDate('crtime', '<=', request('to_date'));
-        })
-        ->when(request('customer_id'), function ($q) {
-            $q->where('account_id', request('customer_id'));
-        })
-        ->orderBy('crtime', 'desc')
-        ->paginate(50);
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('crtime', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('crtime', '<=', request('to_date'));
+            })
+            ->when(request('customer_id'), function ($q) {
+                $q->where('account_id', request('customer_id'));
+            })
+            ->orderBy('crtime', 'desc')
+            ->paginate(50);
 
         $totalAmount = $customerTransactions->sum('debit') + $customerTransactions->sum('credit');
         $totalSales = $customerTransactions->sum('debit');
@@ -1207,8 +1374,13 @@ class ReportController extends Controller
         $totalTransactions = $customerTransactions->count();
 
         return view('reports.general-customers-report', compact(
-            'customers', 'customerTransactions', 'totalAmount', 'totalSales',
-            'totalPayments', 'finalBalance', 'totalTransactions'
+            'customers',
+            'customerTransactions',
+            'totalAmount',
+            'totalSales',
+            'totalPayments',
+            'finalBalance',
+            'totalTransactions'
         ));
     }
 
@@ -1216,21 +1388,21 @@ class ReportController extends Controller
     public function generalSuppliersReport()
     {
         $suppliers = AccHead::where('code', 'like', '211%')->where('isdeleted', 0)->get();
-        
+
         $supplierTransactions = JournalDetail::whereHas('account', function ($q) {
             $q->where('code', 'like', '211%'); // Supplier accounts
         })->with(['account', 'journalHead'])
-        ->when(request('from_date'), function ($q) {
-            $q->whereDate('crtime', '>=', request('from_date'));
-        })
-        ->when(request('to_date'), function ($q) {
-            $q->whereDate('crtime', '<=', request('to_date'));
-        })
-        ->when(request('supplier_id'), function ($q) {
-            $q->where('account_id', request('supplier_id'));
-        })
-        ->orderBy('crtime', 'desc')
-        ->paginate(50);
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('crtime', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('crtime', '<=', request('to_date'));
+            })
+            ->when(request('supplier_id'), function ($q) {
+                $q->where('account_id', request('supplier_id'));
+            })
+            ->orderBy('crtime', 'desc')
+            ->paginate(50);
 
         $totalAmount = $supplierTransactions->sum('debit') + $supplierTransactions->sum('credit');
         $totalPurchases = $supplierTransactions->sum('credit');
@@ -1239,8 +1411,13 @@ class ReportController extends Controller
         $totalTransactions = $supplierTransactions->count();
 
         return view('reports.general-suppliers-report', compact(
-            'suppliers', 'supplierTransactions', 'totalAmount', 'totalPurchases',
-            'totalPayments', 'finalBalance', 'totalTransactions'
+            'suppliers',
+            'supplierTransactions',
+            'totalAmount',
+            'totalPurchases',
+            'totalPayments',
+            'finalBalance',
+            'totalTransactions'
         ));
     }
 
@@ -1248,21 +1425,21 @@ class ReportController extends Controller
     public function generalExpensesReport()
     {
         $expenseAccounts = AccHead::where('code', 'like', '5%')->where('isdeleted', 0)->get();
-        
+
         $expenseTransactions = JournalDetail::whereHas('account', function ($q) {
             $q->where('code', 'like', '5%'); // Expense accounts
         })->with(['account', 'journalHead', 'costCenter'])
-        ->when(request('from_date'), function ($q) {
-            $q->whereDate('crtime', '>=', request('from_date'));
-        })
-        ->when(request('to_date'), function ($q) {
-            $q->whereDate('crtime', '<=', request('to_date'));
-        })
-        ->when(request('expense_account'), function ($q) {
-            $q->where('account_id', request('expense_account'));
-        })
-        ->orderBy('crtime', 'desc')
-        ->paginate(50);
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('crtime', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('crtime', '<=', request('to_date'));
+            })
+            ->when(request('expense_account'), function ($q) {
+                $q->where('account_id', request('expense_account'));
+            })
+            ->orderBy('crtime', 'desc')
+            ->paginate(50);
 
         $totalExpenses = $expenseTransactions->sum('debit');
         $totalPayments = $expenseTransactions->sum('credit');
@@ -1270,7 +1447,12 @@ class ReportController extends Controller
         $totalTransactions = $expenseTransactions->count();
 
         return view('reports.general-expenses-report', compact(
-            'expenseAccounts', 'expenseTransactions', 'totalExpenses', 'totalPayments', 'netExpenses', 'totalTransactions'
+            'expenseAccounts',
+            'expenseTransactions',
+            'totalExpenses',
+            'totalPayments',
+            'netExpenses',
+            'totalTransactions'
         ));
     }
 
@@ -1278,19 +1460,19 @@ class ReportController extends Controller
     public function generalCostCentersReport()
     {
         $costCenters = CostCenter::all();
-        
+
         $costCenterTransactions = JournalDetail::with(['account', 'journalHead', 'costCenter'])
-        ->when(request('from_date'), function ($q) {
-            $q->whereDate('crtime', '>=', request('from_date'));
-        })
-        ->when(request('to_date'), function ($q) {
-            $q->whereDate('crtime', '<=', request('to_date'));
-        })
-        ->when(request('cost_center_id'), function ($q) {
-            $q->where('cost_center_id', request('cost_center_id'));
-        })
-        ->orderBy('crtime', 'desc')
-        ->paginate(50);
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('crtime', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('crtime', '<=', request('to_date'));
+            })
+            ->when(request('cost_center_id'), function ($q) {
+                $q->where('cost_center_id', request('cost_center_id'));
+            })
+            ->orderBy('crtime', 'desc')
+            ->paginate(50);
 
         $totalExpenses = $costCenterTransactions->sum('debit');
         $totalRevenues = $costCenterTransactions->sum('credit');
@@ -1298,7 +1480,38 @@ class ReportController extends Controller
         $totalTransactions = $costCenterTransactions->count();
 
         return view('reports.general-cost-centers-report', compact(
-            'costCenters', 'costCenterTransactions', 'totalExpenses', 'totalRevenues', 'netCost', 'totalTransactions'
+            'costCenters',
+            'costCenterTransactions',
+            'totalExpenses',
+            'totalRevenues',
+            'netCost',
+            'totalTransactions'
         ));
+    }
+
+    protected function getQuantityStatus($item)
+    {
+        if ($item->current_quantity < $item->min_order_quantity) {
+            return 'below_min';
+        } elseif ($item->current_quantity > $item->max_order_quantity) {
+            return 'above_max';
+        }
+        return 'normal';
+    }
+
+    public function getItemsMaxMinQuantity()
+    {
+        $items = Item::with(['units', 'prices'])->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'code' => $item->code,
+                'current_quantity' => $item->current_quantity, // هنا نستخدم الدالة من الموديل
+                'min_order_quantity' => $item->min_order_quantity,
+                'max_order_quantity' => $item->max_order_quantity,
+                'status' => $this->getQuantityStatus($item)
+            ];
+        });
+        return view('reports.items.items-max&min-quantity', compact('items'));
     }
 }
