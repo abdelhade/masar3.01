@@ -134,7 +134,7 @@ class InventoryStartBalanceController extends Controller
                         $unit = $item->units()->where('unit_id', $unitId)->first();
                         $unitCost = $unit ? $unit->pivot->cost : 0;
                     }
-                    if ($newBalance > 0) {
+                    if ($newBalance >= 0) {
                         OperationItems::updateOrCreate(
                             [
                                 'pro_tybe' => 60,
@@ -161,6 +161,16 @@ class InventoryStartBalanceController extends Controller
                             ]
                         );
                     }
+                    //  else {
+                    //     // مسح السجل لو الرصيد صفر
+                    //     OperationItems::where([
+                    //         'pro_tybe' => 60,
+                    //         'item_id' => $itemId,
+                    //         'detail_store' => $storeId,
+                    //         'pro_id' => $operHead->id,
+                    //     ])->delete();
+                    // }
+
                     $totalAmount += ($newBalance * $unitCost);
                     $processedItems++;
                 }

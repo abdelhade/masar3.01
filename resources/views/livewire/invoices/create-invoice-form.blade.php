@@ -97,6 +97,14 @@
             });
         });
 
+        window.addEventListener('swal', event => {
+            Swal.fire({
+                title: event.detail.title,
+                text: event.detail.text,
+                icon: event.detail.icon,
+            });
+        });
+
         document.addEventListener('alpine:init', () => {
             Alpine.directive('focus-next', (el, {
                 expression

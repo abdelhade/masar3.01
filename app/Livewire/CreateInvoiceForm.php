@@ -631,6 +631,7 @@ class CreateInvoiceForm extends Component
 
         foreach ($this->invoiceItems as $index => $item) {
 
+            // حساب الكميه المتوفره للصنف
             $availableQty = OperationItems::where('item_id', $item['item_id'])
                 ->where('detail_store', $this->acc2_id)
                 ->selectRaw('SUM(qty_in - qty_out) as total')
@@ -874,7 +875,14 @@ class CreateInvoiceForm extends Component
                     ]);
                 }
             }
-            Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
+
+            $this->dispatch('swal', [
+                'title' => 'تم الحفظ!',
+                'text' => 'تم حفظ البيانات بنجاح.',
+                'icon' => 'success',
+            ]);
+
+            // Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
             return $operation->id;
         } catch (\Exception $e) {
             logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
