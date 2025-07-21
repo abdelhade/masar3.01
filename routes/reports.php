@@ -105,6 +105,35 @@ Route::get('/reports/general-cost-center-account-statement', [ReportController::
 
 // كشف حساب عام مع مركز تكلفة
 Route::get('/reports/general-account-statement-with-cost-center', [ReportController::class, 'generalAccountStatementWithCostCenter'])->name('reports.general-account-statement-with-cost-center');
+// تقارير المخزون
+Route::get('/reports/general-inventory-report', [ReportController::class, 'generalInventoryReport'])->name('reports.general-inventory-report');
+
+// تقرير حركة المخزون اليومية
+Route::get('/reports/general-inventory-daily-movement-report', [ReportController::class, 'generalInventoryDailyMovementReport'])->name('reports.general-inventory-daily-movement-report');
+
+// تقرير جرد المخزون
+Route::get('/reports/general-inventory-stocktaking-report', [ReportController::class, 'generalInventoryStocktakingReport'])->name('reports.general-inventory-stocktaking-report');
+
+// تقارير الحسابات
+Route::get('/reports/general-accounts-report', [ReportController::class, 'generalAccountsReport'])->name('reports.general-accounts-report');
+
+// تقرير كشف حساب عام
+Route::get('/reports/general-account-statement-report', [ReportController::class, 'generalAccountStatementReport'])->name('reports.general-account-statement-report');
+
+// تقارير المبيعات
+Route::get('/reports/general-sales-report', [ReportController::class, 'generalSalesReport'])->name('reports.general-sales-report');
+
+// تقرير المبيعات اليومية
+Route::get('/reports/general-sales-daily-report', [ReportController::class, 'generalSalesDailyReport'])->name('reports.general-sales-daily-report');
+
+// تقرير مبيعات الأصناف
+Route::get('/reports/general-sales-items-report', [ReportController::class, 'generalSalesItemsReport'])->name('reports.general-sales-items-report');
+
+// تقارير النقدية والبنوك
+Route::get('/reports/general-cash-bank-report', [ReportController::class, 'generalCashBankReport'])->name('reports.general-cash-bank-report');
+
+// تقرير حركة الصندوق
+Route::get('/reports/general-cashbox-movement-report', [ReportController::class, 'generalCashboxMovementReport'])->name('reports.general-cashbox-movement-report');
 
 Route::get(
     '/reports/get-items-max&min-quntity',

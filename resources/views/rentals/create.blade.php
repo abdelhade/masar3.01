@@ -82,7 +82,7 @@
                             </select>
                             <div class="invalid-feedback">يرجى اختيار العميل</div>
                         </div>
-                        <input type="text" name="acc2" id="" value="99" hidden>
+                        <input type="text" name="acc2" id="" value="42" hidden>
                     </div>
 
 

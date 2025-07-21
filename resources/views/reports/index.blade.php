@@ -43,21 +43,33 @@
                     </div>
 
                     <div class="col-md-4">
-                        <h2>تقارير المخزون</h2>
-                        <a href="{{ route('reports.general-inventory-balances') }}">
-                            <p>قائمة الاصناف مع الارصدة كل المخازن</p>
+                        <h2>تقارير المخزون (جديدة)</h2>
+                        <a href="{{ route('reports.general-inventory-report') }}">
+                            <p>تقرير المخزون العام</p>
                         </a>
-                        <a href="{{ route('reports.general-inventory-balances-by-store') }}">
-                            <p>قائمة الاصناف مع الارصدة مخزن معين</p>
+                        <a href="{{ route('reports.general-inventory-daily-movement-report') }}">
+                            <p>تقرير حركة المخزون اليومية</p>
                         </a>
-                        <a href="{{ route('reports.general-account-balances-by-store') }}">
-                            <p>قائمة الحسابات مع الارصدة</p>
+                        <a href="{{ route('reports.general-inventory-stocktaking-report') }}">
+                            <p>تقرير جرد المخزون</p>
                         </a>
-                        <a href="{{ route('reports.general-inventory-movements') }}">
-                            <p>حركة الصنف</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2>تقارير الحسابات (جديدة)</h2>
+                        <a href="{{ route('reports.general-accounts-report') }}">
+                            <p>تقرير الحسابات العام</p>
                         </a>
-                        <a href="{{ route('reports.general-inventory-balances') }}">
-                            <p>ميزان الاصناف</p>
+                        <a href="{{ route('reports.general-account-statement-report') }}">
+                            <p>تقرير كشف حساب عام</p>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <h2>تقارير النقدية والبنوك</h2>
+                        <a href="{{ route('reports.general-cash-bank-report') }}">
+                            <p>تقرير النقدية والبنوك</p>
+                        </a>
+                        <a href="{{ route('reports.general-cashbox-movement-report') }}">
+                            <p>تقرير حركة الصندوق</p>
                         </a>
                     </div>
 
