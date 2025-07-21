@@ -1301,4 +1301,50 @@ class ReportController extends Controller
             'costCenters', 'costCenterTransactions', 'totalExpenses', 'totalRevenues', 'netCost', 'totalTransactions'
         ));
     }
+
+    // تقرير المخزون العام
+    public function generalInventoryReport()
+    {
+        $items = \App\Models\Item::with('units')->paginate(50);
+        foreach ($items as $item) {
+            $item->main_unit = $item->units->first();
+        }
+        return view('reports.general-inventory-report', compact('items'));
+    }
+
+    // تقرير حركة المخزون اليومية
+    public function generalInventoryDailyMovementReport()
+    {
+        return view('reports.general-inventory-daily-movement-report');
+    }
+
+    // تقرير جرد المخزون
+    public function generalInventoryStocktakingReport()
+    {
+        return view('reports.general-inventory-stocktaking-report');
+    }
+
+    // تقرير الحسابات العام
+    public function generalAccountsReport()
+    {
+        return view('reports.general-accounts-report');
+    }
+
+    // تقرير كشف حساب عام
+    public function generalAccountStatementReport()
+    {
+        return view('reports.general-account-statement-report');
+    }
+
+    // تقرير النقدية والبنوك
+    public function generalCashBankReport()
+    {
+        return view('reports.general-cash-bank-report');
+    }
+
+    // تقرير حركة الصندوق
+    public function generalCashboxMovementReport()
+    {
+        return view('reports.general-cashbox-movement-report');
+    }
 }
