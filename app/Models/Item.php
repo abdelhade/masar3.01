@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Item extends Model
 {
     use HasFactory;
@@ -16,7 +18,7 @@ class Item extends Model
         return $this->hasMany(Barcode::class);
     }
 
-    public function units() : BelongsToMany
+    public function units(): BelongsToMany
     {
         return $this->belongsToMany(Unit::class, 'item_units', 'item_id', 'unit_id')
             ->withPivot('u_val', 'cost')
@@ -26,7 +28,7 @@ class Item extends Model
     public function prices(): BelongsToMany
     {
         return $this->belongsToMany(Price::class, 'item_prices', 'item_id', 'price_id')
-            ->withPivot('unit_id','price','discount','tax_rate')
+            ->withPivot('unit_id', 'price', 'discount', 'tax_rate')
             ->withTimestamps();
     }
 
@@ -35,5 +37,19 @@ class Item extends Model
         return $this->belongsToMany(Note::class, 'item_notes', 'item_id', 'note_id')
             ->withPivot('note_detail_name')
             ->withTimestamps();
+    }
+
+    public function getCurrentQuantityAttribute()
+    {
+        // حساب إجمالي الكميات الداخلة (qty_in) والخارجة (qty_out)
+        $totalIn = OperationItems::where('item_id', $this->id)
+            ->where('isdeleted', 0)
+            ->sum('qty_in');
+
+        $totalOut = OperationItems::where('item_id', $this->id)
+            ->where('isdeleted', 0)
+            ->sum('qty_out');
+
+        return $totalIn - $totalOut;
     }
 }

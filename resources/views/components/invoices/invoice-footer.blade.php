@@ -200,11 +200,7 @@
                             id="additional_value">
                     </div>
                 </div>
-
-
-
                 <hr>
-
                 {{-- الإجمالي النهائي --}}
                 <div class="row mb-2">
                     <div class="col-3 text-right font-weight-bold">الإجمالي النهائي:</div>
@@ -246,8 +242,6 @@
                         {{ number_format(max($remaining, 0)) }}
                     </div>
                 </div>
-
-
 
             </div>
         </div>

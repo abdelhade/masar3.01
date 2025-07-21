@@ -134,3 +134,8 @@ Route::get('/reports/general-cash-bank-report', [ReportController::class, 'gener
 
 // تقرير حركة الصندوق
 Route::get('/reports/general-cashbox-movement-report', [ReportController::class, 'generalCashboxMovementReport'])->name('reports.general-cashbox-movement-report');
+
+Route::get(
+    '/reports/get-items-max&min-quntity',
+    [ReportController::class, 'getItemsMaxMinQuantity']
+)->name('reports.get-items-max-min-quantity');

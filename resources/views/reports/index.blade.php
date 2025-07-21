@@ -1,7 +1,6 @@
 @extends('admin.dashboard')
 
 @section('content')
-
     <style>
         h2 {
             font-size: 18px;
@@ -19,7 +18,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <h2>التقارير العامة</h2>
-                        <a href="{{route('reports.overall')}}">
+                        <a href="{{ route('reports.overall') }}">
                             <p>محلل العمل اليومي</p>
                         </a>
                         <a href="{{ route('journal-summery') }}">
@@ -42,6 +41,7 @@
                             <p>ميزان الحسابات</p>
                         </a>
                     </div>
+
                     <div class="col-md-4">
                         <h2>تقارير المخزون (جديدة)</h2>
                         <a href="{{ route('reports.general-inventory-report') }}">
@@ -150,9 +150,16 @@
                             <p>كشف حساب عام مع مركز تكلفة</p>
                         </a>
                     </div>
+
+                    <div class="col-md-4">
+                        <h2>تقارير الاصناف </h2>
+                        <a href="{{ route('reports.get-items-max-min-quantity') }}">
+                            <p>مراقبة كميات الأصناف </p>
+                        </a>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
 @endsection
