@@ -29,7 +29,7 @@ class InventoryStartBalanceController extends Controller
         $partners = cache()->remember('partners', 60 * 60, function () {
             return AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
-                ->where('code', 'like', '2311%')
+                ->where('code', 'like', '221%')
                 ->select('id', 'aname')
                 ->get();
         });

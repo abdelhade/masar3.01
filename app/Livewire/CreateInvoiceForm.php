@@ -138,10 +138,11 @@ class CreateInvoiceForm extends Component
         $this->acc1Role = $map[$type]['acc1_role'] ?? 'مدين';
         $this->acc2Role = $map[$type]['acc2_role'] ?? 'دائن';
         $this->acc2_id = 27;
+        $this->emp_id = 43;
         $this->cash_box_id = 21;
 
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
-            $this->acc1_id = 148;
+            $this->acc1_id = 44;
         } elseif (in_array($this->type, [11, 13, 15, 17])) {
             $this->acc1_id = 36;
         } elseif (in_array($this->type, [18, 19, 20, 21])) {
@@ -607,7 +608,6 @@ class CreateInvoiceForm extends Component
 
     public function saveForm()
     {
-        // dd($this->all());
         if (empty($this->invoiceItems)) {
             Alert::toast('لا يمكن حفظ الفاتورة بدون أصناف.', 'error');
             return;
@@ -646,7 +646,7 @@ class CreateInvoiceForm extends Component
         }
 
         try {
-            // dd($this->all());
+
             $isJournal = in_array($this->type, [10, 11, 12, 13, 18, 19, 20, 21, 23]) ? 1 : 0;
             $isManager = $isJournal ? 0 : 1;
 
@@ -747,7 +747,7 @@ class CreateInvoiceForm extends Component
                 switch ($this->type) {
                     case 10:
                         $debit = $this->acc1_id;
-                        $credit = 93; // حساب المبيعات
+                        $credit = 37; // حساب المبيعات
                         break;
                     case 11:
                         $debit = 4111; // حساب  المشتريات
@@ -816,6 +816,7 @@ class CreateInvoiceForm extends Component
                     'user'       => Auth::id(),
                 ]);
             }
+
             if ($this->received_from_client > 0) {
                 // إنشاء سند قبض أو دفع
                 if ($isReceipt || $isPayment) {
@@ -875,13 +876,11 @@ class CreateInvoiceForm extends Component
                     ]);
                 }
             }
-
             $this->dispatch('swal', [
                 'title' => 'تم الحفظ!',
                 'text' => 'تم حفظ البيانات بنجاح.',
                 'icon' => 'success',
             ]);
-
             // Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
             return $operation->id;
         } catch (\Exception $e) {
