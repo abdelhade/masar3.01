@@ -174,13 +174,27 @@
                         @can('عرض التصنيفات')
                             <livewire:item-management.notes.notesNames />
                         @endcan
-                        {{-- item movement --}}
+                        {{-- item movement report --}}
                         <li class="nav-item">
                             <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
                                 <i class="ti-control-record"></i>{{ __('تقرير حركه صنف') }}
                             </a>
                         </li>
-                        {{-- item movement --}}
+                        {{-- item movement report --}}
+                        {{-- item sales report --}}
+                        <li class="nav-item">
+                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-sales') }}">
+                                <i class="ti-control-record"></i>{{ __('تقرير مبيعات صنف') }}
+                            </a>
+                        </li>
+                        {{-- item sales report --}}
+                        {{-- item purchase report --}}
+                        <li class="nav-item">
+                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-purchase') }}">
+                                <i class="ti-control-record"></i>{{ __('تقرير مشتريات صنف') }}
+                            </a>
+                        </li>
+                        {{-- item purchase report --}}
                     </ul>
                 </li>
             @endcanany
