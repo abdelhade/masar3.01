@@ -11,10 +11,10 @@ class ContractTypeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:عرض أنواع العقود')->only(['index']);
-        $this->middleware('can:إنشاء أنواع العقود')->only(['create', 'store']);
-        $this->middleware('can:تعديل أنواع العقود')->only(['update', 'edit']);
-        $this->middleware('can:حذف أنواع العقود')->only(['destroy']);
+        $this->middleware('can:عرض انواع العقود')->only(['index']);
+        $this->middleware('can:إضافة انواع العقود')->only(['create', 'store']);
+        $this->middleware('can:تعديل انواع العقود')->only(['update', 'edit']);
+        $this->middleware('can:حذف انواع العقود')->only(['destroy']);
     }
 
     public function index()
