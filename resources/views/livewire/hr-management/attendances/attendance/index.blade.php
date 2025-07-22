@@ -224,13 +224,13 @@ new class extends Component {
 
 <div dir="rtl" style="font-family: 'Cairo', sans-serif;">
     <div class="row mb-3">
-        @can('إنشاء البصمات')
-            <div class="col-12 d-flex justify-content-end">
-                <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
-                    <i class="las la-plus"></i> {{ __('إضافة حضور') }}
-                </button>
-            </div>
-        @endcan
+        {{-- @can('إنشاء البصمات') --}}
+        <div class="">
+            <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
+                <i class="las la-plus"></i> {{ __('إضافة حضور') }}
+            </button>
+        </div>
+        {{-- @endcan --}}
 
     </div>
     <div class="row">
@@ -267,601 +267,256 @@ new class extends Component {
                                 wire:click="clearFilters">
                                 <i class="las la-broom me-1"></i> {{ __('مسح الفلاتر') }}
                             </button>
-
-                            @can('مسح -الفلاتر')
-                                <button type="button" class="btn btn-outline-secondary font-family-cairo fw-bold w-100"
-                                    wire:click="clearFilters">
-                                    <i class="las la-broom me-1"></i> {{ __('مسح الفلاتر') }}
-                                </button>
-                            @endcan
-
                         </div>
                     </div>
                 </div>
+
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
-
                                 <tr>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('رقم') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('اسم الموظف') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('رقم الموظف') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('اسم البصمة') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('النوع') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('التاريخ') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الوقت') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الموقع') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الحالة') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('ملاحظات') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الإجراءات') }}</th>
+                                    <th>{{ __('رقم') }}</th>
+                                    <th>{{ __('اسم الموظف') }}</th>
+                                    <th>{{ __('رقم الموظف') }}</th>
+                                    <th>{{ __('اسم البصمة') }}</th>
+                                    <th>{{ __('النوع') }}</th>
+                                    <th>{{ __('التاريخ') }}</th>
+                                    <th>{{ __('الوقت') }}</th>
+                                    <th>{{ __('الموقع') }}</th>
+                                    <th>{{ __('الحالة') }}</th>
+                                    <th>{{ __('ملاحظات') }}</th>
+                                    @can('إجراء العمليات على البصمات')
+                                        <th>{{ __('الإجراءات') }}</th>
+                                    @endcan
+                                </tr>
+                            </thead>
 
-                                    <div class="table-responsive">
-                                        <table
-                                            class="table table-striped table-hover table-bordered table-light text-center align-middle">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th class="font-family-cairo fw-bold">{{ __('رقم') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('اسم الموظف') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('رقم الموظف') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('اسم البصمة') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('النوع') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('التاريخ') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('الوقت') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('الموقع') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('الحالة') }}</th>
-                                                    <th class="font-family-cairo fw-bold">{{ __('ملاحظات') }}</th>
-                                                    @can('إجراء العمليات على البصمات')
-                                                        <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
+                            <tbody>
+                                @forelse($attendances as $attendance)
+                                    <tr>
+                                        <td class="text-center fw-bold">{{ $attendance->id }}</td>
+                                        <td class="text-center fw-bold">{{ $attendance->employee->name ?? '-' }}</td>
+                                        <td class="text-center fw-bold">{{ $attendance->employee_id }}</td>
+                                        <td class="text-center fw-bold">
+                                            {{ $attendance->employee_attendance_finger_print_name }}</td>
+                                        <td class="text-center fw-bold">
+                                            {{ $attendance->type == 'check_in' ? __('دخول') : __('خروج') }}
+                                        </td>
+                                        <td class="text-center fw-bold">{{ $attendance->date->format('Y-m-d') }}</td>
+                                        <td class="text-center fw-bold">{{ $attendance->time->format('H:i:s') }}</td>
+                                        <td class="text-center fw-bold">{{ $attendance->location ?? '-' }}</td>
+                                        <td class="text-center fw-bold">
+                                            @if ($attendance->status == 'pending')
+                                                <span class="badge bg-warning">{{ __('قيد المراجعة') }}</span>
+                                            @elseif($attendance->status == 'approved')
+                                                <span class="badge bg-success">{{ __('معتمد') }}</span>
+                                            @else
+                                                <span class="badge bg-danger">{{ __('مرفوض') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center fw-bold">{{ $attendance->notes ?? '-' }}</td>
+
+                                        @can('إجراء العمليات على البصمات')
+                                            <td class="text-center fw-bold">
+                                                @if ($attendance->status !== 'approved')
+                                                    @can('تعديل البصمات')
+                                                        <button class="btn btn-sm btn-info me-1"
+                                                            wire:click="edit({{ $attendance->id }})">
+                                                            {{ __('تعديل') }}
+                                                        </button>
                                                     @endcan
+                                                    @can('حذف البصمات')
+                                                        <button class="btn btn-sm btn-danger"
+                                                            wire:click="confirmDelete({{ $attendance->id }})">
+                                                            {{ __('حذف') }}
+                                                        </button>
+                                                    @endcan
+                                                @else
+                                                    <span class="text-muted">{{ __('غير قابل للتعديل/الحذف') }}</span>
+                                                @endif
+                                            </td>
+                                        @endcan
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="11" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0 font-family-cairo fw-bold">
+                                                <i class="las la-info-circle me-2"></i> {{ __('لا توجد سجلات حضور') }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @forelse($attendances as $attendance)
-                                                    <tr>
-                                                        <<<<<<< HEAD <td class="font-family-cairo text-center fw-bold">
-                                                            {{ $attendance->id }}</td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->employee->name ?? '-' }}
-                                                            </td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->employee_id }}</td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->employee_attendance_finger_print_name }}
-                                                            </td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->type == 'check_in' ? __('دخول') : __('خروج') }}
-                                                            </td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->date->format('Y-m-d') }}
-                                                            </td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->time->format('H:i:s') }}
-                                                            </td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->location ?? '-' }}</td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                @if ($attendance->status == 'pending')
-                                                                    <span
-                                                                        class="badge bg-warning font-family-cairo">{{ __('قيد المراجعة') }}</span>
-                                                                    =======
-                                                            <td class="font-family-cairo fw-bold">{{ $attendance->id }}
-                                                            </td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->employee->name ?? '-' }}</td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->employee_id }}</td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->employee_attendance_finger_print_name }}
-                                                            </td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->type == 'check_in' ? __('دخول') : __('خروج') }}
-                                                            </td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->date->format('Y-m-d') }}</td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->time->format('H:i:s') }}</td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->location ?? '-' }}</td>
-                                                            <td class="font-family-cairo fw-bold">
-                                                                @if ($attendance->status == 'pending')
-                                                                    <span
-                                                                        class="badge bg-warning font-family-cairo">{{ __('قيد المراجعة') }}</span>
-                                                                    >>>>>>> origin/main
-                                                                @elseif($attendance->status == 'approved')
-                                                                    <span
-                                                                        class="badge bg-success font-family-cairo">{{ __('معتمد') }}</span>
-                                                                @else
-                                                                    <span
-                                                                        class="badge bg-danger font-family-cairo">{{ __('مرفوض') }}</span>
-                                                                @endif
-                                                            </td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                {{ $attendance->notes ?? '-' }}</td>
-                                                            <td class="font-family-cairo text-center fw-bold">
-                                                                @if ($attendance->status !== 'approved')
-                                                                    <button
-                                                                        class="btn btn-success me-1 font-family-cairo"
-                                                                        wire:click="edit({{ $attendance->id }})">{{ __('تعديل') }}</button>
-                                                                    <button
-                                                                        class="btn btn-sm btn-danger font-family-cairo"
-                                                                        wire:click="confirmDelete({{ $attendance->id }})">{{ __('حذف') }}</button>
-                                                                @else
-                                                                    <span
-                                                                        class="text-muted">{{ __('غير قابل للتعديل/الحذف') }}</span>
-                                                                @endif
-                                                            </td>
-
-                                                            <td class="font-family-cairo fw-bold">
-                                                                {{ $attendance->notes ?? '-' }}</td>
-                                                            @can('إجراء العمليات على البصمات')
-                                                                <td class="font-family-cairo fw-bold">
-                                                                    @if ($attendance->status !== 'approved')
-                                                                        @can('تعديل البصمات')
-                                                                            <button
-                                                                                class="btn btn-sm btn-info me-1 font-family-cairo"
-                                                                                wire:click="edit({{ $attendance->id }})">{{ __('تعديل') }}</button>
-                                                                        @endcan
-                                                                        @can('حذف البصمات')
-                                                                            <button
-                                                                                class="btn btn-sm btn-danger font-family-cairo"
-                                                                                wire:click="confirmDelete({{ $attendance->id }})">{{ __('حذف') }}</button>
-                                                                        @endcan
-                                                                    @else
-                                                                        <span
-                                                                            class="text-muted">{{ __('غير قابل للتعديل/الحذف') }}</span>
-                                                                    @endif
-                                                                </td>
-                                                            @endcan
-
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="10" class="text-center">
-                                                            <div class="alert alert-info py-3 mb-0"
-                                                                style="font-size: 1.2rem; font-weight: 500;">
-                                                                <i class="las la-info-circle me-2"></i>
-                                                                لا توجد بيانات
-                                                            </div>
-                                                        <td colspan="10"
-                                                            class="text-center font-family-cairo fw-bold">
-                                                            {{ __('لا توجد سجلات حضور') }}
-                                                        </td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="d-flex justify-content-center mt-3">
-                                        {{ $attendances->links() }}
-                                    </div>
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $attendances->links() }}
                     </div>
                 </div>
             </div>
         </div>
-        {{-- Create Modal --}}
-        @if ($showCreateModal)
-            <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title font-family-cairo">{{ __('إضافة حضور') }}</h5>
-                            <button type="button" class="btn-close"
-                                wire:click="$set('showCreateModal', false)"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form wire:submit.prevent="store">
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo">{{ __('الموظف') }}</label>
+
+    </div>
+    {{-- Create Modal --}}
+    @if ($showCreateModal || $showEditModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title font-family-cairo">
+                            {{ $showCreateModal ? __('إضافة حضور') : __('تعديل الحضور') }}
+                        </h5>
+                        <button type="button" class="btn-close"
+                            wire:click="$set('{{ $showCreateModal ? 'showCreateModal' : 'showEditModal' }}', false)">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form wire:submit.prevent="{{ $showCreateModal ? 'store' : 'update' }}">
+                            {{-- الصف الأول --}}
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">الموظف</label>
                                     <select class="form-select font-family-cairo fw-bold font-14"
                                         wire:model.live="form.employee_id">
-                                        <option class="text-muted font-family-cairo fw-bold font-14" value="">
-                                            <<<<<<< HEAD {{ __('اختر الموظف') }}</option>
-                                                @foreach ($this->employees as $employee)
-                                        <option class="font-family-cairo fw-bold font-14"
-                                            value="{{ $employee->id }}">{{ $employee->name }}</option>
-
-                                        {{ __('اختر الموظف') }}
-                                        </option>
+                                        <option value="">اختر الموظف</option>
                                         @foreach ($this->employees as $employee)
-                                            <option class="font-family-cairo fw-bold font-14"
-                                                value="{{ $employee->id }}">
-                                                {{ $employee->name }}
-                                            </option>
+                                            <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                         @endforeach
                                     </select>
                                     @error('form.employee_id')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo">{{ __('رقم البصمة') }}</label>
-                                    <input type="text" class="form-control font-family-cairo"
-                                        value="{{ $this->form['employee_attendance_finger_print_id'] }}" disabled>
-                                    @error('form.employee_attendance_finger_print_id')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
 
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">رقم البصمة</label>
+                                    <input type="text" class="form-control font-family-cairo"
+                                        value="{{ $form['employee_attendance_finger_print_id'] }}" disabled>
                                     @error('form.employee_attendance_finger_print_id')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo">{{ __('اسم البصمة') }}</label>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">اسم البصمة</label>
                                     <input type="text" class="form-control font-family-cairo"
-                                        value="{{ $this->form['employee_attendance_finger_print_name'] }}" disabled>
+                                        value="{{ $form['employee_attendance_finger_print_name'] }}" disabled>
                                     @error('form.employee_attendance_finger_print_name')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo">{{ __('النوع') }}</label>
-                                    <select class="form-select font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.type">
-                                        <option class="font-family-cairo fw-bold font-14" value="check_in">
-                                            {{ __('دخول') }}</option>
-                                        <option class="font-family-cairo fw-bold font-14" value="check_out">
-                                            {{ __('خروج') }}</option>
+                            </div>
 
-                                        @error('form.employee_attendance_finger_print_name')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo">{{ __('النوع') }}</label>
+                            {{-- الصف الثاني --}}
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">النوع</label>
                                     <select class="form-select font-family-cairo fw-bold font-14"
                                         wire:model.live="form.type">
-                                        <option class="font-family-cairo fw-bold font-14" value="check_in">
-                                            {{ __('دخول') }}
-                                        </option>
-                                        <option class="font-family-cairo fw-bold font-14" value="check_out">
-                                            {{ __('خروج') }}
-                                        </option>
+                                        <option value="check_in">دخول</option>
+                                        <option value="check_out">خروج</option>
                                     </select>
                                     @error('form.type')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo">{{ __('التاريخ') }}</label>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">التاريخ</label>
                                     <input type="date" class="form-control font-family-cairo"
                                         wire:model.live="form.date">
                                     @error('form.date')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo fw-bold font-14">
-                                        {{ __('الوقت') }}</label>
-                                    <input type="time"
-                                        class="form-control
-                                @error('form.time') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الموقع') }}</label>
-                                    <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.location">
-                                    @error('form.location')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
-                                    <select class="form-select font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.status">
-                                        <option class="font-family-cairo fw-bold font-14" value="pending">
-                                            {{ __('قيد المراجعة') }}</option>
-                                        <option class="font-family-cairo fw-bold font-14" value="approved">
-                                            {{ __('معتمد') }}</option>
-                                        <option class="font-family-cairo fw-bold font-14" value="rejected">
-                                            {{ __('مرفوض') }}</option>
 
-                                        <label
-                                            class="form-label font-family-cairo fw-bold font-14">{{ __('الوقت') }}</label>
-                                        <input type="time"
-                                            class="form-control
-                                        @error('form.time') <span class=" text-danger">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="mb-3">
-                                        <label
-                                            class="form-label font-family-cairo fw-bold font-14">{{ __('الموقع') }}</label>
-                                        <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                            wire:model.live="form.location">
-                                        @error('form.location')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
-                                    <select class="form-select font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.status">
-                                        <option class="font-family-cairo fw-bold font-14" value="pending">
-                                            {{ __('قيد المراجعة') }}
-                                        </option>
-                                        <option class="font-family-cairo fw-bold font-14" value="approved">
-                                            {{ __('معتمد') }}
-                                        </option>
-                                        <option class="font-family-cairo fw-bold font-14" value="rejected">
-                                            {{ __('مرفوض') }}
-                                        </option>
-                                    </select>
-                                    @error('form.status')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo fw-bold font-14">
-                                        {{ __('ملاحظات') }}</label>
-                                    <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.live="form.notes"></textarea>
-                                    @error('form.notes')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('ملاحظات') }}</label>
-                                    <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.live="form.notes"></textarea>
-                                    @error('form.notes')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary font-family-cairo"
-                                        wire:click="$set('showCreateModal', false)">{{ __('إلغاء') }}</button>
-                                    <button type="submit" class="btn btn-primary font-family-cairo">
-                                        {{ __('حفظ') }}</button>
-
-                                    <button type="submit"
-                                        class="btn btn-primary font-family-cairo">{{ __('حفظ') }}</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-        {{-- Edit Modal --}}
-        @if ($showEditModal)
-            <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title font-family-cairo">{{ __('تعديل الحضور') }}</h5>
-                            <button type="button" class="btn-close"
-                                wire:click="$set('showEditModal', false)"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form wire:submit.prevent="update">
-                                {{-- Same fields as create modal, but bound to form and update --}}
-                                <div class="mb-3">
-                                    <<<<<<< HEAD <label class="form-label font-family-cairo fw-bold font-14">
-                                        {{ __('الموظف') }}</label>
-                                        <select class="form-select font-family-cairo fw-bold font-14"
-                                            wire:model.live="form.employee_id">
-                                            <option class="text-muted font-family-cairo fw-bold font-14"
-                                                value="">
-                                                {{ __('اختر الموظف') }}</option>
-                                            @foreach ($this->employees as $employee)
-                                                <option class="font-family-cairo fw-bold font-14"
-                                                    value="{{ $employee->id }}">{{ $employee->name }}</option>
-                                                <label
-                                                    class="form-label font-family-cairo fw-bold font-14">{{ __('الموظف') }}</label>
-                                                <select class="form-select font-family-cairo fw-bold font-14"
-                                                    wire:model.live="form.employee_id">
-                                                    <option class="text-muted font-family-cairo fw-bold font-14"
-                                                        value="">
-                                                        {{ __('اختر الموظف') }}
-                                                    </option>
-                                                    @foreach ($this->employees as $employee)
-                                                        <option class="font-family-cairo fw-bold font-14"
-                                                            value="{{ $employee->id }}">
-                                                            {{ $employee->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('form.employee_id')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo fw-bold font-14">
-                                        {{ __('رقم البصمة') }}</label>
-                                    <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                        value="{{ $this->form['employee_attendance_finger_print_id'] }}" disabled>
-                                    @error('form.employee_attendance_finger_print_id')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('اسم البصمة') }}</label>
-                                    <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                        value="{{ $this->form['employee_attendance_finger_print_name'] }}" disabled>
-                                    @error('form.employee_attendance_finger_print_name')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('النوع') }}</label>
-                                    <select class="form-select font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.type">
-                                        <option class="font-family-cairo fw-bold font-14" value="check_in">
-                                            {{ __('دخول') }}</option>
-                                        <option class="font-family-cairo fw-bold font-14" value="check_out">
-                                            {{ __('خروج') }}</option>
-
-                                        <label
-                                            class="form-label font-family-cairo fw-bold font-14">{{ __('رقم البصمة') }}</label>
-                                        <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                            value="{{ $this->form['employee_attendance_finger_print_id'] }}"
-                                            disabled>
-                                        @error('form.employee_attendance_finger_print_id')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('اسم البصمة') }}</label>
-                                    <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                        value="{{ $this->form['employee_attendance_finger_print_name'] }}" disabled>
-                                    @error('form.employee_attendance_finger_print_name')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('النوع') }}</label>
-                                    <select class="form-select font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.type">
-                                        <option class="font-family-cairo fw-bold font-14" value="check_in">
-                                            {{ __('دخول') }}
-                                        </option>
-                                        <option class="font-family-cairo fw-bold font-14" value="check_out">
-                                            {{ __('خروج') }}
-                                        </option>
-                                    </select>
-                                    @error('form.type')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo fw-bold font-14">
-                                        {{ __('التاريخ') }}</label>
-                                    <input type="date" class="form-control font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.date">
-                                    @error('form.date')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الوقت') }}</label>
-                                    <input type="time" class="form-control font-family-cairo fw-bold font-14"
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">الوقت</label>
+                                    <input type="time" class="form-control font-family-cairo"
                                         wire:model.live="form.time">
                                     @error('form.time')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الموقع') }}</label>
-                                    <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.location">
-                                    @error('form.location')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
-                                    <select class="form-select font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.status">
-                                        <option class="font-family-cairo fw-bold font-14" value="pending">
-                                            {{ __('قيد المراجعة') }}</option>
-                                        <option class="font-family-cairo fw-bold font-14" value="approved">
-                                            {{ __('معتمد') }}</option>
-                                        <option class="font-family-cairo fw-bold font-14" value="rejected">
-                                            {{ __('مرفوض') }}</option>
+                            </div>
 
-                                        <label
-                                            class="form-label font-family-cairo fw-bold font-14">{{ __('التاريخ') }}</label>
-                                        <input type="date" class="form-control font-family-cairo fw-bold font-14"
-                                            wire:model.live="form.date">
-                                        @error('form.date')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الوقت') }}</label>
-                                    <input type="time" class="form-control font-family-cairo fw-bold font-14"
-                                        wire:model.live="form.time">
-                                    @error('form.time')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الموقع') }}</label>
-                                    <input type="text" class="form-control font-family-cairo fw-bold font-14"
+                            {{-- الصف الثالث --}}
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">الموقع</label>
+                                    <input type="text" class="form-control font-family-cairo"
                                         wire:model.live="form.location">
                                     @error('form.location')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">الحالة</label>
                                     <select class="form-select font-family-cairo fw-bold font-14"
                                         wire:model.live="form.status">
-                                        <option class="font-family-cairo fw-bold font-14" value="pending">
-                                            {{ __('قيد المراجعة') }}
-                                        </option>
-                                        <option class="font-family-cairo fw-bold font-14" value="approved">
-                                            {{ __('معتمد') }}
-                                        </option>
-                                        <option class="font-family-cairo fw-bold font-14" value="rejected">
-                                            {{ __('مرفوض') }}
-                                        </option>
+                                        <option value="pending">قيد المراجعة</option>
+                                        <option value="approved">معتمد</option>
+                                        <option value="rejected">مرفوض</option>
                                     </select>
                                     @error('form.status')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-family-cairo fw-bold font-14">
-                                        {{ __('ملاحظات') }}</label>
-                                    <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.live="form.notes"></textarea>
-                                    @error('form.notes')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
 
-                                    <label
-                                        class="form-label font-family-cairo fw-bold font-14">{{ __('ملاحظات') }}</label>
-                                    <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.live="form.notes"></textarea>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label font-family-cairo">ملاحظات</label>
+                                    <textarea class="form-control font-family-cairo" wire:model.live="form.notes"></textarea>
                                     @error('form.notes')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary font-family-cairo"
-                                        wire:click="$set('showEditModal', false)">{{ __('إلغاء') }}</button>
-                                    <button type="submit"
-                                        class="btn btn-primary font-family-cairo">{{ __('حفظ التعديلات') }}</button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+
+                            {{-- الأزرار --}}
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary font-family-cairo"
+                                    wire:click="$set('{{ $showCreateModal ? 'showCreateModal' : 'showEditModal' }}', false)">
+                                    إلغاء
+                                </button>
+                                <button type="submit" class="btn btn-primary font-family-cairo">
+                                    {{ $showCreateModal ? 'حفظ' : 'حفظ التعديلات' }}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-        @endif
-        {{-- Delete Modal --}}
-        @if ($showDeleteModal)
-            <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title font-family-cairo">{{ __('تأكيد الحذف') }}</h5>
-                            <button type="button" class="btn-close"
-                                wire:click="$set('showDeleteModal', false)"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="font-family-cairo">{{ __('هل أنت متأكد من حذف هذا السجل؟') }}</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary font-family-cairo"
-                                wire:click="$set('showDeleteModal', false)">{{ __('إلغاء') }}</button>
-                            <button type="button" class="btn btn-danger font-family-cairo"
-                                wire:click="delete">{{ __('حذف') }}</button>
-                        </div>
+        </div>
+    @endif
+
+
+    {{-- Delete Modal --}}
+    @if ($showDeleteModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title font-family-cairo">{{ __('تأكيد الحذف') }}</h5>
+                        <button type="button" class="btn-close"
+                            wire:click="$set('showDeleteModal', false)"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="font-family-cairo">{{ __('هل أنت متأكد من حذف هذا السجل؟') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary font-family-cairo"
+                            wire:click="$set('showDeleteModal', false)">{{ __('إلغاء') }}</button>
+                        <button type="button" class="btn btn-danger font-family-cairo"
+                            wire:click="delete">{{ __('حذف') }}</button>
                     </div>
                 </div>
             </div>
-        @endif
-    </div>
+        </div>
+    @endif
+</div>
 
 </div>

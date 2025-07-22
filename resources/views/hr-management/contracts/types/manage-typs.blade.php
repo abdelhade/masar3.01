@@ -2,7 +2,7 @@
 @section('content')
     @include('components.breadcrumb', [
         'title' => __('Contract Types'),
-        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('HR Management')], ['label' => __('Contract Types')]],
+        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('الموارد البشرية')], ['label' => __('انواع العقود')]],
     ])
 
 

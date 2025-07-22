@@ -116,7 +116,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
 
                                 <tr>
@@ -124,61 +124,38 @@ new class extends Component {
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Description') }}</th>
                                     <th>{{ __('Created At') }}</th>
-                                    @can('إجراء العمليات على المعدلات')
+                                    {{-- @can('إجراء العمليات على المعدلات') --}}
                                         <th>{{ __('Actions') }}</th>
-                                    @endcan
+                                    {{-- @endcan --}}
 
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($kpis as $kpi)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $kpi->id }}
-                                        </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $kpi->name }}
-                                        </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
-                                            {{ $kpi->description }}</td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
-                                            {{ $kpi->created_at->format('Y-m-d') }}</td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
-                                            {{-- @can('update', $kpi) --}}
-                                            <button wire:click="edit({{ $kpi->id }})"
-                                                class="btn btn-success btn-icon-square-sm me-2" data-bs-toggle="modal"
-                                                data-bs-target="#kpiFormModal">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            {{-- @endcan --}}
-                                            {{-- @can('delete', $kpi) --}}
-                                            <button wire:click="delete({{ $kpi->id }})"
-                                                class="btn btn-danger btn-icon-square-sm"
-                                                onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            {{-- @endcan --}}
-                                        </td>
+                                    
                                         <td>{{ $kpi->id }}</td>
                                         <td>{{ $kpi->name }}</td>
                                         <td>{{ $kpi->description }}</td>
                                         <td>{{ $kpi->created_at->format('Y-m-d') }}</td>
-                                        @can('إجراء العمليات على المعدلات')
+                                        {{-- @can('إجراء العمليات على المعدلات') --}}
                                             <td>
-                                                @can('تعديل المعدلات')
+                                                {{-- @can('تعديل المعدلات') --}}
                                                     <button wire:click="edit({{ $kpi->id }})"
-                                                        class="btn btn-sm btn-info me-2" data-bs-toggle="modal"
+                                                        class="btn btn-sm btn-success me-2" data-bs-toggle="modal"
                                                         data-bs-target="#kpiFormModal">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                @endcan
-                                                @can('حذف المعدلات')
+                                                {{-- @endcan
+                                                @can('حذف المعدلات') --}}
                                                     <button wire:click="delete({{ $kpi->id }})"
                                                         class="btn btn-sm btn-danger"
                                                         onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
-                                                @endcan
+                                                {{-- @endcan --}}
                                             </td>
-                                        @endcan
+                                        {{-- @endcan --}}
 
                                     </tr>
                                 @empty
