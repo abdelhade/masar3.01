@@ -205,20 +205,8 @@ class ManufacturingInvoice extends Component
             ])
             ->take(5)->get();
 
-        // تحديث التكاليف للمواد المختارة
-        foreach ($this->selectedRawMaterials as $key => $material) {
-            if (!isset($material['id']) || !isset($material['unit_id'])) {
-                $this->selectedRawMaterials[$key]['unit_cost'] = 0;
-                $this->selectedRawMaterials[$key]['total_cost'] = 0;
-                continue;
-            }
-
-            $unit = Unit::find($material['unit_id']);
-            $cost = $unit ? ($unit->cost ?? ($unit->pivot->cost ?? 0)) : 0;
-            $this->selectedRawMaterials[$key]['unit_cost'] = round($cost, 1);
-            $quantity = $material['quantity'] ?? 0;
-            $this->selectedRawMaterials[$key]['total_cost'] = round($quantity * $cost, 1);
-        }
+        // تم حذف الكود الذي كان يعيد تعيين unit_cost و total_cost للمواد الخام هنا
+        // تحديث التكاليف للمواد المختارة أصبح يتم فقط عند تغيير الوحدة أو الكمية
 
         $this->calculateTotals();
     }
