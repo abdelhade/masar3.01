@@ -96,8 +96,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('notes/{id}', [NoteController::class, 'noteDetails'])->name('notes.noteDetails');
     // 📁 Item Movement
     Route::get('item-movement/{itemId?}/{warehouseId?}', [ItemController::class, 'itemMovementReport'])->name('item-movement');
-    // 📁 Account Movement
-    Route::get('account-movement/{accountId?}', [AccHeadController::class, 'accountMovementReport'])->name('account-movement');
+   
 
 
     Route::resource('journals', JournalController::class)->names('journals');
@@ -116,8 +115,14 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('vouchers', VoucherController::class)->names('vouchers');
     Route::resource('transfers', TransferController::class)->names('transfers');
     Route::resource('accounts', AccHeadController::class)->except(['show'])->names('accounts');
+    // 📁 Account Movement
+    Route::get('account-movement/{accountId?}', [AccHeadController::class, 'accountMovementReport'])->name('account-movement');
     // 📁 Start Balance
     Route::get('accounts/start-balance', [AccHeadController::class, 'startBalance'])->name('accounts.startBalance');
+    // 📁 Balance Sheet
+    Route::get('accounts/balance-sheet', [AccHeadController::class, 'balanceSheet'])->name('accounts.balanceSheet');
+    // 📁 Balance Sheet
+    Route::get('accounts/balance-sheet', [AccHeadController::class, 'balanceSheet'])->name('accounts.balanceSheet');
     Route::resource('multi-vouchers', MultiVoucherController::class)->names('multi-vouchers');
     Route::resource('multi-journals', MultiJournalController::class)->names('multi-journals');
 

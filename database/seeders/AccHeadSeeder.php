@@ -14,7 +14,7 @@ class AccHeadSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('acc_head')->insert([
+        $accounts = [
             [
                 'id' => 1,
                 'code' => '1',
@@ -75,9 +75,41 @@ class AccHeadSeeder extends Seeder
                 'tenant' => 0,
                 'branch' => 0,
             ],
+            // 
             [
                 'id' => 3,
                 'code' => '22',
+                'deletable' => 0,
+                'editable' => 0,
+                'aname' => 'الإتزامات طويله الأجل',
+                'phone' => NULL,
+                'address' => NULL,
+                'e_mail' => NULL,
+                'constant' => 0,
+                'is_stock' => 0,
+                'is_fund' => 0,
+                'rentable' => NULL,
+                'parent_id' => 2,
+                'nature' => 1,
+                'kind' => 1,
+                'is_basic' => 1,
+                'employees_expensses' => 0,
+                'start_balance' => 0.000,
+                'credit' => 0.000,
+                'debit' => 0.000,
+                'balance' => 0.000,
+                'secret' => 0,
+                'crtime' => null,
+                'mdtime' => null,
+                'info' => NULL,
+                'isdeleted' => 0,
+                'tenant' => 0,
+                'branch' => 0,
+            ],
+            // 
+            [
+                'id' => 4,
+                'code' => '23',
                 'deletable' => 0,
                 'editable' => 0,
                 'aname' => 'حقوق الملكية',
@@ -106,7 +138,7 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 4,
+                'id' => 5,
                 'code' => '3',
                 'deletable' => 0,
                 'editable' => 0,
@@ -136,7 +168,7 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 5,
+                'id' => 6,
                 'code' => '4',
                 'deletable' => 0,
                 'editable' => 0,
@@ -166,7 +198,7 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 6,
+                'id' => 7,
                 'code' => '11',
                 'deletable' => 0,
                 'editable' => 0,
@@ -196,7 +228,7 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 7,
+                'id' => 8,
                 'code' => '12',
                 'deletable' => 0,
                 'editable' => 0,
@@ -226,11 +258,11 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 8,
+                'id' => 9,
                 'code' => '21',
                 'deletable' => 0,
                 'editable' => 0,
-                'aname' => 'الخصوم المتداولة',
+                'aname' => 'الإلتزامات المتداولة',
                 'phone' => NULL,
                 'address' => NULL,
                 'e_mail' => NULL,
@@ -256,8 +288,8 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 9,
-                'code' => '221',
+                'id' => 10,
+                'code' => '231',
                 'deletable' => 0,
                 'editable' => 0,
                 'aname' => 'الشركاء',
@@ -286,8 +318,8 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 10,
-                'code' => '222',
+                'id' => 11,
+                'code' => '232',
                 'deletable' => 0,
                 'editable' => 0,
                 'aname' => 'ارباح غير موزعة',
@@ -316,8 +348,8 @@ class AccHeadSeeder extends Seeder
                 'branch' => 0,
             ],
             [
-                'id' => 11,
-                'code' => '223',
+                'id' => 12,
+                'code' => '233',
                 'deletable' => 0,
                 'editable' => 1,
                 'aname' => 'ارباح غير موزعة لفترات سابقة',
@@ -508,7 +540,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 7,
+                'parent_id' => 8,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -538,7 +570,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 7,
+                'parent_id' => 8,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -568,7 +600,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 7,
+                'parent_id' => 8,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -677,7 +709,7 @@ class AccHeadSeeder extends Seeder
             ],
             [
                 'id' => 29,
-                'code' => '2211',
+                'code' => '2311',
                 'deletable' => 0,
                 'editable' => 0,
                 'aname' => 'الشريك الرئيسي',
@@ -718,7 +750,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 8,
+                'parent_id' => 9,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -748,7 +780,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 8,
+                'parent_id' => 9,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 0,
@@ -778,7 +810,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 8,
+                'parent_id' => 9,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -838,7 +870,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 7,
+                'parent_id' => 8,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -868,7 +900,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 7,
+                'parent_id' => 8,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -958,7 +990,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => 0,
-                'parent_id' => 6,
+                'parent_id' => 7,
                 'nature' => NULL,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -1468,7 +1500,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 212,
+                'parent_id' => 34,
                 'nature' => 2,
                 'kind' => 2,
                 'is_basic' => 1,
@@ -1499,7 +1531,7 @@ class AccHeadSeeder extends Seeder
                 'is_stock' => 0,
                 'is_fund' => 0,
                 'rentable' => NULL,
-                'parent_id' => 212,
+                'parent_id' => 38,
                 'nature' => 1,
                 'kind' => 1,
                 'is_basic' => 1,
@@ -1516,6 +1548,44 @@ class AccHeadSeeder extends Seeder
                 'tenant' => 0,
                 'branch' => 0,
             ],
-        ]);
+        ];
+
+        $ids = array_column($accounts, 'id');
+        $missingParents = [];
+        foreach ($accounts as $acc) {
+            if (isset($acc['parent_id']) && $acc['parent_id'] != 0 && $acc['parent_id'] !== null && !in_array($acc['parent_id'], $ids)) {
+                $missingParents[] = [
+                    'id' => $acc['id'],
+                    'parent_id' => $acc['parent_id'],
+                    'aname' => $acc['aname'] ?? ''
+                ];
+            }
+        }
+        if (count($missingParents) > 0) {
+            throw new \Exception('Missing parent_id(s): ' . json_encode($missingParents));
+        }
+
+        $insertedIds = [];
+        $remaining = $accounts;
+        while (count($remaining) > 0) {
+            $nextBatch = [];
+            $stillWaiting = [];
+            foreach ($remaining as $acc) {
+                if (!isset($acc['parent_id']) || $acc['parent_id'] == 0 || $acc['parent_id'] === null || in_array($acc['parent_id'], $insertedIds)) {
+                    $acc['parent_id'] = (!isset($acc['parent_id']) || $acc['parent_id'] == 0) ? null : $acc['parent_id'];
+                    $nextBatch[] = $acc;
+                } else {
+                    $stillWaiting[] = $acc;
+                }
+            }
+            if (count($nextBatch) == 0) {
+                throw new \Exception('Circular or missing parent_id detected in acc_head seeder.');
+            }
+            DB::table('acc_head')->insert($nextBatch);
+            foreach ($nextBatch as $acc) {
+                $insertedIds[] = $acc['id'];
+            }
+            $remaining = $stillWaiting;
+        }
     }
 }

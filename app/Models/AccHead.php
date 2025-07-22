@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AccHead extends Model
 {
     protected $table = 'acc_head';
-    protected $guarded = [];
+    protected $guarded = ['id'];
     public $timestamps = false;
 
     public function transfersAsAcc1()
@@ -43,5 +43,17 @@ class AccHead extends Model
     public function users()
     {
         return $this->hasMany(OperHead::class, 'user');
+    }
+
+    // parent
+    public function parent()
+    {
+        return $this->belongsTo(AccHead::class, 'parent_id');
+    }
+
+    // children
+    public function children()
+    {
+        return $this->hasMany(AccHead::class, 'parent_id');
     }
 }

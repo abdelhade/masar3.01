@@ -22,7 +22,7 @@
                             'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
                             'remove_button' => ['title' => 'إزالة المحدد'],
                         ],
-                    ]" />
+                    ]" class="form-control form-control-sm" style="font-size: 0.85em; height: 2em; padding: 2px 6px;" />
                 @error('acc1_id')
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                 @enderror

@@ -6,12 +6,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            @can('إنشاء - جهات اتصال الشركات')
+            {{-- @can('إنشاء - جهات اتصال الشركات') --}}
             <a href="{{ route('client-contacts.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                 اضافه جديده
                 <i class="fas fa-plus me-2"></i>
             </a>
-            @endcan
+            {{-- @endcan --}}
             <br>
             <br>
             <div class="card">
@@ -25,9 +25,9 @@
                                     <th>{{ __('الاسم') }}</th>
                                     <th>{{ __('البريد الالكتروني') }}</th>
                                     <th>{{ __('الهاتف') }}</th>
-                                    <th>{{ __('المنصب') }}</th> 
+                                    <th>{{ __('المنصب') }}</th>
                                     @can('عرض - تفاصيل جهة اتصال')
-                                    <th>{{ __('العمليات') }}</th>                                        
+                                    <th>{{ __('العمليات') }}</th>
                                     @endcan
                                 </tr>
                             </thead>

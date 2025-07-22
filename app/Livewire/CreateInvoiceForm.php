@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Barcode;
 use Livewire\Component;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
@@ -19,6 +20,11 @@ class CreateInvoiceForm extends Component
     public $accural_date;
     public $pro_id;
     public $serial_number;
+    public $barcodeTerm = '';
+    public $barcodeSearchResults;
+    public $selectedBarcodeResultIndex = -1;
+    public bool $addedFromBarcode = false;
+
 
     public $priceTypes = [];
     public $selectedPriceType = 1;
@@ -27,6 +33,8 @@ class CreateInvoiceForm extends Component
     public $searchTerm = '';
     public $searchResults;
     public $selectedResultIndex = -1;
+    public int $quantityClickCount = 0; // لتتبع عدد الضغطات على Enter
+    public $lastQuantityFieldIndex = null; // لتتبع حقل الكمية الأخير
 
     public $acc1List = [];
     public $acc2List = [];
@@ -144,6 +152,8 @@ class CreateInvoiceForm extends Component
         $this->invoiceItems = [];
         $this->priceTypes = Price::pluck('name', 'id')->toArray();
         $this->searchResults = collect();
+        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $this->barcodeSearchResults = collect();
     }
 
     private function getAccountsByCode(string $code)
@@ -159,7 +169,6 @@ class CreateInvoiceForm extends Component
     {
         $this->currentSelectedItem = $item->id;
 
-        // dd($this->acc2_id);
         $availableQtyInSelectedStore = OperationItems::where('item_id', $item->id)
             ->where('detail_store', $this->acc2_id)
             ->selectRaw('SUM(qty_in - qty_out) as total')
@@ -193,6 +202,66 @@ class CreateInvoiceForm extends Component
         ];
     }
 
+    public function addItemByBarcode()
+    {
+        $barcode = trim($this->barcodeTerm);
+        if (empty($barcode)) {
+            return;
+        }
+
+        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices', 'barcodes'])
+            ->whereHas('barcodes', fn($q) => $q->where('barcode', $barcode))
+            ->first();
+
+        if (! $item) {
+            return $this->dispatch('item-not-found');
+        }
+
+        $this->addedFromBarcode = true;
+
+        $lastIndex = count($this->invoiceItems) - 1;
+        if ($lastIndex >= 0 && $this->invoiceItems[$lastIndex]['item_id'] === $item->id) {
+            $this->invoiceItems[$lastIndex]['quantity']++;
+            $this->recalculateSubValues();
+            $this->calculateTotals();
+            $this->barcodeTerm = '';
+            return;
+        }
+
+        $this->addItemFromSearch($item->id);
+        $this->barcodeTerm = '';
+        $this->barcodeSearchResults = collect();
+        $this->selectedBarcodeResultIndex = -1;
+        $this->lastQuantityFieldIndex = count($this->invoiceItems) - 1;
+    }
+    public function updatedBarcodeTerm($value)
+    {
+        $this->selectedBarcodeResultIndex = -1;
+        $this->barcodeSearchResults = collect(); // إعادة تعيين إلى مجموعة فارغة
+    }
+
+    public function handleQuantityEnter($index)
+    {
+        if (!isset($this->invoiceItems[$index])) {
+            return;
+        }
+
+        $this->quantityClickCount++;
+        $this->lastQuantityFieldIndex = $index;
+
+        // تحديث الكمية بناءً على عدد الضغطات
+        $this->invoiceItems[$index]['quantity'] = $this->quantityClickCount;
+
+        // إعادة حساب القيم الفرعية والإجماليات
+        $this->recalculateSubValues();
+        $this->calculateTotals();
+
+        // إذا ضغط مرة واحدة، عد إلى حقل الباركود
+        if ($this->quantityClickCount === 1) {
+            $this->js('window.focusBarcodeField()');
+        }
+    }
+
     public function removeRow($index)
     {
         unset($this->invoiceItems[$index]);
@@ -215,6 +284,8 @@ class CreateInvoiceForm extends Component
     {
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) return;
+
+        // $this->addedFromBarcode = false;
 
         $firstUnit = $item->units->first();
         $unitId = $firstUnit?->id;
@@ -239,8 +310,6 @@ class CreateInvoiceForm extends Component
             $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
         }
 
-
-        // إضافة الصنف مع البيانات الكاملة
         $this->invoiceItems[] = [
             'item_id' => $item->id,
             'unit_id' => $unitId,
@@ -252,16 +321,22 @@ class CreateInvoiceForm extends Component
         ];
         $this->updateSelectedItemData($item, $unitId, $price);
 
-        // تنظيف البحث
+        $this->barcodeTerm = '';
+        $this->barcodeSearchResults = collect();
+        $this->selectedBarcodeResultIndex = -1;
+        $this->lastQuantityFieldIndex = count($this->invoiceItems) - 1;
+
+        if ($this->addedFromBarcode) {
+            $this->js('window.focusBarcodeSearch()'); // ركز على الباركود
+        } else {
+            $this->js('window.focusLastQuantityField()'); // ركز على الكمية
+        }
+
         $this->searchTerm = '';
         $this->searchResults = collect();
         $this->selectedResultIndex = -1;
 
-        // حساب الإجماليات
         $this->calculateTotals();
-
-        // التركيز على حقل الكمية
-        $this->js('window.focusLastQuantityField()');
     }
 
     public function updatedAcc2Id()
@@ -362,6 +437,22 @@ class CreateInvoiceForm extends Component
         $rowIndex = (int) $parts[0];
         $field = $parts[1];
 
+        if ($field === 'quantity') {
+            $this->quantityClickCount = 0; // إعادة تعيين عداد الضغطات
+            $this->recalculateSubValues();
+            $this->calculateTotals();
+        } elseif ($field === 'item_id') {
+            $this->updateUnits($rowIndex);
+            $itemId = $this->invoiceItems[$rowIndex]['item_id'];
+            if ($itemId) {
+                $item = Item::with(['units', 'prices'])->find($itemId);
+                if ($item) {
+                    $unitId = $this->invoiceItems[$rowIndex]['unit_id'];
+                    $price = $this->invoiceItems[$rowIndex]['price'];
+                    $this->updateSelectedItemData($item, $unitId, $price);
+                }
+            }
+        }
         if ($field === 'item_id') {
             // عند تغيير الصنف، قم بتحديث الوحدات
             $this->updateUnits($rowIndex);

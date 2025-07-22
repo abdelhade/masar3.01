@@ -26,7 +26,7 @@ class CreateAccHeadTable extends Migration
             $table->boolean('rentable')->nullable();
 
             // Parent ID without foreign key constraint
-            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->foreignId('parent_id')->nullable()->constrained('acc_head')->onDelete('restrict');
 
             // Business logic columns
             $table->tinyInteger('nature')->nullable(); // 0 => Debit, 1 => Credit

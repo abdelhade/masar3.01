@@ -3,36 +3,70 @@
 @section('content')
     <div class="container-fluid px-4">
         <section class="content-header">
-            <div class="row">
-                <div class="col">
-                    <h3 class="cake cake-bounce">قائمة الحسابات
-                        @isset($parentAccountName)
-                            : {{ $parentAccountName }}
-                        @else
-                            @php
-                                $typeLabels = [
-                                    'client' => 'العملاء',
-                                    'supplier' => 'الموردين',
-                                    'fund' => 'الصناديق',
-                                    'bank' => 'البنوك',
-                                    'expense' => 'المصروفات',
-                                    'revenue' => 'الإيرادات',
-                                    'creditor' => 'الدائنين',
-                                    'debtor' => 'المدينين',
-                                    'partner' => 'الشركاء',
-                                    'current-partner' => 'الشركاء',
-                                    'asset' => 'الأصول',
-                                    'employee' => 'الموظفين',
-                                    'rentable' => 'المستأجرات',
-                                    'store' => 'المخازن',
-                                ];
-                            @endphp
+                <div class="row">
+                    <div class="col">
+                        <h3 class="cake cake-bounce">قائمة الحسابات
+                            @isset($parentAccountName)
+                                : {{ $parentAccountName }}
+                            @else
+                                @php
+                                    $typeLabels = [
+                                        'client' => 'العملاء',
+                                        'supplier' => 'الموردين',
+                                        'fund' => 'الصناديق',
+                                        'bank' => 'البنوك',
+                                        'expense' => 'المصروفات',
+                                        'revenue' => 'الإيرادات',
+                                        'creditor' => 'الدائنين',
+                                        'debtor' => 'المدينين',
+                                        'partner' => 'الشركاء',
+                                        'current-partner' => 'الشركاء',
+                                        'asset' => 'الأصول',
+                                        'employee' => 'الموظفين',
+                                        'rentable' => 'المستأجرات',
+                                        'store' => 'المخازن',
+                                    ];
+                                @endphp
 
-                            @if (request('type') && isset($typeLabels[request('type')]))
-                                _ {{ $typeLabels[request('type')] }}
-                            @endif
-                        @endisset
-                    </h3>
+                                @if (request('type') && isset($typeLabels[request('type')]))
+                                    _ {{ $typeLabels[request('type')] }}
+                                @endif
+                            @endisset
+                        </h3>
+
+                    </div>
+                    @php
+                        $parentCodes = [
+                            'client' => '122',
+                            'supplier' => '211',
+                            'bank' => '124',
+                            'fund' => '121',
+                            'store' => '123',
+                            'expense' => '44',
+                            'revenue' => '32',
+                            'creditor' => '212',
+                            'depitor' => '125',
+                            'partner' => '231',
+                            'current-partner' => '234',
+                            'asset' => '11',
+                            'employee' => '213',
+                            'rentable' => '112',
+                        ];
+
+                        $type = request()->get('type');
+                        $parentCode = $parentCodes[$type] ?? null;
+                    @endphp
+
+                    <div class="col-md-3">
+                        @if ($parentCode)
+                            @can('إضافةالعملاء')
+                                <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}"
+                                    class="btn btn-primary cake cake-fadeIn">
+                                    {{ __('إضافة حساب جديد') }}
+                                </a>
+                            @endcan
+                        @endif
+                    </div>
                 </div>
                 @php
                     $parentCodes = [

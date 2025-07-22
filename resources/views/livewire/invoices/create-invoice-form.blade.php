@@ -34,6 +34,23 @@
                         @endif
                     </div>
 
+                    <div class="col-lg-4 mb-3">
+                        <label>ابحث بالباركود</label>
+                        <input type="text" wire:model.live="barcodeTerm" class="form-control" id="barcode-search"
+                            placeholder="ادخل الباركود " autocomplete="off" wire:keydown.enter="addItemByBarcode" />
+                        @if (strlen($barcodeTerm) > 0 && $barcodeSearchResults->count())
+                            <ul class="list-group position-absolute w-100" style="z-index: 999;">
+                                @foreach ($barcodeSearchResults as $index => $item)
+                                    <li class="list-group-item list-group-item-action"
+                                        wire:click="addItemFromSearch({{ $item->id }})">
+                                        {{ $item->name }} ({{ $item->code }})
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @elseif (strlen($barcodeTerm) > 0)
+                        @endif
+                    </div>
+
                     {{-- اختيار نوع السعر العام للفاتورة --}}
                     <div class="col-lg-3">
                         <label for="selectedPriceType">{{ __('اختر نوع السعر للفاتورة') }}</label>
@@ -57,17 +74,19 @@
                 {{-- قسم الإجماليات والمدفوعات --}}
                 @include('components.invoices.invoice-footer')
 
-                <div class="row mt-4">
+                {{-- <div class="row mt-4">
                     <div class="col-12 text-left">
                         <button type="submit" class="btn btn-lg btn-primary">
                             <i class="fas fa-save"></i> حفظ الفاتورة
                         </button>
                     </div>
+                </div> --}}
             </form>
         </section>
     </div>
 </div>
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // إضافة Alpine.js directive للتحكم في التركيز
         $(document).ready(function() {
@@ -92,6 +111,21 @@
                         }
                     }
                 });
+            });
+        });
+
+        document.addEventListener('item-not-found', function() {
+            Swal.fire({
+                title: 'الصنف غير موجود',
+                text: 'الصنف بالباركود المدخل غير موجود. هل تريد إضافة صنف جديد؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، إضافة صنف',
+                cancelButtonText: 'لا',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ route('items.create') }}';
+                }
             });
         });
 
@@ -214,7 +248,40 @@
                 }, 150);
             };
 
-            // إضافة مستمع لحقل final_price إذا وُجد
+            document.addEventListener('item-not-found', function() {
+                Swal.fire({
+                    title: 'الصنف غير موجود',
+                    text: 'الصنف بالباركود المدخل غير موجود. هل تريد إضافة صنف جديد؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'نعم، إضافة صنف',
+                    cancelButtonText: 'لا',
+                    allowEscapeKey: true // تأكد إن زر Esc مسموح
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open('{{ route('items.create') }}', '_blank');
+                    }
+                    const barcodeInput = document.getElementById('barcode-search');
+                    if (barcodeInput) {
+                        barcodeInput.value = ''; // تنظيف الحقل
+                        barcodeInput.focus(); // إرجاع التركيز للحقل
+                        @this.set('barcodeTerm', ''); // تحديث Livewire
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    Swal.close(); // إغلاق الـ SweetAlert يدوياً
+                    const barcodeInput = document.getElementById('barcode-search');
+                    if (barcodeInput) {
+                        barcodeInput.value = ''; // تنظيف الحقل
+                        barcodeInput.focus(); // إرجاع التركيز
+                        @this.set('barcodeTerm', ''); // تحديث Livewire
+                    }
+                }
+            });
+
             const finalPriceField = document.getElementById('final_price');
             if (finalPriceField && !finalPriceField.hasAttribute('data-listener')) {
                 finalPriceField.setAttribute('data-listener', 'true');
@@ -229,7 +296,39 @@
             }
         }
 
-        // تشغيل المستمعات عند تحديث الصفحة
+        window.addEventListener('focus-last-quantity-field', function() {
+            setTimeout(function() {
+                const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
+                if (quantityFields.length > 0) {
+                    const lastField = quantityFields[quantityFields.length - 1];
+                    lastField.focus();
+                    lastField.select();
+                }
+            }, 150);
+        });
+
+        window.addEventListener('focus-barcode-field', () => {
+            setTimeout(() => {
+                document.getElementById('barcode-input')?.focus();
+            }, 100);
+        });
+
+        window.addEventListener('focus-quantity-field', event => {
+            const index = event.detail;
+            setTimeout(() => {
+                document.getElementById(`quantity-${index}`)?.focus();
+            }, 100);
+        });
+
+        window.focusBarcodeSearch = function() {
+            const barcodeInput = document.getElementById('barcode-search'); // تأكد من الـ ID
+            if (barcodeInput) {
+                barcodeInput.focus();
+            } else {
+                console.error('Barcode search field not found');
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('livewire:updated', function() {
                 setTimeout(function() {

@@ -22,7 +22,7 @@ new class extends Component {
         'revenue' => '32%',
         'creditor' => '212%',
         'debtor' => '125%',
-        'partner' => '221%',
+        'partner' => '231%',
         'asset' => '11%',
         'employee' => '213%',
         'rentable' => '112%',
@@ -37,7 +37,7 @@ new class extends Component {
         // 'revenue' => '32%',
         'creditor' => '212%',
         'debtor' => '125%',
-        // 'partner' => '221%',
+        // 'partner' => '231%',
         'asset' => '11%',
         'employee' => '213%',
         'rentable' => '112%',
@@ -63,7 +63,7 @@ new class extends Component {
 
         foreach ($this->accounts as $account) {
             $this->current_accounts_opening_balance[$account->id] = (float) $account->start_balance;
-            if (!Str::startsWith($account->code, '221') && !Str::startsWith($account->code, '123')) {
+            if (!Str::startsWith($account->code, '231') && !Str::startsWith($account->code, '123')) {
                 $this->new_accounts_opening_balance[$account->id] = null;
             }
         }
@@ -137,7 +137,7 @@ new class extends Component {
         })->where('is_basic', 0)->get();
 
         $balance = $accounts->sum('start_balance') * -1;
-        $basicCapitalAccount = AccHead::where('code', '=', '2211')->first();
+        $basicCapitalAccount = AccHead::where('code', '=', '2311')->first();
 
         if ($basicCapitalAccount) {
             $oldBalance = $basicCapitalAccount->start_balance;
@@ -176,7 +176,7 @@ new class extends Component {
         $totalDebit = $accounts->where('start_balance', '>', 0)->sum('start_balance');
         $totalCredit = $accounts->where('start_balance', '<', 0)->sum('start_balance');
 
-        $capitalAccount = AccHead::where('code', '=', '2211')->first();
+        $capitalAccount = AccHead::where('code', '=', '2311')->first();
         if ($capitalAccount) {
             $totalCredit += $capitalAccount->start_balance;
         }
@@ -219,6 +219,7 @@ new class extends Component {
                     ],
                 );
             }
+            // finish
             // delete the journal if the capital account balance is 0
             if ($capitalAccount->start_balance == 0) {
                 // delete the journal details
@@ -273,7 +274,7 @@ new class extends Component {
                                         {{ number_format($current_accounts_opening_balance[$account->id] ?? 0, 2) }}</p>
                                 </td>
                                 <td>
-                                    @if (!Str::startsWith($account->code, '221') && !Str::startsWith($account->code, '123'))
+                                    @if (!Str::startsWith($account->code, '231') && !Str::startsWith($account->code, '123'))
                                         <input type="number" step="0.01"
                                             wire:model.blur="new_accounts_opening_balance.{{ $account->id }}"
                                             class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($new_accounts_opening_balance[$account->id] ?? 0) < 0) text-danger @endif"
