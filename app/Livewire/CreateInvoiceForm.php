@@ -138,7 +138,7 @@ class CreateInvoiceForm extends Component
         $this->acc1Role = $map[$type]['acc1_role'] ?? 'مدين';
         $this->acc2Role = $map[$type]['acc2_role'] ?? 'دائن';
         $this->acc2_id = 27;
-        $this->emp_id = 43;
+        $this->emp_id = 131;
         $this->cash_box_id = 21;
 
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
@@ -608,7 +608,7 @@ class CreateInvoiceForm extends Component
 
     public function saveForm()
     {
-        dd($this->all());
+        // dd($this->all());
         if (empty($this->invoiceItems)) {
             Alert::toast('لا يمكن حفظ الفاتورة بدون أصناف.', 'error');
             return;
