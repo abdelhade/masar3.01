@@ -65,6 +65,11 @@ new class extends Component {
     @endif
 
     <div class="card">
+        <div class="card-head">
+            <a href="{{ route('projects.create') }}" class="btn btn-primary">
+                <i class="las la-plus"></i> إضافة مشروع جديد
+            </a>
+        </div>
         <div class="card-body">
             <div class="table-responsive" style="overflow-x: auto;">
                 <table class="table table-striped mb-0" style="min-width: 1200px;">
@@ -81,7 +86,7 @@ new class extends Component {
                             <th class="font-family-cairo fw-bold">الحالة</th>
                             <th class="font-family-cairo fw-bold">أنشئ بواسطة</th>
                             <th class="font-family-cairo fw-bold">تم التحديث بواسطة</th>
-                            @canany('تعديل المشاريع', 'حذف المشاريع')
+                            @canany(abilities: ['تعديل المشاريع', 'حذف المشاريع'])
                                 <th class="font-family-cairo fw-bold">العمليات</th>
                             @endcan
 
@@ -105,14 +110,15 @@ new class extends Component {
 
                                 <td class="font-family-cairo fw-bold">{{ $project->createdBy->name }}</td>
                                 <td class="font-family-cairo fw-bold">{{ $project->updatedBy->name }}</td>
-                                @can('إجراء عمليات علي المشروع')
+                            @canany(abilities: ['تعديل المشاريع', 'حذف المشاريع'])
+
                                     <td>
-                                        @can('تعديل مشروع')
+                                        @can('تعديل المشاريع')
                                             <a href="{{ route('projects.edit', $project) }}" class="btn btn-success btn-sm">
                                                 <i class="las la-edit fa-lg"></i>
                                             </a>
                                         @endcan
-                                        @can('حذف مشروع')
+                                        @can( 'حذف المشاريع')
                                             <button type="button" class="btn btn-danger btn-sm"
                                                 wire:click="delete({{ $project->id }})"
                                                 onclick="confirm('هل أنت متأكد من حذف هذا المشروع؟') || event.stopImmediatePropagation()">
@@ -121,7 +127,7 @@ new class extends Component {
                                         @endcan
 
                                     </td>
-                                @endcan
+                                @endcanany
 
                             </tr>
                         @empty

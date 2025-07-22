@@ -9,7 +9,7 @@ use Modules\Authorization\Models\Permission;
 
 class RoleController extends Controller
 {
-    public function __construct()
+public function __construct()
     {
 
         $this->middleware('can:عرض الادوار')->only(['index', 'show']);

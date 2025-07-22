@@ -452,7 +452,7 @@ class ManufacturingInvoice extends Component
 
     public function saveInvoice()
     {
-        dd(collect($this->selectedRawMaterials)->pluck('unit_id'));
+        dd($this->all());
 
         // التحقق من توفر المواد الخام
         // foreach ($this->selectedRawMaterials as $index => $material) {

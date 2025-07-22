@@ -111,8 +111,8 @@ new class extends Component {
                 </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
-                            <thead class="table-light text-center align-middle">
+                        <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
+                            <thead class="table-light align-middle">
 
                                 <tr>
                                     <th class="font-family-cairo fw-bold">#</th>

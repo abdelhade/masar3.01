@@ -97,6 +97,18 @@
             });
         });
 
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('swal', (data) => {
+                Swal.fire({
+                    title: data.title,
+                    text: data.text,
+                    icon: data.icon,
+                });
+            });
+        });
+
+
+
         document.addEventListener('alpine:init', () => {
             Alpine.directive('focus-next', (el, {
                 expression
@@ -337,6 +349,21 @@
             });
 
             addKeyboardListeners();
+        });
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('open-print-window', (event) => {
+                const url = event.url;
+                console.log('JavaScript received print URL: ' + url);
+                const printWindow = window.open(url, '_blank');
+                if (printWindow) {
+                    printWindow.onload = function() {
+                        printWindow.print();
+                    };
+                } else {
+                    alert('يرجى السماح بفتح النوافذ المنبثقة في المتصفح للطباعة.');
+                }
+            });
         });
     </script>
 @endpush

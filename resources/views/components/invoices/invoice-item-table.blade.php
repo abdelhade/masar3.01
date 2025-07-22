@@ -53,7 +53,7 @@
                                             wire:model.blur="invoiceItems.{{ $index }}.quantity"
                                             id="quantity_{{ $index }}" placeholder="الكمية"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            {{-- wire:keydown.enter.prevent="handleQuantityEnter({{ $index }})" --}}
+
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('price_{{ $index }}')?.focus();document.getElementById('price_{{ $index }}')?.select();}"
                                             class="form-control @error('invoiceItems.' . $index . '.quantity') is-invalid @enderror">
                                         @error('invoiceItems.' . $index . '.quantity')

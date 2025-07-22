@@ -200,11 +200,7 @@
                             id="additional_value">
                     </div>
                 </div>
-
-
-
                 <hr>
-
                 {{-- الإجمالي النهائي --}}
                 <div class="row mb-2">
                     <div class="col-3 text-right font-weight-bold">الإجمالي النهائي:</div>
@@ -226,8 +222,12 @@
                     </div>
 
                     <div class="col-3 text-left">
-                        <button type="button" class="btn btn-lg btn-warning" onclick="printInvoice()">
-                            <i class="fas fa-save"></i> حفظ وطباعه
+                        <button type="button" class="btn btn-lg btn-warning" wire:click="saveAndPrint"
+                            wire:loading.attr="disabled">
+                            <span wire:loading wire:target="saveAndPrint">جارٍ الحفظ...</span>
+                            <span wire:loading.remove wire:target="saveAndPrint">
+                                <i class="fas fa-save"></i> حفظ وطباعة
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -242,8 +242,6 @@
                         {{ number_format(max($remaining, 0)) }}
                     </div>
                 </div>
-
-
 
             </div>
         </div>

@@ -147,7 +147,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
                             <div class="form-group">
                                 <label for="cost_center">مركز التكلفة</label>
                                 <select name="cost_center" class="form-control">
@@ -159,7 +159,19 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label for="project_id">المشروع</label>
+                                <select name="project_id" class="form-control">
+                                    <option value="">اختر المشروع</option>
+                                    @foreach ($projects as $project)
+                                        <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
                             <div class="form-group">
                                 <label for="info">ملاحظات</label>
                                 <input type="text" name="info" class="form-control" placeholder="أدخل أي ملاحظات">

@@ -26,9 +26,20 @@ class OperHead extends Model
         return $this->belongsTo(AccHead::class, 'acc1');
     }
 
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'project_id');
+    }
+
+
     public function acc2Head()
     {
         return $this->belongsTo(AccHead::class, 'acc2');
+    }
+
+    public function acc3Head()
+    {
+        return $this->belongsTo(AccHead::class, 'acc3');
     }
 
     public function employee()

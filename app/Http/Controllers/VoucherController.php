@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{AccHead, OperHead, CostCenter, Voucher, JournalDetail, JournalHead};
+use App\Models\{AccHead, OperHead, CostCenter, Voucher, JournalDetail, JournalHead, Project};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +71,9 @@ class VoucherController extends Controller
             ->select('id', 'aname')
             ->get();
 
+        // المشاريع
+        $projects = Project::all();
+
         // باقي الحسابات
         $otherAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
@@ -100,6 +103,7 @@ class VoucherController extends Controller
             'emp_id' => 'required|integer',
             'emp2_id' => 'integer',
             'pro_value' => 'required|numeric',
+            'project_id' => 'nullable|integer',
         ]);
 
         // إنشاء سجل جديد في جدول operhead
@@ -127,6 +131,7 @@ class VoucherController extends Controller
             'acc2_after' => 0,
             'cost_center' => $validated['cost_cener'] ?? null,
             'user' => Auth::user()->id,
+            'project_id' => $validated['project_id'] ?? null,
         ]);
 
         return redirect()->route('vouchers.index')->with('success', $request->all());
@@ -166,6 +171,8 @@ class VoucherController extends Controller
         $costCenters = CostCenter::where('deleted', 0)
             ->get();
 
+        $projects = Project::all();
+
 
         return view('vouchers.edit', compact(
             'voucher',
@@ -192,6 +199,7 @@ class VoucherController extends Controller
             'info2'       => 'nullable|string',
             'info3'       => 'nullable|string',
             'cost_center' => 'nullable|integer',
+            'project_id'  => 'nullable|integer',
         ]);
 
         try {
@@ -218,6 +226,7 @@ class VoucherController extends Controller
                 'info'         => $validated['info'] ?? null,
                 'info2'        => $validated['info2'] ?? null,
                 'info3'        => $validated['info3'] ?? null,
+                'project_id'   => $validated['project_id'] ?? null,
             ]);
 
             // تحديث journal_head

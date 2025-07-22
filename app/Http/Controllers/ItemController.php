@@ -56,4 +56,11 @@ class ItemController extends Controller
     {
         return view('item-management.reports.item-movement', compact('itemId', 'warehouseId')); // itemId and warehouseId are optional
     }
+
+    // Get item as JSON for AJAX requests
+    public function getItemJson($id)
+    {
+        $item = Item::with(['units', 'prices'])->findOrFail($id);
+        return response()->json($item);
+    }
 }

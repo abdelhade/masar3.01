@@ -272,9 +272,9 @@ new class extends Component {
                         </div>
                     </form>
 
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead>
+                   <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                            <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
@@ -287,11 +287,11 @@ new class extends Component {
                                         <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo text-center fw-bold">{{ $noteDetail->name }}</td>
                                         <td class="text-center">
-                                            <a wire:click="editNoteDetails({{ $noteDetail->id }})"><i
-                                                    class="las la-pen text-success font-20"></i></a>
-                                            <a wire:click="deleteNoteDetails({{ $noteDetail->id }})"
+                                            <a wire:click="editNoteDetails({{ $noteDetail->id }})" class="btn btn-success btn-icon-square-sm "><i
+                                                    class="las la-pen"></i></a>
+                                            <a wire:click="deleteNoteDetails({{ $noteDetail->id }})" class="btn btn-danger btn-icon-square-sm"
                                                 onclick="confirm('هل أنت متأكد من حذف هذا التفاصيل؟') || event.stopImmediatePropagation()">
-                                                <i class="las la-trash-alt text-danger font-20"></i>
+                                                <i class="las la-trash-alt ></i>
                                             </a>
                                         </td>
                                     </tr>

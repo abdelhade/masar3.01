@@ -89,22 +89,21 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    @can('إضافة الأسعار')
+                  @can(abilities: 'إضافة الأسعار')
                         <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
                             {{ __('Add New') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
                     @endcan
+            <div class="card">
+                <div class="card-header">
+  
                 </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <table class="table table-striped mb-0 text-center" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
-
                                 <tr>
-
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
                                     @canany(['تعديل الأسعار', 'حذف الأسعار'])

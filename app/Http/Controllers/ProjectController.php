@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccHead;
+use App\Models\OperHead;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -41,9 +43,33 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Project $project)
+    public function show($id)
     {
-        //
+        $project = Project::findOrFail($id);
+
+        $operations = OperHead::where('project_id', $id)->get();
+        $equipments = AccHead::where('rent_to', $id)->get();
+        
+        // للحصول على عمليات المعدات لكل معدة
+        $equipmentOperations = collect();
+        foreach ($equipments as $equipment) {
+            $operation = OperHead::where('acc3', $equipment->id)->orderBy('start_date')->first();
+            if ($operation) {
+                $equipmentOperations->push([
+                    'equipment' => $equipment,
+                    'operation' => $operation
+                ]);
+            }
+        }
+        
+        $vouchers = OperHead::where('project_id', $id)
+            ->where(function($query) {
+                $query->where('pro_type', 1)
+                      ->orWhere('pro_type', 2);
+            })
+            ->get();
+
+        return view('projects.show', compact('project', 'operations', 'equipments', 'vouchers', 'equipmentOperations'));
     }
 
     /**
