@@ -12,35 +12,54 @@ use App\Models\{AccHead, OperHead, JournalHead, JournalDetail};
 class DiscountController extends Controller
 {
     public function __construct()
-    {
-        $this->middleware('can:عرض قائمة الخصومات المكتسبة')->only(['index']);
-        $this->middleware('can:عرض قائمة الخصومات المسموح بها')->only(['noteDetails']);
+{
+    
+    $this->middleware('can:إضافة قائمة الخصومات المسموح بها')->only(['create', 'store']);
+    $this->middleware('can:إضافة قائمة الخصومات المكتسبة')->only(['create', 'store']);
+    $this->middleware('can:إضافة خصم مسموح به')->only(['create', 'store']);
+
+    $this->middleware('can:تعديل قائمة الخصومات المكتسبة')->only(['edit', 'update']);
+    $this->middleware('can:تعديل قائمة الخصومات المسموح بها')->only(['edit', 'update']);
+    $this->middleware('can:تعديل خصم مسموح به')->only(['edit', 'update']);
+
+    $this->middleware('can:حذف قائمة الخصومات المكتسبة')->only(['destroy']);
+    $this->middleware('can:حذف قائمة الخصومات المسموح بها')->only(['destroy']);
+    $this->middleware('can:حذف خصم مسموح به')->only(['destroy']);
+}
+
+public function index(Request $request)
+{
+    $type = $request->input('type');
+
+    if (!$type) {
+        return redirect()->route('discounts.index', ['type' => 30]);
     }
 
-    public function index(Request $request)
-    {
-        $type = $request->input('type');
-
-        if (!$type) {
-            return redirect()->route('discounts.index', ['type' => 30]);
-        }
-
-        $discounts = OperHead::with(['acc1Head', 'acc2Head']);
-
-        if ($type == 30) {
-            $discounts = $discounts->where(function ($query) {
-                $query->where('acc1', 91)->orWhere('acc2', 91);
-            });
-        } elseif ($type == 31) {
-            $discounts = $discounts->where(function ($query) {
-                $query->where('acc1', 97)->orWhere('acc2', 97);
-            });
-        }
-
-        $discounts = $discounts->get();
-
-        return view('discounts.index', compact('discounts', 'type'));
+    // تأكد من إن اليوزر عنده صلاحية مناسبة حسب النوع
+    if ($type == 30 && !auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
+        abort(403, 'غير مصرح لك بعرض هذه القائمة');
     }
+
+    if ($type == 31 && !auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
+        abort(403, 'غير مصرح لك بعرض هذه القائمة');
+    }
+
+    $discounts = OperHead::with(['acc1Head', 'acc2Head']);
+
+    if ($type == 30) {
+        $discounts = $discounts->where(function ($query) {
+            $query->where('acc1', 91)->orWhere('acc2', 91);
+        });
+    } elseif ($type == 31) {
+        $discounts = $discounts->where(function ($query) {
+            $query->where('acc1', 97)->orWhere('acc2', 97);
+        });
+    }
+
+    $discounts = $discounts->get();
+
+    return view('discounts.index', compact('discounts', 'type'));
+}
 
     public function show() {}
 

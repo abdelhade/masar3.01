@@ -1,8 +1,9 @@
-@extends('admin.dashboard') {{-- أو layout حسب ما تستخدمه --}}
+@extends('admin.dashboard')
 
 @section('content')
     <div class="container-fluid px-4">
         <section class="content-header">
+            <div class="container-fluid">
                 <div class="row">
                     <div class="col">
                         <h3 class="cake cake-bounce">قائمة الحسابات
@@ -33,7 +34,6 @@
                                 @endif
                             @endisset
                         </h3>
-
                     </div>
                     @php
                         $parentCodes = [
@@ -59,7 +59,8 @@
 
                     <div class="col-md-3">
                         @if ($parentCode)
-                            @can('إضافةالعملاء')
+                            @can('إضافة العملاء')
+                                <!-- أو الصلاحية المناسبة حسب نوع الحساب -->
                                 <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}"
                                     class="btn btn-primary cake cake-fadeIn">
                                     {{ __('إضافة حساب جديد') }}

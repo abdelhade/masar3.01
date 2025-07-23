@@ -15,10 +15,10 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        // $this->middleware('can:عرض العملاء')->only(['index']);
-        // $this->middleware('can:إنشاء العملاء')->only(['create', 'store']);
-        // $this->middleware('can:تعديل العملاء')->only(['update', 'edit']);
-        // $this->middleware('can:حذف العملاء')->only(['destroy']);
+        $this->middleware('can:عرض العملاء')->only(['index']);
+        $this->middleware('can:إضافة العملاء')->only(['create', 'store']);
+        $this->middleware('can:تعديل العملاء')->only(['update', 'edit']);
+        $this->middleware('can:حذف العملاء')->only(['destroy']);
     }
 
     /**
@@ -49,7 +49,8 @@ class UserController extends Controller
         try {
             $user = User::create($request->validated());
             if ($request->filled('permissions')) {
-                $user->givePermissionTo($request->permissions);
+                $permissions = Permission::whereIn('id', $request->permissions)->pluck('name')->toArray();
+                $user->givePermissionTo($permissions);
             }
             Alert::toast('تم إنشاء المستخدم بنجاح', 'success');
             return redirect()->route('users.index');
@@ -61,12 +62,13 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $roles = Role::all();
         $permissions = Permission::all()->groupBy(function ($perm) {
             return explode('.', $perm->name)[0];
         });
-        $userPermissions = $user->getPermissionNames()->toArray();
+        $userPermissions = $user->permissions->pluck('name')->toArray();
 
-        return view('users.edit', compact('user', 'permissions', 'userPermissions'));
+        return view('users.edit', compact('user', 'permissions', 'roles', 'userPermissions'));
     }
 
     public function update(Request $request, User $user)
@@ -78,27 +80,42 @@ class UserController extends Controller
             'permissions' => 'nullable|array',
         ]);
 
-        $data = $request->only('name', 'email');
+        try {
+            $data = $request->only('name', 'email');
 
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            if ($request->filled('password')) {
+                $data['password'] = Hash::make($request->password);
+            }
+
+            $user->update($data);
+
+            // تزامن الصلاحيات باستخدام IDs وتحويلها لأسماء
+            if ($request->has('permissions')) {
+                $permissions = Permission::whereIn('id', $request->permissions)
+                    ->pluck('name')
+                    ->toArray();
+                $user->syncPermissions($permissions);
+            } else {
+                $user->syncPermissions([]);
+            }
+
+            Alert::toast('تم تحديث المستخدم بنجاح', 'success');
+            return redirect()->route('users.index');
+        } catch (\Exception $e) {
+            Alert::toast('حدث خطأ أثناء تحديث المستخدم: ' . $e->getMessage(), 'error');
+            return redirect()->back()->withInput();
         }
-
-        $user->update($data);
-
-        // تزامن الصلاحيات فقط
-        $user->syncPermissions($request->permissions ?? []);
-
-        Alert::toast('تم تحديث المستخدم بنجاح', 'success');
-        return redirect()->route('users.index');
     }
-
-
 
     public function destroy(User $user)
     {
-        $user->delete();
-        Alert::toast('تم حذف المستخدم بنجاح', 'success');
-        return redirect()->route('users.index');
+        try {
+            $user->delete();
+            Alert::toast('تم حذف المستخدم بنجاح', 'success');
+            return redirect()->route('users.index');
+        } catch (\Exception $e) {
+            Alert::toast('حدث خطأ أثناء حذف المستخدم: ' . $e->getMessage(), 'error');
+            return redirect()->route('users.index');
+        }
     }
 }

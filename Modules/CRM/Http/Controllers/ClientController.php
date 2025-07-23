@@ -13,7 +13,10 @@ class ClientController extends Controller
 
     public function __construct()
     {
-        // $this->middleware('can:view clients crm')->only(['index']);
+        $this->middleware('can:عرض العملااء')->only(['index']);
+        $this->middleware('can:إضافة العملااء')->only(['store', 'create']);
+        $this->middleware('can:تحديد العملااء')->only(['edit', 'update']);
+        $this->middleware('can:حذف العملااء')->only(['destroy']);
     }
 
     public function index()

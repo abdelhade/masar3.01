@@ -13,6 +13,7 @@
                         <i data-feather="home" style="color:#4e73df" class="menu-icon"></i>
                         {{ __('الرئيسيه') }}
                     </a>
+
                 </li>
                 <!-- البيانات الأساسية -->
 

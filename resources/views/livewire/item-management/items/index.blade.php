@@ -169,31 +169,19 @@ new class extends Component {
                     {{ session('error') }}
                 </div>
             @endif
-            <div class=" d-flex justify-content-between align-items-center">
-                {{-- @can('بحث الأصناف ') --}}
-                <div class="w-25">
-                    <select class="form-select font-family-cairo fw-bold font-14" wire:model.live="selectedWarehouse"
-                        style="min-width: 105px;">
-                        <option value="">كل المخازن</option>
-                        @foreach ($this->warehouses as $warehouse)
-                            <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="w-25">
-                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control font-family-cairo"
-                        placeholder="بحث بالاسم أو الكود أو الباركود...">
-                </div>
-                {{-- @endcan --}}
-            </div>
-            <div class="mb-3">
-                <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
-                    {{ __('Add New Item') }}
-                    <i class="fas fa-plus me-2"></i>
-                </a>
-            </div>
             <div class="card">
-
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    @can('إضافة الأصناف')
+                        <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+                            {{ __('Add New') }}
+                            <i class="fas fa-plus me-2"></i>
+                        </a>
+                    @endcan
+                    <div class="w-25">
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                            class="form-control font-family-cairo" placeholder="بحث بالاسم أو الكود أو الباركود...">
+                    </div>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table class="table table-striped mb-0" style="min-width: 1200px;">
@@ -214,7 +202,9 @@ new class extends Component {
                                     @foreach ($this->noteTypes as $noteId => $noteName)
                                         <th class="font-family-cairo text-center fw-bold">{{ $noteName }}</th>
                                     @endforeach
-                                    <th class="font-family-cairo text-center fw-bold">العمليات</th>
+                                    @canany(['تعديل الأصناف', 'حذف الأصناف'])
+                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
@@ -287,31 +277,22 @@ new class extends Component {
                                                     {{ $itemData['itemNotes'][$noteTypeId] ?? '' }}
                                                 </td>
                                             @endforeach
-
-
-                                            <td>
-                                                @can('تعديل الأصناف')
-                                                    <button type="button" class="btn btn-success btn-sm"
-                                                        wire:click="edit({{ $itemId }})" title="تعديل الصنف">
-                                                        <i class="las la-edit fa-lg"></i>
-                                                    </button>
-                                                @endcan
-                                                {{-- view item movement --}}
-                                                <button type="button" class="btn btn-info btn-sm"
-                                                    wire:click="viewItemMovement({{ $itemId }}, {{ $selectedWarehouse }})"
-                                                    title="عرض حركات الصنف">
-                                                    <i class="las la-chart-bar fa-lg"></i>
-                                                </button>
-
-                                                @can('حذف الأصناف')
-                                                    <button type="button" class="btn btn-danger btn-sm"
-                                                        wire:click="delete({{ $itemId }})" title="حذف الصنف"
-                                                        onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
-                                                        <i class="las la-trash fa-lg"></i>
-                                                    </button>
-                                                @endcan
-
-                                            </td>
+                                            @canany(['تعديل الأصناف', 'حذف الأصناف'])
+                                                <td>
+                                                    @can('تعديل الأصناف')
+                                                        <button type="button" class="btn btn-success btn-sm"
+                                                            wire:click="edit({{ $itemId }})"><i
+                                                                class="las la-edit fa-lg"></i></button>
+                                                    @endcan
+                                                    @can('حذف الأصناف')
+                                                        <button type="button" class="btn btn-danger btn-sm"
+                                                            wire:click="delete({{ $itemId }})"
+                                                            onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
+                                                            <i class="las la-trash fa-lg"></i>
+                                                        </button>
+                                                    @endcan
+                                                </td>
+                                            @endcanany
                                         </tr>
                                     @endif
                                 @empty

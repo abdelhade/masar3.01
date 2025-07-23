@@ -3,19 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-
-
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-   public function __construct()
-{
-    $this->middleware('can:عرض الأقسام')->only(['index']);
-    $this->middleware('can:إضافة الأقسام')->only(['create', 'store']);
-    $this->middleware('can:تعديل الأقسام')->only(['update', 'edit']);
-    $this->middleware('can:حذف الأقسام')->only(['destroy']);
-}
+    public function __construct()
+    {
+        $this->middleware('can:عرض الادارات والاقسام')->only(['index']);
+        $this->middleware('can:إضافة الادارات والاقسام')->only(['create', 'store']);
+        $this->middleware('can:تعديل الادارات والاقسام')->only(['update', 'edit']);
+        $this->middleware('can:حذف الادارات والاقسام')->only(['destroy']);
+    }
 
     public function index()
     {

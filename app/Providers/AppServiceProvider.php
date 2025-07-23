@@ -7,6 +7,10 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use App\Observers\JournalDetailObserver;
+use Illuminate\Support\Facades\Cache;
+use Modules\Settings\Models\PublicSetting;
+use Illuminate\Support\Facades\Schema;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,10 +27,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (!Schema::hasTable('public_settings')) return;
+        $settings = Cache::rememberForever('public_settings', function () {
+        return PublicSetting::pluck('value', 'key')->toArray();
+         }); 
+       config(['public_settings' => $settings]);
+
         // Use Bootstrap 5 for pagination styling
         Paginator::useBootstrapFive();
         JournalDetail::observe(JournalDetailObserver::class);
-
+      
         // automatically egar load relations
         // Model::automaticallyEagerLoadRelationships();
     }

@@ -267,6 +267,7 @@ new class extends Component {
 
 <div dir="rtl" style="font-family: 'Cairo', sans-serif;">
     <div class="row mb-3">
+
         {{-- @can('إنشاء معالجة الحضور والانصراف') --}}
             <div class="">
                 <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
@@ -275,6 +276,7 @@ new class extends Component {
             </div>
         {{-- @endcan --}}
     </div>
+
 
     <div class="row">
         <div class="col-lg-12">

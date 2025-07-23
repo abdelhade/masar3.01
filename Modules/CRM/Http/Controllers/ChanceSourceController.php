@@ -13,7 +13,10 @@ class ChanceSourceController extends Controller
 
     public function __construct()
     {
-        // $this->middleware('can:view chance-sources')->only(['index']);
+        $this->middleware('can:عرض مصدر الفرص')->only(['index']);
+        $this->middleware('can:إضافة مصدر الفرص')->only(['create', 'store']);
+        $this->middleware('can:تعديل مصدر الفرص')->only(['edit', 'update']);
+        $this->middleware('can:حذف مصدر الفرص')->only(['destroy']);
     }
 
     public function index()

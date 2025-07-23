@@ -97,38 +97,52 @@ new class extends Component {
         @endif
         <div class="col-lg-12">
 
-
-            <button wire:click="createNoteDetails" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
-                {{ __('Add New') }}
-                <i class="fas fa-plus me-2"></i>
-            </button>
+            @can('إضافة المجموعات')
+                <button wire:click="createNoteDetails" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
+                    {{ __('Add New') }}
+                    <i class="fas fa-plus me-2"></i>
+                </button>
+            @endcan
             <div class="card">
+                <div class="card-header">
+
+
+
+                </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
                             <thead class="table-light align-middle">
 
                                 <tr>
-                                    <th class="font-family-cairo text-center fw-bold">#</th>
-                                    <th class="font-family-cairo text-center fw-bold">الاسم</th>
-                                    <th class="font-family-cairo text-center fw-bold">العمليات</th>
+                                    <th class="font-family-cairo fw-bold">#</th>
+                                    <th class="font-family-cairo fw-bold">الاسم</th>
+                                    @canany(['حذف المجموعات', 'تعديل المجموعات'])
+                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($noteDetails as $noteDetail)
                                     <tr>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $noteDetail->name }}</td>
-                                        <td class="text-center">
-                                            <a wire:click="editNoteDetails({{ $noteDetail->id }})"
-                                                class="btn btn-success btn-icon-square-sm "><i
-                                                    class="las la-pen "></i></a>
-                                            <a wire:click="deleteNoteDetails({{ $noteDetail->id }})"
-                                                class="btn btn-danger btn-icon-square-sm"
-                                                onclick="confirm('هل أنت متأكد من حذف هذه'. {{ $noteDetail->name }}) || event.stopImmediatePropagation()">
-                                                <i class="las la-trash-alt "></i>
-                                            </a>
-                                        </td>
+                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-family-cairo fw-bold">{{ $noteDetail->name }}</td>
+
+                                        @canany(['حذف المجموعات', 'تعديل المجموعات'])
+                                            <td>
+                                                @can('تعديل المجموعات')
+                                                    <a wire:click="editNoteDetails({{ $noteDetail->id }})"><i
+                                                            class="las la-pen text-success font-20"></i></a>
+                                                @endcan
+                                                @can('حذف المجموعات')
+                                                    <a wire:click="delete({{ $noteDetail->id }})"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذه'. {{ $noteDetail->name }}) || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash-alt text-danger font-20"></i>
+                                                    </a>
+                                                @endcan
+
+                                            </td>
+                                        @endcanany
                                     </tr>
                                 @endforeach
                             </tbody>

@@ -87,8 +87,7 @@ new class extends Component {
 <div style="font-family: 'Cairo', sans-serif; direction: rtl;">
     <div class="row">
         @if (session()->has('success'))
-            <div class="alert alert-success" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
+            <div class="alert alert-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
                 {{ session('success') }}
             </div>
         @endif
@@ -104,17 +103,14 @@ new class extends Component {
             <div class="card">
 
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('إنشاء الأقسام')
+                    @can('إضافة الادارات والاقسام')
                         <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
                             {{ __('Add Department') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
                     @endcan
-                    @can('البحث عن الاقسام')
-                        <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
-                            style="min-width:200px" placeholder="{{ __('Search by title...') }}">
-                    @endcan
-
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
+                        style="min-width:200px" placeholder="{{ __('Search by title...') }}">
                 </div>
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
@@ -130,7 +126,7 @@ new class extends Component {
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">{{ __('title') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('Description') }}</th>
-                                    @can('إجراء العمليات على الأقسام')
+                                    @canany(['حذف الادارات والاقسام', 'تعديل الادارات والاقسام'])
                                         <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
                                     @endcan
 
@@ -167,14 +163,14 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $department->title }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $department->description }}</td>
-                                        @can('إجراء العمليات على الأقسام')
+                                        @canany(['حذف الادارات والاقسام', 'تعديل الادارات والاقسام'])
                                             <td>
-                                                @can('تعديل الأقسام')
+                                                @can('تعديل الادارات والاقسام')
                                                     <a wire:click="edit({{ $department->id }})" class="btn btn-success btn-sm">
                                                         <i class="las la-edit fa-lg"></i>
                                                     </a>
                                                 @endcan
-                                                @can('حذف الأقسام')
+                                                @can('حذف الادارات والاقسام')
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         wire:click="delete({{ $department->id }})"
                                                         onclick="confirm('هل أنت متأكد من حذف هذا القسم؟') || event.stopImmediatePropagation()">
@@ -183,7 +179,7 @@ new class extends Component {
                                                 @endcan
 
                                             </td>
-                                        @endcan
+                                        @endcanany
 
                                     </tr>
                                 @empty
@@ -214,8 +210,8 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-
-                            <label for="title" class="form-label font-family-cairo fw-bold">{{ __('title') }}</label>
+                            <label for="title"
+                                class="form-label font-family-cairo fw-bold">{{ __('title') }}</label>
                             <input type="text"
                                 class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
                                 id="title" wire:model.defer="title" required>
@@ -264,7 +260,7 @@ new class extends Component {
             });
 
 
-            modalElement.addEventListener('hidden.bs.modal', function () {
+            modalElement.addEventListener('hidden.bs.modal', function() {
                 modalInstance = null;
             });
         });

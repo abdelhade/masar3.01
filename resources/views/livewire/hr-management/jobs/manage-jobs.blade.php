@@ -106,6 +106,20 @@ new class extends Component {
 
             </div>
             <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    @can('إضافة الوظائف')
+                        <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                            {{ __('Add Job') }}
+                            <i class="fas fa-plus me-2"></i>
+                        </button>
+                    @endcan
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
+                        style="min-width:200px" placeholder="{{ __('Search by title...') }}">
+
+                </div>
+            <div class="card">
+
+
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
@@ -115,9 +129,10 @@ new class extends Component {
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">{{ __('title') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('Description') }}</th>
-                                    {{-- @can('إجراء العمليات على الوظائف') --}}
-                                    <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
-                                    {{-- @endcan --}}
+                                    @canany(['تعديل الوظائف', 'تعديل الوظائف'])
+                                        <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                                    @endcanany
+
 
                                 </tr>
                             </thead>
@@ -128,34 +143,31 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $job->title }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $job->description }}</td>
-                                        {{-- @can('إجراء العمليات على الوظائف') --}}
-                                        <td>
-                                            {{-- @can('تعديل الوظائف') --}}
-                                            <a wire:click="edit({{ $job->id }})" class="btn btn-success btn-sm">
-                                                <i class="las la-edit fa-lg"></i>
-                                            </a>
-                                            {{-- @endcan --}}
-                                            {{-- @can('حذف الوظائف') --}}
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                wire:click="delete({{ $job->id }})"
-                                                onclick="confirm('هل أنت متأكد من حذف هذا الوظيفة؟') || event.stopImmediatePropagation()">
-                                                <i class="las la-trash fa-lg"></i>
-                                            </button>
-                                            {{-- @endcan --}}
+                                        @canany(['حذف الوظائف', 'تعديل الوظائف'])
+                                            <td>
+                                                @can('تعديل الوظائف')
+                                                    <a wire:click="edit({{ $job->id }})" class="btn btn-success btn-sm">
+                                                        <i class="las la-edit fa-lg"></i>
+                                                    </a>
+                                                @endcan
+                                                @can('حذف الوظائف')
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        wire:click="delete({{ $job->id }})"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذا الوظيفة؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash fa-lg"></i>
+                                                    </button>
+                                                @endcan
 
-                                        </td>
-                                        {{-- @endcan --}}
+                                            </td>
+                                        @endcanany
+
 
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">
-                                            <div class="alert alert-info py-3 mb-0"
-                                                style="font-size: 1.2rem; font-weight: 500;">
-                                                <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات
-                                            </div>
-                                        </td>
+                                        <td colspan="4" class="text-center font-family-cairo fw-bold">
+                                            {{ __('No jobs found.') }}</td>
+
                                     </tr>
                                 @endforelse
                             </tbody>

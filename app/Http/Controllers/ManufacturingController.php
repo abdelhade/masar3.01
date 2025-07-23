@@ -11,6 +11,7 @@ class ManufacturingController extends Controller
 public function __construct()
 {
     $this->middleware('can:عرض فاتورة تصنيع')->only(['index']);
+    $this->middleware('can:إضافة فاتورة تصنيع')->only(['create','store']);
 }
 
     /**

@@ -6,12 +6,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('إنشاء - العملاء') --}}
-            <a href="{{ route('users.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                اضافه جديده
-                <i class="fas fa-plus me-2"></i>
-            </a>
-            {{-- @endcan --}}
+            @can('إضافة المدراء')
+                <a href="{{ route('users.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                    اضافه جديده
+                    <i class="fas fa-plus me-2"></i>
+                </a>
+            @endcan
             <br>
             <br>
             <div class="card">
@@ -21,16 +21,14 @@
                             <thead class="table-light text-center align-middle">
 
                                 <tr>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">#</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الاسم') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('البريد الالكتروني ') }}
-                                    </th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الادوار') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('تم الانشاء في ') }}
-                                    </th>
-                                    {{-- @can('عرض - تفاصيل دور') --}}
-                                    <th>{{ __('العمليات') }}</th>
-                                    {{-- @endcan --}}
+                                    <th>#</th>
+                                    <th>{{ __('الاسم') }}</th>
+                                    <th>{{ __('البريد الالكتروني ') }}</th>
+                                    <th>{{ __('الادوار') }}</th>
+                                    <th>{{ __('تم الانشاء في ') }}</th>
+                                    @canany(['تعديل المدراء', 'حذف المدراء'])
+                                        <th>{{ __('العمليات') }}</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
@@ -45,28 +43,28 @@
                                                 <span class="badge bg-primary">{{ $role->name }}</span>
                                             @endforeach
                                         </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
-                                            {{ $user->created_at->format('Y-m-d') }}</td>
-
-                                        <td>
-                                            {{-- @can('تعديل - الأدوار') --}}
-                                            <a class="btn btn-success btn-icon-square-sm"
-                                                href="{{ route('users.edit', $user->id) }}">
-                                                <i class="las la-edit"></i>
-                                            </a>
-                                            {{-- @endcan
-                                            @can('حذف - الأدوار') --}}
-                                            <form action="{{ route('users.destroy', $user->id) }}" method="POST"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                    <i class="las la-trash"></i>
-                                                </button>
-                                            </form>
-                                            {{-- @endcan --}}
-                                        </td>
+                                        <td>{{ $user->created_at->format('Y-m-d') }}</td>
+                                        @canany(['تعديل المدراء', 'حذف المدراء'])
+                                            <td>
+                                                @can('تعديل المدراء')
+                                                    <a class="btn btn-success btn-icon-square-sm"
+                                                        href="{{ route('users.edit', $user->id) }}">
+                                                        <i class="las la-edit"></i>
+                                                    </a>
+                                                @endcan
+                                                @can('حذف المدراء')
+                                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST"
+                                                        style="display:inline-block;"
+                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                            <i class="las la-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </td>
+                                        @endcanany
                                     </tr>
                                 @empty
                                     <tr>

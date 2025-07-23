@@ -95,137 +95,124 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
-            <div class="">
-                <div class="d-flex m-1 justify-content-between align-items-center">
-                    {{-- @can('إنشاء المحافظات') --}}
-                    <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                        {{ __('إضافة ولاية') }}
-                        <i class="fas fa-plus me-2"></i>
-                    </button>
-                    {{-- @endcan
-                        @can('البحث عن المحافظات') --}}
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    @can('إضافة المحافظات')
+                        <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                            {{ __('إضافة ولاية') }}
+                            <i class="fas fa-plus me-2"></i>
+                        </button>
+                    @endcan
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
                         style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
-                    {{-- @endcan --}}
+
 
                 </div>
-                <div class="card">
-
-                    <div class="card-body">
-                        <div class="table-responsive" style="overflow-x: auto;">
-                            <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
-                                <thead class="table-light align-middle">
-
-                                    <tr>
-                                        <th class="font-family-cairo fw-bold">#</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('الدولة') }}</th>
-                                        {{-- @can('إجراء العمليات على المحافظات') --}}
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="font-family-cairo fw-bold">#</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('الدولة') }}</th>
+                                    @canany(['حذف المحافظات', 'تعديل المحافظات'])
                                         <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
-                                        {{-- @endcan --}}
+                                    @endcanany
 
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse ($states as $state)
-                                        <tr>
-                                            <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ $state->title }}</td>
-                                            <td class="font-family-cairo fw-bold">
-                                                {{ $state->country->title ?? '' }}</td>
-                                            {{-- @can('إجراء العمليات على المحافظات') --}}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($states as $state)
+                                    <tr>
+                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-family-cairo fw-bold">{{ $state->title }}</td>
+                                        <td class="font-family-cairo fw-bold">{{ $state->country->title ?? '' }}</td>
+                                        @canany(['حذف المحافظات', 'تعديل المحافظات'])
                                             <td>
-                                                {{-- @can('تعديل المحافظات') --}}
-                                                <a wire:click="edit({{ $state->id }})"
-                                                    class="btn btn-success btn-sm">
-                                                    <i class="las la-edit fa-lg"></i>
-                                                </a>
-                                                {{-- @endcan
-                                                        @can('حذف المحافظات') --}}
-                                                <button type="button" class="btn btn-danger btn-sm"
-                                                    wire:click="delete({{ $state->id }})"
-                                                    onclick="confirm('هل أنت متأكد من حذف هذه الولاية؟') || event.stopImmediatePropagation()">
-                                                    <i class="las la-trash fa-lg"></i>
-                                                </button>
-                                                {{-- @endcan --}}
+                                                @can('تعديل المحافظات')
+                                                    <a wire:click="edit({{ $state->id }})" class="btn btn-success btn-sm">
+                                                        <i class="las la-edit fa-lg"></i>
+                                                    </a>
+                                                @endcan
+                                                @can('حذف المحافظات')
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        wire:click="delete({{ $state->id }})"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذه الولاية؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash fa-lg"></i>
+                                                    </button>
+                                                @endcan
 
                                             </td>
-                                            {{-- @endcan --}}
+                                        @endcanany
 
-                                        </tr>
+                                            </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center font-family-cairo fw-bold">
+                                                        {{ __('لا توجد ولايات.') }}</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
 
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center">
-                                                <div class="alert alert-info py-3 mb-0"
-                                                    style="font-size: 1.2rem; font-weight: 500;">
-                                                    <i class="las la-info-circle me-2"></i>
-                                                    لا توجد بيانات
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
 
-            </div>
+    <!-- Modal (Create/Edit) -->
+    <div class="modal fade" wire:ignore.self id="stateModal" tabindex="-1" aria-labelledby="stateModalLabel"
+        aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-family-cairo fw-bold" id="stateModalLabel">
+                        {{ $isEdit ? __('تعديل الولاية') : __('إضافة ولاية') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form wire:submit.prevent="save">
+                        <div class="mb-3">
+                            <label for="title"
+                                class="form-label font-family-cairo fw-bold">{{ __('الاسم') }}</label>
+                            <input type="text"
+                                class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                id="title" wire:model.defer="title" required>
+                            @error('title')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
 
-            <!-- Modal (Create/Edit) -->
-            <div class="modal fade" wire:ignore.self id="stateModal" tabindex="-1" aria-labelledby="stateModalLabel"
-                aria-hidden="true" data-bs-backdrop="static">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title font-family-cairo fw-bold" id="stateModalLabel">
-                                {{ $isEdit ? __('تعديل الولاية') : __('إضافة ولاية') }}
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            <form wire:submit.prevent="save">
-                                <div class="mb-3">
-                                    <label for="title"
-                                        class="form-label font-family-cairo fw-bold">{{ __('الاسم') }}</label>
-
-                                    <label for="title"
-                                        class="form-label font-family-cairo fw-bold">{{ __('الاسم') }}</label>
-                                    <input type="text"
-                                        class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
-                                        id="title" wire:model.defer="title" required>
-                                    @error('title')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="mb-3">
-                                    <label for="country_id"
-                                        class="form-label font-family-cairo fw-bold">{{ __('الدولة') }}</label>
-                                    <select
-                                        class="form-control @error('country_id') is-invalid @enderror font-family-cairo fw-bold"
-                                        id="country_id" wire:model.defer="country_id" required>
-                                        <option value="">{{ __('اختر الدولة') }}</option>
-                                        @foreach ($countries as $country)
-                                            <option value="{{ $country->id }}">{{ $country->title }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('country_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">{{ __('إلغاء') }}</button>
-                                    <button type="submit"
-                                        class="btn btn-primary">{{ $isEdit ? __('تحديث') : __('حفظ') }}</button>
-                                </div>
-                            </form>
+                        <div class="mb-3">
+                            <label for="country_id"
+                                class="form-label font-family-cairo fw-bold">{{ __('الدولة') }}</label>
+                            <select
+                                class="form-control @error('country_id') is-invalid @enderror font-family-cairo fw-bold"
+                                id="country_id" wire:model.defer="country_id" required>
+                                <option value="">{{ __('اختر الدولة') }}</option>
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country->id }}">{{ $country->title }}</option>
+                                @endforeach
+                            </select>
+                            @error('country_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ __('إلغاء') }}</button>
+                            <button type="submit"
+                                class="btn btn-primary">{{ $isEdit ? __('تحديث') : __('حفظ') }}</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+        </div>
+    </div>
+
 
             <script>
                 document.addEventListener('livewire:initialized', () => {
@@ -245,9 +232,10 @@ new class extends Component {
                         }
                     });
 
-                    modalElement.addEventListener('hidden.bs.modal', function() {
-                        modalInstance = null;
-                    });
-                });
-            </script>
-        </div>
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalInstance = null;
+            });
+        });
+    </script>
+</div>
+

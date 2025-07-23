@@ -15,39 +15,39 @@ class InvoiceController extends Controller
     public function __construct()
     {
         // فاتورة المبيعات
-        $this->middleware('can:عرض فاتورة مبيعات')->only(['index', 'show']);
-        $this->middleware('can:إضافة فاتورة مبيعات')->only(['create', 'store']);
-        $this->middleware('can:تعديل فاتورة مبيعات')->only(['edit', 'update']);
-        $this->middleware('can:حذف فاتورة مبيعات')->only(['destroy']);
-        $this->middleware('can:طباعة فاتورة مبيعات')->only(['print', 'pdf', 'export']);
+        $this->middleware('can:عرض فاتورة مبيعات')->only(['index', 'show' , 'create']);
+        // $this->middleware('can:إضافة فاتورة مبيعات')->only(['create', 'store']);
+        // $this->middleware('can:تعديل فاتورة مبيعات')->only(['edit', 'update']);
+        // $this->middleware('can:حذف فاتورة مبيعات')->only(['destroy']);
+        // $this->middleware('can:طباعة فاتورة مبيعات')->only(['print', 'pdf', 'export']);
 
         // مردود المبيعات
-        $this->middleware('can:عرض مردود مبيعات')->only(['returnsIndex', 'showReturn']);
-        $this->middleware('can:إضافة مردود مبيعات')->only(['returnsCreate', 'returnsStore']);
-        $this->middleware('can:تعديل مردود مبيعات')->only(['returnsEdit', 'returnsUpdate']);
-        $this->middleware('can:حذف مردود مبيعات')->only(['returnsDestroy']);
-        $this->middleware('can:طباعة مردود مبيعات')->only(['returnsPrint', 'returnsPdf']);
+        $this->middleware('can:عرض مردود مبيعات')->only(['index', 'show' , 'create']);
+        // $this->middleware('can:إضافة مردود مبيعات')->only(['returnsCreate', 'returnsStore']);
+        // $this->middleware('can:تعديل مردود مبيعات')->only(['returnsEdit', 'returnsUpdate']);
+        // $this->middleware('can:حذف مردود مبيعات')->only(['returnsDestroy']);
+        // $this->middleware('can:طباعة مردود مبيعات')->only(['returnsPrint', 'returnsPdf']);
 
         // أمر بيع
-        $this->middleware('can:عرض أمر بيع')->only(['orderIndex']);
-        $this->middleware('can:إضافة أمر بيع')->only(['orderCreate', 'orderStore']);
-        $this->middleware('can:تعديل أمر بيع')->only(['orderEdit', 'orderUpdate']);
-        $this->middleware('can:حذف أمر بيع')->only(['orderDestroy']);
-        $this->middleware('can:طباعة أمر بيع')->only(['orderPrint']);
+        $this->middleware('can:عرض أمر بيع')->only(['index', 'show' , 'create']);
+        // $this->middleware('can:إضافة أمر بيع')->only(['orderCreate', 'orderStore']);
+        // $this->middleware('can:تعديل أمر بيع')->only(['orderEdit', 'orderUpdate']);
+        // $this->middleware('can:حذف أمر بيع')->only(['orderDestroy']);
+        // $this->middleware('can:طباعة أمر بيع')->only(['orderPrint']);
 
         // عرض سعر لعميل
-        $this->middleware('can:عرض عرض سعر لعميل')->only(['quotationIndex']);
-        $this->middleware('can:إضافة عرض سعر لعميل')->only(['quotationCreate', 'quotationStore']);
-        $this->middleware('can:تعديل عرض سعر لعميل')->only(['quotationEdit', 'quotationUpdate']);
-        $this->middleware('can:حذف عرض سعر لعميل')->only(['quotationDestroy']);
-        $this->middleware('can:طباعة عرض سعر لعميل')->only(['quotationPrint']);
+        $this->middleware('can:عرض عرض سعر لعميل')->only(['index', 'show' , 'create']);
+        // $this->middleware('can:إضافة عرض سعر لعميل')->only(['quotationCreate', 'quotationStore']);
+        // $this->middleware('can:تعديل عرض سعر لعميل')->only(['quotationEdit', 'quotationUpdate']);
+        // $this->middleware('can:حذف عرض سعر لعميل')->only(['quotationDestroy']);
+        // $this->middleware('can:طباعة عرض سعر لعميل')->only(['quotationPrint']);
 
         // أمر حجز
-        $this->middleware('can:عرض أمر حجز')->only(['reservationIndex']);
-        $this->middleware('can:إضافة أمر حجز')->only(['reservationCreate', 'reservationStore']);
-        $this->middleware('can:تعديل أمر حجز')->only(['reservationEdit', 'reservationUpdate']);
-        $this->middleware('can:حذف أمر حجز')->only(['reservationDestroy']);
-        $this->middleware('can:طباعة أمر حجز')->only(['reservationPrint']);
+        $this->middleware('can:عرض أمر حجز')->only(['index', 'show' , 'create']);
+    //     $this->middleware('can:إضافة أمر حجز')->only(['reservationCreate', 'reservationStore']);
+    //     $this->middleware('can:تعديل أمر حجز')->only(['reservationEdit', 'reservationUpdate']);
+    //     $this->middleware('can:حذف أمر حجز')->only(['reservationDestroy']);
+    //     $this->middleware('can:طباعة أمر حجز')->only(['reservationPrint']);
     }
 
     public function index()

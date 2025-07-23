@@ -6,12 +6,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('إنشاء - العملاء') --}}
-            <a href="{{ route('clients.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                اضافه جديده
-                <i class="fas fa-plus me-2"></i>
-            </a>
-            {{-- @endcan --}}
+            @can('إضافة العملااء')
+                <a href="{{ route('clients.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                    اضافه جديده
+                    <i class="fas fa-plus me-2"></i>
+                </a>
+            @endcan
             <br>
             <br>
             <div class="card">
@@ -28,9 +28,9 @@
                                     <th>{{ __('العنوان') }}</th>
                                     <th>{{ __('ملاحظات') }}</th>
                                     <th>{{ __('تم الاضافه بواسطة ') }}</th>
-                                    @can('عرض - تفاصيل عميل')
-                                    <th>{{ __('العمليات') }}</th>
-                                    @endcan
+                                    @canany(['حذف العملااء', 'تعديل العملاء'])
+                                        <th>{{ __('العمليات') }}</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
@@ -55,27 +55,27 @@
                                         <td>{{ $client->address }}</td>
                                         <td>{{ $client->notes }}</td>
                                         <td>{{ optional($client->creator)->name }}</td>
-                                    @can('عرض - تفاصيل عميل')
-                                        <td>
-                                            @can('تعديل - العملاء')
-                                            <a class="btn btn-success btn-icon-square-sm"
-                                                href="{{ route('clients.edit', $client->id) }}">
-                                                <i class="las la-edit"></i>
-                                            </a>
-                                            @endcan
-                                            @can('حذف - العملاء')
-                                            <form action="{{ route('clients.destroy', $client->id) }}" method="POST"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                    <i class="las la-trash"></i>
-                                                </button>
-                                            </form>
-                                            @endcan
-                                        </td>
-                                        @endcan
+                                        @canany(['تعديل العملااء', 'حذف العملااء'])
+                                            <td>
+                                                @can('تعديل العملااء')
+                                                    <a class="btn btn-success btn-icon-square-sm"
+                                                        href="{{ route('clients.edit', $client->id) }}">
+                                                        <i class="las la-edit"></i>
+                                                    </a>
+                                                @endcan
+                                                @can('حذف العملااء')
+                                                    <form action="{{ route('clients.destroy', $client->id) }}" method="POST"
+                                                        style="display:inline-block;"
+                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                            <i class="las la-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </td>
+                                        @endcanany
                                     </tr>
                                 @empty
                                     <tr>

@@ -7,6 +7,9 @@ use Modules\Settings\Models\Category;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Settings\Models\PublicSetting;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
+
+
 
 
 class SettingsController extends Controller
@@ -50,20 +53,21 @@ class SettingsController extends Controller
         return view('settings::edit');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request)
-    {
-        foreach ($request->input('settings', []) as $key => $value) {
-            PublicSetting::where('key', $key)->update(['value' => $value]);
-        }
-        Alert::toast('تم تحديث الإعدادات بنجاح', 'success');
-        return redirect()->back();
+   
+public function update(Request $request)
+{
+    foreach ($request->input('settings', []) as $key => $value) {
+        PublicSetting::where('key', $key)->update([
+            'value' => is_array($value) ? json_encode($value) : trim($value)
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    Cache::forget('public_settings'); 
+
+    Alert::toast('تم تحديث الإعدادات بنجاح', 'success');
+    return redirect()->back();
+}
+
+   
     public function destroy($id) {}
 }

@@ -47,10 +47,10 @@ new class extends Component {
 <div class="p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">المشاريع</h2>
-        @can('إنشاء مشروع')
-        <a href="{{ route('projects.create') }}" class="btn btn-primary mb-2">
-            <i class="las la-plus"></i> إضافة مشروع جديد
-        </a>
+        @can('إضافة المشاريع')
+            <a href="{{ route('projects.create') }}" class="btn btn-primary mb-2">
+                <i class="las la-plus"></i> إضافة مشروع جديد
+            </a>
         @endcan
 
     </div>
@@ -86,24 +86,23 @@ new class extends Component {
                             <th class="font-family-cairo fw-bold">الحالة</th>
                             <th class="font-family-cairo fw-bold">أنشئ بواسطة</th>
                             <th class="font-family-cairo fw-bold">تم التحديث بواسطة</th>
-                            <th class="font-family-cairo fw-bold">العمليات</th>
+                            @canany(abilities: ['تعديل المشاريع', 'حذف المشاريع'])
+                                <th class="font-family-cairo fw-bold">العمليات</th>
+                            @endcan
 
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($this->projects as $project)
                             <tr wire:key="{{ $project->id }}">
-                                <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
-                                <td class="font-family-cairo text-center fw-bold">{{ $project->name }}</td>
-                                <td class="font-family-cairo text-center fw-bold">
-                                    {{ Str::limit($project->description, 50) }}</td>
-                                <td class="font-family-cairo text-center fw-bold">
-                                    {{ $project->start_date->format('Y-m-d') }}</td>
-                                <td class="font-family-cairo text-center fw-bold">
-                                    {{ $project->end_date->format('Y-m-d') }}</td>
-                                <td class="font-family-cairo text-center fw-bold">
+                                <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
+                                <td class="font-family-cairo fw-bold">{{ $project->name }}</td>
+                                <td class="font-family-cairo fw-bold">{{ Str::limit($project->description, 50) }}</td>
+                                <td class="font-family-cairo fw-bold">{{ $project->start_date->format('Y-m-d') }}</td>
+                                <td class="font-family-cairo fw-bold">{{ $project->end_date->format('Y-m-d') }}</td>
+                                <td class="font-family-cairo fw-bold">
                                     {{ $project->actual_end_date?->format('Y-m-d') ?? '-' }}</td>
-                                <td class="font-family-cairo text-center fw-bold">
+                                <td class="font-family-cairo fw-bold">
                                     <span class="badge {{ $this->getStatusBadgeClass($project->status) }}">
                                         {{ $this->getStatusText($project->status) }}
                                     </span>
@@ -111,20 +110,24 @@ new class extends Component {
 
                                 <td class="font-family-cairo fw-bold">{{ $project->createdBy->name }}</td>
                                 <td class="font-family-cairo fw-bold">{{ $project->updatedBy->name }}</td>
-                                <td>
-                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-info btn-sm">
-                                        <i class="las la-eye fa-lg"></i>
-                                    </a>
-                                    <a href="{{ route('projects.edit', $project) }}" class="btn btn-success btn-sm">
-                                        <i class="las la-edit fa-lg"></i>
-                                    </a>
-                                  <button type="button" class="btn btn-danger btn-sm"
-                                        wire:click="delete({{ $project->id }})"
-                                        onclick="confirm('هل أنت متأكد من حذف هذا المشروع؟') || event.stopImmediatePropagation()">
-                                        <i class="las la-trash fa-lg"></i>
-                                    </button>
+                            @canany(abilities: ['تعديل المشاريع', 'حذف المشاريع'])
 
-                                </td>
+                                    <td>
+                                        @can('تعديل المشاريع')
+                                            <a href="{{ route('projects.edit', $project) }}" class="btn btn-success btn-sm">
+                                                <i class="las la-edit fa-lg"></i>
+                                            </a>
+                                        @endcan
+                                        @can( 'حذف المشاريع')
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                wire:click="delete({{ $project->id }})"
+                                                onclick="confirm('هل أنت متأكد من حذف هذا المشروع؟') || event.stopImmediatePropagation()">
+                                                <i class="las la-trash fa-lg"></i>
+                                            </button>
+                                        @endcan
+
+                                    </td>
+                                @endcanany
 
                             </tr>
                         @empty

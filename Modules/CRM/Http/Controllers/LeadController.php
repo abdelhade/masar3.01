@@ -15,7 +15,10 @@ class LeadController extends Controller
 
     public function __construct()
     {
-        // $this->middleware('can:view crm leads board')->only(['board']);
+        $this->middleware('can:عرض الفرص')->only(['board']);
+        $this->middleware('can:إضافة الفرص')->only(['store']);
+        $this->middleware('can:تعديل الفرص')->only(['updateStatus']);
+        $this->middleware('can:حذف الفرص')->only(['destroy']);
     }
 
     public function board()

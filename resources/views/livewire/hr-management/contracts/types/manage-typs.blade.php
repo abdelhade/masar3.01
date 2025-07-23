@@ -79,6 +79,30 @@ new class extends Component {
 }; ?>
 
 
+
+
+<div class="mt-4">
+    {{ $contractTypes->links() }}
+</div>
+
+<!-- Modal -->
+<div class="modal fade @if ($showModal) show d-block @endif" tabindex="-1"
+    style="background: rgba(0,0,0,0.5);" @if ($showModal) aria-modal="true" role="dialog" @endif>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ $isEdit ? __('Edit Contract Type') : __('Add Contract Type') }}</h5>
+                <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
+            </div>
+            <form wire:submit.prevent="save">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('Name') }}</label>
+                        <input type="text" class="form-control" wire:model="name" required>
+                        @error('name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -166,6 +190,7 @@ new class extends Component {
                         <button type="submit" class="btn btn-primary">حفظ</button>
                     </div>
                 </div>
+
             </form>
         </div>
     </div>

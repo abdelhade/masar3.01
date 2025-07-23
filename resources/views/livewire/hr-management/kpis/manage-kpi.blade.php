@@ -86,19 +86,17 @@ new class extends Component {
 
     <div class="row mb-3">
         <div class="col-lg-3">
-            @can('البحث عن المعدلات')
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <div class="position-relative">
-                        <input type="text" wire:model.live="search" class="form-control"
-                            placeholder="{{ __('Search KPIs...') }}">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <div class="position-relative">
+                    <input type="text" wire:model.live="search" class="form-control"
+                        placeholder="{{ __('Search KPIs...') }}">
 
-                    </div>
                 </div>
-            @endcan
+            </div>
 
             <div class="col-lg-6 mt-3">
-                @can('إنشاء المعدلات')
+                @can('إضافة المعدلات')
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
                         <i class="fas fa-plus me-2"></i>{{ __('Add New KPI') }}
                     </button>
@@ -124,9 +122,10 @@ new class extends Component {
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Description') }}</th>
                                     <th>{{ __('Created At') }}</th>
-                                    {{-- @can('إجراء العمليات على المعدلات') --}}
+                                    @canany(['حذف المعدلات', 'تعديل المعدلات'])
                                         <th>{{ __('Actions') }}</th>
-                                    {{-- @endcan --}}
+                                    @endcanany
+
 
                                 </tr>
                             </thead>
@@ -138,7 +137,8 @@ new class extends Component {
                                         <td>{{ $kpi->name }}</td>
                                         <td>{{ $kpi->description }}</td>
                                         <td>{{ $kpi->created_at->format('Y-m-d') }}</td>
-                                        {{-- @can('إجراء العمليات على المعدلات') --}}
+                                        @canany(['حذف المعدلات', 'تعديل المعدلات'])
+
                                             <td>
                                                 {{-- @can('تعديل المعدلات') --}}
                                                     <button wire:click="edit({{ $kpi->id }})"
@@ -204,7 +204,6 @@ new class extends Component {
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">{{ __('Description') }}</label>
-
                             <textarea wire:model="description" class="form-control @error('description') is-invalid @enderror" id="description"
                                 rows="3"></textarea>
                             @error('description')
@@ -254,7 +253,6 @@ new class extends Component {
         $wire.on('kpi-deleted', () => {
             showToast('{{ __('KPI deleted successfully') }}');
         });
-
 
         function showToast(message) {
             const toast = new bootstrap.Toast(document.getElementById('successToast'));
