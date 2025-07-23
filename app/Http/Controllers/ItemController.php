@@ -54,6 +54,16 @@ class ItemController extends Controller
         return view('item-management.reports.item-movement', compact('itemId', 'warehouseId')); // itemId and warehouseId are optional
     }
 
+    // 📁 Item Sales Report
+    public function itemSalesReport()
+    {
+        return view('reports.sales.manage-item-sales');
+    }
+
+    // 📁 Item Purchase Report
+    public function itemPurchaseReport()
+    {
+        return view('reports.purchase.manage-item-purchase-report');
     // Get item as JSON for AJAX requests
     public function getItemJson($id)
     {

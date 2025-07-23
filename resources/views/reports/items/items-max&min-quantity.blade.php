@@ -2,44 +2,189 @@
 @section('content')
     @include('components.breadcrumb', [
         'title' => __('Account Movement'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('كميه الاصناف ')]],
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('كمية الأصناف')]],
     ])
 
-    <div class="container mx-auto px-4">
-        <h1 class="text-2xl font-bold mb-6">مراقبة كميات الأصناف</h1>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fs-3 fw-bold text-dark">تقرير حد طلب الاصناف </h1>
+        </div>
 
-        <table class="min-w-full bg-white border">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="py-2 px-4 border">الكود</th>
-                    <th class="py-2 px-4 border">الاسم</th>
-                    <th class="py-2 px-4 border">الكمية الحالية</th>
-                    <th class="py-2 px-4 border">الحد الأدنى</th>
-                    <th class="py-2 px-4 border">الحد الأقصى</th>
-                    <th class="py-2 px-4 border">الحالة</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($items as $item)
-                    <tr
-                        class="@if ($item['status'] == 'below_min') bg-red-50 @elseif($item['status'] == 'above_max') bg-blue-50 @endif hover:bg-gray-50">
-                        <td class="py-2 px-4 border">{{ $item['code'] }}</td>
-                        <td class="py-2 px-4 border">{{ $item['name'] }}</td>
-                        <td class="py-2 px-4 border text-center">{{ number_format($item['current_quantity'], 2) }}</td>
-                        <td class="py-2 px-4 border text-center">{{ $item['min_order_quantity'] }}</td>
-                        <td class="py-2 px-4 border text-center">{{ $item['max_order_quantity'] }}</td>
-                        <td class="py-2 px-4 border">
-                            @if ($item['status'] == 'below_min')
-                                <span class="text-danger font-bold">▼ أقل من الحد الأدنى</span>
-                            @elseif($item['status'] == 'above_max')
-                                <span class="text-blue font-bold">▲ أعلى من الحد الأقصى</span>
-                            @else
-                                <span class="text-green-600">● ضمن الحدود</span>
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="text-end fw-semibold text-uppercase small px-4 py-3">الكود</th>
+
+                                <th scope="col" class="text-end fw-semibold text-uppercase small px-4 py-3">الاسم</th>
+
+                                <th scope="col" class="text-center fw-semibold text-uppercase small px-4 py-3">الكمية
+                                    الحالية</th>
+
+                                <th scope="col" class="text-center fw-semibold text-uppercase small px-4 py-3">الحد
+                                    الأدنى</th>
+
+                                <th scope="col" class="text-center fw-semibold text-uppercase small px-4 py-3">الحد
+                                    الأقصى</th>
+
+                                <th scope="col" class="text-center fw-semibold text-uppercase small px-4 py-3">المطلوب
+                                    تعويضه</th>
+
+                                <th scope="col" class="text-center fw-semibold text-uppercase small px-4 py-3">الحالة
+                                </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($items as $item)
+                                <tr
+                                    class="@if ($item['status'] == 'below_min') table-danger @elseif ($item['status'] == 'above_max') table-primary @else table-success @endif">
+                                    <td class="text-end px-4 py-3">{{ $item['code'] }}</td>
+                                    <td class="text-end px-4 py-3">{{ $item['name'] }}</td>
+
+                                    <td class="text-center px-4 py-3">
+                                        <span
+                                            class="fw-bold @if ($item['status'] == 'below_min') text-danger @elseif ($item['status'] == 'above_max') text-primary @else text-success @endif">
+                                            {{ number_format($item['current_quantity'], 2) }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center px-4 py-3">{{ number_format($item['min_order_quantity'], 2) }}
+                                    </td>
+                                    <td class="text-center px-4 py-3">{{ number_format($item['max_order_quantity'], 2) }}
+                                    </td>
+
+                                    <td class="text-center px-4 py-3">
+                                        @if ($item['required_compensation'] > 0)
+                                            <span
+                                                class="fw-bold @if ($item['status'] == 'below_min') text-danger @else text-primary @endif">
+                                                {{ number_format($item['required_compensation'], 2) }}
+                                                @if ($item['status'] == 'below_min')
+                                                    <small class="d-block text-muted">(نقص)</small>
+                                                @else
+                                                    <small class="d-block text-muted">(زيادة)</small>
+                                                @endif
+                                            </span>
+                                        @else
+                                            <span class="text-success fw-bold">-</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-center px-4 py-3">
+                                        @if ($item['status'] == 'below_min')
+                                            <span class="badge bg-danger rounded-pill">
+                                                <i class="bi bi-arrow-down me-1"></i> أقل من الحد الأدنى
+                                            </span>
+                                        @elseif ($item['status'] == 'above_max')
+                                            <span class="badge bg-primary rounded-pill">
+                                                <i class="bi bi-arrow-up me-1"></i> أعلى من الحد الأقصى
+                                            </span>
+                                        @else
+                                            <span class="badge bg-success rounded-pill">
+                                                <i class="bi bi-check-circle me-1"></i> ضمن الحدود
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">إحصائيات سريعة</h6>
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="text-danger fw-bold fs-4">
+                                    {{ collect($items)->where('status', 'below_min')->count() }}</div>
+                                <small class="text-muted">أقل من الحد الأدنى</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="text-primary fw-bold fs-4">
+                                    {{ collect($items)->where('status', 'above_max')->count() }}</div>
+                                <small class="text-muted">أعلى من الحد الأقصى</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="text-success fw-bold fs-4">
+                                    {{ collect($items)->where('status', 'within_limits')->count() }}</div>
+                                <small class="text-muted">ضمن الحدود</small>
+                            </div>
+
+                            <div class="col-3">
+                                <div class="text-success fw-bold fs-4">
+                                    {{ count($items) }}
+                                </div>
+                                <small class="text-muted">إجمالي الأصناف</small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <style>
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 9999px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f3f5;
+        }
+
+        .btn-group .btn {
+            transition: all 0.2s ease;
+        }
+
+        .btn-group .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* تحسين ألوان الصفوف */
+        .table-danger {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+            border-color: rgba(220, 53, 69, 0.2) !important;
+        }
+
+        .table-primary {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+            border-color: rgba(13, 110, 253, 0.2) !important;
+        }
+
+        .table-success {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+            border-color: rgba(25, 135, 84, 0.2) !important;
+        }
+
+        .table-hover tbody tr:hover {
+            --bs-table-accent-bg: rgba(0, 0, 0, 0.075);
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 @endsection
