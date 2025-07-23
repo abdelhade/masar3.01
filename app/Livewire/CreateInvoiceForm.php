@@ -878,12 +878,7 @@ class CreateInvoiceForm extends Component
                     ]);
                 }
             }
-            $this->dispatch('swal', [
-                'title' => 'تم الحفظ!',
-                'text' => 'تم حفظ البيانات بنجاح.',
-                'icon' => 'success',
-            ]);
-            // Alert::toast('تم حفظ الفاتورة بنجاح', 'success');
+            $this->dispatch('swal', title: 'تم الحفظ!', text: 'تم حفظ الفاتوره بنجاح.', icon: 'success');
             return $operation->id;
         } catch (\Exception $e) {
             logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
@@ -900,7 +895,8 @@ class CreateInvoiceForm extends Component
         if ($operationId) {
             // إعادة التوجيه إلى صفحة الطباعة مع تمرير معرف الفاتورة فقط
             $printUrl = route('invoice.print', ['operation_id' => $operationId]);
-            $this->dispatch('open-print-window', ['url' => $printUrl]);
+            // تأكد أن الرابط يبدأ بـ /invoice/print
+            $this->dispatch('open-print-window', url: $printUrl);
         }
     }
 

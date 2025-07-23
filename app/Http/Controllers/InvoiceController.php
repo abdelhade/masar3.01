@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Models\JournalDetail;
 use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\AccHead;
+use App\Models\Employee;
+use App\Models\Item;
 
 class InvoiceController extends Controller
 {
@@ -167,5 +170,66 @@ class InvoiceController extends Controller
         $operation->delete();
         Alert::toast('تم حذف العملية وسنداتها بنجاح.', 'success');
         return redirect()->back();
+    }
+
+    public function print(Request $request, $operation_id)
+    {
+        $operation = OperHead::with('operationItems')->findOrFail($operation_id);
+
+        $acc1List = AccHead::where('id', $operation->acc1)->get();
+        $acc2List = AccHead::where('id', $operation->acc2)->get();
+        $employees = Employee::where('id', $operation->emp_id)->get();
+        $items = Item::whereIn('id', $operation->operationItems->pluck('item_id'))->get();
+
+        return view('invoices.print-invoice-2', [
+            'pro_id' => $operation->pro_id,
+            'pro_date' => $operation->pro_date,
+            'accural_date' => $operation->accural_date,
+            'serial_number' => $operation->pro_serial,
+            'acc1_id' => $operation->acc1,
+            'acc2_id' => $operation->acc2,
+            'emp_id' => $operation->emp_id,
+            'type' => $operation->pro_type,
+            'titles' => [
+                10 => 'فاتورة مبيعات',
+                11 => 'فاتورة مشتريات',
+                12 => 'مردود مبيعات',
+                13 => 'مردود مشتريات',
+                14 => 'أمر بيع',
+                15 => 'أمر شراء',
+                16 => 'عرض سعر لعميل',
+                17 => 'عرض سعر من مورد',
+                18 => 'فاتورة توالف',
+                19 => 'أمر صرف',
+                20 => 'أمر إضافة',
+                21 => 'تحويل من مخزن لمخزن',
+                22 => 'أمر حجز',
+            ],
+            'acc1Role' => in_array($operation->pro_type, [10, 12, 14, 16, 22]) ? 'مدين' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'دائن' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'مدين' : 'غير محدد')),
+            'acc1List' => $acc1List,
+            'acc2List' => $acc2List,
+            'employees' => $employees,
+            'items' => $items,
+            'invoiceItems' => $operation->operationItems->map(function ($item) {
+                $unit = \App\Models\Unit::find($item->unit_id);
+                return [
+                    'item_id' => $item->item_id,
+                    'unit_id' => $item->unit_id,
+                    'quantity' => $item->qty_in ?: $item->qty_out,
+                    'price' => $item->item_price,
+                    'discount' => $item->item_discount,
+                    'sub_value' => $item->detail_value,
+                    'available_units' => collect([$unit]),
+                ];
+            })->toArray(),
+            'subtotal' => $operation->fat_total,
+            'discount_percentage' => $operation->fat_disc_per,
+            'discount_value' => $operation->fat_disc,
+            'additional_percentage' => $operation->fat_plus_per,
+            'additional_value' => $operation->fat_plus,
+            'total_after_additional' => $operation->fat_net,
+            'received_from_client' => $operation->pro_value,
+            'notes' => $operation->info,
+        ]);
     }
 }
