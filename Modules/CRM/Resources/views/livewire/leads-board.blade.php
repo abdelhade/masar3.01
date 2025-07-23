@@ -289,12 +289,12 @@
                                 {{ isset($leads[$status->id]) ? number_format($leads[$status->id]->sum('amount')) : '0.00' }}
                                 ج.م
                             </span>
-                            @can('اضافه فرصه')
+                            {{-- @can('اضافه فرصه') --}}
                             <button class="btn btn-sm btn-outline-primary"
                                 wire:click="openAddModal({{ $status->id }})">
                                 <i class="fas fa-plus"></i>
                             </button>
-                            @endcan
+                            {{-- @endcan --}}
                         </div>
                     </div>
                     <div class="leads-container" data-status-id="{{ $status->id }}"

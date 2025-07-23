@@ -201,7 +201,8 @@
 
                                                     <div class="col-md-2">
                                                         <button wire:click="removeProduct({{ $index }})"
-                                                            style="font-size: 1em;"  class="btn btn-danger btn-icon-square-sm">
+                                                            style="font-size: 1em;"
+                                                            class="btn btn-danger btn-icon-square-sm">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
                                                     </div>
@@ -227,17 +228,17 @@
                                     wire:keydown.arrow-down="handleKeyDownRawMaterial"
                                     wire:keydown.arrow-up="handleKeyUpRawMaterial"
                                     wire:keydown.enter.prevent="handleEnterRawMaterial" />
-                                @if (strlen($rawMaterialSearchTerm) > 0 && $rawMaterialSearchResults->count())
+                                @if (strlen($rawMaterialSearchTerm) > 0 && !is_null($rawMaterialSearchResults) && $rawMaterialSearchResults->count())
                                     <ul class="list-group position-absolute w-100" style="z-index: 999;">
                                         @foreach ($rawMaterialSearchResults as $index => $item)
                                             <li class="list-group-item list-group-item-action
-                                             @if ($rawMaterialSelectedResultIndex === $index) active @endif"
+                            @if ($rawMaterialSelectedResultIndex === $index) active @endif"
                                                 wire:click="addRawMaterialFromSearch({{ $item->id }})">
                                                 {{ $item->name }}
                                             </li>
                                         @endforeach
                                     </ul>
-                                @elseif(strlen($rawMaterialSearchTerm) > 0)
+                                @elseif (strlen($rawMaterialSearchTerm) > 0)
                                     <div class="mt-2" style="position: absolute; z-index: 1000; width: 100%;">
                                         <div class="list-group-item text-danger">
                                             لا توجد نتائج لـ "{{ $rawMaterialSearchTerm }}"
@@ -257,7 +258,6 @@
                                     <span class="text-red-500 text-sm">{{ $message }}</span>
                                 @enderror
                             </div>
-
                         </div>
 
                         <div class="bg-gray-50 rounded-lg p-4 pt-0">
@@ -270,8 +270,7 @@
                                 <div class="space-y-4">
                                     @foreach ($selectedRawMaterials as $index => $material)
                                         <div class="row g-3 align-items-end"
-                                            wire:key="raw-material-{{ $material['id'] }}">
-
+                                            wire:key="raw-material-{{ $material['id'] ?? 'index-' . $index }}">
                                             <div class="col-md-2">
                                                 <label class="form-label mb-1">المادة الخام</label>
                                                 <input type="text" value="{{ $material['name'] ?? '' }}"
@@ -314,18 +313,10 @@
                                                     class="form-control form-control-sm">
                                             </div>
 
-                                            {{-- <div class="col-md-2">
-                                                <label class="form-label mb-1">المتاح</label>
-                                                <input type="text" style="font-size: 1em;"
-                                                    value="{{ $material['available_quantity'] ?? 0 }}"
-                                                    class="form-control form-control-sm bg-blue-50 text-blue-600"
-                                                    readonly>
-                                            </div> --}}
-
                                             <div class="col-md-1">
                                                 <label class="form-label mb-1">الإجمالي</label>
                                                 <input type="text" style="font-size: 1em;"
-                                                    value="{{ number_format($material['total_cost'], 2) }} جنيه"
+                                                    value="{{ number_format($material['total_cost'] ?? 0, 2) }} جنيه"
                                                     class="form-control form-control-sm bg-gray-100 text-green-600"
                                                     readonly>
                                             </div>
@@ -389,7 +380,7 @@
 
                                                 <div class="flex items-end pb-1">
                                                     <button wire:click="removeExpense({{ $index }})"
-                                                         class="btn btn-danger btn-icon-square-sm p-1 text-xs">
+                                                        class="btn btn-danger btn-icon-square-sm p-1 text-xs">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </div>

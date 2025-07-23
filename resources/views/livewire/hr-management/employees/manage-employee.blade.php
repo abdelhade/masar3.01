@@ -167,47 +167,38 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
-            <div class="m-2 d-flex justify-content-between align-items-center">
-                <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    {{ __('إضافة موظف') }}
-                    <i class="fas fa-plus me-2"></i>
-                </button>
-                <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
-                    style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
-            </div>
-            <div class="card">
-
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('إنشاء الموظفين')
+           <div class="mb-2 d-flex justify-content-between align-items-center">
+                    {{-- @can('إنشاء الموظفين') --}}
                         <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
                             {{ __('إضافة موظف') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
-                    @endcan
-                    @can('البحث عن الموظفين')
+                    {{-- @endcan
+                    @can('البحث عن الموظفين') --}}
                         <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
                             style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
-                    @endcan
+                    {{-- @endcan --}}
 
                 </div>
+            <div class="card">
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
-                            <thead class="table-light text-center align-middle">
+                        <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
+                            <thead class="table-light align-middle">
 
                                 <tr>
-                                    <th class="font-family-cairo text-center fw-bold">#</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الاسم') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('البريد الإلكتروني') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('رقم الهاتف') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('القسم') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الوظيفة') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الحالة') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('إجراءات') }}</th>
+                                    <th class="font-family-cairo fw-bold">#</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('البريد الإلكتروني') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('رقم الهاتف') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('القسم') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('الوظيفة') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('الحالة') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('إجراءات') }}</th>
 
-                                    @can('إجراء العمليات على الموظفين')
+                                    {{-- @can('إجراء العمليات على الموظفين') --}}
                                         <th class="font-family-cairo fw-bold">{{ __('إجراءات') }}</th>
-                                    @endcan
+                                    {{-- @endcan --}}
 
                                 </tr>
                             </thead>
@@ -224,23 +215,23 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ optional($employee->job)->title }}
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $employee->status }}</td>
-                                        @can('إجراء العمليات على الموظفين')
+                                        {{-- @can('إجراء العمليات على الموظفين') --}}
                                             <td>
-                                                @can('تعديل الموظفين')
+                                                {{-- @can('تعديل الموظفين') --}}
                                                     <a wire:click="edit({{ $employee->id }})" class="btn btn-success btn-sm">
                                                         <i class="las la-edit fa-lg"></i>
                                                     </a>
-                                                @endcan
-                                                @can('حذف الموظفين')
+                                                {{-- @endcan
+                                                @can('حذف الموظفين') --}}
                                                     <button type="button" class="btn btn-danger btn-sm"
                                                         wire:click="delete({{ $employee->id }})"
                                                         onclick="confirm('هل أنت متأكد من حذف هذا الموظف؟') || event.stopImmediatePropagation()">
                                                         <i class="las la-trash fa-lg"></i>
                                                     </button>
-                                                @endcan
+                                                {{-- @endcan --}}
 
                                             </td>
-                                        @endcan
+                                        {{-- @endcan --}}
 
                                     </tr>
                                 @empty

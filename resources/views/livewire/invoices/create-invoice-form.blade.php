@@ -97,6 +97,18 @@
             });
         });
 
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('swal', (data) => {
+                Swal.fire({
+                    title: data.title,
+                    text: data.text,
+                    icon: data.icon,
+                });
+            });
+        });
+
+
+
         document.addEventListener('alpine:init', () => {
             Alpine.directive('focus-next', (el, {
                 expression

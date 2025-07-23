@@ -8,13 +8,13 @@ use Illuminate\Http\Request;
 
 class AttendanceProcessingController extends Controller
 {
-    public function __construct()
+  public function __construct()
     {
 
-        $this->middleware('can:عرض معالجه الحضور والانصراف')->only(['index']);
-        $this->middleware('can:إنشاء معالجة الحضور والانصراف')->only(['create', 'store']);
-        $this->middleware('can:تعديل معالجة الحضور والانصراف')->only(['update', 'edit']);
-        $this->middleware('can:حذف معالجة الحضور والانصراف')->only(['destroy']);
+        $this->middleware('can:عرض معالجه الحضور والانصرف')->only(['index']);
+        $this->middleware('can:إضافة معالجه الحضور والانصرف')->only(['create', 'store']);
+        $this->middleware('can:تعديل معالجه الحضور والانصرف')->only(['update', 'edit']);
+        $this->middleware('can:حذف معالجه الحضور والانصرف')->only(['destroy']);
     }
     public function index()
     {
