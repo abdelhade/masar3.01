@@ -64,14 +64,14 @@
                 <input type="hidden" name="pro_type" value="{{ $pro_type }}">
 
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label>رقم الفاتورة</label>
                             <input type="text" name="pro_id" class="form-control" value="{{ $newProId }}" readonly>
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label>SN</label>
                             <input type="text" name="pro_serial" class="form-control">
@@ -94,7 +94,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>الحساب</label>
+                            <label>الصندوق</label>
                             @if (in_array($pro_type, $account1_types))
                                 <select name="acc1[]" class="form-control" required>
                                     @foreach ($accounts1 as $acc1)
@@ -111,20 +111,9 @@
                                 </select>
                             @endif
 
-                            </div>
-                        </div>
-
-
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-9">
-                            <div class="form-group">
-                                <label>البيان</label>
-                                <input name="details" required type="text" class="form-control frst">
-                            </div>
                         </div>
                     </div>
+
 
                     <div class="col-md-4">
                         <div class="form-group">
@@ -138,13 +127,19 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-9">
                         <div class="form-group">
                             <label>البيان</label>
-                            <input name="details" type="text" class="form-control">
+                            <input name="details" required type="text" class="form-control frst">
                         </div>
                     </div>
                 </div>
+
+
 
                 <div class="table-responsive" style="overflow-x: auto;">
                     <table id="entriesTable" class="table table-striped table-bordered mb-0" style="min-width: 1200px;">
@@ -166,7 +161,8 @@
                                             <option value="">__ اختر حساب __</option>
                                             @foreach ($accounts1 as $acc1)
                                                 <option value="{{ $acc1->id }}">{{ $acc1->code }} _
-                                                    {{ $acc1->aname }}</option>
+                                                    {{ $acc1->aname }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     @elseif (in_array($pro_type, $account1_types))
@@ -174,7 +170,8 @@
                                             <option value="">__ اختر حساب __</option>
                                             @foreach ($accounts2 as $acc2)
                                                 <option value="{{ $acc2->id }}">{{ $acc2->code }} _
-                                                    {{ $acc2->aname }}</option>
+                                                    {{ $acc2->aname }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     @endif
@@ -206,7 +203,7 @@
     </div>
 
     <script>
-        document.getElementById('myForm').addEventListener('keydown', function(e) {
+        document.getElementById('myForm').addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
             }
@@ -229,25 +226,25 @@
 
             const row = tableBody.insertRow();
             row.innerHTML = `
-            <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01" value="0"></td>
-            <td>
-                @if (in_array($pro_type, $account2_types))
-                    <select name="acc1[]" class="form-control" required>
-                        @foreach ($accounts1 as $acc1)
-                            <option value="{{ $acc1->id }}">{{ $acc1->code }} _ {{ $acc1->aname }}</option>
-                        @endforeach
-                    </select>
-                @elseif (in_array($pro_type, $account1_types))
-                    <select name="acc2[]" class="form-control" required>
-                        @foreach ($accounts2 as $acc2)
-                            <option value="{{ $acc2->id }}">{{ $acc2->code }} _ {{ $acc2->aname }}</option>
-                        @endforeach
-                    </select>
-                @endif
-            </td>
-            <td><input type="text" name="note[]" class="form-control"></td>
-            <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
-        `;
+                    <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01" value="0"></td>
+                    <td>
+                        @if (in_array($pro_type, $account2_types))
+                            <select name="acc1[]" class="form-control" required>
+                                @foreach ($accounts1 as $acc1)
+                                    <option value="{{ $acc1->id }}">{{ $acc1->code }} _ {{ $acc1->aname }}</option>
+                                @endforeach
+                            </select>
+                        @elseif (in_array($pro_type, $account1_types))
+                            <select name="acc2[]" class="form-control" required>
+                                @foreach ($accounts2 as $acc2)
+                                    <option value="{{ $acc2->id }}">{{ $acc2->code }} _ {{ $acc2->aname }}</option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </td>
+                    <td><input type="text" name="note[]" class="form-control"></td>
+                    <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
+                `;
 
             // بعد إضافة الصف الجديد، ضعه في متغير
             const newRow = tableBody.querySelector('tr:last-child');
@@ -298,7 +295,7 @@
         }
 
         // إعادة حساب المجموع عند إدخال بيانات
-        document.addEventListener('input', function(e) {
+        document.addEventListener('input', function (e) {
             if (e.target.classList.contains('debit')) {
                 calculateTotals();
             }

@@ -577,6 +577,7 @@ File: Horizontal-nav
 
 .navbar-custom-menu .container-fluid {
   width: 1380px;
+  background-color:red;
 }
 
 .navbar-custom-menu .has-submenu.active a {
@@ -2690,7 +2691,9 @@ label {
 dt {
   font-weight: 600;
 }
-
+.page-content{
+  background-color:blue;
+}
 .demo-container {
   box-sizing: border-box;
   width: 850px;

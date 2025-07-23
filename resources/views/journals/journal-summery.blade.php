@@ -10,7 +10,7 @@
 
         <div class="card-body">
             <div class="table-responsive" style="overflow-x: auto;">
-                <table class="table table-striped mb-0" style="min-width: 1200px;">
+                <table class="table table-bordered table-hover table-sm  mb-0" style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
 
                         <tr class="journal_tr text-center">
@@ -44,6 +44,7 @@
                                         <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->date }}</td>
                                     @endif
                                 </tr>
+                     
                             @endforeach
 
                         @empty

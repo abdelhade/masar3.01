@@ -171,9 +171,11 @@ new class extends Component {
                                     </tbody>
                                 </table>
                             </div>
+
                         </div>
                     </div>
                 </div>
+
             </div>
 
     <!-- Modal (Create/Edit) -->

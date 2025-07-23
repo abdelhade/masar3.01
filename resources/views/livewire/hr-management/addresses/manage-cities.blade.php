@@ -109,22 +109,19 @@ new class extends Component {
                     @endcan
 
                 </div>
+
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
-
                                 <tr>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">#</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الاسم') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الولاية') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الإجراءات') }}</th>
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الولاية') }}</th>
                                     @canany(['حذف المدن', 'تعديل المدن'])
                                         <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
                                     @endcanany
+
 
                                 </tr>
                             </thead>
@@ -166,6 +163,7 @@ new class extends Component {
                                 @endforelse
                             </tbody>
 
+
                         </table>
                     </div>
                 </div>
@@ -189,6 +187,7 @@ new class extends Component {
                         <div class="mb-3">
                             <label for="title"
                                 class="form-label font-family-cairo fw-bold">{{ __('الاسم') }}</label>
+
                             <input type="text"
                                 class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
                                 id="title" wire:model.defer="title" required>

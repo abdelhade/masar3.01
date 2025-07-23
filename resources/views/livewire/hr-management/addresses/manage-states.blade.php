@@ -157,6 +157,7 @@ new class extends Component {
                                     </table>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -183,6 +184,7 @@ new class extends Component {
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+
                         </div>
                         <div class="mb-3">
                             <label for="country_id"
@@ -211,23 +213,24 @@ new class extends Component {
         </div>
     </div>
 
-                <script>
-                    document.addEventListener('livewire:initialized', () => {
-                        let modalInstance = null;
-                        const modalElement = document.getElementById('stateModal');
 
-                        Livewire.on('showModal', () => {
-                            if (!modalInstance) {
-                                modalInstance = new bootstrap.Modal(modalElement);
-                            }
-                            modalInstance.show();
-                        });
+            <script>
+                document.addEventListener('livewire:initialized', () => {
+                    let modalInstance = null;
+                    const modalElement = document.getElementById('stateModal');
 
-                        Livewire.on('closeModal', () => {
-                            if (modalInstance) {
-                                modalInstance.hide();
-                            }
-                        });
+                    Livewire.on('showModal', () => {
+                        if (!modalInstance) {
+                            modalInstance = new bootstrap.Modal(modalElement);
+                        }
+                        modalInstance.show();
+                    });
+
+                    Livewire.on('closeModal', () => {
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    });
 
             modalElement.addEventListener('hidden.bs.modal', function() {
                 modalInstance = null;
@@ -235,3 +238,4 @@ new class extends Component {
         });
     </script>
 </div>
+

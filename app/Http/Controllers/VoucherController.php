@@ -98,44 +98,99 @@ class VoucherController extends Controller
         $validated = $request->validate([
             'pro_id' => 'required|integer',
             'pro_date' => 'required|date',
-            'acc1' => 'required|integer',
-            'acc2' => 'required|integer',
-            'emp_id' => 'required|integer',
-            'emp2_id' => 'integer',
+            'acc1' => 'required|integer|exists:acc_head,id',
+            'acc2' => 'required|integer|exists:acc_head,id',
+            'emp_id' => 'required|integer|exists:acc_head,id',
+            'emp2_id' => 'nullable|integer|exists:acc_head,id',
             'pro_value' => 'required|numeric',
-            'project_id' => 'nullable|integer',
+            'project_id' => 'nullable|integer|exists:projects,id',
+            'details' => 'nullable|string',
+            'pro_serial' => 'nullable|string',
+            'pro_num' => 'nullable|string',
+            'cost_center' => 'nullable|integer|exists:cost_centers,id',
         ]);
 
-        // إنشاء سجل جديد في جدول operhead
-        Operhead::create([
-            'pro_id' => $validated['pro_id'],
-            'pro_date' => $validated['pro_date'],
-            'pro_type' => $request['pro_type'],
-            'acc1' => $validated['acc1'] ?? null,
-            'acc2' => $validated['acc2'] ?? null,
-            'pro_value' => $validated['pro_value'],
-            'details' => $request['details'] ?? null,
-            'pro_serial' => $request['pro_serial'] ?? null,
-            'pro_num' => $request['pro_num'] ?? null,
-            'isdeleted' => 0,
-            'tenant' => 0,
-            'branch' => 1,
-            'is_finance' => 1,
-            'is_journal' => 1,
-            'journal_type' => 2,
-            'emp_id' => $validated['emp_id'],
-            'emp2_id' => $validated['emp2_id'],
-            'acc1_before' => 0,
-            'acc1_after' => 0,
-            'acc2_before' => 0,
-            'acc2_after' => 0,
-            'cost_center' => $validated['cost_cener'] ?? null,
-            'user' => Auth::user()->id,
-            'project_id' => $validated['project_id'] ?? null,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('vouchers.index')->with('success', $request->all());
-        // return redirect()->route('vouchers.index')->with('success', 'تم حفظ السند بنجاح.');
+            // تحديد رقم العملية الجديد بناءً على pro_type
+            $pro_type = $request->get('pro_type');
+            if (!$pro_type) {
+                throw new \Exception('نوع العملية غير محدد.');
+            }
+            $lastProId =OperHead::where('pro_type', $pro_type)->max('pro_id') ?? 0;
+            $newProId = $lastProId + 1;
+
+            // إنشاء سجل جديد في جدول operhead
+            $oper =OperHead::create([
+                'pro_id' => $newProId,
+                'pro_date' => $validated['pro_date'],
+                'pro_type' => $pro_type,
+                'acc1' => $validated['acc1'],
+                'acc2' => $validated['acc2'],
+                'pro_value' => $validated['pro_value'],
+                'details' => $request['details'] ?? null,
+                'pro_serial' => $request['pro_serial'] ?? null,
+                'pro_num' => $request['pro_num'] ?? null,
+                'isdeleted' => 0,
+                'tenant' => 0,
+                'branch' => 1,
+                'is_finance' => 1,
+                'is_journal' => 1,
+                'journal_type' => 2,
+                'emp_id' => $validated['emp_id'],
+                'emp2_id' => $validated['emp2_id'] ?? null,
+                'acc1_before' => 0,
+                'acc1_after' => 0,
+                'acc2_before' => 0,
+                'acc2_after' => 0,
+                'cost_center' => $validated['cost_center'] ?? null,
+                'user' => Auth::id(),
+                'project_id' => $validated['project_id'] ?? null,
+            ]);
+
+            // إنشاء رأس القيد (JournalHead)
+            $lastJournalId = JournalHead::max('journal_id') ?? 0;
+            $newJournalId = $lastJournalId + 1;
+            $journalHead = JournalHead::create([
+                'journal_id' => $newJournalId,
+                'total'      => $validated['pro_value'],
+                'date'       => $validated['pro_date'],
+                'op_id'      => $oper->id,
+                'pro_type'   => $pro_type,
+                'details'    => $request['details'] ?? null,
+                'user'       => Auth::id(),
+            ]);
+
+            // إنشاء تفاصيل القيد (مدين)
+            JournalDetail::create([
+                'journal_id' => $journalHead->journal_id,
+                'account_id' => $validated['acc1'],
+                'debit'      => $validated['pro_value'],
+                'credit'     => 0,
+                'type'       => 0,
+                'info'       => $request['details'] ?? null,
+                'op_id'      => $oper->id,
+                'isdeleted'  => 0,
+            ]);
+            // إنشاء تفاصيل القيد (دائن)
+            JournalDetail::create([
+                'journal_id' => $journalHead->journal_id,
+                'account_id' => $validated['acc2'],
+                'debit'      => 0,
+                'credit'     => $validated['pro_value'],
+                'type'       => 1,
+                'info'       => $request['details'] ?? null,
+                'op_id'      => $oper->id,
+                'isdeleted'  => 0,
+            ]);
+
+            DB::commit();
+            return redirect()->route('vouchers.index')->with('success', 'تم حفظ السند والقيد المحاسبي بنجاح.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()])->withInput();
+        }
     }
     public function show($id) {}
     public function edit($id)
@@ -203,7 +258,7 @@ class VoucherController extends Controller
         ]);
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             // تحديث operhead
             $oper = Operhead::findOrFail($id);
@@ -270,17 +325,17 @@ class VoucherController extends Controller
                 ]);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
             return redirect()->route('vouchers.index')->with('success', 'تم تعديل السند بنجاح.');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
         }
     }
     public function destroy(string $id)
     {
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             $voucher = Operhead::findOrFail($id);
 
@@ -298,10 +353,10 @@ class VoucherController extends Controller
             // حذف السند
             $voucher->delete();
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
             return redirect()->route('vouchers.index')->with('success', 'تم حذف السند والقيد بنجاح.');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
         }
     }

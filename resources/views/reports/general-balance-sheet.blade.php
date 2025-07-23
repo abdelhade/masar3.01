@@ -4,17 +4,17 @@
 <div class="container">
     <div class="card">
         <div class="card-head">
-            <h2>الميزانية العمومية</h2>
-            <div class="text-muted">حتى تاريخ: {{ $asOfDate ? \Carbon\Carbon::parse($asOfDate)->format('Y-m-d') : now()->format('Y-m-d') }}</div>
+            <h2>{{ __('الميزانية العمومية') }}</h2>
+            <div class="text-muted">{{ __('حتى تاريخ:') }} {{ $asOfDate ? \Carbon\Carbon::parse($asOfDate)->format('Y-m-d') : now()->format('Y-m-d') }}</div>
         </div>
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-3">
-                    <label for="as_of_date">حتى تاريخ:</label>
+                    <label for="as_of_date">{{ __('حتى تاريخ:') }}</label>
                     <input type="date" id="as_of_date" class="form-control" wire:model="asOfDate">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-primary mt-4" wire:click="generateReport">توليد التقرير</button>
+                    <button class="btn btn-primary mt-4" wire:click="generateReport">{{ __('توليد التقرير') }}</button>
                 </div>
             </div>
 
@@ -23,14 +23,14 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
-                            <h4>الأصول</h4>
+                            <h4>{{ __('الأصول') }}</h4>
                         </div>
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>الحساب</th>
-                                        <th class="text-end">المبلغ</th>
+                                        <th>{{ __('الحساب') }}</th>
+                                        <th class="text-end">{{ __('المبلغ') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -41,7 +41,7 @@
                                     </tr>
                                     @endforeach
                                     <tr class="table-primary">
-                                        <th>إجمالي الأصول</th>
+                                        <th>{{ __('إجمالي الأصول') }}</th>
                                         <th class="text-end">{{ number_format($totalAssets, 2) }}</th>
                                     </tr>
                                 </tbody>
@@ -54,14 +54,14 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header bg-success text-white">
-                            <h4>الخصوم وحقوق الملكية</h4>
+                            <h4>{{ __('الخصوم وحقوق الملكية') }}</h4>
                         </div>
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>الحساب</th>
-                                        <th class="text-end">المبلغ</th>
+                                        <th>{{ __('الحساب') }}</th>
+                                        <th class="text-end">{{ __('المبلغ') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -78,7 +78,7 @@
                                     </tr>
                                     @endforeach
                                     <tr class="table-success">
-                                        <th>إجمالي الخصوم وحقوق الملكية</th>
+                                        <th>{{ __('إجمالي الخصوم وحقوق الملكية') }}</th>
                                         <th class="text-end">{{ number_format($totalLiabilitiesEquity, 2) }}</th>
                                     </tr>
                                 </tbody>
@@ -92,11 +92,11 @@
             <div class="row mt-3">
                 <div class="col-12">
                     <div class="alert {{ $totalAssets == $totalLiabilitiesEquity ? 'alert-success' : 'alert-warning' }}">
-                        <strong>النتيجة:</strong> 
+                        <strong>{{ __('النتيجة:') }}</strong> 
                         @if($totalAssets == $totalLiabilitiesEquity)
-                            الميزانية متوازنة ✓
+                            {{ __('الميزانية متوازنة ✓') }}
                         @else
-                            الميزانية غير متوازنة - الفرق: {{ number_format(abs($totalAssets - $totalLiabilitiesEquity), 2) }}
+                            {{ __('الميزانية غير متوازنة - الفرق: :diff', ['diff' => number_format(abs($totalAssets - $totalLiabilitiesEquity), 2)]) }}
                         @endif
                     </div>
                 </div>

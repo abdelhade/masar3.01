@@ -194,25 +194,20 @@ class ManufacturingInvoice extends Component
 
     public function updatedRawMaterialSearchTerm($value)
     {
-        $unitId = $this->selectedRawMaterials[$value]['unit_id'] ?? null;
-        if (! $unitId) {
-            // مسح التكلفة لو تم إلغاء الاختيار
-            $this->selectedRawMaterials[$value]['unit_cost'] = 0;
-            $this->selectedRawMaterials[$value]['total_cost'] = 0;
-            return $this->calculateTotals();
-        }
+        $this->rawMaterialSelectedResultIndex = -1;
+        $this->rawMaterialSearchResults = strlen($value) < 1
+            ? collect()
+            : Item::with('units')
+            ->whereRaw("name LIKE ? OR name LIKE ? OR name LIKE ?", [
+                "{$value}%",
+                "%{$value}",
+                "%{$value}%",
+            ])
+            ->take(5)->get();
 
-        $unit = Unit::find($unitId);
-        // لنفرض عندك حقل cost في الـ Unit model أو في pivot
-        $cost = $unit->cost ?? ($unit->pivot->cost ?? 0);
+        // تم حذف الكود الذي كان يعيد تعيين unit_cost و total_cost للمواد الخام هنا
+        // تحديث التكاليف للمواد المختارة أصبح يتم فقط عند تغيير الوحدة أو الكمية
 
-        // حط التكلفة مكانها مع تقريب لمكان عشري واحد
-        $this->selectedRawMaterials[$value]['unit_cost']  = round($cost, 1);
-        // احسب التكلفة الإجمالية للعنصر (quantity × unit_cost)
-        $quantity = $this->selectedRawMaterials[$value]['quantity'] ?? 0;
-        $this->selectedRawMaterials[$value]['total_cost'] = round($quantity * $cost, 1);
-
-        // وأخيراً أعِد حساب المجاميع الكلية
         $this->calculateTotals();
     }
 

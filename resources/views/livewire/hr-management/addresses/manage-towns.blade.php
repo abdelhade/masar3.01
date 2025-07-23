@@ -95,13 +95,18 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
-            <div class="m-2 d-flex justify-content-between align-items-center">
+            <div class="d-flex mb-2 justify-content-between align-items-center">
+                {{-- @can('إنشاء المناطق') --}}
                 <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
                     {{ __('إضافة بلدة') }}
                     <i class="fas fa-plus me-2"></i>
                 </button>
+                {{-- @endcan
+                    @can('البحث عن المناطق') --}}
                 <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
                     style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
+                {{-- @endcan --}}
+
             </div>
             <div class="card">
 
@@ -116,44 +121,48 @@ new class extends Component {
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
                         style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
                 </div>
+
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
-
                                 <tr>
-                                    <th class="font-family-cairo text-center fw-bold">#</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الاسم') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('المدينة') }}</th>
-                                    <th class="font-family-cairo text-center fw-bold">{{ __('الإجراءات') }}</th>
-
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('المدينة') }}</th>
                                     @canany(['حذف المناطق', 'تعديل المناطق'])
                                         <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
                                     @endcanany
+n
 
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($towns as $town)
                                     <tr>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $town->title }}</td>
-                                        <td class="font-family-cairo text-center fw-bold">
-                                            {{ $town->city->title ?? '' }}
-                                        </td>
-                                        <td class="font-family-cairo font-14 text-center">
-                                            <a wire:click="edit({{ $town->id }})" class="btn btn-success btn-sm">
-                                                <i class="las la-edit fa-lg"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                wire:click="delete({{ $town->id }})"
-                                                onclick="confirm('هل أنت متأكد من حذف هذه البلدة؟') || event.stopImmediatePropagation()">
-                                                <i class="las la-trash fa-lg"></i>
-                                            </button>
-                                        </td>
+                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-family-cairo fw-bold">{{ $town->title }}</td>
+                                        <td class="font-family-cairo fw-bold">{{ $town->city->title ?? '' }}</td>
+                                        @canany(['حذف المناطق', 'تعديل المناطق'])
+
+                                            <td>
+                                                {{-- @can('تعديل المناطق') --}}
+                                                    <a wire:click="edit({{ $town->id }})" class="btn btn-success btn-sm">
+                                                        <i class="las la-edit fa-lg"></i>
+                                                    </a>
+                                                {{-- @endcan
+                                                @can('حذف المناطق') --}}
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        wire:click="delete({{ $town->id }})"
+                                                        onclick="confirm('هل أنت متأكد من حذف هذه البلدة؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash fa-lg"></i>
+                                                    </button>
+                                                {{-- @endcan --}}
+
+                                            </td>
+                                        @endcanany
+
+
                                     </tr>
                                 @empty
                                     <tr>
@@ -164,42 +173,15 @@ new class extends Component {
                                                 لا توجد بيانات
                                             </div>
                                         </td>
-
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $town->title }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $town->city->title ?? '' }}</td>
-                                        @canany(['حذف المناطق', 'تعديل المناطق'])
-                                            <td>
-                                                @can('تعديل المناطق')
-                                                    <a wire:click="edit({{ $town->id }})" class="btn btn-success btn-sm">
-                                                        <i class="las la-edit fa-lg"></i>
-                                                    </a>
-                                                @endcan
-                                                @can('حذف المناطق')
-                                                    <button type="button" class="btn btn-danger btn-sm"
-                                                        wire:click="delete({{ $town->id }})"
-                                                        onclick="confirm('هل أنت متأكد من حذف هذه البلدة؟') || event.stopImmediatePropagation()">
-                                                        <i class="las la-trash fa-lg"></i>
-                                                    </button>
-                                                @endcan
-
-                                            </td>
-                                        @endcanany
-
                                     </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center font-family-cairo fw-bold">
-                                                {{ __('لا توجد بلدات.') }}</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
         <!-- Modal (Create/Edit) -->
         <div class="modal fade" wire:ignore.self id="townModal" tabindex="-1" aria-labelledby="townModalLabel"
@@ -247,6 +229,7 @@ new class extends Component {
                             </div>
                         </form>
                     </div>
+
                 </div>
             </div>
 
@@ -274,28 +257,29 @@ new class extends Component {
                 });
             </script>
         </div>
-
-        <script>
-            document.addEventListener('livewire:initialized', () => {
-                let modalInstance = null;
-                const modalElement = document.getElementById('townModal');
-
-                Livewire.on('showModal', () => {
-                    if (!modalInstance) {
-                        modalInstance = new bootstrap.Modal(modalElement);
-                    }
-                    modalInstance.show();
-                });
-
-                Livewire.on('closeModal', () => {
-                    if (modalInstance) {
-                        modalInstance.hide();
-                    }
-                });
-
-                modalElement.addEventListener('hidden.bs.modal', function() {
-                    modalInstance = null;
-                });
-            });
-        </script>
     </div>
+
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            let modalInstance = null;
+            const modalElement = document.getElementById('townModal');
+
+            Livewire.on('showModal', () => {
+                if (!modalInstance) {
+                    modalInstance = new bootstrap.Modal(modalElement);
+                }
+                modalInstance.show();
+            });
+
+            Livewire.on('closeModal', () => {
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            });
+
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalInstance = null;
+            });
+        });
+    </script>
+</div>

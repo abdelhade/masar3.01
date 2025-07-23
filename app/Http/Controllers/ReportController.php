@@ -429,7 +429,7 @@ class ReportController extends Controller
     // تقرير المبيعات أصناف
     public function generalSalesItemsReport()
     {
-        $categories = Category::all();
+        // $categories = Category::all();
 
         $query = OperationItems::whereHas('operation', function ($q) {
             $q->where('pro_type', 10); // Sales invoices
@@ -462,7 +462,7 @@ class ReportController extends Controller
         $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
 
         return view('reports.general-sales-items-report', compact(
-            'categories',
+            // 'categories',
             'salesItems',
             'totalQuantity',
             'totalSales',
@@ -577,7 +577,7 @@ class ReportController extends Controller
     // تقرير المشتريات أصناف
     public function generalPurchasesItemsReport()
     {
-        $categories = Category::all();
+        // $categories = Category::all();
 
         $query = OperationItems::whereHas('operation', function ($q) {
             $q->where('pro_type', 11); // Purchase invoices
@@ -610,7 +610,7 @@ class ReportController extends Controller
         $averagePurchasesPerItem = $totalItems > 0 ? $totalPurchases / $totalItems : 0;
 
         return view('reports.general-purchases-items-report', compact(
-            'categories',
+            // 'categories',
             'purchasesItems',
             'totalQuantity',
             'totalPurchases',
@@ -1534,7 +1534,10 @@ class ReportController extends Controller
     public function generalCashboxMovementReport()
     {
         return view('reports.general-cashbox-movement-report');
+    }
 
+
+    // Controller Code
     protected function getQuantityStatus($item)
     {
         if ($item->current_quantity < $item->min_order_quantity) {
@@ -1542,7 +1545,19 @@ class ReportController extends Controller
         } elseif ($item->current_quantity > $item->max_order_quantity) {
             return 'above_max';
         }
-        return 'normal';
+        return 'within_limits'; // تغيير من 'normal' إلى 'within_limits'
+    }
+
+    protected function getRequiredCompensation($item)
+    {
+        if ($item->current_quantity < $item->min_order_quantity) {
+            // المطلوب تعويضه = الحد الأدنى - الكمية الحالية
+            return $item->min_order_quantity - $item->current_quantity;
+        } elseif ($item->current_quantity > $item->max_order_quantity) {
+            // الكمية الزيادة = الكمية الحالية - الحد الأقصى
+            return $item->current_quantity - $item->max_order_quantity;
+        }
+        return 0; // لا يوجد تعويض مطلوب
     }
 
     public function getItemsMaxMinQuantity()
@@ -1552,13 +1567,95 @@ class ReportController extends Controller
                 'id' => $item->id,
                 'name' => $item->name,
                 'code' => $item->code,
-                'current_quantity' => $item->current_quantity, // هنا نستخدم الدالة من الموديل
+                'current_quantity' => $item->current_quantity,
                 'min_order_quantity' => $item->min_order_quantity,
                 'max_order_quantity' => $item->max_order_quantity,
-                'status' => $this->getQuantityStatus($item)
+                'status' => $this->getQuantityStatus($item),
+                'required_compensation' => $this->getRequiredCompensation($item)
             ];
         });
         return view('reports.items.items-max&min-quantity', compact('items'));
+    }
 
+
+    // Controller Method
+    public function pricesCompareReport()
+    {
+        // جلب كل الأصناف التي لها عروض أسعار (pro_tybe = 15)
+        $priceData = OperationItems::where('pro_tybe', 15)
+            ->with(['operhead', 'item'])
+            ->select('item_id', 'item_price', 'pro_id')
+            ->get();
+
+        if ($priceData->isEmpty()) {
+            return view('reports.items.prices-compare-report', [
+                'items' => [],
+                'suppliers' => [],
+                'message' => 'لا توجد عروض أسعار متاحة'
+            ]);
+        }
+
+        // تجميع البيانات حسب الصنف
+        $itemsData = $priceData->groupBy('item_id')->map(function ($group) {
+            $firstItem = $group->first();
+            $itemModel = $firstItem->item ?? Item::find($firstItem->item_id);
+            $itemName = $itemModel ? $itemModel->name : 'صنف غير محدد';
+
+            // جمع عروض الموردين مع التأكد من وجود بيانات صحيحة
+            $supplierOffers = $group->map(function ($row) {
+                $supplierId = $row->operhead ? $row->operhead->acc1 : null;
+                return [
+                    'supplier_id' => $supplierId,
+                    'price' => (float) $row->item_price,
+                ];
+            })->filter(function ($offer) {
+                return $offer['supplier_id'] !== null && $offer['price'] > 0;
+            });
+
+            if ($supplierOffers->isEmpty()) {
+                return null; // تجاهل الأصناف بدون عروض صحيحة
+            }
+
+            // تجميع حسب المورد وأخذ أقل سعر لكل مورد
+            $supplierPrices = $supplierOffers->groupBy('supplier_id')->map(function ($offers) {
+                return $offers->min('price');
+            });
+
+            // العثور على أفضل سعر والمورد
+            $bestPrice = $supplierPrices->min();
+            $bestSupplierId = $supplierPrices->search($bestPrice);
+
+            return [
+                'item_id' => $firstItem->item_id,
+                'item_name' => $itemName,
+                'suppliers' => $supplierPrices,
+                'best_price' => $bestPrice,
+                'best_supplier_id' => $bestSupplierId,
+                'offers_count' => $supplierPrices->count()
+            ];
+        })->filter()->values(); // إزالة العناصر الفارغة
+
+        // جلب أسماء الموردين
+        $allSupplierIds = $itemsData->flatMap(function ($item) {
+            return $item['suppliers']->keys();
+        })->unique();
+
+        $suppliers = [];
+        if ($allSupplierIds->isNotEmpty()) {
+            $suppliersData = \App\Models\AccHead::whereIn('id', $allSupplierIds)->get();
+            foreach ($suppliersData as $supplier) {
+                $suppliers[$supplier->id] = $supplier->aname;
+            }
+        }
+
+        // إضافة أسماء الموردين للبيانات
+        $items = $itemsData->map(function ($item) use ($suppliers) {
+            $item['best_supplier_name'] = $suppliers[$item['best_supplier_id']] ?? 'مورد غير محدد';
+            return $item;
+
+            // dd($suppliers[$item['best_supplier_id']]);
+        });
+
+        return view('reports.items.prices-compare-report', compact('items', 'suppliers'));
     }
 }

@@ -186,11 +186,13 @@ new class extends Component {
                     @endcan
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto" style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">                        
 
+
                 </div>
+            <div class="card">
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0" style="min-width: 1200px;">
-                            <thead class="table-light text-center align-middle">
+                        <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
+                            <thead class="table-light align-middle">
 
                                 <tr>
                                     <th class="font-family-cairo fw-bold">#</th>
@@ -203,6 +205,7 @@ new class extends Component {
                                     @canany(['تعديل الموظفيين','حذف الموظفيين'])
                                     <th class="font-family-cairo fw-bold">{{ __('إجراءات') }}</th>                                        
                                     @endcanany
+
 
                                 </tr>
                             </thead>
@@ -235,8 +238,9 @@ new class extends Component {
                                             </button>                                                
                                             @endcan
 
+
                                             </td>
-                                        @endcan
+                                        {{-- @endcan --}}
 
                                     </tr>
                                 @empty

@@ -232,6 +232,7 @@ new class extends Component {
             </div>
         @endcan
 
+
     </div>
     <div class="row">
         <div class="col-lg-12">
@@ -267,11 +268,11 @@ new class extends Component {
                             <button type="button" class="btn btn-outline-secondary font-family-cairo fw-bold w-100"
                                 wire:click="clearFilters">
                                 <i class="las la-broom me-1"></i> {{ __('مسح الفلاتر') }}
-
-
+                            </button>
                         </div>
                     </div>
                 </div>
+
                 <div class="card-body">
                     <div class="table-responsive">
                         <table
@@ -347,21 +348,25 @@ new class extends Component {
                                     <tr>
                                         <td colspan="10" class="text-center font-family-cairo fw-bold">
                                             {{ __('لا توجد سجلات حضور') }}
+
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
+
                     <div class="d-flex justify-content-center mt-3">
                         {{ $attendances->links() }}
                     </div>
                 </div>
             </div>
         </div>
+
+
     </div>
     {{-- Create Modal --}}
-    @if ($showCreateModal)
+    @if ($showCreateModal || $showEditModal)
         <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -606,6 +611,7 @@ new class extends Component {
                                     wire:click="$set('showEditModal', false)">{{ __('إلغاء') }}</button>
                                 <button type="submit"
                                     class="btn btn-primary font-family-cairo">{{ __('حفظ التعديلات') }}</button>
+
                             </div>
                         </form>
                     </div>
@@ -613,6 +619,7 @@ new class extends Component {
             </div>
         </div>
     @endif
+
     {{-- Delete Modal --}}
     @if ($showDeleteModal)
         <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
@@ -636,4 +643,7 @@ new class extends Component {
             </div>
         </div>
     @endif
+
+</div>
+
 </div>

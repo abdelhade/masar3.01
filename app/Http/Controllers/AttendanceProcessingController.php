@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class AttendanceProcessingController extends Controller
 {
-    public function __construct()
+  public function __construct()
     {
 
         $this->middleware('can:عرض معالجه الحضور والانصرف')->only(['index']);

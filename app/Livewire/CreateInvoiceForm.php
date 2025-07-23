@@ -138,7 +138,7 @@ class CreateInvoiceForm extends Component
         $this->acc1Role = $map[$type]['acc1_role'] ?? 'مدين';
         $this->acc2Role = $map[$type]['acc2_role'] ?? 'دائن';
         $this->acc2_id = 27;
-        $this->emp_id = 43;
+        $this->emp_id = 131;
         $this->cash_box_id = 21;
 
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
@@ -608,6 +608,7 @@ class CreateInvoiceForm extends Component
 
     public function saveForm()
     {
+        // dd($this->all());
         if (empty($this->invoiceItems)) {
             Alert::toast('لا يمكن حفظ الفاتورة بدون أصناف.', 'error');
             return;
@@ -689,8 +690,9 @@ class CreateInvoiceForm extends Component
                 $itemCost  = Item::where('id', $itemId)->value('average_cost');
 
                 $qty_in = $qty_out = 0;
-                if (in_array($this->type, [11, 12, 13, 20])) $qty_in = $quantity;
-                if (in_array($this->type, [10, 18, 19])) $qty_out = $quantity;
+                if (in_array($this->type, [11, 12, 20])) $qty_in = $quantity;
+                if (in_array($this->type, [10, 13, 18, 19])) $qty_out = $quantity;
+
 
                 if (in_array($this->type, [11, 12, 20])) {
                     $oldQty = OperationItems::where('item_id', $itemId)
@@ -710,7 +712,7 @@ class CreateInvoiceForm extends Component
                 }
 
                 // حساب الربح للمبيعات والمردودات
-                if (in_array($this->type, [10, 12, 18, 19])) {
+                if (in_array($this->type, [10, 13, 18, 19])) {
                     $discountItem = $this->subtotal != 0
                         ? ($this->discount_value - $this->additional_value) * $subValue / $this->subtotal
                         : 0;

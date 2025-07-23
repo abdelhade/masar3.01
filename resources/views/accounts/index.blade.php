@@ -80,7 +80,7 @@
                         'revenue' => '32',
                         'creditor' => '212',
                         'depitor' => '125',
-                        'partner' => '221',
+                        'partner' => '231',
                         'current-partner' => '224',
                         'asset' => '11',
                         'employee' => '213',

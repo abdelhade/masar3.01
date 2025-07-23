@@ -101,6 +101,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('notes/{id}', [NoteController::class, 'noteDetails'])->name('notes.noteDetails');
     // 📁 Item Movement
     Route::get('item-movement/{itemId?}/{warehouseId?}', [ItemController::class, 'itemMovementReport'])->name('item-movement');
+    // 📁 Item Sales Report
+    Route::get('item-sales', [ItemController::class, 'itemSalesReport'])->name('item-sales');
+    // 📁 Item Purchase Report
+    Route::get('item-purchase', [ItemController::class, 'itemPurchaseReport'])->name('item-purchase');
 
     // 📁 Account Movement
     Route::get('account-movement/{accountId?}', [AccHeadController::class, 'accountMovementReport'])->name('account-movement');
@@ -129,6 +133,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('accounts/start-balance', [AccHeadController::class, 'startBalance'])->name('accounts.startBalance');
     // 📁 Balance Sheet
     Route::get('accounts/balance-sheet', [AccHeadController::class, 'balanceSheet'])->name('accounts.balanceSheet');
+
     // 📁 Balance Sheet
     Route::get('accounts/balance-sheet', [AccHeadController::class, 'balanceSheet'])->name('accounts.balanceSheet');
     // 📁 Start Balance
@@ -151,8 +156,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
     Route::get('pos-shifts/{shift}/close', [PosShiftController::class, 'close'])->name('pos-shifts.close');
     Route::post('pos-shifts/{shift}/close', [PosShiftController::class, 'closeConfirm'])->name('pos-shifts.close.confirm');
-
+    require __DIR__ . '/reports.php';
 
 });
-require __DIR__ . '/reports.php';
 require __DIR__ . '/auth.php';

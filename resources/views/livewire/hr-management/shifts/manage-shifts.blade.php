@@ -112,116 +112,97 @@ new class extends Component {
 }; ?>
 
 
-<div class="container" style="direction: rtl; font-family: 'Cairo', sans-serif;">
-    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-        @can('إضافة الورديات')
-            <button class="btn btn-primary" wire:click="create">
-                <i class="las la-plus"></i> {{ __('Add Shift') }}
-            </button>
-        @endcan
-
-    </div>
-
-    @if (session()->has('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-            class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
-                x-on:click="show = false"></button>
+<div class="" style="direction: rtl; font-family: 'Cairo', sans-serif;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        {{-- @can('إنشاء الورديات') --}}
+        <button class="btn btn-primary" wire:click="create">
+            <i class="las la-plus"></i> {{ __('Add Shift') }}
+        </button>
+        {{-- @endcan --}}
+        @if (session()->has('success'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+                class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                    x-on:click="show = false"></button>
+            </div>
+        @endif
+        {{-- @can('البحث عن الورديات') --}}
+        <div class="mb-3 col-md-4">
+            <input type="text" class="form-control" style="font-family: 'Cairo', sans-serif;"
+                placeholder="{{ __('Search by notes...') }}" wire:model.live="search">
         </div>
-    @endif
-
-    <div class="mb-3 col-md-4">
-        <input type="text" class="form-control" style="font-family: 'Cairo', sans-serif;"
-            placeholder="{{ __('Search by notes...') }}" wire:model.live="search">
+        {{-- @endcan --}}
     </div>
 
 
+    <div class="card ">
 
-    <table class="table table-bordered table-striped text-center align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>{{ __('Start Time') }}</th>
-                <th>{{ __('End Time') }}</th>
-                <th>{{ __('Shift Type') }}</th>
-                <th>{{ __('Days') }}</th>
-                <th>{{ __('Notes') }}</th>
-                @canany(['حذف الورديات', 'تعديل الورديات'])
-                    <th>{{ __('Actions') }}</th>
-                @endcanany
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($shifts as $shift)
-                <tr>
-                    <td>{{ $shift->start_time }}</td>
-                    <td>{{ $shift->end_time }}</td>
-                    <td>{{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
-                    <td>
-                        @foreach (json_decode($shift->days, true) as $day)
-                            <span class="badge bg-info">{{ $weekDays[$day] ?? $day }}</span>
-                        @endforeach
-                    </td>
-                    <td>{{ $shift->notes }}</td>
-                    @canany(['حذف الورديات', 'تعديل الورديات'])
-                        <td>
-                            @can('تعديل الورديات')
-                                <button class="btn btn-md btn-warning me-1" wire:click="edit({{ $shift->id }})">
-                                    <i class="las la-edit"></i>
-                                </button>
-                            @endcan
-                            @can('حذف الورديات')
-                                <button class="btn btn-md btn-danger" wire:click="delete({{ $shift->id }})"
-                                    onclick="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
-                                    <i class="las la-trash"></i>
-                                </button>
-                            @endcan
+        <div class="card-body">
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table class="table text-center table-striped mb-0" style="min-width: 1200px;">
+                    <thead class="table-light text-center align-middle">
+                        <tr>
+                            <th class="font-family-cairo fw-bold">{{ __('Start Time') }}</th>
+                            <th class="font-family-cairo fw-bold">{{ __('End Time') }}</th>
+                            <th class="font-family-cairo fw-bold">{{ __('Shift Type') }}</th>
+                            <th class="font-family-cairo fw-bold">{{ __('Days') }}</th>
+                            <th class="font-family-cairo fw-bold">{{ __('Notes') }}</th>
+                            {{-- @can('إجراء العمليات على الورديات') --}}
+                            <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                            {{-- @endcan --}}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($shifts as $shift)
+                            <tr>
+                                <td class="font-family-cairo fw-bold">{{ $shift->start_time }}</td>
+                                <td class="font-family-cairo fw-bold">{{ $shift->end_time }}</td>
+                                <td class="font-family-cairo fw-bold">{{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
+                                <td class="font-family-cairo fw-bold">
+                                    @foreach (json_decode($shift->days, true) as $day)
+                                        <span class="badge bg-info">{{ $weekDays[$day] ?? $day }}</span>
+                                    @endforeach
+                                </td>
+                                <td class="font-family-cairo fw-bold">{{ $shift->notes }}</td>
+                                {{-- @can('إجراء العمليات على الورديات') --}}
+                                <td class="font-family-cairo fw-bold">
+                                    {{-- @can('تعديل الورديات') --}}
+                                    <button class="btn btn-md btn-success me-1" wire:click="edit({{ $shift->id }})">
+                                        <i class="las la-edit"></i>
+                                    </button>
+                                    {{-- @endcan
+                            @can('حذف الورديات') --}}
+                                    <button class="btn btn-md btn-danger" wire:click="delete({{ $shift->id }})"
+                                        onclick="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
+                                        <i class="las la-trash"></i>
+                                    </button>
+                                    {{-- @endcan --}}
 
-                        </td>
-                    @endcanany
+                                </td>
+                                {{-- @endcan --}}
 
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($shifts as $shift)
-                    <tr>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $shift->start_time }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $shift->end_time }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">
-                            {{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">
-                            @foreach (json_decode($shift->days, true) as $day)
-                                <span class="badge bg-info">{{ $weekDays[$day] ?? $day }}</span>
-                            @endforeach
-                        </td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $shift->notes }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">
-                            <button class="btn btn-success btn-icon-square-sm me-1"
-                                wire:click="edit({{ $shift->id }})">
-                                <i class="las la-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-icon-square-sm" wire:click="delete({{ $shift->id }})"
-                                onclick="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
-                                <i class="las la-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center">
-                            <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
-                                <i class="las la-info-circle me-2"></i>
-                                لا توجد بيانات
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                            </tr>
+
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="alert alert-info py-3 mb-0"
+                                        style="font-size: 1.2rem; font-weight: 500;">
+                                        <i class="las la-info-circle me-2"></i>
+                                        لا توجد بيانات
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
 
     <!-- Modal -->
+
     <div class="modal fade @if ($showModal) show d-block @endif" tabindex="-1"
         style="background: rgba(0,0,0,0.5);" @if ($showModal) aria-modal="true" role="dialog" @endif>
         <div class="modal-dialog">
@@ -265,6 +246,7 @@ new class extends Component {
                                     <div class="form-check me-3">
                                         <input class="form-check-input" type="checkbox" id="day_{{ $key }}"
                                             value="{{ $key }}" wire:model.defer="days">
+
                                         <label class="form-check-label"
                                             for="day_{{ $key }}">{{ $label }}</label>
                                     </div>
@@ -285,6 +267,7 @@ new class extends Component {
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             wire:click="$set('showModal', false)">{{ __('Cancel') }}</button>
+
                         <button type="submit"
                             class="btn btn-primary">{{ $isEdit ? __('Update') : __('Save') }}</button>
                     </div>

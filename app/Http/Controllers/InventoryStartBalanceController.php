@@ -37,7 +37,7 @@ class InventoryStartBalanceController extends Controller
         $partners = cache()->remember('partners', 60 * 60, function () {
             return AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
-                ->where('code', 'like', '221%')
+                ->where('code', 'like', '231%')
                 ->select('id', 'aname')
                 ->get();
         });
@@ -87,6 +87,7 @@ class InventoryStartBalanceController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'store_id' => 'nullable|exists:acc_head,id',
             'partner_id' => 'nullable|exists:acc_head,id',
@@ -142,6 +143,7 @@ class InventoryStartBalanceController extends Controller
                         $unit = $item->units()->where('unit_id', $unitId)->first();
                         $unitCost = $unit ? $unit->pivot->cost : 0;
                     }
+                    // dd($unitCost);
                     if ($newBalance >= 0) {
                         OperationItems::updateOrCreate(
                             [
@@ -169,22 +171,13 @@ class InventoryStartBalanceController extends Controller
                             ]
                         );
                     }
-                    //  else {
-                    //     // مسح السجل لو الرصيد صفر
-                    //     OperationItems::where([
-                    //         'pro_tybe' => 60,
-                    //         'item_id' => $itemId,
-                    //         'detail_store' => $storeId,
-                    //         'pro_id' => $operHead->id,
-                    //     ])->delete();
-                    // }
 
                     $totalAmount += ($newBalance * $unitCost);
                     $processedItems++;
                 }
             }
             $operHead->update(['pro_value' => $totalAmount]);
-
+            // dd($totalAmount);
             $existingJournal = JournalHead::where('pro_type', 60)
                 ->where('op_id', $operHead->id)
                 ->first();
@@ -194,45 +187,51 @@ class InventoryStartBalanceController extends Controller
             } else {
                 $journalId = JournalHead::max('journal_id') + 1;
             }
-            JournalHead::updateOrCreate(
-                ['journal_id' => $journalId, 'pro_type' => 60],
-                [
-                    'journal_id' => $journalId,
-                    'total' => $totalAmount,
-                    'date' => $periodStart,
-                    'op_id' => $operHead->id,
-                    'pro_type' => 60,
-                    'op2' => $operHead->id,
-                    'user' => Auth::id(),
-                ]
-            );
-            // مدين
-            JournalDetail::updateOrCreate(
-                ['journal_id' => $journalId, 'credit' => 0,],
-                [
-                    'journal_id' => $journalId,
-                    'account_id' => $storeId,
-                    'debit' => $totalAmount,
-                    'credit' => 0,
-                    'type' => 1,
-                    'op_id' => $operHead->id,
-                ]
-            );
-            // دائن
-            JournalDetail::updateOrCreate(
-                [
-                    'journal_id' => $journalId,
-                    'debit' => 0,
-                ],
-                [
-                    'journal_id' => $journalId,
-                    'account_id' => $partnerId,
-                    'debit' => 0,
-                    'credit' => $totalAmount,
-                    'type' => 1,
-                    'op_id' => $operHead->id,
-                ]
-            );
+
+            if ($newBalance == 0) {
+                JournalDetail::where('op_id', $operHead->id)->delete();
+                JournalHead::where('op_id', $operHead->id)->where('pro_type', 60)->delete();
+            } else {
+                JournalHead::updateOrCreate(
+                    ['journal_id' => $journalId, 'pro_type' => 60],
+                    [
+                        'journal_id' => $journalId,
+                        'total' => $totalAmount,
+                        'date' => $periodStart,
+                        'op_id' => $operHead->id,
+                        'pro_type' => 60,
+                        'op2' => $operHead->id,
+                        'user' => Auth::id(),
+                    ]
+                );
+                // مدين
+                JournalDetail::updateOrCreate(
+                    ['journal_id' => $journalId, 'credit' => 0,],
+                    [
+                        'journal_id' => $journalId,
+                        'account_id' => $storeId,
+                        'debit' => $totalAmount,
+                        'credit' => 0,
+                        'type' => 1,
+                        'op_id' => $operHead->id,
+                    ]
+                );
+                // دائن
+                JournalDetail::updateOrCreate(
+                    [
+                        'journal_id' => $journalId,
+                        'debit' => 0,
+                    ],
+                    [
+                        'journal_id' => $journalId,
+                        'account_id' => $partnerId,
+                        'debit' => 0,
+                        'credit' => $totalAmount,
+                        'type' => 1,
+                        'op_id' => $operHead->id,
+                    ]
+                );
+            }
             $partner = AccHead::find($partnerId);
             $store = AccHead::find($storeId);
 

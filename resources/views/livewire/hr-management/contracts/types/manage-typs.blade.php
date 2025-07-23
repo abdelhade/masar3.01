@@ -79,134 +79,7 @@ new class extends Component {
 }; ?>
 
 
-<div class="container" style="direction: rtl; font-family: 'Cairo', sans-serif;">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-        @can('إضافة انواع العقود')
-            <button class="btn btn-primary" wire:click="create">
-                <i class="las la-plus"></i> {{ __('Add Contract Type') }}
-            </button>
-        @endcan
-    </div>
-
-    @if (session()->has('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-            class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
-                x-on:click="show = false"></button>
-        </div>
-    @endif
-
-    <div class="mb-3 col-md-4">
-        <input type="text" class="form-control" style="font-family: 'Cairo', sans-serif;"
-            placeholder="{{ __('Search by name...') }}" wire:model.live="search">
-    </div>
-
-</div>
-
-<div class="card">
-    <div class="card-body">
-
-
-        <table class="table table-striped mb-0" style="min-width: 1200px;">
-            <thead class="table-light text-center align-middle">
-
-                <tr>
-                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Name') }}</th>
-                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Description') }}</th>
-                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Actions') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($contractTypes as $type)
-                    <tr>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $type->name }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $type->description }}</td>
-                        <td class="font-family-cairo fw-bold font-14 text-center">
-                            <button class="btn btn-success btn-icon-square-sm me-1"
-                                wire:click="edit({{ $type->id }})">
-                                <i class="las la-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-icon-square-sm"wire:click="delete({{ $type->id }})"
-                                wire:confirm="{{ __('Are you sure you want to delete this contract type?') }}">
-                                <i class="las la-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="3" class="text-center">
-                            <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
-                                <i class="las la-info-circle me-2"></i>
-                                لا توجد بيانات
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-@if (session()->has('success'))
-    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-        class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
-            x-on:click="show = false"></button>
-    </div>
-@endif
-<div class="mb-3 col-md-4">
-    <input type="text" class="form-control" style="font-family: 'Cairo', sans-serif;"
-        placeholder="{{ __('Search by name...') }}" wire:model.live="search">
-</div>
-
-
-
-<table class="table table-bordered table-striped text-center align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>{{ __('Name') }}</th>
-            <th>{{ __('Description') }}</th>
-            @canany(['تعديل انواع العقود', 'حذف انواع العقود'])
-                <th>{{ __('Actions') }}</th>
-            @endcanany
-
-        </tr>
-    </thead>
-    <tbody>
-        @forelse ($contractTypes as $type)
-            <tr>
-                <td>{{ $type->name }}</td>
-                <td>{{ $type->description }}</td>
-                @can(['تعديل انواع العقود', 'حذف انواع العقود'])
-                    <td>
-                        @can('تعديل انواع العقود')
-                            <button class="btn btn-md btn-warning me-1" wire:click="edit({{ $type->id }})">
-                                <i class="las la-edit"></i>
-                            </button>
-                        @endcan
-                        @can('حذف انواع العقود')
-                            <button class="btn btn-md btn-danger" wire:click="delete({{ $type->id }})"
-                                wire:confirm="{{ __('Are you sure you want to delete this contract type?') }}">
-                                <i class="las la-trash"></i>
-                            </button>
-                        @endcan
-
-                    </td>
-                @endcanany
-
-            </tr>
-        @empty
-            <tr>
-                <td colspan="3">{{ __('No contract types found.') }}</td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
->>>>>>> origin/main
 
 <div class="mt-4">
     {{ $contractTypes->links() }}
@@ -229,22 +102,131 @@ new class extends Component {
                         @error('name')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        {{-- @can('إنشاء أنواع العقود') --}}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createContractTypeModal">
+            <i class="las la-plus"></i> إضافة نوع عقد جديد
+        </button>
+        {{-- @endcan --}}
+        {{-- @can('البحث عن أنواع العقود') --}}
+        <div class="mb-3">
+            <input type="text" wire:model="search" class="form-control" placeholder="بحث بالاسم...">
+        </div>
+        {{-- @endcan --}}
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table class="table table-striped text-center mb-0" style="min-width: 1200px;">
+                    <thead class="table-light text-center align-middle">
+                        <tr>
+                            <th>#</th>
+                            <th>الاسم</th>
+                            <th>الوصف</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($contractTypes as $index => $type)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $type->name }}</td>
+                                <td>{{ $type->description }}</td>
+                                <td>
+                                    {{-- @can('إجراء العمليات على أنواع العقود') --}}
+                                        <button class="btn btn-success btn-sm me-1" wire:click="edit({{ $type->id }})">
+                                            <i class="las la-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" wire:click="delete({{ $type->id }})"
+                                            onclick="return confirm('هل أنت متأكد أنك تريد الحذف؟')">
+                                            <i class="las la-trash"></i>
+                                        </button>
+                                    {{-- @endcan --}}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center">لا توجد أنواع عقود.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Create -->
+    <div wire:ignore.self class="modal fade" id="createContractTypeModal" tabindex="-1"
+        aria-labelledby="createContractTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form wire:submit.prevent="store">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">إضافة نوع عقد جديد</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">{{ __('Description') }}</label>
-                        <textarea class="form-control" wire:model="description"></textarea>
-                        @error('description')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">الاسم</label>
+                            <input wire:model.defer="name" type="text" class="form-control" id="name">
+                            @error('name')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">الوصف</label>
+                            <textarea wire:model.defer="description" class="form-control" id="description"></textarea>
+                            @error('description')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                        wire:click="$set('showModal', false)">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ $isEdit ? __('Update') : __('Save') }}</button>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div wire:ignore.self class="modal fade" id="editContractTypeModal" tabindex="-1"
+        aria-labelledby="editContractTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form wire:submit.prevent="update">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تعديل نوع العقد</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit_name" class="form-label">الاسم</label>
+                            <input wire:model.defer="edit_name" type="text" class="form-control" id="edit_name">
+                            @error('edit_name')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_description" class="form-label">الوصف</label>
+                            <textarea wire:model.defer="edit_description" class="form-control" id="edit_description"></textarea>
+                            @error('edit_description')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">تحديث</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
-</div>
 </div>

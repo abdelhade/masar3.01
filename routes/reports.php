@@ -139,3 +139,8 @@ Route::get(
     '/reports/get-items-max&min-quntity',
     [ReportController::class, 'getItemsMaxMinQuantity']
 )->name('reports.get-items-max-min-quantity');
+
+Route::get(
+    '/prices/compare-report',
+    [ReportController::class, 'pricesCompareReport']
+)->name('prices.compare.report');

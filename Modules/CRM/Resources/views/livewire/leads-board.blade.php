@@ -295,6 +295,7 @@
                                     <i class="fas fa-plus"></i>
                                 </button>
                             @endcan
+
                         </div>
                     </div>
                     <div class="leads-container" data-status-id="{{ $status->id }}"

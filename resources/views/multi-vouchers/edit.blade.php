@@ -48,7 +48,7 @@
 
                         <div class="col-sm-3">
                             <div class="form-group">
-                                <label>الحساب الرئيسي</label>
+                                <label>الصندوق</label>
                                 @if (in_array($pro_type, ['32', '40', '41', '46', '47', '50', '53', '55']))
                                     <select name="acc1[]" class="form-control" required>
                                         @foreach ($accounts1 as $acc1)
