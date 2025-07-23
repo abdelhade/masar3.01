@@ -109,6 +109,26 @@
                     location.reload();
                 });
             });
+        })
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('no-quantity', (data) => {
+                Swal.fire({
+                    title: data.title,
+                    text: data.text,
+                    icon: data.icon,
+                })
+            });
+        });
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('no-items', (data) => {
+                Swal.fire({
+                    title: data.title,
+                    text: data.text,
+                    icon: data.icon,
+                })
+            });
         });
 
         document.addEventListener('alpine:init', () => {
