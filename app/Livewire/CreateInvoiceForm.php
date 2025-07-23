@@ -142,12 +142,28 @@ class CreateInvoiceForm extends Component
         $this->cash_box_id = 21;
 
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
-            $this->acc1_id = 44;
+            $this->acc1_id = 148;
         } elseif (in_array($this->type, [11, 13, 15, 17])) {
             $this->acc1_id = 36;
         } elseif (in_array($this->type, [18, 19, 20, 21])) {
             $this->acc1_id = 0;
         }
+
+        //         public $titles = [
+        //     10 => 'فاتوره مبيعات',
+        //     11 => 'فاتورة مشتريات',
+        //     12 => 'مردود مبيعات',
+        //     13 => 'مردود مشتريات',
+        //     14 => 'امر بيع',
+        //     15 => 'امر شراء',
+        //     16 => 'عرض سعر لعميل',
+        //     17 => 'عرض سعر من مورد',
+        //     18 => 'فاتورة توالف',
+        //     19 => 'امر صرف',
+        //     20 => 'امر اضافة',
+        //     21 => 'تحويل من مخزن لمخزن',
+        //     22 => 'امر حجز',
+        // ];
 
         $this->employees = $employees;
         $this->invoiceItems = [];
@@ -609,42 +625,42 @@ class CreateInvoiceForm extends Component
     public function saveForm()
     {
         // dd($this->all());
-        if (empty($this->invoiceItems)) {
-            Alert::toast('لا يمكن حفظ الفاتورة بدون أصناف.', 'error');
-            return;
-        }
+        // if (empty($this->invoiceItems)) {
+        //     Alert::toast('لا يمكن حفظ الفاتورة بدون أصناف.', 'error');
+        //     return;
+        // }
 
-        $this->validate([
-            'acc1_id' => 'required|exists:acc_head,id',
-            'acc2_id' => 'required|exists:acc_head,id',
-            'pro_date' => 'required|date',
-            'invoiceItems.*.item_id' => 'required|exists:items,id',
-            'invoiceItems.*.unit_id' => 'required|exists:units,id',
-            'invoiceItems.*.quantity' => 'required|numeric|min:0.001',
-            'invoiceItems.*.price' => 'required|numeric|min:0',
-            'discount_percentage' => 'numeric|min:0|max:100',
-            'additional_percentage' => 'numeric|min:0|max:100',
-            'received_from_client' => 'numeric|min:0',
-        ], [
-            'invoiceItems.*.quantity.min' => 'الكمية يجب أن تكون أكبر من الصفر',
-            'invoiceItems.*.price.min' => 'السعر يجب أن يكون قيمة موجبة',
-        ]);
+        // $this->validate([
+        //     'acc1_id' => 'required|exists:acc_head,id',
+        //     'acc2_id' => 'required|exists:acc_head,id',
+        //     'pro_date' => 'required|date',
+        //     'invoiceItems.*.item_id' => 'required|exists:items,id',
+        //     'invoiceItems.*.unit_id' => 'required|exists:units,id',
+        //     'invoiceItems.*.quantity' => 'required|numeric|min:0.001',
+        //     'invoiceItems.*.price' => 'required|numeric|min:0',
+        //     'discount_percentage' => 'numeric|min:0|max:100',
+        //     'additional_percentage' => 'numeric|min:0|max:100',
+        //     'received_from_client' => 'numeric|min:0',
+        // ], [
+        //     'invoiceItems.*.quantity.min' => 'الكمية يجب أن تكون أكبر من الصفر',
+        //     'invoiceItems.*.price.min' => 'السعر يجب أن يكون قيمة موجبة',
+        // ]);
 
-        foreach ($this->invoiceItems as $index => $item) {
+        // foreach ($this->invoiceItems as $index => $item) {
 
-            // حساب الكميه المتوفره للصنف
-            $availableQty = OperationItems::where('item_id', $item['item_id'])
-                ->where('detail_store', $this->acc2_id)
-                ->selectRaw('SUM(qty_in - qty_out) as total')
-                ->value('total') ?? 0;
-            if (in_array($this->type, [10, 12, 18, 19])) { // عمليات صرف
-                if ($availableQty < $item['quantity']) {
-                    $itemName = Item::find($item['item_id'])->name;
-                    Alert::toast("الكمية غير متوفرة للصنف: $itemName. المتاح: $availableQty", 'error');
-                    return;
-                }
-            }
-        }
+        //     // حساب الكميه المتوفره للصنف
+        //     $availableQty = OperationItems::where('item_id', $item['item_id'])
+        //         ->where('detail_store', $this->acc2_id)
+        //         ->selectRaw('SUM(qty_in - qty_out) as total')
+        //         ->value('total') ?? 0;
+        //     if (in_array($this->type, [10, 12, 18, 19])) { // عمليات صرف
+        //         if ($availableQty < $item['quantity']) {
+        //             $itemName = Item::find($item['item_id'])->name;
+        //             Alert::toast("الكمية غير متوفرة للصنف: $itemName. المتاح: $availableQty", 'error');
+        //             return;
+        //         }
+        //     }
+        // }
 
         try {
 
@@ -881,7 +897,7 @@ class CreateInvoiceForm extends Component
             $this->dispatch('swal', title: 'تم الحفظ!', text: 'تم حفظ الفاتوره بنجاح.', icon: 'success');
             return $operation->id;
         } catch (\Exception $e) {
-            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
+            logger()->error('خطأ أثناء حفظ الفاتورة: ');
             Alert::toast('حدث خطأ أثناء حفظ الفاتورة: ', 'error');
             return back()->withInput();
         }
@@ -889,13 +905,9 @@ class CreateInvoiceForm extends Component
 
     public function saveAndPrint()
     {
-        // استدعاء دالة الحفظ وتخزين معرف الفاتورة
         $operationId = $this->saveForm();
-        // dd($operationId);
         if ($operationId) {
-            // إعادة التوجيه إلى صفحة الطباعة مع تمرير معرف الفاتورة فقط
             $printUrl = route('invoice.print', ['operation_id' => $operationId]);
-            // تأكد أن الرابط يبدأ بـ /invoice/print
             $this->dispatch('open-print-window', url: $printUrl);
         }
     }

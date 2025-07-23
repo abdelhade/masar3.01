@@ -189,7 +189,7 @@
     <div class="invoice-container">
         <!-- Header -->
         <div class="header">
-            <div class="company-name">skysoft</div>
+            <div class="company-name">Massar</div>
             <div class="invoice-title">{{ $titles[$type] ?? 'فاتورة' }}</div>
         </div>
 

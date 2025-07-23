@@ -5,8 +5,6 @@
 
                 @include('components.invoices.invoice-head')
 
-                {{-- قسم البحث عن الأصناف وإضافة نوع السعر --}}
-
                 <div class="row">
 
                     <div class="col-lg-4 mb-3" style="position: relative;">
@@ -97,17 +95,21 @@
             });
         });
 
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('enlarge-menu');
+        });
+
         document.addEventListener('livewire:init', () => {
             Livewire.on('swal', (data) => {
                 Swal.fire({
                     title: data.title,
                     text: data.text,
                     icon: data.icon,
+                }).then((result) => {
+                    location.reload();
                 });
             });
         });
-
-
 
         document.addEventListener('alpine:init', () => {
             Alpine.directive('focus-next', (el, {
