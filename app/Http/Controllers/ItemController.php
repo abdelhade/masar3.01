@@ -64,7 +64,10 @@ class ItemController extends Controller
     public function itemPurchaseReport()
     {
         return view('reports.purchase.manage-item-purchase-report');
-    // Get item as JSON for AJAX requests
+        // Get item as JSON for AJAX requests
+    }
+
+    
     public function getItemJson($id)
     {
         $item = Item::with(['units', 'prices'])->findOrFail($id);

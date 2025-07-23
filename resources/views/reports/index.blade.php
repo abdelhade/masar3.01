@@ -479,9 +479,7 @@
             </div>
         </div>
         
-        <div class="mt-5 text-center">
-            <p class="text-muted">نظام التقارير - الإصدار 2.5 | تم التحديث في 22 يوليو 2025</p>
-        </div>
+       
     </div>
 
     <!-- Bootstrap JS -->
