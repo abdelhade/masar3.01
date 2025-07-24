@@ -382,7 +382,7 @@
                         </ul>
                     </li>
                 @endcanany
-            @endforeac
+            @endforeach
 
             @can('عرض السندات')
                 <li class="li-main">
