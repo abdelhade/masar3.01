@@ -79,43 +79,17 @@ new class extends Component {
 }; ?>
 
 
-
-
-<div class="mt-4">
-    {{ $contractTypes->links() }}
-</div>
-
-<!-- Modal -->
-<div class="modal fade @if ($showModal) show d-block @endif" tabindex="-1"
-    style="background: rgba(0,0,0,0.5);" @if ($showModal) aria-modal="true" role="dialog" @endif>
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ $isEdit ? __('Edit Contract Type') : __('Add Contract Type') }}</h5>
-                <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
-            </div>
-            <form wire:submit.prevent="save">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">{{ __('Name') }}</label>
-                        <input type="text" class="form-control" wire:model="name" required>
-                        @error('name')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-1">
-        {{-- @can('إنشاء أنواع العقود') --}}
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createContractTypeModal">
-            <i class="las la-plus"></i> إضافة نوع عقد جديد
-        </button>
-        {{-- @endcan --}}
-        {{-- @can('البحث عن أنواع العقود') --}}
+        @can('إضافة انواع العقود')
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createContractTypeModal">
+                <i class="las la-plus"></i> إضافة نوع عقد جديد
+            </button>
+        @endcan
         <div class="mb-3">
             <input type="text" wire:model="search" class="form-control" placeholder="بحث بالاسم...">
         </div>
-        {{-- @endcan --}}
     </div>
     <div class="card shadow-sm">
         <div class="card-body">
@@ -126,7 +100,9 @@ new class extends Component {
                             <th>#</th>
                             <th>الاسم</th>
                             <th>الوصف</th>
-                            <th>الإجراءات</th>
+                            @canany(['حذف انواع العقود', 'تعديل انواع العقود'])
+                                <th>الإجراءات</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -135,17 +111,23 @@ new class extends Component {
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $type->name }}</td>
                                 <td>{{ $type->description }}</td>
-                                <td>
-                                    {{-- @can('إجراء العمليات على أنواع العقود') --}}
-                                        <button class="btn btn-success btn-sm me-1" wire:click="edit({{ $type->id }})">
-                                            <i class="las la-edit"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" wire:click="delete({{ $type->id }})"
-                                            onclick="return confirm('هل أنت متأكد أنك تريد الحذف؟')">
-                                            <i class="las la-trash"></i>
-                                        </button>
-                                    {{-- @endcan --}}
-                                </td>
+
+                                @canany(['حذف انواع العقود', 'تعديل انواع العقود'])
+                                    <td>
+                                        @can('تعديل انواع العقود')
+                                            <button class="btn btn-success btn-sm me-1" wire:click="edit({{ $type->id }})">
+                                                <i class="las la-edit"></i>
+                                            </button>
+                                        @endcan
+                                        @can('حذف انواع العقود')
+                                            <button class="btn btn-danger btn-sm" wire:click="delete({{ $type->id }})"
+                                                onclick="return confirm('هل أنت متأكد أنك تريد الحذف؟')">
+                                                <i class="las la-trash"></i>
+                                            </button>
+                                        @endcan
+                                    </td>
+                                @endcanany
+
                             </tr>
                         @empty
                             <tr>
@@ -190,7 +172,6 @@ new class extends Component {
                         <button type="submit" class="btn btn-primary">حفظ</button>
                     </div>
                 </div>
-
             </form>
         </div>
     </div>

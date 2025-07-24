@@ -114,11 +114,11 @@ new class extends Component {
 
 <div class="" style="direction: rtl; font-family: 'Cairo', sans-serif;">
     <div class="d-flex justify-content-between align-items-center mb-2">
-        {{-- @can('إنشاء الورديات') --}}
-        <button class="btn btn-primary" wire:click="create">
-            <i class="las la-plus"></i> {{ __('Add Shift') }}
-        </button>
-        {{-- @endcan --}}
+        @can('إضافة الورديات')
+            <button class="btn btn-primary" wire:click="create">
+                <i class="las la-plus"></i> {{ __('Add Shift') }}
+            </button>
+        @endcan
         @if (session()->has('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
                 class="alert alert-success alert-dismissible fade show" role="alert">
@@ -127,12 +127,10 @@ new class extends Component {
                     x-on:click="show = false"></button>
             </div>
         @endif
-        {{-- @can('البحث عن الورديات') --}}
         <div class="mb-3 col-md-4">
             <input type="text" class="form-control" style="font-family: 'Cairo', sans-serif;"
                 placeholder="{{ __('Search by notes...') }}" wire:model.live="search">
         </div>
-        {{-- @endcan --}}
     </div>
 
 
@@ -148,9 +146,9 @@ new class extends Component {
                             <th class="font-family-cairo fw-bold">{{ __('Shift Type') }}</th>
                             <th class="font-family-cairo fw-bold">{{ __('Days') }}</th>
                             <th class="font-family-cairo fw-bold">{{ __('Notes') }}</th>
-                            {{-- @can('إجراء العمليات على الورديات') --}}
-                            <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
-                            {{-- @endcan --}}
+                            @canany(['حذف الورديات', 'تعديل الورديات'])
+                                <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -158,29 +156,30 @@ new class extends Component {
                             <tr>
                                 <td class="font-family-cairo fw-bold">{{ $shift->start_time }}</td>
                                 <td class="font-family-cairo fw-bold">{{ $shift->end_time }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
+                                <td class="font-family-cairo fw-bold">
+                                    {{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
                                 <td class="font-family-cairo fw-bold">
                                     @foreach (json_decode($shift->days, true) as $day)
                                         <span class="badge bg-info">{{ $weekDays[$day] ?? $day }}</span>
                                     @endforeach
                                 </td>
                                 <td class="font-family-cairo fw-bold">{{ $shift->notes }}</td>
-                                {{-- @can('إجراء العمليات على الورديات') --}}
-                                <td class="font-family-cairo fw-bold">
-                                    {{-- @can('تعديل الورديات') --}}
-                                    <button class="btn btn-md btn-success me-1" wire:click="edit({{ $shift->id }})">
-                                        <i class="las la-edit"></i>
-                                    </button>
-                                    {{-- @endcan
-                            @can('حذف الورديات') --}}
-                                    <button class="btn btn-md btn-danger" wire:click="delete({{ $shift->id }})"
-                                        onclick="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
-                                        <i class="las la-trash"></i>
-                                    </button>
-                                    {{-- @endcan --}}
+                                @canany(['حذف الورديات', 'تعديل الورديات'])
+                                    <td class="font-family-cairo fw-bold">
+                                        @can('تعديل الورديات')
+                                            <button class="btn btn-md btn-success me-1" wire:click="edit({{ $shift->id }})">
+                                                <i class="las la-edit"></i>
+                                            </button>
+                                        @endcan
+                                        @can('حذف الورديات')
+                                            <button class="btn btn-md btn-danger" wire:click="delete({{ $shift->id }})"
+                                                onclick="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
+                                                <i class="las la-trash"></i>
+                                            </button>
+                                        @endcan
 
-                                </td>
-                                {{-- @endcan --}}
+                                    </td>
+                                @endcan
 
                             </tr>
 

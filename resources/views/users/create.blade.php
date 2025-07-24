@@ -15,7 +15,7 @@
             <div class="nav flex-column nav-pills text-center" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <a class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" href="#v-pills-home" role="tab"
                     aria-controls="v-pills-home" aria-selected="true">البيانات الاساسيه</a>
-                    aria-controls="v-pills-home" aria-selected="true">البيانات الاساسيه</a>
+
 
                 <a class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" href="#v-pills-profile" role="tab"
                     aria-controls="v-pills-profile" aria-selected="false">الصلاحيات</a>
@@ -100,7 +100,7 @@
                                                 $parts = explode(' ', $perm->name, 2);
                                                 $action = $parts[0];
                                                 $target = $parts[1] ?? '';
-                                                $grouped[$target][$action] = $perm->name;
+                                                $grouped[$target][$action] = $perm; // ✅ هنا بدل perm->name
                                             }
                                         @endphp
 
@@ -127,7 +127,8 @@
                                                                         @if (isset($actions[$act]))
                                                                             <input type="checkbox" class="form-check-input"
                                                                                 name="permissions[]"
-                                                                                value="{{ $actions[$act] }}">
+                                                                                value="{{ $actions[$act]->id }}">
+                                                                            {{-- ✅ كده هيتبعت ID صح --}}
                                                                         @endif
                                                                     </td>
                                                                 @endforeach
@@ -138,6 +139,7 @@
                                             </div>
                                         </div>
                                     @endforeach
+
                                 </div>
                             </div>
                         </div>
