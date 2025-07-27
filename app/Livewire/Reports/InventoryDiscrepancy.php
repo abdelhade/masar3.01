@@ -3,7 +3,7 @@
 namespace App\Livewire\Reports;
 
 use App\Models\{Item, AccHead, OperHead, JournalHead, JournalDetail, OperationItems};
-use Illuminate\Support\Facades\{DB, Auth, Schema};
+use Illuminate\Support\Facades\{DB, Auth};
 use Livewire\Component;
 use Modules\Settings\Models\PublicSetting;
 
@@ -44,8 +44,7 @@ class InventoryDiscrepancy extends Component
     public function loadInventoryDifferenceAccount()
     {
         $setting = PublicSetting::where('key', 'show_inventory_difference_account')->first();
-        $value = $setting ? $setting->value : null;
-        $this->inventoryDifferenceAccount = $value ? $setting->value : null;
+        $this->inventoryDifferenceAccount = $setting ? $setting->value : null;
     }
 
     public function loadWarehouses()
@@ -106,13 +105,16 @@ class InventoryDiscrepancy extends Component
         $tempData = [];
         foreach ($items as $item) {
             $systemQuantity = $itemBalances[$item->id] ?? 0;
+
             $actualQuantity = isset($this->quantities[$item->id])
                 ? (float) $this->quantities[$item->id]
                 : $systemQuantity;
 
             $discrepancy = $actualQuantity - $systemQuantity;
             $discrepancyType = $this->getDiscrepancyType($discrepancy);
-            $itemCost = $item->cost ?? 0;
+
+            // استخدام أفضل تكلفة متاحة
+            $itemCost = $item->average_cost ?? $item->cost ?? 0;
 
             $this->updateStatistics($discrepancy);
 
@@ -123,6 +125,7 @@ class InventoryDiscrepancy extends Component
                 'discrepancy' => (float) $discrepancy,
                 'discrepancy_type' => $discrepancyType,
                 'discrepancy_value' => (float) ($discrepancy * $itemCost),
+                'item_cost' => (float) $itemCost,
                 'main_unit' => $item->units->first(),
             ];
 
@@ -168,18 +171,25 @@ class InventoryDiscrepancy extends Component
 
     /**
      * Livewire hook for when a quantity is updated in the form.
+     * تحسين دالة تحديث الكميات لإعادة حساب الإحصائيات
      */
     public function updatedQuantities($value, $key)
     {
         $itemId = (int) $key;
         $actualQuantity = (float) $value;
 
+        if (!is_numeric($actualQuantity)) {
+            return;
+        }
+        // إعادة تعيين الإحصائيات
+        $this->resetStatistics();
+
         // البحث عن الصنف وتحديث البيانات
         $itemFound = false;
         foreach ($this->inventoryData as $index => $data) {
             if ($data['item']->id == $itemId) {
                 $discrepancy = $actualQuantity - $data['system_quantity'];
-                $discrepancyValue = $discrepancy * ($data['item']->cost ?? 0);
+                $discrepancyValue = $discrepancy * $data['item_cost'];
 
                 $this->inventoryData[$index] = array_merge($this->inventoryData[$index], [
                     'actual_quantity' => $actualQuantity,
@@ -189,13 +199,43 @@ class InventoryDiscrepancy extends Component
                 ]);
 
                 $itemFound = true;
-                break;
             }
+
+            // إعادة حساب الإحصائيات لجميع الأصناف
+            $this->updateStatistics($this->inventoryData[$index]['discrepancy']);
         }
 
         if ($itemFound) {
             $this->hasUnsavedChanges = true;
         }
+    }
+
+    /**
+     * دالة جديدة للحصول على ملخص القيم المالية
+     */
+    public function getFinancialSummary()
+    {
+        $totalIncreaseValue = 0;
+        $totalDecreaseValue = 0;
+        $netDifference = 0;
+
+        foreach ($this->inventoryData as $data) {
+            $discrepancyValue = $data['discrepancy_value'];
+
+            if ($discrepancyValue > 0) {
+                $totalIncreaseValue += $discrepancyValue;
+            } elseif ($discrepancyValue < 0) {
+                $totalDecreaseValue += abs($discrepancyValue);
+            }
+
+            $netDifference += $discrepancyValue;
+        }
+
+        return [
+            'total_increase' => $totalIncreaseValue,
+            'total_decrease' => $totalDecreaseValue,
+            'net_difference' => $netDifference
+        ];
     }
 
     /**
@@ -252,7 +292,7 @@ class InventoryDiscrepancy extends Component
             foreach ($itemsToAdjust as $data) {
                 $item = $data['item'];
                 $discrepancy = $data['discrepancy'];
-                $unitCost = $item->cost ?? 0;
+                $unitCost = $data['item_cost']; // استخدام التكلفة المحسوبة مسبقاً
                 $discrepancyValue = $discrepancy * $unitCost;
 
                 // إضافة حركة المخزون
@@ -327,59 +367,47 @@ class InventoryDiscrepancy extends Component
         // قيد الزيادات (إن وجدت)
         if ($totalIncreaseValue > 0) {
             // مدين: المخزن (زيادة في المخزون)
-            JournalDetail::updateOrCreate(
-                ['journal_id' => $journalId, 'account_id' => $this->selectedWarehouse, 'credit' => 0],
-                [
-                    'journal_id' => $journalId,
-                    'account_id' => $this->selectedWarehouse,
-                    'debit' => $totalIncreaseValue,
-                    'credit' => 0,
-                    'type' => 1,
-                    'op_id' => $operHead->id,
-                ]
-            );
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $this->selectedWarehouse,
+                'debit' => $totalIncreaseValue,
+                'credit' => 0,
+                'type' => 1,
+                'op_id' => $operHead->id,
+            ]);
 
             // دائن: حساب فروقات الجرد (إيراد من زيادة المخزون)
-            JournalDetail::updateOrCreate(
-                ['journal_id' => $journalId, 'account_id' => $this->inventoryDifferenceAccount, 'debit' => 0],
-                [
-                    'journal_id' => $journalId,
-                    'account_id' => $this->inventoryDifferenceAccount,
-                    'debit' => 0,
-                    'credit' => $totalIncreaseValue,
-                    'type' => 1,
-                    'op_id' => $operHead->id,
-                ]
-            );
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $this->inventoryDifferenceAccount,
+                'debit' => 0,
+                'credit' => $totalIncreaseValue,
+                'type' => 1,
+                'op_id' => $operHead->id,
+            ]);
         }
 
         // قيد النقص (إن وجد)
         if ($totalDecreaseValue > 0) {
             // مدين: حساب فروقات الجرد (خسارة من نقص المخزون)
-            JournalDetail::updateOrCreate(
-                ['journal_id' => $journalId, 'account_id' => $this->inventoryDifferenceAccount, 'credit' => 0],
-                [
-                    'journal_id' => $journalId,
-                    'account_id' => $this->inventoryDifferenceAccount,
-                    'debit' => $totalDecreaseValue,
-                    'credit' => 0,
-                    'type' => 1,
-                    'op_id' => $operHead->id,
-                ]
-            );
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $this->inventoryDifferenceAccount,
+                'debit' => $totalDecreaseValue,
+                'credit' => 0,
+                'type' => 1,
+                'op_id' => $operHead->id,
+            ]);
 
             // دائن: المخزن (نقص في المخزون)
-            JournalDetail::updateOrCreate(
-                ['journal_id' => $journalId, 'account_id' => $this->selectedWarehouse, 'debit' => 0],
-                [
-                    'journal_id' => $journalId,
-                    'account_id' => $this->selectedWarehouse,
-                    'debit' => 0,
-                    'credit' => $totalDecreaseValue,
-                    'type' => 1,
-                    'op_id' => $operHead->id,
-                ]
-            );
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $this->selectedWarehouse,
+                'debit' => 0,
+                'credit' => $totalDecreaseValue,
+                'type' => 1,
+                'op_id' => $operHead->id,
+            ]);
         }
 
         // تحديث رصيد حساب الفروقات
@@ -391,6 +419,7 @@ class InventoryDiscrepancy extends Component
      */
     private function updateInventoryDifferenceAccountBalance($totalIncreaseValue, $totalDecreaseValue)
     {
+        // dd($this->inventoryDifferenceAccount);
         if (!$this->inventoryDifferenceAccount) {
             return;
         }
@@ -400,19 +429,20 @@ class InventoryDiscrepancy extends Component
             ->selectRaw('SUM(credit) - SUM(debit) as balance')
             ->value('balance') ?? 0;
 
+        // dd($currentBalance);
         // حساب الرصيد الجديد
         // الزيادات تزيد رصيد الحساب (دائن)
         // النقص يقلل رصيد الحساب (مدين)
         $newBalance = $currentBalance + $totalIncreaseValue - $totalDecreaseValue;
-
+        // dd($newBalance);
+        // dd($this->inventoryDifferenceAccount);
         // تحديث رصيد الحساب في جدول AccHead إذا كان له حقل balance
         $account = AccHead::find($this->inventoryDifferenceAccount);
-        if ($account && Schema::hasColumn('acc_heads', 'balance')) {
-            $account->update(['balance' => $newBalance]);
-        }
+        // dd($account);
+        $account->update(['balance' => $newBalance]);
+
 
         // يمكن إضافة منطق إضافي لتحديث جداول أخرى حسب النظام
-        // مثل جدول account_balances أو أي جدول آخر يحتفظ بالأرصدة
     }
 
     // Helper methods
