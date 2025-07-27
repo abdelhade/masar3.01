@@ -612,7 +612,7 @@
                         <h5>تفاصيل الفرص</h5>
                         <div class="table-responsive">
                             <table class="table table-sm table-hover">
-                                <thead class="table-dark">
+                                <thead>
                                     <tr>
                                         <th>العنوان</th>
                                         <th>العميل</th>

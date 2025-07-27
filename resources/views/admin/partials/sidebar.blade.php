@@ -321,6 +321,15 @@
                                 </a>
                             </li>
                         @endcan
+
+                        @can('عرض الفرص')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('tasks.index') }}">
+                                    <i class="ti-control-record"></i>{{ __('المهمات') }}
+
+                                </a>
+                            </li>
+                        @endcan
                     </ul>
                 </li>
             @endcanany
@@ -358,7 +367,6 @@
                 @endphp
 
                 @canany($viewPermissions)
-
                     <li class="li-main">
                         <a href="javascript:void(0);">
                             <i data-feather="shopping-cart" style="color:#e74a3b"
@@ -482,7 +490,8 @@
                         @endcan
                         @can('عرض احتساب خصم للموظفين')
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'discount_calc']) }}">
+                                <a class="nav-link"
+                                    href="{{ route('multi-vouchers.create', ['type' => 'discount_calc']) }}">
                                     <i class="ti-control-record"></i>{{ __('احتساب خصم للموظفين') }}
                                 </a>
                             </li>
@@ -839,7 +848,6 @@
                                         </li>
                                     @endcan
                                     @can(abilities: 'عرض معدلات اداء الموظفين')
-
                                         <li class="nav-item">
                                             <a class="nav-link" href="{{ route('kpis.employeeEvaluation') }}">
                                                 <i class="ti-control-record"></i>{{ __('معدلات أداء الموظفين') }}
@@ -888,7 +896,6 @@
                                         </li>
                                     @endcan
                                     @can('عرض معالجه الحضور والانصرف')
-
                                         <li class="nav-item">
                                             <a class="nav-link" href="{{ route('attendance-processing.index') }}">
                                                 <i class="ti-control-record"></i>{{ __('معالجة الحضور والانصراف') }}
