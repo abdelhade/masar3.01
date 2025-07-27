@@ -15,11 +15,17 @@ new class extends Component {
 <div>
     <!--  -->
     @foreach ($notes as $noteId => $name)
-    <li class="nav-item">
-        <a class="nav-link font-family-cairo fw-bold" href="{{ route('notes.noteDetails', $noteId) }}">
-            <i class="ti-control-record"></i>{{ $name }}
-        </a>
-    </li>
-    @endforeach
-</div>
+        @php
+            $permission = 'عرض ' . $name;
+        @endphp
 
+        @can($permission)
+            <li class="nav-item">
+                <a class="nav-link font-family-cairo fw-bold" href="{{ route('notes.noteDetails', $noteId) }}">
+                    <i class="ti-control-record"></i>{{ $name }}
+                </a>
+            </li>
+        @endcan
+    @endforeach
+
+</div>

@@ -3,7 +3,8 @@
     <div class="menu-content h-100" data-simplebar>
         <ul class="metismenu left-sidenav-menu">
 
-            <li class="menu-label my-2"><a href="{{ route('home') }}">{{ __('MASAR FOR TECNOLOGY') }}</a></li>
+            <li class="menu-label my-2"><a href="{{ route('home') }}">{{ config('public_settings.campany_name') }}</a>
+            </li>
 
 
             <li class="nav-item border-bottom pb-1 mb-2">
@@ -173,15 +174,18 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('عرض التصنيفات')
+                        @canany(['عرض المقاسات', 'عرض الطباعه', 'عرض الاماكن', 'عرض المواقع', 'عرض التصنيفات', 'عرض
+                            المجموعات'])
                             <livewire:item-management.notes.notesNames />
                         @endcan
                         {{-- item movement --}}
-                        <li class="nav-item">
-                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                <i class="ti-control-record"></i>{{ __('تقرير حركه صنف') }}
-                            </a>
-                        </li>
+                        @can('عرض تقرير حركة صنف')
+                            <li class="nav-item">
+                                <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
+                                    <i class="ti-control-record"></i>{{ __('تقرير حركه صنف') }}
+                                </a>
+                            </li>
+                        @endcan
                         {{-- item movement --}}
                     </ul>
                 </li>
@@ -277,7 +281,7 @@
                 </li>
             @endcanany
 
-            @canany(['عرض العملاء', 'عرض مصدر الفرص', 'عرض جهات اتصال الشركات', 'عرض حالات الفرص', 'عرض الفرص'])
+            @canany(['عرض العملااء', 'عرض مصدر الفرص', 'عرض جهات اتصال الشركات', 'عرض حالات الفرص', 'عرض الفرص'])
                 <li class="li-main">
                     <a href="javascript: void(0);">
                         <i data-feather="grid" class="align-self-center menu-icon"></i>
@@ -751,7 +755,7 @@
                 'عرض المدن',
                 'عرض المناطق',
                 'عرض الورديات',
-                'عرض الموظفين',
+                'عرض الموظفيين',
                 'عرض المعدلات',
                 'عرض تقييم الموظفين',
                 'عرض انواع العقود',
@@ -826,7 +830,7 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('عرض الموظفين')
+                        @can('عرض الموظفيين')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('employees.index') }}">
                                     <i class="ti-control-record"></i>{{ __('الموظفين') }}

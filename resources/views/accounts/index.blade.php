@@ -1,6 +1,28 @@
 @extends('admin.dashboard')
 
 @section('content')
+    @php
+        $permissionTypes = [
+            'client' => 'العملاء',
+            'supplier' => 'الموردين',
+            'fund' => 'الصناديق',
+            'bank' => 'البنوك',
+            'employee' => 'الموظفين',
+            'store' => 'المخازن',
+            'expense' => 'المصروفات',
+            'revenue' => 'الإيرادات',
+            'creditor' => 'دائنين متنوعين',
+            'depitor' => 'مدينين متنوعين',
+            'partner' => 'الشركاء',
+            'current-partner' => 'جارى الشركاء',
+            'asset' => 'الأصول الثابتة',
+            'rentable' => 'الأصول القابلة للتأجير',
+        ];
+
+        $type = request('type');
+        $permName = $permissionTypes[$type] ?? null;
+    @endphp
+
     <div class="container-fluid px-4">
         <section class="content-header">
             <div class="container-fluid">
@@ -57,17 +79,7 @@
                         $parentCode = $parentCodes[$type] ?? null;
                     @endphp
 
-                    <div class="col-md-3">
-                        @if ($parentCode)
-                            @can('إضافة العملاء')
-                                <!-- أو الصلاحية المناسبة حسب نوع الحساب -->
-                                <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}"
-                                    class="btn btn-primary cake cake-fadeIn">
-                                    {{ __('إضافة حساب جديد') }}
-                                </a>
-                            @endcan
-                        @endif
-                    </div>
+
                 </div>
                 @php
                     $parentCodes = [
@@ -93,7 +105,7 @@
 
                 <div class="col-md-3">
                     @if ($parentCode)
-                        @can('إضافةالعملاء')
+                        @can("إضافة $permName")
                             <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}"
                                 class="btn btn-primary cake cake-fadeIn">
                                 {{ __('إضافة حساب جديد') }}
@@ -105,12 +117,7 @@
 
             <div class="row mt-3 justify-content-between align-items-center">
                 <div class="col-lg-3">
-                    @if ($parentCode)
-                        <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}"
-                            class="btn btn-primary cake cake-fadeIn">
-                            <i class="fas fa-plus ms-2"></i> {{ __('إضافة حساب جديد') }}
-                        </a>
-                    @endif
+
                 </div>
                 <div class="col-md-4 text-end">
                     <input class="form-control form-control-lg frst " type="text" id="itmsearch"
@@ -142,7 +149,9 @@
                                         <th class="font-family-cairo fw-bold font-14 text-center">العنوان</th>
                                         <th class="font-family-cairo fw-bold font-14 text-center">التليفون</th>
                                         <th class="font-family-cairo fw-bold font-14 text-center">ID</th>
-                                        <th class="font-family-cairo fw-bold font-14 text-center">عمليات</th>
+                                        @canany(["تعديل $permName", "حذف $permName"])
+                                            <th class="font-family-cairo fw-bold font-14 text-center">عمليات</th>
+                                        @endcanany
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -153,7 +162,8 @@
                                                 <form action="" method="post">
                                                     @csrf
                                                     <input type="hidden" name="acc_id" value="{{ $acc->id }}">
-                                                    <button class="btn btn-light btn-block font-family-cairo fw-bold font-14"
+                                                    <button
+                                                        class="btn btn-light btn-block font-family-cairo fw-bold font-14"
                                                         type="submit">
                                                         {{ $acc->code }} - {{ $acc->aname }}
                                                     </button>
@@ -163,21 +173,29 @@
                                             <td class="text-center">{{ $acc->address }}</td>
                                             <td class="text-center">{{ $acc->phone }}</td>
                                             <td class="text-center">{{ $acc->id }}</td>
-                                            <td class="text-center">
-                                                <a href="{{ route('accounts.edit', $acc->id) }}"
-                                                    class="btn btn-success btn-icon-square-sm">
-                                                    <i class="las la-pen"></i>
-                                                </a>
-                                                <form action="{{ route('accounts.destroy', $acc->id) }}" method="POST"
-                                                    style="display:inline;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-danger btn-icon-square-sm"
-                                                        onclick="return confirm('هل أنت متأكد؟')">
-                                                        <i class="las la-trash-alt"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
+                                            @canany(["تعديل $permName", "حذف $permName"])
+                                                <td class="text-center">
+                                                    @can("تعديل $permName")
+                                                        <a href="{{ route('accounts.edit', $acc->id) }}"
+                                                            class="btn btn-success btn-icon-square-sm">
+                                                            <i class="las la-pen"></i>
+                                                        </a>
+                                                    @endcan
+
+                                                    @can("حذف $permName")
+                                                        <form action="{{ route('accounts.destroy', $acc->id) }}" method="POST"
+                                                            style="display:inline;">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button class="btn btn-danger btn-icon-square-sm"
+                                                                onclick="return confirm('هل أنت متأكد؟')">
+                                                                <i class="las la-trash-alt"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endcan
+                                                </td>
+                                            @endcan
+
                                         </tr>
                                     @empty
                                         <tr>

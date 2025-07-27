@@ -15,10 +15,10 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:عرض العملاء')->only(['index']);
-        $this->middleware('can:إضافة العملاء')->only(['create', 'store']);
-        $this->middleware('can:تعديل العملاء')->only(['update', 'edit']);
-        $this->middleware('can:حذف العملاء')->only(['destroy']);
+        $this->middleware('can:عرض المدراء')->only(['index']);
+        $this->middleware('can:إضافة المدراء')->only(['create', 'store']);
+        $this->middleware('can:تعديل المدراء')->only(['update', 'edit']);
+        $this->middleware('can:حذف المدراء')->only(['destroy']);
     }
 
     /**
