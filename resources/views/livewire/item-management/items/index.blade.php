@@ -170,16 +170,38 @@ new class extends Component {
                 </div>
             @endif
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('إضافة الأصناف')
-                        <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
-                            {{ __('Add New') }}
-                            <i class="fas fa-plus me-2"></i>
-                        </a>
-                    @endcan
-                    <div class="w-25">
-                        <input type="text" wire:model.live.debounce.300ms="search"
-                            class="form-control font-family-cairo" placeholder="بحث بالاسم أو الكود أو الباركود...">
+                <div class="card-header">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        {{-- Primary Action Button --}}
+                        @can('إضافة الأصناف')
+                            <a href="{{ route('items.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+                                <i class="fas fa-plus me-2"></i>
+                                {{ __('Add New') }}
+                            </a>
+                        @endcan
+
+                        {{-- Search and Filter Group --}}
+                        <div class="d-flex flex-grow-1 flex-wrap align-items-center justify-content-end gap-2" style="min-width: 300px;">
+                            {{-- Search Input --}}
+                            <div class="flex-grow-1">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" wire:model.live.debounce.300ms="search"
+                                        class="form-control font-family-cairo"
+                                        placeholder="بحث بالاسم, الكود, الباركود...">
+                                </div>
+                            </div>
+
+                            {{-- Warehouse Filter --}}
+                            <div class="flex-grow-1">
+                                <select wire:model.live="selectedWarehouse" class="form-select font-family-cairo">
+                                    <option value="">كل المخازن</option>
+                                    @foreach ($warehouses as $warehouse)
+                                        <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
