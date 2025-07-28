@@ -11,7 +11,7 @@ use App\Models\{Item, AccHead, JournalDetail, JournalHead, OperHead, OperationIt
 
 class InventoryStartBalanceController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->middleware('can:عرض تسجيل الارصده الافتتاحيه للمخازن')->only(['index', 'show']);
@@ -28,7 +28,7 @@ class InventoryStartBalanceController extends Controller
     {
         $stors =  AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '123%')
+            ->where('code', 'like', '11040%')
             ->select('id', 'aname')
             ->get();
 
@@ -37,7 +37,7 @@ class InventoryStartBalanceController extends Controller
         $partners = cache()->remember('partners', 60 * 60, function () {
             return AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
-                ->where('code', 'like', '231%')
+                ->where('code', 'like', '21010%')
                 ->select('id', 'aname')
                 ->get();
         });

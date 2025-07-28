@@ -53,7 +53,6 @@
                                             wire:model.blur="invoiceItems.{{ $index }}.quantity"
                                             id="quantity_{{ $index }}" placeholder="الكمية"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('price_{{ $index }}')?.focus();document.getElementById('price_{{ $index }}')?.select();}"
                                             class="form-control @error('invoiceItems.' . $index . '.quantity') is-invalid @enderror">
                                         @error('invoiceItems.' . $index . '.quantity')
@@ -64,7 +63,7 @@
                                     {{-- حقل السعر مع التنقل التلقائي --}}
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"
-                                            wire:model.live="invoiceItems.{{ $index }}.price"
+                                            wire:model.live.debounce.300="invoiceItems.{{ $index }}.price"
                                             id="price_{{ $index }}" placeholder="السعر"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"

@@ -331,6 +331,11 @@
                                 <i class="fas fa-box-open"></i>
                                 <span>تقرير المبيعات اصناف</span>
                             </a>
+
+                            <a href="{{ route('sales.invoice-report') }}" class="report-link">
+                                <i class="fas fa-box-open"></i>
+                                <span>تقرير فواتير المبيعات </span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -354,6 +359,11 @@
                             <a href="{{ route('reports.general-purchases-items-report') }}" class="report-link">
                                 <i class="fas fa-boxes"></i>
                                 <span>تقرير المشتريات اصناف</span>
+                            </a>
+
+                            <a href="{{ route('billing.invoice-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span>تقرير فواتير المشتريات </span>
                             </a>
                         </div>
                     </div>

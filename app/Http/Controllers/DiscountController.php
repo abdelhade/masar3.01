@@ -11,82 +11,82 @@ use App\Models\{AccHead, OperHead, JournalHead, JournalDetail};
 
 class DiscountController extends Controller
 {
-//     public function __construct()
-// {
-    
-//     $this->middleware('can:إضافة قائمة الخصومات المسموح بها')->only(['create', 'store']);
-//     $this->middleware('can:إضافة قائمة الخصومات المكتسبة')->only(['create', 'store']);
-//     $this->middleware('can:إضافة خصم مسموح به')->only(['create', 'store']);
+    //     public function __construct()
+    // {
 
-//     $this->middleware('can:تعديل قائمة الخصومات المكتسبة')->only(['edit', 'update']);
-//     $this->middleware('can:تعديل قائمة الخصومات المسموح بها')->only(['edit', 'update']);
-//     $this->middleware('can:تعديل خصم مسموح به')->only(['edit', 'update']);
+    //     $this->middleware('can:إضافة قائمة الخصومات المسموح بها')->only(['create', 'store']);
+    //     $this->middleware('can:إضافة قائمة الخصومات المكتسبة')->only(['create', 'store']);
+    //     $this->middleware('can:إضافة خصم مسموح به')->only(['create', 'store']);
 
-//     $this->middleware('can:حذف قائمة الخصومات المكتسبة')->only(['destroy']);
-//     $this->middleware('can:حذف قائمة الخصومات المسموح بها')->only(['destroy']);
-//     $this->middleware('can:حذف خصم مسموح به')->only(['destroy']);
-// }
+    //     $this->middleware('can:تعديل قائمة الخصومات المكتسبة')->only(['edit', 'update']);
+    //     $this->middleware('can:تعديل قائمة الخصومات المسموح بها')->only(['edit', 'update']);
+    //     $this->middleware('can:تعديل خصم مسموح به')->only(['edit', 'update']);
 
-public function index(Request $request)
-{
-    $type = (int) $request->input('type');
+    //     $this->middleware('can:حذف قائمة الخصومات المكتسبة')->only(['destroy']);
+    //     $this->middleware('can:حذف قائمة الخصومات المسموح بها')->only(['destroy']);
+    //     $this->middleware('can:حذف خصم مسموح به')->only(['destroy']);
+    // }
 
-    if (!$type) {
-        // لو معاه صلاحية واحدة بس، يحوله عليها
-        if (auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
-            return redirect()->route('discounts.index', ['type' => 30]);
-        } elseif (auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
-            return redirect()->route('discounts.index', ['type' => 31]);
-        } else {
-            abort(403, 'غير مصرح لك بعرض هذه الصفحة');
+    public function index(Request $request)
+    {
+        $type = (int) $request->input('type');
+
+        if (!$type) {
+            // لو معاه صلاحية واحدة بس، يحوله عليها
+            if (auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
+                return redirect()->route('discounts.index', ['type' => 30]);
+            } elseif (auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
+                return redirect()->route('discounts.index', ['type' => 31]);
+            } else {
+                abort(403, 'غير مصرح لك بعرض هذه الصفحة');
+            }
         }
+
+        // تحقق من صلاحية العرض حسب النوع
+        if ($type == 30 && !auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
+            abort(403, 'غير مصرح لك بعرض قائمة الخصومات المسموح بها');
+        }
+
+        if ($type == 31 && !auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
+            abort(403, 'غير مصرح لك بعرض قائمة الخصومات المكتسبة');
+        }
+
+        $discounts = OperHead::with(['acc1Head', 'acc2Head']);
+
+        if ($type == 30) {
+            $discounts = $discounts->where(function ($query) {
+                $query->where('acc1', 91)->orWhere('acc2', 91);
+            });
+        } elseif ($type == 31) {
+            $discounts = $discounts->where(function ($query) {
+                $query->where('acc1', 97)->orWhere('acc2', 97);
+            });
+        }
+
+        $discounts = $discounts->get();
+
+        return view('discounts.index', compact('discounts', 'type'));
     }
-
-    // تحقق من صلاحية العرض حسب النوع
-    if ($type == 30 && !auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
-        abort(403, 'غير مصرح لك بعرض قائمة الخصومات المسموح بها');
-    }
-
-    if ($type == 31 && !auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
-        abort(403, 'غير مصرح لك بعرض قائمة الخصومات المكتسبة');
-    }
-
-    $discounts = OperHead::with(['acc1Head', 'acc2Head']);
-
-    if ($type == 30) {
-        $discounts = $discounts->where(function ($query) {
-            $query->where('acc1', 91)->orWhere('acc2', 91);
-        });
-    } elseif ($type == 31) {
-        $discounts = $discounts->where(function ($query) {
-            $query->where('acc1', 97)->orWhere('acc2', 97);
-        });
-    }
-
-    $discounts = $discounts->get();
-
-    return view('discounts.index', compact('discounts', 'type'));
-}
 
     public function show() {}
 
     public function create(Request $request)
     {
-         $type = (int) $request->get('type');
-    $hash = $request->get('q');
+        $type = (int) $request->get('type');
+        $hash = $request->get('q');
 
-    if ($hash !== md5($type)) {
-        abort(403, __('نوع الرمز غير صالح'));
-    }
+        if ($hash !== md5($type)) {
+            abort(403, __('نوع الرمز غير صالح'));
+        }
 
-    // تحقق من الصلاحية قبل الدخول
-    if ($type == 30 && !auth()->user()->can('إضافة قائمة الخصومات المسموح بها')) {
-        abort(403, 'غير مصرح لك بإضافة هذه القائمة');
-    }
+        // تحقق من الصلاحية قبل الدخول
+        if ($type == 30 && !auth()->user()->can('إضافة قائمة الخصومات المسموح بها')) {
+            abort(403, 'غير مصرح لك بإضافة هذه القائمة');
+        }
 
-    if ($type == 31 && !auth()->user()->can('إضافة قائمة الخصومات المكتسبة')) {
-        abort(403, 'غير مصرح لك بإضافة هذه القائمة');
-    }
+        if ($type == 31 && !auth()->user()->can('إضافة قائمة الخصومات المكتسبة')) {
+            abort(403, 'غير مصرح لك بإضافة هذه القائمة');
+        }
         $type = (int) $request->get('type');
         $hash = $request->get('q');
 
@@ -236,20 +236,20 @@ public function index(Request $request)
     public function edit(Request $request, OperHead $discount)
     {
         $type = (int) $request->get('type');
-       
 
-    if (!in_array($type, [30, 31])) {
-        abort(403, 'نوع الخصم غير صحيح');
-    }
 
-    // تحقق من صلاحية التعديل حسب النوع
-    if ($type == 30 && !Auth::user()->can('تعديل قائمة الخصومات المسموح بها')) {
-        abort(403, 'غير مصرح لك بتعديل هذه القائمة');
-    }
+        if (!in_array($type, [30, 31])) {
+            abort(403, 'نوع الخصم غير صحيح');
+        }
 
-    if ($type == 31 && !Auth::user()->can('تعديل قائمة الخصومات المكتسبة')) {
-        abort(403, 'غير مصرح لك بتعديل هذه القائمة');
-    }
+        // تحقق من صلاحية التعديل حسب النوع
+        if ($type == 30 && !Auth::user()->can('تعديل قائمة الخصومات المسموح بها')) {
+            abort(403, 'غير مصرح لك بتعديل هذه القائمة');
+        }
+
+        if ($type == 31 && !Auth::user()->can('تعديل قائمة الخصومات المكتسبة')) {
+            abort(403, 'غير مصرح لك بتعديل هذه القائمة');
+        }
         $titles = [
             30 => 'خصم مسموح به',
             31 => 'خصم مكتسب',
