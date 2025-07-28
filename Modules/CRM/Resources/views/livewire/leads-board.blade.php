@@ -204,59 +204,60 @@
             }
 
             /* مؤشرات السكرول */
-            .scroll-indicator {
-                position: absolute;
-                top: 50%;
-                transform: translateY(-50%);
-                width: 50px;
-                height: 100px;
-                background: rgba(0, 123, 255, 0.8);
-                border-radius: 25px;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-size: 20px;
-                z-index: 999;
-                animation: pulse 1s infinite;
-            }
+            /* .scroll-indicator {
+                                position: absolute;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                width: 50px;
+                                height: 100px;
+                                background: rgba(0, 123, 255, 0.8);
+                                border-radius: 25px;
+                                display: none;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-size: 20px;
+                                z-index: 999;
+                                animation: pulse 1s infinite;
+                            } */
 
-            .scroll-indicator.left {
-                left: 10px;
-            }
+            /* .scroll-indicator.left {
+                                left: 10px;
+                            }
 
-            .scroll-indicator.right {
-                right: 10px;
-            }
+                            .scroll-indicator.right {
+                                right: 10px;
+                            }
 
-            @keyframes pulse {
-                0% {
-                    opacity: 0.7;
-                }
+                            @keyframes pulse {
+                                0% {
+                                    opacity: 0.7;
+                                }
 
-                50% {
-                    opacity: 1;
-                }
+                                50% {
+                                    opacity: 1;
+                                }
 
-                100% {
-                    opacity: 0.7;
-                }
-            }
+                                100% {
+                                    opacity: 0.7;
+                                }
+                            } */
 
             /* تحسين الأداء */
-            .leads-container {
-                contain: layout style paint;
-                will-change: scroll-position;
-            }
+            /* .leads-container {
+                                contain: layout style paint;
+                                will-change: scroll-position;
+                            }
 
-            .lead-card {
-                contain: layout;
-                will-change: transform, opacity;
-            }
+                            .lead-card {
+                                contain: layout;
+                                will-change: transform, opacity;
+                            } */
         </style>
     @endpush
 
-    <div class="container-fluid">
+    <div class="container-fluid" style="max-width: 1600; overflow-y: auto;">
+
         @if (session()->has('message'))
             <div class="alert alert-success alert-dismissible fade show">
                 {{ session('message') }}
@@ -275,12 +276,12 @@
             style="max-height: 80vh; overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; position: relative;">
 
             <!-- مؤشرات السكرول -->
-            <div class="scroll-indicator left" id="scroll-left">
+            {{-- <div class="scroll-indicator left" id="scroll-left">
                 <i class="fas fa-chevron-left"></i>
             </div>
             <div class="scroll-indicator right" id="scroll-right">
                 <i class="fas fa-chevron-right"></i>
-            </div>
+            </div> --}}
 
             @foreach ($statuses as $status)
                 <div class="status-column" data-status-id="{{ $status->id }}"
@@ -333,19 +334,24 @@
                                             <i class="fas fa-user-tie"></i> {{ $lead['assigned_to']['name'] }}
                                         </div>
                                     @endif
-                                    <div class="lead-actions">
-                                        <button class="btn btn-success btn-sm"
+                                    <div class="lead-actions d-flex align-items-center gap-2">
+                                        <button
+                                            class="btn btn-success btn-sm d-flex align-items-center justify-content-center"
+                                            style="width: 32px; height: 32px;"
                                             wire:click="editLead({{ $lead['id'] }})">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         @can('حذف الفرص')
-                                            <button class="btn btn-danger btn-sm"
+                                            <button
+                                                class="btn btn-danger btn-sm d-flex align-items-center justify-content-center"
+                                                style="width: 32px; height: 32px;"
                                                 wire:click="deleteLead({{ $lead['id'] }})"
                                                 onclick="return confirm('هل أنت متأكد من حذف هذه الفرصة؟')">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         @endcan
                                     </div>
+
                                 </div>
                             @endforeach
                         @endif
@@ -653,29 +659,58 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const board = document.getElementById('leads-board');
-                const scrollLeftIndicator = document.getElementById('scroll-left');
+                // const scrollLeftIndicator = document.getElementById('scroll-left');
                 const scrollRightIndicator = document.getElementById('scroll-right');
 
                 let draggedElement = null;
                 let scrollInterval = null;
                 let isDragging = false;
 
-                // إعداد drag & drop
+                // إعداد أزرار التحكم في الاسكرول اليدوي
+                const scrollLeftBtn = document.createElement('button');
+                scrollLeftBtn.className = 'scroll-btn left';
+                scrollLeftBtn.innerHTML = '◀';
+                scrollLeftBtn.onclick = () => board.scrollBy({
+                    left: -300,
+                    behavior: 'smooth'
+                });
+                const scrollRightBtn = document.createElement('button');
+                scrollRightBtn.className = 'scroll-btn right';
+                scrollRightBtn.innerHTML = '▶';
+                scrollRightBtn.onclick = () => board.scrollBy({
+                    left: 300,
+                    behavior: 'smooth'
+                });
+
+                board.parentNode.style.position = 'relative';
+                board.parentNode.appendChild(scrollLeftBtn);
+                board.parentNode.appendChild(scrollRightBtn);
+
                 setupDragAndDrop();
 
                 function setupDragAndDrop() {
-                    // إعداد السحب للكروت مع debouncing
                     document.querySelectorAll('.lead-card').forEach(card => {
                         card.addEventListener('dragstart', handleDragStart);
                         card.addEventListener('dragend', handleDragEnd);
+                        card.addEventListener('touchstart', handleTouchStart, {
+                            passive: false
+                        });
+                        card.addEventListener('touchmove', handleTouchMove, {
+                            passive: false
+                        });
+                        card.addEventListener('touchend', handleTouchEnd, {
+                            passive: false
+                        });
                     });
 
-                    // إعداد الإسقاط للأعمدة
                     document.querySelectorAll('.status-column').forEach(column => {
-                        column.addEventListener('dragover', throttle(handleDragOver, 16)); // 60fps
+                        column.addEventListener('dragover', throttle(handleDragOver, 10));
                         column.addEventListener('drop', handleDrop);
                         column.addEventListener('dragenter', handleDragEnter);
                         column.addEventListener('dragleave', handleDragLeave);
+                        column.addEventListener('touchmove', throttle(handleTouchMove, 10), {
+                            passive: false
+                        });
                     });
                 }
 
@@ -683,33 +718,21 @@
                     draggedElement = this;
                     isDragging = true;
                     this.classList.add('dragging');
-
-                    // إنشاء نسخة شبحية
                     const clone = this.cloneNode(true);
                     clone.classList.add('drag-placeholder');
                     this.parentNode.insertBefore(clone, this.nextSibling);
-
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('text/html', this.outerHTML);
-
-                    // بدء مراقبة السكرول
                     startScrollMonitoring();
                 }
 
                 function handleDragEnd(e) {
                     this.classList.remove('dragging');
-
-                    // إزالة النسخة الشبحية
                     const placeholder = document.querySelector('.drag-placeholder');
-                    if (placeholder) {
-                        placeholder.remove();
-                    }
-
-                    // إزالة جميع classes الخاصة بالسحب
+                    if (placeholder) placeholder.remove();
                     document.querySelectorAll('.status-column').forEach(col => {
                         col.classList.remove('dragover', 'drag-active');
                     });
-
                     draggedElement = null;
                     isDragging = false;
                     stopScrollMonitoring();
@@ -718,31 +741,22 @@
                 function handleDragOver(e) {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
-
-                    // تحديث موقع الماوس للسكرول
                     updateScrollBasedOnMousePosition(e);
-
                     return false;
                 }
 
                 function handleDragEnter(e) {
                     e.preventDefault();
                     this.classList.add('dragover');
-
-                    // إضافة تأثير للأعمدة المجاورة
                     document.querySelectorAll('.status-column').forEach(col => {
-                        if (col !== this) {
-                            col.classList.add('drag-active');
-                        }
+                        if (col !== this) col.classList.add('drag-active');
                     });
                 }
 
                 function handleDragLeave(e) {
-                    // التحقق من أن الماوس خرج فعلاً من العمود
                     const rect = this.getBoundingClientRect();
                     const x = e.clientX;
                     const y = e.clientY;
-
                     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
                         this.classList.remove('dragover');
                     }
@@ -751,64 +765,116 @@
                 function handleDrop(e) {
                     e.stopPropagation();
                     e.preventDefault();
-
                     this.classList.remove('dragover');
                     document.querySelectorAll('.status-column').forEach(col => {
                         col.classList.remove('drag-active');
                     });
-
                     if (draggedElement) {
                         const leadId = draggedElement.getAttribute('data-lead-id');
                         const newStatusId = this.getAttribute('data-status-id');
-
-                        // إضافة تأثير بصري للتأكيد
                         this.style.transform = 'scale(1.05)';
-                        setTimeout(() => {
-                            this.style.transform = '';
-                        }, 200);
-
-                        // استدعاء دالة Livewire لتحديث الحالة
+                        setTimeout(() => this.style.transform = '', 200);
                         @this.updateLeadStatus(leadId, newStatusId);
                     }
-
                     return false;
                 }
 
-                // دالة السكرول التلقائي
+                function handleTouchStart(e) {
+                    e.preventDefault();
+                    draggedElement = this;
+                    isDragging = true;
+                    this.classList.add('dragging');
+                    const clone = this.cloneNode(true);
+                    clone.classList.add('drag-placeholder');
+                    this.parentNode.insertBefore(clone, this.nextSibling);
+                    startScrollMonitoring();
+                }
+
+                function handleTouchMove(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    updateScrollBasedOnTouchPosition(touch);
+                    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                    if (target && target.closest('.status-column')) {
+                        target.closest('.status-column').classList.add('dragover');
+                    }
+                }
+
+                function handleTouchEnd(e) {
+                    e.preventDefault();
+                    const touch = e.changedTouches[0];
+                    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                    if (target && target.closest('.status-column')) {
+                        const leadId = draggedElement.getAttribute('data-lead-id');
+                        const newStatusId = target.closest('.status-column').getAttribute('data-status-id');
+                        target.closest('.status-column').style.transform = 'scale(1.05)';
+                        setTimeout(() => target.closest('.status-column').style.transform = '', 200);
+                        @this.updateLeadStatus(leadId, newStatusId);
+                    }
+                    draggedElement.classList.remove('dragging');
+                    const placeholder = document.querySelector('.drag-placeholder');
+                    if (placeholder) placeholder.remove();
+                    document.querySelectorAll('.status-column').forEach(col => {
+                        col.classList.remove('dragover', 'drag-active');
+                    });
+                    draggedElement = null;
+                    isDragging = false;
+                    stopScrollMonitoring();
+                }
+
                 function updateScrollBasedOnMousePosition(e) {
                     const boardRect = board.getBoundingClientRect();
                     const mouseX = e.clientX;
-                    const scrollZone = 100; // منطقة السكرول بالبكسل
-
+                    const scrollZone = 80;
                     const leftZone = boardRect.left + scrollZone;
                     const rightZone = boardRect.right - scrollZone;
 
+                    const maxScrollSpeed = 20;
+                    let scrollSpeed = 0;
+
                     if (mouseX < leftZone) {
-                        // السكرول لليسار
+                        scrollSpeed = -maxScrollSpeed * ((leftZone - mouseX) / scrollZone);
                         showScrollIndicator('left');
-                        startAutoScroll('left');
+                        startAutoScroll('left', scrollSpeed);
                     } else if (mouseX > rightZone) {
-                        // السكرول لليمين
+                        scrollSpeed = maxScrollSpeed * ((mouseX - rightZone) / scrollZone);
                         showScrollIndicator('right');
-                        startAutoScroll('right');
+                        startAutoScroll('right', scrollSpeed);
                     } else {
-                        // إيقاف السكرول
                         hideScrollIndicators();
                         stopAutoScroll();
                     }
                 }
 
-                function startAutoScroll(direction) {
-                    stopAutoScroll(); // إيقاف أي سكرول سابق
+                function updateScrollBasedOnTouchPosition(touch) {
+                    const boardRect = board.getBoundingClientRect();
+                    const touchX = touch.clientX;
+                    const scrollZone = 80;
+                    const leftZone = boardRect.left + scrollZone;
+                    const rightZone = boardRect.right - scrollZone;
 
+                    const maxScrollSpeed = 20;
+                    let scrollSpeed = 0;
+
+                    if (touchX < leftZone) {
+                        scrollSpeed = -maxScrollSpeed * ((leftZone - touchX) / scrollZone);
+                        showScrollIndicator('left');
+                        startAutoScroll('left', scrollSpeed);
+                    } else if (touchX > rightZone) {
+                        scrollSpeed = maxScrollSpeed * ((touchX - rightZone) / scrollZone);
+                        showScrollIndicator('right');
+                        startAutoScroll('right', scrollSpeed);
+                    } else {
+                        hideScrollIndicators();
+                        stopAutoScroll();
+                    }
+                }
+
+                function startAutoScroll(direction, speed) {
+                    stopAutoScroll();
                     scrollInterval = setInterval(() => {
-                        const scrollAmount = 5;
-                        if (direction === 'left') {
-                            board.scrollLeft -= scrollAmount;
-                        } else {
-                            board.scrollLeft += scrollAmount;
-                        }
-                    }, 16); // 60fps
+                        board.scrollLeft += direction === 'left' ? speed : speed;
+                    }, 16);
                 }
 
                 function stopAutoScroll() {
@@ -839,7 +905,6 @@
                     hideScrollIndicators();
                 }
 
-                // دالة throttle لتحسين الأداء
                 function throttle(func, limit) {
                     let inThrottle;
                     return function() {
@@ -853,35 +918,30 @@
                     }
                 }
 
-                // إعادة إعداد drag & drop بعد تحديث Livewire
+                // مراقبة التغييرات في DOM لإضافة أحداث للكروت الجديدة
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(mutation => {
+                        if (mutation.addedNodes.length) {
+                            requestAnimationFrame(() => setupDragAndDrop());
+                        }
+                    });
+                });
+                observer.observe(board, {
+                    childList: true,
+                    subtree: true
+                });
+
                 Livewire.on('lead-moved', () => {
-                    requestAnimationFrame(() => {
-                        setupDragAndDrop();
-                    });
+                    requestAnimationFrame(() => setupDragAndDrop());
                 });
 
-                // إعادة إعداد drag & drop بعد كل تحديث لـ Livewire
+                Livewire.on('lead-added', () => {
+                    requestAnimationFrame(() => setupDragAndDrop());
+                });
+
                 document.addEventListener('livewire:updated', () => {
-                    requestAnimationFrame(() => {
-                        setupDragAndDrop();
-                    });
+                    requestAnimationFrame(() => setupDragAndDrop());
                 });
-
-                // تحسين الأداء: استخدام Intersection Observer للكروت المرئية فقط
-                if ('IntersectionObserver' in window) {
-                    const observer = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                entry.target.style.willChange = 'transform, opacity';
-                            } else {
-                                entry.target.style.willChange = 'auto';
-                            }
-                        });
-                    });
-                    document.querySelectorAll('.lead-card').forEach(card => {
-                        observer.observe(card);
-                    });
-                }
             });
         </script>
     @endpush
