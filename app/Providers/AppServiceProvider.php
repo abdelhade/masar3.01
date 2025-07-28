@@ -27,17 +27,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!Schema::hasTable('public_settings')) return;
-        $settings = Cache::rememberForever('public_settings', function () {
-        return PublicSetting::pluck('value', 'key')->toArray();
-         }); 
-       config(['public_settings' => $settings]);
+        try {
+            if (!Schema::hasTable('public_settings'))
+                return;
+            $settings = Cache::rememberForever('public_settings', function () {
+                return PublicSetting::pluck('value', 'key')->toArray();
+            });
+            config(['public_settings' => $settings]);
+        } catch (\Exception $e) {
+            // ممكن تكتب لوج هنا لو حابب، بس الأهم ما توقفش الـ boot ولا تطلع error
+        }
 
-        // Use Bootstrap 5 for pagination styling
         Paginator::useBootstrapFive();
         JournalDetail::observe(JournalDetailObserver::class);
-      
-        // automatically egar load relations
         // Model::automaticallyEagerLoadRelationships();
     }
+    
 }
