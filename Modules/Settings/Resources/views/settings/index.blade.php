@@ -10,8 +10,6 @@
                     placeholder="ابحث عن إعداد...">
             </div>
 
-
-
             <div class="accordion" id="settingsAccordion">
                 @foreach ($cateries as $category)
                     @if ($category->publicSettings->count())
@@ -87,11 +85,11 @@
                 @endforeach
             </div>
 
-            @if ($cateries->sum(fn($category) => $category->publicSettings->count()) > 0)
-                <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-primary px-4">حفظ الإعدادات</button>
-                </div>
-            @endif
+            {{-- @if ($cateries->sum(fn($category) => $category->publicSettings->count()) > 0) --}}
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary px-4">حفظ الإعدادات</button>
+            </div>
+            {{-- @endif --}}
         </form>
     </div>
 

@@ -30,6 +30,8 @@ new class extends Component {
 
     public function mount($noteId)
     {
+        $this->noteId = $noteId;
+
         $this->noteDetails = NoteDetails::where('note_id', $noteId)->get();
         $parentNote = Note::find($this->noteId);
         if ($parentNote) {
@@ -97,12 +99,13 @@ new class extends Component {
         @endif
         <div class="col-lg-12">
 
-            @can('إضافة المجموعات')
+            @can('إضافة ' . $parentNoteName)
                 <button wire:click="createNoteDetails" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </button>
             @endcan
+
             <div class="card">
                 <div class="card-header">
 
@@ -117,7 +120,7 @@ new class extends Component {
                                 <tr>
                                     <th class="font-family-cairo fw-bold">#</th>
                                     <th class="font-family-cairo fw-bold">الاسم</th>
-                                    @canany(['حذف المجموعات', 'تعديل المجموعات'])
+                                    @canany(['تعديل ' . $parentNoteName, 'حذف ' . $parentNoteName])
                                         <th class="font-family-cairo fw-bold">العمليات</th>
                                     @endcanany
                                 </tr>
@@ -128,23 +131,25 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $noteDetail->name }}</td>
 
-                                        @canany(['حذف المجموعات', 'تعديل المجموعات'])
+                                        @canany(['تعديل ' . $parentNoteName, 'حذف ' . $parentNoteName])
                                             <td>
-                                                @can('تعديل المجموعات')
-                                                    <a wire:click="editNoteDetails({{ $noteDetail->id }})"><i
-                                                            class="las la-pen text-success font-20"></i></a>
-                                                @endcan
-                                                @can('حذف المجموعات')
-                                                    <a wire:click="delete({{ $noteDetail->id }})"
-                                                        onclick="confirm('هل أنت متأكد من حذف هذه'. {{ $noteDetail->name }}) || event.stopImmediatePropagation()">
-                                                        <i class="las la-trash-alt text-danger font-20"></i>
+                                                @can('تعديل ' . $parentNoteName)
+                                                    <a wire:click="editNoteDetails({{ $noteDetail->id }})">
+                                                        <i class="las la-pen text-success font-20"></i>
                                                     </a>
                                                 @endcan
 
+                                                @can('حذف ' . $parentNoteName)
+                                                    <a wire:click="deleteNoteDetails({{ $noteDetail->id }})"
+                                                        onclick="confirm('هل أنت متأكد من الحذف؟') || event.stopImmediatePropagation()">
+                                                        <i class="las la-trash-alt text-danger font-20"></i>
+                                                    </a>
+                                                @endcan
                                             </td>
                                         @endcanany
                                     </tr>
                                 @endforeach
+
                             </tbody>
                         </table>
                     </div>

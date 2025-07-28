@@ -710,7 +710,6 @@ class CreateInvoiceForm extends Component
                 if (in_array($this->type, [11, 12, 20])) $qty_in = $quantity;
                 if (in_array($this->type, [10, 13, 18, 19])) $qty_out = $quantity;
 
-
                 if (in_array($this->type, [11, 12, 20])) {
                     $oldQty = OperationItems::where('item_id', $itemId)
                         ->where('is_stock', 1)
@@ -724,7 +723,6 @@ class CreateInvoiceForm extends Component
                     } else {
                         $newCost = $newQty > 0 ? (($oldQty * $oldCost) + $subValue) / $newQty : $oldCost;
                     }
-
                     Item::where('id', $itemId)->update(['average_cost' => $newCost]);
                 }
 

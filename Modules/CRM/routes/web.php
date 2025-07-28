@@ -6,15 +6,19 @@ use Modules\CRM\Http\Controllers\{
     ClientContactController,
     ClientController,
     LeadController,
-    LeadStatusController
+    LeadStatusController,
+    TaskController
 };
 use Modules\CRM\Livewire\LeadsBoard;
+
+Route::resource('tasks', TaskController::class)->names('tasks');
 
 Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::resource('clients', ClientController::class)->names('clients');
     Route::resource('chance-sources', ChanceSourceController::class)->names('chance-sources');
     Route::resource('lead-status', LeadStatusController::class)->names('lead-status');
     Route::resource('client-contacts', ClientContactController::class)->names('client-contacts');
+
 
     Route::get('/leads', LeadsBoard::class)->name('leads.index');
     Route::get('/leads/board', [LeadController::class, 'board'])->name('leads.board');

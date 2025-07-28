@@ -22,15 +22,15 @@ class CrmClient extends Model
         return $this->hasMany(Lead::class, 'client_id');
     }
 
-    public function activities()
-    {
-        return $this->morphMany(Activity::class, 'subject');
-    }
+    // public function activities()
+    // {
+    //     return $this->morphMany(Activity::class, 'subject');
+    // }
 
-    public function notes()
-    {
-        return $this->morphMany(Note::class, 'noteable');
-    }
+    // public function notes()
+    // {
+    //     return $this->morphMany(Note::class, 'noteable');
+    // }
 
     public function creator()
     {

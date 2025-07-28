@@ -9,9 +9,6 @@ use Modules\Settings\Models\PublicSetting;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 
-
-
-
 class SettingsController extends Controller
 {
     /**
@@ -19,6 +16,7 @@ class SettingsController extends Controller
      */
     public function index()
     {
+        // dd('Settings Index');
         $cateries = Category::with('publicSettings')->get();
         $publicSettings = PublicSetting::with('category')->get();
         return view('settings::settings.index', get_defined_vars());
@@ -53,21 +51,18 @@ class SettingsController extends Controller
         return view('settings::edit');
     }
 
-   
-public function update(Request $request)
-{
-    foreach ($request->input('settings', []) as $key => $value) {
-        PublicSetting::where('key', $key)->update([
-            'value' => is_array($value) ? json_encode($value) : trim($value)
-        ]);
+
+    public function update(Request $request)
+    {
+        foreach ($request->input('settings', []) as $key => $value) {
+            PublicSetting::where('key', $key)->update([
+                'value' => is_array($value) ? json_encode($value) : trim($value)
+            ]);
+        }
+        Cache::forget('public_settings');
+        Alert::toast('تم تحديث الإعدادات بنجاح', 'success');
+        return redirect()->back();
     }
 
-    Cache::forget('public_settings'); 
-
-    Alert::toast('تم تحديث الإعدادات بنجاح', 'success');
-    return redirect()->back();
-}
-
-   
     public function destroy($id) {}
 }

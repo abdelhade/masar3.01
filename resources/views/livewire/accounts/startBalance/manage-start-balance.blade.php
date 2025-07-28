@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 new class extends Component {
-    public $accounts;
+    public $formAccounts = [];
     public $accountsTypes = [
         'client' => '122%',
         'supplier' => '211%',
@@ -29,9 +29,7 @@ new class extends Component {
         'store' => '123%',
     ];
 
-    public $current_accounts_opening_balance = [];
-    public $new_accounts_opening_balance = [];
-    // public $adjustment = [];
+
 
     public function mount()
     {
@@ -40,48 +38,47 @@ new class extends Component {
 
     public function loadData()
     {
-        $this->accounts = AccHead::where(function ($query) {
-            foreach ($this->accountsTypes as $typePattern) {
-                $query->orWhere('code', 'like', $typePattern);
+        $listAccounts = AccHead::where(function ($query) {
+            foreach ($this->accountsTypes as $accountType) {
+                $query->orWhere('code', 'like', $accountType);
             }
         })->where('is_basic', 0)->get();
 
-        foreach ($this->accounts as $account) {
-            $this->current_accounts_opening_balance[$account->id] = (float) $account->start_balance;
-            if (!Str::startsWith($account->code, '231') && !Str::startsWith($account->code, '123')) {
-                $this->new_accounts_opening_balance[$account->id] = null;
-            }
+        foreach ($listAccounts as $account) {
+            $this->formAccounts[$account->id] = [
+                'id' => $account->id,
+                'code' => $account->code,
+                'name' => $account->aname,
+                'current_start_balance' => (float) $account->start_balance,
+                'new_start_balance' => null,
+            ];
         }
     }
 
     public function updateStartBalance()
     {
-        $newBalances = array_filter($this->new_accounts_opening_balance, fn($value) => !is_null($value));
-
-        if (empty($newBalances)) {
-            session()->flash('error', 'لم يتم إدخال بيانات للتحديث');
+        // if the formAccounts all new_start_balance is null, return
+        if (count(array_filter($this->formAccounts, function ($formAccount) {
+            return $formAccount['new_start_balance'] !== null;
+        })) === 0) {
+            session()->flash('error', 'يجب ادخال رصيد اول المده الجديد للحسابات');
             return;
         }
-
         try {
             DB::beginTransaction();
-
-            $accounts = AccHead::findMany(array_keys($newBalances));
-
-            foreach ($accounts as $account) {
-                $newBalance = $newBalances[$account->id];
-                $oldBalance = $account->start_balance;
-
-                $account->start_balance = $newBalance;
-                $account->save();
-
-                if ($account->parent_id) {
-                    $this->updateParentBalance($account, $oldBalance, $newBalance);
+            foreach ($this->formAccounts as $formAccount) {
+                $account = AccHead::findOrFail($formAccount['id']);
+                if ($formAccount['new_start_balance'] != null) {
+                    $account->start_balance = $formAccount['new_start_balance'];
+                    $account->balance = $account->balance - $formAccount['current_start_balance'] + $formAccount['new_start_balance'];
+                    $account->save();
+                    if ($account->parent_id) {
+                        $this->updateParentBalance($account, $formAccount['current_start_balance'], $formAccount['new_start_balance']);
+                    }
                 }
             }
 
-            $this->updateCapitalBalance();
-            $this->createOperationAndJournal($newBalances);
+            $this->updateParentCapitalBalance();
 
             $this->loadData();
             session()->flash('success', 'تم تحديث الرصيد بنجاح');
@@ -98,43 +95,63 @@ new class extends Component {
         }
     }
 
-    public function updateParentBalance($account, $accountOldStartBalance, $newBalance)
+    public function updateParentBalance($account, $accountOldStartBalance, $accountNewStartBalance)
     {
         if (!$account->parent_id) {
             return;
         }
-        $parent = AccHead::find($account->parent_id);
+        $parent = AccHead::findOrFail($account->parent_id);
         if ($parent) {
-            $parent->start_balance = $parent->start_balance - $accountOldStartBalance + $newBalance;
+            $parent->start_balance = $parent->start_balance - $accountOldStartBalance + $accountNewStartBalance;
             $parent->save();
             if ($parent->parent_id) {
-                $this->updateParentBalance($parent, $accountOldStartBalance, $newBalance);
+                $this->updateParentBalance($parent, $accountOldStartBalance, $accountNewStartBalance);
             }
         }
     }
 
-    public function updateCapitalBalance()
+    public function updateParentCapitalBalance()
     {
-        $accounts = AccHead::where(function ($query) {
-            foreach ($this->accountsTypes as $capitalAccountType) {
-                $query->orWhere('code', 'like', $capitalAccountType);
+        $parentCapital = AccHead::where('code', '=', '2311')->first();
+        $stotresAndCapitalsAccountsIds = AccHead::where('code', 'like', '123%')->orWhere('code', 'like', '231%')->pluck('id')->toArray();
+        $oldAllTotalParentCapital = $parentCapital->start_balance;
+        $totalFormAccountsDebit = 0;
+        $totalFormAccountsCredit = 0;
+        foreach ($this->formAccounts as  $formAccount) {
+            if (in_array($formAccount['id'], $stotresAndCapitalsAccountsIds)) {
+                continue;
             }
-        })->where('is_basic', 0)->get();
-
-        $balance = $accounts->sum('start_balance') * -1;
-        $basicCapitalAccount = AccHead::where('code', '=', '2311')->first();
-
-        if ($basicCapitalAccount) {
-            $oldBalance = $basicCapitalAccount->start_balance;
-            $basicCapitalAccount->start_balance = $balance;
-            $basicCapitalAccount->save();
-            if ($basicCapitalAccount->parent_id) {
-                $this->updateParentBalance($basicCapitalAccount, $oldBalance, $balance);
+            if ($formAccount['new_start_balance'] != null && $formAccount['new_start_balance'] > 0) {
+                $totalFormAccountsDebit += $formAccount['new_start_balance'];
+            }
+            if ($formAccount['new_start_balance'] != null && $formAccount['new_start_balance'] < 0) {
+                $totalFormAccountsCredit += $formAccount['new_start_balance'];
+            }
+            if ($formAccount['new_start_balance'] === null  ) {
+                if ($formAccount['current_start_balance'] > 0) {
+                    $totalFormAccountsDebit += $formAccount['current_start_balance'];
+                } elseif ($formAccount['current_start_balance'] < 0) {
+                    $totalFormAccountsCredit += $formAccount['current_start_balance'];
+                }
             }
         }
+        $newTotalParentCapitalFromStartAccountsBalanceForm = ($totalFormAccountsDebit + $totalFormAccountsCredit) * -1;
+        $itemSartBalanceJournalHeads = JournalHead::where('pro_type', 60)->pluck('id');
+        $totalParentCapitalFromItemsStartBalance = 0;
+        foreach ($itemSartBalanceJournalHeads as $itemSartBalanceJournalHead) {
+            $totalParentCapitalFromItemsStartBalance += JournalDetail::where('journal_id', $itemSartBalanceJournalHead)->where('account_id', $parentCapital->id)->value('credit');
+        }
+        $newAllTotalParentCapital = $newTotalParentCapitalFromStartAccountsBalanceForm + ($totalParentCapitalFromItemsStartBalance * -1);
+        // dd($totalFormAccountsCredit, $totalFormAccountsDebit, $newTotalParentCapitalFromStartAccountsBalanceForm, $totalParentCapitalFromItemsStartBalance, $newAllTotalParentCapital);
+        $parentCapital->start_balance = $newAllTotalParentCapital;
+        $parentCapital->save();
+        if ($parentCapital->parent_id) {
+            $this->updateParentBalance($parentCapital, $oldAllTotalParentCapital, $newAllTotalParentCapital);
+        }
+        $this->createOperationAndJournal($newTotalParentCapitalFromStartAccountsBalanceForm, $totalFormAccountsDebit, $totalFormAccountsCredit);
     }
 
-    public function createOperationAndJournal(array $newBalances)
+    public function createOperationAndJournal($newTotalParentCapitalFromStartAccountsBalanceForm, $totalFormAccountsDebit, $totalFormAccountsCredit)
     {
         $startDate = PublicSetting::where('key', 'start_date')->value('value');
         $userId = Auth::id();
@@ -152,22 +169,11 @@ new class extends Component {
 
         $journalId = JournalHead::where('pro_type', 61)->where('op_id', $oper->id)->value('journal_id') ?? JournalHead::max('journal_id') + 1;
 
-        $accounts = AccHead::where(function ($query) {
-            foreach ($this->accountsTypes as $capitalAccountType) {
-                $query->orWhere('code', 'like', $capitalAccountType);
-            }
-        })->where('is_basic', 0)->get();
+        $totalDebit = $totalFormAccountsDebit;
+        $totalCredit = $totalFormAccountsCredit;
 
-        $totalDebit = $accounts->where('start_balance', '>', 0)->sum('start_balance');
-        $totalCredit = $accounts->where('start_balance', '<', 0)->sum('start_balance');
-        $parentCapital = $totalDebit - $totalCredit;
-
-        $capitalAccount = AccHead::where('code', '=', '2311')->first();
-        if ($capitalAccount) {
-            $totalCredit += $capitalAccount->start_balance;
-        }
-
-        if (round($totalDebit, 2) == round(-$totalCredit, 2)) {
+        // if (round($totalDebit, 2) == round(-$totalCredit, 2)) {
+            $capitalAccount = AccHead::where('code', '=', '2311')->first();
             JournalHead::updateOrCreate(
                 ['journal_id' => $journalId, 'pro_type' => 61],
                 [
@@ -179,52 +185,53 @@ new class extends Component {
                 ],
             );
 
-            foreach ($newBalances as $accountId => $newBalance) {
-                if ($newBalance > 0) {
+            foreach ($this->formAccounts as $formAccount) {
+                if ($formAccount['new_start_balance'] !== null && $formAccount['new_start_balance'] > 0) {
                     JournalDetail::updateOrCreate(
-                        ['journal_id' => $journalId, 'account_id' => $accountId, 'op_id' => $oper->id],
-                        ['debit' => $newBalance, 'credit' => 0, 'type' => 1]
+                        ['journal_id' => $journalId, 'account_id' => $formAccount['id'], 'op_id' => $oper->id],
+                        ['debit' => $formAccount['new_start_balance'], 'credit' => 0, 'type' => 1]
                     );
-                } elseif ($newBalance < 0) {
+                } elseif ($formAccount['new_start_balance'] !== null && $formAccount['new_start_balance'] < 0) {
                     JournalDetail::updateOrCreate(
-                        ['journal_id' => $journalId, 'account_id' => $accountId, 'op_id' => $oper->id],
-                        ['debit' => 0, 'credit' => -$newBalance, 'type' => 1]
+                        ['journal_id' => $journalId, 'account_id' => $formAccount['id'], 'op_id' => $oper->id],
+                        ['debit' => 0, 'credit' => -$formAccount['new_start_balance'], 'type' => 1]
                     );
-                } else {
-                    JournalDetail::where('journal_id', $journalId)->where('account_id', $accountId)->where('op_id', $oper->id)->delete();
+                } elseif ($formAccount['new_start_balance'] !== null && $formAccount['new_start_balance'] == 0) {
+                    JournalDetail::where('journal_id', $journalId)->where('account_id', $formAccount['id'])->where('op_id', $oper->id)->delete();
+                } elseif ($formAccount['new_start_balance'] === null) {
+                    continue;
                 }
             }
 
-            if ($capitalAccount) {
-                if ($parentCapital > 0) {
+            if ($newTotalParentCapitalFromStartAccountsBalanceForm !== null && $newTotalParentCapitalFromStartAccountsBalanceForm > 0) {
                     JournalDetail::updateOrCreate(
                     ['journal_id' => $journalId, 'account_id' => $capitalAccount->id, 'op_id' => $oper->id],
                     [
                         'debit' => 0,
-                        'credit' => $parentCapital,
+                        'credit' => $newTotalParentCapitalFromStartAccountsBalanceForm,
                         'type' => 1,
                     ],
                 );
-                }
+            } elseif ($newTotalParentCapitalFromStartAccountsBalanceForm !== null && $newTotalParentCapitalFromStartAccountsBalanceForm < 0) {
                 JournalDetail::updateOrCreate(
                     ['journal_id' => $journalId, 'account_id' => $capitalAccount->id, 'op_id' => $oper->id],
                     [
                         'debit' => 0,
-                        'credit' => -$parentCapital,
+                        'credit' => -$newTotalParentCapitalFromStartAccountsBalanceForm,
                         'type' => 1,
                     ],
                 );
-            }
-            // finish
-            // delete the journal if the capital account balance is 0
-            if ($capitalAccount->start_balance == 0) {
-                // delete the journal details
+            } elseif ($newTotalParentCapitalFromStartAccountsBalanceForm === null) {
                 JournalDetail::where('journal_id', $journalId)->where('op_id', $oper->id)->where('account_id', $capitalAccount->id)->delete();
                 JournalHead::where('journal_id', $journalId)->delete();
             }
-        } else {
-            throw new \Exception('الحسابات المدينه لا تتساوي مع الحسابات الدائنه');
-        }
+            if ($capitalAccount->start_balance == 0) {
+                JournalDetail::where('journal_id', $journalId)->where('op_id', $oper->id)->where('account_id', $capitalAccount->id)->delete();
+                JournalHead::where('journal_id', $journalId)->delete();
+            }
+        // } else {
+        //     throw new \Exception('الحسابات المدينه لا تتساوي مع الحسابات الدائنه');
+        // }
     }
 }; ?>
 
@@ -256,24 +263,24 @@ new class extends Component {
                         </tr>
                     </thead>
                     <tbody id="items_table_body">
-                        @foreach ($accounts as $account)
-                            <tr data-item-id="{{ $account->id }}">
+                        @foreach ($formAccounts as $formAccount)
+                            <tr data-item-id="{{ $formAccount['id'] }}">
                                 <td>
-                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $account->code }}</p>
+                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['code'] }}</p>
                                 </td>
                                 <td>
-                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $account->aname }}</p>
+                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['name'] }}</p>
                                 </td>
                                 <td>
                                     <p
-                                        class="font-family-cairo fw-bold font-16 text-center @if ($current_accounts_opening_balance[$account->id] < 0) text-danger @endif">
-                                        {{ number_format($current_accounts_opening_balance[$account->id] ?? 0, 2) }}</p>
+                                        class="font-family-cairo fw-bold font-16 text-center @if ($formAccount['current_start_balance'] < 0) text-danger @endif">
+                                        {{ number_format($formAccount['current_start_balance'] ?? 0, 2) }}</p>
                                 </td>
                                 <td>
-                                    @if (!Str::startsWith($account->code, '231') && !Str::startsWith($account->code, '123'))
+                                    @if (!Str::startsWith($formAccount['code'], '231') && !Str::startsWith($formAccount['code'], '123'))
                                         <input type="number" step="0.01"
-                                            wire:model.blur="new_accounts_opening_balance.{{ $account->id }}"
-                                            class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($new_accounts_opening_balance[$account->id] ?? 0) < 0) text-danger @endif"
+                                            wire:model.blur="formAccounts.{{ $formAccount['id'] }}.new_start_balance"
+                                            class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($formAccounts[$formAccount['id']]['new_start_balance'] ?? 0) < 0) text-danger @endif"
                                             placeholder="رصيد اول المده الجديد" style="padding:2px;height:30px;"
                                             x-on:keydown.enter.prevent>
                                         {{-- @else

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\inventoryDiscrepancyController;
 use Livewire\Volt\Volt;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
@@ -146,10 +147,28 @@ Route::get(
 )->name('prices.compare.report');
 
 // تقرير جرد الأصناف - مقارنة الكميات المتوقعة مع الفعلية
-Route::get(
-    '/reports/inventory-discrepancy-report',
-    [ReportController::class, 'inventoryDiscrepancyReport']
-)->name('reports.inventory-discrepancy-report');
+// Route::get(
+//     '/reports/inventory-discrepancy-report',
+//     [ReportController::class, 'inventoryDiscrepancyReport']
+// )->name('reports.inventory-discrepancy-report');
 
-Route::post('/inventory/update', [ReportController::class, 'update'])->name('inventory.update');
-Route::post('/inventory/update-all', [ReportController::class, 'updateAll'])->name('inventory.updateAll');
+// Route::post('/inventory/update', [ReportController::class, 'update'])->name('inventory.update');
+// Route::post('/inventory/update-all', [ReportController::class, 'updateAll'])->name('inventory.updateAll');
+
+
+// تقرير جرد الأصناف
+    Route::get('/discrepancy-report', [ReportController::class, 'inventoryDiscrepancyReport'])
+        ->name('reports.inventory-discrepancy-report');
+
+    // تحديث كمية صنف واحد
+    // Route::post('/update', [inventoryDiscrepancyController::class, 'update'])
+    //     ->name('inventory.update');
+
+    // // تحديث جميع الكميات
+    // Route::post('/update-all', [inventoryDiscrepancyController::class, 'updateAll'])
+    //     ->name('inventory.updateAll');
+
+    // // تطبيق تعديلات الجرد على المخزون
+    // Route::post('/apply-adjustments', [inventoryDiscrepancyController::class, 'applyInventoryAdjustments'])
+    //     ->name('inventory.applyAdjustments');
+

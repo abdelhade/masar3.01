@@ -213,76 +213,66 @@
 @endpush
 
 @push('scripts')
-<script>
-    function togglePassword(fieldId, btn) {
-        const input = document.getElementById(fieldId);
-        if (input.type === "password") {
-            input.type = "text";
-            btn.querySelector('i').classList.remove('fa-eye');
-            btn.querySelector('i').classList.add('fa-eye-slash');
-        } else {
-            input.type = "password";
-            btn.querySelector('i').classList.remove('fa-eye-slash');
-            btn.querySelector('i').classList.add('fa-eye');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('selectAll');
-        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]:not(#selectAll)');
-
-        if (selectAll) {
-            selectAll.addEventListener('change', function () {
-                allCheckboxes.forEach(cb => cb.checked = this.checked);
-            });
+    <script>
+        function togglePassword(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            if (input.type === "password") {
+                input.type = "text";
+                btn.querySelector('i').classList.remove('fa-eye');
+                btn.querySelector('i').classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                btn.querySelector('i').classList.remove('fa-eye-slash');
+                btn.querySelector('i').classList.add('fa-eye');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Select All functionality
             const selectAll = document.getElementById('selectAll');
+
+            // Select All functionality داخل الفئة النشطة فقط
             if (selectAll) {
                 selectAll.addEventListener('change', function() {
                     const activeCategory = document.querySelector(
                         '.permission-category-content:not(.d-none)');
-                    activeCategory.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                        cb.checked = this.checked;
-                    });
+                    if (activeCategory) {
+                        activeCategory.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                            cb.checked = this.checked;
+                        });
+                    }
                 });
             }
 
-            // Permission category tabs
+      
             document.querySelectorAll('.permission-category').forEach(tab => {
                 tab.addEventListener('click', function() {
-                    // Update active tab
-                    document.querySelectorAll('.permission-category').forEach(t => {
-                        t.classList.remove('active');
-                    });
+                    document.querySelectorAll('.permission-category').forEach(t => t.classList
+                        .remove('active'));
                     this.classList.add('active');
-
-                    // Show corresponding content
                     const categoryId = this.getAttribute('data-category');
                     document.querySelectorAll('.permission-category-content').forEach(content => {
                         content.classList.add('d-none');
                     });
-                    document.getElementById(categoryId).classList.remove('d-none');
+                    const activeContent = document.getElementById(categoryId);
+                    if (activeContent) {
+                        activeContent.classList.remove('d-none');
+                    }
 
-                    // Uncheck select all when switching categories
-                    selectAll.checked = false;
+                   
+                    if (selectAll) selectAll.checked = false;
                 });
             });
 
-            // Update "Select All" checkbox when individual permissions change
+            
             document.querySelectorAll('.permission-category-content').forEach(container => {
                 container.addEventListener('change', function(e) {
                     if (e.target.type === 'checkbox' && e.target.id !== 'selectAll') {
                         const allChecked = Array.from(this.querySelectorAll(
-                                'input[type="checkbox"]'))
-                            .every(cb => cb.checked);
-                        selectAll.checked = allChecked;
+                            'input[type="checkbox"]')).every(cb => cb.checked);
+                        if (selectAll) selectAll.checked = allChecked;
                     }
                 });
             });
         });
-    });
-</script>
+    </script>
 @endpush

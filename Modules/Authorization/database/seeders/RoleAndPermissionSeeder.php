@@ -34,6 +34,24 @@ class RoleAndPermissionSeeder extends Seeder
             'التقارير'=>['التقارير']
         ];
 
+        // الحسابات اللي ليها صلاحيات داخلية
+        $accountKeys = [
+           'العملاء' => 'client',
+            'الموردين' => 'supplier',
+            'الصناديق' => 'fund',
+            'البنوك' => 'bank',
+            'الموظفين' => 'employee',
+            'المخازن' => 'store',
+            'المصروفات' => 'expense',
+            'الايرادات' => 'revenue',
+            'دائنين متنوعين' => 'creditor',
+            'مدينين متنوعين' => 'debtor',
+            'الشركاء' => 'partner',
+            'جارى الشركاء' => 'current-partner',
+            'الأصول الثابتة' => 'asset',
+            'الأصول القابلة للتأجير' => 'rentable',
+        ];
+
         $actions = ['عرض', 'إضافة', 'تعديل', 'حذف', 'طباعة'];
 
         foreach ($groupedPermissions as $category => $permissions) {
@@ -41,10 +59,26 @@ class RoleAndPermissionSeeder extends Seeder
                 foreach ($actions as $action) {
                     $fullName = "$action $basePermission";
 
-                    Permission::firstOrCreate(
-                        ['name' => $fullName, 'guard_name' => 'web'],
-                        ['category' => $category]
-                    );
+                    // لو دي صلاحية من الحسابات، ضيف internal_name معها
+                    $internalName = null;
+                    if (isset($accountKeys[$basePermission])) {
+                        $key = $accountKeys[$basePermission];
+                        $actionKey = match($action) {
+                            'عرض' => 'view',
+                            'إضافة' => 'create',
+                            'تعديل' => 'edit',
+                            'حذف' => 'delete',
+                            'طباعة' => 'print',
+                            default => ''
+                        };
+                        $internalName = "$key.$actionKey";
+                    }
+Permission::firstOrCreate(
+    ['name' => $fullName, 'guard_name' => 'web'],
+    ['category' => $category]
+);
+
+
                 }
             }
         }

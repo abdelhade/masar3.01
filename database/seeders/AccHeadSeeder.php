@@ -10,7 +10,6 @@ class AccHeadSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = now();
 
         $rows = [
             ['id'=>1,'code'=>'1','deletable'=>0,'editable'=>0,'aname'=>'الأصول','is_stock'=>0,'is_fund'=>0,'parent_id'=>null,'is_basic'=>1,'employees_expensses'=>0],

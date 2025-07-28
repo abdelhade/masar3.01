@@ -4,122 +4,92 @@ namespace App\Http\Controllers;
 
 use App\Models\AccHead;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 
 class AccHeadController extends Controller
 {
-    public function __construct()
-    {
-        // الصلاحيات للكيانات المختلفة
+public function __construct()
+{
+    $this->middleware(function ($request, $next) {
+        $type = $request->query('type');
 
-        // العملاء
-        $this->middleware('can:عرض العملاء')->only(['index', 'show']);
-        $this->middleware('can:إضافة العملاء')->only(['create', 'store']);
-        $this->middleware('can:تعديل العملاء')->only(['edit', 'update']);
-        $this->middleware('can:حذف العملاء')->only(['destroy']);
-        $this->middleware('can:طباعة العملاء')->only(['print']);
+        // لو مش موجود في الرابط، نجيبه من الـ ID
+        if (!$type) {
+            $id = $request->route('account') ?? $request->route('id');
 
-        // الموردين
-        $this->middleware('can:عرض الموردين')->only(['index', 'show']);
-        $this->middleware('can:إضافة الموردين')->only(['create', 'store']);
-        $this->middleware('can:تعديل الموردين')->only(['edit', 'update']);
-        $this->middleware('can:حذف الموردين')->only(['destroy']);
-        $this->middleware('can:طباعة الموردين')->only(['print']);
+            if ($id) {
+                $account = \App\Models\AccHead::find($id);
 
-        // الصناديق
-        $this->middleware('can:عرض الصناديق')->only(['index', 'show']);
-        $this->middleware('can:إضافة الصناديق')->only(['create', 'store']);
-        $this->middleware('can:تعديل الصناديق')->only(['edit', 'update']);
-        $this->middleware('can:حذف الصناديق')->only(['destroy']);
-        $this->middleware('can:طباعة الصناديق')->only(['print']);
+                if ($account) {
+                    $code = substr($account->code, 0, 3);
 
-        // البنوك
-        $this->middleware('can:عرض البنوك')->only(['index', 'show']);
-        $this->middleware('can:إضافة البنوك')->only(['create', 'store']);
-        $this->middleware('can:تعديل البنوك')->only(['edit', 'update']);
-        $this->middleware('can:حذف البنوك')->only(['destroy']);
-        $this->middleware('can:طباعة البنوك')->only(['print']);
+                    $map = [
+                        '122' => 'client',
+                        '211' => 'supplier',
+                        '121' => 'fund',
+                        '124' => 'bank',
+                        '213' => 'employee',
+                        '123' => 'store',
+                        '044' => 'expense',
+                        '032' => 'revenue',
+                        '212' => 'creditor',
+                        '125' => 'debtor',
+                        '231' => 'partner',
+                        '234' => 'current-partner',
+                        '011' => 'asset',
+                        '112' => 'rentable',
+                    ];
 
-        // الموظفين
-        $this->middleware('can:عرض الموظفين')->only(['index', 'show']);
-        $this->middleware('can:إضافة الموظفين')->only(['create', 'store']);
-        $this->middleware('can:تعديل الموظفين')->only(['edit', 'update']);
-        $this->middleware('can:حذف الموظفين')->only(['destroy']);
-        $this->middleware('can:طباعة الموظفين')->only(['print']);
+                    $type = $map[$code] ?? null;
+                }
+            }
+        }
 
-        // المخازن
-        $this->middleware('can:عرض المخازن')->only(['index', 'show']);
-        $this->middleware('can:إضافة المخازن')->only(['create', 'store']);
-        $this->middleware('can:تعديل المخازن')->only(['edit', 'update']);
-        $this->middleware('can:حذف المخازن')->only(['destroy']);
-        $this->middleware('can:طباعة المخازن')->only(['print']);
+        $label = match ($type) {
+            'client' => 'العملاء',
+            'supplier' => 'الموردين',
+            'fund' => 'الصناديق',
+            'bank' => 'البنوك',
+            'employee' => 'الموظفين',
+            'store' => 'المخازن',
+            'expense' => 'المصروفات',
+            'revenue' => 'الإيرادات',
+            'creditor' => 'دائنين متنوعين',
+            'debtor' => 'مدينين متنوعين',
+            'partner' => 'الشركاء',
+            'current-partner' => 'جارى الشركاء',
+            'asset' => 'الأصول الثابتة',
+            'rentable' => 'الأصول القابلة للتأجير',
+            default => null,
+        };
 
-        // المصروفات
-        $this->middleware('can:عرض المصروفات')->only(['index', 'show']);
-        $this->middleware('can:إضافة المصروفات')->only(['create', 'store']);
-        $this->middleware('can:تعديل المصروفات')->only(['edit', 'update']);
-        $this->middleware('can:حذف المصروفات')->only(['destroy']);
-        $this->middleware('can:طباعة المصروفات')->only(['print']);
+        if ($label) {
+            $action = $request->route()?->getActionMethod();
 
-        // الايرادات
-        $this->middleware('can:عرض الايرادات')->only(['index', 'show']);
-        $this->middleware('can:إضافة الايرادات')->only(['create', 'store']);
-        $this->middleware('can:تعديل الايرادات')->only(['edit', 'update']);
-        $this->middleware('can:حذف الايرادات')->only(['destroy']);
-        $this->middleware('can:طباعة الايرادات')->only(['print']);
+            $permissionMap = [
+                'index' => "عرض $label",
+                'create' => "إضافة $label",
+                'store' => "إضافة $label",
+                'edit' => "تعديل $label",
+                'update' => "تعديل $label",
+                'destroy' => "حذف $label",
+            ];
 
-        // دائنين متنوعين
-        $this->middleware('can:عرض دائنين متنوعين')->only(['index', 'show']);
-        $this->middleware('can:إضافة دائنين متنوعين')->only(['create', 'store']);
-        $this->middleware('can:تعديل دائنين متنوعين')->only(['edit', 'update']);
-        $this->middleware('can:حذف دائنين متنوعين')->only(['destroy']);
-        $this->middleware('can:طباعة دائنين متنوعين')->only(['print']);
+            if (isset($permissionMap[$action])) {
+                $permission = $permissionMap[$action];
 
-        // مدينين متنوعين
-        $this->middleware('can:عرض مدينين متنوعين')->only(['index', 'show']);
-        $this->middleware('can:إضافة مدينين متنوعين')->only(['create', 'store']);
-        $this->middleware('can:تعديل مدينين متنوعين')->only(['edit', 'update']);
-        $this->middleware('can:حذف مدينين متنوعين')->only(['destroy']);
-        $this->middleware('can:طباعة مدينين متنوعين')->only(['print']);
-        // الشركاء
-        $this->middleware('can:عرض الشركاء')->only(['index', 'show']);
-        $this->middleware('can:إضافة الشركاء')->only(['create', 'store']);
-        $this->middleware('can:تعديل الشركاء')->only(['edit', 'update']);
-        $this->middleware('can:حذف الشركاء')->only(['destroy']);
-        $this->middleware('can:طباعة الشركاء')->only(['print']);
+                if (!Auth::check() || !Auth::user()->can($permission)) {
+                    abort(403, 'ليس لديك صلاحية لهذا الإجراء.');
+                }
+            }
+        }
 
-        // جاري الشركاء
-        $this->middleware('can:عرض جارى الشركاء')->only(['index', 'show']);
-        $this->middleware('can:إضافة جارى الشركاء')->only(['create', 'store']);
-        $this->middleware('can:تعديل جارى الشركاء')->only(['edit', 'update']);
-        $this->middleware('can:حذف جارى الشركاء')->only(['destroy']);
-        $this->middleware('can:طباعة جارى الشركاء')->only(['print']);
+        return $next($request);
+    });
+}
 
-        // الأصول الثابتة
-        $this->middleware('can:عرض الأصول الثابتة')->only(['index', 'show']);
-        $this->middleware('can:إضافة الأصول الثابتة')->only(['create', 'store']);
-        $this->middleware('can:تعديل الأصول الثابتة')->only(['edit', 'update']);
-        $this->middleware('can:حذف الأصول الثابتة')->only(['destroy']);
-        $this->middleware('can:طباعة الأصول الثابتة')->only(['print']);
-
-    }
-
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض العملاء')->only(['index', 'show']);
-    //     $this->middleware('can:إضافة إدارة الحسابات')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل إدارة الحسابات')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف إدارة الحسابات')->only(['destroy']);
-    //     $this->middleware('can:طباعة إدارة الحسابات')->only(['print']);
-
-    //     $this->middleware('can:عرض الحسابات')->only(['index', 'show']);
-    //     $this->middleware('can:عرض حساب فرعي')->only(['showSubAccount']);
-    //     $this->middleware('can:إضافة الحسابات')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل الحسابات')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف الحسابات')->only(['destroy']);
-    //     $this->middleware('can:بحث الحسابات')->only(['search']);
-    // }
 
     public function index(Request $request)
     {

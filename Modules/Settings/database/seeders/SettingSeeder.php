@@ -16,6 +16,7 @@ class SettingSeeder extends Seeder
         $general = Category::create(['name' => 'الثوابت العامه']);
         $invoices = Category::create(['name' => ' الفواتير']);
         $accounts = Category::create(['name' => 'حساب الخصم المكتسب ']);
+        $disc = Category::create(['name' => 'حساب فرق الجرد ']);
 
         // ثوابت عامه
 
@@ -309,6 +310,14 @@ class SettingSeeder extends Seeder
             'key' => 'show_shift_time_for_users',
             'input_type' => 'boolean',
             'value' => '1',
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $disc->id,
+            'label' => 'كود حساب فرق الجرد',
+            'key' => 'show_inventory_difference_account',
+            'input_type' => 'text',
+            'value' => '',
         ]);
     }
 }

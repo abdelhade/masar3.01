@@ -19,8 +19,5 @@
     </div>
     @include('admin.partials.scripts')
 </body>
-<<<<<<< HEAD
 
-=======
->>>>>>> abdelhade2
 </html>

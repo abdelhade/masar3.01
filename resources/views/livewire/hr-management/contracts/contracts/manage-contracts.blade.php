@@ -86,9 +86,6 @@ new class extends Component {
                 $query->where('name', 'like', '%' . $this->search . '%')->orWhereHas('employee', function ($q) {
                     $q->where('name', 'like', '%' . $this->search . '%');
                 });
-                $query->where('name', 'like', '%' . $this->search . '%')->orWhereHas('employee', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
-                });
             })
             ->orderByDesc('id')
             ->paginate(15);
@@ -131,12 +128,6 @@ new class extends Component {
 
         $this->contractPoints = $contract->contract_points->map(fn($p) => ['name' => $p->name, 'information' => $p->information, 'sequence' => $p->sequence])->toArray();
         $this->salaryPoints = $contract->salary_points->map(fn($p) => ['name' => $p->name, 'information' => $p->information, 'sequence' => $p->sequence])->toArray();
-        if (empty($this->contractPoints)) {
-            $this->addContractPointInput();
-        }
-        if (empty($this->salaryPoints)) {
-            $this->addSalaryPointInput();
-        }
 
         if (empty($this->contractPoints)) {
             $this->addContractPointInput();
@@ -146,14 +137,10 @@ new class extends Component {
         }
         $this->showModal = true;
     }
-
     public function save()
     {
         $validatedData = $this->validate();
 
-        $contractData = collect($validatedData)
-            ->except(['contractPoints', 'salaryPoints'])
-            ->toArray();
         $contractData = collect($validatedData)
             ->except(['contractPoints', 'salaryPoints'])
             ->toArray();
@@ -186,7 +173,6 @@ new class extends Component {
                     'name' => $point['name'],
                     'information' => $point['information'],
                     'sequence' => $point['sequence'],
-                    'sequence' => $point['sequence'],
                 ]);
             }
         }
@@ -209,22 +195,16 @@ new class extends Component {
 
 <div style="font-family: 'Cairo', sans-serif; direction: rtl;">
 
-
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
 
-            {{-- @can('إنشاء العقود') --}}
-            <button class="btn btn-primary font-family-cairo fw-bold font-14" wire:click="create">
-                {{ __('اضافه عقد') }} <i class="las la-plus font-14"></i>
-            </button>
-
-            {{-- @endcan
-        @can('البحث عن العقود') --}}
+            @can('إضافة العقود')
+                <button class="btn btn-primary font-family-cairo fw-bold font-14" wire:click="create">
+                    {{ __('اضافه عقد') }} <i class="las la-plus font-14"></i>
+                </button>
+            @endcan
             <input type="text" class="form-control w-25" placeholder="{{ __('البحث عن العقود') }}"
                 wire:model.live.debounce.300ms="search">
-            {{-- @endcan --}}
-
-
         </div>
 
         @if (session()->has('success'))
@@ -236,84 +216,78 @@ new class extends Component {
             </div>
         @endif
         <div class="card">
-  
+
             <div class="card-body">
-           <div class="table-responsive" style="overflow-x: auto;">
-            <table class="table table-striped mb-0" style="min-width: 1200px;">
-                <thead class="table-light text-center align-middle">
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table class="table table-striped mb-0" style="min-width: 1200px;">
+                        <thead class="table-light text-center align-middle">
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped text-center align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th class="font-family-cairo fw-bold font-14">#</th>
-                    <th class="font-family-cairo fw-bold font-14">{{ __('Contract Name') }}</th>
-                    <th class="font-family-cairo fw-bold font-14">{{ __('Employee') }}</th>
-                    <th class="font-family-cairo fw-bold font-14">{{ __('Contract Type') }}</th>
-                    <th class="font-family-cairo fw-bold font-14">{{ __('Start Date') }}</th>
-                    <th class="font-family-cairo fw-bold font-14">{{ __('End Date') }}</th>
-                    @canany(['تعديل العقود', 'حذف العقود'])
-                        <th class="font-family-cairo fw-bold font-14">{{ __('Actions') }}</th>
-                    @endcanany
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($contracts as $contract)
-                    <tr>
+                            <tr>
+                                <th class="font-family-cairo fw-bold font-14">#</th>
+                                <th class="font-family-cairo fw-bold font-14">{{ __('Contract Name') }}</th>
+                                <th class="font-family-cairo fw-bold font-14">{{ __('Employee') }}</th>
+                                <th class="font-family-cairo fw-bold font-14">{{ __('Contract Type') }}</th>
+                                <th class="font-family-cairo fw-bold font-14">{{ __('Start Date') }}</th>
+                                <th class="font-family-cairo fw-bold font-14">{{ __('End Date') }}</th>
 
-                        <th class="font-family-cairo fw-bold font-14">#</th>
-                        <th class="font-family-cairo fw-bold font-14">{{ __('Contract Name') }}</th>
-                        <th class="font-family-cairo fw-bold font-14">{{ __('Employee') }}</th>
-                        <th class="font-family-cairo fw-bold font-14">{{ __('Contract Type') }}</th>
-                        <th class="font-family-cairo fw-bold font-14">{{ __('Start Date') }}</th>
-                        <th class="font-family-cairo fw-bold font-14">{{ __('End Date') }}</th>
-                        <th class="font-family-cairo fw-bold font-14">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($contracts as $contract)
-                        <tr>
-                            <td class="font-family-cairo fw-bold font-14">{{ $loop->iteration }}</td>
-                            <td class="font-family-cairo fw-bold font-14">{{ $contract->name }}</td>
-                            <td class="font-family-cairo fw-bold font-14">{{ $contract->employee?->name }}
-                            </td>
-                            <td class="font-family-cairo fw-bold font-14">
-                                {{ $contract->contract_type?->name }}
-                            </td>
-                            <td class="font-family-cairo fw-bold font-14">
-                                {{ $contract->contract_start_date }}
-                            </td>
-                            <td class="font-family-cairo fw-bold font-14">
-                                {{ $contract->contract_end_date }}
-                            </td>
-                            <td class="font-family-cairo fw-bold font-14">
-                                <button class="btn btn-md btn-info font-family-cairo fw-bold"
-                                    wire:click="view({{ $contract->id }})"><i class="las la-eye font-18"></i></button>
-                                <button class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
-                                    wire:click="edit({{ $contract->id }})"><i class="las la-edit font-18"></i></button>
-                                <button class="btn btn-danger btn-icon-square-sm font-family-cairo fw-bold"
-                                    wire:click="delete({{ $contract->id }})"
-                                    wire:confirm="{{ __('Are you sure?') }}"><i
-                                        class="las la-trash font-18"></i></button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="12" class="text-center">
-                                <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
-                                    <i class="las la-info-circle me-2"></i>
-                                    لا توجد بيانات
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                                @canany(['تعديل العقود', 'حذف العقود'])
+                                    <th class="font-family-cairo fw-bold font-14">{{ __('Actions') }}</th>
+                                @endcanany
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($contracts as $contract)
+                                <tr>
+                                    <td class="font-family-cairo fw-bold font-14">{{ $loop->iteration }}</td>
+                                    <td class="font-family-cairo fw-bold font-14">{{ $contract->name }}</td>
+                                    <td class="font-family-cairo fw-bold font-14">{{ $contract->employee?->name }}
+                                    </td>
+                                    <td class="font-family-cairo fw-bold font-14">
+                                        {{ $contract->contract_type?->name }}
+                                    </td>
+                                    <td class="font-family-cairo fw-bold font-14">
+                                        {{ $contract->contract_start_date }}
+                                    </td>
+                                    <td class="font-family-cairo fw-bold font-14">
+                                        {{ $contract->contract_end_date }}
+                                    </td>
+                                    @canany(['تعديل العقود', 'حذف العقود'])
+                                        <td class="font-family-cairo fw-bold font-14">
+                                            <button class="btn btn-md btn-info font-family-cairo fw-bold"
+                                                wire:click="view({{ $contract->id }})"><i
+                                                    class="las la-eye font-18"></i></button>
+                                            @can('تعديل العقود')
+                                                <button class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
+                                                    wire:click="edit({{ $contract->id }})"><i
+                                                        class="las la-edit font-18"></i></button>
+                                            @endcan
+                                            @can('حذف العقود')
+                                                <button class="btn btn-danger btn-icon-square-sm font-family-cairo fw-bold"
+                                                    wire:click="delete({{ $contract->id }})"
+                                                    wire:confirm="{{ __('Are you sure?') }}"><i
+                                                        class="las la-trash font-18"></i></button>
+                                            @endcan
+                                        </td>
+                                    @endcanany
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="12" class="text-center">
+                                        <div class="alert alert-info py-3 mb-0"
+                                            style="font-size: 1.2rem; font-weight: 500;">
+                                            <i class="las la-info-circle me-2"></i>
+                                            لا توجد بيانات
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        
-       
+
+
 
         <div class="mt-4">
             {{ $contracts->links('pagination::bootstrap-5') }}
@@ -368,12 +342,10 @@ new class extends Component {
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
 
-
                                                     @foreach ($contractTypes as $type)
                                                         <option value="{{ $type->id }}">{{ $type->name }}
                                                         </option>
                                                     @endforeach
-
                                                     </select>
                                                     @error('contract_type_id')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -888,7 +860,6 @@ new class extends Component {
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
                                         <h5 class="mb-0"><i class="las la-clock"></i>
-
                                             {{ __('Work Hours & Details') }}</h5>
                                     </div>
                                     <div class="card-body">
@@ -913,12 +884,8 @@ new class extends Component {
                                                 <div class="border rounded p-2 bg-light">
                                                     {{ $viewContract->information ?: __('No information provided.') }}
                                                 </div>
-                                                @error('information')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                @enderror
                                             </div>
                                             <div class="col-md-6 mb-3">
-
                                                 <div class="mb-2">
                                                     <span class="fw-bold"><i
                                                             class="las la-briefcase text-primary"></i>
@@ -927,9 +894,6 @@ new class extends Component {
                                                 <div class="border rounded p-2 bg-light">
                                                     {{ $viewContract->job_description ?: __('No job description provided.') }}
                                                 </div>
-                                                @error('job_description')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                @enderror
                                             </div>
                                         </div>
                                     </div>
@@ -937,7 +901,6 @@ new class extends Component {
 
                                 {{-- Contract Points --}}
                                 <div class="card mb-4">
-
                                     <div class="card-header bg-light">
                                         <h5 class="mb-0"><i class="las la-list-ul"></i>
                                             {{ __('Contract Points') }}</h5>
@@ -956,18 +919,15 @@ new class extends Component {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @forelse ($contractPoints as $index => $point)
-                                                        <tr wire:key="contract-point-{{ $index }}">
-                                                            <td>
-                                                                <input type="number"
-                                                                    class="form-control form-control-sm"
-                                                                    wire:model="contractPoints.{{ $index }}.sequence"
-                                                                    required>
-                                                                @error('contractPoints.' . $index . '.sequence')
-                                                                    <span class="text-danger">{{ $message }}</span>
-                                                                @enderror
+                                                    @forelse ($viewContract->contract_points as $point)
+                                                        <tr>
+                                                            <td class="text-center font-family-cairo fw-bold font-14">
+                                                                {{ $point->sequence }}</td>
+                                                            <td class="font-family-cairo fw-bold font-14">
+                                                                {{ $point->name }}</td>
+                                                            <td class="font-family-cairo fw-bold font-14">
+                                                                {{ $point->information ?: __('No information provided.') }}
                                                             </td>
-
                                                         </tr>
                                                     @empty
                                                         <tr>
@@ -983,7 +943,6 @@ new class extends Component {
 
                                 {{-- Salary Points --}}
                                 <div class="card mb-4">
-
                                     <div class="card-header bg-light">
                                         <h5 class="mb-0"><i class="las la-money-bill"></i>
                                             {{ __('Salary Points') }}</h5>
@@ -1002,38 +961,14 @@ new class extends Component {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @forelse ($salaryPoints as $index => $point)
-                                                        <tr wire:key="salary-point-{{ $index }}">
-                                                            <td>
-                                                                <input type="number"
-                                                                    class="form-control form-control-sm"
-                                                                    wire:model="salaryPoints.{{ $index }}.sequence"
-                                                                    required>
-                                                                @error('salaryPoints.' . $index . '.sequence')
-                                                                    <span class="text-danger">{{ $message }}</span>
-                                                                @enderror
-                                                            </td>
-                                                            <td>
-                                                                <input type="text"
-                                                                    class="form-control form-control-sm"
-                                                                    wire:model="salaryPoints.{{ $index }}.name"
-                                                                    required>
-                                                                @error('salaryPoints.' . $index . '.name')
-                                                                    <span class="text-danger">{{ $message }}</span>
-                                                                @enderror
-                                                            </td>
-                                                            <td>
-                                                                <textarea class="form-control form-control-sm" wire:model="salaryPoints.{{ $index }}.information"
-                                                                    rows="1"></textarea>
-                                                                @error('salaryPoints.' . $index . '.information')
-                                                                    <span class="text-danger">{{ $message }}</span>
-                                                                @enderror
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <button type="button" class="btn btn-md btn-danger"
-                                                                    wire:click="removeSalaryPointInput({{ $index }})">
-                                                                    <i class="las la-trash font-18"></i>
-                                                                </button>
+                                                    @forelse ($viewContract->salary_points as $point)
+                                                        <tr>
+                                                            <td class="text-center font-family-cairo fw-bold font-14">
+                                                                {{ $point->sequence }}</td>
+                                                            <td class="font-family-cairo fw-bold font-14">
+                                                                {{ $point->name }}</td>
+                                                            <td class="font-family-cairo fw-bold font-14">
+                                                                {{ $point->information ?: __('No information provided.') }}
                                                             </td>
                                                         </tr>
                                                     @empty
@@ -1067,4 +1002,3 @@ new class extends Component {
             </div>
         </div>
     </div>
-

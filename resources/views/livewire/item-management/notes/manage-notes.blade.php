@@ -185,20 +185,21 @@ new class extends Component {
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $note->name }}</td>
-                                        @canany('حذف المجموعات', 'تعديل المجموعات')
+                                        @canany(['تعديل ' . $note->name, 'حذف ' . $note->name])
                                             <td>
-                                                @can('تعديل المجموعات')
-                                                    <a wire:click="edit({{ $note->id }})"><i
-                                                            class="las la-pen text-success font-20"></i></a>
-                                                    <a wire:click="createNoteDetails({{ $note->id }})"><i
-                                                            class="las la-eye text-info font-20"></i></a>
+                                                @can('تعديل ' . $note->name)
+                                                    <a wire:click="edit({{ $note->id }})">
+                                                        <i class="las la-pen text-success font-20"></i>
+                                                    </a>
                                                 @endcan
-                                                @can('حذف المجموعات')
+
+                                                @can('حذف ' . $note->name)
                                                     <a wire:click="delete({{ $note->id }})"
-                                                        onclick="confirm('هل أنت متأكد من حذف هذا السعر؟') || event.stopImmediatePropagation()">
+                                                        onclick="confirm('هل أنت متأكد من الحذف؟') || event.stopImmediatePropagation()">
                                                         <i class="las la-trash-alt text-danger font-20"></i>
                                                     </a>
                                                 @endcan
+
 
                                             </td>
                                         @endcanany
@@ -272,7 +273,7 @@ new class extends Component {
                         </div>
                     </form>
 
-                   <div class="table-responsive" style="overflow-x: auto;">
+                    <div class="table-responsive" style="overflow-x: auto;">
                         <table class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
@@ -287,9 +288,11 @@ new class extends Component {
                                         <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-family-cairo text-center fw-bold">{{ $noteDetail->name }}</td>
                                         <td class="text-center">
-                                            <a wire:click="editNoteDetails({{ $noteDetail->id }})" class="btn btn-success btn-icon-square-sm "><i
+                                            <a wire:click="editNoteDetails({{ $noteDetail->id }})"
+                                                class="btn btn-success btn-icon-square-sm "><i
                                                     class="las la-pen"></i></a>
-                                            <a wire:click="deleteNoteDetails({{ $noteDetail->id }})" class="btn btn-danger btn-icon-square-sm"
+                                            <a wire:click="deleteNoteDetails({{ $noteDetail->id }})"
+                                                class="btn btn-danger btn-icon-square-sm"
                                                 onclick="confirm('هل أنت متأكد من حذف هذا التفاصيل؟') || event.stopImmediatePropagation()">
                                                 <i class="las la-trash-alt ></i>
                                             </a>
@@ -298,8 +301,10 @@ new class extends Component {
                                 @empty
 
                                     <tr>
-                                        <td colspan="3" class="text-center font-family-cairo fw-bold">لا يوجد
-                                            تفاصيل</td>
+                                        <td colspan="3"
+                                                    class="text-center font-family-cairo fw-bold">لا يوجد
+                                                    تفاصيل
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>

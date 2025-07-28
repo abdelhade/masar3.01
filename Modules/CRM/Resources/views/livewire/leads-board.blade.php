@@ -264,6 +264,13 @@
             </div>
         @endif
 
+        @if (session()->has('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <div class="leads-board d-flex flex-row flex-nowrap" id="leads-board"
             style="max-height: 80vh; overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; position: relative;">
 
@@ -278,7 +285,7 @@
             @foreach ($statuses as $status)
                 <div class="status-column" data-status-id="{{ $status->id }}"
                     style="width: 300px; flex: 0 0 auto; border-bottom-color: {{ $status->color }};
-                   max-height: 76vh; display: flex; flex-direction: column; margin-right: 15px;">
+               max-height: 76vh; display: flex; flex-direction: column; margin-right: 15px;">
 
                     <div class="status-header" style="border-color: {{ $status->color }}">
                         <div class="status-title" style="color: {{ $status->color }}">
@@ -289,15 +296,22 @@
                                 {{ isset($leads[$status->id]) ? number_format($leads[$status->id]->sum('amount')) : '0.00' }}
                                 ج.م
                             </span>
+
+                            <!-- زر التقرير -->
+                            <button class="btn btn-sm btn-outline-info"
+                                wire:click="openStatusReport({{ $status->id }})" title="تقرير المرحلة">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+
                             @can('إضافة الفرص')
                                 <button class="btn btn-sm btn-outline-primary"
                                     wire:click="openAddModal({{ $status->id }})">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             @endcan
-
                         </div>
                     </div>
+
                     <div class="leads-container" data-status-id="{{ $status->id }}"
                         style="overflow-y: auto; flex: 1 1 0; min-height: 200px;">
                         @if (isset($leads[$status->id]))
@@ -310,7 +324,7 @@
                                     </div>
                                     @if ($lead['amount'])
                                         <div class="lead-amount">
-                                            <i class="fas fa-money-bill"></i> {{ number_format($lead['amount'], 2) }}
+                                            <i class="fas fa-money-bill"></i> {{ number_format($lead['amount']) }}
                                             ج.م
                                         </div>
                                     @endif
@@ -320,6 +334,10 @@
                                         </div>
                                     @endif
                                     <div class="lead-actions">
+                                        <button class="btn btn-success btn-sm"
+                                            wire:click="editLead({{ $lead['id'] }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
                                         @can('حذف الفرص')
                                             <button class="btn btn-danger btn-sm"
                                                 wire:click="deleteLead({{ $lead['id'] }})"
@@ -406,6 +424,226 @@
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">إلغاء</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        @endif
+
+        {{-- نافذة تعديل الفرصة --}}
+        @if ($showEditModal)
+            <div class="modal-overlay" wire:click.self="closeModal">
+                <div class="modal-content">
+                    <h4 class="mb-4">تعديل الفرصة</h4>
+
+                    <form wire:submit.prevent="updateLead">
+                        <div class="form-group">
+                            <label class="form-label">عنوان الفرصة *</label>
+                            <input type="text" class="form-control" wire:model="editingLead.title" required>
+                            @error('editingLead.title')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">العميل *</label>
+                            <select class="form-control" wire:model="editingLead.client_id">
+                                <option value="">اختر العميل</option>
+                                @foreach ($clients as $client)
+                                    <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('editingLead.client_id')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">القيمة المتوقعة</label>
+                            <input type="number" step="0.01" class="form-control"
+                                wire:model="editingLead.amount" placeholder="0.00">
+                            @error('editingLead.amount')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">المصدر</label>
+                            <select class="form-control" wire:model="editingLead.source">
+                                <option value="">اختر مصدر الفرصة</option>
+                                @foreach ($sources as $source)
+                                    <option value="{{ $source->id }}">{{ $source->title }}</option>
+                                @endforeach
+                            </select>
+                            @error('editingLead.source')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">مسؤول المتابعة</label>
+                            <select class="form-control" wire:model="editingLead.assigned_to">
+                                <option value="">اختر المسؤول</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">وصف الفرصة</label>
+                            <textarea class="form-control" wire:model="editingLead.description" rows="3"
+                                placeholder="تفاصيل إضافية عن الفرصة"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success">تحديث الفرصة</button>
+                            <button type="button" class="btn btn-secondary" wire:click="closeModal">إلغاء</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
+
+        {{-- نافذة تقرير المرحلة --}}
+        @if ($showReportModal && $selectedStatusForReport)
+            <div class="modal-overlay" wire:click.self="closeModal">
+                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">تقرير مرحلة: {{ $selectedStatusForReport->name }}</h4>
+                        <button type="button" class="btn-close" wire:click="closeModal"></button>
+                    </div>
+
+                    {{-- إحصائيات سريعة --}}
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">{{ $reportData['total_leads'] }}</h5>
+                                    <p class="card-text">إجمالي الفرص</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">
+                                        {{ number_format($reportData['total_amount']) }} ج.م</h5>
+                                    <p class="card-text">إجمالي القيمة</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title text-info">{{ number_format($reportData['avg_amount']) }}
+                                        ج.م</h5>
+                                    <p class="card-text">متوسط القيمة</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center border-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title text-warning">{{ count($reportData['leads_by_source']) }}
+                                    </h5>
+                                    <p class="card-text">عدد المصادر</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- تحليل حسب المصدر --}}
+                    @if (!empty($reportData['leads_by_source']))
+                        <div class="mb-4">
+                            <h5>التوزيع حسب المصدر</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>المصدر</th>
+                                            <th>عدد الفرص</th>
+                                            <th>النسبة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($reportData['leads_by_source'] as $source => $count)
+                                            <tr>
+                                                <td>{{ $source ?: 'غير محدد' }}</td>
+                                                <td>{{ $count }}</td>
+                                                <td>{{ $reportData['total_leads'] > 0 ? round(($count / $reportData['total_leads']) * 100, 1) : 0 }}%
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- تحليل حسب المسؤول --}}
+                    @if (!empty($reportData['leads_by_user']))
+                        <div class="mb-4">
+                            <h5>التوزيع حسب المسؤول</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>المسؤول</th>
+                                            <th>عدد الفرص</th>
+                                            <th>النسبة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($reportData['leads_by_user'] as $user => $count)
+                                            <tr>
+                                                <td>{{ $user ?: 'غير مُعين' }}</td>
+                                                <td>{{ $count }}</td>
+                                                <td>{{ $reportData['total_leads'] > 0 ? round(($count / $reportData['total_leads']) * 100, 1) : 0 }}%
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- تفاصيل الفرص --}}
+                    <div class="mb-4">
+                        <h5>تفاصيل الفرص</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>العنوان</th>
+                                        <th>العميل</th>
+                                        <th>القيمة</th>
+                                        <th>المصدر</th>
+                                        <th>المسؤول</th>
+                                        <th>تاريخ الإنشاء</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($reportData['leads_details'] as $lead)
+                                        <tr>
+                                            <td>{{ $lead['title'] }}</td>
+                                            <td>{{ $lead['client_name'] }}</td>
+                                            <td>{{ $lead['amount'] ? number_format($lead['amount']) . ' ج.م' : '-' }}
+                                            </td>
+                                            <td>{{ $lead['source'] }}</td>
+                                            <td>{{ $lead['assigned_to'] }}</td>
+                                            <td>{{ $lead['created_at'] }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" wire:click="closeModal">إغلاق</button>
+                        <button type="button" class="btn btn-primary" onclick="window.print()">طباعة
+                            التقرير</button>
+                    </div>
                 </div>
             </div>
         @endif

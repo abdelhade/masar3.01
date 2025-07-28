@@ -14,11 +14,27 @@ class LeadsBoard extends Component
     public $statuses;
     public $leads;
     public $showAddModal = false;
+    public $showEditModal = false;
+    public $showReportModal = false;
     public $selectedStatus = null;
+    public $selectedStatusForReport = null;
+    public $selectedLead = null;
     public $sources;
+    public $reportData = [];
 
     // بيانات الفرصة الجديدة
     public $newLead = [
+        'title' => '',
+        'client_id' => '',
+        'amount' => '',
+        'source' => '',
+        'assigned_to' => '',
+        'description' => ''
+    ];
+
+    // بيانات الفرصة للتعديل
+    public $editingLead = [
+        'id' => '',
         'title' => '',
         'client_id' => '',
         'amount' => '',
@@ -34,7 +50,7 @@ class LeadsBoard extends Component
         'newLead.title' => 'required|string|max:255',
         'newLead.client_id' => 'required|exists:crm_clients,id',
         'newLead.amount' => 'nullable|numeric|min:0',
-        'newLead.source' => 'nullable|exists:chance_sources,id', // تحديث القاعدة لاستقبال ID
+        'newLead.source' => 'nullable|exists:chance_sources,id',
         'newLead.assigned_to' => 'nullable|exists:users,id',
         'newLead.description' => 'nullable|string'
     ];
@@ -47,8 +63,7 @@ class LeadsBoard extends Component
         'newLead.amount.numeric' => 'القيمة يجب أن تكون رقماً',
         'newLead.amount.min' => 'القيمة يجب أن تكون أكبر من أو تساوي صفر',
         'newLead.assigned_to.exists' => 'المستخدم المسؤول غير موجود',
-        'newLead.source_id.exists' => 'المصدر المحدد غير موجود', // إضافة رسالة جديدة
-
+        'newLead.source.exists' => 'المصدر المحدد غير موجود',
     ];
 
     public function mount()
@@ -86,7 +101,7 @@ class LeadsBoard extends Component
         try {
             $this->statuses = LeadStatus::orderBy('order_column')->get();
 
-            $this->leads = Lead::with(['client', 'status', 'assignedTo'])
+            $this->leads = Lead::with(['client', 'status', 'assignedTo', 'source'])
                 ->get()
                 ->groupBy('status_id')
                 ->map(function ($leads) {
@@ -96,7 +111,7 @@ class LeadsBoard extends Component
                             'title' => $lead->title,
                             'client' => $lead->client ? $lead->client->only('name') : null,
                             'amount' => $lead->amount,
-                            'source' => $lead->source, //
+                            'source' => $lead->source,
                             'assigned_to' => $lead->assignedTo ? $lead->assignedTo->only('name') : null,
                             'description' => $lead->description
                         ];
@@ -138,12 +153,114 @@ class LeadsBoard extends Component
         $this->resetNewLead();
     }
 
-    // إغلاق النافذة
+    // فتح نافذة تعديل الفرصة
+    public function editLead($leadId)
+    {
+        try {
+            $lead = Lead::with(['client', 'assignedTo', 'source'])->findOrFail($leadId);
+
+            $this->selectedLead = $lead;
+            $this->editingLead = [
+                'id' => $lead->id,
+                'title' => $lead->title,
+                'client_id' => $lead->client_id,
+                'amount' => $lead->amount,
+                'source' => $lead->source_id,
+                'assigned_to' => $lead->assigned_to,
+                'description' => $lead->description
+            ];
+
+            $this->showEditModal = true;
+        } catch (\Exception $e) {
+            session()->flash('error', 'حدث خطأ في تحميل بيانات الفرصة: ' . $e->getMessage());
+        }
+    }
+
+    // تحديث الفرصة
+    public function updateLead()
+    {
+        $this->validate([
+            'editingLead.title' => 'required|string|max:255',
+            'editingLead.client_id' => 'required|exists:crm_clients,id',
+            'editingLead.amount' => 'nullable|numeric|min:0',
+            'editingLead.source' => 'nullable|exists:chance_sources,id',
+            'editingLead.assigned_to' => 'nullable|exists:users,id',
+            'editingLead.description' => 'nullable|string'
+        ], [
+            'editingLead.title.required' => 'عنوان الفرصة مطلوب',
+            'editingLead.title.max' => 'عنوان الفرصة يجب أن يكون أقل من 255 حرف',
+            'editingLead.client_id.required' => 'يجب اختيار العميل',
+            'editingLead.client_id.exists' => 'العميل المحدد غير موجود',
+            'editingLead.amount.numeric' => 'القيمة يجب أن تكون رقماً',
+            'editingLead.amount.min' => 'القيمة يجب أن تكون أكبر من أو تساوي صفر',
+            'editingLead.assigned_to.exists' => 'المستخدم المسؤول غير موجود',
+            'editingLead.source.exists' => 'المصدر المحدد غير موجود',
+        ]);
+
+        try {
+            $lead = Lead::findOrFail($this->editingLead['id']);
+            $lead->update([
+                'title' => $this->editingLead['title'],
+                'client_id' => $this->editingLead['client_id'],
+                'amount' => $this->editingLead['amount'],
+                'source_id' => $this->editingLead['source'],
+                'assigned_to' => $this->editingLead['assigned_to'],
+                'description' => $this->editingLead['description']
+            ]);
+
+            $this->closeModal();
+            $this->loadData();
+            session()->flash('message', 'تم تحديث الفرصة بنجاح!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'حدث خطأ أثناء تحديث الفرصة: ' . $e->getMessage());
+        }
+    }
+
+    // فتح تقرير المرحلة
+    public function openStatusReport($statusId)
+    {
+        try {
+            $this->selectedStatusForReport = LeadStatus::findOrFail($statusId);
+
+            $leads = Lead::with(['client', 'assignedTo', 'source'])
+                ->where('status_id', $statusId)
+                ->get();
+
+            $this->reportData = [
+                'total_leads' => $leads->count(),
+                'total_amount' => $leads->sum('amount'),
+                'avg_amount' => $leads->count() > 0 ? $leads->avg('amount') : 0,
+                'leads_by_source' => $leads->groupBy('source.title')->map->count(),
+                'leads_by_user' => $leads->groupBy('assignedTo.name')->map->count(),
+                'leads_details' => $leads->map(function ($lead) {
+                    return [
+                        'title' => $lead->title,
+                        'client_name' => $lead->client->name ?? 'غير محدد',
+                        'amount' => $lead->amount,
+                        'source' => $lead->source->title ?? 'غير محدد',
+                        'assigned_to' => $lead->assignedTo->name ?? 'غير مُعين',
+                        'created_at' => $lead->created_at->format('Y-m-d')
+                    ];
+                })
+            ];
+
+            $this->showReportModal = true;
+        } catch (\Exception $e) {
+            session()->flash('error', 'حدث خطأ في تحميل التقرير: ' . $e->getMessage());
+        }
+    }
+
+    // إغلاق النوافذ
     public function closeModal()
     {
         $this->showAddModal = false;
+        $this->showEditModal = false;
+        $this->showReportModal = false;
         $this->selectedStatus = null;
+        $this->selectedLead = null;
+        $this->selectedStatusForReport = null;
         $this->resetNewLead();
+        $this->resetEditingLead();
         $this->resetErrorBag();
     }
 
@@ -165,6 +282,13 @@ class LeadsBoard extends Component
                     return;
                 }
             }
+
+            // تحويل source إلى source_id
+            if (!empty($leadData['source'])) {
+                $leadData['source_id'] = $leadData['source'];
+                unset($leadData['source']);
+            }
+
             Lead::create($leadData);
             $this->closeModal();
             $this->loadData();
@@ -179,6 +303,20 @@ class LeadsBoard extends Component
     private function resetNewLead()
     {
         $this->newLead = [
+            'title' => '',
+            'client_id' => '',
+            'amount' => '',
+            'source' => '',
+            'assigned_to' => '',
+            'description' => ''
+        ];
+    }
+
+    // إعادة تعيين بيانات الفرصة للتعديل
+    private function resetEditingLead()
+    {
+        $this->editingLead = [
+            'id' => '',
             'title' => '',
             'client_id' => '',
             'amount' => '',
