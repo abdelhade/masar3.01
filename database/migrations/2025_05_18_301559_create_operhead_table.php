@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * تشغيل المايغريشن: إنشاء جدول operhead
+     * Run the migration: Create the operhead table
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -21,7 +23,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('is_manager')->nullable();
             $table->unsignedTinyInteger('is_journal')->nullable();
             $table->unsignedTinyInteger('journal_type')->nullable();
-
+            $table->foreignId('currency_id')->nullable()->constrained('currencies')->nullOnDelete();
+            $table->decimal('currency_rate', 15, 6)->default(1);
             $table->string('info', 200)->nullable();
             $table->timestamp('start_time')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('end_time')->default(DB::raw('CURRENT_TIMESTAMP'));
@@ -80,7 +83,8 @@ return new class extends Migration
             $table->string('details', 200)->nullable();
 
             $table->unsignedInteger('pro_type')->nullable();
-
+            $table->unsignedInteger('project_id')->nullable();
+            $table->foreignId('acc3')->nullable()->constrained('acc_head')->nullOnDelete();
             // علاقات Foreign Keys
             $table->foreign('pro_type')->references('id')->on('pro_types')->onDelete('set null');
 

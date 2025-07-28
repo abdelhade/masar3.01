@@ -20,6 +20,7 @@ class CreateAccHeadTable extends Migration
             $table->string('phone', 50)->nullable();
             $table->string('address', 250)->nullable();
             $table->string('e_mail', 150)->nullable();
+            $table->boolean('employees_expensses')->nullable();
             $table->boolean('constant')->nullable();
             $table->boolean('is_stock')->nullable();
             $table->boolean('is_fund')->nullable();
@@ -49,7 +50,8 @@ class CreateAccHeadTable extends Migration
             // Tenant and branch ID without foreign key constraint
             $table->unsignedBigInteger('tenant')->nullable();
             $table->unsignedBigInteger('branch')->nullable();
-
+            $table->unsignedInteger('project_id')->nullable();
+            $table->unsignedInteger('rent_to')->nullable();
             // Indexes (These are optional but can improve query performance)
             $table->index('code');
             $table->index('parent_id');

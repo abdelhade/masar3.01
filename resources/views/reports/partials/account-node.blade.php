@@ -6,7 +6,7 @@
             <span class="no-toggle-icon"></span>
         @endif
 
-        <span class="account-name {{ $account->is_basic == 1 ? 'text-primary' : '' }}">{{ $account->code }}-{{ $account->aname }} - ( {{ $account->is_basic == 1 ? $account->children->count() : '' }})</span>
+        <span style="font-size: 1.2rem;" class="account-name {{ $account->is_basic == 1 ? 'text-primary' : '' }}">{{ $account->code }}-{{ $account->aname }} - ( {{ $account->is_basic == 1 ? $account->children->count() : '' }})</span>
     </div>
 
     @if($account->children->count())

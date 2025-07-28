@@ -21,8 +21,12 @@
                         <tr>
                             <td>{{ $item->aname ?? $item->name ?? '---' }}</td>
                             <td>
-                                <!-- الكمية تأتي من operation_items مجموع qty_in - مجموع qty_out -->
-                                {{ optional($item->operationItems)->sum(function($op) { return $op->operation_type === 'in' ? $op->qty : ($op->operation_type === 'out' ? -$op->qty : 0); }) ?? 0 }}
+                                <!-- الكمية = مجموع qtyin - مجموع qtyout من جدول operation_items حيث item_id = $item->id -->
+                                {{
+                                    \App\Models\OperationItems::where('item_id', $item->id)
+                                        ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0) as balance')
+                                        ->value('balance') ?? 0
+                                }}
                             </td> <!-- ضع هنا الكمية الفعلية إذا كان هناك منطق -->
                             <td>{{ $item->main_unit->aname ?? $item->main_unit->name ?? '---' }}</td>
                         </tr>

@@ -1,4 +1,26 @@
  <!-- jQuery  -->
+  <!-- ضع هذا العنصر في أي مكان في الصفحة (يفضل قبل نهاية الـ body) -->
+<audio id="submit-sound" src="{{ asset('assets/wav/paper_sound.wav') }}"></audio>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // استهدف جميع النماذج في الصفحة
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            // شغل الصوت
+            var audio = document.getElementById('submit-sound');
+            if (audio) {
+                audio.currentTime = 0; // إعادة الصوت للبداية
+                audio.play();
+            }
+            // يمكنك إزالة السطر التالي إذا كنت لا تريد منع الإرسال الفعلي للنموذج
+            // event.preventDefault();
+        });
+    });
+});
+</script>
+
+
  <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
  <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
  <script src="{{ asset('assets/js/metismenu.min.js') }}"></script>

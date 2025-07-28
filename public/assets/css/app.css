@@ -2601,7 +2601,7 @@ label {
 }
 
 .form-control:focus {
-  box-shadow: none;
+  box-shadow:#000000 ;
 }
 
 .input-group-text {

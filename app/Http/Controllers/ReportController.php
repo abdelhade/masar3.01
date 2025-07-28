@@ -16,6 +16,7 @@ use App\Models\NoteDetails;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ReportController extends Controller
 {
@@ -37,7 +38,7 @@ class ReportController extends Controller
     // accounts tree
     public function accountsTree()
     {
-        $accounts = AccHead::where('parent_id', 0)->get();
+        $accounts = AccHead::where('parent_id', null)->get();
         return view('reports.accounts-tree', compact('accounts'));
     }
 
@@ -123,7 +124,7 @@ class ReportController extends Controller
     {
         $accounts = AccHead::where('isdeleted', 0)->get();
         $selectedAccount = null;
-        $movements = collect();
+        $movements = new LengthAwarePaginator([], 0, 50);
         $openingBalance = 0;
         $closingBalance = 0;
 

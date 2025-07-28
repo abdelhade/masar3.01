@@ -128,25 +128,26 @@ class AccHeadController extends Controller
 
         if ($type) {
             $patterns = [
-                'client' => '122%',
-                'supplier' => '211%',
-                'fund' => '121%',
-                'bank' => '124%',
-                'expense' => '44%',
-                'revenue' => '32%',
-                'creditor' => '212%',
-                'debtor' => '125%',
-                'partner' => '231%',
-                'asset' => '11%',
-                'employee' => '213%',
-                'rentable' => '112%',
-                'store' => '123%',
+                'client' => '1103%',   // العملاء
+                'supplier' => '2101%',   // الموردين
+                'fund' => '1101%',   // الصناديق
+                'bank' => '1102%',   // البنوك
+                'expense' => '57%',      // المصروفات
+                'revenue' => '42%',      // الإيرادات
+                'creditor' => '2104%',   // دائنين اخرين
+                'debtor' => '1106%',   // مدينين آخرين
+                'partner' => '3101%',   // الشريك الرئيسي
+                'asset' => '12%',      // الأصول
+                'employee' => '2102%',   // الموظفين
+                'rentable' => '1202%',   // مباني
+                'store' => '1104%',   // المخازن
             ];
 
             $accountsQuery->where('code', 'like', $patterns[$type] ?? '9999%');
         }
 
-        $accounts = $accountsQuery->get();
+        // جلب جميع الحقول المطلوبة للعرض
+        $accounts = $accountsQuery->get(['id', 'code', 'aname', 'is_basic', 'is_stock', 'is_fund', 'employees_expensses', 'deletable', 'editable', 'rentable', 'phone', 'address']);
         return view('accounts.index', compact('accounts'));
     }
 
@@ -277,22 +278,22 @@ class AccHeadController extends Controller
         if ($request->parent_id) {
             $parentAcc = AccHead::find($request->parent_id);
             if ($parentAcc) {
-                $parentCode = substr($parentAcc->code, 0, 3);
+                $parentCode = substr($parentAcc->code, 0, 4);
 
                 $map = [
-                    '122' => 'client',
-                    '211' => 'supplier',
-                    '121' => 'fund',
-                    '124' => 'bank',
-                    '044' => 'expense',
-                    '032' => 'revenue',
-                    '212' => 'creditor',
-                    '125' => 'debtor',
-                    '231' => 'partner',
-                    '011' => 'asset',
-                    '213' => 'employee',
-                    '112' => 'rentable',
-                    '123' => 'store',
+                    '1103' => 'client',
+                    '2101' => 'supplier',
+                    '1101' => 'fund',
+                    '1102' => 'bank',
+                    '57' => 'expense',
+                    '42' => 'revenue',
+                    '2104' => 'creditor',
+                    '1106' => 'debtor',
+                    '31' => 'partner',
+                    '1202' => 'asset',
+                    '2102' => 'employee',
+                    '1104' => 'store',
+                    '3201' => 'current-partner',
                 ];
 
                 $parent = $map[$parentCode] ?? null;

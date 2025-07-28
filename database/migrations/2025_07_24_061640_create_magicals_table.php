@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('items', function (Blueprint $table) {
-            $table->integer('min_order_quantity')->default(0);
-            $table->integer('max_order_quantity')->default(0);
+        Schema::create('magicals', function (Blueprint $table) {
+            $table->id();
+            $table->string('magic_name');
+            $table->string('magic_link');
+            $table->string('info');
+            $table->boolean('is_journal')->default(false);
+            $table->timestamps();
         });
     }
 
@@ -22,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('items', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('magicals');
     }
 };
