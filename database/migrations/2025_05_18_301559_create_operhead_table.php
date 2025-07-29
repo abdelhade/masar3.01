@@ -87,7 +87,6 @@ return new class extends Migration
             $table->foreignId('acc3')->nullable()->constrained('acc_head')->nullOnDelete();
             // علاقات Foreign Keys
             $table->foreign('pro_type')->references('id')->on('pro_types')->onDelete('set null');
-     
 
             $table->index('acc1');
             $table->index('acc2');

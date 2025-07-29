@@ -49,7 +49,7 @@
 
                                     {{-- حقل الكمية مع التنقل التلقائي --}}
                                     <td style="width: 10%; font-size: 1.2em;">
-                                        <input type="number" step="0.01" min="0"
+                                        <input type="number" step="0.01" min="0" onblur="if(this.value === '') this.value = 0;"
                                             wire:model.blur="invoiceItems.{{ $index }}.quantity"
                                             id="quantity_{{ $index }}" placeholder="الكمية"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"

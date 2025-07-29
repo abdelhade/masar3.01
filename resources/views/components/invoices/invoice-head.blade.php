@@ -12,17 +12,17 @@
 
             {{-- الحساب المتغير acc1 --}}
             <div class="col-lg-2">
-                <label class="form-label" style="font-size: 1em;">{{ $acc1Role }} (acc1)</label>
-
+                {{-- <label class="form-label" style="font-size: 1em;">{{ $acc1Role }} (acc1)</label> --}}
                 <x-tom-select :options="collect($acc1List)
                     ->map(fn($acc1List) => ['value' => $acc1List->id, 'text' => $acc1List->aname])
-                    ->toArray()" wireModel="acc1_id" :value="$acc1_id" :search="true"
-                    :tomOptions="[
-                        'plugins' => [
-                            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
-                            'remove_button' => ['title' => 'إزالة المحدد'],
-                        ],
-                    ]" class="form-control form-control-sm" style="font-size: 0.85em; height: 2em; padding: 2px 6px;" />
+                    ->toArray()" wireModel="acc1_id" :value="$acc1_id" :search="true" :tomOptions="[
+                    'plugins' => [
+                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                        'remove_button' => ['title' => 'إزالة المحدد'],
+                    ],
+                ]"
+                    class="form-control form-control-sm scnd"
+                    style="font-size: 0.85em; height: 2em; padding: 2px 6px;" />
                 @error('acc1_id')
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                 @enderror
@@ -30,7 +30,7 @@
 
             {{-- المخزن ثابت acc2 --}}
             <div class="col-lg-2">
-                <label class="form-label" style="font-size: 1em;">{{ $acc2Role }} (المخزن)</label>
+                <label class="form-label" style="font-size: 1em;">المخزن</label>
                 <select wire:model.live="acc2_id"
                     class="form-control form-control-sm @error('acc2_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
