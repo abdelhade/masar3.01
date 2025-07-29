@@ -139,67 +139,69 @@
                         {{ number_format($subtotal) }}
                     </div>
                 </div>
-
-                {{-- الخصم --}}
-                <div class="row mb-2 align-items-center">
-                    <div class="col-2 text-right font-weight-bold">
-                        <label style="font-size: 0.95em;">الخصم %</label>
-                    </div>
-                    <div class="col-3">
-                        <div class="input-group">
-                            <input type="number" step="0.01" wire:model="discount_percentage"
-                                wire:change="calculateTotals" class="form-control form-control-sm"
-                                style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0" max="100">
-                            <div class="input-group-append">
-                                <span class="input-group-text">%</span>
+                @if ($type != 18)
+                    {{-- الخصم --}}
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-2 text-right font-weight-bold">
+                            <label style="font-size: 0.95em;">الخصم %</label>
+                        </div>
+                        <div class="col-3">
+                            <div class="input-group">
+                                <input type="number" step="0.01" wire:model="discount_percentage"
+                                    wire:change="calculateTotals" class="form-control form-control-sm"
+                                    style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
+                                    max="100">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-2 text-right font-weight-bold">
-                        <label for="discount_value" class="form-label" style="font-size: 0.95em;">قيمة
-                            الخصم</label>
-                    </div>
+                        <div class="col-2 text-right font-weight-bold">
+                            <label for="discount_value" class="form-label" style="font-size: 0.95em;">قيمة
+                                الخصم</label>
+                        </div>
 
-                    <div class="col-3">
-                        <input type="number" step="0.01" wire:model="discount_value"
-                            wire:change="calculateTotals" class="form-control form-control-sm"
-                            style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                            id="discount_value">
-                    </div>
-
-                </div>
-
-                {{-- الإضافي (مثال: ضريبة) --}}
-                <div class="row mb-2 align-items-center">
-                    <div class="col-2 text-right font-weight-bold">
-                        <label style="font-size: 0.95em;">الاضافي %</label>
-                    </div>
-
-                    <div class="col-3">
-                        <div class="input-group">
-                            <input type="number" step="0.01" wire:model="additional_percentage"
+                        <div class="col-3">
+                            <input type="number" step="0.01" wire:model="discount_value"
                                 wire:change="calculateTotals" class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                max="100">
-                            <div class="input-group-append">
-                                <span class="input-group-text">%</span>
+                                id="discount_value">
+                        </div>
+
+                    </div>
+
+                    {{-- الإضافي (مثال: ضريبة) --}}
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-2 text-right font-weight-bold">
+                            <label style="font-size: 0.95em;">الاضافي %</label>
+                        </div>
+
+                        <div class="col-3">
+                            <div class="input-group">
+                                <input type="number" step="0.01" wire:model="additional_percentage"
+                                    wire:change="calculateTotals" class="form-control form-control-sm"
+                                    style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
+                                    max="100">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-2 text-right font-weight-bold">
-                        <label for="additional_value" class="form-label" style="font-size: 0.95em;">قيمة
-                            الاضافي</label>
-                    </div>
+                        <div class="col-2 text-right font-weight-bold">
+                            <label for="additional_value" class="form-label" style="font-size: 0.95em;">قيمة
+                                الاضافي</label>
+                        </div>
 
-                    <div class="col-3">
-                        <input type="number" step="0.01" wire:model="additional_value"
-                            wire:change="calculateTotals" class="form-control form-control-sm"
-                            style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                            id="additional_value">
+                        <div class="col-3">
+                            <input type="number" step="0.01" wire:model="additional_value"
+                                wire:change="calculateTotals" class="form-control form-control-sm"
+                                style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
+                                id="additional_value">
+                        </div>
                     </div>
-                </div>
+                @endif
                 <hr>
                 {{-- الإجمالي النهائي --}}
                 <div class="row mb-2">

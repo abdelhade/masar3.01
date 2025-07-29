@@ -5,8 +5,10 @@
             <th class="font-family-cairo fw-bold font-14 text-center">الصنف</th>
             <th class="font-family-cairo fw-bold font-14 text-center">الوحدة</th>
             <th class="font-family-cairo fw-bold font-14 text-center">الكمية</th>
+            {{-- @if ($type != 18) --}}
             <th class="font-family-cairo fw-bold font-14 text-center">السعر</th>
             <th class="font-family-cairo fw-bold font-14 text-center">الخصم</th>
+            {{-- @endif --}}
             <th class="font-family-cairo fw-bold font-14 text-center">القيمة</th>
             <th class="font-family-cairo fw-bold font-14 text-center">إجراء</th>
         </tr>
@@ -49,7 +51,8 @@
 
                                     {{-- حقل الكمية مع التنقل التلقائي --}}
                                     <td style="width: 10%; font-size: 1.2em;">
-                                        <input type="number" step="0.01" min="0" onblur="if(this.value === '') this.value = 0;"
+                                        <input type="number" step="0.01" min="0"
+                                            onblur="if(this.value === '') this.value = 0;"
                                             wire:model.blur="invoiceItems.{{ $index }}.quantity"
                                             id="quantity_{{ $index }}" placeholder="الكمية"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -60,6 +63,7 @@
                                         @enderror
                                     </td>
 
+                                    {{-- @if ($type != 18) --}}
                                     {{-- حقل السعر مع التنقل التلقائي --}}
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"
@@ -89,7 +93,7 @@
                                                             }"
                                             class="form-control">
                                     </td>
-
+                                    {{-- @endif --}}
                                     {{-- حقل القيمة الفرعية --}}
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"

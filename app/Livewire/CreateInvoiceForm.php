@@ -113,6 +113,7 @@ class CreateInvoiceForm extends Component
         $clientsAccounts   = $this->getAccountsByCode('1103%');
         $suppliersAccounts = $this->getAccountsByCode('2101%');
         $stores            = $this->getAccountsByCode('1104%');
+        // $accounts  = $this->getAccountsByCode('1104%');
         $employees         = $this->getAccountsByCode('2102%');
         $wasted         = $this->getAccountsByCode('55%');
         $map = [
@@ -300,14 +301,17 @@ class CreateInvoiceForm extends Component
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) return;
 
-        // $this->addedFromBarcode = false;
-
         $firstUnit = $item->units->first();
         $unitId = $firstUnit?->id;
 
         $vm = new ItemViewModel(null, $item, $unitId);
         $salePrices = $vm->getUnitSalePrices();
         $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
+
+        // إذا كان نوع الفاتورة 18، استخدم average_cost كسعر
+        if ($this->type == 18) {
+            $price = $item->average_cost ?? 0;
+        }
 
         $unitOptions = $vm->getUnitOptions();
 
@@ -317,13 +321,6 @@ class CreateInvoiceForm extends Component
                 'name' => $unit['label'],
             ];
         });
-        // حساب السعر للوحدة الافتراضية
-        $price = 0;
-        if ($unitId && $this->selectedPriceType) {
-            $vm = new ItemViewModel(null, $item, $unitId);
-            $salePrices = $vm->getUnitSalePrices();
-            $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
-        }
 
         $this->invoiceItems[] = [
             'item_id' => $item->id,

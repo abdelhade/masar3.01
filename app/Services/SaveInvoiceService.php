@@ -189,6 +189,7 @@ class SaveInvoiceService
                         $credit = $component->acc2_id;
                         break;
                 }
+
                 JournalHead::create([
                     'journal_id' => $journalId,
                     'total'      => $component->total_after_additional,
@@ -218,20 +219,28 @@ class SaveInvoiceService
                         'journal_id' => $journalId,
                         'account_id' => $credit,
                         'debit'      => 0,
-                        'credit'     => $component->total_after_additional,
+                        'credit'     => $component->total_after_additional - $component->additional_value,
                         'type'       => 1,
                         'info'       => $component->notes,
                         'op_id'      => $operation->id,
                         'isdeleted'  => 0,
                     ]);
                 }
-                // $component->total_after_additional;
-                // dd($component->total_after_additional);
-                // dd($totalProfit);
 
-                // dd($salesCost);
-                // قيود تكلفه البضاعه
-                if (in_array($component->type, [10, 13, 19])) {
+                if ($component->additional_value > 0) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => 69, // الضريبة
+                        'debit'      => 0,
+                        'credit'     => $component->additional_value,
+                        'type'       => 1,
+                        'info'       => $component->notes,
+                        'op_id'      => $operation->id,
+                        'isdeleted'  => 0,
+                    ]);
+                }
+
+                if (in_array($component->type, [10, 12, 19])) {
 
                     $costJournalId = JournalHead::max('journal_id') + 1;
 
@@ -246,7 +255,7 @@ class SaveInvoiceService
                         'user'       => Auth::id(),
                     ]);
 
-                    $costAllSales = $component->total_after_additional - $totalProfit;
+                    $costAllSales = $component->total_after_additional - $totalProfit  - $component->additional_value;
 
                     JournalDetail::create([
                         'journal_id' => $costJournalId,

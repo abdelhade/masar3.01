@@ -65,7 +65,7 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
 }; ?>
 
 <div>
-    <!-- Custom Styles -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
 
@@ -75,14 +75,21 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             box-sizing: border-box;
         }
 
+        html,
+        body {
+            overflow: hidden;
+            /* منع ظهور أي سكرول في الصفحة */
+        }
+
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             position: relative;
-            overflow-x: hidden;
-            padding: 20px 0;
-            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
         /* Animated Background Elements */
@@ -108,32 +115,14 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             }
         }
 
-        .container {
+        /* تم إزالة الـ container القديم */
+
+        .auth-container {
             position: relative;
-            z-index: 1;
-            padding: 0 15px;
-            width: 800%;
-            max-width: 1850px;
-            margin: 0 auto;
-        }
-
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 0 -15px;
-            min-height: 100vh;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .col-12 {
+            z-index: 2;
             width: 100%;
-            padding: 0 15px;
-        }
-
-        .col-lg-5 {
-            width: 100%;
-            max-width: 500px;
+            width: 550px;
+            /* زيادة عرض الفورم */
             margin: 0 auto;
         }
 
@@ -146,7 +135,6 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             border: 1px solid rgba(255, 255, 255, 0.2);
             animation: fadeIn 0.6s ease-out;
             width: 100%;
-            margin: 20px auto;
         }
 
         .modern-header {
@@ -391,7 +379,7 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1; /* Add this line to ensure button text is above ::before */
+            z-index: 1;
         }
 
         .modern-button::before {
@@ -403,12 +391,12 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
-            z-index: 0; /* Make sure ::before is below the text */
+            z-index: 0;
         }
 
-        .modern-button > * {
+        .modern-button>* {
             position: relative;
-            z-index: 2; /* Ensure children (text/icons) are above ::before */
+            z-index: 2;
         }
 
         .modern-button:hover::before {
@@ -450,14 +438,6 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             margin-left: 8px;
         }
 
-        .auth-wrapper {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
         @keyframes spin {
             to {
                 transform: rotate(360deg);
@@ -491,15 +471,10 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
         /* Responsive Design */
         @media (max-width: 768px) {
             body {
-                padding: 10px 0;
-            }
-
-            .container {
-                padding: 0 10px;
+                padding: 10px;
             }
 
             .modern-login-card {
-                margin: 10px auto;
                 border-radius: 20px;
             }
 
@@ -533,15 +508,6 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 0 5px;
-            }
-
-            .modern-login-card {
-                margin: 5px auto;
-                border-radius: 16px;
-            }
-
             .modern-header {
                 padding: 30px 20px;
             }
@@ -574,124 +540,81 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
                 margin-bottom: 25px;
             }
         }
-
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .col-lg-5 {
-                max-width: 600px;
-            }
-        }
-
-        @media (min-width: 1025px) {
-            .col-lg-5 {
-                max-width: 500px;
-            }
-        }
-
-        /* Wire loading states */
-        [wire\:loading] .loading-spinner {
-            display: inline-block;
-        }
-
-        [wire\:loading\.remove] {
-            display: none;
-        }
     </style>
+    </head>
 
-    <!-- Login Container -->
+    <body>
+        <!-- تم تبسيط الهيكل للتوسيط -->
+        <div class="auth-container">
+            <div class="modern-login-card">
+                <!-- Header -->
+                <div class="modern-header">
+                    <div class="modern-logo">
+                        <img src="https://via.placeholder.com/50/ffffff/667eea?text=Logo" alt="logo"
+                            class="auth-logo">
+                    </div>
+                    <h1 class="modern-title">خلينا نبدأ مع مسار</h1>
+                    <p class="modern-subtitle">سجل الدخول للمتابعة</p>
+                </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="col-lg-5">
-                    <div class="d-flex align-items-center justify-content-center min-vh-100">
-
-                        <div class="modern-login-card">
-                            <!-- Header -->
-                            <div class="modern-header">
-                                <div class="modern-logo">
-                                    <img src="{{ asset('assets/images/logo-sm-dark.png') }}" alt="logo"
-                                        class="auth-logo">
+                <!-- Form Body -->
+                <div class="modern-form">
+                    <form wire:submit.prevent="login">
+                        <!-- Email -->
+                        <div class="modern-form-group">
+                            <label class="modern-label" for="email">البريد الإلكتروني</label>
+                            <div class="modern-input-container">
+                                <input type="email" id="email"
+                                    class="modern-input @error('email') is-invalid @enderror"
+                                    placeholder="email@example.com" required wire:model="email" autocomplete="email">
+                                <i class="fas fa-envelope modern-input-icon"></i>
+                            </div>
+                            @error('email')
+                                <div class="modern-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>{{ $message }}</span>
                                 </div>
-                                <h1 class="modern-title">خلينا نبدأ مع مسار</h1>
-                                <p class="modern-subtitle">سجل الدخول للمتابعة</p>
-                            </div>
+                            @enderror
+                        </div>
 
-                            <!-- Form Body -->
-                            <div class="modern-form">
-                                <!-- Session Status -->
-                                <x-auth-session-status class="mb-4" :status="session('status')" />
-
-                                <form wire:submit="login">
-                                    <!-- Email -->
-                                    <div class="modern-form-group">
-                                        <label class="modern-label" for="email">البريد الإلكتروني</label>
-                                        <div class="modern-input-container">
-                                            <input type="email" id="email"
-                                                class="modern-input @error('email') is-invalid @enderror"
-                                                wire:model="email" placeholder="email@example.com" required autofocus>
-                                            <i class="fas fa-envelope modern-input-icon"></i>
-                                        </div>
-                                        @error('email')
-                                            <div class="modern-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                <span>{{ $message }}</span>
-                                            </div>
-                                        @enderror
-                                    </div>
-
-                                    <!-- Password -->
-                                    <div class="modern-form-group">
-                                        <label class="modern-label" for="password">كلمة المرور</label>
-                                        <div class="modern-input-container">
-                                            <input type="password" id="password"
-                                                class="modern-input @error('password') is-invalid @enderror"
-                                                wire:model="password" placeholder="ادخل كلمة المرور" required>
-                                            <i class="fas fa-lock modern-input-icon"></i>
-                                        </div>
-                                        @error('password')
-                                            <div class="modern-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                <span>{{ $message }}</span>
-                                            </div>
-                                        @enderror
-                                    </div>
-
-                                    <!-- Remember Me -->
-                                    <div class="modern-remember">
-                                        <label class="modern-checkbox">
-                                            <input type="checkbox" wire:model="remember" id="remember_me">
-                                            <span class="modern-checkmark"></span>
-                                        </label>
-                                        <label class="modern-remember-label" for="remember_me">تذكرني</label>
-                                    </div>
-
-                                    <!-- Submit Button -->
-                                    <button type="submit" class="modern-button" wire:loading.attr="disabled">
-                                        <span >
-                                            تسجيل الدخول
-                                            <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
-                                        </span>
-                                        <span wire:loading>
-                                            جاری التسجيل...
-                                            <div class="loading-spinner"></div>
-                                        </span>
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- Footer -->
-                            <div class="modern-footer">
-                                <span>{{ config('app.name') }} © {{ date('Y') }}</span>
+                        <!-- Password -->
+                        <div class="modern-form-group">
+                            <label class="modern-label" for="password">كلمة المرور</label>
+                            <div class="modern-input-container">
+                                <input type="password" id="password" class="modern-input"
+                                    placeholder="ادخل كلمة المرور" required wire:model="password"
+                                    autocomplete="current-password">
+                                <i class="fas fa-lock modern-input-icon"></i>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Remember Me -->
+                        <div class="modern-remember">
+                            <label class="modern-checkbox">
+                                <input type="checkbox" id="remember_me" wire:model="remember">
+                                <span class="modern-checkmark"></span>
+                            </label>
+                            <label class="modern-remember-label" for="remember_me">تذكرني</label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="modern-button" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="login">
+                                تسجيل الدخول
+                                <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
+                            </span>
+                            <span wire:loading wire:target="login">
+                                جارِ تسجيل الدخول...
+                                <span class="loading-spinner"></span>
+                            </span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Footer -->
+                <div class="modern-footer">
+                    <span>نظام مسار © 2023</span>
                 </div>
             </div>
         </div>
-    </div>
-
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-</div>
 </div>
