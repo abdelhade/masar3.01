@@ -87,13 +87,7 @@ return new class extends Migration
             $table->foreignId('acc3')->nullable()->constrained('acc_head')->nullOnDelete();
             // علاقات Foreign Keys
             $table->foreign('pro_type')->references('id')->on('pro_types')->onDelete('set null');
-            $table->foreign('store_id')->references('id')->on('acc_head')->nullOnDelete();
-            $table->foreign('emp_id')->references('id')->on('acc_head')->nullOnDelete();
-            $table->foreign('emp2_id')->references('id')->on('acc_head')->nullOnDelete();
-            $table->foreign('acc1')->references('id')->on('acc_head')->nullOnDelete();
-            $table->foreign('acc2')->references('id')->on('acc_head')->nullOnDelete();
-            $table->foreign('acc3')->references('id')->on('acc_head')->nullOnDelete();
-
+     
 
             $table->index('acc1');
             $table->index('acc2');
