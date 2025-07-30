@@ -190,9 +190,9 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             transform: translateY(-5px);
         }
 
-         .modern-logo img {
+        .modern-logo img {
             width: 100px;
-            height:100px;
+            height: 100px;
             border-radius: 40%;
         }
 
@@ -563,7 +563,8 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
                         <div class="modern-form-group">
                             <label class="modern-label" for="email">البريد الإلكتروني</label>
                             <div class="modern-input-container">
-                                <input type="email" id="email" class="modern-input @error('email') is-invalid @enderror"
+                                <input type="email" id="email"
+                                    class="modern-input @error('email') is-invalid @enderror"
                                     placeholder="email@example.com" required wire:model="email" autocomplete="email">
                                 <i class="fas fa-envelope modern-input-icon"></i>
                             </div>
@@ -579,8 +580,9 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
                         <div class="modern-form-group">
                             <label class="modern-label" for="password">كلمة المرور</label>
                             <div class="modern-input-container">
-                                <input type="password" id="password" class="modern-input" placeholder="ادخل كلمة المرور"
-                                    required wire:model="password" autocomplete="current-password">
+                                <input type="password" id="password" class="modern-input"
+                                    placeholder="ادخل كلمة المرور" required wire:model="password"
+                                    autocomplete="current-password">
                                 <i class="fas fa-lock modern-input-icon"></i>
                             </div>
                         </div>
@@ -610,7 +612,7 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
 
                 <!-- Footer -->
                 <div class="modern-footer">
-                    <span>نظام مسار © 2023</span>
+                    <span>نظام مسار © {{ date('Y') }}</span>
                 </div>
             </div>
         </div>

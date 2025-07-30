@@ -1,7 +1,7 @@
 <div class="container">
     @if ($currentStep === 1)
         <div class="row">
-            <div class="col-10">
+            <div class="col-12  ">
                 <div class="bg-white shadow-lg rounded-lg p-8">
                     <div class="flex items-center">
                         <h1 class="text-3xl font-bold text-gray-800">فاتورة التصنيع</h1>
@@ -19,7 +19,15 @@
                             <div class="flex items-center">
                                 <button wire:click="distributeCosts"
                                     class="btn btn-primary px-5 py-3 text-lg font-bold">
-                                    توزيع التكاليف
+                                    توزيع التكاليف <i class="fas fa-balance-scale"></i>
+                                </button>
+                                <button wire:click="saveInvoice" class="btn btn-success px-5 py-3 text-lg font-bold">
+                                    حفظ الفاتورة <i class="fas fa-save"></i>
+                                </button>
+
+                                <button wire:click="cancelInvoice" type="button"
+                                    class="btn btn-danger px-5 py-3 text-lg font-bold">
+                                    إلغاء <i class="fas fa-times-circle"></i>
                                 </button>
                             </div>
                         </div>
@@ -610,13 +618,72 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-5">
+                            <div class="row gx-2 align-items-end">
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">المواد الخام</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalRawMaterialsCost) }} ج" readonly>
+                                </div>
 
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">المصاريف</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalAdditionalExpenses) }} ج" readonly>
+                                </div>
+
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">الإجمالي</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm text-success fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalManufacturingCost) }} ج" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-2">
+                        </div>
+
+                        <div class="col-5">
+                            <div class="row gx-2 align-items-end">
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">الانتاج التام</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalRawMaterialsCost) }} ج" readonly>
+                                </div>
+
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">التكلفه المعياريه</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalAdditionalExpenses) }} ج" readonly>
+                                </div>
+
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">فرق التكلفه</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm  fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalManufacturingCost) }} ج" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-2">
+            {{-- <div class="col-2">
 
-                {{-- <div class="mb-4 card">
+                <div class="mb-4 card">
                     <div class="card-body p-3">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="h2"> المصاريف الإضافية</h3>
@@ -670,7 +737,7 @@
                             @endif
                         </div>
                     </div>
-                </div> --}}
+                </div>
 
                 <!-- ملخص التكاليف -->
                 <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded p-3 mb-4 overflow-hidden">
@@ -712,12 +779,7 @@
                     </button>
                 </div>
 
-
-
-
-
-
-            </div>
+            </div> --}}
         </div>
     @endif
 </div>
