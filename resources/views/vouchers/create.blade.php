@@ -80,7 +80,7 @@
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <label for="pro_value">المبلغ</label>
-                                <input type="number" step="0.01" name="pro_value" id="pro_value" class="form-control">
+                                <input type="number" step="0.01" name="pro_value" id="pro_value" class="form-control frst">
                             </div>
                         </div>
 
@@ -97,7 +97,6 @@
                             <div class="form-group">
                                 <label for="{{ $type === 'receipt' ? 'acc1' : 'acc2' }}">حساب الصندوق</label>
                                 <select name="{{ $type === 'receipt' ? 'acc1' : 'acc2' }}" class="form-control">
-                                    <option value="">اختر حساب الصندوق</option>
                                     @foreach ($cashAccounts as $account)
                                         <option value="{{ $account->id }}">{{ $account->aname }}</option>
                                     @endforeach
@@ -105,19 +104,15 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="{{ $type === 'payment' ? 'acc1' : 'acc2' }}">
-                                    {{ $type === 'payment' ? 'الي الحساب' : 'من الحساب' }}
-                                </label>
-                                <select name="{{ $type === 'payment' ? 'acc1' : 'acc2' }}" class="form-control" required>
-                                    <option value="">اختر حساب</option>
-                                    @foreach ($otherAccounts as $acc)
-                                        <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
-                                    @endforeach
-                                </select>
+
+                        
+                            <div class="col-md-6">
+                                <x-dynamic-search name="{{ $type === 'receipt' ? 'acc2' : 'acc1' }}" label="{{ $type === 'receipt' ? 'من الحساب' : 'الي الحساب' }}" column="aname"
+                                    model="App\Models\AccHead" placeholder="ابحث عن حساب..." :required="false"
+                                    :filters="['is_basic' => '0']" :class="'form-control'" />
                             </div>
-                        </div>
+
+                    
                     </div>
 
                     <div class="row">
@@ -137,7 +132,6 @@
                             <div class="form-group">
                                 <label for="emp2_id">مندوب التحصيل</label>
                                 <select name="emp2_id" class="form-control">
-                                    <option value="">اختر مندوب</option>
                                     @foreach ($employeeAccounts as $emp)
                                         <option value="{{ $emp->id }}">{{ $emp->aname }}</option>
                                     @endforeach

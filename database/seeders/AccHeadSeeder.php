@@ -80,6 +80,8 @@ class AccHeadSeeder extends Seeder
             ['id'=>70,'code'=>'21040102','deletable'=>0,'editable'=>1,'aname'=>'ض ق م مشتريات','is_stock'=>0,'is_fund'=>0,'parent_id'=>68,'is_basic'=>0,'employees_expensses'=>0],
             ['id'=>71,'code'=>'21040103','deletable'=>0,'editable'=>1,'aname'=>'ض خ مبيعات','is_stock'=>0,'is_fund'=>0,'parent_id'=>68,'is_basic'=>0,'employees_expensses'=>0],
             ['id'=>72,'code'=>'21040104','deletable'=>0,'editable'=>1,'aname'=>'ض خ مشتريات','is_stock'=>0,'is_fund'=>0,'parent_id'=>68,'is_basic'=>0,'employees_expensses'=>0],
+            ['id'=>73,'code'=>'110801','deletable'=>0,'editable'=>1,'aname'=>'مركز التشغيل الرئيسي','is_stock'=>0,'is_fund'=>0,'parent_id'=>30,'is_basic'=>0,'employees_expensses'=>0],
+            
 
         ];
 
