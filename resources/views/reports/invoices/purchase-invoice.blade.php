@@ -27,6 +27,7 @@
                                     <th>الحساب المدين</th>
                                     <th>الموظف</th>
                                     <th>المستخدم</th>
+                                    <th>العمليات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -47,6 +48,24 @@
                                         <td>{{ $invoice->acc2Head->aname ?? '-' }}</td>
                                         <td>{{ $invoice->employee->aname ?? '-' }}</td>
                                         <td>{{ $invoice->user->name ?? '-' }}</td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <a class="btn btn-blue btn-icon-square-sm"
+                                                    href="{{ route('invoices.edit', $invoice->id) }}">
+                                                    <i class="las la-eye"></i>
+                                                </a>
+
+                                                <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST"
+                                                    style="display:inline-block;"
+                                                    onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                        <i class="las la-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>

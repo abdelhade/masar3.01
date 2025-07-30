@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
-use App\Models\{OperHead, JournalHead, JournalDetail, OperationItems, AccHead, Price, Item};
+use App\Models\{OperHead, OperationItems, AccHead, Price, Item};
 use Illuminate\Support\Facades\Log;
 
 class EditInvoiceForm extends Component
@@ -24,6 +24,13 @@ class EditInvoiceForm extends Component
     public $accural_date;
     public $pro_id;
     public $serial_number;
+
+
+    public $showConvertModal = false;
+    public $selectedConvertType = null;
+    public $convertFromTypes = [];
+    public $originalInvoiceId = null;
+
 
     public $priceTypes = [];
     public $selectedPriceType = 1;
@@ -187,6 +194,130 @@ class EditInvoiceForm extends Component
                 'notes' => $operationItem->notes ?? '',
             ];
         }
+    }
+
+    public function openConvertModal()
+    {
+        // التأكد من أن التعديل مفعل
+        if ($this->is_disabled) {
+            Alert::toast('يجب تفعيل التعديل أولاً', 'error');
+            return;
+        }
+
+        $this->showConvertModal = true;
+        $this->convertFromTypes = $this->getCompatibleConversionTypes();
+
+        // إذا لم تكن هناك أنواع متوافقة
+        if (empty($this->convertFromTypes)) {
+            Alert::toast('لا توجد أنواع فواتير متوافقة للتحويل إليها', 'error');
+            $this->showConvertModal = false;
+            return;
+        }
+    }
+    public function getCompatibleConversionTypes()
+    {
+        // قواعد التحويل المنطقية
+        $conversionRules = [
+            10 => [12, 14, 16], // من مبيعات إلى: مردود مبيعات، أمر بيع، عرض سعر
+            11 => [13, 15, 17], // من مشتريات إلى: مردود مشتريات، أمر شراء، عرض سعر
+            12 => [10, 14, 16], // من مردود مبيعات إلى: مبيعات، أمر بيع، عرض سعر
+            13 => [11, 15, 17], // من مردود مشتريات إلى: مشتريات، أمر شراء، عرض سعر
+            14 => [10, 16],     // من أمر بيع إلى: فاتورة مبيعات، عرض سعر
+            15 => [11, 17],     // من أمر شراء إلى: فاتورة مشتريات، عرض سعر
+            16 => [10, 14],     // من عرض سعر لعميل إلى: فاتورة مبيعات، أمر بيع
+            17 => [11, 15],     // من عرض سعر من مورد إلى: فاتورة مشتريات، أمر شراء
+            18 => [19, 20],     // من توالف إلى: أمر صرف، أمر إضافة
+            19 => [18, 20],     // من أمر صرف إلى: توالف، أمر إضافة
+            20 => [18, 19],     // من أمر إضافة إلى: توالف، أمر صرف
+            21 => [19, 20],     // من تحويل مخزن إلى: أمر صرف، أمر إضافة
+            22 => [10, 14, 16], // من أمر حجز إلى: مبيعات، أمر بيع، عرض سعر
+        ];
+
+        $allowedTypes = $conversionRules[$this->type] ?? array_keys($this->titles);
+
+        // إزالة النوع الحالي
+        $allowedTypes = array_filter($allowedTypes, fn($type) => $type !== $this->type);
+
+        return array_intersect_key($this->titles, array_flip($allowedTypes));
+    }
+    /**
+     * إغلاق نافذة تحويل الفاتورة
+     */
+    public function closeConvertModal()
+    {
+        $this->showConvertModal = false;
+        $this->selectedConvertType = null;
+        $this->convertFromTypes = [];
+    }
+
+    public function getConversionConfirmationMessage()
+    {
+        if (!$this->selectedConvertType) {
+            return '';
+        }
+
+        $fromType = $this->titles[$this->type] ?? 'غير محدد';
+        $toType = $this->titles[$this->selectedConvertType] ?? 'غير محدد';
+
+        return "هل أنت متأكد من تحويل الفاتورة من \"$fromType\" إلى \"$toType\"؟";
+    }
+    public function canConvertInvoice()
+    {
+        // يمكن إضافة شروط معينة للتحقق من إمكانية التحويل
+        return !empty($this->invoiceItems) && !$this->is_disabled;
+    }
+
+    public function convertInvoice()
+    {
+        if (!$this->selectedConvertType) {
+            Alert::toast('يرجى اختيار نوع الفاتورة المراد التحويل إليها', 'error');
+            return;
+        }
+
+        // التحقق من صحة التحويل
+        $errors = $this->validateConversion();
+        if (!empty($errors)) {
+            Alert::toast(implode(' - ', $errors), 'error');
+            return;
+        }
+
+        // حفظ البيانات القديمة للمقارنة
+        $oldType = $this->type;
+        $this->originalInvoiceId = $this->operation->id;
+
+        // تحديث نوع الفاتورة
+        $this->type = (int) $this->selectedConvertType;
+
+        // تحديث الحسابات والأسعار
+        $this->updateAccountsForNewType();
+        $this->updatePricesForNewType();
+
+        // إعادة حساب الإجماليات
+        $this->calculateTotals();
+
+        // تسجيل التحويل في سجل النشاط
+        $this->logConversion($oldType, $this->type, $this->originalInvoiceId);
+
+        $this->closeConvertModal();
+
+        Alert::toast('تم تحويل الفاتورة بنجاح من ' . $this->titles[$oldType] . ' إلى ' . $this->titles[$this->type], 'success');
+    }
+
+    /**
+     * تسجيل عملية التحويل
+     */
+    public function logConversion($oldType, $newType, $originalId)
+    {
+        // يمكن إنشاء جدول conversion_log لتتبع التحويلات
+        Log::info('تم تحويل الفاتورة', [
+            'original_invoice_id' => $originalId,
+            'original_type' => $oldType,
+            'original_type_name' => $this->titles[$oldType] ?? 'غير محدد',
+            'new_type' => $newType,
+            'new_type_name' => $this->titles[$newType] ?? 'غير محدد',
+            'converted_by' => Auth::id(),
+            'converted_at' => now(),
+        ]);
     }
 
     public function enableEditing()

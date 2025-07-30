@@ -218,126 +218,405 @@
 
                     <hr style=" border: none; border-top: 12px solid #1908da; margin: 0.1rem 0;">
 
-                    <div class="mb-8 card" style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
-                        <!-- حقل البحث للمواد الخام -->
+
+                    <div class="container-fluid">
                         <div class="row">
-                            <div class="col-lg-3 mb-0" style="position: relative;">
-                                <input type="text" wire:model.live="rawMaterialSearchTerm"
-                                    id="raw_material_search" class="form-control form-control-sm frst"
-                                    placeholder="ابحث عن مادة خام..." autocomplete="off" style="font-size: 1em;"
-                                    wire:keydown.arrow-down="handleKeyDownRawMaterial"
-                                    wire:keydown.arrow-up="handleKeyUpRawMaterial"
-                                    wire:keydown.enter.prevent="handleEnterRawMaterial" />
-                                @if (strlen($rawMaterialSearchTerm) > 0 && !is_null($rawMaterialSearchResults) && $rawMaterialSearchResults->count())
-                                    <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                                        @foreach ($rawMaterialSearchResults as $index => $item)
-                                            <li class="list-group-item list-group-item-action
-                            @if ($rawMaterialSelectedResultIndex === $index) active @endif"
-                                                wire:click="addRawMaterialFromSearch({{ $item->id }})">
-                                                {{ $item->name }}
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @elseif (strlen($rawMaterialSearchTerm) > 0)
-                                    <div class="mt-2" style="position: absolute; z-index: 1000; width: 100%;">
-                                        <div class="list-group-item text-danger">
-                                            لا توجد نتائج لـ "{{ $rawMaterialSearchTerm }}"
+                            <div class="chat-box-left col-12"
+                                style="width: 100% !important; max-width: 100% !important; height: 300px;">
+
+                                <!-- إضافة متغير لحفظ التاب النشط -->
+                                <input type="hidden" wire:model="activeTab"
+                                    value="{{ $activeTab ?? 'general_chat' }}">
+
+                                <ul class="nav nav-pills mb-3 nav-justified" id="pills-tab" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ ($activeTab ?? 'general_chat') == 'general_chat' ? 'active' : '' }}"
+                                            id="general_chat_tab" data-bs-toggle="pill" href="#general_chat"
+                                            onclick="setActiveTab('general_chat')"
+                                            wire:click="$set('activeTab', 'general_chat')">
+                                            المواد الخام
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active' : '' }}"
+                                            id="group_chat_tab" data-bs-toggle="pill" href="#group_chat"
+                                            onclick="setActiveTab('group_chat')"
+                                            wire:click="$set('activeTab', 'group_chat')">
+                                            المصروفات
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <div class="chat-list" data-simplebar="init">
+                                    <div class="simplebar-wrapper" style="margin: 0px;">
+                                        <div class="simplebar-mask">
+                                            <div class="simplebar-offset" style="right: 0px; bottom: 0px;">
+                                                <div class="simplebar-content-wrapper"
+                                                    style="height: 100%; overflow: hidden;">
+                                                    <div class="simplebar-content" style="padding: 0px;">
+                                                        <div class="tab-content" id="pills-tabContent">
+
+                                                            <!-- تاب المواد الخام -->
+                                                            <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'general_chat' ? 'active show' : '' }}"
+                                                                id="general_chat">
+                                                                <div class="mb-8 card"
+                                                                    style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
+                                                                    <!-- حقل البحث للمواد الخام -->
+                                                                    <div class="row p-3">
+                                                                        <div class="col-lg-3 mb-2"
+                                                                            style="position: relative;">
+                                                                            <input type="text"
+                                                                                wire:model.live="rawMaterialSearchTerm"
+                                                                                id="raw_material_search"
+                                                                                class="form-control form-control-sm frst"
+                                                                                placeholder="ابحث عن مادة خام..."
+                                                                                autocomplete="off"
+                                                                                style="font-size: 1em;"
+                                                                                wire:keydown.arrow-down="handleKeyDownRawMaterial"
+                                                                                wire:keydown.arrow-up="handleKeyUpRawMaterial"
+                                                                                wire:keydown.enter.prevent="handleEnterRawMaterial" />
+
+                                                                            @if (strlen($rawMaterialSearchTerm) > 0 && !is_null($rawMaterialSearchResults) && $rawMaterialSearchResults->count())
+                                                                                <ul class="list-group position-absolute w-100"
+                                                                                    style="z-index: 999;">
+                                                                                    @foreach ($rawMaterialSearchResults as $index => $item)
+                                                                                        <li class="list-group-item list-group-item-action
+                                                                        @if ($rawMaterialSelectedResultIndex === $index) active @endif"
+                                                                                            wire:click="addRawMaterialFromSearch({{ $item->id }})">
+                                                                                            {{ $item->name }}
+                                                                                        </li>
+                                                                                    @endforeach
+                                                                                </ul>
+                                                                            @elseif (strlen($rawMaterialSearchTerm) > 0)
+                                                                                <div class="mt-2"
+                                                                                    style="position: absolute; z-index: 1000; width: 100%;">
+                                                                                    <div
+                                                                                        class="list-group-item text-danger">
+                                                                                        لا توجد نتائج لـ
+                                                                                        "{{ $rawMaterialSearchTerm }}"
+                                                                                    </div>
+                                                                                </div>
+                                                                            @endif
+                                                                        </div>
+
+                                                                        <div class="col-lg-2 mb-2">
+                                                                            <select wire:model="rawAccount"
+                                                                                class="form-control form-control-sm"
+                                                                                style="font-size: 1em;">
+                                                                                @foreach ($Stors as $keyStore1 => $valueStore1)
+                                                                                    <option
+                                                                                        value="{{ $keyStore1 }}">
+                                                                                        {{ $valueStore1 }}</option>
+                                                                                @endforeach
+                                                                            </select>
+                                                                            @error('rawAccount')
+                                                                                <span
+                                                                                    class="text-danger small">{{ $message }}</span>
+                                                                            @enderror
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="bg-light rounded-3 p-3 mx-3 mb-3">
+                                                                        @if (empty($selectedRawMaterials))
+                                                                            <div class="text-center py-5">
+                                                                                <i class="fas fa-box-open text-muted mb-3"
+                                                                                    style="font-size: 2rem;"></i>
+                                                                                <h5 class="text-muted">لا توجد مواد خام
+                                                                                </h5>
+                                                                                <p class="text-muted small">أضف المواد
+                                                                                    الخام المستخدمة في التصنيع</p>
+                                                                            </div>
+                                                                        @else
+                                                                            <div class="space-y-3">
+                                                                                {{-- @foreach ($selectedRawMaterials as $index => $material) --}}
+                                                                                <!-- جدول المواد الخام -->
+                                                                                {{-- <div class="row mt-4">
+                                                                                        <div class="col-12"> --}}
+                                                                                <table
+                                                                                    class="table table-bordered table-sm">
+                                                                                    <thead class="table-light">
+                                                                                        <tr class="text-center">
+                                                                                            <th style="width: 20%">
+                                                                                                المادة الخام
+                                                                                            </th>
+                                                                                            <th style="width: 15%">
+                                                                                                الوحدة</th>
+                                                                                            <th style="width: 15%">
+                                                                                                الكمية</th>
+                                                                                            <th style="width: 15%">
+                                                                                                سعر الوحدة
+                                                                                            </th>
+                                                                                            <th style="width: 15%">
+                                                                                                الإجمالي
+                                                                                            </th>
+                                                                                            <th style="width: 10%">
+                                                                                                إجراءات</th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody
+                                                                                        id="raw_materials_table_body">
+                                                                                        @foreach ($selectedRawMaterials as $index => $material)
+                                                                                            <tr
+                                                                                                wire:key="raw-material-{{ $material['id'] ?? 'index-' . $index }}">
+                                                                                                <td>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value="{{ $material['name'] ?? '' }}"
+                                                                                                        class="form-control form-control-sm bg-light"
+                                                                                                        readonly
+                                                                                                        style="padding:2px;height:30px;font-size: 0.9em;">
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <select
+                                                                                                        wire:model="selectedRawMaterials.{{ $index }}.unit_id"
+                                                                                                        class="form-control form-control-sm unit-select"
+                                                                                                        style="padding:2px;height:30px;font-size: 0.9em;"
+                                                                                                        data-item-id="{{ $material['id'] ?? '' }}">
+                                                                                                        <option
+                                                                                                            value="">
+                                                                                                            اختر
+                                                                                                            وحدة
+                                                                                                        </option>
+                                                                                                        @foreach ($material['unitsList'] ?? [] as $unit)
+                                                                                                            <option
+                                                                                                                value="{{ $unit['id'] }}">
+                                                                                                                {{ $unit['name'] }}
+                                                                                                                ({{ number_format($unit['available_qty'], 0, '.', '') }}
+                                                                                                                قطعة)
+                                                                                                            </option>
+                                                                                                        @endforeach
+                                                                                                    </select>
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <input
+                                                                                                        type="number"
+                                                                                                        id="raw_quantity_{{ $index }}"
+                                                                                                        wire:model.lazy="selectedRawMaterials.{{ $index }}.quantity"
+                                                                                                        wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.quantity')"
+                                                                                                        min="0.01"
+                                                                                                        step="0.01"
+                                                                                                        class="form-control form-control-sm"
+                                                                                                        style="padding:2px;height:30px;font-size: 0.9em;"
+                                                                                                        placeholder="الكمية">
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <input
+                                                                                                        type="number"
+                                                                                                        id="raw_unit_cost_{{ $index }}"
+                                                                                                        wire:model.lazy="selectedRawMaterials.{{ $index }}.unit_cost"
+                                                                                                        wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.unit_cost')"
+                                                                                                        min="0"
+                                                                                                        step="0.01"
+                                                                                                        class="form-control form-control-sm cost-input"
+                                                                                                        style="padding:2px;height:30px;font-size: 0.9em;"
+                                                                                                        placeholder="سعر الوحدة">
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value="{{ number_format($material['total_cost'] ?? 0, 2) }} "
+                                                                                                        class="form-control form-control-sm  bg-opacity-10  fw-bold"
+                                                                                                        style="padding:2px;height:30px;font-size: 0.9em;"
+                                                                                                        readonly>
+                                                                                                </td>
+                                                                                                <td
+                                                                                                    class="text-center">
+                                                                                                    <button
+                                                                                                        wire:click="removeRawMaterial({{ $index }})"
+                                                                                                        class="btn btn-danger btn-sm"
+                                                                                                        style="height:30px;padding:2px 8px;">
+                                                                                                        <i
+                                                                                                            class="fa fa-trash"></i>
+                                                                                                    </button>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        @endforeach
+                                                                                    </tbody>
+                                                                                </table>
+                                                                                {{-- </div>
+                                                                                    </div> --}}
+                                                                                {{-- @endforeach --}}
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div><!--end general chat-->
+
+                                                            <!-- تاب المصروفات -->
+                                                            <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active show' : '' }}"
+                                                                id="group_chat">
+                                                                <div class="col-12">
+                                                                    <div class="card h-100">
+                                                                        <div
+                                                                            class="card-header  bg-opacity-10 border-0">
+                                                                            <div
+                                                                                class="d-flex justify-content-between align-items-center">
+
+                                                                                <button wire:click="addExpense"
+                                                                                    class="btn btn-primary btn-sm">
+                                                                                    إضافة مصروف
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="card-body p-3"
+                                                                            style="max-height: 250px; overflow-y: auto;">
+                                                                            @if (count($additionalExpenses) === 0)
+                                                                                <div class="text-center py-5">
+                                                                                    <i class="fas fa-money-bill-wave text-muted mb-3"
+                                                                                        style="font-size: 2rem;"></i>
+                                                                                    <h5 class="text-muted">لا توجد
+                                                                                        مصاريف إضافية</h5>
+                                                                                    <p class="text-muted small">أضف
+                                                                                        المصاريف الإضافية للتصنيع</p>
+                                                                                </div>
+                                                                            @else
+                                                                                {{-- <div class="row mt-4"> --}}
+                                                                                {{-- <div class="col-12"> --}}
+                                                                                <table
+                                                                                    class="table table-bordered table-sm">
+                                                                                    <thead class="table-light">
+                                                                                        <tr class="text-center">
+
+                                                                                            <th style="width: 40%">
+                                                                                                وصف المصروف</th>
+                                                                                            <th style="width: 40%">
+                                                                                                الحساب</th>
+
+                                                                                            <th style="width: 30%">
+                                                                                                المبلغ
+                                                                                            </th>
+                                                                                            <th style="width: 10%">
+                                                                                                إجراءات</th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody
+                                                                                        id="additional_expenses_table_body">
+                                                                                        @foreach ($additionalExpenses as $index => $expense)
+                                                                                            <tr>
+
+                                                                                                <td>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        wire:model="additionalExpenses.{{ $index }}.description"
+                                                                                                        placeholder="أدخل وصف المصروف..."
+                                                                                                        class="form-control form-control-sm @error('additionalExpenses.' . $index . '.description') is-invalid @enderror"
+                                                                                                        style="padding:2px;height:30px;">
+                                                                                                    @error('additionalExpenses.'
+                                                                                                        . $index .
+                                                                                                        '.description')
+                                                                                                        <div class="invalid-feedback"
+                                                                                                            style="font-size: 0.8em;">
+                                                                                                            {{ $message }}
+                                                                                                        </div>
+                                                                                                    @enderror
+                                                                                                </td>
+
+
+
+                                                                                                <td>
+                                                                                                    <select
+                                                                                                        wire:model="additionalExpenses.{{ $index }}.account_id"
+                                                                                                        class="form-control form-control-sm"
+                                                                                                        style="padding:2px;height:30px;">
+                                                                                                        @foreach ($expenseAccountList as $keyExpense => $valueExpense)
+                                                                                                            <option
+                                                                                                                value="{{ $keyExpense }}">
+                                                                                                                {{ $valueExpense }}
+                                                                                                            </option>
+                                                                                                        @endforeach
+                                                                                                    </select>
+
+                                                                                                    @error('expenseAccount')
+                                                                                                        <span
+                                                                                                            class="text-red-500 text-sm">{{ $message }}</span>
+                                                                                                    @enderror
+                                                                                                </td>
+
+
+                                                                                                <td>
+                                                                                                    <input
+                                                                                                        type="number"
+                                                                                                        wire:model.live.debounce.300="additionalExpenses.{{ $index }}.amount"
+                                                                                                        min="0"
+                                                                                                        step="0.01"
+                                                                                                        placeholder="0.00"
+                                                                                                        class="form-control form-control-sm @error('additionalExpenses.' . $index . '.amount') is-invalid @enderror"
+                                                                                                        style="padding:2px;height:30px;">
+                                                                                                    @error('additionalExpenses.'
+                                                                                                        . $index .
+                                                                                                        '.amount')
+                                                                                                        <div class="invalid-feedback"
+                                                                                                            style="font-size: 0.8em;">
+                                                                                                            {{ $message }}
+                                                                                                        </div>
+                                                                                                    @enderror
+                                                                                                </td>
+                                                                                                <td
+                                                                                                    class="text-center">
+                                                                                                    <button
+                                                                                                        wire:click="removeExpense({{ $index }})"
+                                                                                                        class="btn btn-danger btn-sm"
+                                                                                                        style="height:30px;padding:2px 8px;"
+                                                                                                        title="حذف المصروف">
+                                                                                                        <i
+                                                                                                            class="fa fa-trash"></i>
+                                                                                                    </button>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        @endforeach
+                                                                                    </tbody>
+                                                                                </table>
+                                                                                {{-- </div> --}}
+                                                                                {{-- </div> --}}
+
+                                                                                <!-- إجمالي المصروفات -->
+                                                                                <div class="mt-4 pt-3">
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-8"></div>
+                                                                                        <div class="col-md-4">
+                                                                                            <div
+                                                                                                class="card bg-light border-0 shadow-sm">
+                                                                                                <div
+                                                                                                    class="card-body p-2 text-center">
+                                                                                                    <small
+                                                                                                        class="text-muted fw-semibold">إجمالي
+                                                                                                        المصروفات</small>
+                                                                                                    <h6
+                                                                                                        class="text-dark mb-0 fs-6">
+                                                                                                        {{ number_format(collect($additionalExpenses)->sum('amount'), 2) }}
+                                                                                                        جنيه
+                                                                                                    </h6>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div><!--end group chat-->
+
+                                                        </div><!--end tab-content-->
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                @endif
-                            </div>
-
-                            <div class="col-lg-2">
-                                <select wire:model="rawAccount" class="form-control form-control-sm"
-                                    style="font-size: 1em;">
-                                    @foreach ($Stors as $keyStore1 => $valueStore1)
-                                        <option value="{{ $keyStore1 }}">{{ $valueStore1 }}</option>
-                                    @endforeach
-                                </select>
-                                @error('rawAccount')
-                                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 rounded-lg p-4 pt-0">
-                            @if (empty($selectedRawMaterials))
-                                <div class="text-center py-12">
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">لا توجد مواد خام</h3>
-                                    <p class="mt-1 text-sm text-gray-500">أضف المواد الخام المستخمة في التصنيع</p>
                                 </div>
-                            @else
-                                <div class="space-y-4">
-                                    @foreach ($selectedRawMaterials as $index => $material)
-                                        <div class="row g-3 align-items-end"
-                                            wire:key="raw-material-{{ $material['id'] ?? 'index-' . $index }}">
-                                            <div class="col-md-2">
-                                                <label class="form-label mb-1">المادة الخام</label>
-                                                <input type="text" value="{{ $material['name'] ?? '' }}"
-                                                    style="font-size: 1em;" class="form-control form-control-sm"
-                                                    readonly>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label mb-1">الوحدة</label>
-                                                <select wire:model="selectedRawMaterials.{{ $index }}.unit_id"
-                                                    style="font-size: 1em;" class="form-control form-control-sm">
-                                                    <option value="">اختر وحدة</option>
-                                                    @foreach ($material['unitsList'] ?? [] as $unit)
-                                                        <option value="{{ $unit['id'] }}">
-                                                            {{ $unit['name'] }}
-                                                            ({{ number_format($unit['available_qty'], 0, '.', '') }}
-                                                            قطعة)
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label mb-1">الكمية</label>
-                                                <input type="number" style="font-size: 1em;"
-                                                    id="raw_quantity_{{ $index }}"
-                                                    wire:model.lazy="selectedRawMaterials.{{ $index }}.quantity"
-                                                    wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.quantity')"
-                                                    min="0.01" step="0.01"
-                                                    class="form-control form-control-sm">
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label class="form-label mb-1">سعر الوحدة</label>
-                                                <input type="number" style="font-size: 1em;"
-                                                    id="raw_unit_cost_{{ $index }}"
-                                                    wire:model.lazy="selectedRawMaterials.{{ $index }}.unit_cost"
-                                                    wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.unit_cost')"
-                                                    min="0" step="0.01"
-                                                    class="form-control form-control-sm">
-                                            </div>
-
-                                            <div class="col-md-1">
-                                                <label class="form-label mb-1">الإجمالي</label>
-                                                <input type="text" style="font-size: 1em;"
-                                                    value="{{ number_format($material['total_cost'] ?? 0, 2) }} جنيه"
-                                                    class="form-control form-control-sm bg-gray-100 text-green-600"
-                                                    readonly>
-                                            </div>
-
-                                            <div class="col-md-1">
-                                                <button wire:click="removeRawMaterial({{ $index }})"
-                                                    class="btn btn-danger btn-icon-square-sm">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
+                            </div>
                         </div>
                     </div>
+
+
                 </div>
             </div>
 
             <div class="col-2">
-                <div class="mb-4 card">
+
+                {{-- <div class="mb-4 card">
                     <div class="card-body p-3">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="h2"> المصاريف الإضافية</h3>
@@ -391,7 +670,7 @@
                             @endif
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- ملخص التكاليف -->
                 <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded p-3 mb-4 overflow-hidden">
@@ -432,6 +711,12 @@
                         إلغاء
                     </button>
                 </div>
+
+
+
+
+
+
             </div>
         </div>
     @endif
@@ -534,6 +819,39 @@
                     }
                 }, 200);
             };
+
+            //alerts
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('success-swal', (data) => {
+                    Swal.fire({
+                        title: data.title,
+                        text: data.text,
+                        icon: data.icon,
+                    }).then((result) => {
+                        location.reload();
+                    });
+                });
+            })
+
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('error-swal', (data) => {
+                    Swal.fire({
+                        title: data.title,
+                        text: data.text,
+                        icon: data.icon,
+                    });
+                });
+            })
+
+
+            // Livewire.on('form-validation-error', errors => {
+            //     let messages = errors.join('\n');
+            //     Swal.fire({
+            //         icon: 'error',
+            //         title: 'خطأ في البيانات',
+            //         text: messages,
+            //     });
+            // });
         });
     </script>
 @endpush

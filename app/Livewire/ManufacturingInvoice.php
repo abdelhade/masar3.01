@@ -2,15 +2,13 @@
 
 namespace App\Livewire;
 
-use App\Models\Item;
-use App\Models\Unit;
-use App\Models\AccHead;
+use App\Models\{
+    Item,
+    OperHead,
+    AccHead
+};
+use App\Services\ManufacturingInvoiceService;
 use Livewire\Component;
-use App\Models\OperHead;
-use App\Models\JournalHead;
-use App\Models\JournalDetail;
-use App\Models\OperationItems;
-use Illuminate\Support\Facades\Auth;
 
 class ManufacturingInvoice extends Component
 {
@@ -41,11 +39,18 @@ class ManufacturingInvoice extends Component
     public $unitCostPerProduct = 0;
     public $OperatingAccount = '';
     public $rawAccount = '';
+
+    public $expenseAccount;
+    public $expenseAccountList = [];
+
     public $productAccount = '';
     public $Stors = [];
     public $OperatingCenter;
     public $patchNumber;
+    public $employee;
     public $employeeList = [];
+    public $activeTab = 'general_chat';
+
 
     protected $rules = [
         'invoiceDate' => 'required|date',
@@ -83,10 +88,18 @@ class ManufacturingInvoice extends Component
 
         $this->nextProId = OperHead::max('pro_id') + 1 ?? 1;
         $this->pro_id = $this->nextProId;
+        $this->Stors = $this->getAccountsByCode('1104%');
+        $this->OperatingCenter = $this->getAccountsByCode('1108%');
+        $this->employeeList = $this->getAccountsByCode('2102%');
 
-        $this->Stors = $this->getAccountsByCode('123%');
-        $this->OperatingCenter = $this->getAccountsByCode('124%');
-        $this->employeeList = $this->getAccountsByCode('213%');
+        $this->expenseAccountList = $this->getAccountsByCode('5%');
+        $this->expenseAccount = array_key_first($this->expenseAccountList);
+
+        $this->employee = array_key_first($this->employeeList);
+
+        $this->OperatingAccount = array_key_first($this->OperatingCenter);
+        $this->rawAccount = array_key_first($this->Stors);
+        $this->productAccount = array_key_first($this->Stors);
         $this->loadProductsAndMaterials();
     }
 
@@ -447,212 +460,9 @@ class ManufacturingInvoice extends Component
 
     public function saveInvoice()
     {
-        dd($this->all());
-
-        // التحقق من توفر المواد الخام
-        // foreach ($this->selectedRawMaterials as $index => $material) {
-        //     $available = (float)$material['available_quantity'];
-        //     $required = (float)$material['quantity'];
-
-        //     if ($required > $available) {
-        //         $this->addError(
-        //             "selectedRawMaterials.$index.quantity",
-        //             "الكمية المطلوبة ($required) تتجاوز الكمية المتاحة ($available)"
-        //         );
-        //         return;
-        //     }
-        // }
-        // if (count($this->selectedProducts) === 0) {
-        //     session()->flash('error', 'يجب إضافة منتج واحد على الأقل');
-        //     return;
-        // }
-
-        if ($totalPercentage !== 100.0) {
-            $this->addError('cost_percentage', 'مجموع نسب التكلفة يجب أن يساوي 100%');
-            return;
-        }
-        // التحقق من وجود مواد خام
-        if (count($this->selectedRawMaterials) === 0) {
-            session()->flash('error', 'يجب إضافة مادة خام واحدة على الأقل');
-            return;
-        }
-        $operation = OperHead::create([
-            'pro_id' => $this->pro_id,
-            'is_stock' => 1,
-            'is_finance' => 0,
-            'is_manager' => 0,
-            'is_journal' => 1,
-            'info' => $this->description,
-            'pro_date' => $this->invoiceDate,
-            'pro_num' => $this->pro_id,
-            'pro_serial' => $this->patchNumber,
-            'store_id' =>  $this->productAccount,
-            'emp_id' => $this->employee,
-            'acc1' => $this->rawAccount,
-            'acc2' => $this->productAccount,
-            'pro_value' => $this->totalManufacturingCost,
-            'user' => Auth::id(),
-            'pro_type' => 59,
-        ]);
-
-        $journalId = JournalHead::max('journal_id') + 1;
-        // قيد الخامات
-        JournalHead::create([
-            'journal_id' => $journalId,
-            'total' => $this->totalRawMaterialsCost,
-            'date' => $this->invoiceDate,
-            'op_id' => $operation->id,
-            'pro_type' => 59,
-            'details' => $this->description,
-            'user' => Auth::id(),
-        ]);
-
-        JournalDetail::create([
-            'journal_id' => $journalId,
-            'account_id' => $this->OperatingAccount,
-            'debit' => $this->totalRawMaterialsCost,
-            'credit' => 0,
-            'type' => 59,
-            'info' =>  $this->description,
-            'op_id' => $operation->id,
-        ]);
-
-        JournalDetail::create([
-            'journal_id' => $journalId,
-            'account_id' => $this->rawAccount,
-            'debit' => 0,
-            'credit' => $this->totalRawMaterialsCost,
-            'type' => 59,
-            'info' =>  $this->description,
-            'op_id' => $operation->id,
-        ]);
-
-        foreach ($this->selectedRawMaterials as $rawItem) {
-            $itemId = $rawItem['item_id'];
-            $unitId = $rawItem['unit_id'];
-            $quantity = $rawItem['quantity'];
-            $unitCost = $rawItem['unit_cost'];
-            $unitValue = collect($this->selectedRawMaterials)->pluck('available_quantity');
-
-            $qtyOut = $quantity * $unitValue;
-
-            $fatQty = $qtyOut;
-
-            $costPrice = $qtyOut * ($unitCost / $unitValue);
-            // $unit = collect($rawItem['unitsList'])->firstWhere('id', $unitId);
-            // $totalValue = $qtyOut * $price;
-            // $totalRawCost += $totalValue;
-
-            OperationItems::create([
-                'pro_tybe'     => 59,
-                'detail_store' => $this->rawAccount,
-                'pro_id'       => $this->pro_id,
-                'item_id'      => $itemId,
-                'unit_id'      => $unitId,
-                'qty_in'       => 0,
-                'qty_out'      => $qtyOut,
-                'fat_quantity' => $fatQty,
-                'item_price'   => $unitCost,
-                'cost_price'   => $costPrice,
-                'fat_price'    => $unitCost,
-                // 'current_stock_value' => $this->current_stock_value,
-                // 'item_discount' => $this->item_discount,
-                // 'additional' => $this->additional,
-                // 'detail_value' => $this->detail_value,
-                // 'profit' => $this->profit,
-                // 'batch_number' => $this->batch_number,
-                // 'expiry_date' => $this->expiry_date,
-                // 'serial_numbers' => $this->serial_numbers,
-                'is_stock' => 1,
-                'isdeleted' => $this->isdeleted,
-                // 'currency_id' => $this->currency_id,
-                // 'currency_rate' => $this->currency_rate,
-                // 'tenant' => $this->tenant,
-                // 'branch' => $this->branch,
-                'detail_value' => $costPrice,
-
-                'notes'        => 'خروج مواد خام للتصنيع',
-            ]);
-        }
-
-        // OperationItems::create([
-        //     'pro_tybe' => 59,
-        //     'detail_store' => $this->rawAccount,
-        //     'pro_id' => $this->pro_id,
-        //     'item_id' => $this->item_id,
-        //     'unit_id' => $this->unit_id,
-        //     'unit_value' => $this->unit_value,
-        //     'qty_in' => 0,
-        //     'qty_out' => $this->qty_out,
-        //     'item_price' => $this->item_price,
-        //     'cost_price' => $this->cost_price,
-        //     'notes' => $this->notes,
-        //     // 'batch_number' => $this->batch_number,
-        //     'expiry_date' => $this->expiry_date,
-        //     // 'serial_numbers' => $this->serial_numbers,
-        //     'is_stock' => $this->is_stock,
-        //     'isdeleted' => $this->isdeleted,
-        //     // 'currency_id' => $this->currency_id,
-        //     // 'currency_rate' => $this->currency_rate,
-        //     // 'tenant' => $this->tenant,
-        //     // 'branch' => $this->branch,
-        // ]);
-
-        OperationItems::create([
-            'pro_tybe' => $this->pro_tybe,
-            // 'detail_store' => $this->detail_store,
-            'pro_id' => $this->pro_id,
-            'item_id' => $this->item_id,
-            'unit_id' => $this->unit_id,
-            'unit_value' => $this->unit_value,
-            'qty_in' => $this->qty_in,
-            'qty_out' => $this->qty_out,
-            'item_price' => $this->item_price,
-            'cost_price' => $this->cost_price,
-            // 'current_stock_value' => $this->current_stock_value,
-            // 'item_discount' => $this->item_discount,
-            // 'additional' => $this->additional,
-            // 'detail_value' => $this->detail_value,
-            // 'profit' => $this->profit,
-            'notes' => $this->notes,
-            // 'batch_number' => $this->batch_number,
-            'expiry_date' => $this->expiry_date,
-            // 'serial_numbers' => $this->serial_numbers,
-            'is_stock' => $this->is_stock,
-            'isdeleted' => $this->isdeleted,
-            // 'currency_id' => $this->currency_id,
-            // 'currency_rate' => $this->currency_rate,
-            // 'tenant' => $this->tenant,
-            // 'branch' => $this->branch,
-        ]);
-
-        JournalDetail::create([
-            'journal_id' => $this->journal_id,
-            'account_id' => $this->account_id,
-            'debit' => $this->debit,
-            'credit' => $this->credit,
-            'type' => $this->type,
-            'info' => $this->info,
-            'op2' => $this->op2,
-            'op_id' => $this->op_id,
-            'isdeleted' => $this->isdeleted,
-            'tenant' => $this->tenant,
-            'branch' => $this->branch,
-        ]);
-
-        JournalHead::create([
-            'journal_id' => $this->journal_id,
-            'total' => $this->total,
-            'date' => $this->date,
-            'op_id' => $this->op_id,
-            'pro_type' => $this->pro_type,
-            'details' => $this->details,
-            'op2' => $this->op2,
-            'isdeleted' => $this->isdeleted,
-            'user' => $this->user,
-            'tenant' => $this->tenant,
-            'branch' => $this->branch,
-        ]);
+        // dd($this->all());
+        $service = new ManufacturingInvoiceService();
+        return $service->saveManufacturingInvoice($this);
     }
 
     public function render()
