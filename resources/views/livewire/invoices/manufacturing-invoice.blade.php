@@ -17,7 +17,19 @@
                             </div>
 
                             <div class="flex items-center">
-                                <button wire:click="distributeCosts"
+
+                                <button wire:click="openSaveTemplateModal"
+                                    class="btn btn-info px-5 py-3 text-lg font-bold">
+                                    حفظ كنموذج <i class="fas fa-save"></i>
+                                </button>
+
+                                <!-- زر اختيار نموذج -->
+                                <button wire:click="openLoadTemplateModal"
+                                    class="btn btn-warning px-5 py-3 text-lg font-bold">
+                                    اختيار نموذج <i class="fas fa-folder-open"></i>
+                                </button>
+
+                                <button wire:click="adjustCostsByPercentage"
                                     class="btn btn-primary px-5 py-3 text-lg font-bold">
                                     توزيع التكاليف <i class="fas fa-balance-scale"></i>
                                 </button>
@@ -31,6 +43,56 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- مودال حفظ النموذج -->
+                        @if ($showSaveTemplateModal)
+                            <div class="modal fade show" style="display: block;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">حفظ كنموذج تصنيع</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label>اسم النموذج</label>
+                                                <input type="text" wire:model="templateName" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button wire:click="saveAsTemplate" class="btn btn-primary">حفظ</button>
+                                            <button wire:click="closeSaveTemplateModal"
+                                                class="btn btn-secondary">إلغاء</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- مودال تحميل النموذج -->
+                        @if ($showLoadTemplateModal)
+                            <div class="modal fade show" style="display: block;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">اختيار نموذج تصنيع</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <select wire:model="selectedTemplate" class="form-control">
+                                                <option value="">اختر نموذج</option>
+                                                @foreach ($templates as $template)
+                                                    <option value="{{ $template->id }}">{{ $template->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button wire:click="loadTemplate" class="btn btn-primary">تحميل</button>
+                                            <button wire:click="closeLoadTemplateModal"
+                                                class="btn btn-secondary">إلغاء</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="row">
                             <div class="card-body">
@@ -110,7 +172,7 @@
                         <div class="mb-9 card" style="max-height: 200px; overflow-y: auto; overflow-x: hidden;">
                             <!-- حقل البحث للمنتجات المصنعة -->
                             <div class="row">
-                                <div class="col-lg-3 mb-0" style="position: relative;">
+                                <div class="col-lg-3 mb-0" style="position: relative; z-index: 999;">
                                     <input type="text" wire:model.live="productSearchTerm" id="product_search"
                                         class="form-control form-control-sm frst" placeholder="ابحث عن منتج..."
                                         autocomplete="off" style="font-size: 1em;"
@@ -189,16 +251,27 @@
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
                                                                 placeholder="الكمية">
                                                         </td>
+
                                                         <td>
                                                             <input type="number"
                                                                 id="product_unit_cost_{{ $index }}"
                                                                 wire:model.lazy="selectedProducts.{{ $index }}.unit_cost"
-                                                                wire:blur="updateProductTotal('selectedProducts.{{ $index }}.unit_cost')"
                                                                 min="0" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                placeholder="تكلفة الوحدة">
+                                                                placeholder="تكلفة الوحدة"
+                                                                title="سيتم تعديل سعر الشراء المتوسط للصنف">
+
+                                                            @if (isset($product['old_unit_cost']) && $product['unit_cost'] != $product['old_unit_cost'])
+                                                                <small class="text-warning d-block">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                    سيتم تحديث المتوسط من
+                                                                    {{ number_format($product['old_unit_cost'], 2) }}
+                                                                    إلى {{ number_format($product['unit_cost'], 2) }}
+                                                                </small>
+                                                            @endif
                                                         </td>
+
                                                         <td>
                                                             <input type="number"
                                                                 id="product_cost_percentage_{{ $index }}"
@@ -385,11 +458,11 @@
                                                                                                         class="form-control form-control-sm unit-select"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
                                                                                                         data-item-id="{{ $material['id'] ?? '' }}">
-                                                                                                        <option
+                                                                                                        {{-- <option
                                                                                                             value="">
                                                                                                             اختر
                                                                                                             وحدة
-                                                                                                        </option>
+                                                                                                        </option> --}}
                                                                                                         @foreach ($material['unitsList'] ?? [] as $unit)
                                                                                                             <option
                                                                                                                 value="{{ $unit['id'] }}">
@@ -611,7 +684,8 @@
                                     <input type="text"
                                         class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalAdditionalExpenses) }} ج" readonly>
+                                        value=" {{ number_format(collect($additionalExpenses)->sum('amount')) }} ج"
+                                        readonly>
                                 </div>
 
                                 <div class="col-4">
@@ -633,7 +707,8 @@
                                     <label class="form-label small text-gray-600">الانتاج التام</label>
                                     <input type="text"
                                         class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalRawMaterialsCost) }} ج" readonly --}}>
+                                        style="font-size: 0.75rem;" value="{{ number_format($totalProductsCost) }} ج"
+                                        readonly>
                                 </div>
 
                                 <div class="col-4">
@@ -653,106 +728,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- <div class="col-2">
-
-                <div class="mb-4 card">
-                    <div class="card-body p-3">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="h2"> المصاريف الإضافية</h3>
-                            <button wire:click="addExpense" class="btn btn-primary btn-sm py-1 px-2 text-sm">
-                                + إضافة
-                            </button>
-                        </div>
-
-                        <div class="bg-gray-50 rounded p-2">
-                            @if (count($additionalExpenses) === 0)
-                                <div class="text-center py-4 text-xs">
-                                    <p class="text-gray-500">لا توجد مصاريف إضافية</p>
-                                </div>
-                            @else
-                                <div class="space-y-2" style="max-height: 200px; overflow-y: auto;">
-                                    @foreach ($additionalExpenses as $index => $expense)
-                                        <div class="bg-white p-2 rounded shadow-xs border border-gray-200 text-xs">
-                                            <div class="flex items-end gap-1">
-                                                <div class="flex-1">
-                                                    <label class="block text-gray-600 mb-1">الوصف</label>
-                                                    <input type="text"
-                                                        wire:model="additionalExpenses.{{ $index }}.description"
-                                                        placeholder="وصف المصروف"
-                                                        class="form-control form-control-xs w-full p-1 text-xs @error('additionalExpenses.' . $index . '.description') border-red-500 @enderror">
-                                                    @error('additionalExpenses.' . $index . '.description')
-                                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-
-                                                <div class="w-20">
-                                                    <label class="block text-gray-600 mb-1">المبلغ</label>
-                                                    <input type="number"
-                                                        wire:model.live="additionalExpenses.{{ $index }}.amount"
-                                                        min="0" step="0.01" placeholder="0.00"
-                                                        class="form-control form-control-xs w-full p-1 text-xs @error('additionalExpenses.' . $index . '.amount') border-red-500 @enderror">
-                                                    @error('additionalExpenses.' . $index . '.amount')
-                                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-
-                                                <div class="flex items-end pb-1">
-                                                    <button wire:click="removeExpense({{ $index }})"
-                                                        class="btn btn-danger btn-icon-square-sm p-1 text-xs">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ملخص التكاليف -->
-                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded p-3 mb-4 overflow-hidden">
-                    <h3 class="h2"> التكاليف</h3>
-                    <div class="space-y-2">
-
-                        <div class="bg-white p-2 rounded shadow-xs">
-                            <div class="text-xs text-gray-600">المواد الخام</div>
-                            <div class="text-sm font-bold text-blue-600">
-                                {{ number_format($totalRawMaterialsCost) }} ج
-                            </div>
-                        </div>
-                        <div class="bg-white p-2 rounded shadow-xs">
-                            <div class="text-xs text-gray-600">المصاريف</div>
-                            <div class="text-sm font-bold text-purple-600">
-                                {{ number_format($totalAdditionalExpenses) }} ج
-                            </div>
-                        </div>
-                        <div class="bg-white p-2 rounded shadow-xs">
-                            <div class="text-xs text-gray-600">الإجمالي</div>
-                            <div class="text-sm font-bold text-green-600">
-                                {{ number_format($totalManufacturingCost) }} ج
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="text-center my-5 d-flex flex-column align-items-center gap-3">
-                    <button wire:click="saveInvoice"
-                        class="btn btn-primary btn-lg px-2 py2 mb-2 flex items-center gap-2"
-                        style="font-size: 1.5em;">
-                        حفظ الفاتورة
-                    </button>
-
-                    <button wire:click="cancelInvoice" type="button"
-                        class="btn btn-secondary btn-lg px-2 py-2 flex items-center gap-2" style="font-size: 1.5em;">
-                        إلغاء
-                    </button>
-                </div>
-
-            </div> --}}
         </div>
     @endif
 </div>
@@ -869,14 +844,27 @@
             })
 
             document.addEventListener('livewire:init', () => {
+                console.log('Livewire initialized');
                 Livewire.on('error-swal', (data) => {
-                    Swal.fire({
-                        title: data.title,
-                        text: data.text,
-                        icon: data.icon,
-                    });
+                    console.log('Received error-swal event:', data);
+                    // استخراج الكائن الأول من المصفوفة
+                    const swalData = Array.isArray(data) ? data[0] : data;
+                    if (swalData && swalData.title && swalData.text) {
+                        Swal.fire({
+                            title: swalData.title,
+                            text: swalData.text,
+                            icon: swalData.icon || 'error',
+                        });
+                    } else {
+                        console.error('Invalid data received for error-swal:', data);
+                        Swal.fire({
+                            title: 'خطأ غير معروف',
+                            text: 'حدث خطأ أثناء معالجة البيانات',
+                            icon: 'error',
+                        });
+                    }
                 });
-            })
+            });
 
 
             // Livewire.on('form-validation-error', errors => {

@@ -8,6 +8,8 @@ use Livewire\Attributes\Computed;
 
 new class extends Component {
     use WithPagination;
+    // bootstrap pagination
+    protected $paginationTheme = 'bootstrap';
 
     public string $search_employee_name = '';
     public string $search_employee_id = '';
@@ -141,7 +143,7 @@ new class extends Component {
             'employee_attendance_finger_print_name' => $attendance->employee_attendance_finger_print_name,
             'type' => $attendance->type,
             'date' => $attendance->date?->format('Y-m-d'),
-            'time' => $attendance->time?->format('H:i:s'),
+            'time' => $attendance->time,
             'location' => $attendance->location,
             'status' => $attendance->status,
             'notes' => $attendance->notes,
@@ -310,7 +312,7 @@ new class extends Component {
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->date->format('Y-m-d') }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->time->format('H:i:s') }}
+                                        <td class="font-family-cairo fw-bold">{{ $attendance->time }}
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->location ?? '-' }}</td>
                                         <td class="font-family-cairo fw-bold">
@@ -357,7 +359,7 @@ new class extends Component {
                     </div>
 
                     <div class="d-flex justify-content-center mt-3">
-                        {{ $attendances->links() }}
+                        {{ $attendances->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

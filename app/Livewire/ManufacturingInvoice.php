@@ -5,18 +5,26 @@ namespace App\Livewire;
 use App\Models\{
     Item,
     OperHead,
-    AccHead
+    AccHead,
+    OperationItems
 };
 use App\Services\ManufacturingInvoiceService;
 use Livewire\Component;
 
 class ManufacturingInvoice extends Component
 {
-    protected $listeners = ['refresh' => '$refresh'];
-    public function hydrate()
-    {
-        $this->calculateTotals();
-    }
+    // protected $listeners = ['refresh' => '$refresh'];
+    // public function hydrate()
+    // {
+    //     $this->calculateTotals();
+    // }
+
+    public $showSaveTemplateModal = false;
+    public $showLoadTemplateModal = false;
+    public $templateName = '';
+    public $templates = [];
+    public $selectedTemplate = null;
+
     public $currentStep = 1;
     public $pro_id;
     public $nextProId;
@@ -34,6 +42,7 @@ class ManufacturingInvoice extends Component
     public $rawMaterialSearchResults;
     public $rawMaterialSelectedResultIndex = -1;
     public $totalRawMaterialsCost = 0;
+    public $totalProductsCost = 0;
     public $totalAdditionalExpenses = 0;
     public $totalManufacturingCost = 0;
     public $unitCostPerProduct = 0;
@@ -224,138 +233,185 @@ class ManufacturingInvoice extends Component
         $this->calculateTotals();
     }
 
-   public function addProductFromSearch($itemId)
-{
-    $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
-    if (! $item) return;
+    public function addProductFromSearch($itemId)
+    {
+        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
+        if (!$item) return;
 
-    // التحقق من وجود المنتج في القائمة
-    $existingProductIndex = null;
-    foreach ($this->selectedProducts as $index => $product) {
-        if ($product['product_id'] === $item->id) {
-            $existingProductIndex = $index;
-            break;
+        // التحقق من وجود المنتج في القائمة
+        $existingProductIndex = null;
+        foreach ($this->selectedProducts as $index => $product) {
+            if ($product['product_id'] === $item->id) {
+                $existingProductIndex = $index;
+                break;
+            }
         }
-    }
 
-    // إذا كان المنتج موجود، زيادة الكمية وإعادة حساب التكلفة
-    if ($existingProductIndex !== null) {
-        $this->selectedProducts[$existingProductIndex]['quantity']++;
+        if ($existingProductIndex !== null) {
+            $this->selectedProducts[$existingProductIndex]['quantity']++;
 
-        // إعادة حساب التكلفة الإجمالية للمنتج
-        $this->selectedProducts[$existingProductIndex]['total_cost'] =
-            $this->selectedProducts[$existingProductIndex]['quantity'] *
-            $this->selectedProducts[$existingProductIndex]['unit_cost'];
+            // إعادة حساب التكلفة الإجمالية للمنتج مع تقريب لمنزلتين
+            $this->selectedProducts[$existingProductIndex]['total_cost'] =
+                round($this->selectedProducts[$existingProductIndex]['quantity'] *
+                    $this->selectedProducts[$existingProductIndex]['unit_cost'], 2);
 
-        // إعادة تعيين حقول البحث
+            $this->productSearchTerm = '';
+            $this->productSearchResults = collect();
+            $this->productSelectedResultIndex = -1;
+
+            $this->calculateTotals();
+            $this->updatePercentages(); // تحديث النسب المئوية
+
+            $this->dispatch('focusProductQuantity', $existingProductIndex);
+            return;
+        }
+
+        $price = $item->prices->first()->pivot->price ?? 0;
+        $price = round($price, 2); // تقريب لمنزلتين
+
+        $this->selectedProducts[] = [
+            'id' => uniqid(),
+            'product_id' => $item->id,
+            'name' => $item->name,
+            'quantity' => 1,
+            'unit_cost' => $price,
+            'total_cost' => $price,
+            'cost_percentage' => 0,
+            'user_modified_percentage' => false // علامة أن النسبة غير معدلة يدوياً
+
+        ];
+
         $this->productSearchTerm = '';
         $this->productSearchResults = collect();
         $this->productSelectedResultIndex = -1;
-
         $this->calculateTotals();
+        $this->updatePercentages(); // تحديث النسب المئوية
 
-        // التركيز على حقل الكمية للمنتج الموجود
-        $this->dispatch('focusProductQuantity', $existingProductIndex);
-
-        return; // الخروج من الدالة
+        $this->dispatch('focusProductQuantity', count($this->selectedProducts) - 1);
     }
-
-    // إذا لم يكن المنتج موجود، إضافة منتج جديد (الكود الأصلي)
-    $price = $item->prices->first()->pivot->price ?? 0;
-    $price = round($price, 1);
-
-    $this->selectedProducts[] = [
-        'id' => uniqid(),
-        'product_id' => $item->id,
-        'name' => $item->name,
-        'quantity' => 1,
-        'unit_cost' => $price,
-        'total_cost' => $price,
-        'cost_percentage' => 0
-    ];
-
-    $this->productSearchTerm = '';
-    $this->productSearchResults = collect();
-    $this->productSelectedResultIndex = -1;
-    $this->calculateTotals();
-
-    // التركيز على حقل الكمية للمنتج الجديد
-    $this->dispatch('focusProductQuantity', count($this->selectedProducts) - 1);
-}
-
- public function addRawMaterialFromSearch($itemId)
-{
-    $item = Item::with('units')->find($itemId);
-    if (! $item) return;
-
-    // التحقق من وجود المادة الخام في القائمة
-    $existingMaterialIndex = null;
-    foreach ($this->selectedRawMaterials as $index => $material) {
-        if ($material['item_id'] === $item->id) {
-            $existingMaterialIndex = $index;
-            break;
-        }
-    }
-
-    // إذا كانت المادة الخام موجودة، زيادة الكمية وإعادة حساب التكلفة
-    if ($existingMaterialIndex !== null) {
-        $this->selectedRawMaterials[$existingMaterialIndex]['quantity']++;
-
-        // إعادة حساب التكلفة الإجمالية للمادة الخام
-        $this->selectedRawMaterials[$existingMaterialIndex]['total_cost'] =
-            $this->selectedRawMaterials[$existingMaterialIndex]['quantity'] *
-            $this->selectedRawMaterials[$existingMaterialIndex]['unit_cost'];
-
-        // إعادة تعيين حقول البحث
-        $this->rawMaterialSearchTerm = '';
-        $this->rawMaterialSearchResults = collect();
-        $this->rawMaterialSelectedResultIndex = -1;
-
-        $this->calculateTotals();
-
-        // التركيز على حقل الكمية للمادة الخام الموجودة
-        $this->dispatch('focusRawMaterialQuantity', $existingMaterialIndex);
-
-        return; // الخروج من الدالة
-    }
-
-    // إذا لم تكن المادة الخام موجودة، إضافة مادة خام جديدة (الكود الأصلي)
-    $unitsList = $item->units->map(function ($unit) {
-        return [
-            'id' => $unit->id,
-            'name' => $unit->name,
-            'cost' => $unit->pivot->cost,
-            'available_qty' => $unit->pivot->u_val
-        ];
-    })->toArray();
-
-    $firstUnit = $unitsList[0] ?? null;
-    $this->selectedRawMaterials[] = [
-        'id' => uniqid(),
-        'item_id' => $item->id,
-        'name' => $item->name,
-        'quantity' => 1,
-        'unit_cost' => $firstUnit['cost'] ?? 0,
-        'available_quantity' => $firstUnit['available_qty'] ?? 0,
-        'total_cost' => $firstUnit['cost'] ?? 0,
-        'unitsList' => $unitsList
-    ];
-
-    $this->rawMaterialSearchTerm = '';
-    $this->rawMaterialSearchResults = collect();
-    $this->rawMaterialSelectedResultIndex = -1;
-    $this->calculateTotals();
-
-    // التركيز على حقل الكمية للمادة الخام الجديدة
-    $this->dispatch('focusRawMaterialQuantity', count($this->selectedRawMaterials) - 1);
-}
-
     public function removeProduct($index)
     {
         unset($this->selectedProducts[$index]);
         $this->selectedProducts = array_values($this->selectedProducts);
         $this->calculateTotals();
+        $this->updatePercentages(); // تحديث النسب المئوية بعد الحذف
     }
+
+    public function updateProductTotal($index)
+    {
+        if (isset($this->selectedProducts[$index])) {
+            $quantity = (float)($this->selectedProducts[$index]['quantity'] ?? 0);
+            $unitCost = (float)($this->selectedProducts[$index]['unit_cost'] ?? 0);
+
+            $total = $quantity * $unitCost;
+            $this->selectedProducts[$index]['total_cost'] = round($total, 2);
+        }
+    }
+    public function updatedSelectedProducts($value, $key)
+    {
+        $parts = explode('.', $key);
+        if (count($parts) === 3) {
+            $index = $parts[1];
+            $field = $parts[2];
+
+            if ($field === 'quantity' || $field === 'unit_cost') {
+                $this->updateProductTotal($index);
+            } elseif ($field === 'cost_percentage') {
+                // وضع علامة أن المستخدم عدل النسبة يدوياً
+                $this->selectedProducts[$index]['user_modified_percentage'] = true;
+            }
+        }
+    }
+
+    // دالة جديدة لتوزيع النسب المئوية
+    private function updatePercentages()
+    {
+        $count = count($this->selectedProducts);
+        if ($count === 0) return;
+
+        // حساب النسبة لكل منتج (100 / عدد المنتجات)
+        $percentage = 100 / $count;
+        $percentage = round($percentage, 2); // تقريب لمنزلتين
+
+        // تطبيق النسبة على جميع المنتجات
+        foreach ($this->selectedProducts as $index => $product) {
+            $this->selectedProducts[$index]['cost_percentage'] = $percentage;
+        }
+    }
+
+    public function addRawMaterialFromSearch($itemId)
+    {
+        $item = Item::with('units')->find($itemId);
+        if (! $item) return;
+
+        // التحقق من وجود المادة الخام في القائمة
+        $existingMaterialIndex = null;
+        foreach ($this->selectedRawMaterials as $index => $material) {
+            if ($material['item_id'] === $item->id) {
+                $existingMaterialIndex = $index;
+                break;
+            }
+        }
+
+        // إذا كانت المادة الخام موجودة، زيادة الكمية وإعادة حساب التكلفة
+        if ($existingMaterialIndex !== null) {
+            $this->selectedRawMaterials[$existingMaterialIndex]['quantity']++;
+
+            // إعادة حساب التكلفة الإجمالية للمادة الخام
+            $this->selectedRawMaterials[$existingMaterialIndex]['total_cost'] =
+                $this->selectedRawMaterials[$existingMaterialIndex]['quantity'] *
+                $this->selectedRawMaterials[$existingMaterialIndex]['unit_cost'];
+
+            // إعادة تعيين حقول البحث
+            $this->rawMaterialSearchTerm = '';
+            $this->rawMaterialSearchResults = collect();
+            $this->rawMaterialSelectedResultIndex = -1;
+
+            $this->calculateTotals();
+
+            // التركيز على حقل الكمية للمادة الخام الموجودة
+            $this->dispatch('focusRawMaterialQuantity', $existingMaterialIndex);
+
+            return; // الخروج من الدالة
+        }
+
+        // إذا لم تكن المادة الخام موجودة، إضافة مادة خام جديدة (الكود الأصلي)
+        $unitsList = $item->units->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'cost' => $unit->pivot->cost,
+                'available_qty' => $unit->pivot->u_val
+            ];
+        })->toArray();
+
+        $firstUnit = $unitsList[0] ?? null;
+        $this->selectedRawMaterials[] = [
+            'id' => uniqid(),
+            'item_id' => $item->id,
+            'name' => $item->name,
+            'quantity' => 1,
+            'unit_cost' => $firstUnit['cost'] ?? 0,
+            'available_quantity' => $firstUnit['available_qty'] ?? 0,
+            'total_cost' => $firstUnit['cost'] ?? 0,
+            'unitsList' => $unitsList
+        ];
+
+        $this->rawMaterialSearchTerm = '';
+        $this->rawMaterialSearchResults = collect();
+        $this->rawMaterialSelectedResultIndex = -1;
+        $this->calculateTotals();
+
+        // التركيز على حقل الكمية للمادة الخام الجديدة
+        $this->dispatch('focusRawMaterialQuantity', count($this->selectedRawMaterials) - 1);
+    }
+
+    // public function removeProduct($index)
+    // {
+    //     unset($this->selectedProducts[$index]);
+    //     $this->selectedProducts = array_values($this->selectedProducts);
+    //     $this->calculateTotals();
+    // }
 
     public function removeRawMaterial($index)
     {
@@ -364,26 +420,26 @@ class ManufacturingInvoice extends Component
         $this->calculateTotals();
     }
 
-    public function updated($propertyName)
-    {
-        if (
-            str_contains($propertyName, 'quantity') ||
-            str_contains($propertyName, 'unit_cost') ||
-            str_contains($propertyName, 'amount') ||
-            str_contains($propertyName, 'cost_percentage')
-        ) {
-            $this->convertToNumber($propertyName);
-        }
-        $this->calculateTotals();
+    // public function updated($propertyName)
+    // {
+    //     if (
+    //         str_contains($propertyName, 'quantity') ||
+    //         str_contains($propertyName, 'unit_cost') ||
+    //         str_contains($propertyName, 'amount') ||
+    //         str_contains($propertyName, 'cost_percentage')
+    //     ) {
+    //         $this->convertToNumber($propertyName);
+    //     }
+    //     $this->calculateTotals();
 
-        if (str_contains($propertyName, 'selectedProducts')) {
-            $this->updateProductTotal($propertyName);
-        }
+    //     if (str_contains($propertyName, 'selectedProducts')) {
+    //         $this->updateProductTotal($propertyName);
+    //     }
 
-        if (str_contains($propertyName, 'selectedRawMaterials')) {
-            $this->updateRawMaterialTotal($propertyName);
-        }
-    }
+    //     if (str_contains($propertyName, 'selectedRawMaterials')) {
+    //         $this->updateRawMaterialTotal($propertyName);
+    //     }
+    // }
 
     private function convertToNumber($propertyName)
     {
@@ -407,20 +463,40 @@ class ManufacturingInvoice extends Component
         }
     }
 
-    public function updateProductTotal($propertyName)
+    // public function updateProductTotal($propertyName)
+    // {
+    //     $parts = explode('.', $propertyName);
+    //     if (count($parts) < 2) return;
+
+    //     $index = $parts[1];
+    //     $field = $parts[2];
+
+    //     if (in_array($field, ['quantity', 'unit_cost']) && isset($this->selectedProducts[$index])) {
+    //         $this->selectedProducts[$index]['total_cost'] =
+    //             $this->selectedProducts[$index]['quantity'] * $this->selectedProducts[$index]['unit_cost'];
+    //     }
+    // }
+
+    public function adjustCostsByPercentage()
     {
-        $parts = explode('.', $propertyName);
-        if (count($parts) < 2) return;
+        $totalCost = 0;
 
-        $index = $parts[1];
-        $field = $parts[2];
+        // حساب التكلفة الإجمالية لجميع المنتجات
+        foreach ($this->selectedProducts as $product) {
+            $totalCost += $product['quantity'] * $product['unit_cost'];
+        }
 
-        if (in_array($field, ['quantity', 'unit_cost']) && isset($this->selectedProducts[$index])) {
-            $this->selectedProducts[$index]['total_cost'] =
-                $this->selectedProducts[$index]['quantity'] * $this->selectedProducts[$index]['unit_cost'];
+        // توزيع التكلفة حسب النسب المئوية
+        foreach ($this->selectedProducts as $index => $product) {
+            $allocatedCost = ($totalCost * $product['cost_percentage']) / 100;
+            $this->selectedProducts[$index]['unit_cost'] = $product['quantity'] > 0
+                ? round($allocatedCost / $product['quantity'], 2)
+                : 0;
+
+            // تحديث التكلفة الإجمالية
+            $this->updateProductTotal($index);
         }
     }
-
     public function updateRawMaterialTotal($propertyName)
     {
         $parts = explode('.', $propertyName);
@@ -464,6 +540,9 @@ class ManufacturingInvoice extends Component
 
     public function calculateTotals()
     {
+        $this->totalProductsCost = collect($this->selectedProducts)
+            ->sum(fn($item) => is_numeric($item['total_cost']) ? (float)$item['total_cost'] : 0);
+
         $this->totalRawMaterialsCost = collect($this->selectedRawMaterials)
             ->sum(fn($item) => is_numeric($item['total_cost']) ? (float)$item['total_cost'] : 0);
 
@@ -493,41 +572,182 @@ class ManufacturingInvoice extends Component
         $this->calculateTotals();
     }
 
-    public function distributeCosts()
+    // public function distributeCosts()
+    // {
+    //     $this->calculateTotals();
+    //     $productsWithPositivePercentage = collect($this->selectedProducts)
+    //         ->filter(fn($p) => (float)$p['cost_percentage'] > 0);
+    //     if ($productsWithPositivePercentage->isEmpty()) {
+    //         foreach ($this->selectedProducts as $index => $product) {
+    //             $this->selectedProducts[$index]['total_cost'] = 0;
+    //             $this->selectedProducts[$index]['unit_cost'] = 0;
+    //         }
+    //         return;
+    //     }
+    //     $totalPercentage = $productsWithPositivePercentage->sum(fn($p) => (float)$p['cost_percentage']);
+    //     $adjustmentFactor = 100 / $totalPercentage;
+    //     foreach ($this->selectedProducts as $index => $product) {
+    //         $percentage = (float)$product['cost_percentage'];
+
+    //         if ($percentage > 0) {
+    //             $adjustedPercentage = $percentage * $adjustmentFactor;
+    //             $productCost = $this->totalManufacturingCost * ($adjustedPercentage / 100);
+
+    //             $this->selectedProducts[$index]['total_cost'] = $productCost;
+
+    //             $quantity = (float)$product['quantity'];
+    //             if ($quantity > 0) {
+    //                 $this->selectedProducts[$index]['unit_cost'] = $productCost / $quantity;
+    //             } else {
+    //                 $this->selectedProducts[$index]['unit_cost'] = 0;
+    //             }
+    //         } else {
+    //             $this->selectedProducts[$index]['total_cost'] = 0;
+    //             $this->selectedProducts[$index]['unit_cost'] = 0;
+    //         }
+    //     }
+    // }
+
+
+    public function openSaveTemplateModal()
     {
-        $this->calculateTotals();
-        $productsWithPositivePercentage = collect($this->selectedProducts)
-            ->filter(fn($p) => (float)$p['cost_percentage'] > 0);
-        if ($productsWithPositivePercentage->isEmpty()) {
-            foreach ($this->selectedProducts as $index => $product) {
-                $this->selectedProducts[$index]['total_cost'] = 0;
-                $this->selectedProducts[$index]['unit_cost'] = 0;
-            }
-            return;
-        }
-        $totalPercentage = $productsWithPositivePercentage->sum(fn($p) => (float)$p['cost_percentage']);
-        $adjustmentFactor = 100 / $totalPercentage;
-        foreach ($this->selectedProducts as $index => $product) {
-            $percentage = (float)$product['cost_percentage'];
-
-            if ($percentage > 0) {
-                $adjustedPercentage = $percentage * $adjustmentFactor;
-                $productCost = $this->totalManufacturingCost * ($adjustedPercentage / 100);
-
-                $this->selectedProducts[$index]['total_cost'] = $productCost;
-
-                $quantity = (float)$product['quantity'];
-                if ($quantity > 0) {
-                    $this->selectedProducts[$index]['unit_cost'] = $productCost / $quantity;
-                } else {
-                    $this->selectedProducts[$index]['unit_cost'] = 0;
-                }
-            } else {
-                $this->selectedProducts[$index]['total_cost'] = 0;
-                $this->selectedProducts[$index]['unit_cost'] = 0;
-            }
-        }
+        $this->showSaveTemplateModal = true;
     }
+
+    // إغلاق مودال الحفظ
+    public function closeSaveTemplateModal()
+    {
+        $this->showSaveTemplateModal = false;
+        $this->templateName = '';
+    }
+
+    // فتح مودال التحميل
+    public function openLoadTemplateModal()
+    {
+        // $this->templates = OperationItems::where('pro_type', 63)->get();
+        $this->showLoadTemplateModal = true;
+    }
+
+    // إغلاق مودال التحميل
+    public function closeLoadTemplateModal()
+    {
+        $this->showLoadTemplateModal = false;
+        $this->selectedTemplate = null;
+    }
+
+    // حفظ النموذج
+    // public function saveAsTemplate()
+    // {
+    //     $this->validate(['templateName' => 'required|min:1']);
+    //     dd($this->all());
+
+    //     $operation = OperHead::create([
+
+    //         'pro_id' => '',
+    //         'is_stock	' => '',
+    //         'is_journal' => '',
+    //         'is_manager' => '',
+    //         'info' => '',
+    //         'pro_date' => '',
+    //         'store_id' => '',
+    //         'emp_id' => '',
+    //         'acc1' => '',
+    //         'acc2' => '',
+    //         'pro_value' => '',
+    //         'fat_net' => '',
+    //         'op2' => '',
+    //         'user' => '',
+    //         'pro_type' => '',
+
+    //     ]);
+
+    //     foreach ($this->selectedProducts as $index => $product) {
+    //         OperationItems::create([
+
+    //             'pro_tybe' => 63,
+    //             'pro_id' => $this->nextProId,
+    //             'item_id' => $product['product_id'],
+    //             'notes' =>$this->templateName,
+    //             'unit_id' => '',
+    //             'detail_store' => '',
+    //             'pro_id' => '',
+    //             'is_stock	' => '',
+    //             'item_price' => '',
+
+    //             'fat_price' => '',
+    //             'fat_quantity' => '',
+    //             'item_price' => '',
+    //             'cost_price' => '',
+    //             'item_discount' => '',
+    //             'additional' => '',
+    //             '' => '',
+    //             '' => '',
+    //             'quantity' => $product['quantity'],
+    //             'cost_price' => $product['unit_cost'],
+    //             'total_cost' => $product['total_cost'],
+    //             // 'cost_percentage' => $product['cost_percentage'],
+    //             'user_modified_percentage' => $product['user_modified_percentage']
+    //         ]);
+    //     }
+
+    //     foreach ($this->selectedRawMaterials as $index => $raw) {
+    //         OperationItems::create([
+
+    //             'pro_tybe' => 63,
+    //             'pro_id' => $this->nextProId,
+    //             'item_id' => $raw['product_id'],
+    //             'unit_id' => '',
+    //             'detail_store' => '',
+    //             'pro_id' => '',
+    //             'is_stock	' => '',
+    //             'item_price' => '',
+
+    //             'fat_price' => '',
+    //             'fat_quantity' => '',
+    //             'item_price' => '',
+    //             'cost_price' => '',
+    //             'item_discount' => '',
+    //             'additional' => '',
+    //             '' => '',
+    //             '' => '',
+    //             'quantity' => $raw['quantity'],
+    //             'cost_price' => $raw['unit_cost'],
+    //             'total_cost' => $raw['total_cost'],
+
+    //         ]);
+    //     }
+
+    //     // \App\Models\ManufacturingTemplate::create([
+    //     //     'name' => $this->templateName,
+    //     //     'operating_account' => $this->OperatingAccount,
+    //     //     'employee_id' => $this->employee,
+    //     //     'description' => $this->description,
+
+    //     //     'products' => json_encode($this->selectedProducts),
+    //     //     'raw_materials' => json_encode($this->selectedRawMaterials),
+    //     //     'expenses' => json_encode($this->additionalExpenses)
+    //     // ]);
+
+    //     $this->closeSaveTemplateModal();
+    //     session()->flash('message', 'تم حفظ النموذج بنجاح!');
+    // }
+
+    // تحميل النموذج
+    public function loadTemplate()
+    {
+        // if ($template = \App\Models\ManufacturingTemplate::find($this->selectedTemplate)) {
+        //     $this->OperatingAccount = $template->operating_account;
+        //     $this->employee = $template->employee_id;
+        //     $this->description = $template->description;
+
+        //     $this->selectedProducts = json_decode($template->products, true);
+        //     $this->selectedRawMaterials = json_decode($template->raw_materials, true);
+        //     $this->additionalExpenses = json_decode($template->expenses, true);
+
+        //     $this->closeLoadTemplateModal();
+        // }
+    }
+
 
     public function saveInvoice()
     {

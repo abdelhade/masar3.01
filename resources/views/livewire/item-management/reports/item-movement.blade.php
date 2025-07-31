@@ -26,7 +26,7 @@ new class extends Component {
 
     public function mount($itemId = null, $warehouseId = null): void
     {
-        $this->warehouses = AccHead::where('is_stock', 1)->orderBy('id')->pluck('aname', 'id');
+        $this->warehouses = AccHead::where('code', 'like', '1104%')->where('is_basic', 0)->orderBy('id')->pluck('aname', 'id');
         $this->fromDate = now()->startOfMonth()->toDateString();
         $this->toDate = now()->endOfMonth()->toDateString();
         // Set from route if present

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class Employee extends Model 
 {
 
@@ -16,55 +18,168 @@ class Employee extends Model
 
     protected $guarded = ['id'];
 
-    public function department()
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
     }
 
-    public function shift()
+    public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
-    public function job()
+    public function job(): BelongsTo
     {
         return $this->belongsTo(EmployeesJob::class);
     }
 
-    public function leave()
+    public function leave(): HasMany
     {
-        return $this->hasOne(Leave::class);
+        return $this->hasMany(Leave::class);
     }
 
-    public function country()
+    public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
-    public function state()
+    public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
     }
 
-    public function town()
+    public function town(): BelongsTo
     {
         return $this->belongsTo(Town::class);
     }
 
-    public function evaluations()
+    public function evaluations(): HasMany
     {
         return $this->hasMany(Employee_Evaluation::class);
     }
 
-    public function employeeProductions()
+    public function employeeProductions(): HasMany
     {
         return $this->hasMany(EmployeeProduction::class);
     }
 
+    // New relationships for attendance and salary system
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
 
+    public function attendanceProcessings(): HasMany
+    {
+        return $this->hasMany(AttendanceProcessing::class);
+    }
+
+    // Helper methods for salary calculation
+    public function getExpectedHoursAttribute(): float
+    {
+        if (!$this->shift) {
+            return 8.0; // Default 8 hours
+        }
+
+        $startTime = \Carbon\Carbon::parse($this->shift->start_time);
+        $endTime = \Carbon\Carbon::parse($this->shift->end_time);
+        
+        return $startTime->diffInHours($endTime, false);
+    }
+
+    public function getHourlyRateAttribute(): float
+    {
+        if (!$this->salary) {
+            return 0.0;
+        }
+
+        return $this->salary / 30 / 8; // Assuming 8 hours per day, 30 days per month
+    }
+
+    public function getDailyRateAttribute(): float
+    {
+        if (!$this->salary) {
+            return 0.0;
+        }
+
+        return $this->salary / 30; // Assuming 30 days per month
+    }
+
+    // Helper methods for attendance
+    public function getAttendanceForDate(string $date): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->attendances()
+            ->where('date', $date)
+            ->orderBy('time')
+            ->get();
+    }
+
+    public function getAttendanceForPeriod(string $startDate, string $endDate): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->attendances()
+            ->whereBetween('date', [$startDate, $endDate])
+            ->orderBy('date')
+            ->orderBy('time')
+            ->get();
+    }
+
+    // Helper methods for salary types
+    public function isHoursOnlyType(): bool
+    {
+        return $this->salary_type === 'ساعات عمل فقط';
+    }
+
+    public function isHoursWithDailyOvertimeType(): bool
+    {
+        return $this->salary_type === 'ساعات عمل و إضافي يومى';
+    }
+
+    public function isHoursWithPeriodOvertimeType(): bool
+    {
+        return $this->salary_type === 'ساعات عمل و إضافي للمده';
+    }
+
+    public function isAttendanceOnlyType(): bool
+    {
+        return $this->salary_type === 'حضور فقط';
+    }
+
+    public function isProductionOnlyType(): bool
+    {
+        return $this->salary_type === 'إنتاج فقط';
+    }
+
+    // Helper methods for status
+    public function isActive(): bool
+    {
+        return $this->status === 'مفعل';
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === 'معطل';
+    }
+
+    // Helper methods for employment
+    public function isCurrentlyEmployed(): bool
+    {
+        return $this->date_of_hire && !$this->date_of_fire;
+    }
+
+    public function getEmploymentDuration(): int
+    {
+        if (!$this->date_of_hire) {
+            return 0;
+        }
+
+        $startDate = \Carbon\Carbon::parse($this->date_of_hire);
+        $endDate = $this->date_of_fire ? \Carbon\Carbon::parse($this->date_of_fire) : now();
+        
+        return $startDate->diffInDays($endDate);
+    }
 }

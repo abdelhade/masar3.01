@@ -111,6 +111,16 @@ class ItemViewModel
         return $this->item->units->firstWhere('id', $this->selectedUnitId)->pivot->cost ?? 0;
     }
 
+    public function getUnitAverageCost(): float
+    {
+        return $this->item->average_cost * $this->item->units->firstWhere('id', $this->selectedUnitId)->pivot->u_val ?? 0;
+    }
+
+    public function getQuantityAverageCost(): float
+    {
+        return $this->getUnitAverageCost() * $this->getCurrentUnitQuantity();
+    }
+
     public function getQuantityCost(): float
     {
         return $this->getCurrentUnitQuantity() * $this->getUnitCostPrice();

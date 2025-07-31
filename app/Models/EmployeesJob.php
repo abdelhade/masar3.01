@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Employee;
 
 class EmployeesJob extends Model
 {
@@ -11,6 +12,6 @@ class EmployeesJob extends Model
 
     public function employees()
     {
-        return $this->hasMany(Employe::class);
+        return $this->hasMany(Employee::class);
     }
 }

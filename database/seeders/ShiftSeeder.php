@@ -13,7 +13,7 @@ class ShiftSeeder extends Seeder
             [
                 'start_time' => '08:00:00',
                 'end_time' => '16:00:00',
-                'days' => json_encode(['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+                'days' => json_encode(['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday']),
                 'shift_type' => 'morning',
                 'notes' => 'Shift 1',
             ],

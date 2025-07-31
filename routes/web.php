@@ -33,13 +33,12 @@ use App\Http\Controllers\{
     ContractTypeController,
     ContractController,
     AttendanceController,
-    AttendanceProcessingController,
     HomeController,
     ReportController,
-    TestController,
     RentalController,
     PosShiftController,
-    PosVouchersController
+    PosVouchersController,
+    CvController
 };
 
 // test for dashboard
@@ -86,8 +85,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('contracts', ContractController::class)->names('contracts')->only('index');
     // 📁 Attendances
     Route::resource('attendances', AttendanceController::class)->names('attendances')->only('index');
-    // 📁 Attendance Processing
-    Route::resource('attendance-processing', AttendanceProcessingController::class)->names('attendance-processing')->only('index', 'show');
+    // 📁 CVs
+    Route::resource('cvs', CvController::class)->names('cvs')->only('index');
     // ############################################################################################################
     // 📁 Projects
     Route::resource('projects', ProjectController::class)->names('projects')->only('index', 'show', 'create', 'edit');
@@ -156,6 +155,7 @@ Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/reports.php';
     require __DIR__ . '/modules/magicals.php';
     require __DIR__ . '/modules/cheques.php';
+    require __DIR__.'/attendance.php';
 
 });
 require __DIR__ . '/auth.php';

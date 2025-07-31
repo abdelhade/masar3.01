@@ -12,7 +12,7 @@ class Shift extends Model
 
     public function employees()
     {
-        return $this->hasMany(employee::class);
+        return $this->hasMany(Employee::class);
     }
 
 }

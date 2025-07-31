@@ -5,6 +5,6 @@
         'items' => [['label' => __('الرئيسية'), 'url' => route('admin.dashboard')], ['label' => __('الموارد البشريه')], ['label' => __('معالجة الحضور')]],
     ])
 
-    <livewire:hr-management.attendances.processing.manage-processing />
+    <livewire:attendance-processing-manager />
  
 @endsection

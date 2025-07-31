@@ -167,16 +167,7 @@ new class extends Component {
             </div>
         @endif
         <div class="col-lg-12">
-            <div class="m-2 d-flex justify-content-between align-items-center">
-                <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    {{ __('إضافة موظف') }}
-                    <i class="fas fa-plus me-2"></i>
-                </button>
-                <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
-                    style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
-            </div>
             <div class="card">
-
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('إضافة الموظفيين')
                     <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
@@ -185,8 +176,6 @@ new class extends Component {
                     </button>                        
                     @endcan
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto" style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">                        
-
-
                 </div>
             <div class="card">
                 <div class="card-body">
@@ -223,7 +212,7 @@ new class extends Component {
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $employee->status }}</td>
                                         
-                                    @canany(['تعديل الموظفيين','حذف الموظفيين'])
+                                                                            @canany(['تعديل الموظفيين','حذف الموظفيين'])
                                         <td>
                                             @can('تعديل الموظفيين')
                                             <a wire:click="edit({{ $employee->id }})" class="btn btn-success btn-sm">
@@ -237,10 +226,8 @@ new class extends Component {
                                                 <i class="las la-trash fa-lg"></i>
                                             </button>                                                
                                             @endcan
-
-
-                                            </td>
-                                        {{-- @endcan --}}
+                                        </td>
+                                        @endcanany
 
                                     </tr>
                                 @empty

@@ -10,8 +10,9 @@ class Attendance extends Model
     protected $table = 'attendances';
     protected $casts = [
         'date' => 'date',
-        'time' => 'datetime',
+        'time' => 'string', // Cast as string since it's a time field
     ];
+    
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -21,8 +22,15 @@ class Attendance extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+    
     public function attendanceProcessingDetails()
     {
         return $this->hasMany(AttendanceProcessingDetail::class);
+    }
+    
+    // Accessor to format time for display
+    public function getFormattedTimeAttribute()
+    {
+        return $this->time ? $this->time : '';
     }
 }

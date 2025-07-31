@@ -39,7 +39,7 @@ class InventoryStartBalanceController extends Controller
             return AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
 
-                ->where('code', 'like', '2101%')
+                ->where('code', 'like', '3101%')
                 ->select('id', 'aname')
                 ->get();
         });

@@ -7,9 +7,13 @@ use App\Models\Note;
 use App\Helpers\ItemViewModel;
 use App\Models\AccHead;
 use App\Models\OperationItems;
+use Livewire\WithPagination;
 
 new class extends Component {
-    public $items;
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
+
     public $selectedUnit = [];
     public $displayItemData = [];
     public $priceTypes;
@@ -17,18 +21,18 @@ new class extends Component {
     public $search = '';
     public $warehouses;
     public $selectedWarehouse = null;
+    public $selectedPriceType = '';
 
     public function mount()
     {
         $this->priceTypes = Price::all()->pluck('name', 'id');
         $this->noteTypes = Note::all()->pluck('name', 'id');
-        $this->warehouses = AccHead::where('is_stock', 1)->get();
-        $this->loadItems();
+        $this->warehouses = AccHead::where('code', 'like', '1104%')->where('is_basic', 0)->orderBy('id')->get();
     }
 
-    public function loadItems()
+    public function getItemsProperty()
     {
-        $this->items = Item::with([
+        return Item::with([
             'units' => function ($query) {
                 $query->orderBy('pivot_u_val');
             },
@@ -44,21 +48,96 @@ new class extends Component {
                         $q->where('barcode', 'like', '%' . $this->search . '%');
                     });
             })
-            ->get();
+            ->paginate(100);
+    }
 
-        $this->displayItemData = [];
+    public function getTotalQuantityProperty()
+    {
+        if (!$this->selectedPriceType) {
+            return 0;
+        }
+
+        $total = 0;
         foreach ($this->items as $item) {
             if (!isset($this->selectedUnit[$item->id])) {
                 $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
                 $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
             }
+            
             $this->calculateAndStoreDisplayData($item->id);
+            $itemData = $this->displayItemData[$item->id] ?? [];
+            
+            if (!empty($itemData) && isset($itemData['formattedQuantity']['quantity']['integer'])) {
+                $total += $itemData['formattedQuantity']['quantity']['integer'];
+            }
         }
+        return $total;
+    }
+
+    public function getTotalAmountProperty()
+    {
+        if (!$this->selectedPriceType) {
+            return 0;
+        }
+
+        $total = 0;
+        foreach ($this->items as $item) {
+            if (!isset($this->selectedUnit[$item->id])) {
+                $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
+                $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
+            }
+            
+            $this->calculateAndStoreDisplayData($item->id);
+            $itemData = $this->displayItemData[$item->id] ?? [];
+            
+            if (!empty($itemData)) {
+                $quantity = $itemData['formattedQuantity']['quantity']['integer'] ?? 0;
+                
+                if ($this->selectedPriceType === 'cost') {
+                    $unitPrice = $itemData['unitCostPrice'] ?? 0;
+                } elseif ($this->selectedPriceType === 'average_cost') {
+                    $unitPrice = $itemData['unitAverageCost'] ?? 0;
+                } else {
+                    $unitPrice = $itemData['unitSalePrices'][$this->selectedPriceType]['price'] ?? 0;
+                }
+                
+                $total += $quantity * $unitPrice;
+            }
+        }
+        return $total;
+    }
+
+    public function getTotalItemsProperty()
+    {
+        if (!$this->selectedPriceType) {
+            return 0;
+        }
+
+        $count = 0;
+        foreach ($this->items as $item) {
+            if (!isset($this->selectedUnit[$item->id])) {
+                $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
+                $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
+            }
+            
+            $this->calculateAndStoreDisplayData($item->id);
+            $itemData = $this->displayItemData[$item->id] ?? [];
+            
+            if (!empty($itemData)) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
     public function updatedSearch()
     {
-        $this->loadItems();
+        $this->resetPage();
+    }
+
+    public function updatedSelectedWarehouse()
+    {
+        $this->resetPage();
     }
 
     public function calculateAndStoreDisplayData($itemId)
@@ -87,7 +166,9 @@ new class extends Component {
             'unitOptions' => $viewModel->getUnitOptions(),
             'formattedQuantity' => $viewModel->getFormattedQuantity(),
             'unitCostPrice' => $viewModel->getUnitCostPrice(),
+            'unitAverageCost' => $viewModel->getUnitAverageCost(),
             'quantityCost' => $viewModel->getQuantityCost(),
+            'quantityAverageCost' => $viewModel->getQuantityAverageCost(),
             'unitSalePrices' => $unitSalePricesData,
             'unitBarcodes' => $selectedUnitId ? $viewModel->getUnitBarcode() : [],
             'itemNotes' => $item->notes
@@ -135,13 +216,6 @@ new class extends Component {
         $item->barcodes()->delete();
         $item->delete();
         session()->flash('success', 'تم حذف الصنف بنجاح');
-        // refresh the items
-        $this->loadItems();
-    }
-
-    public function updatedSelectedWarehouse()
-    {
-        $this->loadItems();
     }
 
     public function viewItemMovement($itemId, $warehouseId = 'all')
@@ -194,7 +268,7 @@ new class extends Component {
 
                             {{-- Warehouse Filter --}}
                             <div class="flex-grow-1">
-                                <select wire:model.live="selectedWarehouse" class="form-select font-family-cairo">
+                                <select wire:model.live="selectedWarehouse" class="form-select font-family-cairo fw-bold font-14">
                                     <option value="">كل المخازن</option>
                                     @foreach ($warehouses as $warehouse)
                                         <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
@@ -215,7 +289,9 @@ new class extends Component {
                                     <th class="font-family-cairo text-center fw-bold">الاسم</th>
                                     <th class="font-family-cairo text-center fw-bold">الوحدات</th>
                                     <th class="font-family-cairo text-center fw-bold">الكميه</th>
-                                    <th class="font-family-cairo text-center fw-bold">التكلفه</th>
+                                    <th class="font-family-cairo text-center fw-bold">متوسط التكلفه</th>
+                                    <th class="font-family-cairo text-center fw-bold">تكلفه المتوسطه للكميه</th>
+                                    <th class="font-family-cairo text-center fw-bold">التكلفه الاخيره</th>
                                     <th class="font-family-cairo text-center fw-bold">تكلفه الكميه</th>
                                     @foreach ($this->priceTypes as $priceId => $priceName)
                                         <th class="font-family-cairo text-center fw-bold">{{ $priceName }}</th>
@@ -230,19 +306,31 @@ new class extends Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($displayItemData as $itemId => $itemData)
+                                @forelse ($this->items as $item)
+                                    @php
+                                        if (!isset($this->selectedUnit[$item->id])) {
+                                            $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
+                                            $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
+                                        }
+                                        $this->calculateAndStoreDisplayData($item->id);
+                                        $itemData = $this->displayItemData[$item->id] ?? [];
+                                        // dd($itemData);
+                                    @endphp
                                     @if (!empty($itemData))
-                                        <tr wire:key="{{ $this->getComputedKey($itemId) }}">
+                                        <tr wire:key="{{ $this->getComputedKey($item->id) }}">
                                             <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}
                                             </td>
                                             <td class="font-family-cairo text-center fw-bold">{{ $itemData['code'] }}
                                             </td>
                                             <td class="font-family-cairo text-center fw-bold">{{ $itemData['name'] }}
+                                                <a href="{{ route('item-movement', ['itemId' => $item->id]) }}">
+                                                    <i class="las la-eye fa-lg" title="عرض حركات الصنف"></i>
+                                                </a>
                                             </td>
                                             <td class="font-family-cairo text-center fw-bold">
                                                 @if (!empty($itemData['unitOptions']))
                                                     <select class="form-select font-family-cairo fw-bold font-14"
-                                                        wire:model.live="selectedUnit.{{ $itemId }}"
+                                                        wire:model.live="selectedUnit.{{ $item->id }}"
                                                         style="min-width: 105px;">
                                                         @foreach ($itemData['unitOptions'] as $option)
                                                             <option value="{{ $option['value'] }}">
@@ -263,6 +351,13 @@ new class extends Component {
                                                 )
                                                     [{{ $fq['quantity']['remainder'] }} {{ $fq['smallerUnitName'] }}]
                                                 @endif
+                                            </td>
+                                            <td class="font-family-cairo text-center fw-bold">
+                                                {{-- average cost * unit value --}}
+                                                {{ formatCurrency($itemData['unitAverageCost']) }}
+                                            </td>
+                                            <td class="font-family-cairo text-center fw-bold">
+                                                {{ formatCurrency($itemData['quantityAverageCost']) }}
                                             </td>
                                             <td class="text-center fw-bold">
                                                 {{ formatCurrency($itemData['unitCostPrice']) }}
@@ -303,12 +398,12 @@ new class extends Component {
                                                 <td>
                                                     @can('تعديل الأصناف')
                                                         <button type="button" class="btn btn-success btn-sm"
-                                                            wire:click="edit({{ $itemId }})"><i
+                                                            wire:click="edit({{ $item->id }})"><i
                                                                 class="las la-edit fa-lg"></i></button>
                                                     @endcan
                                                     @can('حذف الأصناف')
                                                         <button type="button" class="btn btn-danger btn-sm"
-                                                            wire:click="delete({{ $itemId }})"
+                                                            wire:click="delete({{ $item->id }})"
                                                             onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
                                                             <i class="las la-trash fa-lg"></i>
                                                         </button>
@@ -329,9 +424,84 @@ new class extends Component {
                                 @endforelse
                             </tbody>
                         </table>
+                        {{-- table footer to appear the total items quantity and the total cost or any selected price --}}
+                    </div>
+                    
+                    {{-- Price Selector and Totals Section --}}
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="font-family-cairo fw-bold mb-0">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        حساب المجاميع حسب السعر المحدد
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <label class="form-label font-family-cairo fw-bold">اختر نوع السعر:</label>
+                                            <select wire:model.live="selectedPriceType" class="form-select font-family-cairo fw-bold font-14">
+                                                <option value="">اختر نوع السعر</option>
+                                                <option value="cost">التكلفة</option>
+                                                <option value="average_cost">متوسط التكلفة</option>
+                                                @foreach ($this->priceTypes as $priceId => $priceName)
+                                                    <option value="{{ $priceId }}">{{ $priceName }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label font-family-cairo fw-bold">المخزن المحدد:</label>
+                                            <div class="form-control-plaintext font-family-cairo fw-bold">
+                                                @if($selectedWarehouse)
+                                                    @php
+                                                        $warehouse = $warehouses->firstWhere('id', $selectedWarehouse);
+                                                    @endphp
+                                                    {{ $warehouse ? $warehouse->aname : 'غير محدد' }}
+                                                @else
+                                                    جميع المخازن
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @if($selectedPriceType)
+                                            <div class="col-md-3">
+                                                {{-- <div class="card bg-light" style="max-width: 180px; margin: 0 auto;"> --}}
+                                                    {{-- <div class="card-body text-center p-2"> --}}
+                                                        <h6 class="font-family-cairo fw-bold text-primary mb-1" style="font-size: 0.95rem;">إجمالي الكمية</h6>
+                                                        <h4 class="font-family-cairo fw-bold text-success mb-0" style="font-size: 1.2rem;">{{ $this->totalQuantity }}</h4>
+                                                    {{-- </div> --}}
+                                                {{-- </div> --}}
+                                            </div>
+                                            <div class="col-md-3">
+                                                {{-- <div class="card bg-light style="max-width: 180px; margin: 0 auto;"> --}}
+                                                    {{-- <div class="card-body text-center"> --}}
+                                                        <h6 class="font-family-cairo fw-bold text-primary">إجمالي القيمة</h6>
+                                                        <h4 class="font-family-cairo fw-bold text-success">{{ formatCurrency($this->totalAmount) }}</h4>
+                                                    {{-- </div> --}}
+                                                {{-- </div> --}}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{-- <div class="card bg-light style="max-width: 180px; margin: 0 auto;"> --}}
+                                                    {{-- <div class="card-body text-center"> --}}
+                                                        <h6 class="font-family-cairo fw-bold text-primary">عدد الأصناف</h6>
+                                                        <h4 class="font-family-cairo fw-bold text-success">{{ $this->totalItems }}</h4>
+                                                    {{-- </div> --}}
+                                                {{-- </div> --}}
+                                            </div>
+                                    @endif
+                                    </div>
+                                    
+                                   
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex justify-content-center">
+                        {{ $this->items->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+

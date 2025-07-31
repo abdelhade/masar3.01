@@ -737,6 +737,13 @@
                             </a>
                         </li>
                         {{-- account movement --}}
+                        {{-- balance sheet --}}
+                        <li class="nav-item">
+                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.balanceSheet') }}">
+                                <i class="ti-control-record"></i>{{ __('الميزانيه العموميه') }}
+                            </a>
+                        </li>
+                         {{-- balance sheet --}}
                     </ul>
                 </li>
             @endcanany
@@ -919,7 +926,7 @@
                                     @endcan
                                     @can('عرض معالجه الحضور والانصرف')
                                         <li class="nav-item">
-                                            <a class="nav-link" href="{{ route('attendance-processing.index') }}">
+                                            <a class="nav-link" href="{{ route('attendance.processing') }}">
                                                 <i class="ti-control-record"></i>{{ __('معالجة الحضور والانصراف') }}
                                             </a>
                                         </li>
@@ -927,6 +934,12 @@
                                 </ul>
                             </li>
                         @endcanany
+                        {{-- CVs --}}
+                        <li class="nav-item">
+                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('cvs.index') }}">
+                                <i class="ti-control-record"></i>{{ __('السير الذاتية') }}
+                            </a>
+                        </li>
                     </ul>
                 </li>
             @endcanany

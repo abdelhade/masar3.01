@@ -17,18 +17,6 @@ new class extends Component {
         'assets' => '1%',
         'liabilities' => '2%',
         'equity' => '3%',
-        // 'client' => '1103%',
-        // 'supplier' => '2101%',
-        // 'fund' => '1101%',
-        // 'bank' => '1102%',
-        // // 'expense' => '44%',
-        // // 'revenue' => '32%',
-        // 'creditor' => '2104%',
-        // 'debtor' => '1106%',
-        
-        // 'asset' => '12%',
-        // 'employee' => '2102%',
-        // 'store' => '1104%',
     ];
 
 
@@ -271,7 +259,6 @@ new class extends Component {
                             <th style="width: 20%" class="font-family-cairo fw-bold font-14">الاسم</th>
                             <th style="width: 15%" class="font-family-cairo fw-bold font-14">رصيد اول المده الحالي</th>
                             <th style="width: 15%" class="font-family-cairo fw-bold font-14">رصيد اول المده الجديد</th>
-                            {{-- <th style="width: 15%" class="font-family-cairo fw-bold font-14">كميه التسويه</th> --}}
                         </tr>
                     </thead>
                     <tbody id="items_table_body">
@@ -281,7 +268,9 @@ new class extends Component {
                                     <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['code'] }}</p>
                                 </td>
                                 <td>
-                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['name'] }}</p>
+                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['name'] }} - <a href="{{ route('account-movement', ['accountId' => $formAccount['id']]) }}">
+                                        <i class="las la-eye fa-lg" title="عرض حركات الحساب"></i>
+                                    </a></p>
                                 </td>
                                 <td>
                                     <p
@@ -295,17 +284,8 @@ new class extends Component {
                                             class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($formAccounts[$formAccount['id']]['new_start_balance'] ?? 0) < 0) text-danger @endif"
                                             placeholder="رصيد اول المده الجديد" style="padding:2px;height:30px;"
                                             x-on:keydown.enter.prevent>
-                                        {{-- @else
-                                        <p class="font-family-cairo fw-bold font-16 text-center">
-                                            {{ $account->start_balance ?? 0 }}
-                                        </p> --}}
                                     @endif
                                 </td>
-                                {{-- <td>
-                                    <p class="font-family-cairo fw-bold font-16 text-center @if (($new_accounts_opening_balance[$account->id] ?? 0) - ($current_accounts_opening_balance[$account->id] ?? 0) < 0) text-danger @endif">
-                                        {{ number_format(($new_accounts_opening_balance[$account->id] ?? 0) - ($current_accounts_opening_balance[$account->id] ?? 0), 2) }}
-                                    </p>
-                                </td> --}}
                             </tr>
                         @endforeach
 

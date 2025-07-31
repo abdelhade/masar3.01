@@ -33,6 +33,12 @@ class EmployeeSeeder extends Seeder
             'date_of_hire' => '2025-01-01',
             'date_of_fire' => '2026-01-01',
             'image' => null,
+            'shift_id' => 1,
+            'salary' => 3000,
+            'salary_type' => 'ساعات عمل فقط',
+            'additional_hour_calculation' => 1.5,
+            'finger_print_id' => '01',
+            'finger_print_name' => 'محمد عبد الله',
             'created_at' => now(),
         ]);
         

@@ -39,4 +39,10 @@ if (!function_exists('formatCurrency')) {
     {
         return str_replace(' ', '', $barcode);
     }
+
+    // format quantity
+    function formatQuantity($quantity)
+    {
+        return number_format($quantity, 2, '.', '');
+    }
 }

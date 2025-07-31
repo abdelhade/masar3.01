@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->string('employee_attendance_finger_print_id')->required();
-            $table->string('employee_attendance_finger_print_name')->required();
+            $table->string('employee_attendance_finger_print_id')->nullable();
+            $table->string('employee_attendance_finger_print_name')->nullable();
             $table->enum('type', ['check_in', 'check_out']);
             $table->date('date')->default(now()->format('Y-m-d'));
             $table->time('time')->default(now()->format('H:i:s'));
