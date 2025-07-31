@@ -301,6 +301,47 @@ class CreateInvoiceForm extends Component
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) return;
 
+        // التحقق من وجود الصنف في الفاتورة
+        $existingItemIndex = null;
+        foreach ($this->invoiceItems as $index => $invoiceItem) {
+            if ($invoiceItem['item_id'] === $item->id) {
+                $existingItemIndex = $index;
+                break;
+            }
+        }
+
+        // إذا كان الصنف موجود، زيادة الكمية بدلاً من إضافة صف جديد
+        if ($existingItemIndex !== null) {
+            $this->invoiceItems[$existingItemIndex]['quantity']++;
+            $this->recalculateSubValues();
+            $this->calculateTotals();
+
+            // تحديث بيانات الصنف المختار
+            $unitId = $this->invoiceItems[$existingItemIndex]['unit_id'];
+            $price = $this->invoiceItems[$existingItemIndex]['price'];
+            $this->updateSelectedItemData($item, $unitId, $price);
+
+            // إعادة تعيين حقول البحث
+            $this->searchTerm = '';
+            $this->searchResults = collect();
+            $this->selectedResultIndex = -1;
+            $this->barcodeTerm = '';
+            $this->barcodeSearchResults = collect();
+            $this->selectedBarcodeResultIndex = -1;
+
+            // تحديث فهرس الكمية الأخير
+            $this->lastQuantityFieldIndex = $existingItemIndex;
+
+            if ($this->addedFromBarcode) {
+                $this->js('window.focusBarcodeSearch()'); // ركز على الباركود
+            } else {
+                $this->js('window.focusLastQuantityField()'); // ركز على الكمية
+            }
+
+            return; // الخروج من الدالة
+        }
+
+        // إذا لم يكن الصنف موجود، إضافة صف جديد (الكود الأصلي)
         $firstUnit = $item->units->first();
         $unitId = $firstUnit?->id;
 
@@ -331,6 +372,7 @@ class CreateInvoiceForm extends Component
             'discount' => 0,
             'available_units' => $availableUnits,
         ];
+
         $this->updateSelectedItemData($item, $unitId, $price);
 
         $this->barcodeTerm = '';

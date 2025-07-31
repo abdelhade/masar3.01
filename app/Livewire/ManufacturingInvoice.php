@@ -224,60 +224,131 @@ class ManufacturingInvoice extends Component
         $this->calculateTotals();
     }
 
-    public function addProductFromSearch($itemId)
-    {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
-        if (! $item) return;
-        $price = $item->prices->first()->pivot->price ?? 0;
-        $price = round($price, 1);
+   public function addProductFromSearch($itemId)
+{
+    $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
+    if (! $item) return;
 
-        $this->selectedProducts[] = [
-            'id' => uniqid(),
-            'product_id' => $item->id,
-            'name' => $item->name,
-            'quantity' => 1,
-            'unit_cost' => $price,
-            'total_cost' => $price,
-            'cost_percentage' => 0
-        ];
+    // التحقق من وجود المنتج في القائمة
+    $existingProductIndex = null;
+    foreach ($this->selectedProducts as $index => $product) {
+        if ($product['product_id'] === $item->id) {
+            $existingProductIndex = $index;
+            break;
+        }
+    }
 
+    // إذا كان المنتج موجود، زيادة الكمية وإعادة حساب التكلفة
+    if ($existingProductIndex !== null) {
+        $this->selectedProducts[$existingProductIndex]['quantity']++;
+
+        // إعادة حساب التكلفة الإجمالية للمنتج
+        $this->selectedProducts[$existingProductIndex]['total_cost'] =
+            $this->selectedProducts[$existingProductIndex]['quantity'] *
+            $this->selectedProducts[$existingProductIndex]['unit_cost'];
+
+        // إعادة تعيين حقول البحث
         $this->productSearchTerm = '';
         $this->productSearchResults = collect();
         $this->productSelectedResultIndex = -1;
+
         $this->calculateTotals();
+
+        // التركيز على حقل الكمية للمنتج الموجود
+        $this->dispatch('focusProductQuantity', $existingProductIndex);
+
+        return; // الخروج من الدالة
     }
 
-    public function addRawMaterialFromSearch($itemId)
-    {
-        $item = Item::with('units')->find($itemId);
-        if (! $item) return;
+    // إذا لم يكن المنتج موجود، إضافة منتج جديد (الكود الأصلي)
+    $price = $item->prices->first()->pivot->price ?? 0;
+    $price = round($price, 1);
 
-        $unitsList = $item->units->map(function ($unit) {
-            return [
-                'id' => $unit->id,
-                'name' => $unit->name,
-                'cost' => $unit->pivot->cost,
-                'available_qty' => $unit->pivot->u_val
-            ];
-        })->toArray();
+    $this->selectedProducts[] = [
+        'id' => uniqid(),
+        'product_id' => $item->id,
+        'name' => $item->name,
+        'quantity' => 1,
+        'unit_cost' => $price,
+        'total_cost' => $price,
+        'cost_percentage' => 0
+    ];
 
-        $firstUnit = $unitsList[0] ?? null;
-        $this->selectedRawMaterials[] = [
-            'id' => uniqid(),
-            'item_id' => $item->id,
-            'name' => $item->name,
-            'quantity' => 1,
-            'unit_cost' => $firstUnit['cost'] ?? 0,
-            'available_quantity' => $firstUnit['available_qty'] ?? 0,
-            'total_cost' => $firstUnit['cost'] ?? 0,
-            'unitsList' => $unitsList
-        ];
+    $this->productSearchTerm = '';
+    $this->productSearchResults = collect();
+    $this->productSelectedResultIndex = -1;
+    $this->calculateTotals();
 
+    // التركيز على حقل الكمية للمنتج الجديد
+    $this->dispatch('focusProductQuantity', count($this->selectedProducts) - 1);
+}
+
+ public function addRawMaterialFromSearch($itemId)
+{
+    $item = Item::with('units')->find($itemId);
+    if (! $item) return;
+
+    // التحقق من وجود المادة الخام في القائمة
+    $existingMaterialIndex = null;
+    foreach ($this->selectedRawMaterials as $index => $material) {
+        if ($material['item_id'] === $item->id) {
+            $existingMaterialIndex = $index;
+            break;
+        }
+    }
+
+    // إذا كانت المادة الخام موجودة، زيادة الكمية وإعادة حساب التكلفة
+    if ($existingMaterialIndex !== null) {
+        $this->selectedRawMaterials[$existingMaterialIndex]['quantity']++;
+
+        // إعادة حساب التكلفة الإجمالية للمادة الخام
+        $this->selectedRawMaterials[$existingMaterialIndex]['total_cost'] =
+            $this->selectedRawMaterials[$existingMaterialIndex]['quantity'] *
+            $this->selectedRawMaterials[$existingMaterialIndex]['unit_cost'];
+
+        // إعادة تعيين حقول البحث
         $this->rawMaterialSearchTerm = '';
         $this->rawMaterialSearchResults = collect();
         $this->rawMaterialSelectedResultIndex = -1;
+
         $this->calculateTotals();
+
+        // التركيز على حقل الكمية للمادة الخام الموجودة
+        $this->dispatch('focusRawMaterialQuantity', $existingMaterialIndex);
+
+        return; // الخروج من الدالة
     }
+
+    // إذا لم تكن المادة الخام موجودة، إضافة مادة خام جديدة (الكود الأصلي)
+    $unitsList = $item->units->map(function ($unit) {
+        return [
+            'id' => $unit->id,
+            'name' => $unit->name,
+            'cost' => $unit->pivot->cost,
+            'available_qty' => $unit->pivot->u_val
+        ];
+    })->toArray();
+
+    $firstUnit = $unitsList[0] ?? null;
+    $this->selectedRawMaterials[] = [
+        'id' => uniqid(),
+        'item_id' => $item->id,
+        'name' => $item->name,
+        'quantity' => 1,
+        'unit_cost' => $firstUnit['cost'] ?? 0,
+        'available_quantity' => $firstUnit['available_qty'] ?? 0,
+        'total_cost' => $firstUnit['cost'] ?? 0,
+        'unitsList' => $unitsList
+    ];
+
+    $this->rawMaterialSearchTerm = '';
+    $this->rawMaterialSearchResults = collect();
+    $this->rawMaterialSelectedResultIndex = -1;
+    $this->calculateTotals();
+
+    // التركيز على حقل الكمية للمادة الخام الجديدة
+    $this->dispatch('focusRawMaterialQuantity', count($this->selectedRawMaterials) - 1);
+}
 
     public function removeProduct($index)
     {
