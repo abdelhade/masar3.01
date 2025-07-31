@@ -17,6 +17,18 @@
                             </div>
 
                             <div class="flex items-center">
+
+                                <button wire:click="openSaveTemplateModal"
+                                    class="btn btn-info px-5 py-3 text-lg font-bold">
+                                    حفظ كنموذج <i class="fas fa-save"></i>
+                                </button>
+
+                                <!-- زر اختيار نموذج -->
+                                <button wire:click="openLoadTemplateModal"
+                                    class="btn btn-warning px-5 py-3 text-lg font-bold">
+                                    اختيار نموذج <i class="fas fa-folder-open"></i>
+                                </button>
+
                                 <button wire:click="adjustCostsByPercentage"
                                     class="btn btn-primary px-5 py-3 text-lg font-bold">
                                     توزيع التكاليف <i class="fas fa-balance-scale"></i>
@@ -31,6 +43,56 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- مودال حفظ النموذج -->
+                        @if ($showSaveTemplateModal)
+                            <div class="modal fade show" style="display: block;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">حفظ كنموذج تصنيع</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label>اسم النموذج</label>
+                                                <input type="text" wire:model="templateName" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button wire:click="saveAsTemplate" class="btn btn-primary">حفظ</button>
+                                            <button wire:click="closeSaveTemplateModal"
+                                                class="btn btn-secondary">إلغاء</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- مودال تحميل النموذج -->
+                        @if ($showLoadTemplateModal)
+                            <div class="modal fade show" style="display: block;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">اختيار نموذج تصنيع</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <select wire:model="selectedTemplate" class="form-control">
+                                                <option value="">اختر نموذج</option>
+                                                @foreach ($templates as $template)
+                                                    <option value="{{ $template->id }}">{{ $template->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button wire:click="loadTemplate" class="btn btn-primary">تحميل</button>
+                                            <button wire:click="closeLoadTemplateModal"
+                                                class="btn btn-secondary">إلغاء</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="row">
                             <div class="card-body">

@@ -5,7 +5,8 @@ namespace App\Livewire;
 use App\Models\{
     Item,
     OperHead,
-    AccHead
+    AccHead,
+    OperationItems
 };
 use App\Services\ManufacturingInvoiceService;
 use Livewire\Component;
@@ -17,6 +18,13 @@ class ManufacturingInvoice extends Component
     // {
     //     $this->calculateTotals();
     // }
+
+    public $showSaveTemplateModal = false;
+    public $showLoadTemplateModal = false;
+    public $templateName = '';
+    public $templates = [];
+    public $selectedTemplate = null;
+
     public $currentStep = 1;
     public $pro_id;
     public $nextProId;
@@ -599,6 +607,147 @@ class ManufacturingInvoice extends Component
     //         }
     //     }
     // }
+
+
+    public function openSaveTemplateModal()
+    {
+        $this->showSaveTemplateModal = true;
+    }
+
+    // إغلاق مودال الحفظ
+    public function closeSaveTemplateModal()
+    {
+        $this->showSaveTemplateModal = false;
+        $this->templateName = '';
+    }
+
+    // فتح مودال التحميل
+    public function openLoadTemplateModal()
+    {
+        // $this->templates = OperationItems::where('pro_type', 63)->get();
+        $this->showLoadTemplateModal = true;
+    }
+
+    // إغلاق مودال التحميل
+    public function closeLoadTemplateModal()
+    {
+        $this->showLoadTemplateModal = false;
+        $this->selectedTemplate = null;
+    }
+
+    // حفظ النموذج
+    // public function saveAsTemplate()
+    // {
+    //     $this->validate(['templateName' => 'required|min:1']);
+    //     dd($this->all());
+
+    //     $operation = OperHead::create([
+
+    //         'pro_id' => '',
+    //         'is_stock	' => '',
+    //         'is_journal' => '',
+    //         'is_manager' => '',
+    //         'info' => '',
+    //         'pro_date' => '',
+    //         'store_id' => '',
+    //         'emp_id' => '',
+    //         'acc1' => '',
+    //         'acc2' => '',
+    //         'pro_value' => '',
+    //         'fat_net' => '',
+    //         'op2' => '',
+    //         'user' => '',
+    //         'pro_type' => '',
+
+    //     ]);
+
+    //     foreach ($this->selectedProducts as $index => $product) {
+    //         OperationItems::create([
+
+    //             'pro_tybe' => 63,
+    //             'pro_id' => $this->nextProId,
+    //             'item_id' => $product['product_id'],
+    //             'notes' =>$this->templateName,
+    //             'unit_id' => '',
+    //             'detail_store' => '',
+    //             'pro_id' => '',
+    //             'is_stock	' => '',
+    //             'item_price' => '',
+
+    //             'fat_price' => '',
+    //             'fat_quantity' => '',
+    //             'item_price' => '',
+    //             'cost_price' => '',
+    //             'item_discount' => '',
+    //             'additional' => '',
+    //             '' => '',
+    //             '' => '',
+    //             'quantity' => $product['quantity'],
+    //             'cost_price' => $product['unit_cost'],
+    //             'total_cost' => $product['total_cost'],
+    //             // 'cost_percentage' => $product['cost_percentage'],
+    //             'user_modified_percentage' => $product['user_modified_percentage']
+    //         ]);
+    //     }
+
+    //     foreach ($this->selectedRawMaterials as $index => $raw) {
+    //         OperationItems::create([
+
+    //             'pro_tybe' => 63,
+    //             'pro_id' => $this->nextProId,
+    //             'item_id' => $raw['product_id'],
+    //             'unit_id' => '',
+    //             'detail_store' => '',
+    //             'pro_id' => '',
+    //             'is_stock	' => '',
+    //             'item_price' => '',
+
+    //             'fat_price' => '',
+    //             'fat_quantity' => '',
+    //             'item_price' => '',
+    //             'cost_price' => '',
+    //             'item_discount' => '',
+    //             'additional' => '',
+    //             '' => '',
+    //             '' => '',
+    //             'quantity' => $raw['quantity'],
+    //             'cost_price' => $raw['unit_cost'],
+    //             'total_cost' => $raw['total_cost'],
+
+    //         ]);
+    //     }
+
+    //     // \App\Models\ManufacturingTemplate::create([
+    //     //     'name' => $this->templateName,
+    //     //     'operating_account' => $this->OperatingAccount,
+    //     //     'employee_id' => $this->employee,
+    //     //     'description' => $this->description,
+
+    //     //     'products' => json_encode($this->selectedProducts),
+    //     //     'raw_materials' => json_encode($this->selectedRawMaterials),
+    //     //     'expenses' => json_encode($this->additionalExpenses)
+    //     // ]);
+
+    //     $this->closeSaveTemplateModal();
+    //     session()->flash('message', 'تم حفظ النموذج بنجاح!');
+    // }
+
+    // تحميل النموذج
+    public function loadTemplate()
+    {
+        // if ($template = \App\Models\ManufacturingTemplate::find($this->selectedTemplate)) {
+        //     $this->OperatingAccount = $template->operating_account;
+        //     $this->employee = $template->employee_id;
+        //     $this->description = $template->description;
+
+        //     $this->selectedProducts = json_decode($template->products, true);
+        //     $this->selectedRawMaterials = json_decode($template->raw_materials, true);
+        //     $this->additionalExpenses = json_decode($template->expenses, true);
+
+        //     $this->closeLoadTemplateModal();
+        // }
+    }
+
 
     public function saveInvoice()
     {
