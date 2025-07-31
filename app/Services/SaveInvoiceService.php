@@ -10,6 +10,8 @@ class SaveInvoiceService
 {
     public function saveInvoice($component)
     {
+
+        // dd($component->all());
         if (empty($component->invoiceItems)) {
             $component->dispatch('no-items', title: 'خطا!', text: 'لا يمكن حفظ الفاتورة بدون أصناف.', icon: 'error');
             return;
@@ -45,9 +47,8 @@ class SaveInvoiceService
                 }
             }
         }
-
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
             $isJournal = in_array($component->type, [10, 11, 12, 13, 18, 19, 20, 21, 23]) ? 1 : 0;
             $isManager = $isJournal ? 0 : 1;
 
@@ -339,10 +340,9 @@ class SaveInvoiceService
                         'op_id'      => $voucher->id,
                         'isdeleted'  => 0,
                     ]);
-
-                    DB::commit();
                 }
             }
+            DB::commit();
             $component->dispatch('swal', title: 'تم الحفظ!', text: 'تم حفظ الفاتوره بنجاح.', icon: 'success');
             return $operation->id;
         } catch (\Exception $e) {
