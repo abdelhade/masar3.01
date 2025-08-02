@@ -62,7 +62,8 @@
         $defaultPlugins[] = 'remove_button';
     }
     if ($search) {
-        $defaultPlugins[] = 'dropdown_header';
+        // $defaultPlugins[] = 'dropdown_header';
+        $defaultPlugins[] = 'remove_button';
     }
     
     // Merge plugins
@@ -133,7 +134,7 @@
         name="{{ $name }}{{ $isMultiple ? '[]' : '' }}"
         class="tom-select {{ $class }}"
         autocomplete="off"
-        @if($wireModel) wire:model.live="{{ $wireModel }}" @endif
+        @if($wireModel) wire:model.live.debounce.200ms="{{ $wireModel }}" @endif
         @if($isMultiple) multiple @endif
         @if($disabled) disabled @endif
         @if($required) required @endif
@@ -214,8 +215,29 @@
              * Initialize all Tom Select elements on the page
              */
             initializeAll() {
+                // First, clean up orphaned instances
+                this.cleanupOrphanedInstances();
+                
                 const elements = document.querySelectorAll('select[data-tom-select]:not([data-tom-initialized])');
                 elements.forEach(element => this.initializeElement(element));
+            }
+            
+            /**
+             * Clean up instances for elements that no longer exist in the DOM
+             */
+            cleanupOrphanedInstances() {
+                this.instances.forEach((instance, elementId) => {
+                    const element = document.getElementById(elementId);
+                    if (!element) {
+                        try {
+                            instance.destroy();
+                            this.instances.delete(elementId);
+                            console.log(`Cleaned up orphaned Tom Select instance: ${elementId}`);
+                        } catch (error) {
+                            console.warn('Error cleaning up orphaned Tom Select instance:', error);
+                        }
+                    }
+                });
             }
             
             /**
@@ -225,8 +247,20 @@
                 try {
                     const elementId = element.id;
                     
-                    // Prevent double initialization
-                    if (element.hasAttribute('data-tom-initialized')) return;
+                    // Prevent double initialization unless forced
+                    if (element.hasAttribute('data-tom-initialized')) {
+                        // Check if this is a reinitialization scenario (conditional rendering)
+                        const existingInstance = this.instances.get(elementId);
+                        if (existingInstance) {
+                            try {
+                                existingInstance.destroy();
+                                this.instances.delete(elementId);
+                            } catch (error) {
+                                console.warn('Error destroying existing Tom Select instance:', error);
+                            }
+                        }
+                        element.removeAttribute('data-tom-initialized');
+                    }
                     
                     // Parse configuration
                     const config = this.parseConfig(element);
@@ -432,11 +466,44 @@
                     if (!element) {
                         instance.destroy();
                         this.instances.delete(elementId);
+                    } else {
+                        // If element exists but might need reinitialization, destroy and reinitialize
+                        try {
+                            instance.destroy();
+                            this.instances.delete(elementId);
+                            // Remove the initialized attribute to allow reinitialization
+                            element.removeAttribute('data-tom-initialized');
+                        } catch (error) {
+                            console.warn('Error destroying Tom Select instance:', error);
+                        }
                     }
                 });
                 
                 // Initialize new elements
                 this.initializeAll();
+            }
+            
+            /**
+             * Force reinitialize specific elements by selector
+             */
+            reinitializeBySelector(selector) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(element => {
+                    const elementId = element.id;
+                    const existingInstance = this.instances.get(elementId);
+                    
+                    if (existingInstance) {
+                        try {
+                            existingInstance.destroy();
+                            this.instances.delete(elementId);
+                        } catch (error) {
+                            console.warn('Error destroying existing Tom Select instance:', error);
+                        }
+                    }
+                    
+                    element.removeAttribute('data-tom-initialized');
+                    this.initializeElement(element);
+                });
             }
         }
         
@@ -463,6 +530,60 @@
                 setTimeout(() => {
                     window.tomSelectManager.reinitializeAll();
                 }, 100);
+            });
+            
+            // Handle conditional rendering better
+            document.addEventListener('livewire:updated', () => {
+                // Force reinitialize after a longer delay to ensure DOM is fully updated
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 300);
+            });
+            
+            // Listen for specific model changes that might trigger conditional rendering
+            document.addEventListener('livewire:model-updated', () => {
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 200);
+            });
+            
+            // Listen for processing type changes specifically
+            document.addEventListener('processing-type-changed', () => {
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 100);
+            });
+            
+            // Listen for explicit Tom Select reinitialization
+            document.addEventListener('reinitialize-tom-select', () => {
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 150);
+            });
+            
+            // More aggressive reinitialization for processing type changes
+            document.addEventListener('processing-type-changed', () => {
+                // Force cleanup and reinitialization with multiple attempts
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 100);
+                
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 300);
+                
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeAll();
+                }, 500);
+                
+                // Specifically target the selectedEmployee Tom Select
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeBySelector('#selectedEmployee');
+                }, 200);
+                
+                setTimeout(() => {
+                    window.tomSelectManager.reinitializeBySelector('#selectedEmployee');
+                }, 400);
             });
         }
         
@@ -501,6 +622,38 @@
             });
         }
         
+        // Additional observer specifically for Livewire conditional rendering
+        const livewireObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    // Check if any Tom Select elements were added or removed
+                    const hasTomSelectChanges = mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0;
+                    
+                    if (hasTomSelectChanges) {
+                        // Check for Tom Select elements in the added nodes
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1) { // Element node
+                                const tomSelectElements = node.querySelectorAll ? 
+                                    node.querySelectorAll('select[data-tom-select]') : [];
+                                
+                                if (tomSelectElements.length > 0) {
+                                    setTimeout(() => {
+                                        window.tomSelectManager.reinitializeAll();
+                                    }, 100);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Observe the entire document for Livewire changes
+        livewireObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
         // Expose utility functions
         window.getTomSelectInstance = function(elementId) {
             return window.tomSelectManager.instances.get(elementId);
@@ -508,6 +661,34 @@
         
         window.destroyTomSelect = function(elementId) {
             window.tomSelectManager.destroy(elementId);
+        };
+        
+        window.reinitializeTomSelect = function(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                // Remove initialization flag to force reinitialization
+                element.removeAttribute('data-tom-initialized');
+                // Destroy existing instance if any
+                const existingInstance = window.tomSelectManager.instances.get(elementId);
+                if (existingInstance) {
+                    try {
+                        existingInstance.destroy();
+                        window.tomSelectManager.instances.delete(elementId);
+                    } catch (error) {
+                        console.warn('Error destroying existing Tom Select instance:', error);
+                    }
+                }
+                // Reinitialize
+                window.tomSelectManager.initializeElement(element);
+            }
+        };
+        
+        window.reinitializeAllTomSelects = function() {
+            window.tomSelectManager.reinitializeAll();
+        };
+        
+        window.reinitializeTomSelectBySelector = function(selector) {
+            window.tomSelectManager.reinitializeBySelector(selector);
         };
     </script>
     @endpush

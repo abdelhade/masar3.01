@@ -66,6 +66,7 @@ class AttendanceProcessingManager extends Component
         $this->resetSelection();
         $this->resetErrorBag(); // Clear all validation errors
         $this->dispatch('processing-type-changed'); // Trigger UI update
+        $this->dispatch('reinitialize-tom-select'); // Force Tom Select reinitialization
     }
 
     public function resetSelection()
@@ -146,6 +147,7 @@ class AttendanceProcessingManager extends Component
             
             $this->processingResults = $results;
             $this->showResults = true;
+            $this->resetSelection();
             $this->loadProcessings();
             
             session()->flash('success', 'تم معالجة الحضور بنجاح');

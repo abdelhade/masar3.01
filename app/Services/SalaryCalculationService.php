@@ -218,7 +218,6 @@ class SalaryCalculationService
                 $lateHours = $checkInTime->diffInHours($shiftStart, false);
             }
             
-            // $status = 'present';
             $result = [
                 'date' => $date->format('Y-m-d'),
                 'status' => 'present',
