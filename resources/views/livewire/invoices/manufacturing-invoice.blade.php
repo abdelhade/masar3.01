@@ -29,18 +29,29 @@
                                     اختيار نموذج <i class="fas fa-folder-open"></i>
                                 </button>
 
-                                <button wire:click="adjustCostsByPercentage"
-                                    class="btn btn-primary px-5 py-3 text-lg font-bold">
-                                    توزيع التكاليف <i class="fas fa-balance-scale"></i>
+                                <button wire:click="adjustCostsByPercentage" class="btn btn-warning px-4 py-2"
+                                    @if (empty($selectedProducts)) disabled @endif>
+                                    <i class="fas fa-calculator me-2"></i>
+                                    توزيع التكاليف حسب النسبة المئوية
                                 </button>
+
+                                @if (!empty($selectedProducts))
+                                    <small class="d-block text-muted mt-1">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        سيتم توزيع إجمالي تكلفة المواد الخام والمصروفات
+                                        ({{ number_format($totalManufacturingCost, 2) }} جنيه)
+                                        على المنتجات حسب النسب المحددة
+                                    </small>
+                                @endif
+
                                 <button wire:click="saveInvoice" class="btn btn-success px-5 py-3 text-lg font-bold">
                                     حفظ الفاتورة <i class="fas fa-save"></i>
                                 </button>
 
-                                <button wire:click="cancelInvoice" type="button"
+                                {{-- <button wire:click="cancelInvoice" type="button"
                                     class="btn btn-danger px-5 py-3 text-lg font-bold">
                                     إلغاء <i class="fas fa-times-circle"></i>
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
 
@@ -70,24 +81,89 @@
 
                         <!-- مودال تحميل النموذج -->
                         @if ($showLoadTemplateModal)
-                            <div class="modal fade show" style="display: block;">
-                                <div class="modal-dialog">
+                            <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);">
+                                <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">اختيار نموذج تصنيع</h5>
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-folder-open me-2"></i>
+                                                اختيار نموذج تصنيع
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                wire:click="closeLoadTemplateModal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <select wire:model="selectedTemplate" class="form-control">
-                                                <option value="">اختر نموذج</option>
-                                                @foreach ($templates as $template)
-                                                    <option value="{{ $template->id }}">{{ $template->name }}</option>
-                                                @endforeach
-                                            </select>
+                                            @if (count($templates) > 0)
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">اختر النموذج:</label>
+                                                    <select wire:model.live="selectedTemplate"
+                                                        class="form-select form-select-lg">
+                                                        <option value=""> اختر نموذج --</option>
+                                                        @foreach ($templates as $template)
+                                                            <option value="{{ $template['id'] }}">
+                                                                {{ $template['display_name'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                @if ($selectedTemplate)
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        <strong>ملاحظة:</strong> سيتم تحميل جميع المنتجات والخامات
+                                                        المحفوظة في هذا النموذج.
+                                                    </div>
+                                                @endif
+
+                                                {{-- معاينة سريعة للنموذج المختار --}}
+                                                @if ($selectedTemplate)
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0">معاينة النموذج</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            @php
+                                                                $currentTemplate = collect($templates)->firstWhere(
+                                                                    'id',
+                                                                    $selectedTemplate,
+                                                                );
+                                                            @endphp
+                                                            @if ($currentTemplate)
+                                                                {{-- <p class="mb-1"><strong>الاسم:</strong>
+                                                                    {{ $currentTemplate['name'] ?: 'غير محدد' }}</p> --}}
+                                                                <p class="mb-1"><strong>التاريخ:</strong>
+                                                                    {{ $currentTemplate['pro_date'] }}</p>
+                                                                <p class="mb-0"><strong>القيمة:</strong>
+                                                                    {{ number_format($currentTemplate['pro_value'], 2) }}
+                                                                    ج.م</p>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="text-center py-4">
+                                                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                                    <h5 class="text-muted">لا توجد نماذج محفوظة</h5>
+                                                    <p class="text-muted">قم بحفظ نموذج أولاً لتتمكن من تحميله لاحقاً
+                                                    </p>
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="modal-footer">
-                                            <button wire:click="loadTemplate" class="btn btn-primary">تحميل</button>
-                                            <button wire:click="closeLoadTemplateModal"
-                                                class="btn btn-secondary">إلغاء</button>
+                                            @if (count($templates) > 0)
+                                                <button wire:click="loadTemplate" class="btn btn-primary px-4"
+                                                    {{ !$selectedTemplate ? 'disabled' : '' }}>
+                                                    <i class="fas fa-download me-2"></i>
+                                                    تحميل النموذج
+                                                    {{-- @if (!$selectedTemplate)
+                                                        <small class="d-block">(اختر نموذج أولاً)</small>
+                                                    @endif --}}
+                                                </button>
+                                            @endif
+                                            <button wire:click="closeLoadTemplateModal" class="btn btn-secondary px-4">
+                                                <i class="fas fa-times me-2"></i>
+                                                إلغاء
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -255,7 +331,7 @@
                                                         <td>
                                                             <input type="number"
                                                                 id="product_unit_cost_{{ $index }}"
-                                                                wire:model.lazy="selectedProducts.{{ $index }}.unit_cost"
+                                                                wire:model.lazy="selectedProducts.{{ $index }}.average_cost"
                                                                 min="0" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
@@ -430,7 +506,7 @@
                                                                                             <th style="width: 15%">
                                                                                                 الكمية</th>
                                                                                             <th style="width: 15%">
-                                                                                                سعر الوحدة
+                                                                                                سعر التكلفه
                                                                                             </th>
                                                                                             <th style="width: 15%">
                                                                                                 الإجمالي
@@ -458,11 +534,6 @@
                                                                                                         class="form-control form-control-sm unit-select"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
                                                                                                         data-item-id="{{ $material['id'] ?? '' }}">
-                                                                                                        {{-- <option
-                                                                                                            value="">
-                                                                                                            اختر
-                                                                                                            وحدة
-                                                                                                        </option> --}}
                                                                                                         @foreach ($material['unitsList'] ?? [] as $unit)
                                                                                                             <option
                                                                                                                 value="{{ $unit['id'] }}">
@@ -477,8 +548,7 @@
                                                                                                     <input
                                                                                                         type="number"
                                                                                                         id="raw_quantity_{{ $index }}"
-                                                                                                        wire:model.lazy="selectedRawMaterials.{{ $index }}.quantity"
-                                                                                                        wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.quantity')"
+                                                                                                        wire:model.live.debounce.300="selectedRawMaterials.{{ $index }}.quantity"
                                                                                                         min="0.01"
                                                                                                         step="0.01"
                                                                                                         class="form-control form-control-sm"
@@ -489,18 +559,19 @@
                                                                                                     <input
                                                                                                         type="number"
                                                                                                         id="raw_unit_cost_{{ $index }}"
-                                                                                                        wire:model.lazy="selectedRawMaterials.{{ $index }}.unit_cost"
-                                                                                                        wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.unit_cost')"
+                                                                                                        wire:model.live.debounce.300="selectedRawMaterials.{{ $index }}.average_cost"
+                                                                                                        {{-- wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.unit_cost')" --}}
                                                                                                         min="0"
                                                                                                         step="0.01"
                                                                                                         class="form-control form-control-sm cost-input"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                                                        placeholder="سعر الوحدة">
+                                                                                                        placeholder="سعر التكلفه"
+                                                                                                        disabled>
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <input
                                                                                                         type="text"
-                                                                                                        value="{{ number_format($material['total_cost'] ?? 0, 2) }} "
+                                                                                                        value="{{ number_format($material['total_cost'] ?? 0, 2) }} ج"
                                                                                                         class="form-control form-control-sm  bg-opacity-10  fw-bold"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
                                                                                                         readonly>
@@ -748,22 +819,23 @@
                         }
                     });
                 });
+
                 // حقل الكمية - الانتقال لحقل السعر
-                document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
-                    field.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const index = this.id.split('_')[2];
-                            const nextField = document.getElementById('raw_unit_cost_' + index);
-                            if (nextField) {
-                                nextField.focus();
-                                nextField.select();
-                            }
-                        }
-                    });
-                });
+                // document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
+                //     field.addEventListener('keydown', function(e) {
+                //         if (e.key === 'Enter') {
+                //             e.preventDefault();
+                //             const index = this.id.split('_')[2];
+                //             const nextField = document.getElementById('raw_unit_cost_' + index);
+                //             if (nextField) {
+                //                 nextField.focus();
+                //                 nextField.select();
+                //             }
+                //         }
+                //     });
+                // });
                 // حقل السعر - الانتقال لحقل البحث
-                document.querySelectorAll('input[id^="raw_unit_cost_"]').forEach(function(field) {
+                document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
                     field.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
                             e.preventDefault();
@@ -844,6 +916,16 @@
             })
 
             document.addEventListener('livewire:init', () => {
+                Livewire.on('success', (data) => {
+                    Swal.fire({
+                        title: data.title,
+                        text: data.text,
+                        icon: data.icon,
+                    })
+                });
+            })
+
+            document.addEventListener('livewire:init', () => {
                 console.log('Livewire initialized');
                 Livewire.on('error-swal', (data) => {
                     console.log('Received error-swal event:', data);
@@ -866,15 +948,16 @@
                 });
             });
 
+            document.addEventListener('DOMContentLoaded', function() {
+                // تتبع تغيير القيم
+                Livewire.on('template-selected', (templateId) => {
+                    console.log('Template selected:', templateId);
+                });
 
-            // Livewire.on('form-validation-error', errors => {
-            //     let messages = errors.join('\n');
-            //     Swal.fire({
-            //         icon: 'error',
-            //         title: 'خطأ في البيانات',
-            //         text: messages,
-            //     });
-            // });
+                Livewire.on('templates-loaded', (count) => {
+                    console.log('Templates loaded:', count);
+                });
+            });
         });
     </script>
 @endpush
