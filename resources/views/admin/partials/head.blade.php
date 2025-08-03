@@ -88,6 +88,10 @@
         h1 {
             font-size: 40px;
         }
+        h2 {
+            font-size: 30px;
+        }
+
 
         .li-main {
             border: 1px solid rgb(201, 201, 255);

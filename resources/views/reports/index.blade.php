@@ -238,6 +238,7 @@
                                 <i class="fas fa-balance-scale"></i>
                                 <span>الميزانية العمومية</span>
                             </a>
+                            
                             <a href="{{ route('reports.general-profit-loss-report') }}" class="report-link">
                                 <i class="fas fa-calculator"></i>
                                 <span>ارباح و خسائر</span>
