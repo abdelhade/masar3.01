@@ -2,10 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\{Item, OperHead, AccHead, OperationItems};
-use App\Services\ManufacturingInvoiceService;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Expense;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
+use App\Services\ManufacturingInvoiceService;
+use App\Models\{Item, OperHead, AccHead, OperationItems};
 
 class ManufacturingInvoice extends Component
 {
@@ -574,13 +575,36 @@ class ManufacturingInvoice extends Component
             'description' => '',
             'amount' => 0
         ];
+        $this->calculateTotalsAndDistribute();
     }
 
     public function removeExpense($index)
     {
         unset($this->additionalExpenses[$index]);
         $this->additionalExpenses = array_values($this->additionalExpenses);
+        $this->calculateTotalsAndDistribute();
         $this->calculateTotals();
+    }
+
+    public function calculateTotalsAndDistribute()
+    {
+        // أولاً: حساب إجمالي تكلفة المواد الخام (افترض أن لديك دالة مشابهة)
+        $this->calculateTotals();
+
+        // ثانياً: حساب إجمالي المصروفات الإضافية
+        // نستخدم collect() لتسهيل جمع قيمة الـ amount من المصفوفة
+        $totalExpenses = collect($this->additionalExpenses)->sum(function ($expense) {
+            // تأكد من أن المبلغ رقم صحيح وليس نص فارغ
+            return is_numeric($expense['amount']) ? $expense['amount'] : 0;
+        });
+
+        // ثالثاً: حساب إجمالي تكلفة التصنيع
+        // يتم جمع إجمالي المواد الخام مع إجمالي المصروفات
+        $this->totalManufacturingCost = $this->totalRawMaterialsCost + $totalExpenses;
+
+        // رابعاً: تحديث نسب التوزيع على المنتجات
+        // نستدعي الدالة المسؤولة عن توزيع التكلفة الإجمالية الجديدة على المنتجات
+        $this->updatePercentages();
     }
 
     public function openSaveTemplateModal()
@@ -633,7 +657,7 @@ class ManufacturingInvoice extends Component
 
     public function loadTemplate()
     {
-        if (!$this->selectedTemplate || empty($this->selectedTemplate)) {
+        if (!$this->selectedTemplate) {
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
                 'text' => 'يرجى اختيار نموذج أولاً.',
@@ -643,75 +667,49 @@ class ManufacturingInvoice extends Component
         }
 
         try {
+            // 1. العثور على النموذج الرئيسي
             $template = OperHead::find($this->selectedTemplate);
             if (!$template) {
-                $this->dispatch('error-swal', [
-                    'title' => 'خطأ!',
-                    'text' => 'النموذج غير موجود.',
-                    'icon' => 'error'
-                ]);
+                $this->dispatch('error-swal', ['title' => 'خطأ!', 'text' => 'النموذج غير موجود.', 'icon' => 'error']);
                 return;
             }
 
-            $templateItems = OperationItems::where('pro_id', $template->id)->get();
-
-            if ($templateItems->isEmpty()) {
-                $this->dispatch('error-swal', [
-                    'title' => 'تحذير!',
-                    'text' => 'النموذج فارغ أو لا يحتوي على عناصر.',
-                    'icon' => 'warning'
-                ]);
-                return;
-            }
-
-            // إعادة تعيين البيانات الحالية
+            // 2. إعادة تعيين البيانات الحالية
             $this->selectedProducts = [];
             $this->selectedRawMaterials = [];
             $this->additionalExpenses = [];
 
-            // تحميل العناصر
+            // 3. تحميل المنتجات والمواد الخام من جدول OperationItems
+            $templateItems = OperationItems::where('pro_id', $template->id)->get();
             foreach ($templateItems as $item) {
-                if ($this->isExpense($item)) {
-                    // تحميل المصروفات الإضافية
-                    $this->loadExpenseFromTemplate($item);
-                } elseif ($this->isProduct($item)) {
+                if ($this->isProduct($item)) {
                     $this->loadProductFromTemplate($item);
                 } else {
                     $this->loadRawMaterialFromTemplate($item);
                 }
             }
 
-            // تحديث الأسعار الحالية للمنتجات والمواد الخام
+            // 4. تحميل المصروفات من جدول Expense باستخدام الربط المباشر op_id
+            $templateExpenses = Expense::where('op_id', $template->id)->get();
+            foreach ($templateExpenses as $expense) {
+
+                // تنظيف الوصف لعرضه للمستخدم بدون النصوص الإضافية
+                $originalDescription = str_replace('مصروف إضافي: ', '', $expense->description);
+                $originalDescription = preg_replace('/ - نموذج:.*$/', '', $originalDescription);
+
+                $this->additionalExpenses[] = [
+                    'amount' => $expense->amount,
+                    'account_id' => $expense->account_id,
+                    'description' => trim($originalDescription)
+                ];
+            }
+
+            // 5. تحديث باقي البيانات
             $this->updateCurrentPrices();
-
-            // تحميل المصروفات من حقل details إذا كانت موجودة
-            if ($template->details) {
-                $templateData = json_decode($template->details, true);
-                if (isset($templateData['additional_expenses']) && is_array($templateData['additional_expenses'])) {
-                    // دمج المصروفات من details مع المصروفات المحملة من OperationItems
-                    foreach ($templateData['additional_expenses'] as $expense) {
-                        if (isset($expense['amount']) && $expense['amount'] > 0) {
-                            $this->additionalExpenses[] = [
-                                'amount' => $expense['amount'],
-                                'account_id' => $expense['account_id'] ?? $this->expenseAccount,
-                                'description' => $expense['description'] ?? ''
-                            ];
-                        }
-                    }
-                }
-            }
-
-            // تحديث البيانات الأساسية
             $this->description = $template->info ?? '';
-            if ($template->emp_id) {
-                $this->employee = $template->emp_id;
-            }
-            if ($template->acc2) {
-                $this->rawAccount = $template->acc2;
-            }
-            if ($template->acc1) {
-                $this->productAccount = $template->acc1;
-            }
+            if ($template->emp_id) $this->employee = $template->emp_id;
+            if ($template->acc2) $this->rawAccount = $template->acc2;
+            if ($template->acc1) $this->productAccount = $template->acc1;
 
             $this->calculateTotals();
             $this->closeLoadTemplateModal();
@@ -735,14 +733,14 @@ class ManufacturingInvoice extends Component
             $item->detail_store == $this->productAccount;
     }
 
-    private function isExpense($item)
-    {
-        // المصروفات: fat_tax = 999 أو item_id = 0 أو null
-        return ($item->fat_tax == 999) ||
-            (is_null($item->item_id) || $item->item_id == 0) &&
-            !is_null($item->cost_price) &&
-            $item->cost_price > 0;
-    }
+    // private function isExpense($item)
+    // {
+    //     // المصروفات: fat_tax = 999 أو item_id = 0 أو null
+    //     return ($item->fat_tax == 999) ||
+    //         (is_null($item->item_id) || $item->item_id == 0) &&
+    //         !is_null($item->cost_price) &&
+    //         $item->cost_price > 0;
+    // }
 
     private function getAvailableQuantity($itemId, $unitId)
     {
@@ -824,37 +822,37 @@ class ManufacturingInvoice extends Component
         }
     }
 
-    private function loadExpenseFromTemplate($item)
-    {
-        try {
-            // استخراج الوصف من الملاحظات
-            $description = '';
-            if ($item->notes) {
-                $description = $item->notes;
-                // إزالة النصوص الثابتة
-                $description = str_replace('مصروف إضافي: ', '', $description);
-                $description = preg_replace('/ - نموذج:.*$/', '', $description);
-            }
+    // private function loadExpenseFromTemplate($item)
+    // {
+    //     try {
+    //         // استخراج الوصف من الملاحظات
+    //         $description = '';
+    //         if ($item->notes) {
+    //             $description = $item->notes;
+    //             // إزالة النصوص الثابتة
+    //             $description = str_replace('مصروف إضافي: ', '', $description);
+    //             $description = preg_replace('/ - نموذج:.*$/', '', $description);
+    //         }
 
-            // استخدام cost_price أو item_price حسب المتاح
-            $amount = floatval($item->cost_price ?? $item->item_price ?? 0);
+    //         // استخدام cost_price أو item_price حسب المتاح
+    //         $amount = floatval($item->cost_price ?? $item->item_price ?? 0);
 
-            if ($amount > 0) {
-                $this->additionalExpenses[] = [
-                    'amount' => $amount,
-                    'account_id' => $item->detail_store ?? $this->expenseAccount,
-                    'description' => trim($description)
-                ];
-            }
-        } catch (\Exception $e) {
-            // تسجيل الخطأ للتتبع
-            // \Log::error('Error loading expense from template: ' . $e->getMessage(), [
-            //     'item_id' => $item->id ?? null,
-            //     'cost_price' => $item->cost_price ?? null,
-            //     'item_price' => $item->item_price ?? null
-            // ]);
-        }
-    }
+    //         if ($amount > 0) {
+    //             $this->additionalExpenses[] = [
+    //                 'amount' => $amount,
+    //                 'account_id' => $item->detail_store ?? $this->expenseAccount,
+    //                 'description' => trim($description)
+    //             ];
+    //         }
+    //     } catch (\Exception $e) {
+    //         // تسجيل الخطأ للتتبع
+    //         // \Log::error('Error loading expense from template: ' . $e->getMessage(), [
+    //         //     'item_id' => $item->id ?? null,
+    //         //     'cost_price' => $item->cost_price ?? null,
+    //         //     'item_price' => $item->item_price ?? null
+    //         // ]);
+    //     }
+    // }
 
     private function updateCurrentPrices()
     {
@@ -928,11 +926,6 @@ class ManufacturingInvoice extends Component
             // 'op2' => '', ??
             'user' => Auth::user()->id,
             'pro_type' => 63,
-            'details' => json_encode([
-                'template_name' => $this->templateName,
-                'description' => $this->description,
-                'additional_expenses' => $this->additionalExpenses
-            ])
         ]);
 
         foreach ($this->selectedProducts as  $product) {
@@ -971,21 +964,17 @@ class ManufacturingInvoice extends Component
 
         foreach ($this->additionalExpenses as $expense) {
             if (isset($expense['amount']) && $expense['amount'] > 0) {
-                OperationItems::create([
-                    'pro_tybe' => 63,
-                    'pro_id' => $operation->id,
-                    'item_id' => null, // أو 0
-                    'notes' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - نموذج: ' . $this->templateName,
-                    'detail_store' => $expense['account_id'] ?? $this->expenseAccount,
-                    'is_stock' => 0,
-                    'item_price' => $expense['amount'],
-                    'cost_price' => $expense['amount'],
-                    'total_cost' => $expense['amount'],
-                    'quantity' => 1,
-                    'fat_tax' => 999, // علامة للمصروفات الإضافية
+                Expense::create([
+                    'title' => $this->templateName,
+                    'pro_type' => 63,
+                    'op_id' => $operation->id,
+                    'amount' => $expense['amount'],
+                    'account_id' => $expense['account_id'] ?? $this->expenseAccount,
+                    'description' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - نموذج: ' . $this->templateName,
                 ]);
             }
         }
+
         $this->dispatch('success-swal', title: 'تم الحفظ!', text: 'تم حفظ نموذج التصنيع بنجاح.', icon: 'success');
 
         $this->closeSaveTemplateModal();
