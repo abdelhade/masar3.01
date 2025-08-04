@@ -413,27 +413,27 @@ class ManufacturingInvoice extends Component
         $this->calculateTotals();
     }
 
-    private function convertToNumber($propertyName)
-    {
-        $parts = explode('.', $propertyName);
-        if (count($parts) < 3) return;
+    // private function convertToNumber($propertyName)
+    // {
+    //     $parts = explode('.', $propertyName);
+    //     if (count($parts) < 3) return;
 
-        $index = $parts[1];
-        $field = $parts[2];
-        $type = $parts[0];
+    //     $index = $parts[1];
+    //     $field = $parts[2];
+    //     $type = $parts[0];
 
-        if ($type === 'selectedProducts' && isset($this->selectedProducts[$index][$field])) {
-            $this->selectedProducts[$index][$field] = (float)$this->selectedProducts[$index][$field];
-        }
+    //     if ($type === 'selectedProducts' && isset($this->selectedProducts[$index][$field])) {
+    //         $this->selectedProducts[$index][$field] = (float)$this->selectedProducts[$index][$field];
+    //     }
 
-        if ($type === 'selectedRawMaterials' && isset($this->selectedRawMaterials[$index][$field])) {
-            $this->selectedRawMaterials[$index][$field] = (float)$this->selectedRawMaterials[$index][$field];
-        }
+    //     if ($type === 'selectedRawMaterials' && isset($this->selectedRawMaterials[$index][$field])) {
+    //         $this->selectedRawMaterials[$index][$field] = (float)$this->selectedRawMaterials[$index][$field];
+    //     }
 
-        if ($type === 'additionalExpenses' && isset($this->additionalExpenses[$index][$field])) {
-            $this->additionalExpenses[$index][$field] = (float)$this->additionalExpenses[$index][$field];
-        }
-    }
+    //     if ($type === 'additionalExpenses' && isset($this->additionalExpenses[$index][$field])) {
+    //         $this->additionalExpenses[$index][$field] = (float)$this->additionalExpenses[$index][$field];
+    //     }
+    // }
 
     public function adjustCostsByPercentage()
     {
@@ -758,18 +758,18 @@ class ManufacturingInvoice extends Component
     private function loadProductFromTemplate($item)
     {
         try {
-            $product = Item::find($item->item_id);
+            $product = OperationItems::find($item->item_id);
             if (!$product) return;
-
-            $averageCost = $product->average_cost ?? 0;
+            $averageCost = $product->cost_price ?? 0;
             $this->selectedProducts[] = [
                 'id' => uniqid(),
                 'product_id' => $product->id,
                 'name' => $product->name,
-                'quantity' => $item->quantity ?? 1,
-                'unit_cost' => $item->cost_price ?? 0,
+                'quantity' => $item->fat_quantity ?? 1,
+                // 'unit_cost' => $item->cost_price ?? 0,
+                'cost_percentage' => $item->additional ?? 0,
                 'average_cost' => $averageCost, // إضافة متوسط التكلفة
-                'total_cost' => ($item->quantity ?? 1) * $averageCost,
+                'total_cost' => ($item->fat_price ?? 1) * $averageCost,
             ];
         } catch (\Exception $e) {
             $this->dispatch('erorr', title: 'خطأ', text: 'حدث خطا اثناء نحميل المنتجات.', icon: 'erorr');
@@ -807,7 +807,7 @@ class ManufacturingInvoice extends Component
                 'id' => uniqid(),
                 'item_id' => $rawMaterial->id,
                 'name' => $rawMaterial->name,
-                'quantity' => $item->quantity ?? 1,
+                'quantity' => $item->fat_quantity ?? 1,
                 'unit_id' => $selectedUnitId,
                 'unit_cost' => $item->cost_price ?? 0,
                 'available_quantity' => $this->getAvailableQuantity($rawMaterial->id, $selectedUnitId),
@@ -937,8 +937,10 @@ class ManufacturingInvoice extends Component
                 'detail_store' => $this->productAccount,
                 'pro_id' => $operation->id,
                 'is_stock' => 1,
+                'additional' => $product['cost_percentage'],
                 'fat_price' => $this->totalProductsCost,
-                'quantity' => $product['quantity'],
+                'item_price' => $product['average_cost'],
+                'fat_quantity' => $product['quantity'],
                 'cost_price' => $product['unit_cost'],
                 'total_cost' => $product['total_cost'],
             ]);
@@ -954,9 +956,10 @@ class ManufacturingInvoice extends Component
                 'detail_store' => $this->productAccount,
                 'pro_id' => $operation->id,
                 'is_stock' => 1,
-                'item_price' => $raw['unit_cost'],
+                // 'additional' => $raw['cost_percentage'],
+                'item_price' => $raw['average_cost'],
                 'fat_price' => $this->totalRawMaterialsCost,
-                'quantity' => $raw['quantity'],
+                'fat_quantity' => $raw['quantity'],
                 'cost_price' => $raw['unit_cost'],
                 'total_cost' => $raw['total_cost'],
             ]);

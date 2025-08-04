@@ -29,7 +29,8 @@
                                     اختيار نموذج <i class="fas fa-folder-open"></i>
                                 </button>
 
-                                <button wire:click="adjustCostsByPercentage" class="btn btn-primary px-5 py-3 text-lg font-bold"
+                                <button wire:click="adjustCostsByPercentage"
+                                    class="btn btn-primary px-5 py-3 text-lg font-bold"
                                     @if (empty($selectedProducts)) disabled @endif>
                                     <i class="fas fa-calculator me-2"></i>
                                     توزيع التكاليف حسب النسبة المئوية

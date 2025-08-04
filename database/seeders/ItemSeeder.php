@@ -46,7 +46,43 @@ class ItemSeeder extends Seeder
                 'carton_cost' => 960.00,
                 'price_piece' => 150.00,
                 'price_carton' => 1600.00,
-            ]
+            ],
+            [
+                'name' => 'منتج 1',
+                'code' => 2001,
+                'info' => 'هذا منتج 1',
+                'cost' => 70.00,
+                'carton_cost' => 840.00,
+                'price_piece' => 120.00,
+                'price_carton' => 1400.00,
+            ],
+            [
+                'name' => 'منتج 2',
+                'code' => 2002,
+                'info' => 'هذا منتج 2',
+                'cost' => 90.00,
+                'carton_cost' => 1080.00,
+                'price_piece' => 170.00,
+                'price_carton' => 1800.00,
+            ],
+            [
+                'name' => 'خام 1',
+                'code' => 3001,
+                'info' => 'هذا خام 1',
+                'cost' => 30.00,
+                'carton_cost' => 360.00,
+                'price_piece' => 60.00,
+                'price_carton' => 720.00,
+            ],
+            [
+                'name' => 'خام 2',
+                'code' => 3002,
+                'info' => 'هذا خام 2',
+                'cost' => 40.00,
+                'carton_cost' => 480.00,
+                'price_piece' => 80.00,
+                'price_carton' => 960.00,
+            ],
         ];
 
         foreach ($items as $item) {
