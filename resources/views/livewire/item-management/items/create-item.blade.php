@@ -498,7 +498,7 @@ new class extends Component {
 
                 <div class="mt-3">
                     <button type="button" class="btn btn-secondary font-family-cairo fw-bold"
-                        onclick="window.location.href='{{ route('items.index') }}'">عوده / إلغاء</button>
+                        onclick="window.history.back();">عوده / إلغاء</button>
                     <button type="submit"
                         class="btn btn-primary font-family-cairo fw-bold">{{ 'إنشاء' }}</button>
                 </div>
