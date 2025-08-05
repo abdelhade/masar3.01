@@ -1,0 +1,11 @@
+{
+    "name": "Zatca",
+    "alias": "zatca",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Zatca\\Providers\\ZatcaServiceProvider"
+    ],
+    "files": []
+}
