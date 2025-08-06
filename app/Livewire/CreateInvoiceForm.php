@@ -22,7 +22,7 @@ class CreateInvoiceForm extends Component
     public $barcodeSearchResults;
     public $selectedBarcodeResultIndex = -1;
     public bool $addedFromBarcode = false;
-
+    public $searchedTerm = '';
 
     public $priceTypes = [];
     public $selectedPriceType = 1;
@@ -148,22 +148,6 @@ class CreateInvoiceForm extends Component
             $this->acc1_id = 0;
         }
 
-        //         public $titles = [
-        //     10 => 'فاتوره مبيعات',
-        //     11 => 'فاتورة مشتريات',
-        //     12 => 'مردود مبيعات',
-        //     13 => 'مردود مشتريات',
-        //     14 => 'امر بيع',
-        //     15 => 'امر شراء',
-        //     16 => 'عرض سعر لعميل',
-        //     17 => 'عرض سعر من مورد',
-        //     18 => 'فاتورة توالف',
-        //     19 => 'امر صرف',
-        //     20 => 'امر اضافة',
-        //     21 => 'تحويل من مخزن لمخزن',
-        //     22 => 'امر حجز',
-        // ];
-
         $this->employees = $employees;
         $this->invoiceItems = [];
         $this->priceTypes = Price::pluck('name', 'id')->toArray();
@@ -237,8 +221,10 @@ class CreateInvoiceForm extends Component
             ->whereHas('barcodes', fn($q) => $q->where('barcode', $barcode))
             ->first();
 
-        if (! $item) {
-            return $this->dispatch('item-not-found');
+        if (!$item) {
+            // تخزين الباركود المدخل لاستخدامه في الـ alert
+            $this->searchedTerm = $barcode;
+            return $this->dispatch('item-not-found', ['term' => $barcode, 'type' => 'barcode']);
         }
 
         $this->addedFromBarcode = true;
@@ -258,6 +244,7 @@ class CreateInvoiceForm extends Component
         $this->selectedBarcodeResultIndex = -1;
         $this->lastQuantityFieldIndex = count($this->invoiceItems) - 1;
     }
+
     public function updatedBarcodeTerm($value)
     {
         $this->selectedBarcodeResultIndex = -1;
@@ -664,6 +651,23 @@ class CreateInvoiceForm extends Component
         if ($this->selectedResultIndex >= 0) {
             $item = $this->searchResults->get($this->selectedResultIndex);
             $this->addItemFromSearch($item->id);
+        } else {
+            // إذا لم يكن هناك نتائج محددة ولكن يوجد نص بحث
+            $searchTerm = trim($this->searchTerm);
+            if (!empty($searchTerm) && $this->searchResults->isEmpty()) {
+                // تخزين المصطلح المبحوث عنه
+                $this->searchedTerm = $searchTerm;
+                return $this->dispatch('item-not-found', ['term' => $searchTerm, 'type' => 'search']);
+            }
+        }
+    }
+
+    public function checkSearchResults()
+    {
+        $searchTerm = trim($this->searchTerm);
+        if (!empty($searchTerm) && $this->searchResults->isEmpty()) {
+            $this->searchedTerm = $searchTerm;
+            return $this->dispatch('item-not-found', ['term' => $searchTerm, 'type' => 'search']);
         }
     }
 

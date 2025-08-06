@@ -6,7 +6,6 @@
                 @include('components.invoices.invoice-head')
 
                 <div class="row">
-
                     <div class="col-lg-4 mb-3" style="position: relative;">
                         <label>ابحث عن صنف</label>
                         <input type="text" wire:model.live="searchTerm" class="form-control frst"
@@ -148,20 +147,20 @@
             });
         });
 
-        document.addEventListener('item-not-found', function() {
-            Swal.fire({
-                title: 'الصنف غير موجود',
-                text: 'الصنف بالباركود المدخل غير موجود. هل تريد إضافة صنف جديد؟',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'نعم، إضافة صنف',
-                cancelButtonText: 'لا',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '{{ route('items.create') }}';
-                }
-            });
-        });
+        // document.addEventListener('item-not-found', function() {
+        //     Swal.fire({
+        //         title: 'الصنف غير موجود',
+        //         text: 'الصنف بالباركود المدخل غير موجود. هل تريد إضافة صنف جديد؟',
+        //         icon: 'warning',
+        //         showCancelButton: true,
+        //         confirmButtonText: 'نعم، إضافة صنف',
+        //         cancelButtonText: 'لا',
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             window.location.href = '{{ route('items.create') }}';
+        //         }
+        //     });
+        // });
 
         // طريقة بديلة بدون Alpine
         document.addEventListener('DOMContentLoaded', function() {
@@ -282,39 +281,87 @@
                 }, 150);
             };
 
-            document.addEventListener('item-not-found', function() {
+            document.addEventListener('item-not-found', function(event) {
+                const data = event.detail;
+                const term = data.term || '';
+                const type = data.type || 'barcode';
+
+                let title = 'الصنف غير موجود';
+                let text = '';
+                let itemCreateUrl = '';
+
+                if (type === 'barcode') {
+                    text = `الصنف  غير موجود. هل تريد إضافة صنف جديد؟`;
+                    // تمرير الباركود كمعامل في الرابط
+                    itemCreateUrl = `{{ route('items.create') }}?barcode=${encodeURIComponent(term)}`;
+                } else {
+                    text = `الصنف "${term}" غير موجود. هل تريد إضافة صنف جديد؟`;
+                    // تمرير اسم الصنف كمعامل في الرابط
+                    itemCreateUrl = `{{ route('items.create') }}?name=${encodeURIComponent(term)}`;
+                }
+
                 Swal.fire({
-                    title: 'الصنف غير موجود',
-                    text: 'الصنف بالباركود المدخل غير موجود. هل تريد إضافة صنف جديد؟',
+                    title: title,
+                    text: text,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'نعم، إضافة صنف',
                     cancelButtonText: 'لا',
-                    allowEscapeKey: true // تأكد إن زر Esc مسموح
+                    allowEscapeKey: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.open('{{ route('items.create') }}', '_blank');
+                        window.open(itemCreateUrl, '_blank');
                     }
-                    const barcodeInput = document.getElementById('barcode-search');
-                    if (barcodeInput) {
-                        barcodeInput.value = ''; // تنظيف الحقل
-                        barcodeInput.focus(); // إرجاع التركيز للحقل
-                        @this.set('barcodeTerm', ''); // تحديث Livewire
-                    }
+
+                    // تنظيف وإعادة التركيز حسب نوع البحث
+                    // if (type === 'barcode') {
+                    //     const barcodeInput = document.getElementById('barcode-search');
+                    //     if (barcodeInput) {
+                    //         barcodeInput.value = '';
+                    //         barcodeInput.focus();
+                    //         @this.set('barcodeTerm', '');
+                    //     }
+                    // } else {
+                    //     const searchInput = document.querySelector(
+                    //         'input[wire\\:model\\.live="searchTerm"]');
+                    //     if (searchInput) {
+                    //         searchInput.value = '';
+                    //         searchInput.focus();
+                    //         @this.set('searchTerm', '');
+                    //     }
+                    // }
                 });
             });
 
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    Swal.close(); // إغلاق الـ SweetAlert يدوياً
-                    const barcodeInput = document.getElementById('barcode-search');
-                    if (barcodeInput) {
-                        barcodeInput.value = ''; // تنظيف الحقل
-                        barcodeInput.focus(); // إرجاع التركيز
-                        @this.set('barcodeTerm', ''); // تحديث Livewire
+                    Swal.close();
+
+                    // تحديد نوع الحقل النشط وتنظيفه
+                    const activeElement = document.activeElement;
+
+                    if (activeElement && activeElement.id === 'barcode-search') {
+                        activeElement.value = '';
+                        activeElement.focus();
+                        @this.set('barcodeTerm', '');
+                    } else if (activeElement && activeElement.hasAttribute('wire:model.live') &&
+                        activeElement.getAttribute('wire:model.live') === 'searchTerm') {
+                        activeElement.value = '';
+                        activeElement.focus();
+                        @this.set('searchTerm', '');
                     }
                 }
             });
+            const searchInput = document.querySelector('input[wire\\:model\\.live="searchTerm"]');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        // إذا لم تكن هناك نتائج، تحقق من البحث
+                        @this.call('handleEnter');
+                    }
+                });
+            }
 
             const finalPriceField = document.getElementById('final_price');
             if (finalPriceField && !finalPriceField.hasAttribute('data-listener')) {
