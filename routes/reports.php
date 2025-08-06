@@ -1,10 +1,7 @@
 <?php
 
-use App\Http\Controllers\inventoryDiscrepancyController;
-use Livewire\Volt\Volt;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\Reports\InvoiceReportController;
 
 Route::get('/reports/accounts-tree', [ReportController::class, 'accountsTree'])->name('accounts.tree');
 
@@ -123,7 +120,7 @@ Route::get('/reports/general-accounts-report', [ReportController::class, 'genera
 Route::get('/reports/general-account-statement-report', [ReportController::class, 'generalAccountStatementReport'])->name('reports.general-account-statement-report');
 
 // كشف حساب عام - تفاصيل اليومية
-Route::get('/reports/general-journal-details', function() {
+Route::get('/reports/general-journal-details', function () {
     return view('reports.general-journal-details');
 })->name('reports.general-journal-details');
 
@@ -158,9 +155,3 @@ Route::get(
 // تقرير جرد الأصناف
 Route::get('/discrepancy-report', [ReportController::class, 'inventoryDiscrepancyReport'])
     ->name('reports.inventory-discrepancy-report');
-
-Route::get('/billing/invoice-report', [InvoiceReportController::class, 'purchaseInvoices'])->name('billing.invoice-report');
-Route::get('/sales/invoice-report', [InvoiceReportController::class, 'salesInvoices'])->name('sales.invoice-report');
-
-// كشف حساب عام بالID
-
