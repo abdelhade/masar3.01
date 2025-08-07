@@ -212,7 +212,7 @@ class AttendanceProcessingService
     {
         $summary = $processedData['summary'];
         $dailyDetails = $processedData['details'];
-        $hourlyRate = $this->calculateHourlyRate($employee);
+        $hourlyRate = $processedData['salary_data']['hourly_rate'];
         
         foreach ($dailyDetails as $date => $dayData) {
             // Check for existing detail record to prevent duplicates
@@ -333,35 +333,12 @@ class AttendanceProcessingService
     }
 
     /**
-     * Calculate salary data for employee
-     */
-    // private function calculateSalaryData(Employee $employee, array $processedData): array
-    // {
-    //     $summary = $processedData['summary'];
-    //     $hourlyRate = $this->calculateHourlyRate($employee);
-    //     $dailyRate = $this->calculateDailyRate($employee);
-        
-    //     $basicSalary = $summary['actual_hours'] * $hourlyRate;
-    //     $overtimeSalary = $summary['overtime_hours'] * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
-    //     $totalSalary = $basicSalary + $overtimeSalary;
-        
-    //     return [
-    //         'hourly_rate' => $hourlyRate,
-    //         'daily_rate' => $dailyRate,
-    //         'basic_salary' => round($basicSalary, 2),
-    //         'overtime_salary' => round($overtimeSalary, 2),
-    //         'total_salary' => round($totalSalary, 2),
-    //         'calculation_type' => $employee->salary_type ?? 'ساعات عمل فقط'
-    //     ];
-    // }
-
-    /**
      * Calculate hourly rate for employee
      */
     private function calculateHourlyRate(Employee $employee): float
     {
         $monthlySalary = $employee->salary ?? 0;
-        $workingDaysPerMonth = 30;
+        $workingDaysPerMonth = now()->daysInMonth;
         $hoursPerDay = $this->getExpectedHours($employee);
         
         return $monthlySalary / $workingDaysPerMonth / $hoursPerDay;
@@ -373,7 +350,7 @@ class AttendanceProcessingService
     private function calculateDailyRate(Employee $employee): float
     {
         $monthlySalary = $employee->salary ?? 0;
-        $workingDaysPerMonth = 30;
+        $workingDaysPerMonth = now()->daysInMonth;
         
         return $monthlySalary / $workingDaysPerMonth;
     }

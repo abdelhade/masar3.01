@@ -223,9 +223,9 @@ class SalaryCalculationService
                 'status' => 'present',
                 'day_type' => $dayType,
                 'expected_hours' => $expectedHours,
-                'actual_hours' => $actualHours,
-                'overtime_hours' => $overtimeHours,
-                'late_hours' => $lateHours,
+                'actual_hours' => $actualHours - $overtimeHours,
+                'overtime_hours' => $overtimeHours > 0 ? $overtimeHours : 0,
+                'late_hours' => $lateHours > 0 ? $lateHours : 0,
                 'check_in_time' => $firstCheckIn ? $firstCheckIn->time : null,
                 'check_out_time' => $lastCheckOut ? $lastCheckOut->time : null,
             ];
@@ -335,10 +335,13 @@ class SalaryCalculationService
      */
     private function calculateHoursOnlySalary(Employee $employee, array $summary): array
     {
-        $hourlyRate = $employee->salary / $summary['total_days'] / $this->getExpectedHours($employee);
-        $dailyRate = $employee->salary / $summary['total_days'];
+        $currentMonthDays = now()->daysInMonth;
+        $shiftHours = $this->getExpectedHours($employee);
+        $hourlyRate = $employee->salary / $currentMonthDays / $shiftHours;
+        $dailyRate = $employee->salary / $currentMonthDays;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
         $overtimeSalary = $summary['overtime_hours'] * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
+        // dd($summary['actual_hours'],$summary['overtime_hours'],$hourlyRate,$dailyRate,$basicSalary,$overtimeSalary);
         
         
         return [
@@ -356,7 +359,9 @@ class SalaryCalculationService
      */
     private function calculateHoursWithDailyOvertimeSalary(Employee $employee, array $summary): array
     {
-        $hourlyRate = $employee->salary / 30 / 8;
+        $currentMonthDays = now()->daysInMonth;
+        $shiftHours = $this->getExpectedHours($employee);
+        $hourlyRate = $employee->salary / $currentMonthDays / $shiftHours;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
         $overtimeSalary = $summary['overtime_hours'] * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
         
@@ -374,7 +379,10 @@ class SalaryCalculationService
      */
     private function calculateHoursWithPeriodOvertimeSalary(Employee $employee, array $summary): array
     {
-        $hourlyRate = $employee->salary / 30 / 8;
+       
+        $currentMonthDays = now()->daysInMonth;
+        $shiftHours = $this->getExpectedHours($employee);
+        $hourlyRate = $employee->salary / $currentMonthDays / $shiftHours;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
         
         // Calculate period overtime (total overtime for the period)
@@ -395,7 +403,8 @@ class SalaryCalculationService
      */
     private function calculateAttendanceOnlySalary(Employee $employee, array $summary): array
     {
-        $dailyRate = $employee->salary / 30;
+        $currentMonthDays = now()->daysInMonth;
+        $dailyRate = $employee->salary / $currentMonthDays;
         $attendanceSalary = $summary['present_days'] * $dailyRate;
         
         
@@ -415,7 +424,9 @@ class SalaryCalculationService
     {
         // This would need to be integrated with production data
         // For now, return basic calculation
-        $hourlyRate = $employee->salary / 30 / 8;
+        $currentMonthDays = now()->daysInMonth;
+        $shiftHours = $this->getExpectedHours($employee);
+        $hourlyRate = $employee->salary / $currentMonthDays / $shiftHours;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
         
         return [
