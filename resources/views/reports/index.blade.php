@@ -518,9 +518,23 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="report-card">
+                        <div class="card-header">
+                            <i class="fas fa-cubes"></i>
+                            <span class="card-title">تقارير التصنيع </span>
+                        </div>
+
+                        <div class="card-body">
+                            <a href="{{ route('manufacturing.invoice.report') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span> تقارير فواتير التصنيع </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-
         </div>
 
         <!-- Bootstrap JS -->

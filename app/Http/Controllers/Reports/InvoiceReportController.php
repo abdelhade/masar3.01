@@ -53,6 +53,15 @@ class InvoiceReportController extends Controller
         return view('reports.invoices.supplier-rfqs', compact('invoices'));
     }
 
+    public function manufacturingReport()
+    {
+        $invoices = OperHead::whereIn('pro_type', [59])
+            ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
+            ->orderByDesc('pro_date')
+            ->get();
+        return view('reports.invoices.manufacturing-report', compact('invoices'));
+    }
+
     public function convertToPurchaseInvoice($id)
     {
         try {

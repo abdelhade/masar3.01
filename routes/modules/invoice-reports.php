@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Reports\InvoiceReportController;
 
@@ -17,3 +18,6 @@ Route::group(['prefix' => 'invoices', 'as' => 'invoices.'], function () {
     Route::get('/convert-to-sales/{id}', [InvoiceReportController::class, 'convertToSalesInvoice'])
         ->name('convert-to-sales');
 });
+
+Route::get('/manufacturing/invoice/report', [InvoiceReportController::class, 'manufacturingReport'])->name('manufacturing.invoice.report');
+

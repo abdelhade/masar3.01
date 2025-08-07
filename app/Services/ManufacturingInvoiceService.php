@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Item;
+use App\Models\Expense;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\{OperHead, OperationItems, JournalHead, JournalDetail};
@@ -360,5 +361,222 @@ class ManufacturingInvoiceService
             $component->dispatch('error-swal', title: 'خطأ !', text: 'حدث خطا اثناء الحفظ.', icon: 'error');
             return back()->withInput();
         }
+    }
+
+    public function updateManufacturingInvoice($component, $invoiceId)
+    {
+        // try {
+        //     DB::beginTransaction();
+
+        // 1. العثور على الفاتورة القديمة
+        $operation = OperHead::find($invoiceId);
+        if (!$operation) {
+            $component->dispatch('error-swal', [
+                'title' => 'خطأ!',
+                'text' => 'الفاتورة غير موجودة.',
+                'icon' => 'error'
+            ]);
+            return false;
+        }
+
+        // 2. حذف البيانات القديمة
+        OperationItems::where('pro_id', $operation->id)->delete();
+        Expense::where('op_id', $operation->id)->delete();
+        JournalHead::where('op_id', $operation->id)->delete();
+
+        // 3. تحديث بيانات الفاتورة الرئيسية
+        $operation->update([
+            'pro_id' => $component->pro_id,
+            'pro_type' => 59,
+            'acc1' => $component->rawAccount,
+            'acc2' => $component->productAccount,
+            'emp_id' => $component->employee,
+            'store_id' => $component->productAccount,
+            'is_stock' => 1,
+            'is_finance' => 0,
+            'is_manager' => 0,
+            'is_journal' => 1,
+            'pro_date' => $component->invoiceDate,
+            'pro_value' => $component->totalManufacturingCost,
+            'fat_net' => $component->totalManufacturingCost,
+            'info' => $component->description,
+            'user' => Auth::id(),
+        ]);
+
+        // 4. إنشاء بيانات المواد الخام الجديدة
+        foreach ($component->selectedRawMaterials as $raw) {
+            OperationItems::create([
+                'pro_tybe' => 59,
+                'detail_store' => $component->rawAccount,
+                'pro_id' => $operation->id,
+                'item_id' => $raw['item_id'],
+                'unit_id' => $raw['unit_id'] ?? null,
+                'qty_in' => 0,
+                'qty_out' => $raw['quantity'],
+                'item_price' => $raw['unit_cost'],
+                'cost_price' => $raw['unit_cost'],
+                'detail_value' => $raw['total_cost'],
+                'is_stock' => 1,
+            ]);
+        }
+
+        // 5. إنشاء بيانات المنتجات الجديدة
+        foreach ($component->selectedProducts as $product) {
+            $item = Item::find($product['product_id']);
+            if ($item) {
+                $oldQuantity = $item->inventory->quantity ?? 0;
+                $oldAverage = $item->average_cost ?? 0;
+                $newQuantity = $product['quantity'];
+                $newCost = $product['unit_cost'];
+
+                $totalCost = ($oldQuantity * $oldAverage) + ($newQuantity * $newCost);
+                $totalQuantity = $oldQuantity + $newQuantity;
+
+                $newAverage = $totalQuantity > 0 ? $totalCost / $totalQuantity : 0;
+
+                $item->update([
+                    'average_cost' => $newAverage
+                ]);
+            }
+
+            OperationItems::create([
+                'pro_tybe' => 59,
+                'detail_store' => $component->productAccount,
+                'pro_id' => $operation->id,
+                'item_id' => $product['product_id'],
+                'unit_id' => $product['unit_id'] ?? null,
+                'qty_in' => $product['quantity'],
+                'qty_out' => 0,
+                'item_price' => $product['unit_cost'],
+                'cost_price' => $product['unit_cost'],
+                'detail_value' => $product['total_cost'],
+                'is_stock' => 1,
+            ]);
+        }
+
+        // if ($component->totalAdditionalExpenses > 0 && !empty($component->additionalExpenses)) {
+        foreach ($component->additionalExpenses as $expense) {
+            Expense::create([
+                'title' => $component->description ?: 'فاتورة تصنيع',
+                'pro_type' => 59,
+                'op_id' => $operation->id,
+                'amount' => $expense['amount'],
+                'account_id' => $expense['account_id'],
+                'description' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - فاتورة: ' . $component->pro_id,
+            ]);
+        }
+        // }
+
+        // 6. إنشاء قيود المحاسبة
+        $journalId = (JournalHead::max('journal_id') ?? 0) + 1;
+        $totalRaw = $component->totalRawMaterialsCost;
+        $totalExpenses = $component->totalAdditionalExpenses;
+
+        // قيد صرف المواد الخام
+        JournalHead::create([
+            'journal_id' => $journalId,
+            'total' => $totalRaw,
+            'date' => $component->invoiceDate,
+            'op_id' => $operation->id,
+            'pro_type' => 59,
+            'details' => 'صرف مواد خام للتصنيع',
+            'user' => Auth::id(),
+        ]);
+        JournalDetail::create([
+            'journal_id' => $journalId,
+            'account_id' => $component->OperatingAccount,
+            'debit' => $totalRaw,
+            'credit' => 0,
+            'type' => 1,
+            'info' => 'صرف مواد خام للتصنيع',
+            'op_id' => $operation->id,
+        ]);
+        JournalDetail::create([
+            'journal_id' => $journalId,
+            'account_id' => $component->rawAccount,
+            'debit' => 0,
+            'credit' => $totalRaw,
+            'type' => 1,
+            'info' => 'صرف مواد خام للتصنيع',
+            'op_id' => $operation->id,
+        ]);
+
+        // قيد المصروفات الإضافية
+        if ($totalExpenses > 0 && isset($component->additionalExpenses)) {
+            $journalId++;
+
+            JournalHead::create([
+                'journal_id' => $journalId,
+                'total' => $totalExpenses,
+                'date' => $component->invoiceDate,
+                'op_id' => $operation->id,
+                'pro_type' => 59,
+                'details' => 'مصاريف إضافية للتصنيع',
+                'user' => Auth::id(),
+            ]);
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $component->OperatingAccount,
+                'debit' => $totalExpenses,
+                'credit' => 0,
+                'type' => 1,
+                'info' => 'مصاريف إضافية للتصنيع',
+                'op_id' => $operation->id,
+            ]);
+
+            foreach ($component->additionalExpenses as $expense) {
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $expense['account_id'],
+                    'debit' => 0,
+                    'credit' => $expense['amount'],
+                    'type' => 1,
+                    'info' => 'مصاريف إضافية للتصنيع',
+                    'op_id' => $operation->id,
+                ]);
+            }
+        }
+
+        // قيد إنتاج المنتجات
+        $journalId++;
+        JournalHead::create([
+            'journal_id' => $journalId,
+            'total' => $totalRaw,
+            'date' => $component->invoiceDate,
+            'op_id' => $operation->id,
+            'pro_type' => 59,
+            'details' => 'إنتاج منتجات تامة',
+            'user' => Auth::id(),
+        ]);
+        JournalDetail::create([
+            'journal_id' => $journalId,
+            'account_id' => $component->productAccount,
+            'debit' => $totalRaw,
+            'credit' => 0,
+            'type' => 1,
+            'info' => 'إنتاج منتجات تامة',
+            'op_id' => $operation->id,
+        ]);
+        JournalDetail::create([
+            'journal_id' => $journalId,
+            'account_id' => $component->OperatingAccount,
+            'debit' => 0,
+            'credit' => $totalRaw,
+            'type' => 1,
+            'info' => 'إنتاج منتجات تامة',
+            'op_id' => $operation->id,
+        ]);
+
+        DB::commit();
+
+        $component->isEditing = false;
+        $component->originalInvoiceId = null;
+        $component->dispatch('success-swal', title: 'تم التعديل!', text: 'تم تعديل فاتورة التصنيع بنجاح.', icon: 'success');
+        return $operation->id;
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     $component->dispatch('error-swal', title: 'خطأ!', text: 'حدث خطأ أثناء تعديل الفاتورة: ' . $e->getMessage(), icon: 'error');
+        //     return false;
+        // }
     }
 }

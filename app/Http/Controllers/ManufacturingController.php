@@ -8,11 +8,11 @@ use Illuminate\Routing\Controller;
 
 class ManufacturingController extends Controller
 {
-public function __construct()
-{
-    $this->middleware('can:عرض فاتورة تصنيع')->only(['index']);
-    $this->middleware('can:إضافة فاتورة تصنيع')->only(['create','store']);
-}
+    public function __construct()
+    {
+        $this->middleware('can:عرض فاتورة تصنيع')->only(['index']);
+        $this->middleware('can:إضافة فاتورة تصنيع')->only(['create', 'store']);
+    }
 
     /**
      * Display a listing of the resource.
@@ -51,7 +51,7 @@ public function __construct()
      */
     public function edit(string $id)
     {
-        //
+        return view('manufacturing.edit', compact('id'));
     }
 
     /**
