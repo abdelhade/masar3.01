@@ -2,10 +2,10 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تقرير فواتير المشتريات'),
+        'title' => __('تقرير عرض سعر من مورد '),
         'items' => [
             ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('فواتير المشتريات')],
+            ['label' => __('عرض سعر من مورد')],
         ],
     ])
 
@@ -22,7 +22,6 @@
                                     <th>رقم الفاتورة</th>
                                     <th>النوع</th>
                                     <th>القيمة</th>
-                                    <th>الربح</th>
                                     <th>تاريخ الفاتورة</th>
                                     <th>الحساب الدائن</th>
                                     <th>الحساب المدين</th>
@@ -38,24 +37,17 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $invoice->pro_id }}</td>
                                         <td>
-                                            @if ($invoice->pro_type == 10)
-                                                <span class="badge bg-primary">مبيعات</span>
-                                            @elseif($invoice->pro_type == 13)
-                                                <span class="badge bg-warning">مرتجع مبيعات</span>
+                                            @if ($invoice->pro_type == 17)
+                                                <span class="badge bg-primary">عرض سعر من مورد </span>
                                             @endif
                                         </td>
                                         <td>{{ number_format($invoice->pro_value, 2) }}</td>
-                                        <td
-                                            class="{{ $invoice->profit > 0 ? 'bg-success text-white' : ($invoice->profit < 0 ? 'bg-danger text-white' : '') }}">
-                                            {{ $invoice->profit }}
-                                        </td>
-
                                         <td>{{ $invoice->pro_date }}</td>
                                         <td>{{ $invoice->acc1Head->aname ?? '-' }}</td>
                                         <td>{{ $invoice->acc2Head->aname ?? '-' }}</td>
                                         <td>{{ $invoice->employee->aname ?? '-' }}</td>
                                         <td>{{ $invoice->user->name ?? '-' }}</td>
-                                        <td>
+                                        <td class="text-center">
                                             <div class="d-flex flex-wrap gap-1">
                                                 <a class="btn btn-blue btn-icon-square-sm"
                                                     href="{{ route('invoices.edit', $invoice->id) }}">

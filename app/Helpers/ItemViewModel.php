@@ -25,7 +25,7 @@ class ItemViewModel
     {
         return $this->item->units->map(fn($unit) => [
             'value' => $unit->id,
-            'label' => $unit->name . ' [' . number_format($unit->pivot->u_val) . ']',
+            'label' => $unit->name . ' [' . number_format($unit->pivot->u_val ?? 1) . ']',
         ])->toArray();
     }
 
@@ -50,7 +50,7 @@ class ItemViewModel
         $totalBaseQty = 0;
         foreach ($itemRows as $row) {
             $unit = $this->item->units->firstWhere('id', $row->unit_id);
-            $u_val = $unit->pivot->u_val ?? 1;
+            $u_val = $unit && isset($unit->pivot) ? $unit->pivot->u_val : 1;
             $qty = ($row->qty_in - $row->qty_out) * $u_val;
             $totalBaseQty += $qty;
         }
@@ -64,7 +64,7 @@ class ItemViewModel
     public function getCurrentUnitQuantity(): float
     {
         $selectedUnit = $this->item->units->firstWhere('id', $this->selectedUnitId);
-        $selectedUVal = $selectedUnit->pivot->u_val ?? 1;
+        $selectedUVal = $selectedUnit && isset($selectedUnit->pivot) ? $selectedUnit->pivot->u_val : 1;
         $totalBaseQty = $this->getTotalBaseQuantity();
 
         return $selectedUVal > 0 ? $totalBaseQty / $selectedUVal : 0;
@@ -76,7 +76,7 @@ class ItemViewModel
     public function getFormattedQuantity(): array
     {
         $selectedUnit = $this->item->units->firstWhere('id', $this->selectedUnitId);
-        $selectedUVal = $selectedUnit->pivot->u_val ?? 1;
+        $selectedUVal = $selectedUnit && isset($selectedUnit->pivot) ? $selectedUnit->pivot->u_val : 1;
         $unitName = $selectedUnit->name ?? '';
         $smallerUnit = $this->item->units->firstWhere('pivot.u_val', 1);
         $smallerUnitName = $smallerUnit->name ?? '';
@@ -108,7 +108,7 @@ class ItemViewModel
 
     public function getUnitCostPrice(): float
     {
-        return $this->item->units->firstWhere('id', $this->selectedUnitId)->pivot->cost ?? 0;
+        return $this->item->units->firstWhere('id', $this->selectedUnitId)?->pivot->cost ?? 0;
     }
 
     public function getQuantityCost(): float
@@ -118,7 +118,7 @@ class ItemViewModel
 
     public function getUnitAverageCost(): float
     {
-        return $this->item->average_cost * $this->item->units->firstWhere('id', $this->selectedUnitId)->pivot->u_val ?? 0;
+        return $this->item->average_cost * ($this->item->units->firstWhere('id', $this->selectedUnitId)?->pivot->u_val ?? 0);
     }
 
     public function getQuantityAverageCost(): float

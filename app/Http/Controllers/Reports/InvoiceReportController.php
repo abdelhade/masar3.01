@@ -25,4 +25,31 @@ class InvoiceReportController extends Controller
             ->get();
         return view('reports.invoices.sales-invoice', compact('invoices'));
     }
+
+    public function salesOrdersReport()
+    {
+        $invoices = OperHead::whereIn('pro_type', [14])
+            ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
+            ->orderByDesc('pro_date')
+            ->get();
+        return view('reports.invoices.sales-orders', compact('invoices'));
+    }
+
+    public function purchaseQuotationsReport()
+    {
+        $invoices = OperHead::whereIn('pro_type', [16])
+            ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
+            ->orderByDesc('pro_date')
+            ->get();
+        return view('reports.invoices.purchase-quotations', compact('invoices'));
+    }
+
+    public function supplierRfqsReport()
+    {
+        $invoices = OperHead::whereIn('pro_type', [17])
+            ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
+            ->orderByDesc('pro_date')
+            ->get();
+        return view('reports.invoices.supplier-rfqs', compact('invoices'));
+    }
 }

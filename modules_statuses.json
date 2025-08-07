@@ -4,5 +4,6 @@
     "Controller": true,
     "ClientController": true,
     "Authrization": true,
-    "Authorization": true
+    "Authorization": true,
+    "Zatca": true
 }

@@ -213,7 +213,7 @@
                                 <i class="fas fa-book"></i>
                                 <span>اليومية العامة</span>
                             </a>
-                      
+
                             <a href="{{ route('reports.general-journal-details') }}" class="report-link">
                                 <i class="fas fa-file-invoice"></i>
                                 <span>كشف حساب عام</span>
@@ -230,7 +230,7 @@
                             <span class="card-title">تقارير الحسابات</span>
                         </div>
                         <div class="card-body">
-                        <a href="{{ route('accounts.tree') }}" class="report-link">
+                            <a href="{{ route('accounts.tree') }}" class="report-link">
                                 <i class="fas fa-tree"></i>
                                 <span>شجرة الحسابات</span>
                             </a>
@@ -238,12 +238,12 @@
                                 <i class="fas fa-balance-scale"></i>
                                 <span>الميزانية العمومية</span>
                             </a>
-                            
+
                             <a href="{{ route('reports.general-profit-loss-report') }}" class="report-link">
                                 <i class="fas fa-calculator"></i>
                                 <span>ارباح و خسائر</span>
                             </a>
-                    
+
                             <a href="{{ route('reports.general-account-balances') }}" class="report-link">
                                 <i class="fas fa-calculator"></i>
                                 <span>ميزان الحسابات</span>
@@ -343,6 +343,17 @@
                                 <i class="fas fa-box-open"></i>
                                 <span>تقرير فواتير المبيعات </span>
                             </a>
+
+                            <a href="{{ route('sales-orders-report') }}" class="report-link">
+                                <i class="fas fa-box-open"></i>
+                                <span>تقرير أوامر البيع </span>
+                            </a>
+
+                            <a href="{{ route('purchase-quotations-reports') }}" class="report-link">
+                                <i class="fas fa-box-open"></i>
+                                <span>تقرير عرض سعر لعميل </span>
+                            </a>
+
                         </div>
                     </div>
                 </div>
@@ -371,6 +382,11 @@
                             <a href="{{ route('billing.invoice-report') }}" class="report-link">
                                 <i class="fas fa-boxes"></i>
                                 <span>تقرير فواتير المشتريات </span>
+                            </a>
+
+                            <a href="{{ route('supplier-rfqs-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span> تقرير عرض سعر من مورد </span>
                             </a>
                         </div>
                     </div>

@@ -1,10 +1,26 @@
 <div class="row">
     {{-- العنوان واختيار نوع السعر للفاتورة --}}
-    <div class="card-header">
-        <h3 class="card-title fw-bold fs-2">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+        <h3 class="card-title fw-bold fs-2 m-0">
             {{ $titles[$type] }}
         </h3>
+
+        @if ($showBalance)
+            <div class="mt-2 text-end">
+                <div>
+                    <label>الرصيد الحالي: </label>
+                    <span class="fw-bold text-primary">{{ number_format($currentBalance) }}</span>
+                </div>
+                <div>
+                    <label>الرصيد بعد الفاتورة: </label>
+                    <span class="fw-bold {{ $balanceAfterInvoice < 0 ? 'text-danger' : 'text-success' }}">
+                        {{ number_format($balanceAfterInvoice) }}
+                    </span>
+                </div>
+            </div>
+        @endif
     </div>
+
     {{-- بيانات رأس الفاتورة --}}
     <div class="card-body">
         <div class="row">
@@ -15,13 +31,13 @@
                 {{-- <label class="form-label" style="font-size: 1em;">{{ $acc1Role }} (acc1)</label> --}}
                 <x-tom-select :options="collect($acc1List)
                     ->map(fn($acc1List) => ['value' => $acc1List->id, 'text' => $acc1List->aname])
-                    ->toArray()" wireModel="acc1_id" :value="$acc1_id" :search="true" :tomOptions="[
-                    'plugins' => [
-                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
-                        'remove_button' => ['title' => 'إزالة المحدد'],
-                    ],
-                ]"
-                    class="form-control form-control-sm scnd"
+                    ->toArray()" wireModel="acc1_id" :value="$acc1_id" :search="true"
+                    :tomOptions="[
+                        'plugins' => [
+                            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                            'remove_button' => ['title' => 'إزالة المحدد'],
+                        ],
+                    ]" class="form-control form-control-sm scnd"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;" />
                 @error('acc1_id')
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>

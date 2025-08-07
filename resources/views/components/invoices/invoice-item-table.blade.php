@@ -26,7 +26,7 @@
                                         <span class="form-control"
                                             wire:click="selectItemFromTable({{ $row['item_id'] }}, {{ $row['unit_id'] ?? '' }}, {{ $row['price'] ?? 0 }})"
                                             style="cursor: pointer; font-size: 0.85em; height: 2em; padding: 1px 4px; display: block;">
-                                            {{ $items->firstWhere('id', $row['item_id'])->name ?? 'غير محدد' }}
+                                            {{ $row['name'] ?? 'غير محدد' }} {{-- 💡 استخدم $row['name'] مباشرةً --}}
                                         </span>
                                     </td>
 

@@ -10,19 +10,16 @@ class SaveInvoiceService
 {
     public function saveInvoice($component)
     {
-
-        // dd($component->all());
         if (empty($component->invoiceItems)) {
             $component->dispatch('no-items', title: 'خطا!', text: 'لا يمكن حفظ الفاتورة بدون أصناف.', icon: 'error');
             return;
         }
-
         $component->validate([
             'acc1_id' => 'required|exists:acc_head,id',
             'acc2_id' => 'required|exists:acc_head,id',
             'pro_date' => 'required|date',
             'invoiceItems.*.item_id' => 'required|exists:items,id',
-            'invoiceItems.*.unit_id' => 'required|exists:units,id',
+            // 'invoiceItems.*.unit_id' => 'required|exists:units,id',
             'invoiceItems.*.quantity' => 'required|numeric|min:0.001',
             'invoiceItems.*.price' => 'required|numeric|min:0',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
@@ -340,8 +337,6 @@ class SaveInvoiceService
                         'op_id'      => $voucher->id,
                         'isdeleted'  => 0,
                     ]);
-
-
                 }
             }
             DB::commit();

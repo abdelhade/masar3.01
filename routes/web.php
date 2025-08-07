@@ -151,10 +151,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
     Route::get('pos-shifts/{shift}/close', [PosShiftController::class, 'close'])->name('pos-shifts.close');
     Route::post('pos-shifts/{shift}/close', [PosShiftController::class, 'closeConfirm'])->name('pos-shifts.close.confirm');
-    require __DIR__ . '/reports.php';
     require __DIR__ . '/modules/magicals.php';
     require __DIR__ . '/modules/cheques.php';
-    require __DIR__.'/modules/attendance.php';
-
+    require __DIR__ . '/modules/attendance.php';
+    require __DIR__ . '/modules/invoice-reports.php';
+    require __DIR__ . '/modules/reports.php';
 });
 require __DIR__ . '/auth.php';

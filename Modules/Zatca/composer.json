@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/zatca",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Zatca\\": "app/",
+            "Modules\\Zatca\\Database\\Factories\\": "database/factories/",
+            "Modules\\Zatca\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Zatca\\Tests\\": "tests/"
+        }
+    }
+}
