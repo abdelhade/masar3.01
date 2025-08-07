@@ -24,4 +24,9 @@ class OperationItems extends Model
     {
         return $this->belongsTo(Item::class, 'item_id'); // مهم: تأكد من اسم العمود
     }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id', 'id');
+    }
 }

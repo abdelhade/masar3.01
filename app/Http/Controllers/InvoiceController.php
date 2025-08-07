@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OperHead;
-use App\Models\JournalHead;
+use App\Models\{OperHead, JournalHead, AccHead, Employee, Item, JournalDetail};
 use Illuminate\Http\Request;
-use App\Models\JournalDetail;
 use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
-use App\Models\AccHead;
-use App\Models\Employee;
-use App\Models\Item;
 use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
@@ -53,8 +48,6 @@ class InvoiceController extends Controller
     }
 
 
-
-
     public function create(Request $request)
     {
         $type = (int) $request->get('type');
@@ -83,78 +76,18 @@ class InvoiceController extends Controller
             abort(403, 'ليس لديك صلاحية لإضافة هذا النوع.');
         }
 
-        if ($request->get('q') !== md5($type)) {
+        // التحقق من الـ hash
+        $expectedHash = md5($type);
+        $providedHash = $request->get('q');
+
+        if ($providedHash !== $expectedHash) {
             abort(403, 'الطلب غير موثوق.');
         }
 
         return view('invoices.create', [
             'type' => $type,
-            'hash' => $request->get('q'),
+            'hash' => $expectedHash,
         ]);
-
-        // $type = (int) $request->get('type');
-        // $hash = $request->get('q');
-
-        // if ($hash !== md5($type)) {
-        //     abort(403, 'Invalid type hash');
-        // }
-        // $lastProId = OperHead::max('pro_id');
-        // $nextProId = $lastProId ? $lastProId + 1 : 1;
-
-        // $clientsAccounts = AccHead::where('isdeleted', 0)
-        //     ->where('is_basic', 0)
-        //     ->where('code', 'like', '122%')
-        //     ->select('id', 'aname')->get();
-        // $suppliersAccounts = AccHead::where('isdeleted', 0)
-        //     ->where('is_basic', 0)
-        //     ->where('code', 'like', '211%')
-        //     ->select('id', 'aname')->get();
-        // $stores = AccHead::where('isdeleted', 0)
-        //     ->where('is_basic', 0)->where('code', 'like', '123%')
-        //     ->select('id', 'aname')->get();
-        // $employees = AccHead::where('isdeleted', 0)
-        //     ->where('is_basic', 0)->where('code', 'like', '213%')
-        //     ->select('id', 'aname')->get();
-        // $wasted = AccHead::where('isdeleted', 0)
-        //     ->where('is_basic', 0)
-        //     ->where('code', 'like', '441%')
-        //     ->select('id', 'aname')->get();
-        // $accounts = AccHead::where('isdeleted', 0)
-        //     ->where('is_basic', 0)
-        //     ->where('code', 'not like', '123%')
-        //     ->select('id', 'aname')->get();
-        // $map = [
-        //     10 => ['acc1' => 'clientsAccounts', 'acc2' => 'stores'],
-        //     11 => ['acc1' => 'stores', 'acc2' => 'suppliersAccounts'],
-        //     12 => ['acc1' => 'stores', 'acc2' => 'clientsAccounts'],
-        //     13 => ['acc1' => 'suppliersAccounts', 'acc2' => 'stores'],
-        //     14 => ['acc1' => 'clientsAccounts', 'acc2' => 'stores'],
-        //     15 => ['acc1' => 'stores', 'acc2' => 'suppliersAccounts'],
-        //     16 => ['acc1' => 'clientsAccounts', 'acc2' => 'stores'],
-        //     17 => ['acc1' => 'stores', 'acc2' => 'suppliersAccounts'],
-        //     18 => ['acc1' => 'wasted', 'acc2' => 'stores'],
-        //     19 => ['acc1' => 'accounts', 'acc2' => 'stores'],
-        //     20 => ['acc1' => 'stores', 'acc2' => 'accounts'],
-        //     21 => ['acc1' => 'stores', 'acc2' => 'stores'],
-        //     22 => ['acc1' => 'clientsAccounts', 'acc2' => 'stores'],
-        // ];
-
-        // $acc1List = isset($map[$type]) ? ${$map[$type]['acc1']} : collect();
-
-        // // force acc2List to always be stores
-        // $acc2List = $stores;
-
-        // return view('invoices.create', compact(
-        //     'type',
-        //     'acc1List',
-        //     'acc2List',
-        //     'clientsAccounts',
-        //     'suppliersAccounts',
-        //     'stores',
-        //     'employees',
-        //     'wasted',
-        //     'nextProId'
-        // ));
     }
 
     public function store(Request $request)

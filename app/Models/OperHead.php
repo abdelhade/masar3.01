@@ -57,7 +57,7 @@ class OperHead extends Model
     {
         return $this->belongsTo(AccHead::class, 'user');
     }
-    // في App\Models\OperHead
+
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user');
@@ -68,9 +68,8 @@ class OperHead extends Model
     }
     public function operationItems()
     {
-        return $this->hasMany(OperationItems::class, 'pro_id');
+        return $this->hasMany(OperationItems::class, 'pro_id', 'id');
     }
-    // app/Models/OperHead.php
 
     public function journalHead()
     {

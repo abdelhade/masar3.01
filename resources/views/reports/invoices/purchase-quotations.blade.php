@@ -54,6 +54,14 @@
                                                     <i class="las la-eye"></i>
                                                 </a>
 
+                                                 @if ($invoice->pro_type == 16)
+                                                    <!-- تحويل عرض سعر مورد إلى فاتورة مشتريات -->
+                                                    <a class="btn btn-blue btn-icon-square-sm"
+                                                        href="{{ route('invoices.convert-to-purchase', $invoice->id) }}"
+                                                        title="تحويل إلى فاتورة مشتريات">
+                                                        <i class="las la-shopping-cart"></i>
+                                                    </a>
+                                                @endif
                                                 <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST"
                                                     style="display:inline-block;"
                                                     onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">

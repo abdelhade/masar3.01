@@ -103,10 +103,9 @@ class CreateInvoiceForm extends Component
     public function mount($type, $hash)
     {
         $this->type = (int) $type;
-        // إذا لم يكن الهاش مطابقًا لنوع الفاتورة، أوقف التنفيذ
         if ($hash !== md5($this->type)) abort(403, 'نوع الفاتورة غير صحيح');
 
-        // $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $convertData = session()->get('convert_invoice_data');
 
         $this->nextProId = OperHead::max('pro_id') + 1 ?? 1;
         $this->pro_id = $this->nextProId;
@@ -155,6 +154,36 @@ class CreateInvoiceForm extends Component
             $this->acc1_id = 0;
         }
 
+        if ($convertData && isset($convertData['invoice_data'])) {
+            $invoiceData = $convertData['invoice_data'];
+
+            $this->acc1_id = $invoiceData['client_id'] ?? $this->acc1_id;
+            $this->acc2_id = $invoiceData['store_id'] ?? $this->acc2_id;
+            $this->emp_id = $invoiceData['employee_id'] ?? $this->emp_id;
+            $this->notes = $invoiceData['notes'] ?? '';
+            $this->pro_date = $invoiceData['invoice_date'] ?? $this->pro_date;
+
+            // تعبئة بيانات الخصم والإضافي
+            $this->discount_percentage = $convertData['discount_percentage'] ?? 0;
+            $this->additional_percentage = $convertData['additional_percentage'] ?? 0;
+            $this->discount_value = $convertData['discount_value'] ?? 0;
+            $this->additional_value = $convertData['additional_value'] ?? 0;
+            $this->total_after_additional = $convertData['total_after_additional'] ?? 0;
+            $this->subtotal = $convertData['subtotal'] ?? 0;
+
+            if (isset($convertData['items_data']) && !empty($convertData['items_data'])) {
+                $this->invoiceItems = $convertData['items_data'];
+            }
+            session()->forget('convert_invoice_data');
+
+            $this->dispatch('alert', [
+                'type' => 'success',
+                'message' => 'تم تحميل بيانات الفاتورة الأصلية بنجاح. يمكنك التعديل عليها الآن.'
+            ]);
+        } else {
+            $this->invoiceItems = [];
+        }
+
         $this->showBalance = in_array($this->type, [10, 11, 12, 13]);
 
         if ($this->showBalance) {
@@ -163,7 +192,7 @@ class CreateInvoiceForm extends Component
         }
 
         $this->employees = $employees;
-        $this->invoiceItems = [];
+        // $this->invoiceItems = [];
         $this->priceTypes = Price::pluck('name', 'id')->toArray();
         $this->searchResults = collect();
         $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
@@ -273,9 +302,6 @@ class CreateInvoiceForm extends Component
         ];
     }
 
-    /**
-     * يتم استدعاؤها من JavaScript لإنشاء صنف جديد بعد إدخال اسمه
-     */
     public function createItemFromPrompt($name, $barcode)
     {
         // استدعاء الدالة الرئيسية التي أنشأناها في البداية
@@ -702,9 +728,6 @@ class CreateInvoiceForm extends Component
         }
     }
 
-    /**
-     * إنشاء صنف جديد وإضافته للفاتورة
-     */
     public function createNewItem($name, $barcode = null)
     {
         // التحقق من عدم وجود الاسم مسبقاً

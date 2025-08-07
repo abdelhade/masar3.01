@@ -46,14 +46,14 @@
                                         <td>{{ $invoice->user->name ?? '-' }}</td>
                                         <td class="text-center">
                                             <div class="d-flex flex-wrap gap-1">
-                                                <a class="btn btn-blue btn-icon-square-sm"
-                                                    href="{{ route('invoices.edit', $invoice->id) }}">
-                                                    <i class="las la-eye"></i>
+                                                <a class="btn btn-primary btn-sm"
+                                                    href="{{ route('invoices.convert-to-sales', $invoice->id) }}"
+                                                    title="تحويل إلى فاتورة مبيعات">
+                                                    تحويل إلى فاتورة مبيعات
                                                 </a>
-
                                                 <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST"
                                                     style="display:inline-block;"
-                                                    onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                    onsubmit="return confirm('هل أنت متأكد من حذف هذا ');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-icon-square-sm">
