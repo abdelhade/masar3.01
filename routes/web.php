@@ -56,10 +56,10 @@ Route::view('dashboard', 'admin.index')
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::redirect('settings', 'settings/profile');
-    Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
-    Volt::route('settings/password', 'settings.password')->name('settings.password');
-    Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+    Route::redirect('my-settings', 'my-settings/profile');
+    Volt::route('my-settings/profile', 'my-settings.profile')->name('my-settings.profile');
+    Volt::route('my-settings/password', 'my-settings.password')->name('my-settings.password');
+    Volt::route('my-settings/appearance', 'my-settings.appearance')->name('my-settings.appearance');
 
     // 📁 HR Management
     // 📁 Departments

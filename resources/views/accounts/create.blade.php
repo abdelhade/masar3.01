@@ -13,13 +13,11 @@
             <div class="container-fluid">
                 @php
                     $parent = request()->get('parent');
+                    $isClientOrSupplier = in_array($parent, ['1103', '2101']); // تحديد ما إذا كان حساب عميل أو مورد
                 @endphp
 
                 <section class="content">
-
-                        @if (in_array($parent, ['1103', '2101', '1101', '1102', '57', '42', '2104', '1106', '31','32', '12', '2102', '1202', '1104']))
-
-
+                    @if (in_array($parent, ['1103', '2101', '1101', '1102', '57', '42', '2104', '1106', '31','32', '12', '2102', '1202', '1104']))
                         <form id="myForm" action="{{ route('accounts.store') }}" method="post">
                             @csrf
                             <input type="hidden" name="q" value="{{ $parent }}">
@@ -98,6 +96,53 @@
                                         </div>
                                     </div>
 
+                                    @if($isClientOrSupplier)
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="zatca_name">الاسم التجاري (ZATCA)</label>
+                                                <input class="form-control" type="text" name="zatca_name" id="zatca_name" placeholder="الاسم التجاري">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="vat_number">الرقم الضريبي (VAT)</label>
+                                                <input class="form-control" type="text" name="vat_number" id="vat_number" placeholder="الرقم الضريبي">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="national_id">رقم الهوية</label>
+                                                <input class="form-control" type="text" name="national_id" id="national_id" placeholder="رقم الهوية">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="zatca_address">العنوان الوطني (ZATCA)</label>
+                                                <input class="form-control" type="text" name="zatca_address" id="zatca_address" placeholder="العنوان الوطني">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="company_type">نوع العميل</label>
+                                                <select class="form-control" name="company_type" id="company_type">
+                                                    <option value="">اختر النوع</option>
+                                                    <option value="شركة">شركة</option>
+                                                    <option value="فردي">فردي</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="nationality">الجنسية</label>
+                                                <input class="form-control" type="text" name="nationality" id="nationality" placeholder="الجنسية">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
@@ -145,14 +190,10 @@
 
                                 <div class="card-footer">
                                     <div class="d-flex justify-content-start">
-
                                         <button class="btn btn-primary btn-block m-1" type="submit">تأكيد <i
                                                 class="las la-save"></i></button>
-
-
                                         <button class="btn btn-danger btn-block m-1" type="reset">مسح<i
                                                 class="las la-times"></i> </button>
-
                                     </div>
                                 </div>
                             </div>
@@ -162,8 +203,8 @@
                             <p>خطأ في تحديد نوع الحساب</p>
                         </div>
                     @endif
+                </section>
             </div>
         </section>
     </div>
 @endsection
-

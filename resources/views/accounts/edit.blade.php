@@ -13,7 +13,11 @@
     <div class="content-wrapper">
         <section class="content-header">
             <div class="container-fluid">
-                @php $parent = request()->get('parent'); @endphp
+                @php 
+                    $parent = request()->get('parent');
+                    // تحديد ما إذا كان حساب عميل أو مورد
+                    $isClientOrSupplier = in_array(substr($account->code, 0, 4), ['1103', '2101']);
+                @endphp
 
                 <section class="content">
                     <form action="{{ route('accounts.update', $account->id) }}" method="POST">
@@ -100,6 +104,52 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                @if($isClientOrSupplier)
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="zatca_name">الاسم التجاري (ZATCA)</label>
+                                            <input class="form-control" type="text" name="zatca_name" id="zatca_name" value="{{ $account->zatca_name }}" placeholder="الاسم التجاري">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="vat_number">الرقم الضريبي (VAT)</label>
+                                            <input class="form-control" type="text" name="vat_number" id="vat_number" value="{{ $account->vat_number }}" placeholder="الرقم الضريبي">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="national_id">رقم الهوية</label>
+                                            <input class="form-control" type="text" name="national_id" id="national_id" value="{{ $account->national_id }}" placeholder="رقم الهوية">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="zatca_address">العنوان الوطني (ZATCA)</label>
+                                            <input class="form-control" type="text" name="zatca_address" id="zatca_address" value="{{ $account->zatca_address }}" placeholder="العنوان الوطني">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="company_type">نوع العميل</label>
+                                            <select class="form-control" name="company_type" id="company_type">
+                                                <option value="شركة" {{ $account->company_type == 'شركة' ? 'selected' : '' }}>شركة</option>
+                                                <option value="فردي" {{ $account->company_type == 'فردي' ? 'selected' : '' }}>فردي</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="nationality">الجنسية</label>
+                                            <input class="form-control" type="text" name="nationality" id="nationality" value="{{ $account->nationality }}" placeholder="الجنسية">
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
 
                                 <div class="row">
                                     <div class="col-md-3">

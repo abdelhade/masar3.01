@@ -752,6 +752,12 @@ class CreateInvoiceForm extends Component
             'code' => $code,
         ]);
 
+        $newItem->units()->attach([
+            1 => [
+                'u_val' => 1, // يمكنك تعديل القيمة الافتراضية حسب الحاجة
+                'cost' => 0   // يمكنك تعديل القيمة الافتراضية حسب الحاجة
+            ]
+        ]);
         // 💡 هنا التعديل: إذا كان هناك باركود، قم بإنشائه في الجدول المنفصل
         if ($barcode) {
             // يمكنك تحديد unit_id هنا إذا أردت، أو تركه null
@@ -759,6 +765,12 @@ class CreateInvoiceForm extends Component
                 'barcode' => $barcode,
                 'unit_id' => 1 // على سبيل المثال، يمكنك ربطه بوحدة افتراضية
             ]);
+        } else {
+            $newItem->barcodes()->create([
+                'barcode' => $newItem->code,
+                'unit_id' => 1,
+            ]);
+
         }
         $this->updateSelectedItemData($newItem, 1, 0); // تحديث بيانات الصنف المختار
         $this->addItemFromSearch($newItem->id);
