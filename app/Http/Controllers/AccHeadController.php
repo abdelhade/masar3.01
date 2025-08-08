@@ -20,7 +20,7 @@ class AccHeadController extends Controller
                 $id = $request->route('account') ?? $request->route('id');
 
                 if ($id) {
-                    $account = \App\Models\AccHead::find($id);
+                    $account = AccHead::find($id);
 
                     if ($account) {
                         $code = substr($account->code, 0, 3);
@@ -90,7 +90,6 @@ class AccHeadController extends Controller
         });
     }
 
-
     public function index(Request $request)
     {
         $type = $request->query('type');
@@ -116,7 +115,6 @@ class AccHeadController extends Controller
             $accountsQuery->where('code', 'like', $patterns[$type] ?? '9999%');
         }
 
-        // جلب جميع الحقول المطلوبة للعرض
         $accounts = $accountsQuery->get(['id', 'code','balance','address','phone', 'aname', 'is_basic', 'is_stock', 'is_fund', 'employees_expensses', 'deletable', 'editable', 'rentable', 'phone', 'address']);
         return view('accounts.index', compact('accounts'));
     }
@@ -191,6 +189,13 @@ class AccHeadController extends Controller
             'deletable' => 'nullable',
             'editable' => 'nullable',
             'isdeleted' => 'nullable',
+            // الحقول الجديدة
+            'zatca_name' => 'nullable|string|max:100',
+            'vat_number' => 'nullable|string|max:50',
+            'national_id' => 'nullable|string|max:50',
+            'zatca_address' => 'nullable|string|max:250',
+            'company_type' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:50',
         ], [
             'code.required' => 'مطلوب تدخل رمز الحساب.',
             'code.max' => 'رمز الحساب لازم مايعديش 9 حروف.',
@@ -211,6 +216,13 @@ class AccHeadController extends Controller
             'info.max' => 'المعلومات لازم مايعديش 500 حرف.',
             'tenant.integer' => 'المستأجر لازم يكون رقم.',
             'branch.integer' => 'الفرع لازم يكون رقم.',
+            // رسائل التحقق للحقول الجديدة
+            'zatca_name.max' => 'الاسم التجاري لا يجب أن يتجاوز 100 حرف.',
+            'vat_number.max' => 'الرقم الضريبي لا يجب أن يتجاوز 50 حرف.',
+            'national_id.max' => 'رقم الهوية لا يجب أن يتجاوز 50 حرف.',
+            'zatca_address.max' => 'العنوان الوطني لا يجب أن يتجاوز 250 حرف.',
+            'company_type.max' => 'نوع الشركة لا يجب أن يتجاوز 50 حرف.',
+            'nationality.max' => 'الجنسية لا يجب أن تتجاوز 50 حرف.',
         ]);
 
         AccHead::create([
@@ -241,6 +253,13 @@ class AccHeadController extends Controller
             'isdeleted' => $request->isdeleted ?? 0,
             'tenant' => $request->tenant ?? 0,
             'branch' => $request->branch ?? 0,
+            // الحقول الجديدة
+            'zatca_name' => $request->zatca_name,
+            'vat_number' => $request->vat_number,
+            'national_id' => $request->national_id,
+            'zatca_address' => $request->zatca_address,
+            'company_type' => $request->company_type,
+            'nationality' => $request->nationality,
         ]);
 
         $parent = null;
@@ -291,7 +310,6 @@ class AccHeadController extends Controller
     {
         $account = AccHead::findOrFail($id);
 
-        // استخراج الكود الأب لعرض الحسابات الأساسية المتعلقة
         $parent = substr($account->code, 0, -3);
 
         $resacs = DB::table('acc_head')
@@ -320,6 +338,21 @@ class AccHeadController extends Controller
             'nature' => 'nullable|string|max:50',
             'kind' => 'nullable|string|max:50',
             'info' => 'nullable|string|max:500',
+            // الحقول الجديدة
+            'zatca_name' => 'nullable|string|max:100',
+            'vat_number' => 'nullable|string|max:50',
+            'national_id' => 'nullable|string|max:50',
+            'zatca_address' => 'nullable|string|max:250',
+            'company_type' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:50',
+        ], [
+            // رسائل التحقق للحقول الجديدة
+            'zatca_name.max' => 'الاسم التجاري لا يجب أن يتجاوز 100 حرف.',
+            'vat_number.max' => 'الرقم الضريبي لا يجب أن يتجاوز 50 حرف.',
+            'national_id.max' => 'رقم الهوية لا يجب أن يتجاوز 50 حرف.',
+            'zatca_address.max' => 'العنوان الوطني لا يجب أن يتجاوز 250 حرف.',
+            'company_type.max' => 'نوع الشركة لا يجب أن يتجاوز 50 حرف.',
+            'nationality.max' => 'الجنسية لا يجب أن تتجاوز 50 حرف.',
         ]);
 
         $account->update([
@@ -340,8 +373,16 @@ class AccHeadController extends Controller
             'debit' => $request->debit ?? 0,
             'balance' => $request->balance ?? 0,
             'info' => $request->info,
-            'mdtime' => now(), // تاريخ آخر تعديل
+            'mdtime' => now(),
+            // الحقول الجديدة
+            'zatca_name' => $request->zatca_name,
+            'vat_number' => $request->vat_number,
+            'national_id' => $request->national_id,
+            'zatca_address' => $request->zatca_address,
+            'company_type' => $request->company_type,
+            'nationality' => $request->nationality,
         ]);
+
         $parent = null;
 
         if ($request->parent_id) {
@@ -370,9 +411,8 @@ class AccHeadController extends Controller
             }
         }
         return redirect()->route('accounts.index', ['type' => $parent])
-            ->with('success', 'تمت إضافة الحساب بنجاح');
+            ->with('success', 'تم تعديل الحساب بنجاح');
     }
-
 
     public function destroy($id)
     {
@@ -384,7 +424,7 @@ class AccHeadController extends Controller
         if ($hasTransactions) {
             return redirect()->back()->with('error', 'لا يمكن حذف الحساب لأنه مرتبط بحركات محاسبية.');
         }
-        // Determine type for redirect
+
         $parent = null;
         if ($acc->parent_id) {
             $parentAcc = AccHead::find($acc->parent_id);

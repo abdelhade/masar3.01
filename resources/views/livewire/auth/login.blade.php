@@ -78,8 +78,7 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
 
         html,
         body {
-            overflow: hidden;
-            /* منع ظهور أي سكرول في الصفحة */
+            /* overflow: hidden;  حذف لمنع مشاكل في الموبايل */
         }
 
         body {
@@ -122,8 +121,8 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
             position: relative;
             z-index: 2;
             width: 100%;
-            width: 550px;
-            /* زيادة عرض الفورم */
+            max-width: 550px;
+            min-width: 0;
             margin: 0 auto;
         }
 
@@ -541,7 +540,37 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
                 margin-bottom: 25px;
             }
         }
+
+        @media (max-width: 350px) {
+            .modern-header {
+                padding: 18px 8px;
+            }
+
+            .modern-form {
+                padding: 14px 8px;
+            }
+
+            .modern-title {
+                font-size: 1.1rem;
+            }
+
+            .modern-input {
+                padding: 10px 8px 10px 30px;
+                font-size: 0.85rem;
+            }
+
+            .modern-button {
+                padding: 10px 8px;
+                font-size: 0.85rem;
+                min-height: 40px;
+            }
+
+            .modern-form-group {
+                margin-bottom: 15px;
+            }
+        }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
 
     <body>
@@ -558,20 +587,19 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
 
                 <!-- Form Body -->
                 <div class="modern-form">
-                    <form wire:submit.prevent="login">
+                    <form wire:submit.prevent="login" autocomplete="on">
                         <!-- Email -->
                         <div class="modern-form-group">
                             <label class="modern-label" for="email">البريد الإلكتروني</label>
                             <div class="modern-input-container">
-                                <input type="email" id="email"
-                                    class="modern-input @error('email') is-invalid @enderror"
+                                <input type="email" id="email" class="modern-input @error('email') is-invalid @enderror"
                                     placeholder="email@example.com" required wire:model="email" autocomplete="email">
                                 <i class="fas fa-envelope modern-input-icon"></i>
                             </div>
                             @error('email')
                                 <div class="modern-error">
                                     <i class="fas fa-exclamation-circle"></i>
-                                    <span>{{ $message }}</span>
+                                    <span>{{ __('يرجى إدخال بريد إلكتروني صحيح') }}</span>
                                 </div>
                             @enderror
                         </div>
@@ -580,33 +608,35 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
                         <div class="modern-form-group">
                             <label class="modern-label" for="password">كلمة المرور</label>
                             <div class="modern-input-container">
-                                <input type="password" id="password" class="modern-input"
-                                    placeholder="ادخل كلمة المرور" required wire:model="password"
-                                    autocomplete="current-password">
+                                <input type="password" id="password" class="modern-input" placeholder="ادخل كلمة المرور"
+                                    required wire:model="password" autocomplete="current-password">
                                 <i class="fas fa-lock modern-input-icon"></i>
                             </div>
                         </div>
 
-                        <!-- Remember Me -->
-                        <div class="modern-remember">
-                            <label class="modern-checkbox">
-                                <input type="checkbox" id="remember_me" wire:model="remember">
-                                <span class="modern-checkmark"></span>
-                            </label>
-                            <label class="modern-remember-label" for="remember_me">تذكرني</label>
-                        </div>
+                        <div class="modern-form-group">
 
-                        <!-- Submit Button -->
-                        <button type="submit" class="modern-button" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="login">
-                                تسجيل الدخول
-                                <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
-                            </span>
-                            <span wire:loading wire:target="login">
-                                جارِ تسجيل الدخول...
-                                <span class="loading-spinner"></span>
-                            </span>
-                        </button>
+
+
+                            <!-- Remember Me -->
+                            <div class="modern-remember d-flex align-items-center mb-3">
+                                <input type="checkbox" id="remember" wire:model="remember">
+                                <label class="modern-remember-label ms-2 mb-0" for="remember">
+                                    {{ __('تذكرني') }}
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="modern-button" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="login">
+                                    تسجيل الدخول
+                                    <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
+                                </span>
+                                <span wire:loading wire:target="login">
+                                    جارِ تسجيل الدخول...
+                                    <span class="loading-spinner"></span>
+                                </span>
+                            </button>
                     </form>
                 </div>
 

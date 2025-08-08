@@ -1,7 +1,7 @@
 @extends('admin.dashboard')
 @section('content')
     <div class="card-body">
-        <form action="{{ route('settings.update') }}" method="POST">
+        <form action="{{ route('mysettings.update') }}" method="POST">
             @csrf
             @method('POST')
 
