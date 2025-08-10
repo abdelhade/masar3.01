@@ -11,9 +11,10 @@ class SaveInvoiceService
     public function saveInvoice($component)
     {
         if (empty($component->invoiceItems)) {
-            $component->dispatch('no-items', title: 'خطا!', text: 'لا يمكن حفظ الفاتورة بدون أصناف.', icon: 'error');
+            $component->dispatch('error', title: 'خطا!', text: 'لا يمكن حفظ الفاتورة بدون أصناف.', icon: 'error');
             return;
         }
+
         $component->validate([
             'acc1_id' => 'required|exists:acc_head,id',
             'acc2_id' => 'required|exists:acc_head,id',
@@ -39,7 +40,7 @@ class SaveInvoiceService
             if (in_array($component->type, [10, 12, 18, 19])) { // عمليات صرف
                 if ($availableQty < $item['quantity']) {
                     $itemName = Item::find($item['item_id'])->name;
-                    $component->dispatch('no-quantity', title: 'خطا!', text: 'الكمية غير متوفرة للصنف.' . $itemName, icon: 'error');
+                    $component->dispatch('error', title: 'خطا!', text: 'الكمية غير متوفرة للصنف.' . $itemName, icon: 'error');
                     return;
                 }
             }

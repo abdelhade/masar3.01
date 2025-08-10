@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Barcode;
 use Livewire\Component;
+use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use App\Services\SaveInvoiceService;
@@ -210,11 +211,11 @@ class CreateInvoiceForm extends Component
 
     protected function getAccountBalance($accountId)
     {
-        $totalDebit = \App\Models\JournalDetail::where('account_id', $accountId)
+        $totalDebit = JournalDetail::where('account_id', $accountId)
             ->where('isdeleted', 0)
             ->sum('debit');
 
-        $totalCredit = \App\Models\JournalDetail::where('account_id', $accountId)
+        $totalCredit = JournalDetail::where('account_id', $accountId)
             ->where('isdeleted', 0)
             ->sum('credit');
 
@@ -281,13 +282,6 @@ class CreateInvoiceForm extends Component
             ->orderBy('created_at', 'desc')
             ->value('item_price') ?? 0;
 
-        // $lastCost = OperationItems::where('item_id', $item->id)
-        //     ->whereIn('pro_tybe', [11, 20])
-        //     ->where('is_stock', 1)
-        //     ->orderBy('created_at', 'desc')
-        //     ->value('item_price') ?? 0;
-        // $profit = $unitId ? ($price - ($item->average_cost ?? 0)) : 0;
-
         $this->selectedItemData = [
             'name' => $item->name,
             'code' => $item->code ?? '',
@@ -304,7 +298,6 @@ class CreateInvoiceForm extends Component
 
     public function createItemFromPrompt($name, $barcode)
     {
-        // استدعاء الدالة الرئيسية التي أنشأناها في البداية
         $this->createNewItem($name, $barcode);
     }
 
@@ -314,8 +307,6 @@ class CreateInvoiceForm extends Component
         if (empty($barcode)) {
             return;
         }
-
-        // 💡 هنا التعديل الرئيسي: نستخدم whereHas للبحث في الجدول المرتبط
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
             ->whereHas('barcodes', function ($query) use ($barcode) {
                 $query->where('barcode', $barcode);
@@ -352,7 +343,7 @@ class CreateInvoiceForm extends Component
     public function updatedBarcodeTerm($value)
     {
         $this->selectedBarcodeResultIndex = -1;
-        $this->barcodeSearchResults = collect(); // إعادة تعيين إلى مجموعة فارغة
+        $this->barcodeSearchResults = collect();
     }
 
     public function handleQuantityEnter($index)
@@ -581,7 +572,6 @@ class CreateInvoiceForm extends Component
 
         $this->invoiceItems[$index]['price'] = $price;
 
-        // إعادة حساب القيمة الفرعية
         $this->recalculateSubValues();
         $this->calculateTotals();
     }
@@ -730,18 +720,14 @@ class CreateInvoiceForm extends Component
 
     public function createNewItem($name, $barcode = null)
     {
-        // التحقق من عدم وجود الاسم مسبقاً
         $existingItem = Item::where('name', $name)->first();
         if ($existingItem) {
-            // يمكن إظهار رسالة خطأ هنا
             return;
         }
 
-        // في حالة وجود باركود، تأكد أنه غير مستخدم
         if ($barcode) {
             $existingBarcode = Barcode::where('barcode', $barcode)->exists();
             if ($existingBarcode) {
-                // أظهر رسالة أن الباركود مستخدم بالفعل
                 $this->dispatch('alert', ['type' => 'error', 'message' => 'هذا الباركود مستخدم بالفعل لصنف آخر.']);
                 return;
             }
@@ -754,23 +740,20 @@ class CreateInvoiceForm extends Component
 
         $newItem->units()->attach([
             1 => [
-                'u_val' => 1, // يمكنك تعديل القيمة الافتراضية حسب الحاجة
-                'cost' => 0   // يمكنك تعديل القيمة الافتراضية حسب الحاجة
+                'u_val' => 1,
+                'cost' => 0
             ]
         ]);
-        // 💡 هنا التعديل: إذا كان هناك باركود، قم بإنشائه في الجدول المنفصل
         if ($barcode) {
-            // يمكنك تحديد unit_id هنا إذا أردت، أو تركه null
             $newItem->barcodes()->create([
                 'barcode' => $barcode,
-                'unit_id' => 1 // على سبيل المثال، يمكنك ربطه بوحدة افتراضية
+                'unit_id' => 1
             ]);
         } else {
             $newItem->barcodes()->create([
                 'barcode' => $newItem->code,
                 'unit_id' => 1,
             ]);
-
         }
         $this->updateSelectedItemData($newItem, 1, 0); // تحديث بيانات الصنف المختار
         $this->addItemFromSearch($newItem->id);

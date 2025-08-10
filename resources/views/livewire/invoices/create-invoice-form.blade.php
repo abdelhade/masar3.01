@@ -73,13 +73,6 @@
                 {{-- قسم الإجماليات والمدفوعات --}}
                 @include('components.invoices.invoice-footer')
 
-                {{-- <div class="row mt-4">
-                    <div class="col-12 text-left">
-                        <button type="submit" class="btn btn-lg btn-primary">
-                            <i class="fas fa-save"></i> حفظ الفاتورة
-                        </button>
-                    </div>
-                </div> --}}
             </form>
         </section>
     </div>
@@ -142,18 +135,18 @@
         });
 
 
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('no-quantity', (data) => {
-                Swal.fire({
-                    title: data.title,
-                    text: data.text,
-                    icon: data.icon,
-                })
-            });
-        });
+        // document.addEventListener('livewire:init', () => {
+        //     Livewire.on('no-quantity', (data) => {
+        //         Swal.fire({
+        //             title: data.title,
+        //             text: data.text,
+        //             icon: data.icon,
+        //         })
+        //     });
+        // });
 
         document.addEventListener('livewire:init', () => {
-            Livewire.on('no-items', (data) => {
+            Livewire.on('error', (data) => {
                 Swal.fire({
                     title: data.title,
                     text: data.text,

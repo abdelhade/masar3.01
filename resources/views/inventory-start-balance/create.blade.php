@@ -12,7 +12,7 @@
             <form action="{{ route('inventory-balance.store') }}" method="POST">
                 @csrf
                 <div class="row">
-                    <div class="col-lg-2">
+                    <div class="col-lg-2 text-center">
                         <label class="form-label" style="font-size: 1em;">المخزن</label>
                         <select id="store_select" name="store_id"
                             class="form-control form-control-sm @error('store_id') is-invalid @enderror"
@@ -26,7 +26,7 @@
                         @enderror
                     </div>
 
-                    <div class="col-lg-2">
+                    <div class="col-lg-2 text-center">
                         <label class="form-label" style="font-size: 1em;">الشريك</label>
                         <select id="partner_select" name="partner_id"
                             class="form-control form-control-sm @error('partner_id') is-invalid @enderror"
@@ -38,6 +38,18 @@
                         @error('partner_id')
                             <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                         @enderror
+                    </div>
+
+                    <div class="col-lg-2 text-center">
+                        <label class="form-label" style="font-size: 1em;">أجمالي الكميات المضافه </label>
+                        <input class="form-control form-control-sm type="text"
+                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;" disabled>
+                    </div>
+
+                    <div class="col-lg-2 text-center">
+                        <label class="form-label" style="font-size: 1em;"> قيمة الكميات المضافه </label>
+                        <input class="form-control form-control-sm type="text"
+                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;" disabled>
                     </div>
 
                 </div>

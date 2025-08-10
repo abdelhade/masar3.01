@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\Expense;
 use Livewire\Component;
-use Illuminate\Support\Facades\Auth;
 use App\Services\ManufacturingInvoiceService;
 use App\Models\{Item, OperHead, AccHead, OperationItems};
 

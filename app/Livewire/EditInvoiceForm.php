@@ -5,11 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\{OperHead, OperationItems, AccHead, Price, Item, Barcode};
-use Illuminate\Support\Facades\Log;
 
 class EditInvoiceForm extends Component
 {
@@ -50,9 +47,6 @@ class EditInvoiceForm extends Component
     public $searchTerm = '';
     public $searchResults;
     public $selectedResultIndex = -1;
-    
-    public $barcodeTerm = '';
-    public $barcodeSearchResults;
 
     public int $quantityClickCount = 0;
     public $lastQuantityFieldIndex = null;
@@ -305,22 +299,10 @@ class EditInvoiceForm extends Component
         $this->updateAccountsForNewType();
         $this->updatePricesForNewType();
         $this->calculateTotals();
-        $this->logConversion($oldType, $this->type, $this->originalInvoiceId);
         $this->closeConvertModal();
         Alert::toast('تم تحويل الفاتورة بنجاح من ' . $this->titles[$oldType] . ' إلى ' . $this->titles[$this->type], 'success');
     }
-    public function logConversion($oldType, $newType, $originalId)
-    {
-        Log::info('تم تحويل الفاتورة', [
-            'original_invoice_id' => $originalId,
-            'original_type' => $oldType,
-            'original_type_name' => $this->titles[$oldType] ?? 'غير محدد',
-            'new_type' => $newType,
-            'new_type_name' => $this->titles[$newType] ?? 'غير محدد',
-            'converted_by' => Auth::id(),
-            'converted_at' => now(),
-        ]);
-    }
+
     public function enableEditing()
     {
         $this->is_disabled = false;
@@ -396,11 +378,11 @@ class EditInvoiceForm extends Component
         $this->dispatch('focus-quantity', ['index' => $newRowIndex]);
     }
 
-    public function updatedBarcodeTerm($value)
-    {
-        $this->selectedBarcodeResultIndex = -1;
-        $this->barcodeSearchResults = collect();
-    }
+    // public function updatedBarcodeTerm($value)
+    // {
+    //     $this->selectedBarcodeResultIndex = -1;
+    //     $this->barcodeSearchResults = collect();
+    // }
 
     public function handleQuantityEnter($index)
     {
@@ -476,27 +458,27 @@ class EditInvoiceForm extends Component
             ->take(5)->get();
     }
 
-    public function addItemByBarcode()
-    {
-        if (empty($this->barcodeTerm)) {
-            return;
-        }
+    // public function addItemByBarcode()
+    // {
+    //     if (empty($this->barcodeTerm)) {
+    //         return;
+    //     }
 
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
-            ->where('code', $this->barcodeTerm)
-            ->first();
+    //     $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+    //         ->where('code', $this->barcodeTerm)
+    //         ->first();
 
-        if (!$item) {
-            $this->dispatch('item-not-found');
-            $this->barcodeTerm = '';
-            $this->barcodeSearchResults = collect();
-            return;
-        }
+    //     if (!$item) {
+    //         $this->dispatch('item-not-found');
+    //         $this->barcodeTerm = '';
+    //         $this->barcodeSearchResults = collect();
+    //         return;
+    //     }
 
-        $this->addItemFromSearch($item->id);
-        $this->barcodeTerm = '';
-        $this->barcodeSearchResults = collect();
-    }
+    //     $this->addItemFromSearch($item->id);
+    //     $this->barcodeTerm = '';
+    //     $this->barcodeSearchResults = collect();
+    // }
 
     public function addItemFromSearch($itemId)
     {

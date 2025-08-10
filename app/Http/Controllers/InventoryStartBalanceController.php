@@ -11,7 +11,6 @@ use App\Models\{Item, AccHead, JournalDetail, JournalHead, OperHead, OperationIt
 
 class InventoryStartBalanceController extends Controller
 {
-
     public function __construct()
     {
         $this->middleware('can:عرض تسجيل الارصده الافتتاحيه للمخازن')->only(['index', 'show']);
@@ -19,6 +18,7 @@ class InventoryStartBalanceController extends Controller
         $this->middleware('can:تعديل تسجيل الارصده الافتتاحيه للمخازن')->only(['edit', 'update']);
         $this->middleware('can:حذف تسجيل الارصده الافتتاحيه للمخازن')->only(['destroy']);
     }
+
     public function index()
     {
         return view('inventory-start-balance.index');
@@ -89,7 +89,6 @@ class InventoryStartBalanceController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
         $request->validate([
             'store_id' => 'nullable|exists:acc_head,id',
             'partner_id' => 'nullable|exists:acc_head,id',
@@ -98,6 +97,7 @@ class InventoryStartBalanceController extends Controller
             'adjustment_qty' => 'required|array',
             'unit_ids' => 'required|array'
         ]);
+
         try {
             DB::beginTransaction();
             $storeId = $request->store_id;
@@ -145,13 +145,12 @@ class InventoryStartBalanceController extends Controller
                         $unit = $item->units()->where('unit_id', $unitId)->first();
                         $unitCost = $unit ? $unit->pivot->cost : 0;
                     }
-                    // dd($unitCost);
                     if ($newBalance >= 0) {
                         OperationItems::updateOrCreate(
                             [
                                 'pro_tybe' => 60,
                                 'item_id' => $itemId,
-                                'detail_store' => $storeId, // إضافة هذا السطر
+                                'detail_store' => $storeId,
                                 'pro_id' => $operHead->id,
                             ],
                             [
@@ -179,7 +178,6 @@ class InventoryStartBalanceController extends Controller
                 }
             }
             $operHead->update(['pro_value' => $totalAmount]);
-            // dd($totalAmount);
             $existingJournal = JournalHead::where('pro_type', 60)
                 ->where('op_id', $operHead->id)
                 ->first();

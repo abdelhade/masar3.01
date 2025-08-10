@@ -538,6 +538,7 @@ class ManufacturingInvoice extends Component
         // ✅ إعادة حساب الإجماليات في النهاية
         $this->calculateTotals();
     }
+
     private function updateRawMaterialTotal($index)
     {
         $totalRowCost = $this->selectedRawMaterials[$index]['average_cost'] * $this->selectedRawMaterials[$index]['quantity'];
@@ -588,22 +589,11 @@ class ManufacturingInvoice extends Component
 
     public function calculateTotalsAndDistribute()
     {
-        // أولاً: حساب إجمالي تكلفة المواد الخام (افترض أن لديك دالة مشابهة)
         $this->calculateTotals();
-
-        // ثانياً: حساب إجمالي المصروفات الإضافية
-        // نستخدم collect() لتسهيل جمع قيمة الـ amount من المصفوفة
         $totalExpenses = collect($this->additionalExpenses)->sum(function ($expense) {
-            // تأكد من أن المبلغ رقم صحيح وليس نص فارغ
             return is_numeric($expense['amount']) ? $expense['amount'] : 0;
         });
-
-        // ثالثاً: حساب إجمالي تكلفة التصنيع
-        // يتم جمع إجمالي المواد الخام مع إجمالي المصروفات
         $this->totalManufacturingCost = $this->totalRawMaterialsCost + $totalExpenses;
-
-        // رابعاً: تحديث نسب التوزيع على المنتجات
-        // نستدعي الدالة المسؤولة عن توزيع التكلفة الإجمالية الجديدة على المنتجات
         $this->updatePercentages();
     }
 

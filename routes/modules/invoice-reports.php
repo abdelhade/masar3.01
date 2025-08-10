@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Reports\InvoiceReportController;
 
@@ -12,7 +11,6 @@ Route::get('/purchase/quotations-report', [InvoiceReportController::class, 'purc
 Route::get('/supplier/rfqs-report', [InvoiceReportController::class, 'supplierRfqsReport'])->name('supplier-rfqs-report');
 
 Route::group(['prefix' => 'invoices', 'as' => 'invoices.'], function () {
-    //     // عمليات التحويل - تم تغييرها إلى GET للتوجه لصفحة الإنشاء
     Route::get('/convert-to-purchase/{id}', [InvoiceReportController::class, 'convertToPurchaseInvoice'])
         ->name('convert-to-purchase');
     Route::get('/convert-to-sales/{id}', [InvoiceReportController::class, 'convertToSalesInvoice'])
@@ -20,4 +18,3 @@ Route::group(['prefix' => 'invoices', 'as' => 'invoices.'], function () {
 });
 
 Route::get('/manufacturing/invoice/report', [InvoiceReportController::class, 'manufacturingReport'])->name('manufacturing.invoice.report');
-

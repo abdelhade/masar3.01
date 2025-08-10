@@ -8,11 +8,6 @@ use Illuminate\Http\Request;
 
 class AccGroupController extends Controller
 {
-
-  
-    
-
-    // عرض جميع المجموعات
     public function index()
     {
         $accGroups = AccGroup::all(); // جلب جميع المجموعات

@@ -17,13 +17,11 @@ class InventoryDiscrepancy extends Component
     public $quantities = [];
     public $hasUnsavedChanges = false;
 
-    // Statistics
     public $totalItems = 0;
     public $itemsWithShortage = 0;
     public $itemsWithOverage = 0;
     public $itemsMatching = 0;
 
-    // حساب الفروقات من الإعدادات
     public $inventoryDifferenceAccount;
 
     public function mount()
@@ -70,12 +68,9 @@ class InventoryDiscrepancy extends Component
      */
     public function safeRefreshData()
     {
-        // إعادة تعيين المتغيرات للحالة الأولية
         $this->inventoryData = [];
         $this->quantities = [];
         $this->hasUnsavedChanges = false;
-
-        // إعادة تحميل البيانات
         $this->refreshData();
     }
 
@@ -98,8 +93,6 @@ class InventoryDiscrepancy extends Component
         }
 
         $itemIds = $items->pluck('id')->toArray();
-
-        // Optimized balance calculation
         $itemBalances = $this->calculateItemsBalance($itemIds, $this->selectedWarehouse);
 
         $tempData = [];
@@ -170,7 +163,6 @@ class InventoryDiscrepancy extends Component
     }
 
     /**
-     * Livewire hook for when a quantity is updated in the form.
      * تحسين دالة تحديث الكميات لإعادة حساب الإحصائيات
      */
     public function updatedQuantities($value, $key)
@@ -419,7 +411,6 @@ class InventoryDiscrepancy extends Component
      */
     private function updateInventoryDifferenceAccountBalance($totalIncreaseValue, $totalDecreaseValue)
     {
-        // dd($this->inventoryDifferenceAccount);
         if (!$this->inventoryDifferenceAccount) {
             return;
         }
@@ -428,21 +419,11 @@ class InventoryDiscrepancy extends Component
         $currentBalance = JournalDetail::where('account_id', $this->inventoryDifferenceAccount)
             ->selectRaw('SUM(credit) - SUM(debit) as balance')
             ->value('balance') ?? 0;
-
-        // dd($currentBalance);
-        // حساب الرصيد الجديد
-        // الزيادات تزيد رصيد الحساب (دائن)
-        // النقص يقلل رصيد الحساب (مدين)
         $newBalance = $currentBalance + $totalIncreaseValue - $totalDecreaseValue;
-        // dd($newBalance);
-        // dd($this->inventoryDifferenceAccount);
         // تحديث رصيد الحساب في جدول AccHead إذا كان له حقل balance
         $account = AccHead::find($this->inventoryDifferenceAccount);
         // dd($account);
         $account->update(['balance' => $newBalance]);
-
-
-        // يمكن إضافة منطق إضافي لتحديث جداول أخرى حسب النظام
     }
 
     // Helper methods

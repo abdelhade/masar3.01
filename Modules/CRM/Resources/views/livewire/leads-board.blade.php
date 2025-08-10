@@ -202,57 +202,6 @@
                 justify-content: flex-end;
                 margin-top: 10px;
             }
-
-            /* مؤشرات السكرول */
-            /* .scroll-indicator {
-                                position: absolute;
-                                top: 50%;
-                                transform: translateY(-50%);
-                                width: 50px;
-                                height: 100px;
-                                background: rgba(0, 123, 255, 0.8);
-                                border-radius: 25px;
-                                display: none;
-                                align-items: center;
-                                justify-content: center;
-                                color: white;
-                                font-size: 20px;
-                                z-index: 999;
-                                animation: pulse 1s infinite;
-                            } */
-
-            /* .scroll-indicator.left {
-                                left: 10px;
-                            }
-
-                            .scroll-indicator.right {
-                                right: 10px;
-                            }
-
-                            @keyframes pulse {
-                                0% {
-                                    opacity: 0.7;
-                                }
-
-                                50% {
-                                    opacity: 1;
-                                }
-
-                                100% {
-                                    opacity: 0.7;
-                                }
-                            } */
-
-            /* تحسين الأداء */
-            /* .leads-container {
-                                contain: layout style paint;
-                                will-change: scroll-position;
-                            }
-
-                            .lead-card {
-                                contain: layout;
-                                will-change: transform, opacity;
-                            } */
         </style>
     @endpush
 
@@ -345,8 +294,7 @@
                                             <button
                                                 class="btn btn-danger btn-sm d-flex align-items-center justify-content-center"
                                                 style="width: 32px; height: 32px;"
-                                                wire:click="deleteLead({{ $lead['id'] }})"
-                                                onclick="return confirm('هل أنت متأكد من حذف هذه الفرصة؟')">
+                                                wire:click="deleteLead({{ $lead['id'] }})">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         @endcan
