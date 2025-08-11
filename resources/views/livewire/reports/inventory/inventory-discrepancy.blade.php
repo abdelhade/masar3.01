@@ -1,8 +1,4 @@
 <div>
-    {{-- Loading Indicator --}}
-    {{-- <div wire:loading class="loading-overlay">
-        <div class="spinner-border text-primary" role="status"></div>
-    </div> --}}
 
     {{-- Filters --}}
     <div class="card mb-4">
@@ -11,6 +7,7 @@
         </div>
         <div class="card-body">
             <div class="row align-items-end">
+
                 <div class="col-md-4">
                     <label class="form-label">المخزن</label>
                     <select wire:model.live="selectedWarehouse" class="form-select">
@@ -47,6 +44,7 @@
                         <button type="button" class="btn btn-success" onclick="window.print()"> طباعه</button>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

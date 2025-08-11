@@ -837,7 +837,7 @@ class EditInvoiceForm extends Component
 
     public function updateForm()
     {
-        // تحقق خاص بالتعديل (مثلاً: التأكد من وجود العملية)
+        // تحقق من وجود العملية
         if (!$this->operation) {
             $this->dispatch('alert', [
                 'type' => 'error',
@@ -845,10 +845,21 @@ class EditInvoiceForm extends Component
             ]);
             return false;
         }
-        // استخدم نفس خدمة الحفظ الموحدة
+
+        // استدعاء خدمة الحفظ مع تمرير العلم isEdit
         $service = new \App\Services\SaveInvoiceService();
-        return $service->saveInvoice($this);
+        $result = $service->saveInvoice($this, true); // true يعني أن العملية تعديل
+
+        if ($result) {
+            $this->dispatch('alert', [
+                'type' => 'success',
+                'message' => 'تم تحديث الفاتورة بنجاح.'
+            ]);
+            $this->is_disabled = true; // إعادة تعطيل التعديل بعد الحفظ
+            return $result;
+        }
     }
+
     public function saveAndPrint()
     {
         $operationId = $this->updateForm();

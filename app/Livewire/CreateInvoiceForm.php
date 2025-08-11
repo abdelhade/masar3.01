@@ -83,6 +83,8 @@ class CreateInvoiceForm extends Component
         'description' => ''
     ];
 
+    public $recommendedItems = [];
+
     public $titles = [
         10 => 'فاتوره مبيعات',
         11 => 'فاتورة مشتريات',
@@ -199,6 +201,10 @@ class CreateInvoiceForm extends Component
         $this->searchResults = collect();
         $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
         $this->barcodeSearchResults = collect();
+
+        if ($this->type == 10 && $this->acc1_id) {
+            $this->recommendedItems = $this->getRecommendedItems($this->acc1_id);
+        }
     }
 
     private function getAccountsByCode(string $code)
@@ -229,7 +235,63 @@ class CreateInvoiceForm extends Component
             $this->currentBalance = $this->getAccountBalance($value);
             $this->calculateBalanceAfterInvoice();
         }
+
+        // جلب التوصيات لأكثر 5 أصناف تم شراؤها من قبل العميل
+        if ($this->type == 10 && $value) { // فقط لفواتير المبيعات
+            $this->recommendedItems = $this->getRecommendedItems($value);
+        } else {
+            $this->recommendedItems = [];
+        }
     }
+
+    private function getRecommendedItems($clientId)
+    {
+        return OperationItems::whereHas('operhead', function ($query) use ($clientId) {
+            $query->where('pro_type', 10) // فواتير المبيعات فقط
+                ->where('acc1', $clientId); // العميل المحدد
+        })
+            ->groupBy('item_id')
+            ->selectRaw('item_id, SUM(qty_out) as total_quantity')
+            ->with(['item' => function ($query) {
+                $query->select('id', 'name');
+            }])
+            ->orderByDesc('total_quantity')
+            ->take(5)
+            ->get()
+            ->map(function ($operationItem) {
+                return [
+                    'id' => $operationItem->item_id,
+                    'name' => $operationItem->item->name,
+                    'total_quantity' => $operationItem->total_quantity,
+                ];
+            })
+            ->toArray();
+    }
+
+    // public function addRecommendedItem($itemId)
+    // {
+    //     // جلب بيانات الصنف
+    //     $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+    //         ->find($itemId);
+
+    //     if ($item) {
+    //         $price = $item->prices->where('id', $this->selectedPriceType)->first()->price ?? 0;
+    //         $unit = $item->units->first();
+
+    //         $this->invoiceItems[] = [
+    //             'item_id' => $item->id,
+    //             'name' => $item->name,
+    //             'quantity' => 1, // الكمية الافتراضية
+    //             'price' => $price,
+    //             'total' => $price,
+    //             'unit_id' => $unit->id ?? null,
+    //             'unit_name' => $unit->name ?? '',
+    //             'store_id' => $this->acc2_id,
+    //         ];
+
+    //         $this->calculateTotals();
+    //     }
+    // }
 
     public function calculateBalanceAfterInvoice()
     {

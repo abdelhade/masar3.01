@@ -42,14 +42,23 @@ class InventoryDiscrepancy extends Component
     public function loadInventoryDifferenceAccount()
     {
         $setting = PublicSetting::where('key', 'show_inventory_difference_account')->first();
-        $this->inventoryDifferenceAccount = $setting ? $setting->value : null;
+        if ($setting && $setting->value) {
+            // البحث عن الحساب بالكود والحصول على الـ ID
+            $account = AccHead::where('code', $setting->value)
+                ->where('isdeleted', 0)
+                ->first();
+
+            $this->inventoryDifferenceAccount = $account ? $account->id : null;
+        } else {
+            $this->inventoryDifferenceAccount = null;
+        }
     }
 
     public function loadWarehouses()
     {
         $this->warehouses = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '123%')
+            ->where('code', 'like', '110401%')
             ->select('id', 'aname')
             ->get();
     }
@@ -58,7 +67,7 @@ class InventoryDiscrepancy extends Component
     {
         $this->partners = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '231%')
+            ->where('code', 'like', '3101%')
             ->select('id', 'aname')
             ->get();
     }

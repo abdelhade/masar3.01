@@ -32,7 +32,6 @@ class OperHead extends Model
         return $this->belongsTo(Project::class, 'project_id');
     }
 
-
     public function acc2Head()
     {
         return $this->belongsTo(AccHead::class, 'acc2');
@@ -60,8 +59,9 @@ class OperHead extends Model
 
     public function user()
     {
-        return $this->belongsTo(\App\Models\User::class, 'user');
+        return $this->belongsTo(User::class, 'user');
     }
+
     public function costCenter()
     {
         return $this->belongsTo(CostCenter::class, 'cost_center');

@@ -95,7 +95,39 @@
         @endif
     </div>
 
-    <div class="col-3">
+    @if ($type == 10)
+        <div class="col-2">
+            <div class="card border-primary">
+                <div class="card-header text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-star"></i> التوصيات (أكثر 5 أصناف تم شراؤها)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (!empty($recommendedItems) && $type == 10)
+                        <ul class="list-group">
+                            @foreach ($recommendedItems as $item)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ $item['name'] }} ({{ $item['total_quantity'] }} وحدة)</span>
+                                    {{-- <button wire:click="addRecommendedItem({{ $item['id'] }})"
+                                        class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus"></i> إضافة
+                                    </button> --}}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-muted text-center">لا توجد توصيات متاحة</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="col-2">
+        </div>
+    @endif
+
+    <div class="col-2">
         <div class="card border-primary">
 
             <div class="card-body">
@@ -130,7 +162,7 @@
         </div>
     </div>
 
-    <div class="col-6">
+    <div class="col-5">
         <div class="card border-primary">
             <div class="card-body">
                 <div class="row mb-2">

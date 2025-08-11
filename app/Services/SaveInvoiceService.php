@@ -75,11 +75,12 @@ class SaveInvoiceService
                 'fat_plus'       => $component->additional_value,
                 'fat_total'      => $component->subtotal,
                 'info'           => $component->notes,
+                'acc_fund'       => $component->cash_box_id,
+                'paid_from_client' => $component->received_from_client
             ]);
 
             $totalProfit = 0;
             // $salesCost = 0;
-
             foreach ($component->invoiceItems as $invoiceItem) {
                 $itemId    = $invoiceItem['item_id'];
                 $quantity  = $invoiceItem['quantity'];
