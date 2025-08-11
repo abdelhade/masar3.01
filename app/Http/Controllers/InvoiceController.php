@@ -78,7 +78,7 @@ class InvoiceController extends Controller
             abort(404, 'نوع العملية غير معروف');
         }
 
-        if (!auth()->user()->can($permissions[$type])) {
+        if (!Auth()->user()->can($permissions[$type])) {
             abort(403, 'ليس لديك صلاحية لإضافة هذا النوع.');
         }
 
@@ -322,5 +322,10 @@ class InvoiceController extends Controller
             'received_from_client' => $operation->pro_value,
             'notes' => $operation->info,
         ]);
+    }
+
+    public function view($operationId)
+    {
+        return view('invoices.view-invoice', compact('operationId'));
     }
 }

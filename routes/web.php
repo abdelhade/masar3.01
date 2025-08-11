@@ -113,9 +113,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('cost_centers', CostCenterController::class)->names('cost_centers');
     Route::resource('users', UserController::class)->names('users');
+    // 📁 Invoice Route
     Route::resource('invoices', InvoiceController::class)->names('invoices');
-
+    // 📁 Invoice Print Route
     Route::get('/invoice/print/{operation_id}', [InvoiceController::class, 'print'])->name('invoice.print');
+    // 📁 Invoice View Route
+    Route::get('invoice/view/{operationId}', [InvoiceController::class, 'view'])->name('invoice.view');
+    // 📁 Transfer Route
     Route::resource('transfers', TransferController::class)->names('transfers');
     Route::resource('discounts', DiscountController::class)->names('discounts');
 

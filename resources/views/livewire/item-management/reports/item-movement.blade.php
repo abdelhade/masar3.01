@@ -303,7 +303,7 @@ new class extends Component {
                                 <th class="font-family-cairo fw-bold">الرصيد قبل الحركة</th>
                                 <th class="font-family-cairo fw-bold">الكمية</th>
                                 <th class="font-family-cairo fw-bold">الرصيد بعد الحركة</th>
-                                {{-- <th class="font-family-cairo fw-bold">الإجراء</th> --}}
+                                <th class="font-family-cairo fw-bold">الإجرائات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -358,11 +358,11 @@ new class extends Component {
                                         }
                                     @endphp
                                     <td class="font-family-cairo fw-bold">{{ $balanceAfter }}</td>
-                                    {{-- <td class="font-family-cairo fw-bold">
-                                    <button wire:click="viewReference({{ $movement->id }})" class="btn btn-xs btn-primary">
-                                        <i class="fas fa-eye"></i> عرض
-                                    </button>
-                                </td> --}}
+                                    <td class="font-family-cairo fw-bold">
+                                        <a href="{{ route('invoice.view', $movement->pro_id) }}" class="btn btn-xs btn-info" target="_blank">
+                                            <i class="fas fa-eye"></i> عرض
+                                        </a>
+                                </td>
                                 </tr>
                                 @php
                                     $balanceBefore = $balanceAfter;

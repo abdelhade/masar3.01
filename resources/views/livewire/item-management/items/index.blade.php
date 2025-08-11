@@ -73,7 +73,7 @@ new class extends Component {
             ->paginate(100);
     }
 
-        public function getTotalQuantityProperty()
+    public function getTotalQuantityProperty()
     {
         if (!$this->selectedPriceType) {
             return 0;
@@ -99,17 +99,17 @@ new class extends Component {
             ->when($this->selectedGroup, function ($query) {
                 $query->whereHas('notes', function ($q) {
                     $q->where('note_id', 1) // Groups have note_id = 1
-                      ->where('note_detail_name', function ($subQuery) {
-                          $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                      });
+                        ->where('note_detail_name', function ($subQuery) {
+                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
+                        });
                 });
             })
             ->when($this->selectedCategory, function ($query) {
                 $query->whereHas('notes', function ($q) {
                     $q->where('note_id', 2) // Categories have note_id = 2
-                      ->where('note_detail_name', function ($subQuery) {
-                          $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                      });
+                        ->where('note_detail_name', function ($subQuery) {
+                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
+                        });
                 });
             })
             ->get();
@@ -119,11 +119,11 @@ new class extends Component {
             // Get default unit for this item
             $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
             $selectedUnitId = $defaultUnit ? $defaultUnit->id : null;
-            
+
             // Create ItemViewModel for this item
             $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
             $formattedQuantity = $viewModel->getFormattedQuantity();
-            
+
             if (isset($formattedQuantity['quantity']['integer'])) {
                 $total += $formattedQuantity['quantity']['integer'];
             }
@@ -131,7 +131,7 @@ new class extends Component {
         return $total;
     }
 
-        public function getTotalAmountProperty()
+    public function getTotalAmountProperty()
     {
         if (!$this->selectedPriceType) {
             return 0;
@@ -157,17 +157,17 @@ new class extends Component {
             ->when($this->selectedGroup, function ($query) {
                 $query->whereHas('notes', function ($q) {
                     $q->where('note_id', 1) // Groups have note_id = 1
-                      ->where('note_detail_name', function ($subQuery) {
-                          $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                      });
+                        ->where('note_detail_name', function ($subQuery) {
+                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
+                        });
                 });
             })
             ->when($this->selectedCategory, function ($query) {
                 $query->whereHas('notes', function ($q) {
                     $q->where('note_id', 2) // Categories have note_id = 2
-                      ->where('note_detail_name', function ($subQuery) {
-                          $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                      });
+                        ->where('note_detail_name', function ($subQuery) {
+                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
+                        });
                 });
             })
             ->get();
@@ -177,12 +177,12 @@ new class extends Component {
             // Get default unit for this item
             $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
             $selectedUnitId = $defaultUnit ? $defaultUnit->id : null;
-            
+
             // Create ItemViewModel for this item
             $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
             $formattedQuantity = $viewModel->getFormattedQuantity();
             $quantity = $formattedQuantity['quantity']['integer'] ?? 0;
-            
+
             // Get unit price based on selected price type
             if ($this->selectedPriceType === 'cost') {
                 $unitPrice = $viewModel->getUnitCostPrice() ?? 0;
@@ -192,13 +192,13 @@ new class extends Component {
                 $unitSalePrices = $viewModel->getUnitSalePrices();
                 $unitPrice = $unitSalePrices[$this->selectedPriceType]['price'] ?? 0;
             }
-            
+
             $total += $quantity * $unitPrice;
         }
         return $total;
     }
 
-        public function getTotalItemsProperty()
+    public function getTotalItemsProperty()
     {
         if (!$this->selectedPriceType) {
             return 0;
@@ -224,17 +224,17 @@ new class extends Component {
             ->when($this->selectedGroup, function ($query) {
                 $query->whereHas('notes', function ($q) {
                     $q->where('note_id', 1) // Groups have note_id = 1
-                      ->where('note_detail_name', function ($subQuery) {
-                          $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                      });
+                        ->where('note_detail_name', function ($subQuery) {
+                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
+                        });
                 });
             })
             ->when($this->selectedCategory, function ($query) {
                 $query->whereHas('notes', function ($q) {
                     $q->where('note_id', 2) // Categories have note_id = 2
-                      ->where('note_detail_name', function ($subQuery) {
-                          $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                      });
+                        ->where('note_detail_name', function ($subQuery) {
+                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
+                        });
                 });
             })
             ->get();
@@ -244,11 +244,11 @@ new class extends Component {
             // Get default unit for this item
             $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
             $selectedUnitId = $defaultUnit ? $defaultUnit->id : null;
-            
+
             // Create ItemViewModel for this item
             $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
             $formattedQuantity = $viewModel->getFormattedQuantity();
-            
+
             // Count items that have valid quantity data
             if (isset($formattedQuantity['quantity']['integer'])) {
                 $count++;
@@ -400,7 +400,9 @@ new class extends Component {
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                         {{-- Primary Action Button --}}
                         @can('إضافة الأصناف')
-                            <a href="{{ route('items.create') }}" class="btn btn-outline-primary btn-lg font-family-cairo fw-bold mt-4 d-flex justify-content-center align-items-center text-center" style="min-height: 50px;">
+                            <a href="{{ route('items.create') }}"
+                                class="btn btn-outline-primary btn-lg font-family-cairo fw-bold mt-4 d-flex justify-content-center align-items-center text-center"
+                                style="min-height: 50px;">
                                 <i class="fas fa-plus me-2"></i>
                                 <span class="w-100 text-center">{{ __('إضافه صنف') }}</span>
                             </a>
@@ -497,11 +499,13 @@ new class extends Component {
                     @endif
 
                     <div class="table-responsive" style="overflow-x: auto;">
-                        <table class="table table-striped mb-0 table-hover" style="direction: rtl; font-family: 'Cairo', sans-serif;">
+                        <table class="table table-striped mb-0 table-hover"
+                            style="direction: rtl; font-family: 'Cairo', sans-serif;">
                             <style>
                                 /* تخصيص لون الهوفر للصفوف */
                                 .table-hover tbody tr:hover {
-                                    background-color: #ffc107 !important; /* لون warning */
+                                    background-color: #ffc107 !important;
+                                    /* لون warning */
                                 }
                             </style>
                             <thead class="table-light text-center align-middle">
@@ -510,8 +514,10 @@ new class extends Component {
                                     <th class="font-family-cairo text-center fw-bold">#</th>
                                     <th class="font-family-cairo text-center fw-bold">الكود</th>
                                     <th class="font-family-cairo text-center fw-bold">الاسم</th>
-                                    <th class="font-family-cairo text-center fw-bold" style="min-width: 130px;">الوحدات</th>
-                                    <th class="font-family-cairo text-center fw-bold" style="min-width: 100px;">الكميه</th>
+                                    <th class="font-family-cairo text-center fw-bold" style="min-width: 130px;">الوحدات
+                                    </th>
+                                    <th class="font-family-cairo text-center fw-bold" style="min-width: 100px;">الكميه
+                                    </th>
                                     <th class="font-family-cairo text-center fw-bold">متوسط التكلفه</th>
                                     <th class="font-family-cairo text-center fw-bold">تكلفه المتوسطه للكميه</th>
                                     <th class="font-family-cairo text-center fw-bold">التكلفه الاخيره</th>
@@ -547,7 +553,8 @@ new class extends Component {
                                             </td>
                                             <td class="font-family-cairo text-center fw-bold">{{ $itemData['name'] }}
                                                 <a href="{{ route('item-movement', ['itemId' => $item->id]) }}">
-                                                    <i class="las la-eye fa-lg text-primary" title="عرض حركات الصنف"></i>
+                                                    <i class="las la-eye fa-lg text-primary"
+                                                        title="عرض حركات الصنف"></i>
                                                 </a>
                                             </td>
                                             <td class="font-family-cairo text-center fw-bold">

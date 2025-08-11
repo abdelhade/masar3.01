@@ -143,10 +143,10 @@ new class extends Component {
         $this->unitRows = array_values($this->unitRows);
 
         $this->validate();
-        
+
         try {
             DB::beginTransaction();
-            
+
             foreach ($this->unitRows as $unitRowIndex => $unitRow) {
                 $unitsSync[$unitRow['unit_id']] = [
                     'u_val' => $unitRow['u_val'],
@@ -182,7 +182,7 @@ new class extends Component {
             Log::info('Notes synced successfully');
             $itemModel->save();
             $itemModel->refresh();
-            
+
             DB::commit();
             Log::info('Transaction committed successfully');
             $this->creating = false;
@@ -610,7 +610,7 @@ new class extends Component {
                         @if ($creating)
                             <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
-                                عوده   ( إلغاء )
+                                عوده ( إلغاء )
                             </button>
                             <button type="submit" class="btn btn-lg btn-primary font-family-cairo fw-bold"
                                 wire:loading.attr="disabled" wire:target="save">{{ 'حفظ' }}</button>
