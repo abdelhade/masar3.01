@@ -20,13 +20,18 @@ class LogUserLogin
      */
     public function handle(Login $event): void
     {
-        LoginSession::create([
-            'user_id'    => $event->user->id,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'device'     => request()->header('User-Agent'), // ممكن تحللها أكتر لو عايز
-            'login_at'   => now(),
-            'session_id' => session()->getId(),
-        ]);
+        $sessionId = session()->getId();
+
+        // منع التكرار لو نفس session_id موجود بالفعل
+        if (!LoginSession::where('session_id', $sessionId)->exists()) {
+            LoginSession::create([
+                'user_id'    => $event->user->id,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'device'     => request()->header('User-Agent'),
+                'login_at'   => now(),
+                'session_id' => $sessionId,
+            ]);
+        }
     }
 }

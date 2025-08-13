@@ -102,14 +102,22 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="row">
+                                    <div class="col">قبل : <span class="text-primary" id="cash_before">{{ $account->balance }}</span></div>
+                                    <div class="col">بعد : <span class="text-primary" id="cash_after">00.00</span></div>
+                                </div>
                         </div>
 
 
                         
-                            <div class="col-md-6">
+                            <div class="col-md-6">                          
                                 <x-dynamic-search name="{{ $type === 'receipt' ? 'acc2' : 'acc1' }}" label="{{ $type === 'receipt' ? 'من الحساب' : 'الي الحساب' }}" column="aname"
                                     model="App\Models\AccHead" placeholder="ابحث عن حساب..." :required="false"
                                     :filters="['is_basic' => '0']" :class="'form-control'" />
+                                    <div class="row">
+    <div class="col">قبل : <span id="accbefore">00.00</span></div>
+    <div class="col">بعد : <span id="accafter">00.00</span></div>
+</div>
                             </div>
 
                     
@@ -181,5 +189,22 @@
         </form>
     </section>
 </div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let before = parseFloat(document.getElementById("cash_before").innerText) || 0;
+        let proValue = document.getElementById("pro_value");
+        let afterSpan = document.getElementById("cash_after");
+
+        proValue.addEventListener("input", function () {
+            let val = parseFloat(this.value) || 0;
+            afterSpan.textContent = (before + val).toFixed(2);
+        });
+    });
+</script>
+
+
+
 @endif
 @endsection
