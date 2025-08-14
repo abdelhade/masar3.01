@@ -89,6 +89,8 @@ class BarcodePrintingReport extends Component
                     $barcodeData = $this->generateBarcodeData($item);
 
                     try {
+
+
                         $barcodeImage = $generator->getBarcode(
                             $barcodeData,
                             $generator::TYPE_CODE_128,
@@ -96,37 +98,46 @@ class BarcodePrintingReport extends Component
                             $this->settings['barcode_height'] // ارتفاع الباركود
                         );
 
+                        // بهذا الكود المُحسن:
+                        $barcodeImage = $generator->getBarcode(
+                            $barcodeData,
+                            $generator::TYPE_CODE_128,
+                            3, // عرض الباركود (نسبة)
+                            60  // ارتفاع الباركود بالبكسل
+                        );
                         $barcodeImageBase64 = base64_encode($barcodeImage);
 
+                        // 2. إضافة تحسينات للبيانات المرسلة:
                         for ($i = 0; $i < $count; $i++) {
                             $this->barcodes[] = [
                                 'item_id' => $item->item_id,
-                                'item_name' => $this->truncateText($item->item->name ?? 'غير محدد', 30),
+                                'item_name' => $this->truncateText($item->item->name ?? 'غير محدد', 25),
                                 'item_code' => $barcodeData,
                                 'barcode_image' => $barcodeImageBase64,
                                 'copy_number' => $i + 1,
                                 'total_copies' => $count,
-                                'company_name' => $this->settings['company_name'],
-                                'show_company_name' => $this->settings['show_company_name'],
-                                'show_item_name' => $this->settings['show_item_name'],
-                                'show_item_code' => $this->settings['show_item_code'],
-                                'show_barcode_image' => $this->settings['show_barcode_image'],
-                                'show_price_before_discount' => $this->settings['show_price_before_discount'],
-                                'show_price_after_discount' => $this->settings['show_price_after_discount'],
-                                'paper_width' => $this->settings['paper_width'],
-                                'paper_height' => $this->settings['paper_height'],
-                                'margin_top' => $this->settings['margin_top'],
-                                'margin_bottom' => $this->settings['margin_bottom'],
-                                'margin_left' => $this->settings['margin_left'],
-                                'margin_right' => $this->settings['margin_right'],
-                                'font_size_company' => $this->settings['font_size_company'],
-                                'font_size_item' => $this->settings['font_size_item'],
-                                'font_size_price' => $this->settings['font_size_price'],
-                                'text_align' => $this->settings['text_align'],
-                                'invert_colors' => $this->settings['invert_colors'],
-                                // يمكنك إضافة بيانات إضافية مثل السعر إذا كانت متوفرة في $item
-                                'price_before_discount' => $item->price ?? 100.00, // مثال
-                                'price_after_discount' => $item->discounted_price ?? 85.00, // مثال
+                                'company_name' => $this->settings['company_name'] ?? 'اسم الشركة',
+                                'show_company_name' => $this->settings['show_company_name'] ?? true,
+                                'show_item_name' => $this->settings['show_item_name'] ?? true,
+                                'show_item_code' => $this->settings['show_item_code'] ?? true,
+                                'show_barcode_image' => $this->settings['show_barcode_image'] ?? true,
+                                'show_price_before_discount' => $this->settings['show_price_before_discount'] ?? false,
+                                'show_price_after_discount' => $this->settings['show_price_after_discount'] ?? false,
+                                'paper_width' => $this->settings['paper_width'] ?? 50,
+                                'paper_height' => $this->settings['paper_height'] ?? 30,
+                                'margin_top' => $this->settings['margin_top'] ?? 2,
+                                'margin_bottom' => $this->settings['margin_bottom'] ?? 2,
+                                'margin_left' => $this->settings['margin_left'] ?? 2,
+                                'margin_right' => $this->settings['margin_right'] ?? 2,
+                                'font_size_company' => $this->settings['font_size_company'] ?? 10,
+                                'font_size_item' => $this->settings['font_size_item'] ?? 8,
+                                'font_size_price' => $this->settings['font_size_price'] ?? 8,
+                                'barcode_width' => $this->settings['barcode_width'] ?? 40,
+                                'barcode_height' => $this->settings['barcode_height'] ?? 15,
+                                'text_align' => $this->settings['text_align'] ?? 'center',
+                                'invert_colors' => $this->settings['invert_colors'] ?? false,
+                                'price_before_discount' => $item->price ?? 0,
+                                'price_after_discount' => $item->discounted_price ?? $item->price ?? 0,
                             ];
                         }
                     } catch (\Exception $e) {

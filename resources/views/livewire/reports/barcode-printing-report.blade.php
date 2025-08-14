@@ -169,6 +169,56 @@
             word-wrap: break-word;
         }
 
+        @media print {
+
+            .barcodes-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(50mm, 1fr));
+                gap: 2mm;
+                padding: 5mm;
+            }
+
+            .barcode-item {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            .barcode-item img {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
+            }
+        }
+
+        /* تحسين العرض على الشاشة أيضاً */
+        @media screen {
+            .barcode-print-section {
+                margin-top: 20px;
+                padding: 20px;
+                border: 2px dashed #3498db;
+                border-radius: 8px;
+                background: #f8f9fa;
+            }
+
+            .barcodes-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                justify-items: center;
+            }
+
+            .barcode-item {
+                border: 2px solid #ddd;
+                background: white;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .barcode-printing-report {
@@ -437,62 +487,62 @@
             <div class="barcodes-container">
                 @foreach ($barcodes as $barcode)
                     <div class="barcode-item"
-                        style="width: {{ $barcode['paper_width'] }}mm;
-                            height: {{ $barcode['paper_height'] }}mm;
-                            padding-top: {{ $barcode['margin_top'] }}mm;
-                            padding-bottom: {{ $barcode['margin_bottom'] }}mm;
-                            padding-left: {{ $barcode['margin_left'] }}mm;
-                            padding-right: {{ $barcode['margin_right'] }}mm;
-                            text-align: {{ $barcode['text_align'] }};
-                            {{ $barcode['invert_colors'] ? 'background: black; color: white;' : 'background: white; color: black;' }};
-                            border: 2px dashed #3498db;
-                            border-radius: 8px;
-                            margin: 15px auto;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: {{ $barcode['text_align'] == 'center' ? 'center' : ($barcode['text_align'] == 'left' ? 'flex-start' : 'flex-end') }};">
+                        style="width: {{ $barcode['paper_width'] ?? 50 }}mm;
+                        height: {{ $barcode['paper_height'] ?? 30 }}mm;
+                        padding: {{ $barcode['margin_top'] ?? 2 }}mm {{ $barcode['margin_right'] ?? 2 }}mm {{ $barcode['margin_bottom'] ?? 2 }}mm {{ $barcode['margin_left'] ?? 2 }}mm;
+                        text-align: {{ $barcode['text_align'] ?? 'center' }};
+                        {{ $barcode['invert_colors'] ?? false ? 'background: black; color: white;' : 'background: white; color: black;' }}
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        page-break-inside: avoid;">
 
-                        @if ($barcode['show_company_name'])
-                            <div class="preview-company-name"
-                                style="font-size: {{ $barcode['font_size_company'] }}pt; font-weight: bold; margin-bottom: 3px;">
-                                {{ $barcode['company_name'] }}
+                        @if ($barcode['show_company_name'] ?? false)
+                            <div
+                                style="font-size: {{ $barcode['font_size_company'] ?? 10 }}pt; font-weight: bold; margin-bottom: 1mm;">
+                                {{ $barcode['company_name'] ?? 'اسم الشركة' }}
                             </div>
                         @endif
 
-                        @if ($barcode['show_item_name'])
-                            <div class="preview-item-name"
-                                style="font-size: {{ $barcode['font_size_item'] }}pt; margin-bottom: 2px;">
+                        @if ($barcode['show_item_name'] ?? true)
+                            <div
+                                style="font-size: {{ $barcode['font_size_item'] ?? 8 }}pt; margin-bottom: 1mm; font-weight: 600;">
                                 {{ $barcode['item_name'] }}
                             </div>
                         @endif
 
-                        {{-- @if ($barcode['show_barcode_image'])
-                            <div class="preview-barcode">
+                        @if (($barcode['show_barcode_image'] ?? true) && !empty($barcode['barcode_image']))
+                            <div style="margin: 1mm 0;">
                                 <img src="data:image/png;base64,{{ $barcode['barcode_image'] }}"
-                                    style="width: {{ $barcode['barcode_width'] }}mm; height: {{ $barcode['barcode_height'] }}mm;"
+                                    style="max-width: {{ $barcode['barcode_width'] ?? 40 }}mm;
+                                       height: {{ $barcode['barcode_height'] ?? 15 }}mm;
+                                       image-rendering: crisp-edges;
+                                       -webkit-print-color-adjust: exact;"
                                     alt="Barcode">
                             </div>
-                        @endif --}}
+                        @endif
 
-                        @if ($barcode['show_item_code'])
-                            <div class="preview-item-code"
-                                style="font-size: {{ $barcode['font_size_item'] }}pt; margin: 2px 0;">
+                        @if ($barcode['show_item_code'] ?? true)
+                            <div
+                                style="font-size: {{ $barcode['font_size_item'] ?? 8 }}pt; margin: 1mm 0; font-family: monospace;">
                                 {{ $barcode['item_code'] }}
                             </div>
                         @endif
 
-                        @if ($barcode['show_price_before_discount'])
-                            <div class="preview-price-before"
-                                style="font-size: {{ $barcode['font_size_price'] }}pt; text-decoration: line-through; color: #999;">
-                                {{ number_format($barcode['price_before_discount'], 2) }} ج.م
+                        @if ($barcode['show_price_before_discount'] ?? false)
+                            <div
+                                style="font-size: {{ $barcode['font_size_price'] ?? 8 }}pt; text-decoration: line-through; color: #999; margin: 0.5mm 0;">
+                                {{ number_format($barcode['price_before_discount'] ?? 0, 2) }} ج.م
                             </div>
                         @endif
 
-                        @if ($barcode['show_price_after_discount'])
-                            <div class="preview-price-after"
-                                style="font-size: {{ $barcode['font_size_price'] }}pt; font-weight: bold; color: #e74c3c;">
-                                {{ number_format($barcode['price_after_discount'], 2) }} ج.م
+                        @if ($barcode['show_price_after_discount'] ?? false)
+                            <div
+                                style="font-size: {{ $barcode['font_size_price'] ?? 8 }}pt; font-weight: bold; color: #e74c3c; margin: 0.5mm 0;">
+                                {{ number_format($barcode['price_after_discount'] ?? 0, 2) }} ج.م
                             </div>
                         @endif
                     </div>
