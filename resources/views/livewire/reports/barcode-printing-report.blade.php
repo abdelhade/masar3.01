@@ -386,9 +386,6 @@
         </button>
 
         @if (!empty($barcodes))
-            <button onclick="window.print()" class="btn btn-primary">
-                🖨️ طباعة الباركودات
-            </button>
             <button wire:click="clearBarcodes" class="btn" style="background: #e74c3c; color: white;">
                 🗑️ مسح الباركودات
             </button>
@@ -439,10 +436,65 @@
         <div class="barcode-print-section">
             <div class="barcodes-container">
                 @foreach ($barcodes as $barcode)
-                    <div class="barcode-item">
-                        <img src="data:image/png;base64,{{ $barcode['barcode_image'] }}" alt="Barcode">
-                        <p>{{ $barcode['item_name'] }}</p>
-                        <p>({{ $barcode['item_code'] }})</p>
+                    <div class="barcode-item"
+                        style="width: {{ $barcode['paper_width'] }}mm;
+                            height: {{ $barcode['paper_height'] }}mm;
+                            padding-top: {{ $barcode['margin_top'] }}mm;
+                            padding-bottom: {{ $barcode['margin_bottom'] }}mm;
+                            padding-left: {{ $barcode['margin_left'] }}mm;
+                            padding-right: {{ $barcode['margin_right'] }}mm;
+                            text-align: {{ $barcode['text_align'] }};
+                            {{ $barcode['invert_colors'] ? 'background: black; color: white;' : 'background: white; color: black;' }};
+                            border: 2px dashed #3498db;
+                            border-radius: 8px;
+                            margin: 15px auto;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: {{ $barcode['text_align'] == 'center' ? 'center' : ($barcode['text_align'] == 'left' ? 'flex-start' : 'flex-end') }};">
+
+                        @if ($barcode['show_company_name'])
+                            <div class="preview-company-name"
+                                style="font-size: {{ $barcode['font_size_company'] }}pt; font-weight: bold; margin-bottom: 3px;">
+                                {{ $barcode['company_name'] }}
+                            </div>
+                        @endif
+
+                        @if ($barcode['show_item_name'])
+                            <div class="preview-item-name"
+                                style="font-size: {{ $barcode['font_size_item'] }}pt; margin-bottom: 2px;">
+                                {{ $barcode['item_name'] }}
+                            </div>
+                        @endif
+
+                        {{-- @if ($barcode['show_barcode_image'])
+                            <div class="preview-barcode">
+                                <img src="data:image/png;base64,{{ $barcode['barcode_image'] }}"
+                                    style="width: {{ $barcode['barcode_width'] }}mm; height: {{ $barcode['barcode_height'] }}mm;"
+                                    alt="Barcode">
+                            </div>
+                        @endif --}}
+
+                        @if ($barcode['show_item_code'])
+                            <div class="preview-item-code"
+                                style="font-size: {{ $barcode['font_size_item'] }}pt; margin: 2px 0;">
+                                {{ $barcode['item_code'] }}
+                            </div>
+                        @endif
+
+                        @if ($barcode['show_price_before_discount'])
+                            <div class="preview-price-before"
+                                style="font-size: {{ $barcode['font_size_price'] }}pt; text-decoration: line-through; color: #999;">
+                                {{ number_format($barcode['price_before_discount'], 2) }} ج.م
+                            </div>
+                        @endif
+
+                        @if ($barcode['show_price_after_discount'])
+                            <div class="preview-price-after"
+                                style="font-size: {{ $barcode['font_size_price'] }}pt; font-weight: bold; color: #e74c3c;">
+                                {{ number_format($barcode['price_after_discount'], 2) }} ج.م
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -462,20 +514,14 @@
                 // Auto-print after generation
                 let printTimeout;
                 window.addEventListener('barcodesGenerated', function() {
-                    // Clear any existing timeout
                     clearTimeout(printTimeout);
-
-                    // Wait for DOM to update, then print
                     printTimeout = setTimeout(() => {
                         window.print();
                     }, 500);
                 });
 
-                // Handle print button clicks - no need to show barcodes on screen
-
-                // Add keyboard shortcuts
+                // Handle keyboard shortcuts
                 document.addEventListener('keydown', function(e) {
-                    // Ctrl+P for print
                     if (e.ctrlKey && e.key === 'p' && document.querySelector('.barcode-print-section')) {
                         e.preventDefault();
                         setTimeout(() => window.print(), 100);

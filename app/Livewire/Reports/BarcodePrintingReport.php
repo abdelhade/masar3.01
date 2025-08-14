@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Reports;
 
-use App\Models\OperationItems;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use App\Models\OperationItems;
 use Picqer\Barcode\BarcodeGeneratorPNG;
+use Modules\Settings\Helpers\HelperSettings;
 
 class BarcodePrintingReport extends Component
 {
@@ -14,10 +15,14 @@ class BarcodePrintingReport extends Component
     public $barcodeCounts = [];
     public $barcodes = [];
     public $isLoading = false;
+    public $settings = [];
 
     public function mount($operationId)
     {
         $this->operationId = $operationId;
+        $this->settings = HelperSettings::getBarcodeSettings(); // جلب الإعدادات
+
+        // dd($this->settings);
         $this->loadItems();
     }
 
@@ -66,7 +71,7 @@ class BarcodePrintingReport extends Component
             }
 
             if ($totalBarcodes > 5000) {
-                session()->flash('error', 'العدد الإجمالي للباركودات كبير جداً. الحد الأقصى 5000 باركود');
+                session()->flash('error', 'العدد الإجمالي للباركودات كبير جدًا. الحد الأقصى 5000 باركود');
                 $this->isLoading = false;
                 return;
             }
@@ -87,8 +92,8 @@ class BarcodePrintingReport extends Component
                         $barcodeImage = $generator->getBarcode(
                             $barcodeData,
                             $generator::TYPE_CODE_128,
-                            2, // Width factor
-                            60 // Height
+                            $this->settings['barcode_width'] / 25.4 * 96, // تحويل مم إلى بكسل (96 DPI)
+                            $this->settings['barcode_height'] // ارتفاع الباركود
                         );
 
                         $barcodeImageBase64 = base64_encode($barcodeImage);
@@ -101,6 +106,27 @@ class BarcodePrintingReport extends Component
                                 'barcode_image' => $barcodeImageBase64,
                                 'copy_number' => $i + 1,
                                 'total_copies' => $count,
+                                'company_name' => $this->settings['company_name'],
+                                'show_company_name' => $this->settings['show_company_name'],
+                                'show_item_name' => $this->settings['show_item_name'],
+                                'show_item_code' => $this->settings['show_item_code'],
+                                'show_barcode_image' => $this->settings['show_barcode_image'],
+                                'show_price_before_discount' => $this->settings['show_price_before_discount'],
+                                'show_price_after_discount' => $this->settings['show_price_after_discount'],
+                                'paper_width' => $this->settings['paper_width'],
+                                'paper_height' => $this->settings['paper_height'],
+                                'margin_top' => $this->settings['margin_top'],
+                                'margin_bottom' => $this->settings['margin_bottom'],
+                                'margin_left' => $this->settings['margin_left'],
+                                'margin_right' => $this->settings['margin_right'],
+                                'font_size_company' => $this->settings['font_size_company'],
+                                'font_size_item' => $this->settings['font_size_item'],
+                                'font_size_price' => $this->settings['font_size_price'],
+                                'text_align' => $this->settings['text_align'],
+                                'invert_colors' => $this->settings['invert_colors'],
+                                // يمكنك إضافة بيانات إضافية مثل السعر إذا كانت متوفرة في $item
+                                'price_before_discount' => $item->price ?? 100.00, // مثال
+                                'price_after_discount' => $item->discounted_price ?? 85.00, // مثال
                             ];
                         }
                     } catch (\Exception $e) {
@@ -116,6 +142,7 @@ class BarcodePrintingReport extends Component
                 $this->dispatch('barcodesGenerated');
             }
         } catch (\Exception $e) {
+            session()->flash('error', 'حدث خطأ أثناء توليد الباركودات');
         } finally {
             $this->isLoading = false;
         }

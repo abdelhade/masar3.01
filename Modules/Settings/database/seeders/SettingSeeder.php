@@ -58,7 +58,7 @@ class SettingSeeder extends Seeder
             'label' => 'البريد الإلكتروني',
             'key' => 'email',
             'input_type' => 'email',
-            'value' => 'ثمثال@example.com',
+            'value' => 'a@a.com',
         ]);
 
         PublicSetting::create([
