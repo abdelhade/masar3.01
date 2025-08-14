@@ -80,7 +80,7 @@
                                                     </a>
 
                                                     <a class="btn btn-primary d-inline-flex align-items-center"
-                                                        href="{{ route('invoices.edit', $invoice->id) }}">
+                                                        href="{{ route('invoices.barcode-report', $invoice->id) }}">
                                                         <i class="las la-barcode me-1"></i>
                                                         طباعة باركود
                                                     </a>

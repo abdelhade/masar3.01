@@ -67,6 +67,11 @@ class InvoiceReportController extends Controller
         return view('reports.invoices.edit-purchase-price-invoice-report', compact('id'));
     }
 
+    public function invoicesBarcodeReport($id)
+    {
+        return view('reports.invoices.invoices-barcode-report', compact('id'));
+    }
+
     public function convertToPurchaseInvoice($id)
     {
         try {
