@@ -958,6 +958,36 @@
                 </ul>
             </li>
 
+            <li class="li-main">
+                <a href="javascript: void(0);">
+                    <i data-feather="truck" class="align-self-center menu-icon"></i>
+                    <span>{{ __('ادارة الشحن') }}</span>
+                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                </a>
+                <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('companies.index') }}">
+                            <i class="ti-control-record"></i>{{ __('شركات الشحن') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('drivers.index') }}">
+                            <i class="ti-control-record"></i>{{ __('السائقون') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('orders.index') }}">
+                            <i class="ti-control-record"></i>{{ __('الطلبات') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('shipments.index') }}">
+                            <i class="ti-control-record"></i>{{ __('الشحنات') }}
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
         </ul>
     </div>
 </div>
