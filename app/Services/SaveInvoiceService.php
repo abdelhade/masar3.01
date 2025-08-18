@@ -32,7 +32,7 @@ class SaveInvoiceService
 
         // التحقق من الكميات المتاحة فقط للمبيعات والصرف
         foreach ($component->invoiceItems as $index => $item) {
-            if (in_array($component->type, [10, 12, 18, 19])) {
+            if (in_array($component->type, [10, 12, 18, 19, 21])) {
                 $availableQty = OperationItems::where('item_id', $item['item_id'])
                     ->where('detail_store', $component->acc2_id)
                     ->selectRaw('SUM(qty_in - qty_out) as total')
@@ -59,145 +59,183 @@ class SaveInvoiceService
             }
         }
 
-        // DB::beginTransaction();
-        // try {
-        $isJournal = in_array($component->type, [10, 11, 12, 13, 18, 19, 20, 21, 23]) ? 1 : 0;
-        $isManager = $isJournal ? 0 : 1;
-        $isReceipt = in_array($component->type, [10, 22, 13]);
-        $isPayment = in_array($component->type, [11, 12]);
+        DB::beginTransaction();
+        try {
+            $isJournal = in_array($component->type, [10, 11, 12, 13, 18, 19, 20, 21, 23]) ? 1 : 0;
+            $isManager = $isJournal ? 0 : 1;
+            $isReceipt = in_array($component->type, [10, 22, 13]);
+            $isPayment = in_array($component->type, [11, 12]);
 
-        $operationData = [
-            'pro_type'       => $component->type,
-            'acc1'           => $component->acc1_id,
-            'acc2'           => $component->acc2_id,
-            'emp_id'         => $component->emp_id,
-            'is_manager'     => $isManager,
-            'is_journal'     => $isJournal,
-            'is_stock'       => 1,
-            'pro_date'       => $component->pro_date,
-            'op2'            => 0,
-            'pro_value'      => $component->total_after_additional,
-            'fat_net'        => $component->total_after_additional,
-            'price_list'     => $component->selectedPriceType,
-            'accural_date'   => $component->accural_date,
-            'pro_serial'     => $component->serial_number,
-            'fat_disc_per'   => $component->discount_percentage,
-            'fat_disc'       => $component->discount_value,
-            'fat_plus_per'   => $component->additional_percentage,
-            'fat_plus'       => $component->additional_value,
-            'fat_total'      => $component->subtotal,
-            'info'           => $component->notes,
-            'acc_fund'       => $component->cash_box_id ?: 0,
-            'paid_from_client' => $component->received_from_client
-        ];
+            $operationData = [
+                'pro_type'       => $component->type,
+                'acc1'           => $component->acc1_id,
+                'acc2'           => $component->acc2_id,
+                'emp_id'         => $component->emp_id,
+                'is_manager'     => $isManager,
+                'is_journal'     => $isJournal,
+                'is_stock'       => 1,
+                'pro_date'       => $component->pro_date,
+                'op2'            => 0,
+                'pro_value'      => $component->total_after_additional,
+                'fat_net'        => $component->total_after_additional,
+                'price_list'     => $component->selectedPriceType,
+                'accural_date'   => $component->accural_date,
+                'pro_serial'     => $component->serial_number,
+                'fat_disc_per'   => $component->discount_percentage,
+                'fat_disc'       => $component->discount_value,
+                'fat_plus_per'   => $component->additional_percentage,
+                'fat_plus'       => $component->additional_value,
+                'fat_total'      => $component->subtotal,
+                'info'           => $component->notes,
+                'acc_fund'       => $component->cash_box_id ?: 0,
+                'paid_from_client' => $component->received_from_client
+            ];
 
-        // تحديث الفاتورة الحالية أو إنشاء جديدة
-        if ($isEdit && $component->operationId) {
-            $operation = OperHead::findOrFail($component->operationId);
+            // تحديث الفاتورة الحالية أو إنشاء جديدة
+            if ($isEdit && $component->operationId) {
+                $operation = OperHead::findOrFail($component->operationId);
 
-            // حذف البيانات المرتبطة بالفاتورة القديمة
-            $this->deleteRelatedRecords($operation->id);
+                // حذف البيانات المرتبطة بالفاتورة القديمة
+                $this->deleteRelatedRecords($operation->id);
 
-            // تحديث بيانات رأس الفاتورة مع الاحتفاظ بـ pro_id الأصلي
-            $operationData['pro_id'] = $operation->pro_id; // الاحتفاظ بالرقم الأصلي
-            $operation->update($operationData);
+                // تحديث بيانات رأس الفاتورة مع الاحتفاظ بـ pro_id الأصلي
+                $operationData['pro_id'] = $operation->pro_id; // الاحتفاظ بالرقم الأصلي
+                $operation->update($operationData);
 
-            // logger()->info('تم تحديث الفاتورة رقم: ' . $operation->id);
-        } else {
-            // إنشاء فاتورة جديدة
-            $operationData['pro_id'] = $component->pro_id;
-            $operation = OperHead::create($operationData);
-
-            // logger()->info('تم إنشاء فاتورة جديدة رقم: ' . $operation->id);
-        }
-
-        // إضافة عناصر الفاتورة
-        $totalProfit = 0;
-        foreach ($component->invoiceItems as $invoiceItem) {
-            $itemId    = $invoiceItem['item_id'];
-            $quantity  = $invoiceItem['quantity'];
-            $unitId    = $invoiceItem['unit_id'];
-            $price     = $invoiceItem['price'];
-            $subValue  = $invoiceItem['sub_value'] ?? $price * $quantity;
-            $discount  = $invoiceItem['discount'] ?? 0;
-            $itemCost  = Item::where('id', $itemId)->value('average_cost');
-
-            $qty_in = $qty_out = 0;
-            if (in_array($component->type, [11, 12, 20])) $qty_in = $quantity;
-            if (in_array($component->type, [10, 13, 18, 19])) $qty_out = $quantity;
-
-            // تحديث متوسط التكلفة للمشتريات
-            if (in_array($component->type, [11, 12, 20])) {
-                $this->updateAverageCost($itemId, $quantity, $subValue, $itemCost);
-            }
-
-            // حساب الربح للمبيعات
-            if (in_array($component->type, [10, 13, 19])) {
-                $discountItem = $component->subtotal != 0
-                    ? ($component->discount_value * $subValue / $component->subtotal)
-                    : 0;
-
-                $itemCostTotal = $itemCost * $quantity;
-                $profit = ($subValue - $discountItem) - $itemCostTotal;
-                $totalProfit += $profit;
+                // logger()->info('تم تحديث الفاتورة رقم: ' . $operation->id);
             } else {
-                $profit = 0;
+                // إنشاء فاتورة جديدة
+                $operationData['pro_id'] = $component->pro_id;
+                $operation = OperHead::create($operationData);
+
+                // logger()->info('تم إنشاء فاتورة جديدة رقم: ' . $operation->id);
             }
 
-            // إنشاء عنصر الفاتورة
-            OperationItems::create([
-                'pro_tybe'      => $component->type,
-                'detail_store'  => $component->acc2_id,
-                'pro_id'        => $operation->id,
-                'item_id'       => $itemId,
-                'unit_id'       => $unitId,
-                'qty_in'        => $qty_in,
-                'qty_out'       => $qty_out,
-                'item_price'    => $price,
-                'cost_price'    => $itemCost,
-                'item_discount' => $discount,
-                'detail_value'  => $subValue,
-                'notes'         => $invoiceItem['notes'] ?? null,
-                'is_stock'      => 1,
-                'profit'        => $profit,
-            ]);
+            // إضافة عناصر الفاتورة
+            $totalProfit = 0;
+            foreach ($component->invoiceItems as $invoiceItem) {
+                $itemId    = $invoiceItem['item_id'];
+                $quantity  = $invoiceItem['quantity'];
+                $unitId    = $invoiceItem['unit_id'];
+                $price     = $invoiceItem['price'];
+                $subValue  = $invoiceItem['sub_value'] ?? $price * $quantity;
+                $discount  = $invoiceItem['discount'] ?? 0;
+                $itemCost  = Item::where('id', $itemId)->value('average_cost');
+
+                if ($component->type == 21) {
+                    // 1. خصم الكمية من المخزن المحوَّل منه (المخزن الأول acc1)
+                    OperationItems::create([
+                        'pro_tybe'      => $component->type,
+                        'detail_store'  => $component->acc1_id, // <-- المخزن الأول (المُرسِل)
+                        'pro_id'        => $operation->id,
+                        'item_id'       => $itemId,
+                        'unit_id'       => $unitId,
+                        'qty_in'        => 0,
+                        'qty_out'       => $quantity, // <-- خصم الكمية
+                        'item_price'    => $price,
+                        'cost_price'    => $itemCost,
+                        'item_discount' => $discount,
+                        'detail_value'  => $subValue,
+                        'notes'         => $invoiceItem['notes'] ?? 'تحويل إلى مخزن ' . $component->acc2_id,
+                        'is_stock'      => 1,
+                        // 'profit'        => $profit,
+                    ]);
+
+                    // 2. إضافة الكمية إلى المخزن المحوَّل إليه (المخزن الثاني acc2)
+                    OperationItems::create([
+                        'pro_tybe'      => $component->type,
+                        'detail_store'  => $component->acc2_id, // <-- المخزن الثاني (المُستقبِل)
+                        'pro_id'        => $operation->id,
+                        'item_id'       => $itemId,
+                        'unit_id'       => $unitId,
+                        'qty_in'        => $quantity, // <-- إضافة الكمية
+                        'qty_out'       => 0,
+                        'item_price'    => $price,
+                        'cost_price'    => $itemCost,
+                        'item_discount' => $discount,
+                        'detail_value'  => $subValue,
+                        'notes'         => $invoiceItem['notes'] ?? 'تحويل من مخزن ' . $component->acc1_id,
+                        'is_stock'      => 1,
+                        // 'profit'        => $profit,
+                    ]);
+                }
+
+                $qty_in = $qty_out = 0;
+                if (in_array($component->type, [11, 12, 20])) $qty_in = $quantity;
+                if (in_array($component->type, [10, 13, 18, 19])) $qty_out = $quantity;
+
+                // تحديث متوسط التكلفة للمشتريات
+                if (in_array($component->type, [11, 12, 20])) {
+                    $this->updateAverageCost($itemId, $quantity, $subValue, $itemCost);
+                }
+
+                // حساب الربح للمبيعات
+                if (in_array($component->type, [10, 13, 19])) {
+                    $discountItem = $component->subtotal != 0
+                        ? ($component->discount_value * $subValue / $component->subtotal)
+                        : 0;
+
+                    $itemCostTotal = $itemCost * $quantity;
+                    $profit = ($subValue - $discountItem) - $itemCostTotal;
+                    $totalProfit += $profit;
+                } else {
+                    $profit = 0;
+                }
+
+                // إنشاء عنصر الفاتورة
+                OperationItems::create([
+                    'pro_tybe'      => $component->type,
+                    'detail_store'  => $component->acc2_id,
+                    'pro_id'        => $operation->id,
+                    'item_id'       => $itemId,
+                    'unit_id'       => $unitId,
+                    'qty_in'        => $qty_in,
+                    'qty_out'       => $qty_out,
+                    'item_price'    => $price,
+                    'cost_price'    => $itemCost,
+                    'item_discount' => $discount,
+                    'detail_value'  => $subValue,
+                    'notes'         => $invoiceItem['notes'] ?? null,
+                    'is_stock'      => 1,
+                    'profit'        => $profit,
+                ]);
+            }
+
+            // تحديث إجمالي الربح
+            $operation->update(['profit' => $totalProfit]);
+
+            // إنشاء القيود المحاسبية
+            if ($isJournal) {
+                $this->createJournalEntries($component, $operation);
+            }
+
+            // إنشاء سند القبض/الدفع إذا وُجد
+            if ($component->received_from_client > 0) {
+                $this->createVoucher($component, $operation, $isReceipt, $isPayment);
+            }
+
+            DB::commit();
+
+            $message = $isEdit ? 'تم تحديث الفاتورة بنجاح.' : 'تم حفظ الفاتورة بنجاح.';
+            $component->dispatch(
+                'swal',
+                title: 'تم الحفظ!',
+                text: $message,
+                icon: 'success'
+            );
+
+            return $operation->id;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
+            $component->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'فشل في حفظ الفاتورة: ' . $e->getMessage(),
+                icon: 'error'
+            );
+            return false;
         }
-
-        // تحديث إجمالي الربح
-        $operation->update(['profit' => $totalProfit]);
-
-        // إنشاء القيود المحاسبية
-        if ($isJournal) {
-            $this->createJournalEntries($component, $operation);
-        }
-
-        // إنشاء سند القبض/الدفع إذا وُجد
-        if ($component->received_from_client > 0) {
-            $this->createVoucher($component, $operation, $isReceipt, $isPayment);
-        }
-
-        DB::commit();
-
-        $message = $isEdit ? 'تم تحديث الفاتورة بنجاح.' : 'تم حفظ الفاتورة بنجاح.';
-        $component->dispatch(
-            'swal',
-            title: 'تم الحفظ!',
-            text: $message,
-            icon: 'success'
-        );
-
-        return $operation->id;
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-        //     logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
-        //     $component->dispatch(
-        //         'error',
-        //         title: 'خطأ!',
-        //         text: 'فشل في حفظ الفاتورة: ' . $e->getMessage(),
-        //         icon: 'error'
-        //     );
-        //     return false;
-        // }
     }
 
     private function updateAverageCost($itemId, $quantity, $subValue, $currentCost)
@@ -280,8 +318,8 @@ class SaveInvoiceService
                 $credit = $component->acc1_id;
                 break; // إضافة
             case 21:
-                $debit = $component->acc1_id;
-                $credit = $component->acc2_id;
+                $debit = $component->acc2_id;  // المخزن الذي استلم البضاعة (مدين)
+                $credit = $component->acc1_id; // المخزن الذي أرسل البضاعة (دائن)
                 break; // تحويل
         }
 
