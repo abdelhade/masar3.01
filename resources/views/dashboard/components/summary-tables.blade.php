@@ -47,7 +47,7 @@
                 ->get();
                 @endphp
 
-                <table class="table table-striped mb-0">
+                <table class="table table-responsive table-striped mb-0">
                     <thead>
                         <tr>
                             <th>المستخدم</th>
