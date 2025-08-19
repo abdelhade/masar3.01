@@ -2,6 +2,9 @@
     <!-- Navbar -->
     <nav class="navbar-custom">
         <ul class="list-unstyled topbar-nav float-end mb-0">
+
+            <x-notification::notifications />
+
             @can('عرض التحكم في الاعدادات')
                 <li>
                     <a title="المستخدمين" href="{{ route('mysettings.index') }}" class="nav-link">
@@ -10,13 +13,14 @@
                 </li>
             @endcan
             <li>
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn btn-lg" title="{{ __('تسجيل الخروج') }}" style="background: none; border: none; ">
-                            <i class="fas fa-sign-out-alt fa-3x text-primary"></i>
-                        </button>
-                    </form>
-                </li>
+                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-lg" title="{{ __('تسجيل الخروج') }}"
+                        style="background: none; border: none; ">
+                        <i class="fas fa-sign-out-alt fa-3x text-primary"></i>
+                    </button>
+                </form>
+            </li>
         </ul><!--end topbar-nav-->
 
         <ul class="list-unstyled topbar-nav mb-0">
@@ -27,10 +31,10 @@
                 </button>
             </li>
             <li>
-                    <a title="help" href="https://www.updates.elhadeerp.com" class="nav-link" target="_blank">
-                        <i class="fas fa-book fa-2x text-primary"></i>
-                    </a>
-                </li>
+                <a title="help" href="https://www.updates.elhadeerp.com" class="nav-link" target="_blank">
+                    <i class="fas fa-book fa-2x text-primary"></i>
+                </a>
+            </li>
             @can('عرض المدراء')
                 <li>
                     <a title="المستخدمين" href="{{ route('users.index') }}" class="nav-link">
@@ -38,7 +42,7 @@
                     </a>
                 </li>
             @endcan
-             
+
 
             @can('عرض التقارير')
                 <li>
