@@ -934,6 +934,31 @@
                                 </ul>
                             </li>
                         @endcanany
+                        {{-- إدارة الإجازات --}}
+                        @canany(['عرض رصيد الإجازات', 'عرض طلبات الإجازة'])
+                            <li class="nav-item has-submenu">
+                                <a class="nav-link" href="javascript: void(0);">
+                                    <i class="ti-control-record"></i>{{ __('إدارة الإجازات') }}
+                                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                                </a>
+                                <ul class="sub-menu mm-collapse">
+                                    @can('عرض رصيد الإجازات')
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{{ route('leaves.balances.index') }}">
+                                                <i class="ti-control-record"></i>{{ __('رصيد الإجازات') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('عرض طلبات الإجازة')
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{{ route('leaves.requests.index') }}">
+                                                <i class="ti-control-record"></i>{{ __('طلبات الإجازة') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endcanany
                         {{-- CVs --}}
                         <li class="nav-item">
                             <a class="nav-link font-family-cairo fw-bold" href="{{ route('cvs.index') }}">

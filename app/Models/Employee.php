@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Employee extends Model 
+class Employee extends Model
 {
-
     protected $table = 'employees';
+
     protected $casts = [
         'date_of_birth' => 'date',
         'date_of_hire' => 'date',
@@ -33,9 +33,19 @@ class Employee extends Model
         return $this->belongsTo(EmployeesJob::class);
     }
 
-    public function leave(): HasMany
+    public function leaveRequests(): HasMany
     {
-        return $this->hasMany(Leave::class);
+        return $this->hasMany(LeaveRequest::class);
+    }
+
+    public function leaveBalances(): HasMany
+    {
+        return $this->hasMany(EmployeeLeaveBalance::class);
+    }
+
+    public function payrollEntries(): HasMany
+    {
+        return $this->hasMany(PayrollEntry::class);
     }
 
     public function country(): BelongsTo
@@ -82,19 +92,19 @@ class Employee extends Model
     // Helper methods for salary calculation
     public function getExpectedHoursAttribute(): float
     {
-        if (!$this->shift) {
+        if (! $this->shift) {
             return 8.0; // Default 8 hours
         }
 
         $startTime = \Carbon\Carbon::parse($this->shift->start_time);
         $endTime = \Carbon\Carbon::parse($this->shift->end_time);
-        
+
         return $startTime->diffInHours($endTime, false);
     }
 
     public function getHourlyRateAttribute(): float
     {
-        if (!$this->salary) {
+        if (! $this->salary) {
             return 0.0;
         }
 
@@ -103,7 +113,7 @@ class Employee extends Model
 
     public function getDailyRateAttribute(): float
     {
-        if (!$this->salary) {
+        if (! $this->salary) {
             return 0.0;
         }
 
@@ -168,18 +178,18 @@ class Employee extends Model
     // Helper methods for employment
     public function isCurrentlyEmployed(): bool
     {
-        return $this->date_of_hire && !$this->date_of_fire;
+        return $this->date_of_hire && ! $this->date_of_fire;
     }
 
     public function getEmploymentDuration(): int
     {
-        if (!$this->date_of_hire) {
+        if (! $this->date_of_hire) {
             return 0;
         }
 
         $startDate = \Carbon\Carbon::parse($this->date_of_hire);
         $endDate = $this->date_of_fire ? \Carbon\Carbon::parse($this->date_of_fire) : now();
-        
+
         return $startDate->diffInDays($endDate);
     }
 }

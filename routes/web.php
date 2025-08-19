@@ -1,45 +1,43 @@
 <?php
 
-use Livewire\Volt\Volt;
+use App\Http\Controllers\AccHeadController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ContractTypeController;
+use App\Http\Controllers\CostCenterController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\CvController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeesJobController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InventoryStartBalanceController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\JournalController;
+use App\Http\Controllers\JournalSummeryController;
+use App\Http\Controllers\KpiController;
+use App\Http\Controllers\ManufacturingController;
+use App\Http\Controllers\MultiJournalController;
+use App\Http\Controllers\MultiVoucherController;
+use App\Http\Controllers\NoteController;
+use App\Http\Controllers\PosShiftController;
+use App\Http\Controllers\PosVouchersController;
+use App\Http\Controllers\PriceController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\RentalController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\TownController;
+use App\Http\Controllers\TransferController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{
-    AccHeadController,
-    JournalController,
-    InvoiceController,
-    CostCenterController,
-    EmployeeController,
-    DiscountController,
-    InventoryStartBalanceController,
-    ItemController,
-    JournalSummeryController,
-    ManufacturingController,
-    TransferController,
-    UnitController,
-    UserController,
-    PriceController,
-    NoteController,
-    VoucherController,
-    ProjectController,
-    DepartmentController,
-    EmployeesJobController,
-    CountryController,
-    StateController,
-    CityController,
-    TownController,
-    ShiftController,
-    MultiVoucherController,
-    MultiJournalController,
-    KpiController,
-    ContractTypeController,
-    ContractController,
-    AttendanceController,
-    HomeController,
-    ReportController,
-    RentalController,
-    PosShiftController,
-    PosVouchersController,
-    CvController
-};
+use Livewire\Volt\Volt;
 
 // test for dashboard
 Route::get('/admin/dashboard', function () {
@@ -87,6 +85,33 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('attendances', AttendanceController::class)->names('attendances')->only('index');
     // 📁 CVs
     Route::resource('cvs', CvController::class)->names('cvs')->only('index');
+    // 📁 Leave Management
+    Route::prefix('hr/leaves')->middleware(['auth'])->group(function () {
+        // Leave Balances
+        Route::get('/balances', function () {
+            return view('hr-management.leaves.leave-balances.index');
+        })->name('leaves.balances.index');
+        Route::get('/balances/create', function () {
+            return view('hr-management.leaves.leave-balances.create-edit');
+        })->name('leaves.balances.create');
+        Route::get('/balances/{balanceId}/edit', function () {
+            return view('hr-management.leaves.leave-balances.create-edit');
+        })->name('leaves.balances.edit');
+
+        // Leave Requests
+        Route::get('/requests', function () {
+            return view('hr-management.leaves.leave-requests.index');
+        })->name('leaves.requests.index');
+        Route::get('/requests/create', function () {
+            return view('hr-management.leaves.leave-requests.create');
+        })->name('leaves.requests.create');
+        Route::get('/requests/{requestId}', function ($requestId) {
+            return view('hr-management.leaves.leave-requests.show', ['requestId' => $requestId]);
+        })->name('leaves.requests.show');
+        Route::get('/requests/{requestId}/edit', function ($requestId) {
+            return view('hr-management.leaves.leave-requests.edit', ['requestId' => $requestId]);
+        })->name('leaves.requests.edit');
+    });
     // ############################################################################################################
     // 📁 Projects
     Route::resource('projects', ProjectController::class)->names('projects')->only('index', 'show', 'create', 'edit');
@@ -109,7 +134,6 @@ Route::middleware(['auth'])->group(function () {
 
     // 📁 Account Movement
     Route::get('account-movement/{accountId?}', [AccHeadController::class, 'accountMovementReport'])->name('account-movement');
-
 
     Route::resource('journals', JournalController::class)->names('journals');
 
@@ -157,10 +181,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
     Route::get('pos-shifts/{shift}/close', [PosShiftController::class, 'close'])->name('pos-shifts.close');
     Route::post('pos-shifts/{shift}/close', [PosShiftController::class, 'closeConfirm'])->name('pos-shifts.close.confirm');
-    require __DIR__ . '/modules/magicals.php';
-    require __DIR__ . '/modules/cheques.php';
-    require __DIR__ . '/modules/invoice-reports.php';
-    require __DIR__ . '/modules/attendance.php';
-    require __DIR__ . '/modules/reports.php';
+    require __DIR__.'/modules/magicals.php';
+    require __DIR__.'/modules/cheques.php';
+    require __DIR__.'/modules/invoice-reports.php';
+    require __DIR__.'/modules/attendance.php';
+    require __DIR__.'/modules/reports.php';
 });
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

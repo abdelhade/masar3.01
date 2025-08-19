@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             ContractTypeSeeder::class,
             AttendanceSeeder::class,
             CvSeeder::class,
+            LeaveTypeSeeder::class,
         ]);
     }
 }

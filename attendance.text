@@ -1,0 +1,1 @@
+$columnMapping = ['AC-No' => 0, 'NO' => 1,  'Name' => 2,'Time' => 3 ,  'State' => 4,  'New State' => 5,   'Exception' => 6,   'Operation' => 7, ];
