@@ -2,9 +2,13 @@
 
 namespace App\Livewire\Leaves\LeaveRequests;
 
+use App\Events\LeaveRequestApproved;
+use App\Events\LeaveRequestCancelled;
+use App\Events\LeaveRequestRejected;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,6 +17,7 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    protected $paginationTheme = 'bootstrap';
 
     public $search = '';
 
@@ -100,6 +105,73 @@ class Index extends Component
         ]);
     }
 
+    public function approveRequest(LeaveRequest $request): void
+    {
+        $this->authorize('approve', $request);
+
+        if (! $request->canBeApproved()) {
+            session()->flash('error', 'لا يمكن الموافقة على هذا الطلب.');
+            $this->dispatch('show-message', message: 'لا يمكن الموافقة على هذا الطلب.', type: 'error');
+
+            return;
+        }
+
+        $request->update([
+            'status' => 'approved',
+            'approver_id' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+
+        // إطلاق الحدث
+        event(new LeaveRequestApproved($request));
+
+        session()->flash('message', 'تم الموافقة على الطلب بنجاح.');
+        $this->dispatch('show-message', message: 'تم الموافقة على الطلب بنجاح.', type: 'success');
+    }
+
+    public function rejectRequest(LeaveRequest $request): void
+    {
+        $this->authorize('reject', $request);
+
+        if (! $request->canBeRejected()) {
+            session()->flash('error', 'لا يمكن رفض هذا الطلب.');
+            $this->dispatch('show-message', message: 'لا يمكن رفض هذا الطلب.', type: 'error');
+
+            return;
+        }
+
+        $request->update([
+            'status' => 'rejected',
+            'approver_id' => Auth::id(),
+        ]);
+
+        // إطلاق الحدث
+        event(new LeaveRequestRejected($request));
+
+        session()->flash('message', 'تم رفض الطلب بنجاح.');
+        $this->dispatch('show-message', message: 'تم رفض الطلب بنجاح.', type: 'success');
+    }
+
+    public function cancelRequest(LeaveRequest $request): void
+    {
+        $this->authorize('cancel', $request);
+
+        if (! $request->canBeCancelled()) {
+            session()->flash('error', 'لا يمكن إلغاء هذا الطلب.');
+            $this->dispatch('show-message', message: 'لا يمكن إلغاء هذا الطلب.', type: 'error');
+
+            return;
+        }
+
+        $request->update(['status' => 'cancelled']);
+
+        // إطلاق الحدث
+        event(new LeaveRequestCancelled($request));
+
+        session()->flash('message', 'تم إلغاء الطلب بنجاح.');
+        $this->dispatch('show-message', message: 'تم إلغاء الطلب بنجاح.', type: 'success');
+    }
+
     public function deleteRequest(LeaveRequest $request): void
     {
         $this->authorize('delete', $request);
@@ -107,6 +179,7 @@ class Index extends Component
         $request->delete();
 
         session()->flash('message', 'تم حذف طلب الإجازة بنجاح.');
+        $this->dispatch('show-message', message: 'تم حذف طلب الإجازة بنجاح.', type: 'success');
     }
 
     public function getStatusBadgeClass($status): string

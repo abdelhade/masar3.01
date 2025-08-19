@@ -37,7 +37,7 @@ class EmployeeLeaveBalancePolicy
 
     public function create(User $user): bool
     {
-        return $user->hasRole('hr-admin') || $user->hasPermissionTo('create-leave-balances');
+        return $user->hasRole(['admin', 'hr-admin']) || $user->hasPermissionTo('create-leave-balances');
     }
 
     public function update(User $user, EmployeeLeaveBalance $balance): bool
@@ -45,6 +45,10 @@ class EmployeeLeaveBalancePolicy
         // المدير يعدل رصيد مرؤوسيه
         if ($user->hasRole('manager')) {
             return $this->isSubordinate($user, $balance->employee_id);
+        }
+
+        if ($user->hasRole('admin')) {
+            return true;
         }
 
         // HR يعدل الجميع
@@ -56,6 +60,10 @@ class EmployeeLeaveBalancePolicy
         // المدير يحذف رصيد مرؤوسيه
         if ($user->hasRole('manager')) {
             return $this->isSubordinate($user, $balance->employee_id);
+        }
+
+        if ($user->hasRole('admin')) {
+            return true;
         }
 
         // HR يحذف الجميع

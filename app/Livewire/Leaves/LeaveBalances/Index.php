@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
-
+    protected $paginationTheme = 'bootstrap';
     public $search = '';
 
     public $selectedEmployee = '';
@@ -89,5 +89,6 @@ class Index extends Component
         $balance->delete();
 
         session()->flash('message', 'تم حذف رصيد الإجازة بنجاح.');
+        $this->dispatch('show-message', message: 'تم حذف رصيد الإجازة بنجاح.', type: 'success');
     }
 }

@@ -1,5 +1,24 @@
 <div class="container-fluid">
     <div class="row">
+        <!-- رسائل الخطأ -->
+        @if (session()->has('error'))
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+        @if (session()->has('message'))
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+                    <i class="fas fa-check-circle"></i>
+                    {{ session('message') }}
+                    <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
         <div class="col-12">
             <div class="card">
                 <div class="card-header">

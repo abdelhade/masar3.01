@@ -3,17 +3,64 @@
         <!-- رسائل النجاح -->
         @if (session()->has('message'))
             <div class="col-12">
-                <div class="toast show" role="alert">
-                    <div class="toast-header bg-success text-white">
-                        <strong class="me-auto">نجح</strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ session('message') }}
-                    </div>
+                <div class="alert alert-success alert-dismissible fade show" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+                    <i class="fas fa-check-circle"></i>
+                    {{ session('message') }}
+                    <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
                 </div>
             </div>
         @endif
+
+        <!-- رسائل الخطأ -->
+        @if (session()->has('error'))
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- رسائل Livewire -->
+        <div class="col-12" x-data="{ showMessage: false, message: '', messageType: 'success' }" x-show="showMessage">
+            <div class="alert alert-dismissible fade show" 
+                 :class="messageType === 'success' ? 'alert-success' : 'alert-danger'"
+                 x-show="showMessage" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-95">
+                <i class="fas" :class="messageType === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+                <span x-text="message"></span>
+                <button type="button" class="btn-close" @click="showMessage = false" aria-label="Close"></button>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('show-message', (data) => {
+                    const alertDiv = document.querySelector('[x-data*="showMessage"]');
+                    if (alertDiv) {
+                        const alpine = Alpine.$data(alertDiv);
+                        // إعادة تعيين الرسالة
+                        alpine.message = data.message;
+                        alpine.messageType = data.type;
+                        // إخفاء الرسالة أولاً ثم إظهارها
+                        alpine.showMessage = false;
+                        setTimeout(() => {
+                            alpine.showMessage = true;
+                            // إغلاق تلقائي بعد 5 ثوانٍ
+                            setTimeout(() => {
+                                alpine.showMessage = false;
+                            }, 5000);
+                        }, 100);
+                    }
+                });
+            });
+        </script>
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
