@@ -109,27 +109,22 @@ class ReportController extends Controller
         // Get assets (accounts starting with 1)
         $assets = AccHead::where('code', 'like', '1%')
             ->where('isdeleted', 0)
-            ->paginate(50)
-        ;
+            ->paginate(50);
 
         // Get liabilities (accounts starting with 2)
         $liabilities = AccHead::where('code', 'like', '2%')
             ->where('isdeleted', 0)
-            ->paginate(50)
-           
-            ;
+            ->paginate(50);
 
         // Get equity (accounts starting with 3)
         $equity = AccHead::where('code', 'like', '3%')
             ->where('isdeleted', 0)
-            ->paginate(50)
-        
-            ;
+            ->paginate(50);
 
-            $totalAssets = AccHead::where('code', '1')->first()?->balance ?? 0;
-            $totalLiabilities = AccHead::where('code', '2')->first()?->balance ?? 0;
-            $totalEquities = AccHead::where('code', '3')->first()?->balance ?? 0;
-       
+        $totalAssets = AccHead::where('code', '1')->first()?->balance ?? 0;
+        $totalLiabilities = AccHead::where('code', '2')->first()?->balance ?? 0;
+        $totalEquities = AccHead::where('code', '3')->first()?->balance ?? 0;
+
         // لحساب صافي الربح (netProfit) من دالة generalProfitLossReport
         // سنعيد استخدام نفس المنطق هنا بناءً على تاريخ الميزانية
 
@@ -152,7 +147,7 @@ class ReportController extends Controller
             $totalExpensesForProfit += $expense;
         }
 
-        $netProfit = -($totalRevenueForProfit - $totalExpensesForProfit);
+        $netProfit = - ($totalRevenueForProfit - $totalExpensesForProfit);
         $totalLiabilitiesEquity = $totalLiabilities + $totalEquities + $netProfit;
         return view('reports.general-balance-sheet', compact(
             'assets',
@@ -1609,7 +1604,11 @@ class ReportController extends Controller
 
     public function getItemsMaxMinQuantity()
     {
-        $items = Item::with(['units', 'prices'])->get()->map(function ($item) {
+        $items = Item::select('id', 'name', 'code')
+            ->paginate(50);
+
+        // Map the items within the paginator
+        $items->getCollection()->transform(function ($item) {
             return [
                 'id' => $item->id,
                 'name' => $item->name,
@@ -1621,10 +1620,9 @@ class ReportController extends Controller
                 'required_compensation' => $this->getRequiredCompensation($item)
             ];
         });
+
         return view('reports.items.items-max&min-quantity', compact('items'));
     }
-
-
     // Controller Method
     public function pricesCompareReport()
     {

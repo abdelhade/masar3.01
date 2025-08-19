@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Modules\Settings\Models\PublicSetting;
 use App\Models\{Item, AccHead, JournalDetail, JournalHead, OperHead, OperationItems};
 
@@ -26,12 +27,13 @@ class InventoryStartBalanceController extends Controller
 
     public function create(Request $request)
     {
-        $stors =  AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', '1104%')
-
-            ->select('id', 'aname')
-            ->get();
+        $stors = Cache::rememberForever('stores_list', function () {
+            return AccHead::where('isdeleted', 0)
+                ->where('is_basic', 0)
+                ->where('code', 'like', '1104%')
+                ->select('id', 'aname')
+                ->get();
+        });
 
         $storeId = $request->input('store_id', $stors->first()->id ?? null);
 
@@ -43,14 +45,17 @@ class InventoryStartBalanceController extends Controller
                 ->select('id', 'aname')
                 ->get();
         });
+        $page = request()->get('page', 1);
 
-        $itemList = Item::with('units')
-            ->get()
-            ->map(function ($item) use ($storeId) {
-                $openingBalance = $this->calculateItemOpeningBalance($item->id, $storeId);
-                $item->opening_balance = $openingBalance;
-                return $item;
-            });
+        $itemList = Cache::rememberForever("item_list_store_{$storeId}_page_{$page}", function () use ($storeId) {
+            return Item::with('units')
+                ->select('id', 'name')
+                ->paginate(20)
+                ->through(function ($item) use ($storeId) {
+                    $item->opening_balance = $this->calculateItemOpeningBalance($item->id, $storeId);
+                    return $item;
+                });
+        });
 
         $periodStart = PublicSetting::where('key', 'start_date')->value('value') ?? now()->toDateString();
 

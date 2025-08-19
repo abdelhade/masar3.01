@@ -62,7 +62,7 @@ class VoucherController extends Controller
         $cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '1101%')
-            ->select('id', 'aname')
+            ->select('id', 'aname','balance')
             ->get();
 
         // حسابات الموظفين
@@ -207,7 +207,7 @@ class VoucherController extends Controller
         $cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '1101%')
-            ->select('id', 'aname', 'code')
+            ->select('id', 'aname', 'code','balance')
             ->get();
 
         // حسابات الموظفين

@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Authorization\database\seeders\RoleAndPermissionSeeder;
-use Modules\CRM\database\seeders\LeadStatusSeeder;
-use Modules\Settings\database\seeders\SettingSeeder;
+use Modules\Authorization\Database\Seeders\RoleAndPermissionSeeder;
+use Modules\CRM\Database\Seeders\LeadStatusSeeder;
+use Modules\Settings\Database\Seeders\SettingSeeder;
 
 class DatabaseSeeder extends Seeder
 {

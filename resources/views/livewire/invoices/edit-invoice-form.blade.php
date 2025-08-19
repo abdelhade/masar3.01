@@ -76,7 +76,7 @@
                 <div class="row form-control">
                     @include('components.invoices.invoice-item-table')
                 </div>
-  
+
                 {{-- قسم الإجماليات والمدفوعات --}}
                 @include('components.invoices.invoice-footer')
 
@@ -97,17 +97,17 @@
                         @endif
 
                         <!-- زر تحويل الفاتورة -->
-                        @if ($this->canConvertInvoice())
+                        {{-- @if ($this->canConvertInvoice())
                             <button type="button" wire:click="openConvertModal" class="btn btn-lg btn-warning"
                                 title="تحويل الفاتورة إلى نوع آخر">
                                 <i class="fas fa-exchange-alt"></i> تحويل الفاتورة
                             </button>
-                        @endif
+                        @endif --}}
                     </div>
                 </div>
 
                 <!-- نافذة تحويل الفاتورة المنبثقة -->
-                @if ($showConvertModal)
+                {{-- @if ($showConvertModal)
                     <!-- خلفية النافذة -->
                     <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);"
                         wire:click="closeConvertModal">
@@ -202,7 +202,7 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                @endif --}}
             </form>
         </section>
     </div>
@@ -511,4 +511,3 @@
         </script>
     @endpush
 </div>
-

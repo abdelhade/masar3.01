@@ -17,6 +17,8 @@
         "livewire/volt": "^1.7.0",
         "mhmiton/laravel-modules-livewire": "^5.1",
         "nwidart/laravel-modules": "^12.0",
+        "picqer/php-barcode-generator": "^3.2",
+        "pusher/pusher-php-server": "^7.2",
         "realrashid/sweet-alert": "^7.3",
         "salla/zatca": "^3.0",
         "spatie/laravel-medialibrary": "^11.13",
@@ -38,8 +40,12 @@
             "App\\": "app/",
             "Modules\\": "Modules/",
             "Database\\Factories\\": "database/factories/",
+            "Database\\Migration\\": "Database/migrations/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "Modules/Settings/Helpers/HelperSettings.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

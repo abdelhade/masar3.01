@@ -124,7 +124,7 @@
                         </table>
                     </div>
                 </div>
-
+                {{ $itemList->links() }}
                 <div class="row mt-3">
                     <div class="col-12 text-left">
                         <button type="submit" class="btn btn-primary" id="save-btn">

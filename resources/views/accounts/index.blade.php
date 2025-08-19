@@ -120,8 +120,10 @@
         <div class="card-body px-0 mt-4">
             <div class="card border-0 rounded-0">
                 <div class="card-header border-0">
-                    <div class="table-responsive" style="overflow-x: auto;">
-                        <table id="myTable" class="table table-striped" style="min-width: 100%;">
+                <button class="printbtn" data-target="printed">طباعة</button>
+
+                    <div class="table-responsive" id="printed" style="overflow-x: auto;">
+                    <table id="myTable" class="table table-striped" style="min-width: 100%;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th class="font-family-cairo fw-bold font-14 text-center">#</th>

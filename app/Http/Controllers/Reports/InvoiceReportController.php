@@ -13,7 +13,7 @@ class InvoiceReportController extends Controller
         $invoices = OperHead::whereIn('pro_type', [11, 13])
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
-            ->get();
+            ->paginate(50);
         return view('reports.invoices.purchase-invoice', compact('invoices'));
     }
 
@@ -22,7 +22,7 @@ class InvoiceReportController extends Controller
         $invoices = OperHead::whereIn('pro_type', [10, 12])
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
-            ->get();
+            ->paginate(50);
         return view('reports.invoices.sales-invoice', compact('invoices'));
     }
 
@@ -31,7 +31,7 @@ class InvoiceReportController extends Controller
         $invoices = OperHead::whereIn('pro_type', [14])
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
-            ->get();
+            ->paginate(50);
         return view('reports.invoices.sales-orders', compact('invoices'));
     }
 
@@ -40,7 +40,7 @@ class InvoiceReportController extends Controller
         $invoices = OperHead::whereIn('pro_type', [16])
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
-            ->get();
+            ->paginate(50);
         return view('reports.invoices.purchase-quotations', compact('invoices'));
     }
 
@@ -49,7 +49,7 @@ class InvoiceReportController extends Controller
         $invoices = OperHead::whereIn('pro_type', [17])
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
-            ->get();
+            ->paginate(50);
         return view('reports.invoices.supplier-rfqs', compact('invoices'));
     }
 
@@ -58,8 +58,18 @@ class InvoiceReportController extends Controller
         $invoices = OperHead::whereIn('pro_type', [59])
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
-            ->get();
+            ->paginate(50);
         return view('reports.invoices.manufacturing-report', compact('invoices'));
+    }
+
+    public function editPurchasePriceInvoice($id)
+    {
+        return view('reports.invoices.edit-purchase-price-invoice-report', compact('id'));
+    }
+
+    public function invoicesBarcodeReport($id)
+    {
+        return view('reports.invoices.invoices-barcode-report', compact('id'));
     }
 
     public function convertToPurchaseInvoice($id)

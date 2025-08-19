@@ -48,7 +48,7 @@ return new class extends Migration
             $table->decimal('acc1_before', 15, 2)->nullable();
             $table->decimal('acc1_after', 15, 2)->nullable();
 
-             $table->foreignId('acc2')->nullable()->constrained('acc_head')->nullOnDelete();
+            $table->foreignId('acc2')->nullable()->constrained('acc_head')->nullOnDelete();
             $table->decimal('acc2_before', 15, 2)->nullable();
             $table->decimal('acc2_after', 15, 2)->nullable();
 
@@ -97,6 +97,8 @@ return new class extends Migration
             $table->index('cost_center');
             $table->index('store_id');
             $table->index('price_list');
+            $table->index('pro_type');
+            $table->index('crtime');
         });
     }
 

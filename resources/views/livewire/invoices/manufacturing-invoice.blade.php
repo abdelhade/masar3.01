@@ -16,6 +16,52 @@
                                 <p class="mb-0">التاريخ: {{ $invoiceDate }}</p>
                             </div>
 
+                            @if (
+                                (count($selectedProducts) > 0 || count($selectedRawMaterials) > 0) &&
+                                    (!empty($templateExpectedTime) || $selectedTemplate))
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <!-- الوقت المتوقع -->
+                                            <div class="col-md-3">
+                                                <label class="form-label small" style="font-size: 1em;">الوقت
+                                                    المتوقع</label>
+                                                <input type="text" wire:model="templateExpectedTime"
+                                                    class="form-control form-control-sm" readonly
+                                                    style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
+                                            </div>
+
+                                            <!-- الوقت الفعلي -->
+                                            <div class="col-md-3">
+                                                <label class="form-label small" style="font-size: 1em;">الوقت
+                                                    الفعلي</label>
+                                                <input type="text" wire:model="actualTime"
+                                                    class="form-control form-control-sm" id="actualTimePicker"
+                                                    style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
+                                            </div>
+
+                                            <!-- مضاعف الكمية -->
+                                            <div class="col-md-3">
+                                                <label class="form-label small" style="font-size: 1em;">مضاعف
+                                                    الكمية</label>
+                                                <input type="number" wire:model="quantityMultiplier"
+                                                    class="form-control form-control-sm" min="0.1" step="0.1"
+                                                    style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
+                                                    value="1">
+                                            </div>
+
+                                            <!-- زر التطبيق -->
+                                            <div class="col-md-3 d-flex align-items-end">
+                                                <button wire:click="applyQuantityMultiplier"
+                                                    class="btn btn-info btn-sm">
+                                                    <i class="fas fa-calculator me-1"></i>تطبيق
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="flex items-center">
 
                                 <button wire:click="openSaveTemplateModal"
@@ -40,8 +86,10 @@
                                     <small class="d-block text-muted mt-1">
                                         <i class="fas fa-info-circle me-1"></i>
                                         سيتم توزيع إجمالي تكلفة المواد الخام والمصروفات
-                                        (   {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }} جنيه)
-                                     
+                                        (
+                                        {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
+                                        جنيه)
+
 
                                         على المنتجات حسب النسب المحددة
                                     </small>
@@ -57,6 +105,7 @@
                                 </button> --}}
                             </div>
                         </div>
+                        <!-- حقول الوقت ومضاعفة الكمية -->
 
                         <!-- مودال حفظ النموذج -->
                         @if ($showSaveTemplateModal)
@@ -72,6 +121,24 @@
                                                 <input type="text" wire:model="templateName" class="form-control">
                                             </div>
                                         </div>
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label>الوقت المتوقع للإنتاج</label>
+                                                <input type="text" wire:model="templateExpectedTime"
+                                                    class="form-control" id="timepicker">
+                                            </div>
+                                        </div>
+
+                                        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                                        <script>
+                                            flatpickr("#timepicker", {
+                                                enableTime: true,
+                                                noCalendar: true,
+                                                dateFormat: "H:i",
+                                                time_24hr: true
+                                            });
+                                        </script>
+
                                         <div class="modal-footer">
                                             <button wire:click="saveAsTemplate" class="btn btn-primary">حفظ</button>
                                             <button wire:click="closeSaveTemplateModal"
@@ -163,7 +230,8 @@
                                                     @endif --}}
                                                 </button>
                                             @endif
-                                            <button wire:click="closeLoadTemplateModal" class="btn btn-secondary px-4">
+                                            <button wire:click="closeLoadTemplateModal"
+                                                class="btn btn-secondary px-4">
                                                 <i class="fas fa-times me-2"></i>
                                                 إلغاء
                                             </button>
@@ -753,7 +821,7 @@
                                         style="font-size: 0.75rem;"
                                         value="{{ number_format($totalRawMaterialsCost) }} ج" readonly>
                                 </div>
-  
+
                                 <div class="col-4">
                                     <label class="form-label small text-gray-600">المصاريف</label>
                                     <input type="text"

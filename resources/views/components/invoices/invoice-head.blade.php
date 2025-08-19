@@ -1,9 +1,25 @@
 <div class="row">
-    {{-- العنوان واختيار نوع السعر للفاتورة --}}
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-        <h3 class="card-title fw-bold fs-2 m-0">
-            {{ $titles[$type] }}
-        </h3>
+
+        <div class="d-flex align-items-center">
+            <h3 class="card-title fw-bold fs-2 m-0 me-3">
+                {{ $titles[$type] }}
+            </h3>
+            @php
+                $colorClass = '';
+                if (in_array($type, [10, 14, 16, 22])) {
+                    $colorClass = 'bg-primary';
+                } elseif (in_array($type, [11, 15, 17])) {
+                    $colorClass = 'bg-danger';
+                } elseif (in_array($type, [12, 13, 18, 19, 20, 21])) {
+                    $colorClass = 'bg-warning';
+                }
+            @endphp
+
+            <div class="rounded-circle {{ $colorClass }}" style="width: 50px; height: 50px; min-width: 50px;">
+            </div>
+        </div>
+
 
         @if ($showBalance)
             <div class="mt-2 text-end">

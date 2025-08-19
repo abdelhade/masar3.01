@@ -76,6 +76,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $invoices->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

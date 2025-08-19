@@ -1,8 +1,4 @@
 <div>
-    {{-- Loading Indicator --}}
-    {{-- <div wire:loading class="loading-overlay">
-        <div class="spinner-border text-primary" role="status"></div>
-    </div> --}}
 
     {{-- Filters --}}
     <div class="card mb-4">
@@ -11,6 +7,7 @@
         </div>
         <div class="card-body">
             <div class="row align-items-end">
+
                 <div class="col-md-4">
                     <label class="form-label">المخزن</label>
                     <select wire:model.live="selectedWarehouse" class="form-select">
@@ -47,6 +44,7 @@
                         <button type="button" class="btn btn-success" onclick="window.print()"> طباعه</button>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -121,22 +119,24 @@
                             <tr
                                 class="{{ $data['discrepancy'] < 0 ? 'table-danger' : ($data['discrepancy'] > 0 ? 'table-info' : '') }}">
                                 <td class="text-center">{{ $index + 1 }}</td>
-                                <td class="text-center">{{ $data['item']->name }}</td>
-                                <td class="text-center">{{ number_format($data['item_cost'], 2) }}</td>
+                                {{-- CORRECTED --}}
+                                <td class="text-center">{{ $data['item_name'] }}</td>
+                                <td class="text-center">{{ number_format($data['item_cost']) }}</td>
                                 <td class="text-center">
-                                    {{ number_format($data['system_quantity'], 2) }}
-                                    <br><small>{{ $data['main_unit']?->name }}</small>
+                                    {{ number_format($data['system_quantity']) }}
+                                    {{-- CORRECTED --}}
+                                    <br><small>{{ $data['main_unit_name'] }}</small>
                                 </td>
                                 <td style="width: 150px;">
+                                    {{-- CORRECTED --}}
                                     <input type="number"
-                                        wire:model.live.debounce.500ms="quantities.{{ $data['item']->id }}"
-                                        class="form-control form-control-sm text-center" step="any"
-                                        value="{{ $data['actual_quantity'] }}">
+                                        wire:model.live.debounce.500ms="quantities.{{ $data['item_id'] }}"
+                                        class="form-control form-control-sm text-center" step="any">
                                 </td>
                                 <td class="text-center fw-bold">
                                     <span
                                         class="{{ $data['discrepancy'] < 0 ? 'text-danger' : ($data['discrepancy'] > 0 ? 'text-primary' : 'text-success') }}">
-                                        {{ $data['discrepancy'] > 0 ? '+' : '' }}{{ number_format($data['discrepancy'], 2) }}
+                                        {{ $data['discrepancy'] > 0 ? '+' : '' }}{{ number_format($data['discrepancy']) }}
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -148,7 +148,7 @@
                                 <td class="text-center fw-bold">
                                     <span
                                         class="{{ $data['discrepancy_value'] < 0 ? 'text-danger' : ($data['discrepancy_value'] > 0 ? 'text-primary' : 'text-success') }}">
-                                        {{ $data['discrepancy_value'] > 0 ? '+' : '' }}{{ number_format($data['discrepancy_value'], 2) }}
+                                        {{ $data['discrepancy_value'] > 0 ? '+' : '' }}{{ number_format($data['discrepancy_value']) }}
                                     </span>
                                 </td>
                             </tr>
@@ -182,7 +182,7 @@
                             <div class="card-body text-center">
                                 <i class="ri-arrow-up-line fs-2"></i>
                                 <h6 class="mt-2">إجمالي قيمة الزيادات</h6>
-                                <h4>{{ number_format($totalIncreaseValue, 2) }}</h4>
+                                <h4>{{ number_format($totalIncreaseValue) }}</h4>
                             </div>
                         </div>
                     </div>
@@ -191,7 +191,7 @@
                             <div class="card-body text-center">
                                 <i class="ri-arrow-down-line fs-2"></i>
                                 <h6 class="mt-2">إجمالي قيمة النقص</h6>
-                                <h4>{{ number_format($totalDecreaseValue, 2) }}</h4>
+                                <h4>{{ number_format($totalDecreaseValue) }}</h4>
                             </div>
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                             <div class="card-body text-center">
                                 <i class="ri-calculator-line fs-2"></i>
                                 <h6 class="mt-2">صافي الفرق</h6>
-                                <h4>{{ number_format($netDifference, 2) }}</h4>
+                                <h4>{{ number_format($netDifference) }}</h4>
                             </div>
                         </div>
                     </div>
@@ -251,16 +251,17 @@
                                     <tbody>
                                         @foreach ($itemsWithDiscrepancies as $item)
                                             <tr class="text-center">
-                                                <td>{{ $item['item']->name }}</td>
-                                                <td>{{ number_format($item['system_quantity'], 2) }}</td>
-                                                <td>{{ number_format($item['actual_quantity'], 2) }}</td>
+                                                {{-- CORRECTED --}}
+                                                <td>{{ $item['item_name'] }}</td>
+                                                <td>{{ number_format($item['system_quantity']) }}</td>
+                                                <td>{{ number_format($item['actual_quantity']) }}</td>
                                                 <td
-                                                    class="{{ $item['discrepancy'] < 0 ? 'text-danger' : 'text-info' }}">
-                                                    {{ $item['discrepancy'] > 0 ? '+' : '' }}{{ number_format($item['discrepancy'], 2) }}
+                                                    class="{{ $item['discrepancy'] > 0 ? 'text-success' : 'text-danger' }} fw-bold">
+                                                    {{ $item['discrepancy'] > 0 ? '+' : '' }}{{ number_format($item['discrepancy']) }}
                                                 </td>
                                                 <td
-                                                    class="{{ $item['discrepancy_value'] < 0 ? 'text-danger' : 'text-info' }}">
-                                                    {{ $item['discrepancy_value'] > 0 ? '+' : '' }}{{ number_format($item['discrepancy_value'], 2) }}
+                                                    class="{{ $item['discrepancy_value'] > 0 ? 'text-success' : 'text-danger' }} fw-bold">
+                                                    {{ $item['discrepancy_value'] > 0 ? '+' : '' }}{{ number_format($item['discrepancy_value']) }}
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -270,21 +271,23 @@
                         </div>
                     </div>
                 @endif
+
             @endif
         </div>
     </div>
+</div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('livewire:initialized', () => {
-                Livewire.on('show-alert', (event) => {
-                    const eventData = event[0];
-                    const alertContainer = document.getElementById('alertContainer');
-                    const alertClass = eventData.type === 'success' ? 'alert-success' :
-                        eventData.type === 'error' ? 'alert-danger' :
-                        eventData.type === 'info' ? 'alert-info' : 'alert-warning';
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('show-alert', (event) => {
+                const eventData = event[0];
+                const alertContainer = document.getElementById('alertContainer');
+                const alertClass = eventData.type === 'success' ? 'alert-success' :
+                    eventData.type === 'error' ? 'alert-danger' :
+                    eventData.type === 'info' ? 'alert-info' : 'alert-warning';
 
-                    alertContainer.innerHTML = `
+                alertContainer.innerHTML = `
                         <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
                             <i class="ri-${eventData.type === 'success' ? 'check' : eventData.type === 'error' ? 'close' : 'information'}-line"></i>
                             ${eventData.message}
@@ -292,29 +295,29 @@
                         </div>
                     `;
 
-                    // إخفاء التنبيه تلقائياً بعد 5 ثوان
-                    setTimeout(() => {
-                        const alert = alertContainer.querySelector('.alert');
-                        if (alert) {
-                            alert.remove();
-                        }
-                    }, 5000);
-                });
-
-                // تحسين تجربة المستخدم عند إدخال الكميات
-                document.addEventListener('input', function(e) {
-                    if (e.target.type === 'number' && e.target.getAttribute('wire:model.live.debounce.500ms')) {
-                        e.target.style.backgroundColor = '#fff3cd'; // تمييز الحقول المعدلة
-                        setTimeout(() => {
-                            e.target.style.backgroundColor = '';
-                        }, 1000);
+                // إخفاء التنبيه تلقائياً بعد 5 ثوان
+                setTimeout(() => {
+                    const alert = alertContainer.querySelector('.alert');
+                    if (alert) {
+                        alert.remove();
                     }
-                });
+                }, 5000);
             });
 
-            // دالة لطباعة تقرير مخصص
-            function printInventoryReport() {
-                const printContent = `
+            // تحسين تجربة المستخدم عند إدخال الكميات
+            document.addEventListener('input', function(e) {
+                if (e.target.type === 'number' && e.target.getAttribute('wire:model.live.debounce.500ms')) {
+                    e.target.style.backgroundColor = '#fff3cd'; // تمييز الحقول المعدلة
+                    setTimeout(() => {
+                        e.target.style.backgroundColor = '';
+                    }, 1000);
+                }
+            });
+        });
+
+        // دالة لطباعة تقرير مخصص
+        function printInventoryReport() {
+            const printContent = `
                     <style>
                         body { font-family: Arial, sans-serif; direction: rtl; }
                         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
@@ -333,124 +336,124 @@
                     ${document.querySelector('.table-responsive').innerHTML}
                 `;
 
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(printContent);
-                printWindow.document.close();
-                printWindow.print();
-            }
-        </script>
-    @endpush
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+@endpush
 
-    @push('styles')
-        <style>
-            .loading-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, .8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-            }
+@push('styles')
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, .8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
 
-            .table th,
-            .table td {
-                vertical-align: middle;
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        /* تحسين مظهر الجدول */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        /* تحسين حقول الإدخال */
+        input[type="number"]:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* تمييز الصفوف بناءً على نوع الفرق */
+        .table-danger {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+
+        .table-info {
+            background-color: rgba(13, 202, 240, 0.1) !important;
+        }
+
+        /* تحسين البطاقات الإحصائية */
+        .card .card-body i {
+            opacity: 0.8;
+        }
+
+        /* تحسين التنبيهات */
+        .alert {
+            border-left: 4px solid;
+            border-radius: 0.375rem;
+        }
+
+        .alert-warning {
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            border-left-color: #198754;
+        }
+
+        .alert-danger {
+            border-left-color: #dc3545;
+        }
+
+        .alert-info {
+            border-left-color: #0dcaf0;
+        }
+
+        @media print {
+
+            .btn,
+            .loading-overlay,
+            #alertContainer,
+            .no-print {
+                display: none !important;
             }
 
             .card {
-                box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-                border: 1px solid rgba(0, 0, 0, 0.125);
-                transition: all 0.3s ease;
+                border: none !important;
+                box-shadow: none !important;
             }
 
-            .card:hover {
-                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            .table {
+                font-size: 12px;
+            }
+        }
+
+        /* تحسينات للجوال */
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 12px;
             }
 
-            /* تحسين مظهر الجدول */
-            .table-hover tbody tr:hover {
-                background-color: rgba(0, 123, 255, 0.1);
+            .card-body {
+                padding: 1rem 0.5rem;
             }
 
-            /* تحسين حقول الإدخال */
-            input[type="number"]:focus {
-                border-color: #80bdff;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            .col-md-3 {
+                margin-bottom: 1rem;
             }
-
-            /* تمييز الصفوف بناءً على نوع الفرق */
-            .table-danger {
-                background-color: rgba(220, 53, 69, 0.1) !important;
-            }
-
-            .table-info {
-                background-color: rgba(13, 202, 240, 0.1) !important;
-            }
-
-            /* تحسين البطاقات الإحصائية */
-            .card .card-body i {
-                opacity: 0.8;
-            }
-
-            /* تحسين التنبيهات */
-            .alert {
-                border-left: 4px solid;
-                border-radius: 0.375rem;
-            }
-
-            .alert-warning {
-                border-left-color: #ffc107;
-            }
-
-            .alert-success {
-                border-left-color: #198754;
-            }
-
-            .alert-danger {
-                border-left-color: #dc3545;
-            }
-
-            .alert-info {
-                border-left-color: #0dcaf0;
-            }
-
-            @media print {
-
-                .btn,
-                .loading-overlay,
-                #alertContainer,
-                .no-print {
-                    display: none !important;
-                }
-
-                .card {
-                    border: none !important;
-                    box-shadow: none !important;
-                }
-
-                .table {
-                    font-size: 12px;
-                }
-            }
-
-            /* تحسينات للجوال */
-            @media (max-width: 768px) {
-                .table-responsive {
-                    font-size: 12px;
-                }
-
-                .card-body {
-                    padding: 1rem 0.5rem;
-                }
-
-                .col-md-3 {
-                    margin-bottom: 1rem;
-                }
-            }
-        </style>
-    @endpush
+        }
+    </style>
+@endpush
 </div>

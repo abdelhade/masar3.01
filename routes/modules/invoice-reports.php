@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Reports\BarcodePrintingReport;
 use App\Http\Controllers\Reports\InvoiceReportController;
 
 Route::get('/billing/invoice-report', [InvoiceReportController::class, 'purchaseInvoices'])->name('billing.invoice-report');
@@ -18,3 +19,7 @@ Route::group(['prefix' => 'invoices', 'as' => 'invoices.'], function () {
 });
 
 Route::get('/manufacturing/invoice/report', [InvoiceReportController::class, 'manufacturingReport'])->name('manufacturing.invoice.report');
+Route::get('/edit/purchase/price/invoice/report/{id}', [InvoiceReportController::class, 'editPurchasePriceInvoice'])->name('edit.purchase.price.invoice.report');
+
+Route::get('/invoices/barcode-report/{id}', [InvoiceReportController::class, 'invoicesBarcodeReport'])
+    ->name('invoices.barcode-report');

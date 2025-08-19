@@ -58,7 +58,18 @@
     </script> --}}
 
 
+<script>
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('printbtn')) {
+        let targetId = e.target.getAttribute('data-target');
+        let content = document.getElementById(targetId).innerHTML;
 
-
+        let printWindow = window.open('', '', 'width=800,height=600');
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.print();
+    }
+});
+</script>
 
 </footer>

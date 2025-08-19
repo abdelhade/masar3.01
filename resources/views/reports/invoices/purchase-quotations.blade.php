@@ -54,7 +54,7 @@
                                                     <i class="las la-eye"></i>
                                                 </a>
 
-                                                 @if ($invoice->pro_type == 16)
+                                                @if ($invoice->pro_type == 16)
                                                     <!-- تحويل عرض سعر مورد إلى فاتورة مشتريات -->
                                                     <a class="btn btn-blue btn-icon-square-sm"
                                                         href="{{ route('invoices.convert-to-purchase', $invoice->id) }}"
@@ -87,6 +87,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $invoices->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

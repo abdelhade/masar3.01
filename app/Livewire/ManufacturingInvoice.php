@@ -16,6 +16,10 @@ class ManufacturingInvoice extends Component
     public $templates = [];
     public $selectedTemplate = null;
 
+    public $templateExpectedTime = '';
+    public $actualTime = '';
+    public $quantityMultiplier = 1;
+
     public $currentStep = 1;
     public $pro_id;
     public $nextProId;
@@ -188,42 +192,61 @@ class ManufacturingInvoice extends Component
 
     public function loadProductsAndMaterials()
     {
-        $this->productsList = Item::with(['prices' => function ($q) {
-            $q->withPivot('price');
-        }])
-            ->select('id', 'name', 'average_cost') // إضافة average_cost
-            ->get();
-
-        $this->rawMaterialsList = Item::select('id', 'name', 'average_cost')->get()->toArray();
+        $this->productsList = collect();
+        $this->rawMaterialsList = [];
     }
 
     public function updatedProductSearchTerm($value)
     {
         $this->productSelectedResultIndex = -1;
-        $this->productSearchResults = strlen($value) < 1
-            ? collect()
-            : Item::with(['units', 'prices'])
-            ->select('id', 'name', 'average_cost') // إضافة average_cost
-            ->whereRaw("name LIKE ? OR name LIKE ? OR name LIKE ?", [
-                "{$value}%",
-                "%{$value}",
-                "%{$value}%",
-            ])
-            ->take(5)->get();
+        $this->productSearchResults = collect();
+
+        if (empty(trim($value))) {
+            return;
+        }
+
+        // تحديد عدد النتائج بناءً على طول النص
+        $limit = strlen(trim($value)) == 1 ? 10 : 20;
+
+        // تنظيف مصطلح البحث
+        $searchTerm = trim($value);
+
+        // الكويري للبحث عن المنتجات
+        $this->productSearchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+            ->select('id', 'name', 'average_cost')
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            ->orWhereHas('barcodes', function ($query) use ($searchTerm) {
+                $query->where('barcode', 'like', '%' . $searchTerm . '%');
+            })
+            ->take($limit)
+            ->get();
     }
 
     public function updatedRawMaterialSearchTerm($value)
     {
         $this->rawMaterialSelectedResultIndex = -1;
-        $this->rawMaterialSearchResults = strlen($value) < 1
-            ? collect()
-            : Item::with('units')
-            ->whereRaw("name LIKE ? OR name LIKE ? OR name LIKE ?", [
-                "{$value}%",
-                "%{$value}",
-                "%{$value}%",
-            ])
-            ->take(5)->get();
+        $this->rawMaterialSearchResults = collect();
+
+        if (empty(trim($value))) {
+            return;
+        }
+
+        // تحديد عدد النتائج بناءً على طول النص
+        $limit = strlen(trim($value)) == 1 ? 10 : 20;
+
+        // تنظيف مصطلح البحث
+        $searchTerm = trim($value);
+
+        // الكويري للبحث عن المواد الخام
+        $this->rawMaterialSearchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val')])
+            ->select('id', 'name', 'average_cost')
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            ->orWhereHas('barcodes', function ($query) use ($searchTerm) {
+                $query->where('barcode', 'like', '%' . $searchTerm . '%');
+            })
+            ->take($limit)
+            ->get();
+
         $this->calculateTotals();
     }
 
@@ -606,6 +629,7 @@ class ManufacturingInvoice extends Component
     {
         $this->showSaveTemplateModal = false;
         $this->templateName = '';
+        $this->templateExpectedTime;
     }
 
     public function openLoadTemplateModal()
@@ -645,6 +669,33 @@ class ManufacturingInvoice extends Component
         }
     }
 
+    public function applyQuantityMultiplier()
+    {
+        if ($this->quantityMultiplier <= 0) {
+            $this->dispatch('error', title: 'خطأ !', text: 'يجب أن يكون المضاعف أكبر من صفر.', icon: 'error');
+        }
+
+        // مضاعفة كميات المواد الخام
+        foreach ($this->selectedRawMaterials as $index => $material) {
+            $this->selectedRawMaterials[$index]['quantity'] = $material['quantity'] * $this->quantityMultiplier;
+            $this->updateRawMaterialTotal($index);
+        }
+
+        // مضاعفة كميات المنتجات
+        foreach ($this->selectedProducts as $index => $product) {
+            $this->selectedProducts[$index]['quantity'] = $product['quantity'] * $this->quantityMultiplier;
+            $this->updateProductTotal($index);
+        }
+
+        if (!empty($this->templateExpectedTime)) {
+            $timeParts = $this->templateExpectedTime * $this->quantityMultiplier;
+            $this->templateExpectedTime = $timeParts;
+        }
+
+        $this->calculateTotals();
+        $this->dispatch('success', title: 'تم !', text: 'تم مضاعفة الكميات بنجاح.', icon: 'success');
+    }
+
     public function loadTemplate()
     {
         if (!$this->selectedTemplate) {
@@ -669,6 +720,10 @@ class ManufacturingInvoice extends Component
             $this->selectedRawMaterials = [];
             $this->additionalExpenses = [];
 
+            $this->templateExpectedTime = $template->expected_time ?? '';
+            $this->actualTime = '';
+            $this->quantityMultiplier = 1;
+
             // 3. تحميل المنتجات والمواد الخام من جدول OperationItems
             $templateItems = OperationItems::where('pro_id', $template->id)->get();
             foreach ($templateItems as $item) {
@@ -678,7 +733,6 @@ class ManufacturingInvoice extends Component
                     $this->loadRawMaterialFromTemplate($item);
                 }
             }
-
             // 4. تحميل المصروفات من جدول Expense باستخدام الربط المباشر op_id
             $templateExpenses = Expense::where('op_id', $template->id)->get();
             foreach ($templateExpenses as $expense) {
@@ -899,21 +953,28 @@ class ManufacturingInvoice extends Component
 
     public function saveAsTemplate()
     {
-        $this->validate(['templateName' => 'required|min:1']);
+        if (empty($this->templateName)) {
+            $this->dispatch('error-swal', [
+                'title' => 'خطأ!',
+                'text' => 'يرجى إدخال اسم النموذج.',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
         $operation = OperHead::create([
             'pro_id' => $this->pro_id,
             'is_stock' => 1,
             'is_journal' => 0,
             'is_manager' => 1,
             'info' => $this->templateName,
+            'expected_time' => $this->templateExpectedTime, // إضافة الوقت المتوقع
             'pro_date' => $this->invoiceDate,
-            // 'store_id' => '', ??
             'emp_id' => $this->employee,
             'acc1' => $this->productAccount,
             'acc2' => $this->rawAccount,
             'pro_value' => $this->totalManufacturingCost,
             'fat_net' => $this->totalManufacturingCost,
-            // 'op2' => '', ??
             'user' => Auth::user()->id,
             'pro_type' => 63,
         ]);

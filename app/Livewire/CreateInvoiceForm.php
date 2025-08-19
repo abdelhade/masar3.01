@@ -8,6 +8,8 @@ use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use App\Services\SaveInvoiceService;
+use Illuminate\Support\Facades\Cache;
+use Modules\Settings\Models\PublicSetting;
 use App\Models\{OperHead, OperationItems, AccHead, Price, Item};
 
 class CreateInvoiceForm extends Component
@@ -69,6 +71,8 @@ class CreateInvoiceForm extends Component
     public $additional_value = 0;
     public $total_after_additional = 0;
     public $notes = '';
+    public $settings = [];
+
 
     public $currentSelectedItem = null;
     public $selectedItemData = [
@@ -82,6 +86,8 @@ class CreateInvoiceForm extends Component
         'category' => '',
         'description' => ''
     ];
+
+    public $recommendedItems = [];
 
     public $titles = [
         10 => 'فاتوره مبيعات',
@@ -116,6 +122,10 @@ class CreateInvoiceForm extends Component
             ->where('is_fund', 1)
             ->select('id', 'aname')
             ->get();
+
+        $this->settings = PublicSetting::pluck('value', 'key')->toArray();
+
+        // dd($this->settings);
 
         $clientsAccounts   = $this->getAccountsByCode('1103%');
         $suppliersAccounts = $this->getAccountsByCode('2101%');
@@ -178,10 +188,12 @@ class CreateInvoiceForm extends Component
             }
             session()->forget('convert_invoice_data');
 
-            $this->dispatch('alert', [
-                'type' => 'success',
-                'message' => 'تم تحميل بيانات الفاتورة الأصلية بنجاح. يمكنك التعديل عليها الآن.'
-            ]);
+            $this->dispatch(
+                'error',
+                title: 'تم الحفظ!',
+                text: 'تم تحميل بيانات الفاتورة الأصلية بنجاح. يمكنك التعديل عليها الآن.',
+                icon: 'success'
+            );
         } else {
             $this->invoiceItems = [];
         }
@@ -197,8 +209,12 @@ class CreateInvoiceForm extends Component
         // $this->invoiceItems = [];
         $this->priceTypes = Price::pluck('name', 'id')->toArray();
         $this->searchResults = collect();
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->take(20)->get();
         $this->barcodeSearchResults = collect();
+
+        if ($this->type == 10 && $this->acc1_id) {
+            $this->recommendedItems = $this->getRecommendedItems($this->acc1_id);
+        }
     }
 
     private function getAccountsByCode(string $code)
@@ -212,16 +228,33 @@ class CreateInvoiceForm extends Component
 
     protected function getAccountBalance($accountId)
     {
-        $totalDebit = JournalDetail::where('account_id', $accountId)
+        $balance = JournalDetail::where('account_id', $accountId)
             ->where('isdeleted', 0)
-            ->sum('debit');
+            ->selectRaw('SUM(debit) - SUM(credit) as balance')
+            ->value('balance') ?? 0;
 
-        $totalCredit = JournalDetail::where('account_id', $accountId)
-            ->where('isdeleted', 0)
-            ->sum('credit');
-
-        return $totalDebit - $totalCredit;
+        if (($this->settings['allow_zero_opening_balance'] ?? '0') != '1' && $balance == 0 && $accountId) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'الرصيد الافتتاحي لا يمكن أن يكون صفرًا.',
+                icon: 'error'
+            );
+        }
+        return $balance;
     }
+
+    // private function getFilteredItems()
+    // {
+    //     $query = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices']);
+    //     if (($this->settings['allow_hide_items_by_company'] ?? '0') == '1' && $this->acc1_id) {
+    //         $companyId = AccHead::where('id', $this->acc1_id)->value('company_id');
+    //         if ($companyId) {
+    //             $query->where('company_id', $companyId);
+    //         }
+    //     }
+    //     return $query->get();
+    // }
 
     public function updatedAcc1Id($value)
     {
@@ -229,7 +262,63 @@ class CreateInvoiceForm extends Component
             $this->currentBalance = $this->getAccountBalance($value);
             $this->calculateBalanceAfterInvoice();
         }
+
+        // جلب التوصيات لأكثر 5 أصناف تم شراؤها من قبل العميل
+        if ($this->type == 10 && $value) { // فقط لفواتير المبيعات
+            $this->recommendedItems = $this->getRecommendedItems($value);
+        } else {
+            $this->recommendedItems = [];
+        }
     }
+
+    private function getRecommendedItems($clientId)
+    {
+        return OperationItems::whereHas('operhead', function ($query) use ($clientId) {
+            $query->where('pro_type', 10) // فواتير المبيعات فقط
+                ->where('acc1', $clientId); // العميل المحدد
+        })
+            ->groupBy('item_id')
+            ->selectRaw('item_id, SUM(qty_out) as total_quantity')
+            ->with(['item' => function ($query) {
+                $query->select('id', 'name');
+            }])
+            ->orderByDesc('total_quantity')
+            ->take(5)
+            ->get()
+            ->map(function ($operationItem) {
+                return [
+                    'id' => $operationItem->item_id,
+                    'name' => $operationItem->item->name,
+                    'total_quantity' => $operationItem->total_quantity,
+                ];
+            })
+            ->toArray();
+    }
+
+    // public function addRecommendedItem($itemId)
+    // {
+    //     // جلب بيانات الصنف
+    //     $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+    //         ->find($itemId);
+
+    //     if ($item) {
+    //         $price = $item->prices->where('id', $this->selectedPriceType)->first()->price ?? 0;
+    //         $unit = $item->units->first();
+
+    //         $this->invoiceItems[] = [
+    //             'item_id' => $item->id,
+    //             'name' => $item->name,
+    //             'quantity' => 1, // الكمية الافتراضية
+    //             'price' => $price,
+    //             'total' => $price,
+    //             'unit_id' => $unit->id ?? null,
+    //             'unit_name' => $unit->name ?? '',
+    //             'store_id' => $this->acc2_id,
+    //         ];
+
+    //         $this->calculateTotals();
+    //     }
+    // }
 
     public function calculateBalanceAfterInvoice()
     {
@@ -357,13 +446,25 @@ class CreateInvoiceForm extends Component
         $this->lastQuantityFieldIndex = $index;
 
         // تحديث الكمية بناءً على عدد الضغطات
-        $this->invoiceItems[$index]['quantity'] = $this->quantityClickCount;
+        if (($this->settings['default_quantity_greater_than_zero'] ?? '0') == '1' && $this->type == 10) {
+            $this->invoiceItems[$index]['quantity'] = max(1, $this->quantityClickCount);
+        } else {
+            $this->invoiceItems[$index]['quantity'] = $this->quantityClickCount;
+        }
 
-        // إعادة حساب القيم الفرعية والإجماليات
+        if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && $this->invoiceItems[$index]['quantity'] < 0) {
+            $this->invoiceItems[$index]['quantity'] = 0;
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'لا يمكن إدخال كمية سالبة في الفاتورة.',
+                icon: 'error'
+            );
+        }
+
         $this->recalculateSubValues();
         $this->calculateTotals();
 
-        // إذا ضغط مرة واحدة، عد إلى حقل الباركود
         if ($this->quantityClickCount === 1) {
             $this->js('window.focusBarcodeField()');
         }
@@ -378,20 +479,33 @@ class CreateInvoiceForm extends Component
 
     public function updatedSearchTerm($value)
     {
+        $this->searchResults = collect();
         $this->selectedResultIndex = -1;
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
-        $this->searchResults = strlen($value) < 1
-            ? collect()
-            : Item::with(['units', 'prices'])
-            ->where('name', 'like', "%{$value}%")
-            ->take(5)->get();
+
+        if (empty(trim($value))) {
+            return;
+        }
+
+        // تحديد عدد النتائج بناءً على طول النص
+        $limit = strlen(trim($value)) == 1 ? 10 : 20;
+
+        // تنظيف مصطلح البحث
+        $searchTerm = trim($value);
+
+        // الكويري للبحث عن الأصناف
+        $this->searchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            ->orWhereHas('barcodes', function ($query) use ($searchTerm) {
+                $query->where('barcode', 'like', '%' . $searchTerm . '%');
+            })
+            ->take($limit)
+            ->get();
     }
 
     public function addItemFromSearch($itemId)
     {
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) return;
-
         // التحقق من وجود الصنف في الفاتورة
         $existingItemIndex = null;
         foreach ($this->invoiceItems as $index => $invoiceItem) {
@@ -448,6 +562,28 @@ class CreateInvoiceForm extends Component
             $price = $item->average_cost ?? 0;
         }
 
+        // التحقق من منع السعر صفر
+        if (($this->settings['allow_zero_price_in_invoice'] ?? '0') != '1' && $price == 0) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'لا يمكن أن يكون السعر صفرًا في الفاتورة.',
+                icon: 'error'
+            );
+            return;
+        }
+
+        // التحقق من منع الأرقام السالبة
+        if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && $price < 0) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'لا يمكن إدخال سعر سالب في الفاتورة.',
+                icon: 'error'
+            );
+            return;
+        }
+
         $unitOptions = $vm->getUnitOptions();
 
         $availableUnits = collect($unitOptions)->map(function ($unit) {
@@ -457,13 +593,15 @@ class CreateInvoiceForm extends Component
             ];
         });
 
+        $quantity = ($this->settings['default_quantity_greater_than_zero'] ?? '0') == '1' && $this->type == 10 ? 1 : 1;
+
         $this->invoiceItems[] = [
             'item_id' => $item->id,
             'unit_id' => $unitId,
             'name' => $item->name, // 💡 أضف هذا السطر
-            'quantity' => 1,
+            'quantity' => $quantity,
             'price' => $price,
-            'sub_value' => $price * 1, // quantity * price
+            'sub_value' => $price * $quantity, // quantity * price
             'discount' => 0,
             'available_units' => $availableUnits,
         ];
@@ -566,10 +704,39 @@ class CreateInvoiceForm extends Component
         $item = $this->items->firstWhere('id', $itemId);
         if (!$item) return;
 
+        if ($this->type == 11 && ($this->settings['allow_purchase_price_change'] ?? '0') != '1') {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'غير مسموح بتغيير سعر البيع في فاتورة المشتريات.',
+                icon: 'error'
+            );
+            return;
+        }
         // حساب السعر للوحدة المختارة
         $vm = new ItemViewModel(null, $item, $unitId);
         $salePrices = $vm->getUnitSalePrices();
         $price = $salePrices[$this->selectedPriceType]['price'] ?? 0;
+
+        if (($this->settings['allow_zero_price_in_invoice'] ?? '0') != '1' && $price == 0) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'لا يمكن أن يكون السعر صفرًا في الفاتورة.',
+                icon: 'error'
+            );
+            return;
+        }
+
+        if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && $price < 0) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'لا يمكن إدخال سعر سالب في الفاتورة.',
+                icon: 'error'
+            );
+            return;
+        }
 
         $this->invoiceItems[$index]['price'] = $price;
 
@@ -587,6 +754,25 @@ class CreateInvoiceForm extends Component
 
         if ($field === 'quantity') {
             $this->quantityClickCount = 0; // إعادة تعيين عداد الضغطات
+            if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && $value < 0) {
+                $this->invoiceItems[$rowIndex]['quantity'] = 0;
+                $this->dispatch(
+                    'error',
+                    title: 'خطأ!',
+                    text: 'لا يمكن إدخال كمية سالبة في الفاتورة.',
+                    icon: 'error'
+                );
+            }
+
+            if (($this->settings['default_quantity_greater_than_zero'] ?? '0') == '1' && $this->type == 10 && $value <= 0) {
+                $this->invoiceItems[$rowIndex]['quantity'] = 1;
+                $this->dispatch(
+                    'error',
+                    title: 'خطأ!',
+                    text: 'يجب أن تكون الكمية أكبر من صفر في فواتير البيع.',
+                    icon: 'error'
+                );
+            }
             $this->recalculateSubValues();
             $this->calculateTotals();
         } elseif ($field === 'item_id') {
@@ -631,8 +817,43 @@ class CreateInvoiceForm extends Component
             }
         } elseif ($field === 'sub_value') {
             // حساب عكسي: حساب الكمية من القيمة الفرعية
+            if (($this->settings['allow_edit_invoice_value'] ?? '0') != '1') {
+                $this->dispatch(
+                    'error',
+                    title: 'خطأ!',
+                    text: 'غير مسموح بتعديل قيمة الفاتورة.',
+                    icon: 'error'
+                );
+                return;
+            }
             $this->calculateQuantityFromSubValue($rowIndex);
+        } elseif ($field === 'price' && $this->type == 11 && ($this->settings['allow_purchase_price_change'] ?? '0') != '1') {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'غير مسموح بتغيير سعر البيع في فاتورة المشتريات.',
+                icon: 'error'
+            );
+            return;
         } elseif (in_array($field, ['quantity', 'price', 'discount'])) {
+            if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && ($value < 0)) {
+                $this->invoiceItems[$rowIndex][$field] = 0;
+                $this->dispatch(
+                    'error',
+                    title: 'خطأ!',
+                    text: 'لا يمكن إدخال قيم سالبة في الفاتورة.',
+                    icon: 'error'
+                );
+            }
+            if ($field === 'price' && ($this->settings['allow_zero_price_in_invoice'] ?? '0') != '1' && $value == 0) {
+                $this->invoiceItems[$rowIndex]['price'] = 0;
+                $this->dispatch(
+                    'error',
+                    title: 'خطأ!',
+                    text: 'لا يمكن أن يكون السعر صفرًا في الفاتورة.',
+                    icon: 'error'
+                );
+            }
             $this->recalculateSubValues();
             $this->calculateTotals();
         }
@@ -641,6 +862,15 @@ class CreateInvoiceForm extends Component
 
     public function updatedSelectedPriceType()
     {
+        if (($this->settings['allow_edit_price_payments'] ?? '0') != '1') {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'غير مسموح بتعديل الفئات السعرية في الفواتير.',
+                icon: 'error'
+            );
+            return;
+        }
         foreach ($this->invoiceItems as $index => $item) {
             if ($item['item_id'] && $item['unit_id']) {
                 $this->updatePriceForUnit($index);
@@ -661,6 +891,16 @@ class CreateInvoiceForm extends Component
     {
         if (!isset($this->invoiceItems[$index])) return;
 
+        if (($this->settings['allow_edit_invoice_value'] ?? '0') != '1') {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'غير مسموح بتعديل قيمة الفاتورة.',
+                icon: 'error'
+            );
+            return;
+        }
+
         $item = $this->invoiceItems[$index];
         $subValue = (float) $item['sub_value'];
         $price = (float) $item['price'];
@@ -675,8 +915,22 @@ class CreateInvoiceForm extends Component
         }
 
         // حساب الكمية الجديدة
-        $newQuantity = ($subValue + $discount) / $price;
-        $this->invoiceItems[$index]['quantity'] = round($newQuantity, 3);
+        if (($this->settings['change_quantity_on_value_edit'] ?? '0') == '1') {
+            $newQuantity = ($subValue + $discount) / $price;
+            $this->invoiceItems[$index]['quantity'] = round($newQuantity, 3);
+        } else {
+            $this->invoiceItems[$index]['price'] = ($subValue + $discount) / $item['quantity'];
+        }
+
+        if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && $this->invoiceItems[$index]['quantity'] < 0) {
+            $this->invoiceItems[$index]['quantity'] = 0;
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'لا يمكن أن تكون الكمية سالبة.',
+                icon: 'error'
+            );
+        }
         $this->calculateTotals();
     }
 
@@ -700,6 +954,16 @@ class CreateInvoiceForm extends Component
         // $afterDiscount = round($this->subtotal - $this->discount_value, 2);
         $this->additional_value = ($this->subtotal *  $additionalPercentage) / 100;
         $this->total_after_additional = round($this->subtotal - $this->discount_value + $this->additional_value, 2);
+
+        // dd($this->settings['allow_zero_invoice_total']);
+        if (($this->settings['allow_zero_invoice_total'] ?? '0') != '1' && $this->total_after_additional == 0) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'قيمة الفاتورة لا يمكن أن تكون صفرًا.',
+                icon: 'error'
+            );
+        }
     }
 
     public function calculateSubtotal()
@@ -849,6 +1113,15 @@ class CreateInvoiceForm extends Component
 
     public function saveForm()
     {
+        if (($this->settings['allow_zero_invoice_total'] ?? '0') != '1' && $this->total_after_additional == 0) {
+            $this->dispatch(
+                'error',
+                title: 'خطأ!',
+                text: 'قيمة الفاتورة لا يمكن أن تكون صفرًا.',
+                icon: 'error'
+            );
+            return null;
+        }
         $service = new SaveInvoiceService();
         return $service->saveInvoice($this);
     }

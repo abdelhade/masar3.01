@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -133,6 +134,7 @@ class EditInvoiceForm extends Component
         $this->subtotal = $this->operation->fat_total ?? 0;
         $this->total_after_additional = $this->operation->fat_net ?? 0;
         $this->notes = $this->operation->info ?? '';
+        $this->received_from_client = $this->operation->paid_from_client ?? 0;
 
         $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
 
@@ -192,11 +194,11 @@ class EditInvoiceForm extends Component
 
     private function getAccountBalance($accountId)
     {
-        $totalDebit = \App\Models\JournalDetail::where('account_id', $accountId)
+        $totalDebit = JournalDetail::where('account_id', $accountId)
             ->where('isdeleted', 0)
             ->sum('debit');
 
-        $totalCredit = \App\Models\JournalDetail::where('account_id', $accountId)
+        $totalCredit = JournalDetail::where('account_id', $accountId)
             ->where('isdeleted', 0)
             ->sum('credit');
 
@@ -229,20 +231,20 @@ class EditInvoiceForm extends Component
         }
     }
 
-    public function openConvertModal()
-    {
-        if ($this->is_disabled) {
-            Alert::toast('يجب تفعيل التعديل أولاً', 'error');
-            return;
-        }
-        $this->showConvertModal = true;
-        $this->convertFromTypes = $this->getCompatibleConversionTypes();
-        if (empty($this->convertFromTypes)) {
-            Alert::toast('لا توجد أنواع فواتير متوافقة للتحويل إليها', 'error');
-            $this->showConvertModal = false;
-            return;
-        }
-    }
+    // public function openConvertModal()
+    // {
+    //     if ($this->is_disabled) {
+    //         Alert::toast('يجب تفعيل التعديل أولاً', 'error');
+    //         return;
+    //     }
+    //     $this->showConvertModal = true;
+    //     $this->convertFromTypes = $this->getCompatibleConversionTypes();
+    //     if (empty($this->convertFromTypes)) {
+    //         Alert::toast('لا توجد أنواع فواتير متوافقة للتحويل إليها', 'error');
+    //         $this->showConvertModal = false;
+    //         return;
+    //     }
+    // }
 
     public function getCompatibleConversionTypes()
     {
@@ -282,10 +284,10 @@ class EditInvoiceForm extends Component
         return "هل أنت متأكد من تحويل الفاتورة من \"$fromType\" إلى \"$toType\"؟";
     }
 
-    public function canConvertInvoice()
-    {
-        return !empty($this->invoiceItems) && !$this->is_disabled;
-    }
+    // public function canConvertInvoice()
+    // {
+    //     return !empty($this->invoiceItems) && !$this->is_disabled;
+    // }
 
     public function convertInvoice()
     {
@@ -837,18 +839,62 @@ class EditInvoiceForm extends Component
 
     public function updateForm()
     {
-        // تحقق خاص بالتعديل (مثلاً: التأكد من وجود العملية)
-        if (!$this->operation) {
+        // تحقق من وجود العملية
+        if (!$this->operation || !$this->operationId) {
             $this->dispatch('alert', [
                 'type' => 'error',
                 'message' => 'لا توجد فاتورة لتحريرها.'
             ]);
             return false;
         }
-        // استخدم نفس خدمة الحفظ الموحدة
+
+        // تحقق من أن التعديل مفعل
+        if ($this->is_disabled) {
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => 'يجب تفعيل التعديل أولاً.'
+            ]);
+            return false;
+        }
+
+        // استدعاء خدمة الحفظ مع تمرير العلم isEdit = true
         $service = new \App\Services\SaveInvoiceService();
-        return $service->saveInvoice($this);
+        $result = $service->saveInvoice($this, true); // true يعني أن العملية تعديل
+
+        if ($result) {
+            $this->dispatch('alert', [
+                'type' => 'success',
+                'message' => 'تم تحديث الفاتورة بنجاح.'
+            ]);
+
+            // إعادة تعطيل التعديل بعد الحفظ
+            $this->is_disabled = true;
+
+            // إعادة تحميل البيانات المحدثة
+            $this->mount($this->operationId);
+
+            return $result;
+        }
+
+        return false;
     }
+
+
+
+    public function cancelUpdate()
+    {
+        $this->is_disabled = true;
+
+        // إعادة تحميل البيانات الأصلية
+        $this->mount($this->operationId);
+
+        $this->dispatch('alert', [
+            'type' => 'info',
+            'message' => 'تم إلغاء التعديلات وإرجاع البيانات الأصلية.'
+        ]);
+    }
+
+
     public function saveAndPrint()
     {
         $operationId = $this->updateForm();
@@ -909,15 +955,5 @@ class EditInvoiceForm extends Component
                 $this->invoiceItems[$index]['sub_value'] = $newPrice * $item['quantity'];
             }
         }
-    }
-
-    public function cancelUpdate()
-    {
-        $this->is_disabled = true;
-        $this->mount($this->operationId);
-        $this->dispatch('alert', [
-            'type' => 'info',
-            'message' => 'تم إلغاء التعديلات.'
-        ]);
     }
 }

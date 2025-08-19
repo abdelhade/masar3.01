@@ -2,14 +2,16 @@
 
 namespace App\Providers;
 
+use App\Models\Item;
 use App\Models\JournalDetail;
+use App\Observers\ItemObserver;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use App\Observers\JournalDetailObserver;
-use Illuminate\Support\Facades\Cache;
 use Modules\Settings\Models\PublicSetting;
-use Illuminate\Support\Facades\Schema;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -40,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useBootstrapFive();
         JournalDetail::observe(JournalDetailObserver::class);
+        Item::observe(ItemObserver::class);
         // Model::automaticallyEagerLoadRelationships();
     }
-    
 }

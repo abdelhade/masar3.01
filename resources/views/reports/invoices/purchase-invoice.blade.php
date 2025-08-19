@@ -8,7 +8,6 @@
             ['label' => __('فواتير المشتريات')],
         ],
     ])
-
     <div class="row">
         <div class="col-lg-12">
             <br><br>
@@ -80,6 +79,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $invoices->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

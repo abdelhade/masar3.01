@@ -48,8 +48,8 @@ class InvoiceController extends Controller
 
     public function index()
     {
-        $invoices = OperHead::with(['acc1Headuser', 'store', 'employee', 'acc1Head', 'acc2Head', 'type'])->get();
-
+        $invoices = OperHead::with(['acc1Headuser', 'store', 'employee', 'acc1Head', 'acc2Head', 'type', 'user'])
+            ->whereIn('pro_type', [11, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22])->get();
         return view('invoices.index', compact('invoices'));
     }
 
@@ -96,13 +96,9 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-    }
+    public function store(Request $request) {}
 
-    public function show(string $id)
-    {
-    }
+    public function show(string $id) {}
 
 
 
@@ -282,9 +278,7 @@ class InvoiceController extends Controller
             22 => 'أمر حجز',
         ];
 
-        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22]) ? 'مدين' :
-            (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'دائن' :
-                (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'مدين' : 'غير محدد'));
+        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22]) ? 'مدين' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'دائن' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'مدين' : 'غير محدد'));
 
         return view('invoices.print-invoice', [
             'pro_id' => $operation->pro_id,

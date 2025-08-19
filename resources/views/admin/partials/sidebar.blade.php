@@ -419,33 +419,33 @@
                             </li>
                         @endcan
                         @can('عرض سند دفع')
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
-                                <i class="ti-control-record"></i>{{ __('سند دفع') }}
-                            </a>
-                        </li>                            
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
+                                    <i class="ti-control-record"></i>{{ __('سند دفع') }}
+                                </a>
+                            </li>
                         @endcan
                         @can('عرض السندات')
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('vouchers.index') }}">
-                                <i class="ti-control-record"></i>{{ __('السندات') }}
-                            </a>
-                        </li>                            
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('vouchers.index') }}">
+                                    <i class="ti-control-record"></i>{{ __('السندات') }}
+                                </a>
+                            </li>
                         @endcan
                         @can('عرض سند دفع متعدد')
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
-                                <i class="ti-control-record"></i>{{ __('سند دفع متعدد') }}
-                            </a>
-                        </li>                            
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
+                                    <i class="ti-control-record"></i>{{ __('سند دفع متعدد') }}
+                                </a>
+                            </li>
                         @endcan
                         @can('عرض احتساب الثابت للموظفين')
-                        <li class="nav-item">
-                            <a class="nav-link"
-                                href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
-                                <i class="ti-control-record"></i>{{ __('احتساب الثابت للموظفين') }}
-                            </a>
-                        </li>                            
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                    href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
+                                    <i class="ti-control-record"></i>{{ __('احتساب الثابت للموظفين') }}
+                                </a>
+                            </li>
                         @endcan
 
                     </ul>
@@ -743,7 +743,7 @@
                                 <i class="ti-control-record"></i>{{ __('الميزانيه العموميه') }}
                             </a>
                         </li>
-                         {{-- balance sheet --}}
+                        {{-- balance sheet --}}
                     </ul>
                 </li>
             @endcanany
@@ -968,6 +968,51 @@
                     </ul>
                 </li>
             @endcanany
+            <li class="li-main">
+                <a href="javascript: void(0);">
+                    <i data-feather="settings" class="align-self-center menu-icon"></i>
+                    <span>{{ __('الاعدادات') }}</span>
+                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                </a>
+                <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('barcode.print.settings.edit') }}">
+                            <i class="ti-control-record"></i>{{ __('اعدادات الطابعه') }}
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="li-main">
+                <a href="javascript: void(0);">
+                    <i data-feather="truck" class="align-self-center menu-icon"></i>
+                    <span>{{ __('ادارة الشحن') }}</span>
+                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                </a>
+                <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('companies.index') }}">
+                            <i class="ti-control-record"></i>{{ __('شركات الشحن') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('drivers.index') }}">
+                            <i class="ti-control-record"></i>{{ __('السائقون') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('orders.index') }}">
+                            <i class="ti-control-record"></i>{{ __('الطلبات') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('shipments.index') }}">
+                            <i class="ti-control-record"></i>{{ __('الشحنات') }}
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
         </ul>
     </div>
 </div>
