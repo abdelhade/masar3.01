@@ -1582,38 +1582,162 @@ class ReportController extends Controller
     // Controller Code
     protected function getQuantityStatus($item)
     {
-        if ($item->current_quantity < $item->min_order_quantity) {
+        // Calculate current quantity from operation_items
+        $currentQuantity = $this->calculateCurrentQuantity($item->id);
+        
+        if ($currentQuantity < $item->min_order_quantity) {
+            // Send notification for low quantity
+            $this->sendQuantityNotification($item, $currentQuantity, 'below_min');
+            // Clear any "above_max" notifications since status changed
+            $this->clearQuantityNotification($item->id, 'above_max');
             return 'below_min';
-        } elseif ($item->current_quantity > $item->max_order_quantity) {
+        } elseif ($currentQuantity > $item->max_order_quantity) {
+            // Send notification for high quantity
+            $this->sendQuantityNotification($item, $currentQuantity, 'above_max');
+            // Clear any "below_min" notifications since status changed
+            $this->clearQuantityNotification($item->id, 'below_min');
             return 'above_max';
+        } else {
+            // Quantity is within limits - clear any existing notifications
+            $this->clearQuantityNotification($item->id, 'below_min');
+            $this->clearQuantityNotification($item->id, 'above_max');
+            return 'within_limits';
         }
-        return 'within_limits'; // تغيير من 'normal' إلى 'within_limits'
+    }
+
+    /**
+     * Clear quantity notification cache for a specific item and status
+     */
+    protected function clearQuantityNotification($itemId, $status)
+    {
+        $notificationKey = "item_quantity_{$itemId}_{$status}";
+        cache()->forget($notificationKey);
     }
 
     protected function getRequiredCompensation($item)
     {
-        if ($item->current_quantity < $item->min_order_quantity) {
+        // Calculate current quantity from operation_items
+        $currentQuantity = $this->calculateCurrentQuantity($item->id);
+        
+        if ($currentQuantity < $item->min_order_quantity) {
             // المطلوب تعويضه = الحد الأدنى - الكمية الحالية
-            return $item->min_order_quantity - $item->current_quantity;
-        } elseif ($item->current_quantity > $item->max_order_quantity) {
+            return $item->min_order_quantity - $currentQuantity;
+        } elseif ($currentQuantity > $item->max_order_quantity) {
             // الكمية الزيادة = الكمية الحالية - الحد الأقصى
-            return $item->current_quantity - $item->max_order_quantity;
+            return $currentQuantity - $item->max_order_quantity;
         }
         return 0; // لا يوجد تعويض مطلوب
     }
 
+    /**
+     * Calculate current quantity from operation_items table
+     */
+    protected function calculateCurrentQuantity($itemId)
+    {
+        $qtyIn = DB::table('operation_items')
+            ->where('item_id', $itemId)
+            ->where('qty_in', '>', 0)
+            ->sum('qty_in');
+
+        $qtyOut = DB::table('operation_items')
+            ->where('item_id', $itemId)
+            ->where('qty_out', '>', 0)
+            ->sum('qty_out');
+
+        return $qtyIn - $qtyOut;
+    }
+
+    /**
+     * Send quantity limit notification
+     */
+    protected function sendQuantityNotification($item, $currentQuantity, $status)
+    {
+        // Check if we already sent a notification for this item with the same status
+        $notificationKey = "item_quantity_{$item->id}_{$status}";
+        $lastNotification = cache()->get($notificationKey);
+        
+        // If we already sent a notification for this status, check if quantity changed significantly
+        if ($lastNotification) {
+            $quantityDifference = abs($lastNotification['quantity'] - $currentQuantity);
+            $minChangeThreshold = $this->getMinChangeThreshold($item, $status);
+            
+            // Skip notification if quantity hasn't changed significantly
+            if ($quantityDifference < $minChangeThreshold) {
+                return; // Skip notification - insufficient change
+            }
+        }
+        
+        // Get all users with notification permissions or specific role
+        $users = User::whereHas('roles', function($query) {
+            $query->whereIn('name', ['مدير', 'admin', 'مشرف مخزن']);
+        })->orWhere('id', 1)->get(); // Include admin user
+
+        foreach ($users as $user) {
+            $title = '';
+            $message = '';
+            $icon = '';
+
+            if ($status === 'below_min') {
+                $title = 'تنبيه: كمية منخفضة';
+                $message = "الصنف '{$item->name}' وصل للحد الأدنى. الكمية الحالية: {$currentQuantity}";
+                $icon = 'exclamation-triangle';
+            } elseif ($status === 'above_max') {
+                $title = 'تنبيه: كمية زائدة';
+                $message = "الصنف '{$item->name}' تجاوز الحد الأقصى. الكمية الحالية: {$currentQuantity}";
+                $icon = 'exclamation-circle';
+            }
+
+            if ($title && $message) {
+                $user->notify(new \Modules\Notifications\Notifications\OrderNotification([
+                    'id' => $item->id,
+                    'title' => $title,
+                    'message' => $message,
+                    'icon' => $icon,
+                    'created_at' => now()->toDateTimeString(),
+                ]));
+            }
+        }
+        
+        // Store notification info in cache to prevent duplicates
+        cache()->put($notificationKey, [
+            'quantity' => $currentQuantity,
+            'status' => $status,
+            'sent_at' => now(),
+            'item_id' => $item->id
+        ], now()->addDays(1)); // Cache for 1 day
+    }
+
+    /**
+     * Get minimum change threshold for notifications based on item type and limits
+     */
+    protected function getMinChangeThreshold($item, $status)
+    {
+        if ($status === 'below_min') {
+            // For low quantity, notify if change is at least 1% of min_order_quantity or 1 unit
+            return max(1, $item->min_order_quantity * 0.01);
+        } elseif ($status === 'above_max') {
+            // For high quantity, notify if change is at least 1% of max_order_quantity or 1 unit
+            return max(1, $item->max_order_quantity * 0.01);
+        }
+        
+        return 1; // Default threshold
+    }
+
     public function getItemsMaxMinQuantity()
     {
-        $items = Item::select('id', 'name', 'code')
+        $items = Item::select('id', 'name', 'code', 'min_order_quantity', 'max_order_quantity')
             ->paginate(50);
 
         // Map the items within the paginator
         $items->getCollection()->transform(function ($item) {
+            // Calculate current quantity from operation_items
+            $currentQuantity = $this->calculateCurrentQuantity($item->id);
+            
             return [
                 'id' => $item->id,
                 'name' => $item->name,
                 'code' => $item->code,
-                'current_quantity' => $item->current_quantity,
+                'current_quantity' => $currentQuantity,
                 'min_order_quantity' => $item->min_order_quantity,
                 'max_order_quantity' => $item->max_order_quantity,
                 'status' => $this->getQuantityStatus($item),
@@ -1623,6 +1747,85 @@ class ReportController extends Controller
 
         return view('reports.items.items-max&min-quantity', compact('items'));
     }
+
+    /**
+     * Check all items for quantity limits and send notifications
+     * This can be called manually or from other parts of the system
+     */
+    public function checkAllItemsQuantityLimits()
+    {
+        $items = Item::whereNotNull('min_order_quantity')
+            ->orWhereNotNull('max_order_quantity')
+            ->get();
+
+        $notificationsSent = 0;
+
+        foreach ($items as $item) {
+            $currentQuantity = $this->calculateCurrentQuantity($item->id);
+            $status = $this->getQuantityStatus($item);
+            
+            if ($status !== 'within_limits') {
+                $notificationsSent++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم فحص {$items->count()} صنف وتم إرسال {$notificationsSent} إشعار",
+            'items_checked' => $items->count(),
+            'notifications_sent' => $notificationsSent
+        ]);
+    }
+
+    /**
+     * Check specific item quantity after operation (can be called from other controllers)
+     */
+    public function checkItemQuantityAfterOperation($itemId)
+    {
+        $item = Item::find($itemId);
+        
+        if (!$item) {
+            return false;
+        }
+
+        $currentQuantity = $this->calculateCurrentQuantity($item->id);
+        $status = $this->getQuantityStatus($item);
+        
+        return $status !== 'within_limits'; // Return true if notification was sent
+    }
+
+    /**
+     * Get items with quantity issues for dashboard display
+     */
+    public function getItemsWithQuantityIssues()
+    {
+        $items = Item::whereNotNull('min_order_quantity')
+            ->orWhereNotNull('max_order_quantity')
+            ->get()
+            ->map(function ($item) {
+                $currentQuantity = $this->calculateCurrentQuantity($item->id);
+                $status = $this->getQuantityStatus($item);
+                
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'code' => $item->code,
+                    'current_quantity' => $currentQuantity,
+                    'min_order_quantity' => $item->min_order_quantity,
+                    'max_order_quantity' => $item->max_order_quantity,
+                    'status' => $status,
+                    'required_compensation' => $this->getRequiredCompensation($item),
+                    'issue_type' => $status === 'below_min' ? 'منخفضة' : ($status === 'above_max' ? 'زائدة' : 'طبيعية')
+                ];
+            })
+            ->filter(function ($item) {
+                return $item['status'] !== 'within_limits';
+            })
+            ->values();
+
+        return response()->json($items);
+    }
+
     // Controller Method
     public function pricesCompareReport()
     {
@@ -1747,5 +1950,59 @@ class ReportController extends Controller
             'fromDate',
             'toDate'
         ));
+    }
+
+    /**
+     * Clear all quantity notification caches (useful for testing)
+     */
+    public function clearAllQuantityNotifications()
+    {
+        $items = Item::whereNotNull('min_order_quantity')
+            ->orWhereNotNull('max_order_quantity')
+            ->get();
+
+        $clearedCount = 0;
+
+        foreach ($items as $item) {
+            $this->clearQuantityNotification($item->id, 'below_min');
+            $this->clearQuantityNotification($item->id, 'above_max');
+            $clearedCount += 2;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم مسح {$clearedCount} إشعار من الكاش",
+            'notifications_cleared' => $clearedCount
+        ]);
+    }
+
+    /**
+     * Get notification status for a specific item (useful for debugging)
+     */
+    public function getItemNotificationStatus($itemId)
+    {
+        $item = Item::find($itemId);
+        
+        if (!$item) {
+            return response()->json(['error' => 'الصنف غير موجود'], 404);
+        }
+
+        $currentQuantity = $this->calculateCurrentQuantity($item->id);
+        $status = $this->getQuantityStatus($item);
+        
+        $notificationInfo = [
+            'below_min_cache' => cache()->get("item_quantity_{$itemId}_below_min"),
+            'above_max_cache' => cache()->get("item_quantity_{$itemId}_above_max"),
+        ];
+
+        return response()->json([
+            'item_id' => $item->id,
+            'item_name' => $item->name,
+            'current_quantity' => $currentQuantity,
+            'min_order_quantity' => $item->min_order_quantity,
+            'max_order_quantity' => $item->max_order_quantity,
+            'status' => $status,
+            'notification_cache' => $notificationInfo
+        ]);
     }
 }
