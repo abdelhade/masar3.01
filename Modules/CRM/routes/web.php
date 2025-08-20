@@ -7,6 +7,7 @@ use Modules\CRM\Http\Controllers\{
     ClientController,
     LeadController,
     LeadStatusController,
+    StatisticsController,
     TaskController
 };
 use Modules\CRM\Livewire\LeadsBoard;
@@ -25,4 +26,6 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
     Route::post('/leads/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
+
+    Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
 });

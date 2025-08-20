@@ -10,6 +10,6 @@ class ChanceSource extends Model
 
     public function leads()
     {
-        return $this->hasMany(Lead::class);
+        return $this->hasMany(Lead::class, 'source_id'); // هنا نحدد العمود الصحيح
     }
 }

@@ -296,6 +296,11 @@
                         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                     </a>
                     <ul class="sub-menu mm-collapse" aria-expanded="false">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('statistics.index') }}">
+                                <i class="ti-control-record"></i>{{ __('الاحصائيات') }}
+                            </a>
+                        </li>
                         @can('عرض العملااء')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('clients.index') }}">

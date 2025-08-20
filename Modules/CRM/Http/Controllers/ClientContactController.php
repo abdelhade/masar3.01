@@ -3,7 +3,7 @@
 namespace Modules\CRM\Http\Controllers;
 
 
-use Modules\CRM\Http\Requests\CLientContactRequest;
+use Modules\CRM\Http\Requests\ClientContactRequest;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Models\ClientContact;
 use Illuminate\Routing\Controller;
@@ -30,7 +30,7 @@ class ClientContactController extends Controller
         return view('crm::client-contacts.create');
     }
 
-    public function store(CLientContactRequest $request)
+    public function store(ClientContactRequest $request)
     {
         ClientContact::create($request->validated());
         Alert::toast('تم الانشاء بنجاح', 'success');
