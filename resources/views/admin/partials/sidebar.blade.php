@@ -991,6 +991,12 @@
                             <i class="ti-control-record"></i>{{ __('اعدادات الطابعه') }}
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('export-settings') }}">
+                            <i class="ti-control-record"></i>{{ __('النسخ الاحتياطي للبيانات ') }}
+                        </a>
+                    </li>
                 </ul>
             </li>
 
