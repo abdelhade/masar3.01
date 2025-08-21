@@ -2,15 +2,15 @@
     <thead class="table-light text-center align-middle">
 
         <tr>
-            <th class="font-family-cairo fw-bold font-14 text-center">الصنف</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">الوحدة</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">الكمية</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الصنف') }}</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الوحدة') }}</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الكمية') }}</th>
             {{-- @if ($type != 18) --}}
-            <th class="font-family-cairo fw-bold font-14 text-center">السعر</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">الخصم</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('السعر') }}</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الخصم') }}</th>
             {{-- @endif --}}
-            <th class="font-family-cairo fw-bold font-14 text-center">القيمة</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">إجراء</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('القيمة') }}</th>
+            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('إجراء') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -54,7 +54,7 @@
                                         <input type="number" step="0.01" min="0"
                                             onblur="if(this.value === '') this.value = 0;"
                                             wire:model.blur="invoiceItems.{{ $index }}.quantity"
-                                            id="quantity_{{ $index }}" placeholder="الكمية"
+                                            id="quantity_{{ $index }}" placeholder="{{ __('الكمية') }}"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('price_{{ $index }}')?.focus();document.getElementById('price_{{ $index }}')?.select();}"
                                             class="form-control @error('invoiceItems.' . $index . '.quantity') is-invalid @enderror">
@@ -68,7 +68,7 @@
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"
                                             wire:model.blur="invoiceItems.{{ $index }}.price"
-                                            id="price_{{ $index }}" placeholder="السعر"
+                                            id="price_{{ $index }}" placeholder="{{ __('السعر') }}"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"
                                             class="form-control @error('invoiceItems.' . $index . '.price') is-invalid @enderror">
@@ -81,7 +81,7 @@
                                     <td style="width: 15%; font-size: 1.2em;">
                                         <input type="number" step="0.01" min="0"
                                             wire:model.blur="invoiceItems.{{ $index }}.discount"
-                                            id="discount_{{ $index }}" placeholder="الخصم"
+                                            id="discount_{{ $index }}" placeholder="{{ __('الخصم') }}"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             onkeydown="if(event.key==='Enter'){
                                                                 event.preventDefault();
@@ -99,7 +99,7 @@
                                         <input type="number" step="0.01" min="0"
                                             style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                             wire:model.blur="invoiceItems.{{ $index }}.sub_value"
-                                            id="sub_value_{{ $index }}" placeholder="القيمة"
+                                            id="sub_value_{{ $index }}" placeholder="{{ __('القيمة') }}"
                                             onkeydown="if(event.key==='Enter'){
                                                                 event.preventDefault();
                                                                 const nextQuantity = document.getElementById('quantity_{{ $index + 1 }}');

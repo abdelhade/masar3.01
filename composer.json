@@ -23,7 +23,8 @@
         "realrashid/sweet-alert": "^7.3",
         "salla/zatca": "^3.0",
         "spatie/laravel-medialibrary": "^11.13",
-        "spatie/laravel-permission": "^6.20"
+        "spatie/laravel-permission": "^6.20",
+        "spatie/laravel-translation-loader": "^2.8"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

@@ -37,7 +37,7 @@
             </li>
             @can('عرض المدراء')
                 <li>
-                    <a title="المستخدمين" href="{{ route('users.index') }}" class="nav-link">
+                    <a title="{{ __('المستخدمين') }}" href="{{ route('users.index') }}" class="nav-link">
                         <i class="fas fa-user fa-2x text-primary"></i>
                     </a>
                 </li>
@@ -46,14 +46,13 @@
 
             @can('عرض التقارير')
                 <li>
-                    <a title="التقارير" href="{{ route('reports.index') }}" class="nav-link">
+                    <a title="{{ __('التقارير') }}" href="{{ route('reports.index') }}" class="nav-link">
                         <i class="fas fa-chart-pie fa-2x text-primary"></i>
                     </a>
 
                 </li>
             @endcan
-
-
+            <x-lang.switch-lang />
         </ul>
     </nav>
     <!-- end navbar-->
