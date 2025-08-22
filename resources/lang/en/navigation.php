@@ -1,0 +1,251 @@
+<?php
+
+return [
+    // Main Menu
+    'home' => 'Home',
+    'dashboard' => 'Dashboard',
+    'main_menu' => 'Main Menu',
+
+    // Master Data
+    'master_data' => 'Master Data',
+    'clients' => 'Clients',
+    'suppliers' => 'Suppliers',
+    'funds' => 'Funds',
+    'banks' => 'Banks',
+    'employees' => 'Employees',
+    'warehouses' => 'Warehouses',
+    'expenses' => 'Expenses',
+    'revenues' => 'Revenues',
+    'various_creditors' => 'Various Creditors',
+    'various_debtors' => 'Various Debtors',
+    'partners' => 'Partners',
+    'current_partners' => 'Current Partners',
+    'fixed_assets' => 'Fixed Assets',
+    'rentable_assets' => 'Rentable Assets',
+
+    // Items Management
+    'items' => 'Items',
+    'units' => 'Units',
+    'prices' => 'Prices',
+    'categories' => 'Categories',
+    'item_movement_report' => 'Item Movement Report',
+    'item_management' => 'Items Management',
+
+    // Discounts Management
+    'discounts' => 'Discounts',
+    'allowed_discounts_list' => 'Allowed Discounts List',
+    'earned_discounts_list' => 'Earned Discounts List',
+    'allowed_discount' => 'Allowed Discount',
+    'earned_discount' => 'Earned Discount',
+    'allowed_discounts' => 'Allowed Discounts List',
+    'earned_discounts' => 'Earned Discounts List',
+
+    // Manufacturing
+    'manufacturing' => 'Manufacturing',
+    'manufacturing_invoice' => 'Manufacturing Invoice',
+
+    // Permissions & Roles
+    'permissions' => 'Permissions',
+    'roles' => 'Roles',
+    'admins' => 'Administrators',
+    'managers' => 'Managers',
+
+    // CRM
+    'crm' => 'CRM',
+    'statistics' => 'Statistics',
+    'lead_sources' => 'Lead Sources',
+    'chance_sources' => 'Lead Sources',
+    'company_contacts' => 'Company Contacts',
+    'client_contacts' => 'Company Contacts',
+    'lead_statuses' => 'Lead Statuses',
+    'leads' => 'Leads',
+    'tasks' => 'Tasks',
+    'activities' => 'Activities',
+
+    // Sales Management
+    'sales_management' => 'Sales Management',
+    'sales_return' => 'Sales Return',
+    'sales_invoice' => 'Sales Invoice',
+    'sales_order' => 'Sales Order',
+    'customer_quotation' => 'Customer Quotation',
+    'reservation_order' => 'Reservation Order',
+
+    // Purchasing Management
+    'purchasing_management' => 'Purchasing Management',
+    'purchase_invoice' => 'Purchase Invoice',
+    'purchase_return' => 'Purchase Return',
+    'purchase_order' => 'Purchase Order',
+    'supplier_quotation' => 'Supplier Quotation',
+
+    // Inventory Management
+    'inventory_management' => 'Inventory Management',
+    'damaged_invoice' => 'Damaged Invoice',
+    'issue_order' => 'Issue Order',
+    'add_order' => 'Add Order',
+    'warehouse_transfer' => 'Warehouse Transfer',
+
+    // Vouchers
+    'vouchers' => 'Vouchers',
+    'receipt_voucher' => 'Receipt Voucher',
+    'payment_voucher' => 'Payment Voucher',
+    'multi_payment_voucher' => 'Multi Payment Voucher',
+    'employees_fixed_salary_calculation' => 'Employees Fixed Salary Calculation',
+    'general_receipt_voucher' => 'General Receipt Voucher',
+    'general_payment_voucher' => 'General Payment Voucher',
+    'general_payment_voucher_for_expenses' => 'General Payment Voucher for Expenses',
+    'multi_receipt_voucher' => 'Multi Receipt Voucher',
+
+    // Cash Transfers
+    'cash_transfers' => 'Cash Transfers',
+    'cash_transfer_fund_to_fund' => 'Cash Transfer from Fund to Fund',
+    'cash_transfer_fund_to_bank' => 'Cash Transfer from Fund to Bank',
+    'transfer_bank_to_fund' => 'Transfer from Bank to Fund',
+    'transfer_bank_to_bank' => 'Transfer from Bank to Bank',
+    'cash_to_cash_transfer' => 'Cash Transfer from Fund to Fund',
+    'cash_to_bank_transfer' => 'Cash Transfer from Fund to Bank',
+    'bank_to_cash_transfer' => 'Transfer from Bank to Fund',
+    'bank_to_bank_transfer' => 'Transfer from Bank to Bank',
+
+    // Employee Salaries
+    'employees_payroll' => 'Employees Payroll',
+    'employee_salaries' => 'Employee Salaries',
+    'overtime_calculation' => 'Overtime Calculation',
+    'extra_salary_calculation' => 'Extra Salary Calculation',
+    'deduction_calculation' => 'Deduction Calculation',
+    'discount_salary_calculation' => 'Discount Salary Calculation',
+    'insurance_calculation' => 'Insurance Calculation',
+    'income_tax_calculation' => 'Income Tax Calculation',
+    'tax_calculation' => 'Tax Calculation',
+    'fixed_salary_calculation' => 'Fixed Salary Calculation',
+
+    // Accruals
+    'accruals' => 'Accruals',
+    'multi_receipt_voucher' => 'Multi Receipt Voucher',
+    'service_contract' => 'Service Contract',
+    'service_agreement' => 'Service Agreement',
+    'accrued_expenses' => 'Accrued Expenses',
+    'accured_expenses' => 'Accrued Expenses',
+    'accrued_revenues' => 'Accrued Revenues',
+    'accured_revenues' => 'Accrued Revenues',
+    'bank_commission' => 'Bank Commission',
+    'bank_commission_calculation' => 'Bank Commission Calculation',
+    'sales_contract' => 'Sales Contract',
+    'partners_profit_distribution' => 'Partners Profit Distribution',
+    'partner_profit_sharing' => 'Partner Profit Sharing',
+
+    // Asset Operations
+    'asset_operations' => 'Asset Operations',
+    'asset_depreciation' => 'Asset Depreciation',
+    'depreciation' => 'Depreciation',
+    'asset_sale' => 'Asset Sale',
+    'sell_asset' => 'Sell Asset',
+    'asset_purchase' => 'Asset Purchase',
+    'buy_asset' => 'Buy Asset',
+    'increase_asset_value' => 'Increase Asset Value',
+    'decrease_asset_value' => 'Decrease Asset Value',
+
+    // Account Management
+    'accounts_management' => 'Accounts Management',
+    'account_management' => 'Account Management',
+    'journal_entry' => 'Journal Entry',
+    'daily_journal' => 'Daily Journal',
+    'multi_journal_entry' => 'Multi Journal Entry',
+    'multi_journal' => 'Multi Journal',
+    'operations_journal_entries' => 'Daily Ledgers Operations',
+    'daily_ledgers_operations' => 'Daily Ledgers Operations',
+    'multiple_operations_journal_entries' => 'Multi Daily Ledgers Operations',
+    'multi_daily_ledgers_operations' => 'Multi Daily Ledgers Operations',
+    'accounts_journal_entries' => 'Daily Ledgers Accounts',
+    'daily_ledgers_accounts' => 'Daily Ledgers Accounts',
+    'inventory_opening_balance' => 'Inventory Opening Balance',
+    'opening_inventory_balance' => 'Inventory Opening Balance',
+    'accounts_opening_balance' => 'Accounts Opening Balance',
+    'opening_balance_accounts' => 'Accounts Opening Balance',
+    'account_movement_report' => 'Account Movement Report',
+    'balance_sheet' => 'Balance Sheet',
+
+    // Project Management
+    'project_management' => 'Project Management',
+    'projects' => 'Projects',
+    'rentals' => 'Rentals',
+
+    // Human Resources
+    'human_resources' => 'Human Resources',
+    'departments' => 'Departments',
+    'jobs' => 'Jobs',
+    'addresses' => 'Addresses',
+    'countries' => 'Countries',
+    'states' => 'States',
+    'cities' => 'Cities',
+    'towns' => 'Towns',
+    'shifts' => 'Shifts',
+    'performance_metrics' => 'Performance Metrics',
+    'performance_kpis' => 'Performance KPIs',
+    'kpis' => 'KPIs',
+    'employee_performance_metrics' => 'Employee Performance KPIs',
+    'employee_performance_kpis' => 'Employee Performance KPIs',
+    'contracts' => 'Contracts',
+    'contract_types' => 'Contract Types',
+    'attendance' => 'Attendance',
+    'attendances' => 'Attendance Records',
+    'attendance_records' => 'Attendance Records',
+    'attendance_processing' => 'Attendance Processing',
+    'leave_management' => 'Leave Management',
+    'leave_balances' => 'Leave Balances',
+    'leave_requests' => 'Leave Requests',
+    'cvs' => 'CVs',
+    'cv_management' => 'CV Management',
+
+    // Settings
+    'settings' => 'Settings',
+    'barcode_print_settings' => 'Barcode Print Settings',
+    'barcode_settings' => 'Barcode Settings',
+    'data_backup' => 'Data Backup',
+
+    // Shipping Management
+    'shipping' => 'Shipping',
+    'shipping_management' => 'Shipping Management',
+    'shipping_companies' => 'Shipping Companies',
+    'drivers' => 'Drivers',
+    'orders' => 'Orders',
+    'shipments' => 'Shipments',
+
+    // Users & Reports
+    'users' => 'Users',
+    'reports' => 'Reports',
+    'logout' => 'Logout',
+
+    // Account Types
+    'account_type' => 'Account Type',
+    'basic' => 'Basic',
+    'regular_account' => 'Regular Account',
+    'parent' => 'Parent',
+    'trade_name_zatca' => 'Trade Name (ZATCA)',
+    'vat_number' => 'VAT Number',
+    'national_id' => 'National ID',
+    'national_address_zatca' => 'National Address (ZATCA)',
+    'customer_type' => 'Customer Type',
+    'company' => 'Company',
+    'individual' => 'Individual',
+    'nationality' => 'Nationality',
+    'stock' => 'Stock',
+    'secret_account' => 'Secret Account',
+    'fund_account' => 'Fund Account',
+    'rentable_asset' => 'Rentable Asset',
+    'employees_salary_account' => 'Employees Salary Account',
+
+    // Transfers
+    'transfers' => 'Transfers',
+    'item_movement' => 'Item Movement',
+    'warehouse_transfers' => 'Warehouse Transfers',
+    'cash_transfers' => 'Cash Transfers',
+    'bank_transfers' => 'Bank Transfers',
+
+    // Reports
+    'general_reports' => 'General Reports',
+    'financial_reports' => 'Financial Reports',
+    'inventory_reports' => 'Inventory Reports',
+    'sales_reports' => 'Sales Reports',
+    'purchase_reports' => 'Purchase Reports',
+    'hr_reports' => 'HR Reports',
+]; 

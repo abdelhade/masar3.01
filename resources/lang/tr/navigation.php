@@ -1,0 +1,225 @@
+<?php
+
+return [
+    // Main Menu
+    'home' => 'Ana Sayfa',
+    'dashboard' => 'Gösterge Paneli',
+    'main_menu' => 'Ana Menü',
+    'master_data' => 'Ana Veriler',
+    'clients' => 'Müşteriler',
+    'suppliers' => 'Tedarikçiler',
+    'employees' => 'Çalışanlar',
+    'users' => 'Kullanıcılar',
+    'reports' => 'Raporlar',
+    'settings' => 'Ayarlar',
+    'logout' => 'Çıkış Yap',
+
+    // Master Data
+    'items' => 'Ürünler',
+    'categories' => 'Kategoriler',
+    'brands' => 'Markalar',
+    'units' => 'Birimler',
+    'warehouses' => 'Depolar',
+    'currencies' => 'Para Birimleri',
+    'tax_rates' => 'Vergi Oranları',
+    'payment_methods' => 'Ödeme Yöntemleri',
+    'shipping_methods' => 'Kargo Yöntemleri',
+
+    // Item Management
+    'item_management' => 'Ürün Yönetimi',
+    'add_item' => 'Ürün Ekle',
+    'edit_item' => 'Ürün Düzenle',
+    'delete_item' => 'Ürün Sil',
+    'item_categories' => 'Ürün Kategorileri',
+    'item_brands' => 'Ürün Markaları',
+    'item_units' => 'Ürün Birimleri',
+    'item_warehouses' => 'Ürün Depoları',
+    'item_suppliers' => 'Ürün Tedarikçileri',
+    'item_manufacturers' => 'Ürün Üreticileri',
+
+    // Discounts
+    'discounts' => 'İndirimler',
+    'discount_types' => 'İndirim Türleri',
+    'discount_rules' => 'İndirim Kuralları',
+    'discount_coupons' => 'İndirim Kuponları',
+    'discount_campaigns' => 'İndirim Kampanyaları',
+    'allowed_discounts' => 'İzin Verilen İndirimler Listesi',
+    'earned_discounts' => 'Kazanılan İndirimler Listesi',
+
+    // Manufacturing
+    'manufacturing' => 'Üretim',
+    'production_orders' => 'Üretim Siparişleri',
+    'work_orders' => 'İş Emirleri',
+    'production_plans' => 'Üretim Planları',
+    'production_schedules' => 'Üretim Programları',
+    'production_lines' => 'Üretim Hatları',
+    'production_machines' => 'Üretim Makineleri',
+    'production_workers' => 'Üretim İşçileri',
+    'production_materials' => 'Üretim Malzemeleri',
+    'production_products' => 'Üretim Ürünleri',
+
+    // Permissions
+    'permissions' => 'İzinler',
+    'roles' => 'Roller',
+    'user_roles' => 'Kullanıcı Rolleri',
+    'role_permissions' => 'Rol İzinleri',
+    'user_permissions' => 'Kullanıcı İzinleri',
+    'system_permissions' => 'Sistem İzinleri',
+    'module_permissions' => 'Modül İzinleri',
+    'function_permissions' => 'Fonksiyon İzinleri',
+
+    // CRM
+    'crm' => 'Müşteri İlişkileri Yönetimi',
+    'leads' => 'Müşteri Adayları',
+    'opportunities' => 'Fırsatlar',
+    'accounts' => 'Hesaplar',
+    'contacts' => 'Kişiler',
+    'deals' => 'Anlaşmalar',
+    'campaigns' => 'Kampanyalar',
+    'tasks' => 'Görevler',
+    'activities' => 'Aktiviteler',
+    'notes' => 'Notlar',
+    'emails' => 'E-postalar',
+    'calls' => 'Aramalar',
+    'meetings' => 'Toplantılar',
+
+    // Sales
+    'sales' => 'Satış',
+    'sales_orders' => 'Satış Siparişleri',
+    'sales_invoices' => 'Satış Faturaları',
+    'sales_returns' => 'Satış İadeleri',
+    'sales_quotes' => 'Satış Teklifleri',
+    'sales_contracts' => 'Satış Sözleşmeleri',
+    'sales_commissions' => 'Satış Komisyonları',
+    'sales_targets' => 'Satış Hedefleri',
+    'sales_forecasts' => 'Satış Tahminleri',
+    'sales_analytics' => 'Satış Analizleri',
+
+    // Purchasing
+    'purchasing' => 'Satın Alma',
+    'purchase_orders' => 'Satın Alma Siparişleri',
+    'purchase_invoices' => 'Satın Alma Faturaları',
+    'purchase_returns' => 'Satın Alma İadeleri',
+    'purchase_quotes' => 'Satın Alma Teklifleri',
+    'purchase_contracts' => 'Satın Alma Sözleşmeleri',
+    'purchase_approvals' => 'Satın Alma Onayları',
+    'purchase_analytics' => 'Satın Alma Analizleri',
+
+    // Inventory
+    'inventory' => 'Envanter',
+    'stock_management' => 'Stok Yönetimi',
+    'stock_transfers' => 'Stok Transferleri',
+    'stock_adjustments' => 'Stok Düzeltmeleri',
+    'stock_counts' => 'Stok Sayımları',
+    'stock_reports' => 'Stok Raporları',
+    'stock_alerts' => 'Stok Uyarıları',
+    'stock_valuations' => 'Stok Değerlemeleri',
+    'inventory_analytics' => 'Envanter Analizleri',
+
+    // Vouchers
+    'vouchers' => 'Kuponlar',
+    'voucher_types' => 'Kupon Türleri',
+    'voucher_rules' => 'Kupon Kuralları',
+    'voucher_campaigns' => 'Kupon Kampanyaları',
+    'voucher_usage' => 'Kupon Kullanımı',
+    'voucher_analytics' => 'Kupon Analizleri',
+
+    // Cash Transfers
+    'cash_transfers' => 'Nakit Transferleri',
+    'bank_transfers' => 'Banka Transferleri',
+    'internal_transfers' => 'İç Transferler',
+    'external_transfers' => 'Dış Transferler',
+    'transfer_approvals' => 'Transfer Onayları',
+    'transfer_reports' => 'Transfer Raporları',
+
+    // Employee Salaries
+    'employee_salaries' => 'Çalışan Maaşları',
+    'salary_structure' => 'Maaş Yapısı',
+    'salary_components' => 'Maaş Bileşenleri',
+    'salary_allowances' => 'Maaş İkramiyeleri',
+    'salary_deductions' => 'Maaş Kesintileri',
+    'salary_overtime' => 'Maaş Fazla Mesai',
+    'salary_bonuses' => 'Maaş Primleri',
+    'salary_increments' => 'Maaş Artışları',
+    'salary_reports' => 'Maaş Raporları',
+
+    // Accruals
+    'accruals' => 'Tahakkuklar',
+    'leave_accruals' => 'İzin Tahakkukları',
+    'overtime_accruals' => 'Fazla Mesai Tahakkukları',
+    'bonus_accruals' => 'Prim Tahakkukları',
+    'allowance_accruals' => 'İkramiye Tahakkukları',
+    'accrual_calculations' => 'Tahakkuk Hesaplamaları',
+    'accrual_reports' => 'Tahakkuk Raporları',
+
+    // Asset Operations
+    'asset_operations' => 'Varlık İşlemleri',
+    'asset_acquisitions' => 'Varlık Edinimleri',
+    'asset_disposals' => 'Varlık Satışları',
+    'asset_transfers' => 'Varlık Transferleri',
+    'asset_maintenance' => 'Varlık Bakımı',
+    'asset_depreciation' => 'Varlık Amortismanı',
+    'asset_valuations' => 'Varlık Değerlemeleri',
+    'asset_reports' => 'Varlık Raporları',
+
+    // Account Management
+    'account_management' => 'Hesap Yönetimi',
+    'chart_of_accounts' => 'Hesap Planı',
+    'account_types' => 'Hesap Türleri',
+    'account_categories' => 'Hesap Kategorileri',
+    'account_balances' => 'Hesap Bakiyeleri',
+    'account_reconciliations' => 'Hesap Mutabakatları',
+    'account_analytics' => 'Hesap Analizleri',
+
+    // Project Management
+    'project_management' => 'Proje Yönetimi',
+    'projects' => 'Projeler',
+    'project_phases' => 'Proje Aşamaları',
+    'project_tasks' => 'Proje Görevleri',
+    'project_milestones' => 'Proje Kilometre Taşları',
+    'project_resources' => 'Proje Kaynakları',
+    'project_costs' => 'Proje Maliyetleri',
+    'project_schedules' => 'Proje Programları',
+    'project_reports' => 'Proje Raporları',
+
+    // Human Resources
+    'human_resources' => 'İnsan Kaynakları',
+    'hr_management' => 'İK Yönetimi',
+    'recruitment' => 'İşe Alım',
+    'onboarding' => 'Oryantasyon',
+    'performance_management' => 'Performans Yönetimi',
+    'training_development' => 'Eğitim ve Gelişim',
+    'compensation_benefits' => 'Maaş ve Faydalar',
+    'employee_relations' => 'Çalışan İlişkileri',
+    'hr_analytics' => 'İK Analizleri',
+
+    // Settings
+    'system_settings' => 'Sistem Ayarları',
+    'user_settings' => 'Kullanıcı Ayarları',
+    'company_settings' => 'Şirket Ayarları',
+    'module_settings' => 'Modül Ayarları',
+    'notification_settings' => 'Bildirim Ayarları',
+    'security_settings' => 'Güvenlik Ayarları',
+    'backup_settings' => 'Yedekleme Ayarları',
+    'integration_settings' => 'Entegrasyon Ayarları',
+
+    // Shipping
+    'shipping' => 'Kargo',
+    'shipping_methods' => 'Kargo Yöntemleri',
+    'shipping_zones' => 'Kargo Bölgeleri',
+    'shipping_rates' => 'Kargo Ücretleri',
+    'shipping_packages' => 'Kargo Paketleri',
+    'shipping_labels' => 'Kargo Etiketleri',
+    'shipping_tracking' => 'Kargo Takibi',
+    'shipping_reports' => 'Kargo Raporları',
+
+    // Account Types
+    'client' => 'Müşteri',
+    'supplier' => 'Tedarikçi',
+    'employee' => 'Çalışan',
+    'vendor' => 'Satıcı',
+    'partner' => 'Ortak',
+    'investor' => 'Yatırımcı',
+    'creditor' => 'Alacaklı',
+    'debtor' => 'Borçlu',
+];
