@@ -5,9 +5,14 @@
 
             <x-notifications::notifications />
 
+            <!-- مبدل اللغة -->
+            <li class="me-3">
+                @livewire('language-switcher')
+            </li>
+
             @can('عرض التحكم في الاعدادات')
                 <li>
-                    <a title="المستخدمين" href="{{ route('mysettings.index') }}" class="nav-link">
+                    <a title="{{ __('navigation.users') }}" href="{{ route('mysettings.index') }}" class="nav-link">
                         <i data-feather="settings" class="text-primary fa-3x"></i>
                     </a>
                 </li>
@@ -15,7 +20,7 @@
             <li>
                 <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                     @csrf
-                    <button type="submit" class="btn btn-lg" title="{{ __('تسجيل الخروج') }}"
+                    <button type="submit" class="btn btn-lg" title="{{ __('navigation.logout') }}"
                         style="background: none; border: none; ">
                         <i class="fas fa-sign-out-alt fa-3x text-primary"></i>
                     </button>
@@ -37,7 +42,7 @@
             </li>
             @can('عرض المدراء')
                 <li>
-                    <a title="{{ __('المستخدمين') }}" href="{{ route('users.index') }}" class="nav-link">
+                    <a title="{{ __('navigation.users') }}" href="{{ route('users.index') }}" class="nav-link">
                         <i class="fas fa-user fa-2x text-primary"></i>
                     </a>
                 </li>
@@ -46,13 +51,12 @@
 
             @can('عرض التقارير')
                 <li>
-                    <a title="{{ __('التقارير') }}" href="{{ route('reports.index') }}" class="nav-link">
+                    <a title="{{ __('navigation.reports') }}" href="{{ route('reports.index') }}" class="nav-link">
                         <i class="fas fa-chart-pie fa-2x text-primary"></i>
                     </a>
 
                 </li>
             @endcan
-            <x-lang.switch-lang />
         </ul>
     </nav>
     <!-- end navbar-->

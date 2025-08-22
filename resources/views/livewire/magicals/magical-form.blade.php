@@ -3,21 +3,26 @@
 use Livewire\Volt\Component;
 
 new class extends Component {
-    public array $rows = [
-        [
-            'type' => '',
-            'options' => [''],
-            'name' => '',
-            'value' => '',
-            'placeholder' => '',
-        ],
-    ];
+    public $rows = [];
+
+    public function mount()
+    {
+        $this->rows = [
+            [
+                'type' => '',
+                'options' => [],
+                'name' => '',
+                'value' => '',
+                'placeholder' => '',
+            ]
+        ];
+    }
 
     public function addRow()
     {
         $this->rows[] = [
             'type' => '',
-            'options' => [''],
+            'options' => [],
             'name' => '',
             'value' => '',
             'placeholder' => '',
@@ -47,12 +52,12 @@ new class extends Component {
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>{{ __('type') }}</th>
-                <th>{{ __('options') }}</th>
-                <th>{{ __('name') }}</th>
-                <th>{{ __('value') }}</th>
-                <th>{{ __('placeholder') }}</th>
-                <th>{{ __('action') }}</th>
+                <th>{{ __('common.type') }}</th>
+                <th>{{ __('common.options') }}</th>
+                <th>{{ __('common.name') }}</th>
+                <th>{{ __('common.value') }}</th>
+                <th>{{ __('common.placeholder') }}</th>
+                <th>{{ __('common.action') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -65,9 +70,9 @@ new class extends Component {
                         @endphp
                         <select name="type[]"
                             class="form-control input_type form-control-sm">
-                            <option value="">{{ __('اختر النوع') }}</option>
+                            <option value="">{{ __('forms.select_type') }}</option>
                             @foreach($types as $type)
-                                <option value="{{ $type }}">{{ __($type) }}</option>
+                                <option value="{{ $type }}">{{ __("forms.{$type}") }}</option>
                             @endforeach
                         </select>
                     </td>
@@ -77,31 +82,31 @@ new class extends Component {
                         @endphp
                         <select name="option[]"
                             class="form-control form-control-sm mb-2">
-                            <option value="">{{ __('اختر خيار') }}</option>
+                            <option value="">{{ __('forms.select_option') }}</option>
                             @foreach($options as $opt)
-                                <option value="{{ $opt }}">{{ $opt }}</option>
+                                <option value="{{ $opt }}">{{ __("forms.{$opt}") }}</option>
                             @endforeach
                         </select>
                     </td>
 
                     {{-- Name --}}
                     <td>
-                        <input placeholder="{{ __('name') }}" type="text" wire:model="rows.{{ $i }}.name"
+                        <input placeholder="{{ __('common.name') }}" type="text" wire:model="rows.{{ $i }}.name"
                             name="name[]" class="form-control form-control-sm">
                     </td>
 
                     {{-- Value --}}
                     <td>
-                        <input placeholder="{{ __('value') }}" type="text" wire:model="rows.{{ $i }}.value"
+                        <input placeholder="{{ __('common.value') }}" type="text" wire:model="rows.{{ $i }}.value"
                             name="value[]" class="form-control form-control-sm">
                     </td>
 
                     {{-- Placeholder --}}
                     <td>
-                        <input placeholder="{{ __('placeholder') }}" type="text" name="placeholder[]" class="form-control form-control-sm">
+                        <input placeholder="{{ __('common.placeholder') }}" type="text" name="placeholder[]" class="form-control form-control-sm">
                     </td>
                     <td>
-                        <input placeholder="{{ __('label') }}" type="text" name="label[]" class="form-control form-control-sm">
+                        <input placeholder="{{ __('forms.label') }}" type="text" name="label[]" class="form-control form-control-sm">
                     </td>
 
 

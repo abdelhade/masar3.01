@@ -24,7 +24,7 @@ class SetLocale
             }
         }
 
-        if (! in_array($locale, ['ar', 'en'], true)) {
+        if (! in_array($locale, ['ar', 'en', 'tr'], true)) {
             $locale = config('app.locale');
         }
 

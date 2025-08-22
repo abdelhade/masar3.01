@@ -34,7 +34,15 @@ document.addEventListener('DOMContentLoaded', function() {
  <script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-us-aea-en.js') }}"></script>
  <script src="{{ asset('assets/pages/jquery.analytics_dashboard.init.js') }}"></script>
  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/ar.js"></script>
+ 
+ <!-- Select2 Language Support -->
+ @if(app()->getLocale() === 'ar')
+     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/ar.js"></script>
+ @elseif(app()->getLocale() === 'tr')
+     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/tr.js"></script>
+ @else
+     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/en.js"></script>
+ @endif
 
  <!-- Tom Select JS -->
  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
@@ -44,4 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
  <!-- App js -->
  <script src="{{ asset('assets/js/app.js') }}"></script>
  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+ 
+ <!-- Livewire Scripts -->
+ @livewireScripts
+ 
  @stack('scripts')

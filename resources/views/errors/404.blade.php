@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" type="image/x-icon">
-    <title>البحر الواسع 😅</title>
+    <title>{{ __('errors.page_not_found_title') }}</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -64,13 +64,13 @@
 <body>
     <div class="animation"></div>
     <h1>404</h1>
-    <p>الصفحة اللي بدك اياها مش موجودة!</p>
+    <p>{{ __('errors.page_not_found_message') }}</p>
 
     <div class="dialect">
-        "احنا بنسجل محاولات الدخول من اللينك فوق علي انها مشبوهه _ ارجع الرئيسية و اتحرك من الأزار !"
+        "{{ __('errors.page_not_found_dialect') }}"
     </div>
 
-    <a href="/" class="btn">ارجع للرئيسية</a>
+    <a href="/" class="btn">{{ __('errors.go_home') }}</a>
 </body>
 
 </html>
