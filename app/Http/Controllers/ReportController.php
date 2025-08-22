@@ -147,7 +147,7 @@ class ReportController extends Controller
             $totalExpensesForProfit += $expense;
         }
 
-        $netProfit = - ($totalRevenueForProfit - $totalExpensesForProfit);
+        $netProfit = -($totalRevenueForProfit - $totalExpensesForProfit);
         $totalLiabilitiesEquity = $totalLiabilities + $totalEquities + $netProfit;
         return view('reports.general-balance-sheet', compact(
             'assets',
@@ -1584,7 +1584,7 @@ class ReportController extends Controller
     {
         // Calculate current quantity from operation_items
         $currentQuantity = $this->calculateCurrentQuantity($item->id);
-        
+
         if ($currentQuantity < $item->min_order_quantity) {
             // Send notification for low quantity
             $this->sendQuantityNotification($item, $currentQuantity, 'below_min');
@@ -1618,7 +1618,7 @@ class ReportController extends Controller
     {
         // Calculate current quantity from operation_items
         $currentQuantity = $this->calculateCurrentQuantity($item->id);
-        
+
         if ($currentQuantity < $item->min_order_quantity) {
             // المطلوب تعويضه = الحد الأدنى - الكمية الحالية
             return $item->min_order_quantity - $currentQuantity;
@@ -1655,20 +1655,20 @@ class ReportController extends Controller
         // Check if we already sent a notification for this item with the same status
         $notificationKey = "item_quantity_{$item->id}_{$status}";
         $lastNotification = cache()->get($notificationKey);
-        
+
         // If we already sent a notification for this status, check if quantity changed significantly
         if ($lastNotification) {
             $quantityDifference = abs($lastNotification['quantity'] - $currentQuantity);
             $minChangeThreshold = $this->getMinChangeThreshold($item, $status);
-            
+
             // Skip notification if quantity hasn't changed significantly
             if ($quantityDifference < $minChangeThreshold) {
                 return; // Skip notification - insufficient change
             }
         }
-        
+
         // Get all users with notification permissions or specific role
-        $users = User::whereHas('roles', function($query) {
+        $users = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['مدير', 'admin', 'مشرف مخزن']);
         })->orWhere('id', 1)->get(); // Include admin user
 
@@ -1697,7 +1697,7 @@ class ReportController extends Controller
                 ]));
             }
         }
-        
+
         // Store notification info in cache to prevent duplicates
         cache()->put($notificationKey, [
             'quantity' => $currentQuantity,
@@ -1719,7 +1719,7 @@ class ReportController extends Controller
             // For high quantity, notify if change is at least 1% of max_order_quantity or 1 unit
             return max(1, $item->max_order_quantity * 0.01);
         }
-        
+
         return 1; // Default threshold
     }
 
@@ -1732,7 +1732,7 @@ class ReportController extends Controller
         $items->getCollection()->transform(function ($item) {
             // Calculate current quantity from operation_items
             $currentQuantity = $this->calculateCurrentQuantity($item->id);
-            
+
             return [
                 'id' => $item->id,
                 'name' => $item->name,
@@ -1763,7 +1763,7 @@ class ReportController extends Controller
         foreach ($items as $item) {
             $currentQuantity = $this->calculateCurrentQuantity($item->id);
             $status = $this->getQuantityStatus($item);
-            
+
             if ($status !== 'within_limits') {
                 $notificationsSent++;
             }
@@ -1783,14 +1783,14 @@ class ReportController extends Controller
     public function checkItemQuantityAfterOperation($itemId)
     {
         $item = Item::find($itemId);
-        
+
         if (!$item) {
             return false;
         }
 
         $currentQuantity = $this->calculateCurrentQuantity($item->id);
         $status = $this->getQuantityStatus($item);
-        
+
         return $status !== 'within_limits'; // Return true if notification was sent
     }
 
@@ -1805,7 +1805,7 @@ class ReportController extends Controller
             ->map(function ($item) {
                 $currentQuantity = $this->calculateCurrentQuantity($item->id);
                 $status = $this->getQuantityStatus($item);
-                
+
                 return [
                     'id' => $item->id,
                     'name' => $item->name,
@@ -1982,14 +1982,14 @@ class ReportController extends Controller
     public function getItemNotificationStatus($itemId)
     {
         $item = Item::find($itemId);
-        
+
         if (!$item) {
             return response()->json(['error' => 'الصنف غير موجود'], 404);
         }
 
         $currentQuantity = $this->calculateCurrentQuantity($item->id);
         $status = $this->getQuantityStatus($item);
-        
+
         $notificationInfo = [
             'below_min_cache' => cache()->get("item_quantity_{$itemId}_below_min"),
             'above_max_cache' => cache()->get("item_quantity_{$itemId}_above_max"),
@@ -2005,4 +2005,35 @@ class ReportController extends Controller
             'notification_cache' => $notificationInfo
         ]);
     }
+
+    public function agingReport()
+    {
+        $today = now();
+
+        $data = DB::table('operhead as o')
+            ->leftJoin('journal_details as jd', 'jd.oper_id', '=', 'o.id')
+            ->select(
+                'o.id',
+                'o.pro_num',
+                'o.pro_date',
+                'o.end_date as due_date',
+                'o.fat_net as invoice_value',
+                DB::raw('(o.fat_net - IFNULL(SUM(jd.amount),0)) as balance'),
+                DB::raw("
+                CASE 
+                    WHEN DATEDIFF(CURDATE(), o.end_date) <= 30 THEN '0-30 يوم'
+                    WHEN DATEDIFF(CURDATE(), o.end_date) BETWEEN 31 AND 60 THEN '31-60 يوم'
+                    WHEN DATEDIFF(CURDATE(), o.end_date) BETWEEN 61 AND 90 THEN '61-90 يوم'
+                    ELSE '+90 يوم'
+                END as aging_bucket
+            ")
+            )
+            ->where('o.isdeleted', 0)
+            ->where('o.pro_type', 1) // فواتير مبيعات مثلاً
+            ->groupBy('o.id', 'o.pro_num', 'o.pro_date', 'o.end_date', 'o.fat_net')
+            ->get();
+
+        return view('reports.oper_aging', compact('data', 'today'));
+    }
+
 }

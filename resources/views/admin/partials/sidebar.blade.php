@@ -419,21 +419,26 @@
                         @can('عرض سند قبض')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
-                                    <i class="ti-control-record"></i>{{ __('سند قبض') }}
+                                    <i class="ti-control-record"></i>{{ __('سند قبض عام') }}
                                 </a>
                             </li>
                         @endcan
-                        @can('عرض سند دفع')
+                        @can(' سند دفع عامل')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
                                     <i class="ti-control-record"></i>{{ __('سند دفع') }}
                                 </a>
                             </li>
                         @endcan
+                        <li class="nav-item">
+                                <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
+                                    <i class="ti-control-record"></i>{{ __('سند دفع') }}
+                                </a>
+                            </li>
                         @can('عرض السندات')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('vouchers.index') }}">
-                                    <i class="ti-control-record"></i>{{ __('السندات') }}
+                                    <i class="ti-control-record"></i>{{ __('سند دفع لمصروفات عامة') }}
                                 </a>
                             </li>
                         @endcan
@@ -444,14 +449,7 @@
                                 </a>
                             </li>
                         @endcan
-                        @can('عرض احتساب الثابت للموظفين')
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                    href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
-                                    <i class="ti-control-record"></i>{{ __('احتساب الثابت للموظفين') }}
-                                </a>
-                            </li>
-                        @endcan
+                   
 
                     </ul>
                 </li>
@@ -508,6 +506,14 @@
                         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                     </a>
                     <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    @can('عرض احتساب الثابت للموظفين')
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                    href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
+                                    <i class="ti-control-record"></i>{{ __('احتساب الثابت للموظفين') }}
+                                </a>
+                            </li>
+                        @endcan
                         @can('عرض احتساب الاضافي للموظفين')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'extra_calc']) }}">
