@@ -15,9 +15,6 @@ class VoucherController extends Controller
     {
         $this->middleware('can:عرض سند قبض')->only(['index', 'create', 'store']);
         $this->middleware('can:عرض سند دفع')->only(['index', 'create', 'store']);
-        $this->middleware('can:عرض السندات')->only(['index', 'create', 'store']);
-        $this->middleware('can:عرض سند دفع متعدد')->only(['index', 'create', 'store']);
-        $this->middleware('can:عرض احتساب الثابت للموظفين')->only(['index', 'create', 'store']);
     }
 
 
@@ -36,10 +33,8 @@ class VoucherController extends Controller
         $proTypeMap = [
             'receipt'      => 1,
             'payment'      => 2,
-            'cash_to_cash' => 3,
-            'cash_to_bank' => 4,
-            'bank_to_cash' => 5,
-            'bank_to_bank' => 6,
+            'exp-payment'      => 2,
+           
         ];
 
         $pro_type = $proTypeMap[$type] ?? null;
@@ -51,6 +46,7 @@ class VoucherController extends Controller
         $proTypeMap = [
             'receipt' => 1,
             'payment' => 2,
+            'exp-payment' => 2,
         ];
 
         $pro_type = $proTypeMap[$type] ?? null;
@@ -71,6 +67,13 @@ class VoucherController extends Controller
             ->where('code', 'like', '2102%') // غيّر الكود حسب النظام عندك
             ->select('id', 'aname')
             ->get();
+
+                    // حسابات المصاريف
+        $expensesAccounts = AccHead::where('isdeleted', 0)
+        ->where('is_basic', 0)
+        ->where('code', 'like', '57%') // غيّر الكود حسب النظام عندك
+        ->select('id', 'aname')
+        ->get();
 
         // المشاريع
         $projects = Project::all();
@@ -217,6 +220,12 @@ class VoucherController extends Controller
             ->select('id', 'aname', 'code')
             ->get();
 
+        // حسابات المصاريف
+        $expensesAccounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', '57%')
+            ->select('id', 'aname', 'code')
+            ->get();
         // باقي الحسابات
         $otherAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
@@ -224,7 +233,7 @@ class VoucherController extends Controller
             ->where('is_stock', '!=', 1)
             ->select('id', 'aname', 'code')
             ->orderBy('code')
-            ->get();
+            ->get();    
 
         $costCenters = CostCenter::where('deleted', 0)
             ->get();
@@ -238,6 +247,7 @@ class VoucherController extends Controller
             'cashAccounts',
             'employeeAccounts',
             'otherAccounts',
+            'expensesAccounts',
             'costCenters'
         ));
     }

@@ -89,8 +89,22 @@
                 @enderror
             </div>
 
-            {{-- التاريخ --}}
             <div class="col-lg-2">
+                <label for="delivery_id" class="form-label" style="font-size: 1em;">{{ __('المندوب') }}</label>
+                <select wire:model="delivery_id"
+                    class="form-control form-control-sm @error('delivery_id') is-invalid @enderror"
+                    style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
+                    @foreach ($deliverys as $delivery)
+                        <option value="{{ $delivery->id }}">{{ $delivery->aname }}</option>
+                    @endforeach
+                </select>
+                @error('delivery_id')
+                    <span class="emp_id-feedback"><strong>{{ $message }}</strong></span>
+                @enderror
+            </div>
+
+            {{-- التاريخ --}}
+            <div class="col-lg-1">
                 <label for="pro_date" class="form-label" style="font-size: 1em;">{{ __('التاريخ') }}</label>
                 <input type="date" wire:model="pro_date"
                     class="form-control form-control-sm @error('pro_date') is-invalid @enderror"
@@ -101,7 +115,7 @@
             </div>
 
             {{-- تاريخ الاستحقاق --}}
-            <div class="col-lg-2">
+            <div class="col-lg-1">
                 <label for="accural_date" class="form-label"
                     style="font-size: 1em;"">{{ __('تاريخ الاستحقاق') }}</label>
                 <input type="date" wire:model="accural_date"

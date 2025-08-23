@@ -62,7 +62,6 @@ class SaveInvoiceService
 
         DB::beginTransaction();
         try {
-
             // for testing notifications
 
             // $user = User::find(Auth::id());
@@ -84,6 +83,7 @@ class SaveInvoiceService
                 'acc1'           => $component->acc1_id,
                 'acc2'           => $component->acc2_id,
                 'emp_id'         => $component->emp_id,
+                'emp2_id' => $component->delivery_id,
                 'is_manager'     => $isManager,
                 'is_journal'     => $isJournal,
                 'is_stock'       => 1,
@@ -100,6 +100,7 @@ class SaveInvoiceService
                 'fat_plus'       => $component->additional_value,
                 'fat_total'      => $component->subtotal,
                 'info'           => $component->notes,
+                'status'         => $component->status ?? null,
                 'acc_fund'       => $component->cash_box_id ?: 0,
                 'paid_from_client' => $component->received_from_client
             ];

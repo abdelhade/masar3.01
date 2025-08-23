@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Barcode;
 use Livewire\Component;
+use App\Enums\InvoiceStatus;
 use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
@@ -36,6 +37,7 @@ class CreateInvoiceForm extends Component
 
     public $priceTypes = [];
     public $selectedPriceType = 1;
+    public $status = 0;
     public $selectedUnit = [];
 
     public $searchTerm = '';
@@ -47,6 +49,9 @@ class CreateInvoiceForm extends Component
     public $acc1List = [];
     public $acc2List = [];
     public $employees = [];
+    public $deliverys = [];
+    public $statues = [];
+    public $delivery_id = null;   // هنا القيمة اللي المستخدم هيختارها
     public $nextProId;
     public $acc1Role;
     public $acc2Role;
@@ -105,8 +110,6 @@ class CreateInvoiceForm extends Component
         22 => 'امر حجز',
     ];
 
-    // protected $listeners = ['addRow'];
-
     public function mount($type, $hash)
     {
         $this->type = (int) $type;
@@ -117,6 +120,8 @@ class CreateInvoiceForm extends Component
         $this->nextProId = OperHead::max('pro_id') + 1 ?? 1;
         $this->pro_id = $this->nextProId;
         $this->pro_date = now()->format('Y-m-d');
+        $this->deliverys = $this->getAccountsByCode('2102%');
+
         $this->cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('is_fund', 1)
@@ -125,8 +130,9 @@ class CreateInvoiceForm extends Component
 
         $this->settings = PublicSetting::pluck('value', 'key')->toArray();
 
-        // dd($this->settings);
-
+        if ($type = 14) {
+            $this->statues = InvoiceStatus::cases();
+        }
         $clientsAccounts   = $this->getAccountsByCode('1103%');
         $suppliersAccounts = $this->getAccountsByCode('2101%');
         $stores            = $this->getAccountsByCode('1104%');
@@ -157,6 +163,8 @@ class CreateInvoiceForm extends Component
         $this->acc2_id = 62;
         $this->emp_id = 65;
         $this->cash_box_id = 59;
+        $this->delivery_id = 65;
+        $this->status = 0;
 
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
             $this->acc1_id = 61;

@@ -28,7 +28,7 @@
 
                         <div class="card card-info">
                             <div class="card-header">
-                                <h3>تعديل حساب</h3>
+                                <h3>{{ __('تعديل حساب') }}</h3>
                             </div>
 
                             <div class="card-body">
@@ -45,7 +45,7 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="code">الكود <span class="text-danger">*</span></label>
+                                            <label for="code">{{ __('الكود') }} <span class="text-danger">*</span></label>
                                             <input required readonly class="form-control font-bold" type="text"
                                                 name="code" value="{{ $account->code }}" id="code">
                                         </div>
@@ -53,7 +53,7 @@
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="aname">الاسم <span class="text-danger">*</span></label>
+                                            <label for="aname">{{ __('الاسم') }} <span class="text-danger">*</span></label>
                                             <input required class="form-control font-bold" type="text" name="aname"
                                                 value="{{ $account->aname }}" id="frst">
                                             <div id="resaname"></div>
@@ -62,12 +62,10 @@
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="is_basic">نوع الحساب <span class="text-danger">*</span></label>
+                                            <label for="is_basic">{{ __('نوع الحساب') }} <span class="text-danger">*</span></label>
                                             <select class="form-control font-bold" name="is_basic" id="is_basic">
-                                                <option value="1" {{ $account->is_basic == 1 ? 'selected' : '' }}>اساسي
-                                                </option>
-                                                <option value="0" {{ $account->is_basic == 0 ? 'selected' : '' }}>حساب
-                                                    عادي</option>
+                                                <option value="1" {{ $account->is_basic == 1 ? 'selected' : '' }}>{{ __('اساسي') }}</option>
+                                                <option value="0" {{ $account->is_basic == 0 ? 'selected' : '' }}>{{ __('حساب عادي') }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -76,7 +74,7 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="parent_id">يتبع ل <span class="text-danger">*</span></label>
+                                            <label for="parent_id">{{ __('يتبع ل') }} <span class="text-danger">*</span></label>
                                             <select class="form-control font-bold" name="parent_id" id="parent_id">
                                                 @foreach ($resacs as $rowacs)
                                                     <option value="{{ $rowacs->id }}"
@@ -90,7 +88,7 @@
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="phone">تليفون</label>
+                                            <label for="phone">{{ __('تليفون') }}</label>
                                             <input class="form-control font-bold" type="text" name="phone"
                                                 id="phone" value="{{ $account->phone }}">
                                         </div>
@@ -98,7 +96,7 @@
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="address">العنوان</label>
+                                            <label for="address">{{ __('العنوان') }}</label>
                                             <input class="form-control font-bold" type="text" name="address"
                                                 id="address" value="{{ $account->address }}">
                                         </div>
@@ -109,43 +107,43 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="zatca_name">الاسم التجاري (ZATCA)</label>
-                                            <input class="form-control" type="text" name="zatca_name" id="zatca_name" value="{{ $account->zatca_name }}" placeholder="الاسم التجاري">
+                                            <label for="zatca_name">{{ __('الاسم التجاري (ZATCA)') }}</label>
+                                            <input class="form-control" type="text" name="zatca_name" id="zatca_name" value="{{ $account->zatca_name }}" placeholder="{{ __('الاسم التجاري') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="vat_number">الرقم الضريبي (VAT)</label>
-                                            <input class="form-control" type="text" name="vat_number" id="vat_number" value="{{ $account->vat_number }}" placeholder="الرقم الضريبي">
+                                            <label for="vat_number">{{ __('الرقم الضريبي (VAT)') }}</label>
+                                            <input class="form-control" type="text" name="vat_number" id="vat_number" value="{{ $account->vat_number }}" placeholder="{{ __('الرقم الضريبي') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="national_id">رقم الهوية</label>
-                                            <input class="form-control" type="text" name="national_id" id="national_id" value="{{ $account->national_id }}" placeholder="رقم الهوية">
+                                            <label for="national_id">{{ __('رقم الهوية') }}</label>
+                                            <input class="form-control" type="text" name="national_id" id="national_id" value="{{ $account->national_id }}" placeholder="{{ __('رقم الهوية') }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="zatca_address">العنوان الوطني (ZATCA)</label>
-                                            <input class="form-control" type="text" name="zatca_address" id="zatca_address" value="{{ $account->zatca_address }}" placeholder="العنوان الوطني">
+                                            <label for="zatca_address">{{ __('العنوان الوطني (ZATCA)') }}</label>
+                                            <input class="form-control" type="text" name="zatca_address" id="zatca_address" value="{{ $account->zatca_address }}" placeholder="{{ __('العنوان الوطني') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="company_type">نوع العميل</label>
+                                            <label for="company_type">{{ __('نوع العميل') }}</label>
                                             <select class="form-control" name="company_type" id="company_type">
-                                                <option value="شركة" {{ $account->company_type == 'شركة' ? 'selected' : '' }}>شركة</option>
-                                                <option value="فردي" {{ $account->company_type == 'فردي' ? 'selected' : '' }}>فردي</option>
+                                                <option value="شركة" {{ $account->company_type == 'شركة' ? 'selected' : '' }}>{{ __('شركة') }}</option>
+                                                <option value="فردي" {{ $account->company_type == 'فردي' ? 'selected' : '' }}>{{ __('فردي') }}</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="nationality">الجنسية</label>
-                                            <input class="form-control" type="text" name="nationality" id="nationality" value="{{ $account->nationality }}" placeholder="الجنسية">
+                                            <label for="nationality">{{ __('الجنسية') }}</label>
+                                            <input class="form-control" type="text" name="nationality" id="nationality" value="{{ $account->nationality }}" placeholder="{{ __('الجنسية') }}">
                                         </div>
                                     </div>
                                 </div>
@@ -154,7 +152,7 @@
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="is_stock">مخزون</label><br>
+                                            <label for="is_stock">{{ __('مخزون') }}</label><br>
                                             <input type="checkbox" name="is_stock" id="is_stock"
                                                 {{ $account->is_stock ? 'checked' : '' }}>
                                         </div>
@@ -162,7 +160,7 @@
 
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="secret">حساب سري</label><br>
+                                            <label for="secret">{{ __('حساب سري') }}</label><br>
                                             <input type="checkbox" name="secret" id="secret"
                                                 {{ $account->secret ? 'checked' : '' }}>
                                         </div>
@@ -170,7 +168,7 @@
 
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="is_fund">حساب صندوق</label><br>
+                                            <label for="is_fund">{{ __('حساب صندوق') }}</label><br>
                                             <input type="checkbox" name="is_fund" id="is_fund"
                                                 {{ $account->is_fund ? 'checked' : '' }}>
                                         </div>
@@ -178,7 +176,7 @@
 
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="rentable">أصل قابل للتأجير</label><br>
+                                            <label for="rentable">{{ __('أصل قابل للتأجير') }}</label><br>
                                             <input type="checkbox" name="rentable" id="rentable"
                                                 {{ $account->rentable ? 'checked' : '' }}>
                                         </div>
@@ -187,7 +185,7 @@
                                     @if ($parent == 44)
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="employees_expensses">حساب رواتب للموظفين</label><br>
+                                                <label for="employees_expensses">{{ __('حساب رواتب للموظفين') }}</label><br>
                                                 <input type="checkbox" name="employees_expensses" id="employees_expensses"
                                                     {{ $account->employees_expensses ? 'checked' : '' }}>
                                             </div>
@@ -198,9 +196,9 @@
 
                             <div class="card-footer">
                                 <div class="d-flex justify-content-start">
-                                    <button class="btn btn-success btn-block m-1" type="submit">تحديث</button>
+                                    <button class="btn btn-success btn-block m-1" type="submit">{{ __('تحديث') }}</button>
                                     <a href="{{ route('accounts.index') }}"
-                                        class="btn btn-secondary btn-block m-1">رجوع</a>
+                                        class="btn btn-secondary btn-block m-1">{{ __('رجوع') }}</a>
                                 </div>
                             </div>
                         </div>

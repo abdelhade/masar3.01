@@ -179,7 +179,6 @@ class ManufacturingInvoiceService
             return false;
         }
 
-
         try {
             DB::beginTransaction();
 
@@ -193,12 +192,14 @@ class ManufacturingInvoiceService
                 'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج، 1 للفاتورة العادية
                 'is_finance' => 0,
                 'is_manager' => 0,
+                'expected_time' => $component->actualTime ?? null,
                 'is_journal' => $isTemplate ? 0 : 1, // 0 للنموذج، 1 للفاتورة العادية
                 'pro_date' => $component->invoiceDate,
                 'pro_value' => $component->totalManufacturingCost,
                 'fat_net' => $component->totalManufacturingCost,
                 'info' => $component->description,
                 'user' => Auth::id(),
+
                 'is_template' => $isTemplate ? 1 : 0, // إضافة هذا الحقل إذا كان موجوداً في الجدول
             ]);
 

@@ -155,3 +155,6 @@ Route::get(
 // تقرير جرد الأصناف
 Route::get('/discrepancy-report', [ReportController::class, 'inventoryDiscrepancyReport'])
     ->name('reports.inventory-discrepancy-report');
+
+Route::get('/oper-aging', [ReportController::class, 'agingReport'])
+    ->name('reports.oper-aging');

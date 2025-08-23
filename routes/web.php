@@ -37,8 +37,18 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\ProductionOrderController;
+
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+
+Route::get('/locale/{locale}', function (string $locale) {
+    if (! in_array($locale, ['ar', 'en'], true)) {
+        abort(404);
+    }
+    session(['locale' => $locale]);
+
+    return back();
+})->name('locale.switch');
 
 // test for dashboard
 Route::get('/admin/dashboard', function () {

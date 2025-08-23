@@ -28,7 +28,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    <h3 class="cake cake-bounce">قائمة الحسابات
+                    <h3 class="cake cake-bounce">{{ __('قائمة الحسابات') }}
                         @isset($parentAccountName)
                             : {{ $parentAccountName }}
                         @else

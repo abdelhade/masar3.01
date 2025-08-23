@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('operhead', function (Blueprint $table) {
-            $table->string('expected_time')->nullable()->after('pro_value')->comment('الوقت المتوقع للإنتاج');
+            $table->string('expected_time')->nullable();
         });
     }
 

@@ -1,0 +1,251 @@
+<?php
+
+return [
+    // القائمة الرئيسية
+    'home' => 'الرئيسية',
+    'dashboard' => 'لوحة التحكم',
+    'main_menu' => 'القائمة الرئيسية',
+
+    // البيانات الأساسية
+    'master_data' => 'البيانات الأساسية',
+    'clients' => 'العملاء',
+    'suppliers' => 'الموردين',
+    'funds' => 'الصناديق',
+    'banks' => 'البنوك',
+    'employees' => 'الموظفين',
+    'warehouses' => 'المخازن',
+    'expenses' => 'المصروفات',
+    'revenues' => 'الإيرادات',
+    'various_creditors' => 'دائنين متنوعين',
+    'various_debtors' => 'مدينين متنوعين',
+    'partners' => 'الشركاء',
+    'current_partners' => 'جارى الشركاء',
+    'fixed_assets' => 'الأصول الثابتة',
+    'rentable_assets' => 'الأصول القابلة للتأجير',
+
+    // إدارة الأصناف
+    'items' => 'الأصناف',
+    'units' => 'الوحدات',
+    'prices' => 'الأسعار',
+    'categories' => 'التصنيفات',
+    'item_movement_report' => 'تقرير حركة صنف',
+    'item_management' => 'إدارة الأصناف',
+
+    // إدارة الخصومات
+    'discounts' => 'الخصومات',
+    'allowed_discounts_list' => 'قائمة الخصومات المسموح بها',
+    'earned_discounts_list' => 'قائمة الخصومات المكتسبة',
+    'allowed_discount' => 'خصم مسموح به',
+    'earned_discount' => 'خصم مكتسب',
+    'allowed_discounts' => 'قائمة الخصومات المسموح بها',
+    'earned_discounts' => 'قائمة الخصومات المكتسبة',
+
+    // التصنيع
+    'manufacturing' => 'التصنيع',
+    'manufacturing_invoice' => 'فاتورة تصنيع',
+
+    // الصلاحيات والأدوار
+    'permissions' => 'الصلاحيات',
+    'roles' => 'الأدوار',
+    'admins' => 'المدراء',
+    'managers' => 'المدراء',
+
+    // CRM
+    'crm' => 'CRM',
+    'statistics' => 'الإحصائيات',
+    'lead_sources' => 'مصدر الفرص',
+    'chance_sources' => 'مصدر الفرص',
+    'company_contacts' => 'جهات اتصال الشركات',
+    'client_contacts' => 'جهات اتصال الشركات',
+    'lead_statuses' => 'حالات الفرص',
+    'leads' => 'الفرص',
+    'tasks' => 'المهمات',
+    'activities' => 'الأنشطة',
+
+    // إدارة المبيعات
+    'sales_management' => 'إدارة المبيعات',
+    'sales_return' => 'مردود مبيعات',
+    'sales_invoice' => 'فاتورة مبيعات',
+    'sales_order' => 'أمر بيع',
+    'customer_quotation' => 'عرض سعر لعميل',
+    'reservation_order' => 'أمر حجز',
+
+    // إدارة المشتريات
+    'purchasing_management' => 'إدارة المشتريات',
+    'purchase_invoice' => 'فاتورة مشتريات',
+    'purchase_return' => 'مردود مشتريات',
+    'purchase_order' => 'أمر شراء',
+    'supplier_quotation' => 'عرض سعر من مورد',
+
+    // إدارة المخزون
+    'inventory_management' => 'إدارة المخزون',
+    'damaged_invoice' => 'فاتورة تالف',
+    'issue_order' => 'أمر صرف',
+    'add_order' => 'أمر إضافة',
+    'warehouse_transfer' => 'تحويل من مخزن لمخزن',
+
+    // السندات
+    'vouchers' => 'السندات',
+    'receipt_voucher' => 'سند قبض',
+    'payment_voucher' => 'سند دفع',
+    'multi_payment_voucher' => 'سند دفع متعدد',
+    'employees_fixed_salary_calculation' => 'احتساب الثابت للموظفين',
+    'general_receipt_voucher' => 'سند قبض عام',
+    'general_payment_voucher' => 'سند دفع',
+    'general_payment_voucher_for_expenses' => 'سند دفع لمصروفات عامة',
+    'multi_receipt_voucher' => 'سند قبض متعدد',
+
+    // التحويلات النقدية
+    'cash_transfers' => 'التحويلات النقدية',
+    'cash_transfer_fund_to_fund' => 'تحويل نقدية من صندوق لصندوق',
+    'cash_transfer_fund_to_bank' => 'تحويل نقدية من صندوق لبنك',
+    'transfer_bank_to_fund' => 'تحويل من بنك لصندوق',
+    'transfer_bank_to_bank' => 'تحويل من بنك لبنك',
+    'cash_to_cash_transfer' => 'تحويل نقدية من صندوق لصندوق',
+    'cash_to_bank_transfer' => 'تحويل نقدية من صندوق لبنك',
+    'bank_to_cash_transfer' => 'تحويل من بنك لصندوق',
+    'bank_to_bank_transfer' => 'تحويل من بنك لبنك',
+
+    // رواتب الموظفين
+    'employees_payroll' => 'رواتب الموظفين',
+    'employee_salaries' => 'رواتب الموظفين',
+    'overtime_calculation' => 'احتساب الإضافي للموظفين',
+    'extra_salary_calculation' => 'احتساب الإضافي للموظفين',
+    'deduction_calculation' => 'احتساب خصم للموظفين',
+    'discount_salary_calculation' => 'احتساب خصم للموظفين',
+    'insurance_calculation' => 'احتساب تأمينات',
+    'income_tax_calculation' => 'احتساب ضريبة دخل',
+    'tax_calculation' => 'احتساب ضريبة دخل',
+    'fixed_salary_calculation' => 'احتساب الثابت للموظفين',
+
+    // الاستحقاقات
+    'accruals' => 'الاستحقاقات',
+    'multi_receipt_voucher' => 'سند قبض متعدد',
+    'service_contract' => 'اتفاقية خدمة',
+    'service_agreement' => 'اتفاقية خدمة',
+    'accrued_expenses' => 'مصروفات مستحقة',
+    'accured_expenses' => 'مصروفات مستحقة',
+    'accrued_revenues' => 'إيرادات مستحقة',
+    'accured_revenues' => 'إيرادات مستحقة',
+    'bank_commission' => 'احتساب عمولة بنكية',
+    'bank_commission_calculation' => 'احتساب عمولة بنكية',
+    'sales_contract' => 'عقد بيع',
+    'partners_profit_distribution' => 'توزيع الأرباح على الشركاء',
+    'partner_profit_sharing' => 'توزيع الأرباح على الشركاء',
+
+    // عمليات الأصول
+    'asset_operations' => 'عمليات الأصول',
+    'asset_depreciation' => 'اهلاك الأصل',
+    'depreciation' => 'اهلاك الأصل',
+    'asset_sale' => 'بيع الأصول',
+    'sell_asset' => 'بيع الأصول',
+    'asset_purchase' => 'شراء أصل',
+    'buy_asset' => 'شراء أصل',
+    'increase_asset_value' => 'زيادة في قيمة الأصل',
+    'decrease_asset_value' => 'نقص في قيمة الأصل',
+
+    // إدارة الحسابات
+    'accounts_management' => 'إدارة الحسابات',
+    'account_management' => 'إدارة الحسابات',
+    'journal_entry' => 'قيد يومية',
+    'daily_journal' => 'قيد يومية',
+    'multi_journal_entry' => 'قيد يومية متعدد',
+    'multi_journal' => 'قيد يومية متعدد',
+    'operations_journal_entries' => 'قيود اليومية _عمليات_',
+    'daily_ledgers_operations' => 'قيود اليومية _عمليات_',
+    'multiple_operations_journal_entries' => 'قيود اليومية المتعددة _عمليات_',
+    'multi_daily_ledgers_operations' => 'قيود اليومية المتعددة _عمليات_',
+    'accounts_journal_entries' => 'قيود اليومية - حسابات',
+    'daily_ledgers_accounts' => 'قيود اليومية - حسابات',
+    'inventory_opening_balance' => 'تسجيل الأرصدة الافتتاحية للمخازن',
+    'opening_inventory_balance' => 'تسجيل الأرصدة الافتتاحية للمخازن',
+    'accounts_opening_balance' => 'الرصيد الافتتاحي للحسابات',
+    'opening_balance_accounts' => 'الرصيد الافتتاحي للحسابات',
+    'account_movement_report' => 'تقرير حركة حساب',
+    'balance_sheet' => 'الميزانية العمومية',
+
+    // إدارة المشاريع
+    'project_management' => 'إدارة المشاريع',
+    'projects' => 'المشاريع',
+    'rentals' => 'المستأجرات',
+
+    // الموارد البشرية
+    'human_resources' => 'الموارد البشرية',
+    'departments' => 'الإدارات والأقسام',
+    'jobs' => 'الوظائف',
+    'addresses' => 'العناوين',
+    'countries' => 'الدول',
+    'states' => 'المحافظات',
+    'cities' => 'المدن',
+    'towns' => 'المناطق',
+    'shifts' => 'الورديات',
+    'performance_metrics' => 'معدلات الأداء',
+    'performance_kpis' => 'معدلات الأداء',
+    'kpis' => 'المعدلات',
+    'employee_performance_metrics' => 'معدلات أداء الموظفين',
+    'employee_performance_kpis' => 'معدلات أداء الموظفين',
+    'contracts' => 'العقود',
+    'contract_types' => 'أنواع العقود',
+    'attendance' => 'الحضور والانصراف',
+    'attendances' => 'البصمات',
+    'attendance_records' => 'البصمات',
+    'attendance_processing' => 'معالجة الحضور والانصراف',
+    'leave_management' => 'إدارة الإجازات',
+    'leave_balances' => 'رصيد الإجازات',
+    'leave_requests' => 'طلبات الإجازة',
+    'cvs' => 'السير الذاتية',
+    'cv_management' => 'السير الذاتية',
+
+    // الإعدادات
+    'settings' => 'الإعدادات',
+    'barcode_print_settings' => 'إعدادات الطابعة',
+    'barcode_settings' => 'إعدادات الطابعة',
+    'data_backup' => 'النسخ الاحتياطي للبيانات',
+
+    // إدارة الشحن
+    'shipping' => 'إدارة الشحن',
+    'shipping_management' => 'إدارة الشحن',
+    'shipping_companies' => 'شركات الشحن',
+    'drivers' => 'السائقون',
+    'orders' => 'الطلبات',
+    'shipments' => 'الشحنات',
+
+    // المستخدمين والتقارير
+    'users' => 'المستخدمين',
+    'reports' => 'التقارير',
+    'logout' => 'تسجيل الخروج',
+
+    // أنواع الحسابات
+    'account_type' => 'نوع الحساب',
+    'basic' => 'أساسي',
+    'regular_account' => 'حساب عادي',
+    'parent' => 'يتبع ل',
+    'trade_name_zatca' => 'الاسم التجاري (ZATCA)',
+    'vat_number' => 'الرقم الضريبي (VAT)',
+    'national_id' => 'رقم الهوية',
+    'national_address_zatca' => 'العنوان الوطني (ZATCA)',
+    'customer_type' => 'نوع العميل',
+    'company' => 'شركة',
+    'individual' => 'فردي',
+    'nationality' => 'الجنسية',
+    'stock' => 'مخزون',
+    'secret_account' => 'حساب سري',
+    'fund_account' => 'حساب صندوق',
+    'rentable_asset' => 'أصل قابل للتأجير',
+    'employees_salary_account' => 'حساب رواتب للموظفين',
+
+    // التحويلات
+    'transfers' => 'التحويلات',
+    'item_movement' => 'حركة صنف',
+    'warehouse_transfers' => 'تحويلات المخازن',
+    'cash_transfers' => 'التحويلات النقدية',
+    'bank_transfers' => 'التحويلات البنكية',
+
+    // التقارير
+    'general_reports' => 'التقارير العامة',
+    'financial_reports' => 'التقارير المالية',
+    'inventory_reports' => 'تقارير المخزون',
+    'sales_reports' => 'تقارير المبيعات',
+    'purchase_reports' => 'تقارير المشتريات',
+    'hr_reports' => 'تقارير الموارد البشرية',
+]; 
