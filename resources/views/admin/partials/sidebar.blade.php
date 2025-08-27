@@ -437,14 +437,15 @@
                             </li>
                         @endcan
                         <li class="nav-item">
-                                <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
-                                    <i class="ti-control-record"></i>{{ __('navigation.general_payment_voucher') }}
-                                </a>
-                            </li>
+                            <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
+                                <i class="ti-control-record"></i>{{ __('navigation.general_payment_voucher') }}
+                            </a>
+                        </li>
                         @can('عرض السندات')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('vouchers.index') }}">
-                                    <i class="ti-control-record"></i>{{ __('navigation.general_payment_voucher_for_expenses') }}
+                                    <i
+                                        class="ti-control-record"></i>{{ __('navigation.general_payment_voucher_for_expenses') }}
                                 </a>
                             </li>
                         @endcan
@@ -457,11 +458,10 @@
                         @endcan
                         @can('عرض سند قبض متعدد')
                             <li class="nav-item">
-                                <a class="nav-link"
-                                    href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
+                                <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
                                     <i class="ti-control-record"></i>{{ __('navigation.multi_receipt_voucher') }}
                                 </a>
-                            </li> 
+                            </li>
                         @endcan
 
                     </ul>
@@ -519,7 +519,7 @@
                         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                     </a>
                     <ul class="sub-menu mm-collapse" aria-expanded="false">
-                    @can('عرض احتساب الثابت للموظفين')
+                        @can('عرض احتساب الثابت للموظفين')
                             <li class="nav-item">
                                 <a class="nav-link"
                                     href="{{ route('multi-vouchers.create', ['type' => 'salary_calculation']) }}">
@@ -578,7 +578,7 @@
                         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                     </a>
                     <ul class="sub-menu mm-collapse" aria-expanded="false">
-             
+
                         @can('عرض اتفاقية خدمة')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'contract']) }}">
@@ -1003,6 +1003,28 @@
                             <i class="ti-control-record"></i>{{ __('navigation.data_backup') }}
                         </a>
                     </li>
+                </ul>
+            </li>
+
+            <li class="li-main">
+                <a href="javascript: void(0);">
+                    <i data-feather="settings" class="align-self-center menu-icon"></i>
+                    <span>{{ __('أدارة المستأجرات') }}</span>
+                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                </a>
+                <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('rentals.buildings.index') }}">
+                            <i class="ti-control-record"></i>{{ __('أستأجار مبني') }}
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('rentals.leases.index') }}">
+                            <i class="ti-control-record"></i>{{ __('عقود الاستأجار') }}
+                        </a>
+                    </li>
+
                 </ul>
             </li>
 

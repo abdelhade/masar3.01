@@ -1,0 +1,11 @@
+{
+    "name": "Rentals",
+    "alias": "rentals",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Rentals\\Providers\\RentalsServiceProvider"
+    ],
+    "files": []
+}

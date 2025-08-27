@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/rentals",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Rentals\\": "app/",
+            "Modules\\Rentals\\Database\\Factories\\": "database/factories/",
+            "Modules\\Rentals\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Rentals\\Tests\\": "tests/"
+        }
+    }
+}
