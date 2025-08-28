@@ -6,5 +6,6 @@
     "Zatca": true,
     "Shipping": true,
     "Notifications": true,
-    "Rentals": true
+    "Rentals": true,
+    "Maintenance": true
 }

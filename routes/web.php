@@ -22,7 +22,6 @@ use App\Http\Controllers\KpiController;
 use App\Http\Controllers\ManufacturingController;
 use App\Http\Controllers\MultiJournalController;
 use App\Http\Controllers\MultiVoucherController;
-use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\PosShiftController;
 use App\Http\Controllers\PosVouchersController;

@@ -445,7 +445,8 @@
                             <li class="nav-item">
 
                                 <a class="nav-link" href="{{ route('vouchers.create', ['type' => 'exp-payment']) }}">
-                                    <i class="ti-control-record"></i>{{ __('navigation.general_payment_voucher_for_expenses') }}
+                                    <i
+                                        class="ti-control-record"></i>{{ __('navigation.general_payment_voucher_for_expenses') }}
                                 </a>
                             </li>
                         @endcan
@@ -1022,6 +1023,28 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('rentals.leases.index') }}">
                             <i class="ti-control-record"></i>{{ __('عقود الاستأجار') }}
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+            <li class="li-main">
+                <a href="javascript: void(0);">
+                    <i data-feather="settings" class="align-self-center menu-icon"></i>
+                    <span>{{ __('الصيانه') }}</span>
+                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                </a>
+                <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('service.types.index') }}">
+                            <i class="ti-control-record"></i>{{ __('انواع الخدمات') }}
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('maintenances.index') }}">
+                            <i class="ti-control-record"></i>{{ __('الصيانات') }}
                         </a>
                     </li>
 
