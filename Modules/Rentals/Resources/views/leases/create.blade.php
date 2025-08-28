@@ -48,15 +48,15 @@
                             <label class="form-label">العميل <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
+
                                 <select name="client_id" class="form-select @error('client_id') is-invalid @enderror"
                                     required>
                                     <option value="">-- اختر العميل --</option>
-                                    @foreach ($clients as $id => $cname)
-                                        <option value="{{ $id }}" @selected(old('client_id') == $id)>
-                                            {{ $cname }}
+                                    @foreach ($clients as $client)
+                                        <option value="{{ $client->id }}" @selected(old('client_id') == $client->id)>
+                                            {{ $client->aname }}
                                         </option>
                                     @endforeach
-
                                 </select>
                             </div>
                             @error('client_id')
@@ -108,14 +108,18 @@
 
                         {{-- طريقة الدفع --}}
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">طريقة الدفع</label>
+                            <label class="form-label">الصندوق <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
-                                <input type="text" name="payment_method"
-                                    class="form-control @error('payment_method') is-invalid @enderror"
-                                    value="{{ old('payment_method') }}">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <select name="acc_id" class="form-select @error('acc_id') is-invalid @enderror" required>
+                                    @foreach ($paymantAccount as $account)
+                                        <option value="{{ $account->id }}" @selected(old('acc_id') == $account->id)>
+                                            {{ $account->aname }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            @error('payment_method')
+                            @error('acc_id')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
@@ -126,9 +130,11 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
                                 <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                                    <option value="0" @selected(old('status') == 0)>قيد الانتظار</option>
-                                    <option value="1" @selected(old('status') == 1)>نشط</option>
-                                    <option value="2" @selected(old('status') == 2)>منتهي</option>
+                                    @foreach (\Modules\Rentals\Enums\LeaseStatus::cases() as $status)
+                                        <option value="{{ $status->value }}" @selected(old('status', $lease->status ?? \Modules\Rentals\Enums\LeaseStatus::PENDING->value) == $status->value)>
+                                            {{ $status->label() }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             @error('status')

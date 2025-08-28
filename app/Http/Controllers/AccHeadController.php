@@ -45,44 +45,44 @@ class AccHeadController extends Controller
                 }
             }
 
-            $label = match ($type) {
-                'client' => 'العملاء',
-                'supplier' => 'الموردين',
-                'fund' => 'الصناديق',
-                'bank' => 'البنوك',
-                'employee' => 'الموظفين',
-                'store' => 'المخازن',
-                'expense' => 'المصروفات',
-                'revenue' => 'الإيرادات',
-                'creditor' => 'دائنين متنوعين',
-                'debtor' => 'مدينين متنوعين',
-                'partner' => 'الشركاء',
-                'current-partner' => 'جارى الشركاء',
-                'asset' => 'الأصول الثابتة',
-                'rentable' => 'الأصول القابلة للتأجير',
-                default => null,
-            };
+            // $label = match ($type) {
+            //     'client' => 'العملاء',
+            //     'supplier' => 'الموردين',
+            //     'fund' => 'الصناديق',
+            //     'bank' => 'البنوك',
+            //     'employee' => 'الموظفين',
+            //     'store' => 'المخازن',
+            //     'expense' => 'المصروفات',
+            //     'revenue' => 'الإيرادات',
+            //     'creditor' => 'دائنين متنوعين',
+            //     'debtor' => 'مدينين متنوعين',
+            //     'partner' => 'الشركاء',
+            //     'current-partner' => 'جارى الشركاء',
+            //     'asset' => 'الأصول الثابتة',
+            //     'rentable' => 'الأصول القابلة للتأجير',
+            //     default => null,
+            // };
 
-            if ($label) {
-                $action = $request->route()?->getActionMethod();
+            // if ($label) {
+            //     $action = $request->route()?->getActionMethod();
 
-                $permissionMap = [
-                    'index' => "عرض $label",
-                    'create' => "إضافة $label",
-                    'store' => "إضافة $label",
-                    'edit' => "تعديل $label",
-                    'update' => "تعديل $label",
-                    'destroy' => "حذف $label",
-                ];
+            //     $permissionMap = [
+            //         'index' => "عرض $label",
+            //         'create' => "إضافة $label",
+            //         'store' => "إضافة $label",
+            //         'edit' => "تعديل $label",
+            //         'update' => "تعديل $label",
+            //         'destroy' => "حذف $label",
+            //     ];
 
-                if (isset($permissionMap[$action])) {
-                    $permission = $permissionMap[$action];
+            //     if (isset($permissionMap[$action])) {
+            //         $permission = $permissionMap[$action];
 
-                    if (!Auth::check() || !Auth::user()->can($permission)) {
-                        abort(403, 'ليس لديك صلاحية لهذا الإجراء.');
-                    }
-                }
-            }
+            //         if (!Auth::check() || !Auth::user()->can($permission)) {
+            //             abort(403, 'ليس لديك صلاحية لهذا الإجراء.');
+            //         }
+            //     }
+            // }
 
             return $next($request);
         });

@@ -2,6 +2,7 @@
 
 namespace Modules\Rentals\Models;
 
+use App\Models\AccHead;
 use App\Models\Client;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,5 +33,10 @@ class RentalsLease extends Model
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function account()
+    {
+        return $this->belongsTo(AccHead::class, 'acc_id');
     }
 }

@@ -15,7 +15,7 @@
         <div class="card shadow-sm">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-edit me-2"></i>
+                    <i class="fas fa-file-contract me-2"></i>
                     تعديل عقد إيجار
                 </h5>
             </div>
@@ -49,12 +49,11 @@
                             <label class="form-label">العميل <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <select name="client_id" class="form-select @error('client_id') is-invalid @enderror"
-                                    required>
+                                <select name="client_id" class="form-select @error('client_id') is-invalid @enderror" required>
                                     <option value="">-- اختر العميل --</option>
-                                    @foreach ($clients as $id => $cname)
-                                        <option value="{{ $id }}" @selected(old('client_id', $lease->client_id) == $id)>
-                                            {{ $cname }}
+                                    @foreach ($clients as $client)
+                                        <option value="{{ $client->id }}" @selected(old('client_id', $lease->client_id) == $client->id)>
+                                            {{ $client->aname }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -71,7 +70,7 @@
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                                 <input type="date" name="start_date"
                                     class="form-control @error('start_date') is-invalid @enderror"
-                                    value="{{ old('start_date', $lease->start_date) }}" required>
+                                    value="{{ old('start_date', $lease->start_date?->format('Y-m-d')) }}" required>
                             </div>
                             @error('start_date')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -85,7 +84,7 @@
                                 <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
                                 <input type="date" name="end_date"
                                     class="form-control @error('end_date') is-invalid @enderror"
-                                    value="{{ old('end_date', $lease->end_date) }}" required>
+                                    value="{{ old('end_date', $lease->end_date?->format('Y-m-d')) }}" required>
                             </div>
                             @error('end_date')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -108,14 +107,18 @@
 
                         {{-- طريقة الدفع --}}
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">طريقة الدفع</label>
+                            <label class="form-label">الصندوق <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
-                                <input type="text" name="payment_method"
-                                    class="form-control @error('payment_method') is-invalid @enderror"
-                                    value="{{ old('payment_method', $lease->payment_method) }}">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <select name="acc_id" class="form-select @error('acc_id') is-invalid @enderror" required>
+                                    @foreach ($paymantAccount as $account)
+                                        <option value="{{ $account->id }}" @selected(old('acc_id', $lease->acc_id) == $account->id)>
+                                            {{ $account->aname }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            @error('payment_method')
+                            @error('acc_id')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
@@ -126,9 +129,12 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
                                 <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                                    <option value="0" @selected(old('status', $lease->status) == 0)>قيد الانتظار</option>
-                                    <option value="1" @selected(old('status', $lease->status) == 1)>نشط</option>
-                                    <option value="2" @selected(old('status', $lease->status) == 2)>منتهي</option>
+                                    @foreach (\Modules\Rentals\Enums\LeaseStatus::cases() as $status)
+                                        <option value="{{ $status->value }}"
+                                            @selected(old('status', $lease->status) == $status->value)>
+                                            {{ $status->label() }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             @error('status')
@@ -147,7 +153,7 @@
                     </div>
 
                     <div class="card-footer text-end bg-transparent border-top pt-3 pe-0">
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>تحديث العقد
                         </button>
                         <a href="{{ route('rentals.leases.index') }}" class="btn btn-danger">

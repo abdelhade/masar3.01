@@ -160,12 +160,12 @@
                     @endphp
                     <div class="col-md-3">
                         @if ($parentCode)
-                            @can("إضافة $permName")
+                            {{-- @can("إضافة $permName") --}}
                                 <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}"
                                     class="btn btn-primary cake cake-fadeIn">
                                     {{ __('إضافة حساب جديد') }}
                                 </a>
-                            @endcan
+                            {{-- @endcan --}}
                         @endif
                     </div>
 

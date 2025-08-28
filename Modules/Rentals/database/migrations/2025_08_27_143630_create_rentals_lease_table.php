@@ -17,12 +17,15 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained()->onDelete('cascade');
 
             $table->unsignedBigInteger('client_id');
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->foreign('client_id')->references('id')->on('acc_head')->onDelete('cascade');
 
             $table->date('start_date');
             $table->date('end_date');
             $table->decimal('rent_amount', 12, 2);
-            $table->string('payment_method')->nullable();
+
+            $table->unsignedBigInteger('acc_id')->nullable();
+            $table->foreign('acc_id')->references('id')->on('acc_head')->onDelete('set null');
+
             $table->unsignedTinyInteger('status')->default(LeaseStatus::PENDING->value);
             $table->text('notes')->nullable();
             $table->timestamps();
