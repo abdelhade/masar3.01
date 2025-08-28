@@ -32,7 +32,7 @@
                                     <th>{{ __('تاريخ البداية') }}</th>
                                     <th>{{ __('تاريخ النهاية') }}</th>
                                     <th>{{ __('قيمة الإيجار') }}</th>
-                                    <th>{{ __('طريقة الدفع') }}</th>
+                                    <th>{{ __('الصندوق') }}</th>
                                     <th>{{ __('الحالة') }}</th>
                                     <th>{{ __('ملاحظات') }}</th>
                                     {{-- @canany(['تعديل العقود', 'حذف العقود']) --}}
@@ -49,22 +49,31 @@
                                         <td>{{ $lease->start_date }}</td>
                                         <td>{{ $lease->end_date }}</td>
                                         <td>{{ number_format($lease->rent_amount, 2) }}</td>
-                                        <td>{{ $lease->payment_method ?? '-' }}</td>
+                                        <td>{{ $lease->account->aname ?? '-' }}</td>
                                         <td>
                                             @switch($lease->status)
                                                 @case(\Modules\Rentals\Enums\LeaseStatus::PENDING->value)
-                                                    <span class="badge bg-warning">قيد الانتظار</span>
+                                                    <span
+                                                        class="badge bg-warning">{{ \Modules\Rentals\Enums\LeaseStatus::PENDING->label() }}</span>
                                                 @break
 
                                                 @case(\Modules\Rentals\Enums\LeaseStatus::ACTIVE->value)
-                                                    <span class="badge bg-success">نشط</span>
+                                                    <span
+                                                        class="badge bg-success">{{ \Modules\Rentals\Enums\LeaseStatus::ACTIVE->label() }}</span>
                                                 @break
 
-                                                @case(\Modules\Rentals\Enums\LeaseStatus::ENDED->value)
-                                                    <span class="badge bg-secondary">منتهي</span>
+                                                @case(\Modules\Rentals\Enums\LeaseStatus::EXPIRED->value)
+                                                    <span
+                                                        class="badge bg-secondary">{{ \Modules\Rentals\Enums\LeaseStatus::EXPIRED->label() }}</span>
+                                                @break
+
+                                                @case(\Modules\Rentals\Enums\LeaseStatus::TERMINATED->value)
+                                                    <span
+                                                        class="badge bg-danger">{{ \Modules\Rentals\Enums\LeaseStatus::TERMINATED->label() }}</span>
                                                 @break
                                             @endswitch
                                         </td>
+
                                         <td>{{ $lease->notes ?? '-' }}</td>
 
                                         {{-- @canany(['تعديل العقود', 'حذف العقود']) --}}
@@ -102,6 +111,9 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="mt-3">
+                            {{ $leases->links() }}
                         </div>
                     </div>
                 </div>

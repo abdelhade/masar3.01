@@ -16,11 +16,11 @@ class RentalsLeaseRequest extends FormRequest
     {
         return [
             'unit_id'        => ['required', 'exists:rentals_units,id'],
-            'client_id'      => ['required', 'exists:clients,id'],
+            'client_id'      => ['required', 'exists:acc_head,id'],
             'start_date'     => ['required', 'date'],
             'end_date'       => ['required', 'date', 'after:start_date'],
             'rent_amount'    => ['required', 'numeric', 'min:0'],
-            'payment_method' => ['nullable', 'string', 'max:255'],
+            'acc_id'         => ['required', 'exists:acc_head,id'],
             'status'         => ['required', 'in:' . implode(',', array_column(LeaseStatus::cases(), 'value'))],
             'notes'          => ['nullable', 'string'],
         ];

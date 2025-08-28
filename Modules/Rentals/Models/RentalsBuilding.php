@@ -22,4 +22,9 @@ class RentalsBuilding extends Model
     {
         return $this->hasMany(RentalsUnit::class, 'building_id');
     }
+
+    public function accBuilding()
+    {
+        return $this->hasMany(RentalsUnit::class, 'building_id');
+    }
 }
