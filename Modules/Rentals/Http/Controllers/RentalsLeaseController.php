@@ -27,15 +27,11 @@ class RentalsLeaseController extends Controller
      */
     public function create()
     {
-        $paymantAccount = AccHead::where('rentable', 0)
-            ->where('code', 'like', '%42002%')
-            ->get();
+        $paymantAccount = AccHead::where('code', 'like', '42002%')->where('is_basic', 0)->get();
 
         $units = RentalsUnit::pluck('name', 'id');
 
-        $clients = AccHead::where('is_basic', 1)
-            ->where('code', 'like', '%1103%')
-            ->get();
+        $clients = AccHead::where('is_basic', 0)->where('code', 'like', '%1103%')->get();
         return view('rentals::leases.create', compact('units', 'clients', 'paymantAccount'));
     }
 
@@ -124,19 +120,14 @@ class RentalsLeaseController extends Controller
     {
         $lease = RentalsLease::findOrFail($id);
 
-        $paymantAccount = AccHead::where('rentable', 0)
-            ->where('code', 'like', '%42002%')
-            ->get();
+        $paymantAccount = AccHead::where('code', 'like', '42002%')->where('is_basic', 0)->get();
 
         $units = RentalsUnit::pluck('name', 'id');
 
-        $clients = AccHead::where('is_basic', 1)
-            ->where('code', 'like', '%1103%')
-            ->get();
+        $clients = AccHead::where('is_basic', 0)->where('code', 'like', '%1103%')->get();
 
         return view('rentals::leases.edit', compact('lease', 'units', 'clients', 'paymantAccount'));
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -148,33 +139,29 @@ class RentalsLeaseController extends Controller
             $lease = RentalsLease::findOrFail($id);
             $lease->update($request->validated());
 
-            $oper = OperHead::where('pro_type', 64)
-                ->where('pro_id', $lease->id)
-                ->first();
+            $oper = OperHead::where('pro_type', 64)->where('pro_id', $lease->id)->first();
 
             if ($oper) {
                 $oper->update([
                     'start_date' => $request->start_date,
-                    'end_date'   => $request->end_date,
-                    'pro_date'   => now()->toDateString(),
-                    'info'       => 'تعديل عقد إيجار للوحدة #' . $request->unit_id . ' للعميل #' . $request->client_id,
-                    'pro_value'  => $request->rent_amount,
-                    'fat_net'    => $request->rent_amount,
-                    'acc1'       => $request->client_id ?? 0,
-                    'acc2'       => $request->acc_id,
-                    'user'       => Auth::id(),
+                    'end_date' => $request->end_date,
+                    'pro_date' => now()->toDateString(),
+                    'info' => 'تعديل عقد إيجار للوحدة #' . $request->unit_id . ' للعميل #' . $request->client_id,
+                    'pro_value' => $request->rent_amount,
+                    'fat_net' => $request->rent_amount,
+                    'acc1' => $request->client_id ?? 0,
+                    'acc2' => $request->acc_id,
+                    'user' => Auth::id(),
                 ]);
             }
-            $journalHead = JournalHead::where('op_id', $oper->id)
-                ->where('pro_type', 64)
-                ->first();
+            $journalHead = JournalHead::where('op_id', $oper->id)->where('pro_type', 64)->first();
 
             if ($journalHead) {
                 $journalHead->update([
-                    'total'   => $oper->pro_value,
-                    'date'    => $oper->pro_date,
+                    'total' => $oper->pro_value,
+                    'date' => $oper->pro_date,
                     'details' => $oper->info,
-                    'user'    => Auth::id(),
+                    'user' => Auth::id(),
                 ]);
             }
 
@@ -193,7 +180,7 @@ class RentalsLeaseController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalHead->journal_id,
                     'account_id' => $oper->acc2,
-                    'debit' =>  $oper->pro_value,
+                    'debit' => $oper->pro_value,
                     'credit' => 0,
                     'type' => 1,
                     'info' => $oper->info,
