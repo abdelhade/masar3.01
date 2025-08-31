@@ -17,7 +17,7 @@
                     <h2>اضافة جديده</h2>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('clients.store') }}" method="POST">
+                    <form action="{{ route('crm.clients.store') }}" method="POST">
                         @csrf
                         <div class="row">
 

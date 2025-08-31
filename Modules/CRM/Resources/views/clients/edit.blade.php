@@ -17,7 +17,7 @@
                     <h2>تعديل عميل</h2>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('clients.update', $client->id) }}" method="POST">
+                    <form action="{{ route('crm.clients.update', $client->id) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="row">

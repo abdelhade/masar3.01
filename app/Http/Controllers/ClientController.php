@@ -2,107 +2,137 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\ClientRequest;
+use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
 
 
 class ClientController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:عرض العملااء')->only(['index']);
-        $this->middleware('can:عرض تفاصيل عميل')->only(['show']);
-        $this->middleware('can:إضافة العملااء')->only(['create', 'store']);
-        $this->middleware('can:تعديل العملااء')->only(['edit', 'update']);
-        $this->middleware('can:حذف العملااء')->only(['destroy']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('can:عرض العملااء')->only(['index']);
+    //     $this->middleware('can:عرض تفاصيل عميل')->only(['show']);
+    //     $this->middleware('can:إضافة العملااء')->only(['create', 'store']);
+    //     $this->middleware('can:تعديل العملااء')->only(['edit', 'update']);
+    //     $this->middleware('can:حذف العملااء')->only(['destroy']);
+    // }
 
-    // عرض جميع العملاء
     public function index()
     {
-        $clients = Client::all(); // جلب جميع العملاء
-        return view('clients.index', compact('clients')); // عرض البيانات في صفحة
+        $clients = Client::paginate(20);
+        return view('clients.index', compact('clients'));
     }
 
-    // عرض نموذج إضافة عميل جديد
     public function create()
     {
         return view('clients.create');
     }
 
-    // تخزين عميل جديد في قاعدة البيانات
-    public function store(Request $request)
+    public function store(ClientRequest $request)
     {
-        // التحقق من المدخلات
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'nullable|email|max:100',
-            'phone' => 'nullable|string|max:15',
-            'address' => 'nullable|string|max:250',
-            'company' => 'nullable|string|max:100',
-            'info' => 'nullable|string|max:500',
-        ]);
-
-        // إضافة عميل جديد
-        Client::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'company' => $request->company,
-            'info' => $request->info,
-        ]);
-
-        return redirect()->route('clients.index')->with('success', 'Client added successfully');
+        DB::beginTransaction();
+        try {
+            Client::create([
+                'cname'            => $request->cname,
+                'email'            => $request->email,
+                'phone'            => $request->phone,
+                'phone2'           => $request->phone2,
+                'address'          => $request->address,
+                'address2'         => $request->address2,
+                'date_of_birth'    => $request->date_of_birth,
+                'national_id'      => $request->national_id,
+                'contact_person'   => $request->contact_person,
+                'contact_phone'    => $request->contact_phone,
+                'contact_relation' => $request->contact_relation,
+                'info'             => $request->info,
+                'job'              => $request->job,
+                'gender'           => $request->gender,
+                'is_active'        => $request->has('is_active') ? 1 : 0,
+                'created_by' => Auth::id(),
+            ]);
+            DB::commit();
+            Alert::toast('تم إنشاء العميل بنجاح', 'success');
+            return redirect()->route('clients.index');
+        } catch (Exception) {
+            DB::rollBack();
+            Alert::toast('حدث خطأ أثناء إنشاء العميل', 'error');
+            return redirect();
+        }
     }
-
-    // عرض تفاصيل عميل معين
     public function show($id)
     {
-        $client = Client::findOrFail($id); // جلب العميل بناءً على ID
-        return view('clients.show', compact('client')); // عرض التفاصيل
+        $client = Client::findOrFail($id);
+        return view('clients.show', compact('client'));
     }
 
-    // عرض نموذج تعديل عميل معين
     public function edit($id)
     {
-        $client = Client::findOrFail($id); // العثور على العميل بناءً على ID
-        return view('clients.edit', compact('client')); // عرض نموذج التعديل
+        $client = Client::findOrFail($id);
+        return view('clients.edit', compact('client'));
     }
 
-    // تحديث بيانات العميل في قاعدة البيانات
-    public function update(Request $request, $id)
+    public function update(ClientRequest $request, $id)
     {
-        // التحقق من المدخلات
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'nullable|email|max:100',
-            'phone' => 'nullable|string|max:15',
-            'address' => 'nullable|string|max:250',
-            'company' => 'nullable|string|max:100',
-            'info' => 'nullable|string|max:500',
-        ]);
+        DB::beginTransaction();
+        try {
+            $client = Client::findOrFail($id);
+            $client->update([
+                'cname'            => $request->cname,
+                'email'            => $request->email,
+                'phone'            => $request->phone,
+                'phone2'           => $request->phone2,
+                'address'          => $request->address,
+                'address2'         => $request->address2,
+                'date_of_birth'    => $request->date_of_birth,
+                'national_id'      => $request->national_id,
+                'contact_person'   => $request->contact_person,
+                'contact_phone'    => $request->contact_phone,
+                'contact_relation' => $request->contact_relation,
+                'info'             => $request->info,
+                'job'              => $request->job,
+                'gender'           => $request->gender,
+                'is_active'        => $request->has('is_active') ? 1 : 0,
+            ]);
 
-        $client = Client::findOrFail($id); // العثور على العميل بناءً على ID
-        $client->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'company' => $request->company,
-            'info' => $request->info,
-        ]);
-
-        return redirect()->route('clients.index')->with('success', 'Client updated successfully');
+            DB::commit();
+            Alert::toast('تم تحديث بيانات العميل بنجاح', 'success');
+            return redirect()->route('clients.index');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Alert::toast('حدث خطأ أثناء تحديث بيانات العميل', 'error');
+            return redirect()->back()->withInput();
+        }
     }
 
-    // حذف عميل معين
     public function destroy($id)
     {
-        $client = Client::findOrFail($id); // العثور على العميل بناءً على ID
-        $client->delete(); // حذف العميل
+        try {
+            $client = Client::findOrFail($id);
+            $client->delete();
+            Alert::toast('تم حذف العنصر بنجاح', 'success');
 
-        return redirect()->route('clients.index')->with('success', 'Client deleted successfully');
+            return redirect()->route('clients.index');
+        } catch (Exception) {
+            Alert::toast('حدث خطأ أثناء حذف العميل', 'error');
+            return redirect()->route('clients.index');
+        }
+    }
+
+    public function toggleActive($id)
+    {
+        $client = Client::findOrFail($id);
+        $client->is_active = !$client->is_active;
+        $client->save();
+
+        return response()->json([
+            'success' => true,
+            'status'  => $client->is_active ? 'نشط' : 'غير نشط',
+        ]);
     }
 }

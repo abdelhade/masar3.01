@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-lg-12">
             @can('إضافة العملااء')
-                <a href="{{ route('clients.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                <a href="{{ route('crm.clients.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                     اضافه جديده
                     <i class="fas fa-plus me-2"></i>
                 </a>
@@ -16,8 +16,8 @@
             <br>
             <div class="card">
                 <div class="card-body">
-                    <x-table-export-actions table-id="clients-table" filename="clients"
-                        excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                    <x-table-export-actions table-id="clients-table" filename="clients" excel-label="تصدير Excel"
+                        pdf-label="تصدير PDF" print-label="طباعة" />
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table id="clients-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
@@ -61,12 +61,12 @@
                                             <td>
                                                 @can('تعديل العملااء')
                                                     <a class="btn btn-success btn-icon-square-sm"
-                                                        href="{{ route('clients.edit', $client->id) }}">
+                                                        href="{{ route('crm.clients.edit', $client->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
                                                 @can('حذف العملااء')
-                                                    <form action="{{ route('clients.destroy', $client->id) }}" method="POST"
+                                                    <form action="{{ route('crm.clients.destroy', $client->id) }}" method="POST"
                                                         style="display:inline-block;"
                                                         onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
                                                         @csrf
