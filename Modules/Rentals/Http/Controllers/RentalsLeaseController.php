@@ -27,7 +27,7 @@ class RentalsLeaseController extends Controller
      */
     public function create()
     {
-        $paymantAccount = AccHead::where('code', 'like', '42002%')->where('is_basic', 0)->get();
+        $paymantAccount = AccHead::where('code', 'like', '42%')->where('is_basic', 0)->get();
 
         $units = RentalsUnit::pluck('name', 'id');
 
@@ -120,7 +120,7 @@ class RentalsLeaseController extends Controller
     {
         $lease = RentalsLease::findOrFail($id);
 
-        $paymantAccount = AccHead::where('code', 'like', '42002%')->where('is_basic', 0)->get();
+        $paymantAccount = AccHead::where('code', 'like', '42%')->where('is_basic', 0)->get();
 
         $units = RentalsUnit::pluck('name', 'id');
 

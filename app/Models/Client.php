@@ -7,9 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 class Client extends Model
 {
     protected $fillable = [
-        'name', 'phone', 'phone2', 'address', 'address2', 'address3', 'city',
-        'height', 'weight', 'dateofbirth', 'ref', 'diseses', 'info',
-        'imgs', 'jop', 'gender', 'drugs', 'seriousdes', 'familydes', 'allergy',
-        'temp', 'pressure', 'diabetes', 'brate', 'isdeleted', 'tenant', 'branch'
+        'cname',
+        'email',
+        'phone',
+        'phone2',
+        'address',
+        'address2',
+        'date_of_birth',
+        'national_id',
+        'contact_person',
+        'contact_phone',
+        'contact_relation',
+        'info',
+        'job',
+        'gender',
+        'isdeleted',
+        'tenant',
+        'branch',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'date_of_birth' => 'date',
     ];
 }

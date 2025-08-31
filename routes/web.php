@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccHeadController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractTypeController;
 use App\Http\Controllers\CostCenterController;
@@ -83,6 +84,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('shifts', ShiftController::class)->names('shifts')->only('index');
     // 📁 Employees
     Route::resource('employees', EmployeeController::class)->names('employees')->only('index');
+    Route::resource('clients', ClientController::class)->names('clients');
+    Route::post('/clients/toggle-active/{id}', [ClientController::class, 'toggleActive'])
+        ->name('clients.toggle-active');
+
     // 📁 KPIs
     Route::resource('kpis', KpiController::class)->names('kpis')->only('index');
     Route::get('kpis/employee-evaluation', [KpiController::class, 'employeeEvaluation'])->name('kpis.employeeEvaluation');
@@ -192,10 +197,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
     Route::get('pos-shifts/{shift}/close', [PosShiftController::class, 'close'])->name('pos-shifts.close');
     Route::post('pos-shifts/{shift}/close', [PosShiftController::class, 'closeConfirm'])->name('pos-shifts.close.confirm');
-    require __DIR__.'/modules/magicals.php';
-    require __DIR__.'/modules/cheques.php';
-    require __DIR__.'/modules/invoice-reports.php';
-    require __DIR__.'/modules/attendance.php';
-    require __DIR__.'/modules/reports.php';
+    require __DIR__ . '/modules/magicals.php';
+    require __DIR__ . '/modules/cheques.php';
+    require __DIR__ . '/modules/invoice-reports.php';
+    require __DIR__ . '/modules/attendance.php';
+    require __DIR__ . '/modules/reports.php';
 });
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -13,34 +13,49 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id('id')->autoIncrement();
-            $table->string('cname', 100)->unique();
-            $table->string('phone', 20)->nullable();
-            $table->string('phone2', 150)->nullable();
-            $table->string('address', 250)->nullable();
-            $table->string('address2', 150)->nullable();
-            $table->string('address3', 150)->nullable();
-            $table->integer('city')->nullable();
-            $table->double('height')->nullable();
-            $table->double('weight')->nullable();
-            $table->date('dateofbirth')->nullable();
-            $table->string('ref', 20)->nullable();
-            $table->string('diseses', 200)->nullable();
-            $table->string('info', 200)->nullable();
-            $table->string('imgs', 250)->nullable();
-            $table->string('jop', 50)->nullable();
-            $table->tinyInteger('gender')->nullable();
-            $table->string('drugs', 250)->nullable();
-            $table->string('seriousdes', 250)->nullable();
-            $table->string('familydes', 250)->nullable();
-            $table->string('allergy', 250)->nullable();
-            $table->string('temp', 9)->nullable();
-            $table->string('pressure', 9)->nullable();
-            $table->string('diabetes', 9)->nullable();
-            $table->string('brate', 9)->nullable();
+            $table->string('cname')->unique();
+            $table->string('email')->unique()->nullable();
+            $table->string('phone')->nullable();
+            $table->string('phone2')->nullable();
+            $table->string('company')->nullable();
+
+            $table->string('address')->nullable();
+            $table->string('address2')->nullable();
+            $table->date('date_of_birth')->nullable();
+            $table->string('national_id')->nullable();
+
+            $table->string('contact_person')->nullable();
+            $table->string('contact_phone')->nullable();
+            $table->string('contact_relation')->nullable();
+
+            $table->string('info')->nullable();
+            $table->string('job')->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->boolean('isdeleted')->default(0);
+            $table->boolean('is_active')->default(0);
+            $table->integer('created_by')->default(0);
+
             $table->integer('tenant')->default(0);
             $table->integer('branch')->default(0);
             $table->timestamps();
+
+            // $table->string('drugs', 250)->nullable();
+            // $table->string('seriousdes', 250)->nullable();
+            // $table->string('familydes', 250)->nullable();
+            // $table->string('allergy', 250)->nullable();
+            // $table->string('temp', 9)->nullable();
+            // $table->string('pressure', 9)->nullable();
+            // $table->string('diabetes', 9)->nullable();
+            // $table->string('brate', 9)->nullable();
+            // $table->string('imgs', 250)->nullable();
+            // $table->integer('city')->nullable();
+
+            // $table->string('ref', 20)->nullable();
+            // $table->string('diseses', 200)->nullable();
+
+            // $table->double('height')->nullable();
+            // $table->double('weight')->nullable();
+            // $table->string('address3', 150)->nullable();
         });
     }
 

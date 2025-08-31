@@ -11,7 +11,7 @@ use Illuminate\Routing\Controller;
 class ClientController extends Controller
 {
 
-      public function __construct()
+    public function __construct()
     {
         $this->middleware('can:عرض العملااء')->only(['index']);
         $this->middleware('can:عرض تفاصيل عميل')->only(['show']);
@@ -43,7 +43,7 @@ class ClientController extends Controller
             'created_by' => Auth::id(),
         ]);
         Alert::toast('تم إنشاء العميل بنجاح', 'success');
-        return redirect()->route('clients.index');
+        return redirect()->route('crm.clients.index');
     }
 
     public function show($id)
@@ -63,7 +63,7 @@ class ClientController extends Controller
 
         $client->update($request->validated());
         Alert::toast('تم تعديل العميل بنجاح', 'success');
-        return redirect()->route('clients.index');
+        return redirect()->route('crm.clients.index');
     }
 
     public function destroy($id)
@@ -71,6 +71,6 @@ class ClientController extends Controller
         $client = CrmClient::findOrFail($id);
         $client->delete();
         Alert::toast('تم حذف العنصر بنجاح', 'success');
-        return redirect()->route('clients.index');
+        return redirect()->route('crm.clients.index');
     }
 }
