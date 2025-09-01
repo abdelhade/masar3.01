@@ -47,6 +47,8 @@ Route::get('/reports/general-sales-total-report', [ReportController::class, 'gen
 // تقرير المبيعات اصناف
 Route::get('/reports/general-sales-items-report', [ReportController::class, 'generalSalesItemsReport'])->name('reports.general-sales-items-report');
 
+// تقريب المبيعات بالعنوان
+Route::get('/reports/general-sales-report-by-address', [ReportController::class, 'salesReportByAddress'])->name('reports.general-sales-report-by-address');
 // تقارير المشتريات
 Route::get('/reports/general-purchases-report', [ReportController::class, 'generalPurchasesReport'])->name('reports.general-purchases-report');
 
@@ -70,6 +72,9 @@ Route::get('/reports/general-customers-total-report', [ReportController::class, 
 
 // تقرير العملاء اصناف
 Route::get('/reports/general-customers-items-report', [ReportController::class, 'generalCustomersItemsReport'])->name('reports.general-customers-items-report');
+
+// تقرير اعمار ديون العملاء
+Route::get('/reports/general-customers-debt-history-report', [ReportController::class, 'generalCustomersDebtHistoryReport'])->name('reports.general-customers-debt-history-report');
 
 // تقارير الموردين
 Route::get('/reports/general-suppliers-report', [ReportController::class, 'generalSuppliersReport'])->name('reports.general-suppliers-report');

@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\State;
+use App\Models\Town;
 class City extends Model 
 {
 

@@ -353,6 +353,10 @@
                                 <i class="fas fa-box-open"></i>
                                 <span>تقرير عرض سعر لعميل </span>
                             </a>
+                            <a href="{{ route('reports.general-sales-report-by-address') }}" class="report-link">
+                                <i class="fas fa-box-open"></i>
+                                <span>تقرير المبيعات بالعنوان</span>
+                            </a>
 
                         </div>
                     </div>
@@ -411,6 +415,10 @@
                             <a href="{{ route('reports.general-customers-items-report') }}" class="report-link">
                                 <i class="fas fa-user-tag"></i>
                                 <span>تقرير العملاء اصناف</span>
+                            </a>
+                            <a href="{{ route('reports.general-customers-debt-history-report') }}" class="report-link">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>تقرير اعمار ديون العملاء</span>
                             </a>
                         </div>
                     </div>

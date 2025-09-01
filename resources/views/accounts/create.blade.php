@@ -86,14 +86,6 @@
                                                     id="phone" placeholder="{{ __('التليفون او تليفون المسؤول') }}">
                                             </div>
                                         </div>
-
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label for="address">{{ __('العنوان') }}</label>
-                                                <input class="form-control font-bold" type="text" name="address"
-                                                    id="address" placeholder="{{ __('اكتب العنوان او عنوان المسؤول') }}">
-                                            </div>
-                                        </div>
                                     </div>
 
                                     @if($isClientOrSupplier)
@@ -140,9 +132,50 @@
                                                 <input class="form-control" type="text" name="nationality" id="nationality" placeholder="{{ __('الجنسية') }}">
                                             </div>
                                         </div>
+                                        <div class="col-md-4">
+                                                <label for="address">{{ __('الدولة') }}</label>
+                                                <select class="form-control font-bold" name="country_id" id="country_id">
+                                                    <option value="">{{ __('اختر الدولة') }}</option>
+                                                    @foreach($countries as $id => $title)
+                                                        <option value="{{ $id }}">{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="address">{{ __('المدينة') }}</label>
+                                                <select class="form-control font-bold" name="city_id" id="city_id">
+                                                    <option value="">{{ __('اختر المدينة') }}</option>
+                                                    @foreach($cities as $id => $title)
+                                                        <option value="{{ $id }}">{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="address">{{ __('المنطقة') }}</label>
+                                                <select class="form-control font-bold" name="state_id" id="state_id">
+                                                    <option value="">{{ __('اختر المنطقة') }}</option>
+                                                    @foreach($states as $id => $title)
+                                                        <option value="{{ $id }}">{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="address">{{ __('الحي') }}</label>
+                                                <select class="form-control font-bold" name="town_id" id="town_id">
+                                                    <option value="">{{ __('اختر الحي') }}</option>
+                                                    @foreach($towns as $id => $title)
+                                                        <option value="{{ $id }}">{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                     @endif
-
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">

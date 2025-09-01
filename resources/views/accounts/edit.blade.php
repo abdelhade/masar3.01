@@ -93,14 +93,6 @@
                                                 id="phone" value="{{ $account->phone }}">
                                         </div>
                                     </div>
-
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="address">{{ __('العنوان') }}</label>
-                                            <input class="form-control font-bold" type="text" name="address"
-                                                id="address" value="{{ $account->address }}">
-                                        </div>
-                                    </div>
                                 </div>
                                 
                                 @if($isClientOrSupplier)
@@ -144,6 +136,51 @@
                                         <div class="form-group">
                                             <label for="nationality">{{ __('الجنسية') }}</label>
                                             <input class="form-control" type="text" name="nationality" id="nationality" value="{{ $account->nationality }}" placeholder="{{ __('الجنسية') }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                                <label for="address">{{ __('الدولة') }}</label>
+                                                <select class="form-control font-bold" name="country_id" id="country_id">
+                                                    <option value="">{{ __('اختر الدولة') }}</option>
+                                                    @foreach($countries as $id => $title)
+                                                        <option value="{{ $id }}" {{ $account->country_id == $id ? 'selected' : '' }}>{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                        </div>
+                                    </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="address">{{ __('المدينة') }}</label>
+                                                <select class="form-control font-bold" name="city_id" id="city_id">
+                                                    <option value="">{{ __('اختر المدينة') }}</option>
+                                                    @foreach($cities as $id => $title)
+                                                        <option value="{{ $id }}" {{ $account->city_id == $id ? 'selected' : '' }}>{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="address">{{ __('المنطقة') }}</label>
+                                                <select class="form-control font-bold" name="state_id" id="state_id">
+                                                    <option value="">{{ __('اختر المنطقة') }}</option>
+                                                    @foreach($states as $id => $title)
+                                                        <option value="{{ $id }}" {{ $account->state_id == $id ? 'selected' : '' }}>{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="address">{{ __('الحي') }}</label>
+                                                <select class="form-control font-bold" name="town_id" id="town_id">
+                                                    <option value="">{{ __('اختر الحي') }}</option>
+                                                    @foreach($towns as $id => $title)
+                                                        <option value="{{ $id }}" {{ $account->town_id == $id ? 'selected' : '' }}>{{ $title }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

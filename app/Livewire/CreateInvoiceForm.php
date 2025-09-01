@@ -120,6 +120,7 @@ class CreateInvoiceForm extends Component
         $this->nextProId = OperHead::max('pro_id') + 1 ?? 1;
         $this->pro_id = $this->nextProId;
         $this->pro_date = now()->format('Y-m-d');
+        $this->accural_date = now()->format('Y-m-d');
         $this->deliverys = $this->getAccountsByCode('2102%');
 
         $this->cashAccounts = AccHead::where('isdeleted', 0)
@@ -182,7 +183,7 @@ class CreateInvoiceForm extends Component
             $this->emp_id = $invoiceData['employee_id'] ?? $this->emp_id;
             $this->notes = $invoiceData['notes'] ?? '';
             $this->pro_date = $invoiceData['invoice_date'] ?? $this->pro_date;
-
+            $this->accural_date = $invoiceData['accural_date'] ?? $this->accural_date;
             // تعبئة بيانات الخصم والإضافي
             $this->discount_percentage = $convertData['discount_percentage'] ?? 0;
             $this->additional_percentage = $convertData['additional_percentage'] ?? 0;

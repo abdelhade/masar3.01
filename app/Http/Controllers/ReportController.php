@@ -517,6 +517,12 @@ class ReportController extends Controller
         ));
     }
 
+        // sales report by address
+        public function salesReportByAddress()
+        {
+            return view('reports.sales.manage-sales-report-by-adress');
+        }
+
     // تقرير المشتريات اليومية
     public function generalPurchasesDailyReport()
     {
@@ -812,6 +818,11 @@ class ReportController extends Controller
             'averageQuantityPerItem',
             'averageSalesPerItem'
         ));
+    }
+    // تقرير اعمار ديون العملاء
+    public function generalCustomersDebtHistoryReport()
+    {
+        return view('reports.customers.customer-debt-history');
     }
 
     // تقرير الموردين اليومية
