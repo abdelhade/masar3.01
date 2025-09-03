@@ -186,14 +186,14 @@
                             <livewire:item-management.notes.notesNames />
                         @endcan
                         <!-- {{-- item movement --}}
-                                                                                    @can('عرض تقرير حركة صنف')
+                                                                                                        @can('عرض تقرير حركة صنف')
         <li class="nav-item">
-                                                                                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                                                                                                                                            <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
-                                                                                                                                                        </a>
-                                                                                                                                                    </li>
+                                                                                                                                                                                                <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
+                                                                                                                                                                                                    <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
+                                                                                                                                                                                                </a>
+                                                                                                                                                                                            </li>
     @endcan
-                                                                                    {{-- item movement --}} -->
+                                                                                                        {{-- item movement --}} -->
                     </ul>
                 </li>
             @endcanany
@@ -366,21 +366,21 @@
             @php
                 $sections = [
                     'ادارة المبيعات' => [
-                        10 => 'فاتورة مبيعات',
-                        12 => 'مردود مبيعات',
+                        10 => 'فواتير مبيعات',
+                        12 => 'فواتير مبيعات',
                         14 => 'أمر بيع',
                         16 => 'عرض سعر لعميل',
                         22 => 'أمر حجز',
                     ],
                     'ادارة المشتريات' => [
-                        11 => 'فاتورة مشتريات',
-                        13 => 'مردود مشتريات',
-                        15 => 'أمر شراء',
+                        11 => 'فواتير مشتريات ',
+                        13 => ' فواتير مردود مشتريات',
+                        15 => 'فواتير أمر شراء ',
                         17 => 'عرض سعر من مورد',
                     ],
                     'ادارة المخزون' => [
-                        18 => 'فاتورة تالف',
-                        19 => 'أمر صرف',
+                        18 => 'فواتير تالف',
+                        19 => ' فواتير أمر صرف',
                         20 => 'أمر إضافة',
                         21 => 'تحويل من مخزن لمخزن',
                     ],
@@ -408,10 +408,8 @@
                             @foreach ($items as $type => $label)
                                 @can('عرض ' . $label)
                                     <li class="nav-item">
-                                        <a class="nav-link"
-                                            href="{{ url('/invoices/create?type=' . $type . '&q=' . md5($type)) }}">
+                                        <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
                                             <i class="ti-control-record"></i> {{ __($label) }}
-
                                         </a>
                                     </li>
                                 @endcan
@@ -757,10 +755,10 @@
                         {{-- الرصيد الافتتاحى للحسابات --}}
                         {{-- account movement --}}
                         <!-- <li class="nav-item">
-                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
-                                                                                            <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
-                                                                                        </a>
-                                                                                    </li> -->
+                                                                                                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
+                                                                                                                <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
+                                                                                                            </a>
+                                                                                                        </li> -->
                         {{-- account movement --}}
                         {{-- balance sheet --}}
                         <li class="nav-item">

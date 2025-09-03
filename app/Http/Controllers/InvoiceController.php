@@ -64,27 +64,58 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
+        // Get the invoice type from the request
+        $invoiceType = $request->input('type');
+
+        // If no type is provided, redirect to dashboard or show error
+        if (!$invoiceType || !array_key_exists($invoiceType, $this->titles)) {
+            return redirect()->route('admin.dashboard')->with('error', 'نوع الفاتورة غير صحيح');
+        }
+
         // Default to today's date if no date range is provided
         $startDate = $request->input('start_date', Carbon::today()->toDateString());
         $endDate = $request->input('end_date', Carbon::today()->toDateString());
-        $proTypes = $request->input('pro_types', [11, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
 
-        // Build the query
+        // Build the query for specific invoice type only
         $invoices = OperHead::with(['acc1Headuser', 'store', 'employee', 'acc1Head', 'acc2Head', 'type'])
-            ->whereIn('pro_type', $proTypes)
+            ->where('pro_type', $invoiceType)
             ->whereDate('crtime', '>=', $startDate)
             ->whereDate('crtime', '<=', $endDate)
             ->get();
 
-        // Fetch available invoice types for the filter dropdown
-        $invoiceTypes = OperHead::select('pro_type')
-            ->distinct()
-            ->whereIn('pro_type',  array_keys($this->titles))
-            ->pluck('pro_type')
-            ->toArray();
-        $titles = $this->titles;
+        // Get the title for the current invoice type
+        $invoiceTitle = $this->titles[$invoiceType];
 
-        return view('invoices.index', compact('invoices', 'invoiceTypes', 'startDate', 'endDate', 'proTypes', 'titles'));
+        // Define sections for breadcrumb and navigation
+        $sections = [
+            'ادارة المبيعات' => [10, 12, 14, 16, 22],
+            'ادارة المشتريات' => [11, 13, 15, 17],
+            'ادارة المخزون' => [18, 19, 20, 21],
+        ];
+
+        // Find which section this invoice type belongs to
+        $currentSection = '';
+        foreach ($sections as $sectionName => $types) {
+            if (in_array($invoiceType, $types)) {
+                $currentSection = $sectionName;
+                break;
+            }
+        }
+
+        return view('invoices.index', compact(
+            'invoices',
+            'startDate',
+            'endDate',
+            'invoiceType',
+            'invoiceTitle',
+            'currentSection'
+        ));
+    }
+
+    // Helper method to get create route for specific invoice type
+    public function getCreateRoute($type)
+    {
+        return url('/invoices/create?type=' . $type . '&q=' . md5($type));
     }
 
 
