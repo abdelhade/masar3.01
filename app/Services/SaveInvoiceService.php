@@ -102,7 +102,8 @@ class SaveInvoiceService
                 'info'           => $component->notes,
                 'status'         => $component->status ?? null,
                 'acc_fund'       => $component->cash_box_id ?: 0,
-                'paid_from_client' => $component->received_from_client
+                'paid_from_client' => $component->received_from_client,
+                'user'           => Auth::id()
             ];
 
             // تحديث الفاتورة الحالية أو إنشاء جديدة
@@ -475,6 +476,7 @@ class SaveInvoiceService
             'op2'        => $operation->id,
             'is_journal' => 1,
             'is_stock'   => 0,
+            'user'       => Auth::id(),
         ]);
 
         // إنشاء قيد السند

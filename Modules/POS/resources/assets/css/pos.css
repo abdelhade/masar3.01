@@ -1,0 +1,1104 @@
+/* الأنماط المخصصة للPOS */
+
+/* Navigation Buttons */
+.header-navigation {
+    margin-bottom: 2rem;
+    text-align: right;
+}
+
+.back-to-main-btn, .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #2c3e50;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid transparent;
+}
+
+.back-to-main-btn:hover, .back-btn:hover {
+    background: #2c3e50;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.pos-header-navigation {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+}
+
+.pos-header-navigation .back-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #2c3e50;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+/* Invoice Info Section */
+.invoice-info-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.pos-select {
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Cairo', sans-serif;
+}
+
+.pos-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    transform: translateY(-1px);
+}
+
+.balance-info {
+    text-align: center;
+}
+
+.balance-display {
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    border: 2px solid;
+}
+
+.balance-display.positive {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.balance-display.negative {
+    background: linear-gradient(135deg, #f8d7da 0%, #f1b0b7 100%);
+    color: #721c24;
+    border-color: #f1b0b7;
+}
+
+/* Unit Selection Styles */
+.unit-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.unit-selection label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.unit-select {
+    padding: 0.4rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.8rem;
+    font-family: 'Cairo', sans-serif;
+    color: #2c3e50;
+    transition: all 0.2s ease;
+}
+
+.unit-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.unit-display {
+    margin-bottom: 0.5rem;
+}
+
+.unit-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Categories Section */
+.categories-section {
+    margin-bottom: 1.5rem;
+}
+
+.categories-section h4 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+    min-height: 80px;
+}
+
+.category-btn:hover {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+}
+
+.category-btn.active {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border-color: #2980b9;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.category-btn i {
+    font-size: 1.2rem;
+}
+
+.category-btn span {
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.no-items-message {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    border: 2px dashed #dee2e6;
+}
+
+.no-items-message i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+}
+
+.no-items-message p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.pos-container {
+    font-family: 'Cairo', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    direction: rtl;
+}
+
+.pos-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.pos-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.pos-logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #2c3e50;
+}
+
+.pos-logo i {
+    font-size: 2rem;
+    color: #3498db;
+}
+
+.pos-logo h2 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.pos-info {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.invoice-number {
+    background: #3498db;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.pos-main-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 100px);
+}
+
+.pos-left-panel, .pos-right-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* البحث */
+.pos-search-section {
+    margin-bottom: 2rem;
+}
+
+.search-box {
+    position: relative;
+}
+
+.pos-search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1rem;
+    border: 2px solid #e0e6ed;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-family: 'Cairo', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.pos-search-input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.item-code {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.item-price {
+    font-weight: 700;
+    color: #27ae60;
+}
+
+/* الباركود */
+.barcode-section {
+    margin-bottom: 2rem;
+}
+
+.barcode-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.barcode-input {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #e0e6ed;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
+}
+
+.barcode-btn {
+    padding: 1rem 1.5rem;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.barcode-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+/* الأصناف السريعة */
+.quick-access-section h4 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.quick-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.quick-item-btn {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 1rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 80px;
+}
+
+.quick-item-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(116, 185, 255, 0.3);
+}
+
+.quick-item-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.quick-item-code {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* معلومات الصنف المختار */
+.selected-item-info {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.selected-item-info h4 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stock-qty {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.price {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+/* سلة التسوق */
+.shopping-cart {
+    margin-bottom: 2rem;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.cart-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.items-count {
+    background: #3498db;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.cart-items {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.cart-item {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.item-main-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.item-name-code .name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.remove-item-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.remove-item-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.item-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    border-radius: 25px;
+    padding: 0.5rem;
+}
+
+.qty-btn {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.qty-btn.minus {
+    background: #e74c3c;
+    color: white;
+}
+
+.qty-btn.plus {
+    background: #27ae60;
+    color: white;
+}
+
+.qty-btn:hover {
+    transform: scale(1.1);
+}
+
+.qty-input {
+    width: 60px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.price-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.unit-price {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.total-price {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #27ae60;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #7f8c8d;
+}
+
+.empty-cart i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* ملخص المعاملة */
+.transaction-summary {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.summary-row.total {
+    border-bottom: none;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    background: white;
+    margin: 1rem -1.5rem -1.5rem;
+    padding: 1.5rem;
+    border-radius: 0 0 15px 15px;
+}
+
+.summary-row.discount span:last-child {
+    color: #e74c3c;
+}
+
+.summary-row.additional span:last-child {
+    color: #27ae60;
+}
+
+/* طرق الدفع */
+.payment-section h4 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-method-btn {
+    background: #ecf0f1;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cairo', sans-serif;
+}
+
+.payment-method-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+.payment-method-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.payment-input-group {
+    margin-bottom: 1rem;
+}
+
+.payment-input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.payment-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e0e6ed;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-family: 'Cairo', sans-serif;
+}
+
+.change-amount {
+    background: #27ae60;
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.change-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* أزرار العمليات */
+.pos-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.pos-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.pos-btn {
+    padding: 1.5rem;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'Cairo', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pos-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pos-btn.primary {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+}
+
+.pos-btn.primary:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+}
+
+.pos-btn.secondary {
+    background: linear-gradient(135deg, #3498db 0%, #74b9ff 100%);
+    color: white;
+}
+
+.pos-btn.secondary:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+}
+
+.pos-btn.danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #ff6b6b 100%);
+    color: white;
+}
+
+.pos-btn.danger:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(231, 76, 60, 0.3);
+}
+
+.pos-btn.info {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    color: white;
+}
+
+.pos-btn.info:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(23, 162, 184, 0.3);
+}
+
+.pos-btn.large {
+    font-size: 1.3rem;
+    padding: 2rem;
+}
+
+/* شاشة العميل */
+.customer-display {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    background: #2c3e50;
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.customer-total {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.total-label {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.total-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2ecc71;
+}
+
+/* تجاوبية محسنة */
+@media (max-width: 1400px) {
+    .pos-main-layout {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .pos-left-panel, .pos-right-panel {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .pos-main-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .pos-left-panel, .pos-right-panel {
+        padding: 1rem;
+    }
+    
+    .quick-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .payment-methods {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .cart-items {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .pos-container {
+        min-height: 100vh;
+    }
+    
+    .pos-header {
+        padding: 0.5rem 1rem;
+    }
+    
+    .pos-header-content {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .pos-logo h2 {
+        font-size: 1.2rem;
+    }
+    
+    .pos-info {
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .invoice-info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .category-btn {
+        padding: 0.75rem 0.5rem;
+        min-height: 70px;
+    }
+    
+    .category-btn span {
+        font-size: 0.8rem;
+    }
+    
+    .pos-main-layout {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .pos-left-panel, .pos-right-panel {
+        padding: 1rem;
+        border-radius: 10px;
+    }
+    
+    .quick-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .quick-item-btn {
+        padding: 0.5rem 0.25rem;
+        min-height: 60px;
+    }
+    
+    .quick-item-name {
+        font-size: 0.8rem;
+    }
+    
+    .payment-methods {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .payment-method-btn {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .pos-btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .pos-btn.large {
+        font-size: 1.1rem;
+        padding: 1.5rem;
+    }
+    
+    .cart-item {
+        padding: 1rem;
+    }
+    
+    .quantity-controls {
+        gap: 0.25rem;
+        padding: 0.25rem;
+    }
+    
+    .qty-btn {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .qty-input {
+        width: 50px;
+        font-size: 1rem;
+    }
+    
+    .customer-display {
+        position: static;
+        margin-top: 1rem;
+        left: auto;
+        right: auto;
+        bottom: auto;
+    }
+    
+    .search-results {
+        max-height: 200px;
+    }
+    
+    .selected-item-info {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pos-header {
+        padding: 0.5rem;
+    }
+    
+    .pos-logo i {
+        font-size: 1.5rem;
+    }
+    
+    .pos-logo h2 {
+        font-size: 1rem;
+    }
+    
+    .invoice-number {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .pos-main-layout {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+    
+    .pos-left-panel, .pos-right-panel {
+        padding: 0.75rem;
+    }
+    
+    .pos-search-input, .barcode-input {
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    .quick-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    }
+    
+    .quick-item-btn {
+        min-height: 50px;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .cart-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .items-count {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .summary-row {
+        font-size: 0.9rem;
+    }
+    
+    .summary-row.total {
+        font-size: 1.1rem;
+    }
+}

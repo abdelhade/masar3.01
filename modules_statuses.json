@@ -7,5 +7,6 @@
     "Shipping": true,
     "Notifications": true,
     "Rentals": true,
-    "Maintenance": true
+    "Maintenance": true,
+    "POS": true
 }

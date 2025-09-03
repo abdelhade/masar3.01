@@ -35,7 +35,6 @@ class UserController extends Controller
         try {
             $roles = Role::pluck('name', 'id');
             $permissions = Permission::all()->groupBy('category');
-            Alert::toast('تم إنشاء المستخدم بنجاح', 'error');
 
             return view('users.create', compact('roles', 'permissions'));
         } catch (\Exception $e) {
@@ -63,9 +62,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        $permissions = Permission::all()->groupBy(function ($perm) {
-            return explode('.', $perm->name)[0];
-        });
+        $permissions = Permission::all()->groupBy('category');
         $userPermissions = $user->permissions->pluck('name')->toArray();
 
         return view('users.edit', compact('user', 'permissions', 'roles', 'userPermissions'));

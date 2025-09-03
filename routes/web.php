@@ -26,6 +26,7 @@ use App\Http\Controllers\MultiVoucherController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\PosShiftController;
 use App\Http\Controllers\PosVouchersController;
+use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RentalController;

@@ -20,7 +20,7 @@ class StoreUserRequest extends FormRequest
             'roles'                 => ['nullable', 'array'],
             'permissions'           => ['nullable', 'array'],
             'roles.*'               => ['string'],
-            'permissions.*'         => ['string'],
+            'permissions.*'         => ['integer'],
         ];
     }
 
