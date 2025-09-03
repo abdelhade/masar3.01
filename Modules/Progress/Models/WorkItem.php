@@ -13,14 +13,14 @@ class WorkItem extends Model
         'description'
     ];
 
-    // public function projectItems(): HasMany
-    // {
-    //     return $this->hasMany(ProjectItem::class);
-    // }
+    public function projectItems(): HasMany
+    {
+        return $this->hasMany(ProjectItem::class);
+    }
 
-    // // العلاقة مع TemplateItem (بنود التيمبليت)
-    // public function templateItems(): HasMany
-    // {
-    //     return $this->hasMany(TemplateItem::class);
-    // }
+    // العلاقة مع TemplateItem (بنود التيمبليت)
+    public function templateItems(): HasMany
+    {
+        return $this->hasMany(TemplateItem::class);
+    }
 }

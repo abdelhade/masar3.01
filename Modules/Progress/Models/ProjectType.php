@@ -8,8 +8,8 @@ class ProjectType extends Model
 {
     protected $fillable = ['name'];
 
-    // public function projects()
-    // {
-    //     return $this->hasMany(Project::class, 'project_type_id');
-    // }
+    public function projects()
+    {
+        return $this->hasMany(ProjectProgress::class, 'project_type_id');
+    }
 }

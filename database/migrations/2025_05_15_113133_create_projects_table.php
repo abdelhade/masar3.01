@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->required()->unique();
+            $table->string('name');
             $table->string('description')->nullable();
 
             $table->unsignedBigInteger('client_id')->nullable();
@@ -23,12 +23,12 @@ return new class extends Migration
             $table->string('working_zone')->nullable();
             $table->foreignId('project_type_id')->nullable()->constrained('project_types')->nullOnDelete();
 
-            $table->date('start_date')->required();
-            $table->date('end_date')->required();
+            $table->date('start_date');
+            $table->date('end_date');
             $table->date('actual_end_date')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('updated_by')->constrained('users')->onDelete('cascade');
+            // $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            // $table->foreignId('updated_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
