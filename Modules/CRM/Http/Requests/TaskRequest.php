@@ -17,7 +17,7 @@ class TaskRequest extends FormRequest
         return [
             'client_id'      => ['required', 'exists:crm_clients,id'],
             'user_id'        => ['required', 'exists:users,id'],
-            'task_type'           => ['required', 'string'],
+            'task_type_id' => ['required', 'exists:task_types,id'],
             'title'          => ['required', 'string', 'max:255'],
             'status' => ['required', new Enum(TaskStatusEnum::class)],
             'priority' => ['required', new Enum(TaskPriorityEnum::class)],

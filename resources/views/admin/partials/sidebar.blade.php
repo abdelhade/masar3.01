@@ -186,14 +186,14 @@
                             <livewire:item-management.notes.notesNames />
                         @endcan
                         <!-- {{-- item movement --}}
-                                                                            @can('عرض تقرير حركة صنف')
+                                                                                    @can('عرض تقرير حركة صنف')
         <li class="nav-item">
-                                                                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                                                                                                                            <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
-                                                                                                                                        </a>
-                                                                                                                                    </li>
+                                                                                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
+                                                                                                                                                            <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
+                                                                                                                                                        </a>
+                                                                                                                                                    </li>
     @endcan
-                                                                            {{-- item movement --}} -->
+                                                                                    {{-- item movement --}} -->
                     </ul>
                 </li>
             @endcanany
@@ -343,6 +343,13 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('tasks.index') }}">
                                     <i class="ti-control-record"></i>{{ __('navigation.tasks') }}
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('tasks.types.index') }}">
+                                    <i class="ti-control-record"></i>{{ __('انواع المهمات') }}
 
                                 </a>
                             </li>
@@ -750,10 +757,10 @@
                         {{-- الرصيد الافتتاحى للحسابات --}}
                         {{-- account movement --}}
                         <!-- <li class="nav-item">
-                                                                                <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
-                                                                                    <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
-                                                                                </a>
-                                                                            </li> -->
+                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
+                                                                                            <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
+                                                                                        </a>
+                                                                                    </li> -->
                         {{-- account movement --}}
                         {{-- balance sheet --}}
                         <li class="nav-item">

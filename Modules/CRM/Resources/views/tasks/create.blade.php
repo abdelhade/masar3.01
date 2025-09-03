@@ -48,14 +48,22 @@
                                 @enderror
                             </div>
 
-                            <!-- نوع المهمة -->
                             <div class="mb-3 col-lg-4">
-                                <label for="type" class="form-label">نوع المهمة</label>
-                                <input type="text" name="task_type" id="task_type" class="form-control">
-                                @error('task_type')
+                                <label class="form-label" for="task_type_id">نوع المهمة</label>
+                                <select name="task_type_id" id="task_type_id" class="form-control">
+                                    <option value="">-- اختر نوع المهمة --</option>
+                                    @foreach ($taskTypes as $id => $title)
+                                        <option value="{{ $id }}"
+                                            {{ old('task_type_id', $task->task_type_id ?? '') == $id ? 'selected' : '' }}>
+                                            {{ $title }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('task_type_id')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
+
 
                             <!-- العنوان -->
                             <div class="mb-3 col-lg-4">

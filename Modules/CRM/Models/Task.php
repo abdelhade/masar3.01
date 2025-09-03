@@ -39,6 +39,10 @@ class Task extends Model  implements HasMedia
         return $this->belongsTo(User::class, 'target_user_id');
     }
 
+    public function taskType()
+    {
+        return $this->belongsTo(\Modules\CRM\Models\TaskType::class, 'task_type_id');
+    }
 
     public function registerMediaConversions(?Media $media = null): void
     {

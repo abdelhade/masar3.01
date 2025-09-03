@@ -5,12 +5,13 @@ namespace Modules\CRM\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Modules\CRM\Models\Task;
+use Modules\CRM\Models\TaskType;
 use Modules\CRM\Models\CrmClient;
 use App\Http\Controllers\Controller;
 use Modules\CRM\Enums\TaskStatusEnum;
 use Modules\CRM\Enums\TaskPriorityEnum;
-use Modules\CRM\Http\Requests\TaskRequest;
 use RealRashid\SweetAlert\Facades\Alert;
+use Modules\CRM\Http\Requests\TaskRequest;
 
 class TaskController extends Controller
 {
@@ -30,6 +31,9 @@ class TaskController extends Controller
      */
     public function create()
     {
+        // في create و edit
+        $taskTypes = TaskType::pluck('title', 'id');
+
         $clients = CrmClient::pluck('name', 'id');
         $users = User::pluck('name', 'id');
 
@@ -40,7 +44,8 @@ class TaskController extends Controller
             'clients',
             'users',
             'priorities',
-            'statuses'
+            'statuses',
+            'taskTypes'
         ));
     }
 
@@ -49,7 +54,6 @@ class TaskController extends Controller
      */
     public function store(TaskRequest $request)
     {
-        // dd($request->all());
         $data = $request->validated();
 
         $task = Task::create($data);
@@ -76,6 +80,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
+        $taskTypes = TaskType::pluck('title', 'id');
         $clients = CrmClient::pluck('name', 'id');
         $users = User::pluck('name', 'id');
         return view('crm::tasks.edit', get_defined_vars());

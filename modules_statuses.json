@@ -1,7 +1,6 @@
 {
     "Settings": true,
     "CRM": true,
-    "ClientController": true,
     "Authorization": true,
     "Zatca": true,
     "Shipping": true,
