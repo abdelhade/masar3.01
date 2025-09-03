@@ -1,0 +1,93 @@
+<?php
+
+namespace Modules\Progress\Http\Controllers;
+
+use Exception;
+use Illuminate\Routing\Controller;
+use Modules\Progress\Models\ProjectItem;
+use RealRashid\SweetAlert\Facades\Alert;
+use Modules\Progress\Http\Requests\ProjectItemRequest;
+use Modules\Progress\Models\ProjectProgress;
+
+class ProjectItemController extends Controller
+{
+    // public function __construct()
+    // {
+    //     $this->middleware('can:items-list')->only('index');
+    //     $this->middleware('can:items-create')->only(['create', 'store']);
+    //     $this->middleware('can:items-edit')->only(['edit', 'update']);
+    //     $this->middleware('can:items-delete')->only('destroy');
+    // }
+
+    public function store(ProjectItemRequest $request, ProjectProgress $project)
+    {
+        try {
+            $project->items()->create([
+                'work_item_id'   => $request->work_item_id,
+                'total_quantity' => $request->total_quantity,
+                'start_date'     => $request->start_date,
+                'end_date'       => $request->end_date,
+                'daily_quantity' => $this->calculateDailyQuantity(
+                    $request->total_quantity,
+                    $request->start_date,
+                    $request->end_date
+                )
+            ]);
+
+            Alert::toast('تم إضافة بند العمل للمشروع بنجاح', 'success');
+            return back();
+        } catch (Exception) {
+            Alert::toast('حدث خطأ أثناء الإضافة', 'error');
+            return back();
+        }
+    }
+
+    public function update(ProjectItemRequest $request, ProjectItem $projectItem)
+    {
+        try {
+            $projectItem->update([
+                'total_quantity' => $request->total_quantity,
+                'start_date'     => $request->start_date,
+                'end_date'       => $request->end_date,
+                'daily_quantity' => $this->calculateDailyQuantity(
+                    $request->total_quantity,
+                    $request->start_date,
+                    $request->end_date
+                )
+            ]);
+
+            Alert::toast('تم تحديث بند العمل بنجاح', 'success');
+            return back();
+        } catch (Exception) {
+            Alert::toast('حدث خطأ أثناء التحديث', 'error');
+            return back();
+        }
+    }
+
+    public function destroy(ProjectItem $projectItem)
+    {
+        try {
+            $projectItem->delete();
+            Alert::toast('تم حذف بند العمل بنجاح', 'success');
+            return back();
+        } catch (Exception) {
+            Alert::toast('حدث خطأ أثناء الحذف', 'error');
+            return back();
+        }
+    }
+
+    public function getByProject($projectId)
+    {
+        $items = ProjectItem::with('workItem')
+            ->where('project_id', $projectId)
+            ->get();
+
+        return response()->json($items);
+    }
+
+    private function calculateDailyQuantity($total, $start, $end)
+    {
+        $days = \Carbon\Carbon::parse($start)->diffInDays(\Carbon\Carbon::parse($end)) + 1;
+        return round($total / $days, 2);
+    }
+}

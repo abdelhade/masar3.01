@@ -2,14 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{OperHead, JournalHead, AccHead, Employee, Item, JournalDetail};
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
+use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\{OperHead, JournalHead, AccHead, Employee, Item, JournalDetail};
 
 class InvoiceController extends Controller
 {
+    public $titles = [
+        10 => 'فاتوره مبيعات',
+        11 => 'فاتورة مشتريات',
+        12 => 'مردود مبيعات',
+        13 => 'مردود مشتريات',
+        14 => 'امر بيع',
+        15 => 'امر شراء',
+        16 => 'عرض سعر لعميل',
+        17 => 'عرض سعر من مورد',
+        18 => 'فاتورة توالف',
+        19 => 'امر صرف',
+        20 => 'امر اضافة',
+        21 => 'تحويل من مخزن لمخزن',
+        22 => 'امر حجز',
+    ];
 
     // public function index(Request $request)
     // {
@@ -46,11 +62,29 @@ class InvoiceController extends Controller
     //     return view('invoices.index', compact('invoices', 'type'));
     // }
 
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = OperHead::with(['acc1Headuser', 'store', 'employee', 'acc1Head', 'acc2Head', 'type', 'user'])
-            ->whereIn('pro_type', [11, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22])->get();
-        return view('invoices.index', compact('invoices'));
+        // Default to today's date if no date range is provided
+        $startDate = $request->input('start_date', Carbon::today()->toDateString());
+        $endDate = $request->input('end_date', Carbon::today()->toDateString());
+        $proTypes = $request->input('pro_types', [11, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
+
+        // Build the query
+        $invoices = OperHead::with(['acc1Headuser', 'store', 'employee', 'acc1Head', 'acc2Head', 'type'])
+            ->whereIn('pro_type', $proTypes)
+            ->whereDate('crtime', '>=', $startDate)
+            ->whereDate('crtime', '<=', $endDate)
+            ->get();
+
+        // Fetch available invoice types for the filter dropdown
+        $invoiceTypes = OperHead::select('pro_type')
+            ->distinct()
+            ->whereIn('pro_type',  array_keys($this->titles))
+            ->pluck('pro_type')
+            ->toArray();
+        $titles = $this->titles;
+
+        return view('invoices.index', compact('invoices', 'invoiceTypes', 'startDate', 'endDate', 'proTypes', 'titles'));
     }
 
 

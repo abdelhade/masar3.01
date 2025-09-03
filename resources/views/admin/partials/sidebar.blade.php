@@ -186,14 +186,14 @@
                             <livewire:item-management.notes.notesNames />
                         @endcan
                         <!-- {{-- item movement --}}
-                        @can('عرض تقرير حركة صنف')
-                            <li class="nav-item">
-                                <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                    <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
-                                </a>
-                            </li>
-                        @endcan
-                        {{-- item movement --}} -->
+                                                                                    @can('عرض تقرير حركة صنف')
+        <li class="nav-item">
+                                                                                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
+                                                                                                                                                            <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
+                                                                                                                                                        </a>
+                                                                                                                                                    </li>
+    @endcan
+                                                                                    {{-- item movement --}} -->
                     </ul>
                 </li>
             @endcanany
@@ -343,6 +343,13 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('tasks.index') }}">
                                     <i class="ti-control-record"></i>{{ __('navigation.tasks') }}
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('tasks.types.index') }}">
+                                    <i class="ti-control-record"></i>{{ __('انواع المهمات') }}
 
                                 </a>
                             </li>
@@ -750,10 +757,10 @@
                         {{-- الرصيد الافتتاحى للحسابات --}}
                         {{-- account movement --}}
                         <!-- <li class="nav-item">
-                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
-                                <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
-                            </a>
-                        </li> -->
+                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
+                                                                                            <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
+                                                                                        </a>
+                                                                                    </li> -->
                         {{-- account movement --}}
                         {{-- balance sheet --}}
                         <li class="nav-item">
@@ -1078,6 +1085,54 @@
                             <i class="ti-control-record"></i>{{ __('navigation.shipments') }}
                         </a>
                     </li>
+                </ul>
+            </li>
+
+            <li class="li-main">
+                <a href="javascript: void(0);">
+                    <i data-feather="truck" class="align-self-center menu-icon"></i>
+                    <span>{{ __('Daily Progress') }}</span>
+                    <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
+                </a>
+                <ul class="sub-menu mm-collapse" aria-expanded="false">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('project.types.index') }}">
+                            <i class="ti-control-record"></i>{{ __('Project Types') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('clients.index') }}">
+                            <i class="ti-control-record"></i>{{ __('Clients') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('employees.index') }}">
+                            <i class="ti-control-record"></i>{{ __('Employees') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('work.items.index') }}">
+                            <i class="ti-control-record"></i>{{ __('Work Items') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('project.template.index') }}">
+                            <i class="ti-control-record"></i>{{ __('Project Template') }}
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('progress.projcet.index') }}">
+                            <i class="ti-control-record"></i>{{ __('Projects') }}
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('progress.projcet.index') }}">
+                            <i class="ti-control-record"></i>{{ __('DailyProgress') }}
+                        </a>
+                    </li>
+
                 </ul>
             </li>
 

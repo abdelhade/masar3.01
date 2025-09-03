@@ -1,12 +1,12 @@
 {
     "Settings": true,
     "CRM": true,
-    "ClientController": true,
     "Authorization": true,
     "Zatca": true,
     "Shipping": true,
     "Notifications": true,
     "Rentals": true,
     "Maintenance": true,
-    "POS": true
+    "POS": true,
+    "Progress": true
 }

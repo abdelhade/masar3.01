@@ -9,7 +9,8 @@ use Modules\CRM\Http\Controllers\{
     LeadController,
     LeadStatusController,
     StatisticsController,
-    TaskController
+    TaskController,
+    TaskTypeController
 };
 use Modules\CRM\Livewire\LeadsBoard;
 
@@ -22,6 +23,7 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::resource('activities', ActivityController::class)->names('activities');
 
     Route::resource('tasks', TaskController::class)->names('tasks');
+    Route::resource('tasks-types', TaskTypeController::class)->names('tasks.types');
 
     Route::get('/leads', LeadsBoard::class)->name('leads.index');
     Route::get('/leads/board', [LeadController::class, 'board'])->name('leads.board');

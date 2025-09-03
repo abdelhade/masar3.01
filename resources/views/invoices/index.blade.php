@@ -13,13 +13,48 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" action="{{ route('invoices.index') }}" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">{{ __('من تاريخ') }}</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control"
+                                value="{{ $startDate }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">{{ __('إلى تاريخ') }}</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control"
+                                value="{{ $endDate }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="pro_types" class="form-label">{{ __('نوع الفاتورة') }}</label>
+                            <select name="pro_types[]" id="pro_types" class="form-select" multiple>
+                                @foreach ($invoiceTypes as $type)
+                                    <option value="{{ $type }}" {{ in_array($type, $proTypes) ? 'selected' : '' }}>
+                                        {{ $titles[$type] ?? __('نوع') . ' ' . $type }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">{{ __('فلتر') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
 
-                    <x-table-export-actions table-id="invoices-table" filename="invoices"
-                        excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                    <x-table-export-actions table-id="invoices-table" filename="invoices" excel-label="تصدير Excel"
+                        pdf-label="تصدير PDF" print-label="طباعة" />
 
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table id="invoices-table" class="table table-striped mb-0" style="min-width: 1200px;">
@@ -36,7 +71,8 @@
                                     {{-- <th class="font-family-cairo fw-bold font-14 text-center">{{ __('المخزن') }}</th> --}}
                                     <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الموظف') }}</th>
                                     <th class="font-family-cairo fw-bold font-14 text-center">{{ __('قيمة الماليه') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('المدفوع من العميل ') }}
+                                    <th class="font-family-cairo fw-bold font-14 text-center">
+                                        {{ __('المدفوع من العميل ') }}
                                     </th>
                                     <th class="font-family-cairo fw-bold font-14 text-center">{{ __('صافي العمليه') }}</th>
                                     <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الربح') }}</th>

@@ -18,8 +18,10 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade'); // المستخدم (المندوب)
             $table->foreignId('target_user_id')->nullable()->constrained('users')->nullOnDelete(); // العميل المستهدف (لو مستخدم داخلي)
 
+            // بدل work_item_type_id
+            $table->foreignId('task_type_id')->constrained('task_types')->onDelete('cascade');
+
             // الحقول النصية
-            $table->string('task_type'); // نوع التاسك - مثال: زيارة - أعطال
             $table->string('title'); // عنوان التاسك
 
             // Enums
