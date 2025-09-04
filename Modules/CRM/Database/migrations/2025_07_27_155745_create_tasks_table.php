@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->nullable()->constrained('crm_clients')->onDelete('cascade'); // اسم العميل
+            $table->foreignId('client_id')->nullable()->constrained('clients')->onDelete('cascade'); // اسم العميل
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade'); // المستخدم (المندوب)
             $table->foreignId('target_user_id')->nullable()->constrained('users')->nullOnDelete(); // العميل المستهدف (لو مستخدم داخلي)
 

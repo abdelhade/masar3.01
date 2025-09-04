@@ -45,6 +45,7 @@
                                     <th>{{ __('العنوان') }}</th>
                                     <th>{{ __('الوظيفة') }}</th>
                                     <th>{{ __('تاريخ الميلاد') }}</th>
+                                    <th>{{ __('الصفه') }}</th>
                                     <th>{{ __('الجنس') }}</th>
                                     <th>{{ __('الحالة') }}</th>
                                     <th>{{ __('العمليات') }}</th>
@@ -60,6 +61,18 @@
                                         <td>{{ $client->address }}</td>
                                         <td>{{ $client->job }}</td>
                                         <td>{{ $client->date_of_birth?->format('Y-m-d') }}</td>
+                                        <td>
+                                            @if ($client->type == 'person')
+                                                <span class="badge bg-primary">
+                                                    {{ $client->type }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-danger">
+                                                    {{ $client->type }}
+                                                </span>
+                                            @endif
+
+                                        </td>
                                         <td>
                                             <span
                                                 class="badge {{ $client->gender === 'male' ? 'bg-primary' : 'bg-pink' }}">

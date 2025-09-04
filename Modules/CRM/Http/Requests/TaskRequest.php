@@ -15,7 +15,7 @@ class TaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'client_id'      => ['required', 'exists:crm_clients,id'],
+            'client_id'      => ['required', 'exists:clients,id'],
             'user_id'        => ['required', 'exists:users,id'],
             'task_type_id' => ['required', 'exists:task_types,id'],
             'title'          => ['required', 'string', 'max:255'],

@@ -328,7 +328,7 @@
                             <select class="form-control" wire:model="newLead.client_id">
                                 <option value="">اختر العميل</option>
                                 @foreach ($clients as $client)
-                                    <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                    <option value="{{ $client->id }}">{{ $client->cname }}</option>
                                 @endforeach
                             </select>
                             @error('newLead.client_id')

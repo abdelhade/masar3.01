@@ -27,7 +27,7 @@ class ActivityRequest extends FormRequest
             'type'          => 'required|in:' . implode(',', ActivityTypeEnum::values()),
             'activity_date' => 'required|date',         // اليوم
             'scheduled_at' => 'nullable|date_format:H:i',
-            'client_id'     => 'nullable|exists:crm_clients,id',
+            'client_id'     => 'nullable|exists:clients,id',
             'assigned_to'   => 'nullable|exists:users,id',
         ];
     }

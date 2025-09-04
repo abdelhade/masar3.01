@@ -36,6 +36,7 @@ class ClientController extends Controller
 
     public function store(ClientRequest $request)
     {
+        // dd($request->all());
         DB::beginTransaction();
         try {
             Client::create([
@@ -53,6 +54,7 @@ class ClientController extends Controller
                 'info'             => $request->info,
                 'job'              => $request->job,
                 'gender'           => $request->gender,
+                'type'             => $request->type,
                 'is_active'        => $request->has('is_active') ? 1 : 0,
                 'created_by' => Auth::id(),
             ]);
@@ -97,6 +99,7 @@ class ClientController extends Controller
                 'info'             => $request->info,
                 'job'              => $request->job,
                 'gender'           => $request->gender,
+                'type'             => $request->type,
                 'is_active'        => $request->has('is_active') ? 1 : 0,
             ]);
 

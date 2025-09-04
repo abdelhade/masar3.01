@@ -3,6 +3,7 @@
 namespace Modules\CRM\Models;
 
 use App\Models\User;
+use App\Models\Client;
 use Illuminate\Database\Eloquent\Model;
 
 class Lead extends Model
@@ -22,7 +23,7 @@ class Lead extends Model
 
     public function client()
     {
-        return $this->belongsTo(CrmClient::class, 'client_id');
+        return $this->belongsTo(Client::class, 'client_id');
     }
 
     public function status()

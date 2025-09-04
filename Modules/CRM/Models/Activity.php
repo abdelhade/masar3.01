@@ -2,10 +2,11 @@
 
 namespace Modules\CRM\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\CRM\Enums\ActivityTypeEnum;
 use App\Models\User;
+use App\Models\Client;
+use Illuminate\Database\Eloquent\Model;
+use Modules\CRM\Enums\ActivityTypeEnum;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Activity extends Model
 {
@@ -31,7 +32,7 @@ class Activity extends Model
 
     public function client()
     {
-        return $this->belongsTo(CrmClient::class);
+        return $this->belongsTo(Client::class);
     }
 
     public function assignedUser()

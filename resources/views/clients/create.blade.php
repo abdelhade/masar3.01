@@ -147,7 +147,19 @@
                             {{-- النوع والحالة --}}
                             <div class="row g-3">
                                 <!-- حقل النوع -->
-                                <div class="col-lg-6 col-md-6">
+                                <div class="mb-3 col-lg-4">
+                                    <label class="form-label" for="type">الصفه</label>
+                                    <select class="form-control" id="type" name="type">
+                                        <option value="person" {{ old('type') == 'person' ? 'selected' : '' }}>شخص</option>
+                                        <option value="company" {{ old('type') == 'company' ? 'selected' : '' }}>شركة
+                                        </option>
+                                    </select>
+                                    @error('type')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                </div>
+
+                                <div class="col-lg-4 col-md-6">
                                     <label class="form-label">النوع</label>
                                     <select name="gender" class="form-select">
                                         <option value="">اختر النوع</option>
@@ -157,7 +169,7 @@
                                 </div>
 
                                 <!-- حقل الحالة -->
-                                <div class="col-lg-6 col-md-6">
+                                <div class="col-lg-4 col-md-6">
                                     <label class="form-label">الحالة</label>
                                     <div class="status-container d-flex align-items-center justify-content-between">
                                         <span class="status-label">نشط</span>

@@ -45,9 +45,9 @@
                                 @forelse ($tasks as $task)
                                     <tr class="text-center">
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ optional($task->client)->name }}</td>
+                                        <td>{{ optional($task->client)->cname }}</td>
                                         <td>{{ optional($task->user)->name }}</td>
-                                        <td>{{ $task->task_type }}</td>
+                                        <td>{{ $task->taskType->title }}</td>
                                         <td>{{ $task->title }}</td>
                                         <td>
                                             @php

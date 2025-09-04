@@ -23,9 +23,8 @@
 
                         <div class="row">
                             <div class="mb-3 col-lg-4">
-                                <x-dynamic-search name="client_id" label="الشركة" column="name"
-                                    model="Modules\CRM\Models\CrmClient" placeholder="ابحث عن شركة..." :required="true"
-                                    :selected="$contact->client_id" :filters="['type' => 'company']" />
+                                <x-dynamic-search name="client_id" label="الشركة" column="cname" model="App\Models\Client"
+                                    placeholder="ابحث عن شركة..." :required="true" :selected="$contact->client_id" :filters="['type' => 'company']" />
                             </div>
 
                             <div class="mb-3 col-lg-4">

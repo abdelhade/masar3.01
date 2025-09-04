@@ -25,6 +25,7 @@ class Client extends Model
         'tenant',
         'branch',
         'is_active',
+        'type'
     ];
 
     protected $casts = [

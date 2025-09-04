@@ -3,12 +3,12 @@
 namespace Modules\CRM\Models;
 
 use App\Models\User;
-use Modules\CRM\Models\CrmClient;
+use App\Models\Client;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
 
 
 
@@ -26,7 +26,7 @@ class Task extends Model  implements HasMedia
 
     public function client()
     {
-        return $this->belongsTo(CrmClient::class);
+        return $this->belongsTo(Client::class);
     }
 
     public function user()

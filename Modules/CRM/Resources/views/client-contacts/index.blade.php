@@ -39,7 +39,7 @@
                                 @forelse ($ClientContacts as $contact)
                                     <tr class="text-center">
                                         <td> {{ $loop->iteration }} </td>
-                                        <td>{{ $contact->client->name }}</td>
+                                        <td>{{ $contact->client->cname }}</td>
                                         <td>{{ $contact->name }}</td>
                                         <td>{{ $contact->email }}</td>
                                         <td>{{ $contact->phone }}</td>

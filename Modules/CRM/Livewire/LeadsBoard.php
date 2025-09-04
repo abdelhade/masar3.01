@@ -3,9 +3,9 @@
 namespace Modules\CRM\Livewire;
 
 use App\Models\User;
+use App\Models\Client;
 use Livewire\Component;
 use Modules\CRM\Models\Lead;
-use Modules\CRM\Models\CrmClient;
 use Modules\CRM\Models\LeadStatus;
 use Modules\CRM\Models\ChanceSource;
 
@@ -48,7 +48,7 @@ class LeadsBoard extends Component
 
     protected $rules = [
         'newLead.title' => 'required|string|max:255',
-        'newLead.client_id' => 'required|exists:crm_clients,id',
+        'newLead.client_id' => 'required|exists:clients,id',
         'newLead.amount' => 'nullable|numeric|min:0',
         'newLead.source' => 'nullable|exists:chance_sources,id',
         'newLead.assigned_to' => 'nullable|exists:users,id',
@@ -76,7 +76,7 @@ class LeadsBoard extends Component
         }
 
         $this->loadData();
-        $this->clients = CrmClient::all();
+        $this->clients = Client::all();
         $this->users = User::all();
         $this->sources = ChanceSource::all();
     }

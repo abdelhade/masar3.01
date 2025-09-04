@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 namespace App\Observers;
 
 use App\Models\AccHead;
@@ -33,15 +34,14 @@ class JournalDetailObserver
                 return;
             }
 
-            // If this is a leaf account (no children), calculate balance from journal details
+            // احسب الرصيد للحساب الحالي
             if ($this->isLeafAccount($accountId)) {
                 $this->updateLeafAccountBalance($accountId);
             } else {
-                // If this is a parent account, calculate balance from children
                 $this->updateParentAccountBalance($accountId);
             }
 
-            // Recursively update all parent accounts
+            // مهم: اطلع للأب وخليه يعمل نفس الحساب بعد ما تخلص
             if ($accHead->parent_id) {
                 $this->updateAccountBalanceRecursive($accHead->parent_id);
             }
@@ -49,6 +49,7 @@ class JournalDetailObserver
             Log::error('Failed to update account balance recursively: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Check if account is a leaf account (has no children)
@@ -79,14 +80,27 @@ class JournalDetailObserver
      */
     protected function updateParentAccountBalance($accountId)
     {
-        $childrenBalance = AccHead::where('parent_id', $accountId)->sum('balance');
-        
+        $children = AccHead::where('parent_id', $accountId)->get();
+        $total = 0;
+
+        foreach ($children as $child) {
+            // حدّث الولد الأول (سواء كان Leaf أو Parent)
+            if ($this->isLeafAccount($child->id)) {
+                $this->updateLeafAccountBalance($child->id);
+            } else {
+                $this->updateParentAccountBalance($child->id);
+            }
+
+            $total += $child->balance;
+        }
+
         $accHead = AccHead::find($accountId);
         if ($accHead) {
-            $accHead->balance = $childrenBalance;
+            $accHead->balance = $total;
             $accHead->save();
         }
     }
+
 
     /**
      * Alternative recursive method that updates entire account tree
@@ -113,7 +127,7 @@ class JournalDetailObserver
      */
     protected function updateAllLeafAccounts()
     {
-        $leafAccounts = AccHead::whereNotIn('id', function($query) {
+        $leafAccounts = AccHead::whereNotIn('id', function ($query) {
             $query->select('parent_id')->from('acc_heads')->whereNotNull('parent_id');
         })->get();
 
@@ -127,7 +141,7 @@ class JournalDetailObserver
      */
     protected function updateAllParentAccounts()
     {
-        $parentAccounts = AccHead::whereIn('id', function($query) {
+        $parentAccounts = AccHead::whereIn('id', function ($query) {
             $query->select('parent_id')->from('acc_heads')->whereNotNull('parent_id');
         })->orderBy('level', 'desc')->get();
 

@@ -436,8 +436,8 @@
                         <th width="200">اسم الصنف</th>
                         <th width="60">الوحدة</th>
                         <th width="70">الكمية</th>
-                        <th width="90">سعر التكلفة</th>
-                        <th width="90">إجمالي التكلفة</th>
+                        {{-- <th width="90">سعر التكلفة</th>
+                        <th width="90">إجمالي التكلفة</th> --}}
                         @foreach ($priceTypes as $priceType)
                             <th width="90">{{ $priceType->name }}</th>
                         @endforeach
@@ -457,8 +457,8 @@
                             </td>
                             <td>{{ $item->unit->name ?? 'قطعة' }}</td>
                             <td>{{ number_format($item->qty_in) }}</td>
-                            <td class="purchase-price">{{ number_format($item->cost_price) }} ج</td>
-                            <td class="purchase-price">{{ number_format($item->cost_price * $item->qty_in) }} ج</td>
+                            {{-- <td class="purchase-price">{{ number_format($item->cost_price) }} ج</td>
+                            <td class="purchase-price">{{ number_format($item->cost_price * $item->qty_in) }} ج</td> --}}
                             @foreach ($priceTypes as $priceType)
                                 <td class="sale-price">
                                     {{ number_format($item->item->prices()->where('prices.id', $priceType->id)->wherePivot('unit_id', $item->unit_id)->first()?->pivot?->price ?? 0) }}

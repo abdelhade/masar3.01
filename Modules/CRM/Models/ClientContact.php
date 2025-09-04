@@ -2,6 +2,7 @@
 
 namespace Modules\CRM\Models;
 
+use App\Models\Client;
 use Illuminate\Database\Eloquent\Model;
 
 class ClientContact extends Model
@@ -11,6 +12,6 @@ class ClientContact extends Model
 
     public function client()
     {
-        return $this->belongsTo(CrmClient::class, 'client_id');
+        return $this->belongsTo(Client::class, 'client_id');
     }
 }

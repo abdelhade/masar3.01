@@ -35,27 +35,11 @@ return new class extends Migration
             $table->boolean('is_active')->default(0);
             $table->integer('created_by')->default(0);
 
+            $table->enum('type', ['person', 'company'])->default('person');
+
             $table->integer('tenant')->default(0);
             $table->integer('branch')->default(0);
             $table->timestamps();
-
-            // $table->string('drugs', 250)->nullable();
-            // $table->string('seriousdes', 250)->nullable();
-            // $table->string('familydes', 250)->nullable();
-            // $table->string('allergy', 250)->nullable();
-            // $table->string('temp', 9)->nullable();
-            // $table->string('pressure', 9)->nullable();
-            // $table->string('diabetes', 9)->nullable();
-            // $table->string('brate', 9)->nullable();
-            // $table->string('imgs', 250)->nullable();
-            // $table->integer('city')->nullable();
-
-            // $table->string('ref', 20)->nullable();
-            // $table->string('diseses', 200)->nullable();
-
-            // $table->double('height')->nullable();
-            // $table->double('weight')->nullable();
-            // $table->string('address3', 150)->nullable();
         });
     }
 

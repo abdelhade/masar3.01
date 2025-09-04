@@ -17,13 +17,12 @@
                     <h2>اضافة جديده</h2>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('client-contacts.store') }}" method="POST" onsubmit="disableButton()">
+                    <form action="{{ route('client-contacts.store') }}" method="POST">
                         @csrf
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <x-dynamic-search name="client_id" label="الشركة" column="name"
-                                    model="Modules\CRM\Models\CrmClient" placeholder="ابحث عن شركة..." :required="false"
-                                    :filters="['type' => 'company']" :class="'form-select'" />
+                                <x-dynamic-search name="client_id" label="الشركة" column="cname" model="App\Models\Client"
+                                    placeholder="ابحث عن شركة..." :required="false" :filters="['type' => 'company']" :class="'form-select'" />
                             </div>
 
                             <div class="mb-3 col-lg-4">

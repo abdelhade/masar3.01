@@ -2,10 +2,12 @@
 
 namespace Modules\CRM\Http\Controllers;
 
+use Exception;
 use App\Models\User;
-use Modules\CRM\Models\{Activity, CrmClient};
+use App\Models\Client;
 use App\Http\Controllers\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
+use Modules\CRM\Models\{Activity, CrmClient};
 use Modules\CRM\Http\Requests\ActivityRequest;
 
 class ActivityController extends Controller
@@ -24,7 +26,7 @@ class ActivityController extends Controller
      */
     public function create()
     {
-        $clients = CrmClient::pluck('name', 'id');
+        $clients = Client::pluck('cname', 'id');
         $users = User::pluck('name', 'id');
         return view('crm::activities.create', compact('clients', 'users'));
     }
@@ -38,7 +40,7 @@ class ActivityController extends Controller
             Activity::create($request->validated());
             Alert::toast('تم إضافة النشاط بنجاح ✅', 'success');
             return redirect()->route('activities.index');
-        } catch (\Exception $e) {
+        } catch (Exception) {
             Alert::toast('حدث خطأ أثناء التحقق من البيانات', 'error');
             return redirect()->back()->withInput();
         }
@@ -58,7 +60,7 @@ class ActivityController extends Controller
      */
     public function edit(Activity $activity)
     {
-        $clients = CrmClient::pluck('name', 'id');
+        $clients = Client::pluck('cname', 'id');
         $users = User::pluck('name', 'id');
         return view('crm::activities.edit', compact('activity', 'clients', 'users'));
     }

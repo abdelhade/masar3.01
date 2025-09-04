@@ -54,7 +54,7 @@
                                         </td>
                                         <td>{{ $activity->activity_date?->format('Y-m-d') }}</td>
                                         <td>{{ $activity->scheduled_at?->format('H:i') }}</td>
-                                        <td>{{ optional($activity->client)->name }}</td>
+                                        <td>{{ optional($activity->client)->cname }}</td>
                                         <td>{{ optional($activity->assignedUser)->name }}</td>
                                         <td>{{ Str::limit($activity->description, 30) }}</td>
 

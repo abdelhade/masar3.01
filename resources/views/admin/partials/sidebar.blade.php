@@ -304,7 +304,7 @@
                         </li>
                         @can('عرض العملااء')
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('crm.clients.index') }}">
+                                <a class="nav-link" href="{{ route('clients.index') }}">
                                     <i class="ti-control-record"></i>{{ __('navigation.clients') }}
                                 </a>
                             </li>

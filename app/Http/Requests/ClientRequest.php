@@ -34,6 +34,8 @@ class ClientRequest extends FormRequest
             'is_active'        => 'boolean',
             'tenant'           => 'nullable|integer',
             'branch'           => 'nullable|integer',
+            'type'       => 'required|in:person,company',
+
         ];
 
         // إضافة قاعدة التحقق لـ email فقط إذا تم إدخال قيمة

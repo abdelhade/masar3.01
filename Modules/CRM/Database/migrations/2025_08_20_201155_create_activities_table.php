@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('activity_date')->nullable();
             $table->dateTime('scheduled_at')->nullable();
             $table->unsignedBigInteger('assigned_to')->nullable();
-            $table->foreign('client_id')->references('id')->on('crm_clients')->nullOnDelete();
+            $table->foreign('client_id')->references('id')->on('clients')->nullOnDelete();
             $table->foreign('assigned_to')->references('id')->on('users')->nullOnDelete();
             $table->timestamps();
         });
