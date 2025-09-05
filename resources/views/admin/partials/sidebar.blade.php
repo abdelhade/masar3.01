@@ -186,14 +186,14 @@
                             <livewire:item-management.notes.notesNames />
                         @endcan
                         <!-- {{-- item movement --}}
-                                                                                                  @can('عرض تقرير حركة صنف')
+                                                                                                      @can('عرض تقرير حركة صنف')
         <li class="nav-item">
-                                                                                                                                                                                                                <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                                                                                                                                                                                                    <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
-                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                            </li>
+                                                                                                                                                                                                                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
+                                                                                                                                                                                                                            <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
+                                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                                    </li>
     @endcan
-                                                                                                                {{-- item movement --}} -->
+                                                                                                                    {{-- item movement --}} -->
                     </ul>
                 </li>
             @endcanany
@@ -349,7 +349,7 @@
 
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('tasks.types.index') }}">
-                                    <i class="ti-control-record"></i>{{ __('انواع المهمات') }}
+                                    <i class="ti-control-record"></i>{{ __('navigation.task_types') }}
 
                                 </a>
                             </li>
@@ -756,11 +756,11 @@
                         {{-- الرصيد الافتتاحى للحسابات --}}
                         {{-- account movement --}}
                         <li class="nav-item">
-                        <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
-                                                   <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
-                           </a>
-                             </li> 
-                                                                                                               
+                            <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
+                                <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
+                            </a>
+                        </li>
+
                         {{-- account movement --}}
                         {{-- balance sheet --}}
                         <li class="nav-item">
@@ -1022,13 +1022,13 @@
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="settings" class="align-self-center menu-icon"></i>
-                    <span>{{ __('أدارة المستأجرات') }}</span>
+                    <span>{{ __('navigation.rent_management') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('rentals.buildings.index') }}">
-                            <i class="ti-control-record"></i>{{ __('أستأجار مبني') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.rent_building') }}
                         </a>
                     </li>
 
@@ -1037,7 +1037,7 @@
 
                         <a class="nav-link" href="{{ route('rentals.leases.index') }}">
 
-                            <i class="ti-control-record"></i>{{ __('عقود الاستأجار') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.rent_contracts') }}
                         </a>
                     </li>
                 </ul>
@@ -1045,21 +1045,20 @@
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="settings" class="align-self-center menu-icon"></i>
-                    <span>{{ __('الصيانه') }}</span>
+                    <span>{{ __('navigation.maintenance') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
-                    @dd(0000000000000000000)
 
                         <a class="nav-link" href="{{ route('service.types.index') }}">
-                            <i class="ti-control-record"></i>{{ __('انواع الخدمات') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.service_types') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('maintenances.index') }}">
-                            <i class="ti-control-record"></i>{{ __('الصيانات') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.maintenances') }}
                         </a>
                     </li>
 
@@ -1100,13 +1099,13 @@
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="shopping-cart" class="align-self-center menu-icon"></i>
-                    <span>{{ __('نقطة البيع') }}</span>
+                    <span>{{ __('navigation.point_of_sale') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('pos.index') }}">
-                            <i class="ti-control-record"></i>{{ __('نقطة البيع') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.point_of_sale') }}
                         </a>
                     </li>
                 </ul>
@@ -1115,45 +1114,45 @@
             <li class="li-main">
                 <a href="javascript: void(0);">
                     <i data-feather="truck" class="align-self-center menu-icon"></i>
-                    <span>{{ __('Daily Progress') }}</span>
+                    <span>{{ __('navigation.daily_progress') }}</span>
                     <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
                 </a>
                 <ul class="sub-menu mm-collapse" aria-expanded="false">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('project.types.index') }}">
-                            <i class="ti-control-record"></i>{{ __('Project Types') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.project_types') }}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('clients.index') }}">
-                            <i class="ti-control-record"></i>{{ __('Clients') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.clients') }}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('employees.index') }}">
-                            <i class="ti-control-record"></i>{{ __('Employees') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.employees') }}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('work.items.index') }}">
-                            <i class="ti-control-record"></i>{{ __('Work Items') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.work_items') }}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('project.template.index') }}">
-                            <i class="ti-control-record"></i>{{ __('Project Template') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.project_template') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('progress.projcet.index') }}">
-                            <i class="ti-control-record"></i>{{ __('Projects') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.projects') }}
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('progress.projcet.index') }}">
-                            <i class="ti-control-record"></i>{{ __('DailyProgress') }}
+                            <i class="ti-control-record"></i>{{ __('navigation.daily_progress') }}
                         </a>
                     </li>
 
@@ -1162,5 +1161,4 @@
 
         </ul>
     </div>
-</div>
 </div>

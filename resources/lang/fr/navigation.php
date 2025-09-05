@@ -246,4 +246,13 @@ return [
     'sales_reports' => 'Rapports de ventes',
     'purchase_reports' => 'Rapports d\'achats',
     'hr_reports' => 'Rapports RH',
+    'service_types' => 'Types de services',
+    'maintenances' => 'Maintenances',
+    'rent_building' => 'Location de bâtiment',
+    'rent_contracts' => 'Contrats de location',
+    'maintenance' => 'Maintenance',
+    'rent_management' => 'Gestion de location',
+    'daily_progress' => 'Progression quotidienne',
+    'work_items' => 'Éléments de travail',
+    'project_template' => 'Modèle de projet',
 ];

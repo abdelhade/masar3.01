@@ -248,4 +248,13 @@ return [
     'sales_reports' => 'تقارير المبيعات',
     'purchase_reports' => 'تقارير المشتريات',
     'hr_reports' => 'تقارير الموارد البشرية',
+    'service_types' => 'انواع الخدمات',
+    'maintenances' => 'الصيانات',
+    'rent_building' => 'أستأجار مبني',
+    'rent_contracts' => 'عقود الاستأجار',
+    'maintenance' => 'الصيانه',
+    'rent_management' => 'أدارة المستأجرات',
+    'daily_progress' => 'التقدم اليومي',
+    'work_items' => 'عناصر العمل',
+    'project_template' => 'قالب المشروع',
 ]; 

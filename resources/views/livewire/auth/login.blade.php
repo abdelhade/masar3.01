@@ -20,6 +20,11 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
 
     public bool $remember = false;
 
+    protected $rules = [
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ];
+
     public function login(): void
     {
         $this->validate();
@@ -37,7 +42,7 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        $this->redirect(route('admin.dashboard'));
+        $this->redirect(route('admin.dashboard'), navigate: true);
     }
 
     protected function ensureIsNotRateLimited(): void
@@ -571,9 +576,6 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
         }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-
-    <body>
         <div class="auth-container">
             <div class="modern-login-card">
                 <!-- Header -->
@@ -614,29 +616,28 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
                             </div>
                         </div>
 
-                        <div class="modern-form-group">
-
-
-
-                            <!-- Remember Me -->
-                            <div class="modern-remember d-flex align-items-center mb-3">
+                        <!-- Remember Me -->
+                        <div class="modern-remember">
+                            <div class="modern-checkbox">
                                 <input type="checkbox" id="remember" wire:model="remember">
-                                <label class="modern-remember-label ms-2 mb-0" for="remember">
-                                    {{ __('تذكرني') }}
-                                </label>
+                                <span class="modern-checkmark"></span>
                             </div>
+                            <label class="modern-remember-label" for="remember">
+                                {{ __('تذكرني') }}
+                            </label>
+                        </div>
 
-                            <!-- Submit Button -->
-                            <button type="submit" class="modern-button" wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="login">
-                                    تسجيل الدخول
-                                    <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
-                                </span>
-                                <span wire:loading wire:target="login">
-                                    جارِ تسجيل الدخول...
-                                    <span class="loading-spinner"></span>
-                                </span>
-                            </button>
+                        <!-- Submit Button -->
+                        <button type="submit" class="modern-button" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="login">
+                                تسجيل الدخول
+                                <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
+                            </span>
+                            <span wire:loading wire:target="login">
+                                جارِ تسجيل الدخول...
+                                <span class="loading-spinner"></span>
+                            </span>
+                        </button>
                     </form>
                 </div>
 

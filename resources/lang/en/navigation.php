@@ -248,4 +248,13 @@ return [
     'sales_reports' => 'Sales Reports',
     'purchase_reports' => 'Purchase Reports',
     'hr_reports' => 'HR Reports',
+    'service_types' => 'Service Types',
+    'maintenances' => 'Maintenances',
+    'rent_building' => 'Rent Building',
+    'rent_contracts' => 'Rent Contracts',
+    'maintenance' => 'Maintenance',
+    'rent_management' => 'Rent Management',
+    'daily_progress' => 'Daily Progress',
+    'work_items' => 'Work Items',
+    'project_template' => 'Project Template',
 ]; 

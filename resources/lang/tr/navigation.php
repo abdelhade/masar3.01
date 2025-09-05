@@ -222,4 +222,13 @@ return [
     'investor' => 'Yatırımcı',
     'creditor' => 'Alacaklı',
     'debtor' => 'Borçlu',
+    'service_types' => 'Hizmet Türleri',
+    'maintenances' => 'Bakımlar',
+    'rent_building' => 'Bina Kiralama',
+    'rent_contracts' => 'Kiralama Sözleşmeleri',
+    'maintenance' => 'Bakım',
+    'rent_management' => 'Kiralama Yönetimi',
+    'daily_progress' => 'Günlük İlerleme',
+    'work_items' => 'İş Kalemleri',
+    'project_template' => 'Proje Şablonu',
 ];
