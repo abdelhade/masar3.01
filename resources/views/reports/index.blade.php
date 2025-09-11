@@ -277,21 +277,26 @@
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>قائمة الاصناف مع حد الطلب الادني والاقصي</span>
                             </a>
-{{--
+
+                            <a href="{{ route('reports.items.inactive') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>تقرير الاصناف الموقوفه</span>
+                            </a>
+
+                            <a href="{{ route('reports.items.with-stores') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>قائمة الاصناف لكل مستودع رأسي</span>
+                            </a>
+
+                            {{--
                             <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>ميزان الاصناف</span>
                             </a>
 
-                            <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
-                                <i class="fas fa-clipboard-list"></i>
-                                <span>قائمة الاصناف لكل مستودع رأسي</span>
-                            </a>
 
-                            <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
-                                <i class="fas fa-clipboard-list"></i>
-                                <span>تقرير الاصناف الموقوفه</span>
-                            </a> --}}
+
+--}}
 
                             <a href="{{ route('reports.inventory-discrepancy-report') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
@@ -336,10 +341,11 @@
                                 <i class="fas fa-chart-line"></i>
                                 <span>تقرير المبيعات اجماليات</span>
                             </a>
-                            <a href="{{ route('reports.general-sales-items-report') }}" class="report-link">
+
+                            {{-- <a href="{{ route('reports.general-sales-items-report') }}" class="report-link">
                                 <i class="fas fa-box-open"></i>
                                 <span>تقرير المبيعات اصناف</span>
-                            </a>
+                            </a> --}}
                             <a href="{{ route('sales.invoice-report') }}" class="report-link">
                                 <i class="fas fa-box-open"></i>
                                 <span>تقرير فواتير المبيعات </span>
@@ -390,10 +396,11 @@
                                 <span>تقرير المشتريات اليومية</span>
                             </a>
 
-                            <a href="{{ route('reports.general-purchases-total-report') }}" class="report-link">
+                            <a href="{{ route('reports.general-purchases-total') }}" class="report-link">
                                 <i class="fas fa-chart-pie"></i>
                                 <span>تقرير المشتريات اجماليات</span>
                             </a>
+
                             <a href="{{ route('reports.general-purchases-items-report') }}" class="report-link">
                                 <i class="fas fa-boxes"></i>
                                 <span>تقرير المشتريات اصناف</span>
@@ -409,7 +416,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <!-- تقارير المصروفات -->
                 <div class="col-lg-4 col-md-6">

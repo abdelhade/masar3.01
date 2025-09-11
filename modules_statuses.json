@@ -8,5 +8,6 @@
     "Rentals": true,
     "Maintenance": true,
     "POS": true,
-    "Progress": true
+    "Progress": true,
+    "Reports": true
 }
