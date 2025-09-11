@@ -441,7 +441,7 @@
                                 <span>ميزان المصروفات</span>
                             </a> --}}
 
-                            <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                            {{-- <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
                                 <i class="fas fa-list"></i>
                                 <span>قائمة الاصناف مع الارصدة</span>
                             </a>
@@ -449,7 +449,7 @@
                             <a href="{{ route('reports.general-expenses-daily-report') }}" class="report-link">
                                 <i class="fas fa-file-invoice"></i>
                                 <span>كشف حساب مصروف</span>
-                            </a>
+                            </a> --}}
 
                             <a href="{{ route('reports.expenses-balance-report') }}" class="report-link">
                                 <i class="fas fa-balance-scale-right"></i>
@@ -491,24 +491,24 @@
                                 <i class="fas fa-user-clock"></i>
                                 <span>تقرير العملاء اليومية</span>
                             </a>
-                            <a href="{{ route('reports.general-customers-total-report') }}" class="report-link">
+                            {{-- <a href="{{ route('reports.general-customers-total-report') }}" class="report-link">
                                 <i class="fas fa-user-friends"></i>
                                 <span>تقرير العملاء اجماليات</span>
-                            </a>
-                            <a href="{{ route('reports.general-customers-items-report') }}" class="report-link">
+                            </a> --}}
+                            {{-- <a href="{{ route('reports.general-customers-items-report') }}" class="report-link">
                                 <i class="fas fa-user-tag"></i>
                                 <span>تقرير العملاء اصناف</span>
-                            </a>
-                            <a href="{{ route('reports.general-customers-debt-history-report') }}" class="report-link">
+                            </a> --}}
+                            {{-- <a href="{{ route('reports.general-customers-debt-history-report') }}" class="report-link">
                                 <i class="fas fa-file-invoice"></i>
                                 <span>تقرير اعمار ديون العملاء</span>
-                            </a>
+                            </a> --}}
                         </div>
                     </div>
                 </div>
 
                 <!-- تقارير الموردين -->
-                <div class="col-lg-4 col-md-6">
+                {{-- <div class="col-lg-4 col-md-6">
                     <div class="report-card">
                         <div class="card-header">
                             <i class="fas fa-truck-loading"></i>
@@ -529,9 +529,9 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
-                <!-- تقارير مراكز التكلفة -->
+                {{-- <!-- تقارير مراكز التكلفة -->
                 <div class="col-lg-4 col-md-6">
                     <div class="report-card">
                         <div class="card-header">
@@ -554,7 +554,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- تقارير التصنيع -->
                 <div class="col-lg-4 col-md-6">

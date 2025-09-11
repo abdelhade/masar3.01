@@ -485,269 +485,269 @@ class ReportController extends Controller
     }
 
     // تقرير العملاء إجماليات
-    public function generalCustomersTotalReport()
-    {
-        $groupBy = request('group_by', 'customer');
-        $fromDate = request('from_date');
-        $toDate = request('to_date');
+    // public function generalCustomersTotalReport()
+    // {
+    //     $groupBy = request('group_by', 'customer');
+    //     $fromDate = request('from_date');
+    //     $toDate = request('to_date');
 
-        $query = JournalDetail::whereHas('account', function ($q) {
-            $q->where('code', 'like', '1103%'); // Customer accounts
-        })->with('account');
+    //     $query = JournalDetail::whereHas('account', function ($q) {
+    //         $q->where('code', 'like', '1103%'); // Customer accounts
+    //     })->with('account');
 
-        if ($fromDate) {
-            $query->whereDate('crtime', '>=', $fromDate);
-        }
-        if ($toDate) {
-            $query->whereDate('crtime', '<=', $toDate);
-        }
+    //     if ($fromDate) {
+    //         $query->whereDate('crtime', '>=', $fromDate);
+    //     }
+    //     if ($toDate) {
+    //         $query->whereDate('crtime', '<=', $toDate);
+    //     }
 
-        if ($groupBy === 'customer') {
-            $customerTotals = $query->selectRaw('account_id, SUM(debit) as total_sales, SUM(credit) as total_payments, COUNT(*) as transactions_count')
-                ->groupBy('account_id')
-                ->with('account')
-                ->orderBy('total_sales', 'desc')
-                ->paginate(50);
-        } else {
-            $customerTotals = $query->selectRaw('DATE(crtime) as date, SUM(debit) as total_sales, SUM(credit) as total_payments, COUNT(*) as transactions_count')
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->paginate(50);
-        }
+    //     if ($groupBy === 'customer') {
+    //         $customerTotals = $query->selectRaw('account_id, SUM(debit) as total_sales, SUM(credit) as total_payments, COUNT(*) as transactions_count')
+    //             ->groupBy('account_id')
+    //             ->with('account')
+    //             ->orderBy('total_sales', 'desc')
+    //             ->paginate(50);
+    //     } else {
+    //         $customerTotals = $query->selectRaw('DATE(crtime) as date, SUM(debit) as total_sales, SUM(credit) as total_payments, COUNT(*) as transactions_count')
+    //             ->groupBy('date')
+    //             ->orderBy('date', 'desc')
+    //             ->paginate(50);
+    //     }
 
-        $grandTotalTransactions = $customerTotals->sum('transactions_count');
-        $grandTotalSales = $customerTotals->sum('total_sales');
-        $grandTotalPayments = $customerTotals->sum('total_payments');
-        $grandTotalBalance = $grandTotalSales - $grandTotalPayments;
-        $grandAverageTransaction = $grandTotalTransactions > 0 ? ($grandTotalSales + $grandTotalPayments) / $grandTotalTransactions : 0;
+    //     $grandTotalTransactions = $customerTotals->sum('transactions_count');
+    //     $grandTotalSales = $customerTotals->sum('total_sales');
+    //     $grandTotalPayments = $customerTotals->sum('total_payments');
+    //     $grandTotalBalance = $grandTotalSales - $grandTotalPayments;
+    //     $grandAverageTransaction = $grandTotalTransactions > 0 ? ($grandTotalSales + $grandTotalPayments) / $grandTotalTransactions : 0;
 
-        $totalCustomers = $customerTotals->count();
-        $topCustomer = $customerTotals->first() ? $customerTotals->first()->accHead->aname : '---';
-        $averageSalesPerCustomer = $totalCustomers > 0 ? $grandTotalSales / $totalCustomers : 0;
-        $averageBalancePerCustomer = $totalCustomers > 0 ? $grandTotalBalance / $totalCustomers : 0;
+    //     $totalCustomers = $customerTotals->count();
+    //     $topCustomer = $customerTotals->first() ? $customerTotals->first()->accHead->aname : '---';
+    //     $averageSalesPerCustomer = $totalCustomers > 0 ? $grandTotalSales / $totalCustomers : 0;
+    //     $averageBalancePerCustomer = $totalCustomers > 0 ? $grandTotalBalance / $totalCustomers : 0;
 
-        return view('reports.general-customers-total-report', compact(
-            'customerTotals',
-            'groupBy',
-            'grandTotalTransactions',
-            'grandTotalSales',
-            'grandTotalPayments',
-            'grandTotalBalance',
-            'grandAverageTransaction',
-            'totalCustomers',
-            'topCustomer',
-            'averageSalesPerCustomer',
-            'averageBalancePerCustomer'
-        ));
-    }
+    //     return view('reports.general-customers-total-report', compact(
+    //         'customerTotals',
+    //         'groupBy',
+    //         'grandTotalTransactions',
+    //         'grandTotalSales',
+    //         'grandTotalPayments',
+    //         'grandTotalBalance',
+    //         'grandAverageTransaction',
+    //         'totalCustomers',
+    //         'topCustomer',
+    //         'averageSalesPerCustomer',
+    //         'averageBalancePerCustomer'
+    //     ));
+    // }
 
     // تقرير العملاء أصناف
-    public function generalCustomersItemsReport()
-    {
-        $customers = AccHead::where('code', 'like', '1103%')->where('isdeleted', 0)->get();
+    // public function generalCustomersItemsReport()
+    // {
+    //     $customers = AccHead::where('code', 'like', '1103%')->where('isdeleted', 0)->get();
 
-        $query = OperationItems::whereHas('operation', function ($q) {
-            $q->where('pro_type', 10); // Sales invoices
-        })->with(['item', 'operation']);
+    //     $query = OperationItems::whereHas('operation', function ($q) {
+    //         $q->where('pro_type', 10); // Sales invoices
+    //     })->with(['item', 'operation']);
 
-        if (request('from_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
-            });
-        }
-        if (request('to_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
-            });
-        }
-        if (request('customer_id')) {
-            $query->whereHas('operation', function ($q) {
-                $q->where('acc1', request('customer_id'));
-            });
-        }
+    //     if (request('from_date')) {
+    //         $query->whereHas('operation', function ($q) {
+    //             $q->whereDate('pro_date', '>=', request('from_date'));
+    //         });
+    //     }
+    //     if (request('to_date')) {
+    //         $query->whereHas('operation', function ($q) {
+    //             $q->whereDate('pro_date', '<=', request('to_date'));
+    //         });
+    //     }
+    //     if (request('customer_id')) {
+    //         $query->whereHas('operation', function ($q) {
+    //             $q->where('acc1', request('customer_id'));
+    //         });
+    //     }
 
-        $customerItems = $query->selectRaw('item_id, SUM(qty_out) as total_quantity, SUM(qty_out * price) as total_sales, COUNT(DISTINCT operation_id) as invoices_count')
-            ->groupBy('item_id')
-            ->with('item')
-            ->orderBy('total_quantity', 'desc')
-            ->paginate(50);
+    //     $customerItems = $query->selectRaw('item_id, SUM(qty_out) as total_quantity, SUM(qty_out * price) as total_sales, COUNT(DISTINCT operation_id) as invoices_count')
+    //         ->groupBy('item_id')
+    //         ->with('item')
+    //         ->orderBy('total_quantity', 'desc')
+    //         ->paginate(50);
 
-        $totalQuantity = $customerItems->sum('total_quantity');
-        $totalSales = $customerItems->sum('total_sales');
-        $averagePrice = $totalQuantity > 0 ? $totalSales / $totalQuantity : 0;
-        $totalInvoices = $customerItems->sum('invoices_count');
-        $totalItems = $customerItems->count();
-        $topSellingItem = $customerItems->first() ? $customerItems->first()->item->name : '---';
-        $averageQuantityPerItem = $totalItems > 0 ? $totalQuantity / $totalItems : 0;
-        $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
+    //     $totalQuantity = $customerItems->sum('total_quantity');
+    //     $totalSales = $customerItems->sum('total_sales');
+    //     $averagePrice = $totalQuantity > 0 ? $totalSales / $totalQuantity : 0;
+    //     $totalInvoices = $customerItems->sum('invoices_count');
+    //     $totalItems = $customerItems->count();
+    //     $topSellingItem = $customerItems->first() ? $customerItems->first()->item->name : '---';
+    //     $averageQuantityPerItem = $totalItems > 0 ? $totalQuantity / $totalItems : 0;
+    //     $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
 
-        return view('reports.general-customers-items-report', compact(
-            'customers',
-            'customerItems',
-            'totalQuantity',
-            'totalSales',
-            'averagePrice',
-            'totalInvoices',
-            'totalItems',
-            'topSellingItem',
-            'averageQuantityPerItem',
-            'averageSalesPerItem'
-        ));
-    }
+    //     return view('reports.general-customers-items-report', compact(
+    //         'customers',
+    //         'customerItems',
+    //         'totalQuantity',
+    //         'totalSales',
+    //         'averagePrice',
+    //         'totalInvoices',
+    //         'totalItems',
+    //         'topSellingItem',
+    //         'averageQuantityPerItem',
+    //         'averageSalesPerItem'
+    //     ));
+    // }
     // تقرير اعمار ديون العملاء
-    public function generalCustomersDebtHistoryReport()
-    {
-        return view('reports.customers.customer-debt-history');
-    }
+    // public function generalCustomersDebtHistoryReport()
+    // {
+    //     return view('reports.customers.customer-debt-history');
+    // }
 
     // تقرير الموردين اليومية
-    public function generalSuppliersDailyReport()
-    {
-        $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
+    // public function generalSuppliersDailyReport()
+    // {
+    //     $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
 
-        $query = JournalDetail::whereHas('account', function ($q) {
-            $q->where('code', 'like', '2101%'); // Supplier accounts
-        })->with(['account', 'journalHead']);
+    //     $query = JournalDetail::whereHas('account', function ($q) {
+    //         $q->where('code', 'like', '2101%'); // Supplier accounts
+    //     })->with(['account', 'journalHead']);
 
-        if (request('from_date')) {
-            $query->whereDate('crtime', '>=', request('from_date'));
-        }
-        if (request('to_date')) {
-            $query->whereDate('crtime', '<=', request('to_date'));
-        }
-        if (request('supplier_id')) {
-            $query->where('account_id', request('supplier_id'));
-        }
+    //     if (request('from_date')) {
+    //         $query->whereDate('crtime', '>=', request('from_date'));
+    //     }
+    //     if (request('to_date')) {
+    //         $query->whereDate('crtime', '<=', request('to_date'));
+    //     }
+    //     if (request('supplier_id')) {
+    //         $query->where('account_id', request('supplier_id'));
+    //     }
 
-        $supplierTransactions = $query->orderBy('crtime', 'desc')->paginate(50);
+    //     $supplierTransactions = $query->orderBy('crtime', 'desc')->paginate(50);
 
-        $totalAmount = $supplierTransactions->sum('debit') + $supplierTransactions->sum('credit');
-        $totalPurchases = $supplierTransactions->sum('credit');
-        $totalPayments = $supplierTransactions->sum('debit');
-        $finalBalance = $totalPurchases - $totalPayments;
-        $totalTransactions = $supplierTransactions->count();
+    //     $totalAmount = $supplierTransactions->sum('debit') + $supplierTransactions->sum('credit');
+    //     $totalPurchases = $supplierTransactions->sum('credit');
+    //     $totalPayments = $supplierTransactions->sum('debit');
+    //     $finalBalance = $totalPurchases - $totalPayments;
+    //     $totalTransactions = $supplierTransactions->count();
 
-        return view('reports.general-suppliers-daily-report', compact(
-            'suppliers',
-            'supplierTransactions',
-            'totalAmount',
-            'totalPurchases',
-            'totalPayments',
-            'finalBalance',
-            'totalTransactions'
-        ));
-    }
+    //     return view('reports.general-suppliers-daily-report', compact(
+    //         'suppliers',
+    //         'supplierTransactions',
+    //         'totalAmount',
+    //         'totalPurchases',
+    //         'totalPayments',
+    //         'finalBalance',
+    //         'totalTransactions'
+    //     ));
+    // }
 
     // تقرير الموردين إجماليات
-    public function generalSuppliersTotalReport()
-    {
-        $groupBy = request('group_by', 'supplier');
-        $fromDate = request('from_date');
-        $toDate = request('to_date');
+    // public function generalSuppliersTotalReport()
+    // {
+    //     $groupBy = request('group_by', 'supplier');
+    //     $fromDate = request('from_date');
+    //     $toDate = request('to_date');
 
-        $query = JournalDetail::whereHas('account', function ($q) {
-            $q->where('code', 'like', '2101%'); // Supplier accounts
-        })->with('account');
+    //     $query = JournalDetail::whereHas('account', function ($q) {
+    //         $q->where('code', 'like', '2101%'); // Supplier accounts
+    //     })->with('account');
 
-        if ($fromDate) {
-            $query->whereDate('crtime', '>=', $fromDate);
-        }
-        if ($toDate) {
-            $query->whereDate('crtime', '<=', $toDate);
-        }
+    //     if ($fromDate) {
+    //         $query->whereDate('crtime', '>=', $fromDate);
+    //     }
+    //     if ($toDate) {
+    //         $query->whereDate('crtime', '<=', $toDate);
+    //     }
 
-        if ($groupBy === 'supplier') {
-            $supplierTotals = $query->selectRaw('account_id, SUM(credit) as total_purchases, SUM(debit) as total_payments, COUNT(*) as transactions_count')
-                ->groupBy('account_id')
-                ->with('account')
-                ->orderBy('total_purchases', 'desc')
-                ->paginate(50);
-        } else {
-            $supplierTotals = $query->selectRaw('DATE(crtime) as date, SUM(credit) as total_purchases, SUM(debit) as total_payments, COUNT(*) as transactions_count')
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->paginate(50);
-        }
+    //     if ($groupBy === 'supplier') {
+    //         $supplierTotals = $query->selectRaw('account_id, SUM(credit) as total_purchases, SUM(debit) as total_payments, COUNT(*) as transactions_count')
+    //             ->groupBy('account_id')
+    //             ->with('account')
+    //             ->orderBy('total_purchases', 'desc')
+    //             ->paginate(50);
+    //     } else {
+    //         $supplierTotals = $query->selectRaw('DATE(crtime) as date, SUM(credit) as total_purchases, SUM(debit) as total_payments, COUNT(*) as transactions_count')
+    //             ->groupBy('date')
+    //             ->orderBy('date', 'desc')
+    //             ->paginate(50);
+    //     }
 
-        $grandTotalTransactions = $supplierTotals->sum('transactions_count');
-        $grandTotalPurchases = $supplierTotals->sum('total_purchases');
-        $grandTotalPayments = $supplierTotals->sum('total_payments');
-        $grandTotalBalance = $grandTotalPurchases - $grandTotalPayments;
-        $grandAverageTransaction = $grandTotalTransactions > 0 ? ($grandTotalPurchases + $grandTotalPayments) / $grandTotalTransactions : 0;
+    //     $grandTotalTransactions = $supplierTotals->sum('transactions_count');
+    //     $grandTotalPurchases = $supplierTotals->sum('total_purchases');
+    //     $grandTotalPayments = $supplierTotals->sum('total_payments');
+    //     $grandTotalBalance = $grandTotalPurchases - $grandTotalPayments;
+    //     $grandAverageTransaction = $grandTotalTransactions > 0 ? ($grandTotalPurchases + $grandTotalPayments) / $grandTotalTransactions : 0;
 
-        $totalSuppliers = $supplierTotals->count();
-        $topSupplier = $supplierTotals->first() ? $supplierTotals->first()->accHead->aname : '---';
-        $averagePurchasesPerSupplier = $totalSuppliers > 0 ? $grandTotalPurchases / $totalSuppliers : 0;
-        $averageBalancePerSupplier = $totalSuppliers > 0 ? $grandTotalBalance / $totalSuppliers : 0;
+    //     $totalSuppliers = $supplierTotals->count();
+    //     $topSupplier = $supplierTotals->first() ? $supplierTotals->first()->accHead->aname : '---';
+    //     $averagePurchasesPerSupplier = $totalSuppliers > 0 ? $grandTotalPurchases / $totalSuppliers : 0;
+    //     $averageBalancePerSupplier = $totalSuppliers > 0 ? $grandTotalBalance / $totalSuppliers : 0;
 
-        return view('reports.general-suppliers-total-report', compact(
-            'supplierTotals',
-            'groupBy',
-            'grandTotalTransactions',
-            'grandTotalPurchases',
-            'grandTotalPayments',
-            'grandTotalBalance',
-            'grandAverageTransaction',
-            'totalSuppliers',
-            'topSupplier',
-            'averagePurchasesPerSupplier',
-            'averageBalancePerSupplier'
-        ));
-    }
+    //     return view('reports.general-suppliers-total-report', compact(
+    //         'supplierTotals',
+    //         'groupBy',
+    //         'grandTotalTransactions',
+    //         'grandTotalPurchases',
+    //         'grandTotalPayments',
+    //         'grandTotalBalance',
+    //         'grandAverageTransaction',
+    //         'totalSuppliers',
+    //         'topSupplier',
+    //         'averagePurchasesPerSupplier',
+    //         'averageBalancePerSupplier'
+    //     ));
+    // }
 
     // تقرير الموردين أصناف
-    public function generalSuppliersItemsReport()
-    {
-        $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
+    // public function generalSuppliersItemsReport()
+    // {
+    //     $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
 
-        $query = OperationItems::whereHas('operation', function ($q) {
-            $q->where('pro_type', 11); // Purchase invoices
-        })->with(['item', 'operation']);
+    //     $query = OperationItems::whereHas('operation', function ($q) {
+    //         $q->where('pro_type', 11); // Purchase invoices
+    //     })->with(['item', 'operation']);
 
-        if (request('from_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
-            });
-        }
-        if (request('to_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
-            });
-        }
-        if (request('supplier_id')) {
-            $query->whereHas('operation', function ($q) {
-                $q->where('acc1', request('supplier_id'));
-            });
-        }
+    //     if (request('from_date')) {
+    //         $query->whereHas('operation', function ($q) {
+    //             $q->whereDate('pro_date', '>=', request('from_date'));
+    //         });
+    //     }
+    //     if (request('to_date')) {
+    //         $query->whereHas('operation', function ($q) {
+    //             $q->whereDate('pro_date', '<=', request('to_date'));
+    //         });
+    //     }
+    //     if (request('supplier_id')) {
+    //         $query->whereHas('operation', function ($q) {
+    //             $q->where('acc1', request('supplier_id'));
+    //         });
+    //     }
 
-        $supplierItems = $query->selectRaw('item_id, SUM(qty_in) as total_quantity, SUM(qty_in * price) as total_purchases, COUNT(DISTINCT operation_id) as invoices_count')
-            ->groupBy('item_id')
-            ->with('item')
-            ->orderBy('total_quantity', 'desc')
-            ->paginate(50);
+    //     $supplierItems = $query->selectRaw('item_id, SUM(qty_in) as total_quantity, SUM(qty_in * price) as total_purchases, COUNT(DISTINCT operation_id) as invoices_count')
+    //         ->groupBy('item_id')
+    //         ->with('item')
+    //         ->orderBy('total_quantity', 'desc')
+    //         ->paginate(50);
 
-        $totalQuantity = $supplierItems->sum('total_quantity');
-        $totalPurchases = $supplierItems->sum('total_purchases');
-        $averagePrice = $totalQuantity > 0 ? $totalPurchases / $totalQuantity : 0;
-        $totalInvoices = $supplierItems->sum('invoices_count');
-        $totalItems = $supplierItems->count();
-        $topPurchasedItem = $supplierItems->first() ? $supplierItems->first()->item->name : '---';
-        $averageQuantityPerItem = $totalItems > 0 ? $totalQuantity / $totalItems : 0;
-        $averagePurchasesPerItem = $totalItems > 0 ? $totalPurchases / $totalItems : 0;
+    //     $totalQuantity = $supplierItems->sum('total_quantity');
+    //     $totalPurchases = $supplierItems->sum('total_purchases');
+    //     $averagePrice = $totalQuantity > 0 ? $totalPurchases / $totalQuantity : 0;
+    //     $totalInvoices = $supplierItems->sum('invoices_count');
+    //     $totalItems = $supplierItems->count();
+    //     $topPurchasedItem = $supplierItems->first() ? $supplierItems->first()->item->name : '---';
+    //     $averageQuantityPerItem = $totalItems > 0 ? $totalQuantity / $totalItems : 0;
+    //     $averagePurchasesPerItem = $totalItems > 0 ? $totalPurchases / $totalItems : 0;
 
-        return view('reports.general-suppliers-items-report', compact(
-            'suppliers',
-            'supplierItems',
-            'totalQuantity',
-            'totalPurchases',
-            'averagePrice',
-            'totalInvoices',
-            'totalItems',
-            'topPurchasedItem',
-            'averageQuantityPerItem',
-            'averagePurchasesPerItem'
-        ));
-    }
+    //     return view('reports.general-suppliers-items-report', compact(
+    //         'suppliers',
+    //         'supplierItems',
+    //         'totalQuantity',
+    //         'totalPurchases',
+    //         'averagePrice',
+    //         'totalInvoices',
+    //         'totalItems',
+    //         'topPurchasedItem',
+    //         'averageQuantityPerItem',
+    //         'averagePurchasesPerItem'
+    //     ));
+    // }
 
     // ميزان المصروفات
     public function expensesBalanceReport()
@@ -794,196 +794,196 @@ class ReportController extends Controller
     }
 
     // كشف حساب مصروف
-    public function generalExpensesDailyReport()
-    {
-        $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->where('is_basic', 0)->get();
-        $selectedAccount = null;
-        $expenseTransactions = collect();
-        $openingBalance = 0;
-        $closingBalance = 0;
+    // public function generalExpensesDailyReport()
+    // {
+    //     $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->where('is_basic', 0)->get();
+    //     $selectedAccount = null;
+    //     $expenseTransactions = collect();
+    //     $openingBalance = 0;
+    //     $closingBalance = 0;
 
-        if (request('expense_account')) {
-            $selectedAccount = AccHead::find(request('expense_account'));
-            if ($selectedAccount) {
-                $fromDate = request('from_date');
-                $toDate = request('to_date');
+    //     if (request('expense_account')) {
+    //         $selectedAccount = AccHead::find(request('expense_account'));
+    //         if ($selectedAccount) {
+    //             $fromDate = request('from_date');
+    //             $toDate = request('to_date');
 
-                $expenseTransactions = JournalDetail::where('account_id', $selectedAccount->id)
-                    ->with(['head', 'costCenter'])
-                    ->when($fromDate, function ($q) use ($fromDate) {
-                        $q->whereDate('crtime', '>=', $fromDate);
-                    })
-                    ->when($toDate, function ($q) use ($toDate) {
-                        $q->whereDate('crtime', '<=', $toDate);
-                    })
-                    ->orderBy('crtime', 'asc')
-                    ->paginate(50);
+    //             $expenseTransactions = JournalDetail::where('account_id', $selectedAccount->id)
+    //                 ->with(['head', 'costCenter'])
+    //                 ->when($fromDate, function ($q) use ($fromDate) {
+    //                     $q->whereDate('crtime', '>=', $fromDate);
+    //                 })
+    //                 ->when($toDate, function ($q) use ($toDate) {
+    //                     $q->whereDate('crtime', '<=', $toDate);
+    //                 })
+    //                 ->orderBy('crtime', 'asc')
+    //                 ->paginate(50);
 
-                $openingBalance = $this->calculateAccountBalance($selectedAccount->id, $fromDate);
-                $closingBalance = $this->calculateAccountBalance($selectedAccount->id, $toDate);
-            }
-        }
+    //             $openingBalance = $this->calculateAccountBalance($selectedAccount->id, $fromDate);
+    //             $closingBalance = $this->calculateAccountBalance($selectedAccount->id, $toDate);
+    //         }
+    //     }
 
-        return view('reports.general-expenses-daily-report', compact(
-            'expenseAccounts',
-            'selectedAccount',
-            'expenseTransactions',
-            'openingBalance',
-            'closingBalance'
-        ));
-    }
+    //     return view('reports.general-expenses-daily-report', compact(
+    //         'expenseAccounts',
+    //         'selectedAccount',
+    //         'expenseTransactions',
+    //         'openingBalance',
+    //         'closingBalance'
+    //     ));
+    // }
 
     // قائمة مراكز التكلفة
-    public function generalCostCentersList()
-    {
-        $asOfDate = request('as_of_date', now()->format('Y-m-d'));
-        $costCenterType = request('cost_center_type');
-        $search = request('search');
+    // public function generalCostCentersList()
+    // {
+    //     $asOfDate = request('as_of_date', now()->format('Y-m-d'));
+    //     $costCenterType = request('cost_center_type');
+    //     $search = request('search');
 
-        $costCenters = CostCenter::when($costCenterType, function ($q) use ($costCenterType) {
-            $q->where('type', $costCenterType);
-        })
-            ->when($search, function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            })
-            ->paginate(50)
-            ->through(function ($center) use ($asOfDate) {
-                $center->total_expenses = $this->calculateCostCenterExpenses($center->id, $asOfDate);
-                $center->total_revenues = $this->calculateCostCenterRevenues($center->id, $asOfDate);
-                $center->net_cost = $center->total_expenses - $center->total_revenues;
-                return $center;
-            });
+    //     $costCenters = CostCenter::when($costCenterType, function ($q) use ($costCenterType) {
+    //         $q->where('type', $costCenterType);
+    //     })
+    //         ->when($search, function ($q) use ($search) {
+    //             $q->where('name', 'like', '%' . $search . '%');
+    //         })
+    //         ->paginate(50)
+    //         ->through(function ($center) use ($asOfDate) {
+    //             $center->total_expenses = $this->calculateCostCenterExpenses($center->id, $asOfDate);
+    //             $center->total_revenues = $this->calculateCostCenterRevenues($center->id, $asOfDate);
+    //             $center->net_cost = $center->total_expenses - $center->total_revenues;
+    //             return $center;
+    //         });
 
-        $totalExpenses = $costCenters->sum('total_expenses');
-        $totalRevenues = $costCenters->sum('total_revenues');
-        $totalNetCost = $costCenters->sum('net_cost');
-        $totalCostCenters = $costCenters->count();
-        $activeCostCenters = $costCenters->where('is_active', true)->count();
-        $averageCostPerCenter = $totalCostCenters > 0 ? $totalNetCost / $totalCostCenters : 0;
+    //     $totalExpenses = $costCenters->sum('total_expenses');
+    //     $totalRevenues = $costCenters->sum('total_revenues');
+    //     $totalNetCost = $costCenters->sum('net_cost');
+    //     $totalCostCenters = $costCenters->count();
+    //     $activeCostCenters = $costCenters->where('is_active', true)->count();
+    //     $averageCostPerCenter = $totalCostCenters > 0 ? $totalNetCost / $totalCostCenters : 0;
 
-        return view('reports.general-cost-centers-list', compact(
-            'costCenters',
-            'totalExpenses',
-            'totalRevenues',
-            'totalNetCost',
-            'totalCostCenters',
-            'activeCostCenters',
-            'averageCostPerCenter',
-            'asOfDate'
-        ));
-    }
+    //     return view('reports.general-cost-centers-list', compact(
+    //         'costCenters',
+    //         'totalExpenses',
+    //         'totalRevenues',
+    //         'totalNetCost',
+    //         'totalCostCenters',
+    //         'activeCostCenters',
+    //         'averageCostPerCenter',
+    //         'asOfDate'
+    //     ));
+    // }
 
     // كشف حساب مركز التكلفة
-    public function generalCostCenterAccountStatement()
-    {
-        $costCenters = CostCenter::all();
-        $selectedCostCenter = null;
-        $costCenterTransactions = collect();
-        $openingBalance = 0;
-        $closingBalance = 0;
+    // public function generalCostCenterAccountStatement()
+    // {
+    //     $costCenters = CostCenter::all();
+    //     $selectedCostCenter = null;
+    //     $costCenterTransactions = collect();
+    //     $openingBalance = 0;
+    //     $closingBalance = 0;
 
-        if (request('cost_center_id')) {
-            $selectedCostCenter = CostCenter::find(request('cost_center_id'));
-            if ($selectedCostCenter) {
-                $fromDate = request('from_date');
-                $toDate = request('to_date');
+    //     if (request('cost_center_id')) {
+    //         $selectedCostCenter = CostCenter::find(request('cost_center_id'));
+    //         if ($selectedCostCenter) {
+    //             $fromDate = request('from_date');
+    //             $toDate = request('to_date');
 
-                $costCenterTransactions = JournalDetail::where('cost_center_id', $selectedCostCenter->id)
-                    ->with(['head', 'accHead'])
-                    ->when($fromDate, function ($q) use ($fromDate) {
-                        $q->whereDate('crtime', '>=', $fromDate);
-                    })
-                    ->when($toDate, function ($q) use ($toDate) {
-                        $q->whereDate('crtime', '<=', $toDate);
-                    })
-                    ->orderBy('crtime', 'asc')
-                    ->paginate(50);
+    //             $costCenterTransactions = JournalDetail::where('cost_center_id', $selectedCostCenter->id)
+    //                 ->with(['head', 'accHead'])
+    //                 ->when($fromDate, function ($q) use ($fromDate) {
+    //                     $q->whereDate('crtime', '>=', $fromDate);
+    //                 })
+    //                 ->when($toDate, function ($q) use ($toDate) {
+    //                     $q->whereDate('crtime', '<=', $toDate);
+    //                 })
+    //                 ->orderBy('crtime', 'asc')
+    //                 ->paginate(50);
 
-                $openingBalance = $this->calculateCostCenterBalance($selectedCostCenter->id, $fromDate);
-                $closingBalance = $this->calculateCostCenterBalance($selectedCostCenter->id, $toDate);
-            }
-        }
+    //             $openingBalance = $this->calculateCostCenterBalance($selectedCostCenter->id, $fromDate);
+    //             $closingBalance = $this->calculateCostCenterBalance($selectedCostCenter->id, $toDate);
+    //         }
+    //     }
 
-        return view('reports.general-cost-center-account-statement', compact(
-            'costCenters',
-            'selectedCostCenter',
-            'costCenterTransactions',
-            'openingBalance',
-            'closingBalance'
-        ));
-    }
+    //     return view('reports.general-cost-center-account-statement', compact(
+    //         'costCenters',
+    //         'selectedCostCenter',
+    //         'costCenterTransactions',
+    //         'openingBalance',
+    //         'closingBalance'
+    //     ));
+    // }
 
     // كشف حساب عام مع مركز تكلفة
-    public function generalAccountStatementWithCostCenter()
-    {
-        $accounts = AccHead::where('isdeleted', 0)->get();
-        $costCenters = CostCenter::all();
-        $selectedAccount = null;
-        $accountTransactions = collect();
-        $openingBalance = 0;
-        $closingBalance = 0;
-        $costCenterSummary = collect();
+    // public function generalAccountStatementWithCostCenter()
+    // {
+    //     $accounts = AccHead::where('isdeleted', 0)->get();
+    //     $costCenters = CostCenter::all();
+    //     $selectedAccount = null;
+    //     $accountTransactions = collect();
+    //     $openingBalance = 0;
+    //     $closingBalance = 0;
+    //     $costCenterSummary = collect();
 
-        if (request('account_id')) {
-            $selectedAccount = AccHead::find(request('account_id'));
-            if ($selectedAccount) {
-                $costCenterId = request('cost_center_id');
-                $fromDate = request('from_date');
-                $toDate = request('to_date');
+    //     if (request('account_id')) {
+    //         $selectedAccount = AccHead::find(request('account_id'));
+    //         if ($selectedAccount) {
+    //             $costCenterId = request('cost_center_id');
+    //             $fromDate = request('from_date');
+    //             $toDate = request('to_date');
 
-                $query = JournalDetail::where('account_id', $selectedAccount->id)
-                    ->with(['head', 'costCenter']);
+    //             $query = JournalDetail::where('account_id', $selectedAccount->id)
+    //                 ->with(['head', 'costCenter']);
 
-                if ($costCenterId) {
-                    $query->where('cost_center_id', $costCenterId);
-                }
+    //             if ($costCenterId) {
+    //                 $query->where('cost_center_id', $costCenterId);
+    //             }
 
-                if ($fromDate) {
-                    $query->whereDate('crtime', '>=', $fromDate);
-                }
+    //             if ($fromDate) {
+    //                 $query->whereDate('crtime', '>=', $fromDate);
+    //             }
 
-                if ($toDate) {
-                    $query->whereDate('crtime', '<=', $toDate);
-                }
+    //             if ($toDate) {
+    //                 $query->whereDate('crtime', '<=', $toDate);
+    //             }
 
-                $accountTransactions = $query->orderBy('crtime', 'asc')->paginate(50);
+    //             $accountTransactions = $query->orderBy('crtime', 'asc')->paginate(50);
 
-                $openingBalance = $this->calculateAccountBalance($selectedAccount->id, $fromDate);
-                $closingBalance = $this->calculateAccountBalance($selectedAccount->id, $toDate);
+    //             $openingBalance = $this->calculateAccountBalance($selectedAccount->id, $fromDate);
+    //             $closingBalance = $this->calculateAccountBalance($selectedAccount->id, $toDate);
 
-                // Calculate cost center summary
-                $costCenterSummary = JournalDetail::where('account_id', $selectedAccount->id)
-                    ->with('costCenter')
-                    ->when($fromDate, function ($q) use ($fromDate) {
-                        $q->whereDate('crtime', '>=', $fromDate);
-                    })
-                    ->when($toDate, function ($q) use ($toDate) {
-                        $q->whereDate('crtime', '<=', $toDate);
-                    })
-                    ->get()
-                    ->groupBy('cost_center_id')
-                    ->map(function ($transactions, $costCenterId) {
-                        $costCenter = $transactions->first()->costCenter;
-                        return (object) [
-                            'cost_center_name' => $costCenter ? $costCenter->name : 'بدون مركز تكلفة',
-                            'total_debit' => $transactions->sum('debit'),
-                            'total_credit' => $transactions->sum('credit'),
-                            'net_amount' => $transactions->sum('debit') - $transactions->sum('credit')
-                        ];
-                    });
-            }
-        }
+    //             // Calculate cost center summary
+    //             $costCenterSummary = JournalDetail::where('account_id', $selectedAccount->id)
+    //                 ->with('costCenter')
+    //                 ->when($fromDate, function ($q) use ($fromDate) {
+    //                     $q->whereDate('crtime', '>=', $fromDate);
+    //                 })
+    //                 ->when($toDate, function ($q) use ($toDate) {
+    //                     $q->whereDate('crtime', '<=', $toDate);
+    //                 })
+    //                 ->get()
+    //                 ->groupBy('cost_center_id')
+    //                 ->map(function ($transactions, $costCenterId) {
+    //                     $costCenter = $transactions->first()->costCenter;
+    //                     return (object) [
+    //                         'cost_center_name' => $costCenter ? $costCenter->name : 'بدون مركز تكلفة',
+    //                         'total_debit' => $transactions->sum('debit'),
+    //                         'total_credit' => $transactions->sum('credit'),
+    //                         'net_amount' => $transactions->sum('debit') - $transactions->sum('credit')
+    //                     ];
+    //                 });
+    //         }
+    //     }
 
-        return view('reports.general-account-statement-with-cost-center', compact(
-            'accounts',
-            'costCenters',
-            'selectedAccount',
-            'accountTransactions',
-            'openingBalance',
-            'closingBalance',
-            'costCenterSummary'
-        ));
-    }
+    //     return view('reports.general-account-statement-with-cost-center', compact(
+    //         'accounts',
+    //         'costCenters',
+    //         'selectedAccount',
+    //         'accountTransactions',
+    //         'openingBalance',
+    //         'closingBalance',
+    //         'costCenterSummary'
+    //     ));
+    // }
 
     // Helper methods
     private function calculateAccountBalance($accountId, $asOfDate = null)
@@ -1258,39 +1258,39 @@ class ReportController extends Controller
     }
 
     // تقارير المصروفات
-    public function generalExpensesReport()
-    {
-        $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->get();
+    // public function generalExpensesReport()
+    // {
+    //     $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->get();
 
-        $expenseTransactions = JournalDetail::whereHas('account', function ($q) {
-            $q->where('code', 'like', '57%'); // Expense accounts
-        })->with(['account', 'journalHead', 'costCenter'])
-            ->when(request('from_date'), function ($q) {
-                $q->whereDate('crtime', '>=', request('from_date'));
-            })
-            ->when(request('to_date'), function ($q) {
-                $q->whereDate('crtime', '<=', request('to_date'));
-            })
-            ->when(request('expense_account'), function ($q) {
-                $q->where('account_id', request('expense_account'));
-            })
-            ->orderBy('crtime', 'desc')
-            ->paginate(50);
+    //     $expenseTransactions = JournalDetail::whereHas('account', function ($q) {
+    //         $q->where('code', 'like', '57%'); // Expense accounts
+    //     })->with(['account', 'journalHead', 'costCenter'])
+    //         ->when(request('from_date'), function ($q) {
+    //             $q->whereDate('crtime', '>=', request('from_date'));
+    //         })
+    //         ->when(request('to_date'), function ($q) {
+    //             $q->whereDate('crtime', '<=', request('to_date'));
+    //         })
+    //         ->when(request('expense_account'), function ($q) {
+    //             $q->where('account_id', request('expense_account'));
+    //         })
+    //         ->orderBy('crtime', 'desc')
+    //         ->paginate(50);
 
-        $totalExpenses = $expenseTransactions->sum('debit');
-        $totalPayments = $expenseTransactions->sum('credit');
-        $netExpenses = $totalExpenses - $totalPayments;
-        $totalTransactions = $expenseTransactions->count();
+    //     $totalExpenses = $expenseTransactions->sum('debit');
+    //     $totalPayments = $expenseTransactions->sum('credit');
+    //     $netExpenses = $totalExpenses - $totalPayments;
+    //     $totalTransactions = $expenseTransactions->count();
 
-        return view('reports.general-expenses-report', compact(
-            'expenseAccounts',
-            'expenseTransactions',
-            'totalExpenses',
-            'totalPayments',
-            'netExpenses',
-            'totalTransactions'
-        ));
-    }
+    //     return view('reports.general-expenses-report', compact(
+    //         'expenseAccounts',
+    //         'expenseTransactions',
+    //         'totalExpenses',
+    //         'totalPayments',
+    //         'netExpenses',
+    //         'totalTransactions'
+    //     ));
+    // }
 
     // تقارير مراكز التكلفة
     public function generalCostCentersReport()

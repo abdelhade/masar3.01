@@ -23,6 +23,9 @@ class EditInvoiceForm extends Component
     public $pro_id;
     public $serial_number;
 
+    public $deliverys = [];
+    public $delivery_id = null;
+
     public $barcodeTerm = '';
     public $barcodeSearchResults;
     public $selectedBarcodeResultIndex = -1;
@@ -181,6 +184,8 @@ class EditInvoiceForm extends Component
             $this->calculateBalanceAfterInvoice();
         }
         $this->barcodeSearchResults = collect();
+
+        $this->deliverys = $this->getAccountsByCode('2102%');
     }
 
     private function getAccountsByCode(string $code)

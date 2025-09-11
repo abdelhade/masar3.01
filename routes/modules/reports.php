@@ -55,30 +55,30 @@ Route::get('/reports/general-customers-report', [ReportController::class, 'gener
 Route::get('/reports/general-customers-daily-report', [ReportController::class, 'generalCustomersDailyReport'])->name('reports.general-customers-daily-report');
 
 // تقرير العملاء اجماليات
-Route::get('/reports/general-customers-total-report', [ReportController::class, 'generalCustomersTotalReport'])->name('reports.general-customers-total-report');
+// Route::get('/reports/general-customers-total-report', [ReportController::class, 'generalCustomersTotalReport'])->name('reports.general-customers-total-report');
 
 // تقرير العملاء اصناف
-Route::get('/reports/general-customers-items-report', [ReportController::class, 'generalCustomersItemsReport'])->name('reports.general-customers-items-report');
+// Route::get('/reports/general-customers-items-report', [ReportController::class, 'generalCustomersItemsReport'])->name('reports.general-customers-items-report');
 
 // تقرير اعمار ديون العملاء
-Route::get('/reports/general-customers-debt-history-report', [ReportController::class, 'generalCustomersDebtHistoryReport'])->name('reports.general-customers-debt-history-report');
+// Route::get('/reports/general-customers-debt-history-report', [ReportController::class, 'generalCustomersDebtHistoryReport'])->name('reports.general-customers-debt-history-report');
 
 // تقارير الموردين
 Route::get('/reports/general-suppliers-report', [ReportController::class, 'generalSuppliersReport'])->name('reports.general-suppliers-report');
 
 // تقرير الموردين اليومية
-Route::get('/reports/general-suppliers-daily-report', [ReportController::class, 'generalSuppliersDailyReport'])->name('reports.general-suppliers-daily-report');
+// Route::get('/reports/general-suppliers-daily-report', [ReportController::class, 'generalSuppliersDailyReport'])->name('reports.general-suppliers-daily-report');
 
 //  تقرير الموردين اجماليات
-Route::get('/reports/general-suppliers-total-report', [ReportController::class, 'generalSuppliersTotalReport'])->name('reports.general-suppliers-total-report');
+// Route::get('/reports/general-suppliers-total-report', [ReportController::class, 'generalSuppliersTotalReport'])->name('reports.general-suppliers-total-report');
 
 // تقرير الموردين اصناف
-Route::get('/reports/general-suppliers-items-report', [ReportController::class, 'generalSuppliersItemsReport'])->name('reports.general-suppliers-items-report');
+// Route::get('/reports/general-suppliers-items-report', [ReportController::class, 'generalSuppliersItemsReport'])->name('reports.general-suppliers-items-report');
 
 // تقارير المصروفات
-Route::get('/reports/general-expenses-report', [ReportController::class, 'generalExpensesReport'])->name('reports.general-expenses-report');
+// Route::get('/reports/general-expenses-report', [ReportController::class, 'generalExpensesReport'])->name('reports.general-expenses-report');
 
-Route::get('/reports/general-expenses-daily-report', [ReportController::class, 'generalExpensesDailyReport'])->name('reports.general-expenses-daily-report');
+// Route::get('/reports/general-expenses-daily-report', [ReportController::class, 'generalExpensesDailyReport'])->name('reports.general-expenses-daily-report');
 
 // تقرير ميزان المصروفات
 Route::get('/reports/expenses-balance-report', [ReportController::class, 'expensesBalanceReport'])->name('reports.expenses-balance-report');
@@ -87,13 +87,13 @@ Route::get('/reports/expenses-balance-report', [ReportController::class, 'expens
 Route::get('/reports/general-cost-centers-report', [ReportController::class, 'generalCostCentersReport'])->name('reports.general-cost-centers-report');
 
 // قائمة مراكز التكلفة
-Route::get('/reports/general-cost-centers-list', [ReportController::class, 'generalCostCentersList'])->name('reports.general-cost-centers-list');
+// Route::get('/reports/general-cost-centers-list', [ReportController::class, 'generalCostCentersList'])->name('reports.general-cost-centers-list');
 
 // كشف حساب مركز التكلفة
-Route::get('/reports/general-cost-center-account-statement', [ReportController::class, 'generalCostCenterAccountStatement'])->name('reports.general-cost-center-account-statement');
+// Route::get('/reports/general-cost-center-account-statement', [ReportController::class, 'generalCostCenterAccountStatement'])->name('reports.general-cost-center-account-statement');
 
 // كشف حساب عام مع مركز تكلفة
-Route::get('/reports/general-account-statement-with-cost-center', [ReportController::class, 'generalAccountStatementWithCostCenter'])->name('reports.general-account-statement-with-cost-center');
+// Route::get('/reports/general-account-statement-with-cost-center', [ReportController::class, 'generalAccountStatementWithCostCenter'])->name('reports.general-account-statement-with-cost-center');
 // تقارير المخزون
 Route::get('/reports/general-inventory-report', [ReportController::class, 'generalInventoryReport'])->name('reports.general-inventory-report');
 
