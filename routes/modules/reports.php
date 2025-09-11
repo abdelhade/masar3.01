@@ -41,12 +41,6 @@ Route::get('/reports/general-sales-report', [ReportController::class, 'generalSa
 // تقرير المبيعات اليومية
 Route::get('/reports/general-sales-daily-report', [ReportController::class, 'generalSalesDailyReport'])->name('reports.general-sales-daily-report');
 
-// تقرير المبيعات اجماليات
-Route::get('/reports/general-sales-total-report', [ReportController::class, 'generalSalesTotalReport'])->name('reports.general-sales-total-report');
-
-// تقرير المبيعات اصناف
-Route::get('/reports/general-sales-items-report', [ReportController::class, 'generalSalesItemsReport'])->name('reports.general-sales-items-report');
-
 // تقريب المبيعات بالعنوان
 Route::get('/reports/general-sales-report-by-address', [ReportController::class, 'salesReportByAddress'])->name('reports.general-sales-report-by-address');
 // تقارير المشتريات
@@ -54,13 +48,6 @@ Route::get('/reports/general-purchases-report', [ReportController::class, 'gener
 
 // تقرير المشتريات اليومية
 Route::get('/reports/general-purchases-daily-report', [ReportController::class, 'generalPurchasesDailyReport'])->name('reports.general-purchases-daily-report');
-
-// تقرير المشتريات اجماليات
-Route::get('/reports/general-purchases-total-report', [ReportController::class, 'generalPurchasesTotalReport'])->name('reports.general-purchases-total-report');
-
-// تقرير المشتريات اصناف
-Route::get('/reports/general-purchases-items-report', [ReportController::class, 'generalPurchasesItemsReport'])->name('reports.general-purchases-items-report');
-
 // تقارير العملاء
 Route::get('/reports/general-customers-report', [ReportController::class, 'generalCustomersReport'])->name('reports.general-customers-report');
 
@@ -93,8 +80,6 @@ Route::get('/reports/general-expenses-report', [ReportController::class, 'genera
 
 Route::get('/reports/general-expenses-daily-report', [ReportController::class, 'generalExpensesDailyReport'])->name('reports.general-expenses-daily-report');
 
-
-// ميزان المصروفات
 // تقرير ميزان المصروفات
 Route::get('/reports/expenses-balance-report', [ReportController::class, 'expensesBalanceReport'])->name('reports.expenses-balance-report');
 
@@ -137,9 +122,6 @@ Route::get('/reports/general-sales-report', [ReportController::class, 'generalSa
 
 // تقرير المبيعات اليومية
 Route::get('/reports/general-sales-daily-report', [ReportController::class, 'generalSalesDailyReport'])->name('reports.general-sales-daily-report');
-
-// تقرير مبيعات الأصناف
-Route::get('/reports/general-sales-items-report', [ReportController::class, 'generalSalesItemsReport'])->name('reports.general-sales-items-report');
 
 // تقارير النقدية والبنوك
 Route::get('/reports/general-cash-bank-report', [ReportController::class, 'generalCashBankReport'])->name('reports.general-cash-bank-report');

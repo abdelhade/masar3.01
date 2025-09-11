@@ -42,7 +42,7 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        $this->redirect(route('admin.dashboard'), navigate: true);
+        $this->redirectRoute('admin.dashboard');
     }
 
     protected function ensureIsNotRateLimited(): void
@@ -576,75 +576,76 @@ new #[Layout('layouts.dastone-auth')] class extends Component {
         }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-        <div class="auth-container">
-            <div class="modern-login-card">
-                <!-- Header -->
-                <div class="modern-header">
-                    <div class="modern-logo">
-                        <img src="{{ asset('assets/images/masarlogo.jpg') }}" alt="{{ __('logo') }}" class="">
+    <div class="auth-container">
+        <div class="modern-login-card">
+            <!-- Header -->
+            <div class="modern-header">
+                <div class="modern-logo">
+                    <img src="{{ asset('assets/images/masarlogo.jpg') }}" alt="{{ __('logo') }}" class="">
+                </div>
+                <h1 class="modern-title">مسار لادارة المشاريع</h1>
+                <p class="modern-subtitle">سجل الدخول للمتابعة</p>
+            </div>
+
+            <!-- Form Body -->
+            <div class="modern-form">
+                <form wire:submit.prevent="login" autocomplete="on">
+                    <!-- Email -->
+                    <div class="modern-form-group">
+                        <label class="modern-label" for="email">البريد الإلكتروني</label>
+                        <div class="modern-input-container">
+                            <input type="email" id="email"
+                                class="modern-input @error('email') is-invalid @enderror"
+                                placeholder="email@example.com" required wire:model="email" autocomplete="email">
+                            <i class="fas fa-envelope modern-input-icon"></i>
+                        </div>
+                        @error('email')
+                            <div class="modern-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ __('يرجى إدخال بريد إلكتروني صحيح') }}</span>
+                            </div>
+                        @enderror
                     </div>
-                    <h1 class="modern-title">مسار لادارة المشاريع</h1>
-                    <p class="modern-subtitle">سجل الدخول للمتابعة</p>
-                </div>
 
-                <!-- Form Body -->
-                <div class="modern-form">
-                    <form wire:submit.prevent="login" autocomplete="on">
-                        <!-- Email -->
-                        <div class="modern-form-group">
-                            <label class="modern-label" for="email">البريد الإلكتروني</label>
-                            <div class="modern-input-container">
-                                <input type="email" id="email" class="modern-input @error('email') is-invalid @enderror"
-                                    placeholder="email@example.com" required wire:model="email" autocomplete="email">
-                                <i class="fas fa-envelope modern-input-icon"></i>
-                            </div>
-                            @error('email')
-                                <div class="modern-error">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    <span>{{ __('يرجى إدخال بريد إلكتروني صحيح') }}</span>
-                                </div>
-                            @enderror
+                    <!-- Password -->
+                    <div class="modern-form-group">
+                        <label class="modern-label" for="password">كلمة المرور</label>
+                        <div class="modern-input-container">
+                            <input type="password" id="password" class="modern-input" placeholder="ادخل كلمة المرور"
+                                required wire:model="password" autocomplete="current-password">
+                            <i class="fas fa-lock modern-input-icon"></i>
                         </div>
+                    </div>
 
-                        <!-- Password -->
-                        <div class="modern-form-group">
-                            <label class="modern-label" for="password">كلمة المرور</label>
-                            <div class="modern-input-container">
-                                <input type="password" id="password" class="modern-input" placeholder="ادخل كلمة المرور"
-                                    required wire:model="password" autocomplete="current-password">
-                                <i class="fas fa-lock modern-input-icon"></i>
-                            </div>
+                    <!-- Remember Me -->
+                    <div class="modern-remember">
+                        <div class="modern-checkbox">
+                            <input type="checkbox" id="remember" wire:model="remember">
+                            <span class="modern-checkmark"></span>
                         </div>
+                        <label class="modern-remember-label" for="remember">
+                            {{ __('تذكرني') }}
+                        </label>
+                    </div>
 
-                        <!-- Remember Me -->
-                        <div class="modern-remember">
-                            <div class="modern-checkbox">
-                                <input type="checkbox" id="remember" wire:model="remember">
-                                <span class="modern-checkmark"></span>
-                            </div>
-                            <label class="modern-remember-label" for="remember">
-                                {{ __('تذكرني') }}
-                            </label>
-                        </div>
+                    <!-- Submit Button -->
+                    <button type="submit" class="modern-button" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="login">
+                            تسجيل الدخول
+                            <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
+                        </span>
+                        <span wire:loading wire:target="login">
+                            جارِ تسجيل الدخول...
+                            <span class="loading-spinner"></span>
+                        </span>
+                    </button>
+                </form>
+            </div>
 
-                        <!-- Submit Button -->
-                        <button type="submit" class="modern-button" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="login">
-                                تسجيل الدخول
-                                <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
-                            </span>
-                            <span wire:loading wire:target="login">
-                                جارِ تسجيل الدخول...
-                                <span class="loading-spinner"></span>
-                            </span>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="modern-footer">
-                    <span>نظام مسار © {{ date('Y') }}</span>
-                </div>
+            <!-- Footer -->
+            <div class="modern-footer">
+                <span>نظام مسار © {{ date('Y') }}</span>
             </div>
         </div>
+    </div>
 </div>

@@ -142,7 +142,7 @@ class ReportController extends Controller
             $totalExpensesForProfit += $expense;
         }
 
-        $netProfit = -($totalRevenueForProfit - $totalExpensesForProfit);
+        $netProfit = - ($totalRevenueForProfit - $totalExpensesForProfit);
         $totalLiabilitiesEquity = $totalLiabilities + $totalEquities + $netProfit;
         return view('reports.general-balance-sheet', compact(
             'assets',
@@ -202,7 +202,7 @@ class ReportController extends Controller
         $asOfDate = request('as_of_date', now()->format('Y-m-d'));
         $accountGroup = request('account_group');
 
-        $query = AccHead::where('isdeleted', 0)->orderBy('code','asc');
+        $query = AccHead::where('isdeleted', 0)->orderBy('code', 'asc');
 
         if ($accountGroup) {
             $query->where('code', 'like', $accountGroup . '%');
@@ -402,121 +402,11 @@ class ReportController extends Controller
         ));
     }
 
-    // تقرير المبيعات إجماليات
-    public function generalSalesTotalReport()
+    // sales report by address
+    public function salesReportByAddress()
     {
-        $groupBy = request('group_by', 'day');
-        $fromDate = request('from_date');
-        $toDate = request('to_date');
-
-        // Get sales data and group by the specified criteria
-        $query = OperHead::where('pro_type', 10); // Sales invoices
-
-        if ($fromDate) {
-            $query->whereDate('pro_date', '>=', $fromDate);
-        }
-        if ($toDate) {
-            $query->whereDate('pro_date', '<=', $toDate);
-        }
-
-        if ($groupBy === 'day') {
-            $salesTotals = $query->selectRaw('DATE(pro_date) as date, COUNT(*) as invoices_count, SUM(total_quantity) as total_quantity, SUM(total_sales) as total_sales, SUM(discount) as total_discount, SUM(net_sales) as net_sales')
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->paginate(50);
-        } elseif ($groupBy === 'month') {
-            $salesTotals = $query->selectRaw('YEAR(pro_date) as year, MONTH(pro_date) as month, COUNT(*) as invoices_count, SUM(total_quantity) as total_quantity, SUM(total_sales) as total_sales, SUM(discount) as total_discount, SUM(net_sales) as net_sales')
-                ->groupBy('year', 'month')
-                ->orderBy('year', 'desc')
-                ->orderBy('month', 'desc')
-                ->paginate(50);
-        } else {
-            $salesTotals = $query->selectRaw('COUNT(*) as invoices_count, SUM(total_quantity) as total_quantity, SUM(total_sales) as total_sales, SUM(discount) as total_discount, SUM(net_sales) as net_sales')
-                ->paginate(50);
-        }
-
-        $grandTotalInvoices = $salesTotals->sum('invoices_count');
-        $grandTotalQuantity = $salesTotals->sum('total_quantity');
-        $grandTotalSales = $salesTotals->sum('total_sales');
-        $grandTotalDiscount = $salesTotals->sum('total_discount');
-        $grandTotalNetSales = $salesTotals->sum('net_sales');
-        $grandAverageInvoice = $grandTotalInvoices > 0 ? $grandTotalNetSales / $grandTotalInvoices : 0;
-
-        $totalPeriods = $salesTotals->count();
-        $highestSales = $salesTotals->max('net_sales') ?? 0;
-        $lowestSales = $salesTotals->min('net_sales') ?? 0;
-        $averageSales = $totalPeriods > 0 ? $grandTotalNetSales / $totalPeriods : 0;
-
-        return view('reports.general-sales-total-report', compact(
-            'salesTotals',
-            'groupBy',
-            'grandTotalInvoices',
-            'grandTotalQuantity',
-            'grandTotalSales',
-            'grandTotalDiscount',
-            'grandTotalNetSales',
-            'grandAverageInvoice',
-            'totalPeriods',
-            'highestSales',
-            'lowestSales',
-            'averageSales'
-        ));
+        return view('reports.sales.manage-sales-report-by-adress');
     }
-
-    // تقرير المبيعات أصناف
-    public function generalSalesItemsReport()
-    {
-        // $categories = Category::all();
-
-        $query = OperationItems::whereHas('operation', function ($q) {
-            $q->where('pro_type', 10); // Sales invoices
-        })->with(['item', 'operation']);
-
-        if (request('from_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
-            });
-        }
-        if (request('to_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
-            });
-        }
-
-        $salesItems = $query->selectRaw('item_id, SUM(qty_out) as total_quantity, SUM(qty_out * price) as total_sales, COUNT(DISTINCT operation_id) as invoices_count')
-            ->groupBy('item_id')
-            ->with('item')
-            ->orderBy('total_quantity', 'desc')
-            ->paginate(50);
-
-        $totalQuantity = $salesItems->sum('total_quantity');
-        $totalSales = $salesItems->sum('total_sales');
-        $averagePrice = $totalQuantity > 0 ? $totalSales / $totalQuantity : 0;
-        $totalInvoices = $salesItems->sum('invoices_count');
-        $totalItems = $salesItems->count();
-        $topSellingItem = $salesItems->first() ? $salesItems->first()->item->name : '---';
-        $averageQuantityPerItem = $totalItems > 0 ? $totalQuantity / $totalItems : 0;
-        $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
-
-        return view('reports.general-sales-items-report', compact(
-            // 'categories',
-            'salesItems',
-            'totalQuantity',
-            'totalSales',
-            'averagePrice',
-            'totalInvoices',
-            'totalItems',
-            'topSellingItem',
-            'averageQuantityPerItem',
-            'averageSalesPerItem'
-        ));
-    }
-
-        // sales report by address
-        public function salesReportByAddress()
-        {
-            return view('reports.sales.manage-sales-report-by-adress');
-        }
 
     // تقرير المشتريات اليومية
     public function generalPurchasesDailyReport()
@@ -553,116 +443,6 @@ class ReportController extends Controller
             'totalNetPurchases',
             'totalInvoices',
             'averageInvoiceValue'
-        ));
-    }
-
-    // تقرير المشتريات إجماليات
-    public function generalPurchasesTotalReport()
-    {
-        $groupBy = request('group_by', 'day');
-        $fromDate = request('from_date');
-        $toDate = request('to_date');
-
-        // Get purchases data and group by the specified criteria
-        $query = OperHead::where('pro_type', 11); // Purchase invoices
-
-        if ($fromDate) {
-            $query->whereDate('pro_date', '>=', $fromDate);
-        }
-        if ($toDate) {
-            $query->whereDate('pro_date', '<=', $toDate);
-        }
-
-        if ($groupBy === 'day') {
-            $purchasesTotals = $query->selectRaw('DATE(pro_date) as date, COUNT(*) as invoices_count, SUM(total_quantity) as total_quantity, SUM(total_purchases) as total_purchases, SUM(discount) as total_discount, SUM(net_purchases) as net_purchases')
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->paginate(50);
-        } elseif ($groupBy === 'month') {
-            $purchasesTotals = $query->selectRaw('YEAR(pro_date) as year, MONTH(pro_date) as month, COUNT(*) as invoices_count, SUM(total_quantity) as total_quantity, SUM(total_purchases) as total_purchases, SUM(discount) as total_discount, SUM(net_purchases) as net_purchases')
-                ->groupBy('year', 'month')
-                ->orderBy('year', 'desc')
-                ->orderBy('month', 'desc')
-                ->paginate(50);
-        } else {
-            $purchasesTotals = $query->selectRaw('COUNT(*) as invoices_count, SUM(total_quantity) as total_quantity, SUM(total_purchases) as total_purchases, SUM(discount) as total_discount, SUM(net_purchases) as net_purchases')
-                ->paginate(50);
-        }
-
-        $grandTotalInvoices = $purchasesTotals->sum('invoices_count');
-        $grandTotalQuantity = $purchasesTotals->sum('total_quantity');
-        $grandTotalPurchases = $purchasesTotals->sum('total_purchases');
-        $grandTotalDiscount = $purchasesTotals->sum('total_discount');
-        $grandTotalNetPurchases = $purchasesTotals->sum('net_purchases');
-        $grandAverageInvoice = $grandTotalInvoices > 0 ? $grandTotalNetPurchases / $grandTotalInvoices : 0;
-
-        $totalPeriods = $purchasesTotals->count();
-        $highestPurchases = $purchasesTotals->max('net_purchases') ?? 0;
-        $lowestPurchases = $purchasesTotals->min('net_purchases') ?? 0;
-        $averagePurchases = $totalPeriods > 0 ? $grandTotalNetPurchases / $totalPeriods : 0;
-
-        return view('reports.general-purchases-total-report', compact(
-            'purchasesTotals',
-            'groupBy',
-            'grandTotalInvoices',
-            'grandTotalQuantity',
-            'grandTotalPurchases',
-            'grandTotalDiscount',
-            'grandTotalNetPurchases',
-            'grandAverageInvoice',
-            'totalPeriods',
-            'highestPurchases',
-            'lowestPurchases',
-            'averagePurchases'
-        ));
-    }
-
-    // تقرير المشتريات أصناف
-    public function generalPurchasesItemsReport()
-    {
-        // $categories = Category::all();
-
-        $query = OperationItems::whereHas('operation', function ($q) {
-            $q->where('pro_type', 11); // Purchase invoices
-        })->with(['item', 'operation']);
-
-        if (request('from_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
-            });
-        }
-        if (request('to_date')) {
-            $query->whereHas('operation', function ($q) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
-            });
-        }
-
-        $purchasesItems = $query->selectRaw('item_id, SUM(qty_in) as total_quantity, SUM(qty_in * price) as total_purchases, COUNT(DISTINCT operation_id) as invoices_count')
-            ->groupBy('item_id')
-            ->with('item')
-            ->orderBy('total_quantity', 'desc')
-            ->paginate(50);
-
-        $totalQuantity = $purchasesItems->sum('total_quantity');
-        $totalPurchases = $purchasesItems->sum('total_purchases');
-        $averagePrice = $totalQuantity > 0 ? $totalPurchases / $totalQuantity : 0;
-        $totalInvoices = $purchasesItems->sum('invoices_count');
-        $totalItems = $purchasesItems->count();
-        $topPurchasedItem = $purchasesItems->first() ? $purchasesItems->first()->item->name : '---';
-        $averageQuantityPerItem = $totalItems > 0 ? $totalQuantity / $totalItems : 0;
-        $averagePurchasesPerItem = $totalItems > 0 ? $totalPurchases / $totalItems : 0;
-
-        return view('reports.general-purchases-items-report', compact(
-            // 'categories',
-            'purchasesItems',
-            'totalQuantity',
-            'totalPurchases',
-            'averagePrice',
-            'totalInvoices',
-            'totalItems',
-            'topPurchasedItem',
-            'averageQuantityPerItem',
-            'averagePurchasesPerItem'
         ));
     }
 
@@ -2059,5 +1839,4 @@ class ReportController extends Controller
 
         return view('reports.oper_aging', compact('data', 'today'));
     }
-
 }
