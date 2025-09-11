@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\AccHead;
 use App\Models\User;
 use App\Models\OperHead;
-use App\Models\JournalHead;
 use App\Models\JournalDetail;
 use App\Models\Item;
 use App\Models\CostCenter;
 use App\Models\OperationItems;
 use App\Models\Note;
-use App\Models\NoteDetails;
-
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -94,7 +89,7 @@ class ReportController extends Controller
     public function generalJournal()
     {
         $accounts = AccHead::where('isdeleted', 0)->get();
-        $journalDetails = JournalDetail::with(['head', 'accountHead', 'costCenter'])
+        $journalDetails = JournalDetail::with(['head', 'accHead', 'costCenter'])
             ->orderBy('crtime', 'desc')
             ->paginate(50);
 
@@ -676,9 +671,9 @@ class ReportController extends Controller
     {
         $customers = AccHead::where('code', 'like', '1103%')->where('isdeleted', 0)->get();
 
-        $query = JournalDetail::whereHas('account', function ($q) {
+        $query = JournalDetail::whereHas('accHead', function ($q) {
             $q->where('code', 'like', '1103%'); // Customer accounts
-        })->with(['account', 'journalHead']);
+        })->with(['accHead', 'head']);
 
         if (request('from_date')) {
             $query->whereDate('crtime', '>=', request('from_date'));
@@ -747,7 +742,7 @@ class ReportController extends Controller
         $grandAverageTransaction = $grandTotalTransactions > 0 ? ($grandTotalSales + $grandTotalPayments) / $grandTotalTransactions : 0;
 
         $totalCustomers = $customerTotals->count();
-        $topCustomer = $customerTotals->first() ? $customerTotals->first()->accountHead->aname : '---';
+        $topCustomer = $customerTotals->first() ? $customerTotals->first()->accHead->aname : '---';
         $averageSalesPerCustomer = $totalCustomers > 0 ? $grandTotalSales / $totalCustomers : 0;
         $averageBalancePerCustomer = $totalCustomers > 0 ? $grandTotalBalance / $totalCustomers : 0;
 
@@ -901,7 +896,7 @@ class ReportController extends Controller
         $grandAverageTransaction = $grandTotalTransactions > 0 ? ($grandTotalPurchases + $grandTotalPayments) / $grandTotalTransactions : 0;
 
         $totalSuppliers = $supplierTotals->count();
-        $topSupplier = $supplierTotals->first() ? $supplierTotals->first()->accountHead->aname : '---';
+        $topSupplier = $supplierTotals->first() ? $supplierTotals->first()->accHead->aname : '---';
         $averagePurchasesPerSupplier = $totalSuppliers > 0 ? $grandTotalPurchases / $totalSuppliers : 0;
         $averageBalancePerSupplier = $totalSuppliers > 0 ? $grandTotalBalance / $totalSuppliers : 0;
 
@@ -1114,7 +1109,7 @@ class ReportController extends Controller
                 $toDate = request('to_date');
 
                 $costCenterTransactions = JournalDetail::where('cost_center_id', $selectedCostCenter->id)
-                    ->with(['head', 'accountHead'])
+                    ->with(['head', 'accHead'])
                     ->when($fromDate, function ($q) use ($fromDate) {
                         $q->whereDate('crtime', '>=', $fromDate);
                     })
@@ -2049,7 +2044,7 @@ class ReportController extends Controller
                 'o.fat_net as invoice_value',
                 DB::raw('(o.fat_net - IFNULL(SUM(jd.amount),0)) as balance'),
                 DB::raw("
-                CASE 
+                CASE
                     WHEN DATEDIFF(CURDATE(), o.end_date) <= 30 THEN '0-30 يوم'
                     WHEN DATEDIFF(CURDATE(), o.end_date) BETWEEN 31 AND 60 THEN '31-60 يوم'
                     WHEN DATEDIFF(CURDATE(), o.end_date) BETWEEN 61 AND 90 THEN '61-90 يوم'

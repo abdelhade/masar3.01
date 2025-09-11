@@ -50,7 +50,7 @@
                             <td>{{ $transaction->accountHead->aname ?? '---' }}</td>
                             <td>
                                 <span class="badge bg-{{ $transaction->type == 'sale' ? 'success' : ($transaction->type == 'payment' ? 'info' : 'warning') }}">
-                                    {{ $transaction->getTransactionTypeText() }}
+                                    {{-- {{ $transaction->getTransactionTypeText() }} --}}
                                 </span>
                             </td>
                             <td>{{ $transaction->pro_num ?? '---' }}</td>
@@ -107,4 +107,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

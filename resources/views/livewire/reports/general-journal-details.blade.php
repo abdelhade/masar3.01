@@ -28,7 +28,7 @@ new class extends Component {
 
     public function with(): array
     {
-        $query = JournalDetail::with(['head', 'accountHead', 'costCenter', 'operHead'])
+        $query = JournalDetail::with(['head', 'accHead', 'costCenter', 'operHead'])
             ->when($this->fromDate, function ($q) {
                 $q->whereDate('crtime', '>=', $this->fromDate);
             })
@@ -240,7 +240,7 @@ new class extends Component {
                                                         $operationType = $detail->operHead->type->ptext ?? '---';
                                                         $editRoute = $detail->operHead->getEditRoute();
                                                     @endphp
-                                                    
+
                                                     @if(\Illuminate\Support\Facades\Route::has($editRoute))
                                                         <a href="{{ route($editRoute, $detail->op_id) }}"
                                                            class="text-decoration-underline text-primary"
@@ -256,7 +256,7 @@ new class extends Component {
                                                     {{ $detail->operHead->pname ?? '---' }}
                                                 @endif
                                             </td>
-                                        
+
                                             <td class="text-center font-family-cairo fw-bold">
                                                 {{ $detail->journal_id ?? '---' }}
                                             </td>
@@ -320,4 +320,4 @@ new class extends Component {
             </div>
         </div>
     </div>
-</div> 
+</div>

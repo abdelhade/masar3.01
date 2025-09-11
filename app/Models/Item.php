@@ -40,6 +40,16 @@ class Item extends Model
             ->withTimestamps();
     }
 
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
+
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', 0);
+    }
+
     // public function getCurrentQuantityAttribute()
     // {
     //     // حساب إجمالي الكميات الداخلة (qty_in) والخارجة (qty_out)

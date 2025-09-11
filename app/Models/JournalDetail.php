@@ -12,14 +12,6 @@ class JournalDetail extends Model
 
     public $timestamps = false;
 
-
-    public function accountHead()
-    {
-        
-        return $this->belongsTo(AccHead::class, 'account_id');
-        
-    }
-
     public function accHead()
     {
         return $this->belongsTo(AccHead::class, 'account_id');

@@ -246,7 +246,7 @@
                                 <i class="fas fa-calculator"></i>
                                 <span>ميزان الحسابات</span>
                             </a>
-                            <a href="{{ route('account-movement') }}" class="report-link" target="_blank">
+                            <a href="{{ route('account-movement') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>تقرير حركة حساب</span>
                             </a>
@@ -259,25 +259,44 @@
                     <div class="report-card">
                         <div class="card-header">
                             <i class="fas fa-boxes"></i>
-                            <span class="card-title">تقارير الاصناف</span>
+                            <span class="card-title">تقارير الاصناف والمخزون</span>
                         </div>
+
                         <div class="card-body">
+                            <a href="{{ route('items.index') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>قائمة الاصناف مع الارصدة</span>
+                            </a>
+
+                            <a href="{{ route('item-movement') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>حركه الصنف</span>
+                            </a>
+
                             <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
-                                <span>مراقبة كميات الأصناف</span>
+                                <span>قائمة الاصناف مع حد الطلب الادني والاقصي</span>
                             </a>
+{{--
+                            <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>ميزان الاصناف</span>
+                            </a>
+
+                            <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>قائمة الاصناف لكل مستودع رأسي</span>
+                            </a>
+
+                            <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>تقرير الاصناف الموقوفه</span>
+                            </a> --}}
+
                             <a href="{{ route('reports.inventory-discrepancy-report') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>مراقبة جرد الأصناف</span>
                             </a>
-                            {{-- item movement --}}
-                            @can('عرض تقرير حركة صنف')
-                                    <a href="{{ route('item-movement') }}" class="report-link" target="_blank">
-                                    <i class="fas fa-clipboard-list"></i>
-                                        <span>تقرير حركة صنف</span>
-                                    </a>
-                            @endcan
-                            {{-- item movement --}}
                         </div>
                     </div>
                 </div>
@@ -290,10 +309,29 @@
                             <span class="card-title">تقارير المبيعات</span>
                         </div>
                         <div class="card-body">
+
+                            {{-- <a href="{{ route('reports.general-sales-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>تقرير المبيعات فواتير</span>
+                            </a>
+
+
+                            <a href="{{ route('reports.general-sales-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>تقرير المبيعات اصناف</span>
+                            </a>
+
+
+                            <a href="{{ route('reports.general-sales-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>تقرير المبيعات اليومية</span>
+                            </a> --}}
+
                             <a href="{{ route('reports.general-sales-daily-report') }}" class="report-link">
                                 <i class="fas fa-calendar-day"></i>
                                 <span>تقرير المبيعات اليومية</span>
                             </a>
+
                             <a href="{{ route('reports.general-sales-total-report') }}" class="report-link">
                                 <i class="fas fa-chart-line"></i>
                                 <span>تقرير المبيعات اجماليات</span>
@@ -322,6 +360,99 @@
                     </div>
                 </div>
 
+
+                <!-- تقارير المشتريات -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="report-card">
+                        <div class="card-header">
+                            <i class="fas fa-shopping-basket"></i>
+                            <span class="card-title">تقارير المشتريات</span>
+                        </div>
+                        <div class="card-body">
+
+                            {{-- <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>تقرير المشتريات فواتير</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>تقرير المشتريات اصناف</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>تقرير المشتريات اجمالي</span>
+                            </a> --}}
+
+                            <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>تقرير المشتريات اليومية</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-purchases-total-report') }}" class="report-link">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>تقرير المشتريات اجماليات</span>
+                            </a>
+                            <a href="{{ route('reports.general-purchases-items-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span>تقرير المشتريات اصناف</span>
+                            </a>
+                            <a href="{{ route('billing.invoice-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span>تقرير فواتير المشتريات </span>
+                            </a>
+                            <a href="{{ route('supplier-rfqs-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span> تقرير عرض سعر من مورد </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- تقارير المصروفات -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="report-card">
+                        <div class="card-header">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span class="card-title">تقارير المصروفات</span>
+                        </div>
+                        <div class="card-body">
+
+                            {{-- <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                                <i class="fas fa-list"></i>
+                                <span>قائمة المصروفات</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                                <i class="fas fa-list"></i>
+                                <span>حركة المصروف</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                                <i class="fas fa-list"></i>
+                                <span>ميزان المصروفات</span>
+                            </a> --}}
+
+                            <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                                <i class="fas fa-list"></i>
+                                <span>قائمة الاصناف مع الارصدة</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-expenses-daily-report') }}" class="report-link">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>كشف حساب مصروف</span>
+                            </a>
+
+                            <a href="{{ route('reports.expenses-balance-report') }}" class="report-link">
+                                <i class="fas fa-balance-scale-right"></i>
+                                <span>ميزان المصروفات</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- تقارير النقدية والبنوك -->
                 <div class="col-lg-4 col-md-6">
                     <div class="report-card">
@@ -342,7 +473,6 @@
                     </div>
                 </div>
 
-                <!-- الصف الثالث -->
                 <!-- تقارير العملاء -->
                 <div class="col-lg-4 col-md-6">
                     <div class="report-card">
@@ -366,38 +496,6 @@
                             <a href="{{ route('reports.general-customers-debt-history-report') }}" class="report-link">
                                 <i class="fas fa-file-invoice"></i>
                                 <span>تقرير اعمار ديون العملاء</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تقارير المشتريات -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="report-card">
-                        <div class="card-header">
-                            <i class="fas fa-shopping-basket"></i>
-                            <span class="card-title">تقارير المشتريات</span>
-                        </div>
-                        <div class="card-body">
-                            <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
-                                <i class="fas fa-calendar-alt"></i>
-                                <span>تقرير المشتريات اليومية</span>
-                            </a>
-                            <a href="{{ route('reports.general-purchases-total-report') }}" class="report-link">
-                                <i class="fas fa-chart-pie"></i>
-                                <span>تقرير المشتريات اجماليات</span>
-                            </a>
-                            <a href="{{ route('reports.general-purchases-items-report') }}" class="report-link">
-                                <i class="fas fa-boxes"></i>
-                                <span>تقرير المشتريات اصناف</span>
-                            </a>
-                            <a href="{{ route('billing.invoice-report') }}" class="report-link">
-                                <i class="fas fa-boxes"></i>
-                                <span>تقرير فواتير المشتريات </span>
-                            </a>
-                            <a href="{{ route('supplier-rfqs-report') }}" class="report-link">
-                                <i class="fas fa-boxes"></i>
-                                <span> تقرير عرض سعر من مورد </span>
                             </a>
                         </div>
                     </div>
@@ -427,31 +525,6 @@
                     </div>
                 </div>
 
-                <!-- الصف الرابع -->
-                <!-- تقارير المصروفات -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="report-card">
-                        <div class="card-header">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            <span class="card-title">تقارير المصروفات</span>
-                        </div>
-                        <div class="card-body">
-                            <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
-                                <i class="fas fa-list"></i>
-                                <span>قائمة الاصناف مع الارصدة</span>
-                            </a>
-                            <a href="{{ route('reports.general-expenses-daily-report') }}" class="report-link">
-                                <i class="fas fa-file-invoice"></i>
-                                <span>كشف حساب مصروف</span>
-                            </a>
-                            <a href="{{ route('reports.expenses-balance-report') }}" class="report-link">
-                                <i class="fas fa-balance-scale-right"></i>
-                                <span>ميزان المصروفات</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- تقارير مراكز التكلفة -->
                 <div class="col-lg-4 col-md-6">
                     <div class="report-card">
@@ -468,7 +541,8 @@
                                 <i class="fas fa-file-alt"></i>
                                 <span>كشف حساب مركز التكلفة</span>
                             </a>
-                            <a href="{{ route('reports.general-account-statement-with-cost-center') }}" class="report-link">
+                            <a href="{{ route('reports.general-account-statement-with-cost-center') }}"
+                                class="report-link">
                                 <i class="fas fa-file-invoice-dollar"></i>
                                 <span>كشف حساب عام مع مركز تكلفة</span>
                             </a>
@@ -494,24 +568,24 @@
             </div>
         </div>
 
-            <!-- Bootstrap JS -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-            <script>
-                // Simple animation for cards on page load
-                document.addEventListener('DOMContentLoaded', function() {
-                    const cards = document.querySelectorAll('.report-card');
-                    cards.forEach((card, index) => {
-                        setTimeout(() => {
-                            card.style.opacity = '0';
-                            card.style.transform = 'translateY(20px)';
-                            card.style.transition = 'all 0.5s ease';
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Simple animation for cards on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                const cards = document.querySelectorAll('.report-card');
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        card.style.transition = 'all 0.5s ease';
 
-                            setTimeout(() => {
-                                card.style.opacity = '1';
-                                card.style.transform = 'translateY(0)';
-                            }, 50);
-                        }, index * 100);
-                    });
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, 50);
+                    }, index * 100);
                 });
-            </script>
-@endsection
+            });
+        </script>
+    @endsection
