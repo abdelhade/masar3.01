@@ -91,7 +91,7 @@ class ItemSeeder extends Seeder
                 'code' => $item['code'],
                 'info' => $item['info'],
                 'tenant' => 1,
-                'branch' => 1,
+                'branch_id' => null, // بدل الرقم الثابت
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
