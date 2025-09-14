@@ -440,6 +440,7 @@ new class extends Component {
                         @endcan
 
                         {{-- Print Button --}}
+                        <div class = "mt-4">
                         <a href="{{ route('items.print', [
                             'search' => $search,
                             'warehouse' => $selectedWarehouse,
@@ -447,9 +448,10 @@ new class extends Component {
                             'category' => $selectedCategory,
                             'priceType' => $selectedPriceType
                         ]) }}" target="_blank" class="print-btn font-family-cairo fw-bold" style="text-decoration: none;">
-                            <i class="fas fa-print"></i>
-                            طباعة القائمة
-                        </a>
+                                <i class="fas fa-print"></i>
+                                طباعة القائمة
+                            </a>
+                        </div>
 
                         {{-- Search and Filter Group --}}
                         <div class="d-flex flex-grow-1 flex-wrap align-items-center justify-content-end gap-2"
