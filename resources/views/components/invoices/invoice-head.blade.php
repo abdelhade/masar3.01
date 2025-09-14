@@ -43,7 +43,6 @@
             <input type="hidden" wire:model="type">
 
             {{-- الحساب المتغير acc1 --}}
-            {{-- الحساب المتغير acc1 --}}
             <div class="col-lg-2">
                 <label class="form-label" style="font-size: 1em;">{{ $acc1Role }}</label>
                 <x-tom-select :options="collect($acc1List)
