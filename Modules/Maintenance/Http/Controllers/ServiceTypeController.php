@@ -17,6 +17,7 @@ class ServiceTypeController extends Controller
 
     public function create()
     {
+        $branches = userBranches();
         return view('maintenance::service-types.create');
     }
 
