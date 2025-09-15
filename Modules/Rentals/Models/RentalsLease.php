@@ -27,10 +27,10 @@ class RentalsLease extends Model
         'end_date'   => 'date',
     ];
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    // }
 
     public function unit()
     {
@@ -47,8 +47,8 @@ class RentalsLease extends Model
         return $this->belongsTo(AccHead::class, 'acc_id');
     }
 
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class, 'branch_id');
-    }
+    // public function branch()
+    // {
+    //     return $this->belongsTo(Branch::class, 'branch_id');
+    // }
 }

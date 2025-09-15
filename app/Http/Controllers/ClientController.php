@@ -31,7 +31,8 @@ class ClientController extends Controller
 
     public function create()
     {
-        return view('clients.create');
+        $branches = userBranches();
+        return view('clients.create', compact('branches'));
     }
 
     public function store(ClientRequest $request)
@@ -57,6 +58,7 @@ class ClientController extends Controller
                 'type'             => $request->type,
                 'is_active'        => $request->has('is_active') ? 1 : 0,
                 'created_by' => Auth::id(),
+                'branch_id' => $request->branch_id
             ]);
             DB::commit();
             Alert::toast('تم إنشاء العميل بنجاح', 'success');

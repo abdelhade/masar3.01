@@ -142,6 +142,8 @@
                                 </div>
                             </div>
 
+                            <x-branches::branch-select :branches="$branches" />
+
                             <div class="col-sm-10 mt-3">
                                 <button type="submit" class="btn btn-primary" id="submitBtn">تأكيد</button>
                                 <a href="{{ url()->previous() }}" class="btn btn-danger">إلغاء</a>

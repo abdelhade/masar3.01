@@ -9,7 +9,6 @@ use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use App\Services\SaveInvoiceService;
-use Illuminate\Support\Facades\Cache;
 use Modules\Settings\Models\PublicSetting;
 use App\Models\{OperHead, OperationItems, AccHead, Price, Item};
 
@@ -78,6 +77,8 @@ class CreateInvoiceForm extends Component
     public $notes = '';
     public $settings = [];
 
+    public $branch_id;
+    public $branches;
 
     public $currentSelectedItem = null;
     public $selectedItemData = [
@@ -112,6 +113,11 @@ class CreateInvoiceForm extends Component
 
     public function mount($type, $hash)
     {
+        $this->branches = userBranches();
+        if ($this->branches->isNotEmpty()) {
+            $this->branch_id = $this->branches->first()->id;
+        }
+
         $this->type = (int) $type;
         if ($hash !== md5($this->type)) abort(403, 'نوع الفاتورة غير صحيح');
 

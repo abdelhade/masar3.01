@@ -103,7 +103,8 @@ class SaveInvoiceService
                 'status'         => $component->status ?? null,
                 'acc_fund'       => $component->cash_box_id ?: 0,
                 'paid_from_client' => $component->received_from_client,
-                'user'           => Auth::id()
+                'user'           => Auth::id(),
+                'branch_id' => $component->branch_id
             ];
 
             // تحديث الفاتورة الحالية أو إنشاء جديدة
@@ -153,6 +154,8 @@ class SaveInvoiceService
                         'detail_value'  => $subValue,
                         'notes'         => $invoiceItem['notes'] ?? 'تحويل إلى مخزن ' . $component->acc2_id,
                         'is_stock'      => 1,
+                        'branch_id' => $component->branch_id
+
                         // 'profit'        => $profit,
                     ]);
 
@@ -171,6 +174,7 @@ class SaveInvoiceService
                         'detail_value'  => $subValue,
                         'notes'         => $invoiceItem['notes'] ?? 'تحويل من مخزن ' . $component->acc1_id,
                         'is_stock'      => 1,
+                        'branch_id' => $component->branch_id
                         // 'profit'        => $profit,
                     ]);
                 }
@@ -213,6 +217,7 @@ class SaveInvoiceService
                     'notes'         => $invoiceItem['notes'] ?? null,
                     'is_stock'      => 1,
                     'profit'        => $profit,
+                    'branch_id' => $component->branch_id
                 ]);
             }
 
@@ -348,6 +353,7 @@ class SaveInvoiceService
             'date'       => $component->pro_date,
             'details'    => $component->notes,
             'user'       => Auth::id(),
+            'branch_id' => $component->branch_id
         ]);
 
         // الطرف المدين
@@ -361,6 +367,7 @@ class SaveInvoiceService
                 'info'       => $component->notes,
                 'op_id'      => $operation->id,
                 'isdeleted'  => 0,
+                'branch_id' => $component->branch_id
             ]);
         }
 
@@ -375,6 +382,7 @@ class SaveInvoiceService
                 'info'       => $component->notes,
                 'op_id'      => $operation->id,
                 'isdeleted'  => 0,
+                'branch_id' => $component->branch_id
             ]);
         }
 
@@ -389,6 +397,7 @@ class SaveInvoiceService
                 'info'       => 'إضافات - ' . $component->notes,
                 'op_id'      => $operation->id,
                 'isdeleted'  => 0,
+                'branch_id' => $component->branch_id
             ]);
         }
 
@@ -413,6 +422,7 @@ class SaveInvoiceService
                 'date'       => $component->pro_date,
                 'details'    => 'قيد تكلفة البضاعة - ' . $component->notes,
                 'user'       => Auth::id(),
+                'branch_id' => $component->branch_id
             ]);
 
             JournalDetail::create([
@@ -424,6 +434,7 @@ class SaveInvoiceService
                 'info'       => 'قيد تكلفة البضاعة',
                 'op_id'      => $operation->id,
                 'isdeleted'  => 0,
+                'branch_id' => $component->branch_id
             ]);
 
             JournalDetail::create([
@@ -435,6 +446,7 @@ class SaveInvoiceService
                 'info'       => 'قيد تكلفة البضاعة',
                 'op_id'      => $operation->id,
                 'isdeleted'  => 0,
+                'branch_id' => $component->branch_id
             ]);
         }
     }
@@ -477,6 +489,7 @@ class SaveInvoiceService
             'is_journal' => 1,
             'is_stock'   => 0,
             'user'       => Auth::id(),
+            'branch_id' => $component->branch_id
         ]);
 
         // إنشاء قيد السند
@@ -491,6 +504,7 @@ class SaveInvoiceService
             'date'       => $component->pro_date,
             'details'    => 'قيد سند ' . $voucherType . ' آلي',
             'user'       => Auth::id(),
+            'branch_id' => $component->branch_id
         ]);
 
         JournalDetail::create([
@@ -502,6 +516,7 @@ class SaveInvoiceService
             'info'       => 'سند ' . $voucherType,
             'op_id'      => $voucher->id,
             'isdeleted'  => 0,
+            'branch_id' => $component->branch_id
         ]);
 
         JournalDetail::create([
@@ -513,6 +528,7 @@ class SaveInvoiceService
             'info'       => 'سند ' . $voucherType,
             'op_id'      => $voucher->id,
             'isdeleted'  => 0,
+            'branch_id' => $component->branch_id
         ]);
     }
 }

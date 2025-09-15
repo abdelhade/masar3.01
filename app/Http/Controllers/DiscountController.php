@@ -93,6 +93,7 @@ class DiscountController extends Controller
         if ($hash !== md5($type)) {
             abort(403, __('نوع الرمز غير صالح'));
         }
+        $branches = userBranches();
 
         $lastProId = OperHead::max('pro_id');
         $nextProId = $lastProId ? $lastProId + 1 : 1;
@@ -111,7 +112,9 @@ class DiscountController extends Controller
                 'type' => $type,
                 'nextProId' => $nextProId,
                 'acc2Fixed' => $acc2Fixed,
-                'clientsAccounts' => $clientsAccounts
+                'clientsAccounts' => $clientsAccounts,
+                'branches' => $branches
+
             ]);
         } elseif ($type == 31) {
             // خصم مكتسب: acc1 ثابت (id 97) - acc2 الموردين
@@ -129,7 +132,8 @@ class DiscountController extends Controller
                 'type' => $type,
                 'nextProId' => $nextProId,
                 'acc1Fixed' => $acc1Fixed,
-                'suppliers' => $suppliers
+                'suppliers' => $suppliers,
+                'branches' => $branches
             ]);
         } else {
             abort(404);
@@ -149,6 +153,7 @@ class DiscountController extends Controller
 
     public function store(CreatDiscountRequest $request)
     {
+
         // try {
         //     DB::beginTransaction();
         $validated = $request->validated();
@@ -158,6 +163,7 @@ class DiscountController extends Controller
         $oper->pro_date = $request->pro_date;
         $oper->info = $request->info ?? null;
         $oper->pro_value = $request->pro_value;
+        $oper->branch_id = $request->branch_id;
 
         if ($validated['type'] == 30) {
             // خصم مسموح به: acc1 = العملاء، acc2 ثابت (91)
@@ -180,6 +186,7 @@ class DiscountController extends Controller
             'date' => $oper->pro_date,
             'details' => $oper->info ?? ($oper->pro_type == 30 ? 'خصم مسموح به' : 'خصم مكتسب'),
             'user' => Auth::id(),
+            'branch_id' => $request->branch_id
         ]);
 
         if ($oper->pro_type == 30) {
@@ -191,6 +198,7 @@ class DiscountController extends Controller
                 'type' => 1,
                 'info' => $oper->info ?? 'خصم مسموح به',
                 'op_id' => $oper->id,
+                'branch_id' => $request->branch_id
             ]);
 
             JournalDetail::create([
@@ -201,6 +209,7 @@ class DiscountController extends Controller
                 'type' => 1,
                 'info' => $oper->info ?? 'خصم مسموح به',
                 'op_id' => $oper->id,
+                'branch_id' => $request->branch_id
             ]);
         } elseif ($oper->pro_type == 31) {
             JournalDetail::create([
@@ -211,6 +220,7 @@ class DiscountController extends Controller
                 'type' => 1,
                 'info' => $oper->info ?? 'خصم مكتسب',
                 'op_id' => $oper->id,
+                'branch_id' => $request->branch_id
             ]);
 
             JournalDetail::create([
@@ -221,6 +231,7 @@ class DiscountController extends Controller
                 'type' => 1,
                 'info' => $oper->info ?? 'خصم مكتسب',
                 'op_id' => $oper->id,
+                'branch_id' => $request->branch_id
             ]);
         }
         // DB::commit();

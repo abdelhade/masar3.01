@@ -62,6 +62,8 @@
                                 </div>
                             @endif
 
+                            <x-branches::branch-select :branches="$branches" model="branch_id" />
+
                             <div class="flex items-center">
 
                                 <button wire:click="openSaveTemplateModal"

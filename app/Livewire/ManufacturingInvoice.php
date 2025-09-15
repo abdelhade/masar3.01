@@ -47,6 +47,9 @@ class ManufacturingInvoice extends Component
     public $expenseAccount;
     public $expenseAccountList = [];
 
+    public $branch_id;
+    public $branches;
+
     public $productAccount = '';
     public $Stors = [];
     public $OperatingCenter;
@@ -88,6 +91,12 @@ class ManufacturingInvoice extends Component
 
     public function mount()
     {
+
+        $this->branches = userBranches();
+        if ($this->branches->isNotEmpty()) {
+            $this->branch_id = $this->branches->first()->id;
+        }
+
         $this->invoiceDate = now()->format('Y-m-d');
 
         $this->nextProId = OperHead::max('pro_id') + 1 ?? 1;

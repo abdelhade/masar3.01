@@ -29,6 +29,7 @@ class CreatDiscountRequest extends FormRequest
             'pro_date' => 'required|date',
             'info' => 'nullable|string',
             'pro_value' => 'required|numeric|min:0',
+            'branch_id' => 'required|exists:branches,id',
         ];
     }
 
@@ -52,6 +53,9 @@ class CreatDiscountRequest extends FormRequest
             'pro_value.required' => 'قيمة الخصم مطلوبة.',
             'pro_value.numeric' => 'قيمة الخصم يجب أن تكون رقماً.',
             'pro_value.min' => 'قيمة الخصم يجب أن تكون على الأقل 0.',
+
+            'branch_id.required' => 'الفرع مطلوب.',
+            'branch_id.exists' => 'الفرع المختار غير صحيح.',
         ];
     }
 }

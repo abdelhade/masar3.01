@@ -35,7 +35,7 @@ class ClientRequest extends FormRequest
             'tenant'           => 'nullable|integer',
             'branch'           => 'nullable|integer',
             'type'       => 'required|in:person,company',
-
+            'branch_id' => 'required|exists:branches,id',
         ];
 
         // إضافة قاعدة التحقق لـ email فقط إذا تم إدخال قيمة
@@ -60,6 +60,9 @@ class ClientRequest extends FormRequest
             'email.email'    => 'صيغة البريد الإلكتروني غير صحيحة',
             'email.unique'   => 'البريد الإلكتروني مستخدم بالفعل',
             'gender.in'      => 'النوع يجب أن يكون ذكر أو أنثى فقط',
+
+            'branch_id.required' => 'الفرع مطلوب.',
+            'branch_id.exists' => 'الفرع المختار غير صحيح.',
         ];
     }
 }

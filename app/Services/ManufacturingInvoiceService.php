@@ -199,6 +199,7 @@ class ManufacturingInvoiceService
                 'fat_net' => $component->totalManufacturingCost,
                 'info' => $component->description,
                 'user' => Auth::id(),
+                'branch_id' => $component->branch_id,
 
                 'is_template' => $isTemplate ? 1 : 0, // إضافة هذا الحقل إذا كان موجوداً في الجدول
             ]);
@@ -216,6 +217,7 @@ class ManufacturingInvoiceService
                     'cost_price' => $raw['unit_cost'],
                     'detail_value' => $raw['total_cost'],
                     'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج
+                    'branch_id' => $component->branch_id
                 ]);
             }
 
@@ -252,6 +254,7 @@ class ManufacturingInvoiceService
                     'cost_price' => $product['unit_cost'],
                     'detail_value' => $product['total_cost'],
                     'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج
+                    'branch_id' => $component->branch_id
                 ]);
             }
             if (!$isTemplate) {
@@ -269,6 +272,7 @@ class ManufacturingInvoiceService
                     'pro_type' => 59,
                     'details' => 'صرف مواد خام للتصنيع',
                     'user' => Auth::id(),
+                    'branch_id' => $component->branch_id
                 ]);
                 JournalDetail::create([
                     'journal_id' => $journalId,
@@ -278,6 +282,7 @@ class ManufacturingInvoiceService
                     'type' => 1,
                     'info' => 'صرف مواد خام للتصنيع',
                     'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
                 ]);
                 JournalDetail::create([
                     'journal_id' => $journalId,
@@ -287,6 +292,7 @@ class ManufacturingInvoiceService
                     'type' => 1,
                     'info' => 'صرف مواد خام للتصنيع',
                     'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
                 ]);
 
                 if ($totalExpenses > 0 && isset($component->additionalExpenses)) {
@@ -300,6 +306,8 @@ class ManufacturingInvoiceService
                         'pro_type' => 59,
                         'details' => 'مصاريف إضافية للتصنيع',
                         'user' => Auth::id(),
+                        'branch_id' => $component->branch_id
+
                     ]);
                     JournalDetail::create([
                         'journal_id' => $journalId,
@@ -309,6 +317,7 @@ class ManufacturingInvoiceService
                         'type' => 1,
                         'info' => 'مصاريف إضافية للتصنيع',
                         'op_id' => $operation->id,
+                        'branch_id' => $component->branch_id
                     ]);
 
                     foreach ($component->additionalExpenses as $expense) {
@@ -320,6 +329,7 @@ class ManufacturingInvoiceService
                             'type' => 1,
                             'info' => 'مصاريف إضافية للتصنيع',
                             'op_id' => $operation->id,
+                            'branch_id' => $component->branch_id
                         ]);
                     }
                 }
@@ -333,6 +343,7 @@ class ManufacturingInvoiceService
                     'pro_type' => 59,
                     'details' => 'إنتاج منتجات تامة',
                     'user' => Auth::id(),
+                    'branch_id' => $component->branch_id
                 ]);
                 JournalDetail::create([
                     'journal_id' => $journalId,
@@ -342,6 +353,7 @@ class ManufacturingInvoiceService
                     'type' => 1,
                     'info' => 'إنتاج منتجات تامة',
                     'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
                 ]);
                 JournalDetail::create([
                     'journal_id' => $journalId,
@@ -351,6 +363,7 @@ class ManufacturingInvoiceService
                     'type' => 1,
                     'info' => 'إنتاج منتجات تامة',
                     'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
                 ]);
             }
             DB::commit();
@@ -402,6 +415,7 @@ class ManufacturingInvoiceService
             'fat_net' => $component->totalManufacturingCost,
             'info' => $component->description,
             'user' => Auth::id(),
+            'branch_id' => $component->branch_id
         ]);
 
         // 4. إنشاء بيانات المواد الخام الجديدة
@@ -418,6 +432,7 @@ class ManufacturingInvoiceService
                 'cost_price' => $raw['unit_cost'],
                 'detail_value' => $raw['total_cost'],
                 'is_stock' => 1,
+                'branch_id' => $component->branch_id
             ]);
         }
 
@@ -452,6 +467,7 @@ class ManufacturingInvoiceService
                 'cost_price' => $product['unit_cost'],
                 'detail_value' => $product['total_cost'],
                 'is_stock' => 1,
+                'branch_id' => $component->branch_id
             ]);
         }
 
@@ -482,6 +498,7 @@ class ManufacturingInvoiceService
             'pro_type' => 59,
             'details' => 'صرف مواد خام للتصنيع',
             'user' => Auth::id(),
+            'branch_id' => $component->branch_id
         ]);
         JournalDetail::create([
             'journal_id' => $journalId,
@@ -491,6 +508,7 @@ class ManufacturingInvoiceService
             'type' => 1,
             'info' => 'صرف مواد خام للتصنيع',
             'op_id' => $operation->id,
+            'branch_id' => $component->branch_id
         ]);
         JournalDetail::create([
             'journal_id' => $journalId,
@@ -500,6 +518,7 @@ class ManufacturingInvoiceService
             'type' => 1,
             'info' => 'صرف مواد خام للتصنيع',
             'op_id' => $operation->id,
+            'branch_id' => $component->branch_id
         ]);
 
         // قيد المصروفات الإضافية
@@ -514,6 +533,7 @@ class ManufacturingInvoiceService
                 'pro_type' => 59,
                 'details' => 'مصاريف إضافية للتصنيع',
                 'user' => Auth::id(),
+                'branch_id' => $component->branch_id
             ]);
             JournalDetail::create([
                 'journal_id' => $journalId,
@@ -523,6 +543,7 @@ class ManufacturingInvoiceService
                 'type' => 1,
                 'info' => 'مصاريف إضافية للتصنيع',
                 'op_id' => $operation->id,
+                'branch_id' => $component->branch_id
             ]);
 
             foreach ($component->additionalExpenses as $expense) {
@@ -534,6 +555,7 @@ class ManufacturingInvoiceService
                     'type' => 1,
                     'info' => 'مصاريف إضافية للتصنيع',
                     'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
                 ]);
             }
         }
@@ -548,6 +570,7 @@ class ManufacturingInvoiceService
             'pro_type' => 59,
             'details' => 'إنتاج منتجات تامة',
             'user' => Auth::id(),
+            'branch_id' => $component->branch_id
         ]);
         JournalDetail::create([
             'journal_id' => $journalId,
@@ -557,6 +580,7 @@ class ManufacturingInvoiceService
             'type' => 1,
             'info' => 'إنتاج منتجات تامة',
             'op_id' => $operation->id,
+            'branch_id' => $component->branch_id
         ]);
         JournalDetail::create([
             'journal_id' => $journalId,
@@ -566,6 +590,7 @@ class ManufacturingInvoiceService
             'type' => 1,
             'info' => 'إنتاج منتجات تامة',
             'op_id' => $operation->id,
+            'branch_id' => $component->branch_id
         ]);
 
         DB::commit();

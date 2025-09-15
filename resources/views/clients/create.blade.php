@@ -179,6 +179,9 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <x-branches::branch-select :branches="$branches" />
+
                             </div>
                         </div>
 
