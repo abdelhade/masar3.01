@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class PosShift extends Model
@@ -21,4 +22,8 @@ class PosShift extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

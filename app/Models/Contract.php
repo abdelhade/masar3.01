@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -42,5 +43,10 @@ class Contract extends Model
     public function salary_points(): HasMany
     {
         return $this->hasMany(SalaryPoint::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

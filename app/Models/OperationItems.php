@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class OperationItems extends Model
@@ -28,5 +29,10 @@ class OperationItems extends Model
     public function unit()
     {
         return $this->belongsTo(Unit::class, 'unit_id', 'id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

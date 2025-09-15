@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
@@ -40,4 +41,9 @@ class Setting extends Model
     ];
 
     public $timestamps = false; // لأن الجدول لا يحتوي على created_at أو updated_at
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

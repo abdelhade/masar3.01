@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class JournalHead extends Model
@@ -19,5 +20,10 @@ class JournalHead extends Model
     public function oper()
     {
         return $this->hasOne(OperHead::class, 'id', 'op_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

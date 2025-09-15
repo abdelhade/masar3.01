@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
-class Shift extends Model 
+class Shift extends Model
 {
 
     protected $table = 'shifts';
@@ -15,4 +16,8 @@ class Shift extends Model
         return $this->hasMany(Employee::class);
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

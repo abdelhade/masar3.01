@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
+use Modules\Branches\Models\Branch;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -28,5 +29,10 @@ class Cv extends Model implements HasMedia
         $this->addMediaCollection('HR_Cvs')
             ->useDisk('public')
             ->singleFile();
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PayrollEntry extends Model
 {
@@ -47,5 +48,10 @@ class PayrollEntry extends Model
     public function addUnpaidLeaveDays(float $days): void
     {
         $this->increment('leave_days_unpaid', $days);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

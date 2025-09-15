@@ -2,20 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Item;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Modules\Branches\Models\Branch;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductionOrder extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'production_orders';
     protected $guarded = ['id'];
-    
+
     protected $casts = [
         'order_date' => 'date',
         'total_amount' => 'decimal:2',
@@ -24,7 +25,7 @@ class ProductionOrder extends Model
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'production_order_items', 'production_order_id', 'item_id')
-        ->withPivot('quantity', 'note')->withTimestamps();
+            ->withPivot('quantity', 'note')->withTimestamps();
     }
     public function customer(): BelongsTo
     {
@@ -41,5 +42,10 @@ class ProductionOrder extends Model
     public function productionInvoice(): HasOne
     {
         return $this->hasOne(OperHead::class, 'production_order_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

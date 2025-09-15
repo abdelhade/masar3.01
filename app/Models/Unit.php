@@ -1,17 +1,20 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 class Unit extends Model
 {
     use HasFactory;
     protected $table = 'units';
     protected $guarded = ['id'];
 
-    public function items() : BelongsToMany
+    public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'item_units', 'unit_id', 'item_id')
             ->withPivot('u_val', 'cost')
@@ -29,8 +32,12 @@ class Unit extends Model
     public function prices(): BelongsToMany
     {
         return $this->belongsToMany(Price::class, 'item_prices', 'unit_id', 'price_id')
-            ->withPivot('price','discount','tax_rate')
+            ->withPivot('price', 'discount', 'tax_rate')
             ->withTimestamps();
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

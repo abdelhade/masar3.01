@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
@@ -31,4 +32,9 @@ class Client extends Model
     protected $casts = [
         'date_of_birth' => 'date',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

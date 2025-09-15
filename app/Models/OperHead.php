@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Models\AccHead;
 use App\Models\ProType;
-use App\Enums\OperationTypeEnum;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\OperationItems;
+use App\Enums\OperationTypeEnum;
+use Modules\Branches\Models\Branch;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OperHead extends Model
 {
@@ -152,5 +153,10 @@ class OperHead extends Model
     public function productionOrder(): BelongsTo
     {
         return $this->belongsTo(ProductionOrder::class, 'production_order_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

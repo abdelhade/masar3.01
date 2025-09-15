@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
@@ -23,5 +24,10 @@ class Project extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by', 'id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

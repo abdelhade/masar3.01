@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Collection;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class Barcode extends Model
 {
     use HasFactory;
@@ -16,10 +18,10 @@ class Barcode extends Model
     // تحديد الأعمدة القابلة للتعبئة (mass assignable)
     protected $fillable = [
         'item_id',
-        'unit_id', 
-        'barcode', 
-        'isdeleted', 
-        'tenant', 
+        'unit_id',
+        'barcode',
+        'isdeleted',
+        'tenant',
         'branch'
     ];
 
@@ -34,5 +36,10 @@ class Barcode extends Model
     public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

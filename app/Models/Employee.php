@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Employee extends Model
 {
@@ -191,5 +192,10 @@ class Employee extends Model
         $endDate = $this->date_of_fire ? \Carbon\Carbon::parse($this->date_of_fire) : now();
 
         return $startDate->diffInDays($endDate);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

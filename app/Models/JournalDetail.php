@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class JournalDetail extends Model
@@ -18,7 +19,7 @@ class JournalDetail extends Model
     }
     public function head()
     {
-        return $this->belongsTo(JournalHead::class,'journal_id');
+        return $this->belongsTo(JournalHead::class, 'journal_id');
     }
 
     public function costCenter()
@@ -29,5 +30,10 @@ class JournalDetail extends Model
     public function operHead()
     {
         return $this->belongsTo(OperHead::class, 'op_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }
