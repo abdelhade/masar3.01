@@ -36,8 +36,4 @@ class Unit extends Model
             ->withTimestamps();
     }
 
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class);
-    }
 }

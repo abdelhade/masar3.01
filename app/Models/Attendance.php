@@ -14,6 +14,11 @@ class Attendance extends Model
         'time' => 'string', // Cast as string since it's a time field
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

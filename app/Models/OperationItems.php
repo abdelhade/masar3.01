@@ -11,6 +11,11 @@ class OperationItems extends Model
 
     protected $guarded = ['id'];
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function currency()
     {
         return $this->belongsTo(Currency::class);

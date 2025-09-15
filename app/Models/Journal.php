@@ -7,11 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Journal extends Model
 {
     protected $table = 'operhead';
+
     protected $guarded = [];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function scopeReceipts($query)
     {
         return $query->whereIn('pro_type', [8, 7]);
     }
+
     public function type()
     {
         return $this->belongsTo(\App\Models\ProType::class, 'pro_type');

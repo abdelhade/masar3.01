@@ -13,6 +13,11 @@ class JournalDetail extends Model
 
     public $timestamps = false;
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function accHead()
     {
         return $this->belongsTo(AccHead::class, 'account_id');

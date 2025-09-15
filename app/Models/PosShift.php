@@ -15,7 +15,13 @@ class PosShift extends Model
         'opened_at',
         'closed_at',
         'status',
+        'branch_id'
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function user()
     {

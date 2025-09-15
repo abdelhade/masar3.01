@@ -21,6 +21,11 @@ return new class extends Migration
             $table->unsignedTinyInteger('status')->default(1);
             $table->date('date')->nullable();
             $table->date('accural_date')->nullable();
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

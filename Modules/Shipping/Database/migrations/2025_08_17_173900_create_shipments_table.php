@@ -16,6 +16,11 @@ class CreateShipmentsTable extends Migration
             $table->text('customer_address');
             $table->decimal('weight', 8, 2);
             $table->enum('status', ['pending', 'in_transit', 'delivered']);
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

@@ -15,6 +15,11 @@ class Item extends Model
     protected $table = 'items';
     protected $guarded = ['id'];
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function barcodes(): HasMany
     {
         return $this->hasMany(Barcode::class);

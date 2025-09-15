@@ -2,8 +2,9 @@
 
 namespace Modules\Rentals\Models;
 
-use App\Models\AccHead;
 use App\Models\Client;
+use App\Models\AccHead;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class RentalsLease extends Model
@@ -18,12 +19,18 @@ class RentalsLease extends Model
         'payment_method',
         'status',
         'notes',
+        'branch_id',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date'   => 'date',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function unit()
     {
@@ -38,5 +45,10 @@ class RentalsLease extends Model
     public function account()
     {
         return $this->belongsTo(AccHead::class, 'acc_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

@@ -16,6 +16,11 @@ class Cv extends Model implements HasMedia
 
     protected $table = 'cvs';
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     // registerMediaConversions
     public function registerMediaConversions(?Media $media = null): void
     {

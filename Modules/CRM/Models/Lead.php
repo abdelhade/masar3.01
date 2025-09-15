@@ -4,6 +4,7 @@ namespace Modules\CRM\Models;
 
 use App\Models\User;
 use App\Models\Client;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class Lead extends Model
@@ -18,8 +19,14 @@ class Lead extends Model
         'amount',
         'source_id',
         'assigned_to',
-        'description'
+        'description',
+        'branch_id',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function client()
     {
@@ -44,5 +51,10 @@ class Lead extends Model
     public function source()
     {
         return $this->belongsTo(ChanceSource::class, 'source_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

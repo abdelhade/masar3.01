@@ -3,6 +3,7 @@
 namespace Modules\Progress\Models;
 
 use App\Models\Employee;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class DailyProgress extends Model
@@ -15,6 +16,7 @@ class DailyProgress extends Model
         'quantity',
         'notes',
         'completion_percentage',
+        'branch_id',
     ];
 
     protected $casts = [
@@ -22,6 +24,11 @@ class DailyProgress extends Model
     ];
 
     protected $appends = ['completion_percentage'];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function project()
     {
@@ -36,6 +43,11 @@ class DailyProgress extends Model
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
     public function getCompletionPercentageAttribute()

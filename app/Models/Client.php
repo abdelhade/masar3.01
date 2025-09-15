@@ -24,10 +24,15 @@ class Client extends Model
         'gender',
         'isdeleted',
         'tenant',
-        'branch',
+        'branch_id',
         'is_active',
         'type'
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     protected $casts = [
         'date_of_birth' => 'date',

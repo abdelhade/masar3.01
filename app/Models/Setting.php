@@ -35,7 +35,7 @@ class Setting extends Model
         'def_pos_fund',
         'isdeleted',
         'tenant',
-        'branch',
+        'branch_id',
         'show_all_tasks',
         'logo'
     ];

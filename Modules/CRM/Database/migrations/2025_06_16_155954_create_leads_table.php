@@ -20,6 +20,10 @@ return new class extends Migration
             $table->foreignId('source_id')->nullable()->constrained('chance_sources')->onDelete('set null');
             $table->decimal('amount', 12, 2)->nullable(); // القيمة المتوقعة للصفقة
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
             $table->timestamps();
         });
     }

@@ -22,6 +22,11 @@ return new class extends Migration
 
             $table->decimal('area', 10, 2)->nullable(); // المساحة الكلية بالمتر
             $table->text('details')->nullable();
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

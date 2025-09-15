@@ -17,12 +17,18 @@ class PayrollEntry extends Model
         'leave_days_paid',
         'leave_days_unpaid',
         'notes',
+        'branch_id'
     ];
 
     protected $casts = [
         'leave_days_paid' => 'decimal:2',
         'leave_days_unpaid' => 'decimal:2',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function payrollRun(): BelongsTo
     {

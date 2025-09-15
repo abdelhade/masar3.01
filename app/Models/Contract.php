@@ -10,6 +10,11 @@ class Contract extends Model
 {
     protected $guarded = ['id'];
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function created_by()
     {
         return $this->belongsTo(User::class, 'created_by');

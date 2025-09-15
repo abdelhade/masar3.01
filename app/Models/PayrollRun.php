@@ -15,12 +15,18 @@ class PayrollRun extends Model
         'period_start',
         'period_end',
         'status',
+        'branch_id'
     ];
 
     protected $casts = [
         'period_start' => 'date',
         'period_end' => 'date',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function payrollEntries(): HasMany
     {

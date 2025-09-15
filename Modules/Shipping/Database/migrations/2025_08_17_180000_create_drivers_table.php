@@ -14,6 +14,11 @@ class CreateDriversTable extends Migration
             $table->string('phone');
             $table->string('vehicle_type');
             $table->boolean('is_available')->default(true);
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

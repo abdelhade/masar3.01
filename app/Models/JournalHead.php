@@ -11,6 +11,11 @@ class JournalHead extends Model
     protected $guarded = [];
     public $timestamps = false;
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     // علاقة 1 إلى متعدد مع تفاصيل اليومية
     public function dets()
     {

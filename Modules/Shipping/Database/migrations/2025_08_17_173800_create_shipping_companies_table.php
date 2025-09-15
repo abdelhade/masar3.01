@@ -16,6 +16,11 @@ class CreateShippingCompaniesTable extends Migration
             $table->text('address');
             $table->decimal('base_rate', 8, 2);
             $table->boolean('is_active')->default(true);
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

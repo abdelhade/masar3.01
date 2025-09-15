@@ -22,6 +22,11 @@ return new class extends Migration
             $table->unsignedBigInteger('assigned_to')->nullable();
             $table->foreign('client_id')->references('id')->on('clients')->nullOnDelete();
             $table->foreign('assigned_to')->references('id')->on('users')->nullOnDelete();
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

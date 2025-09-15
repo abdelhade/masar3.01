@@ -26,6 +26,11 @@ return new class extends Migration
             $table->decimal('quantity', 12, 2);
             $table->decimal('completion_percentage', 5, 2)->default(0);
             $table->text('notes')->nullable();
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

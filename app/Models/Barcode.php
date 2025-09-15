@@ -22,8 +22,13 @@ class Barcode extends Model
         'barcode',
         'isdeleted',
         'tenant',
-        'branch'
+        'branch_id'
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     /**
      * Get the unit that owns the Barcode.

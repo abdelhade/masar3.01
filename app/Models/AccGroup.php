@@ -17,7 +17,7 @@ class AccGroup extends Model
         'code',
         'isdeleted',
         'tenant',
-        'branch',
+        'branch_id',
     ];
 
     public $timestamps = false; // لأنك تستخدم crtime و mdtime بدل created_at و updated_at

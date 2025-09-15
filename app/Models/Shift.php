@@ -11,6 +11,11 @@ class Shift extends Model
     protected $table = 'shifts';
     protected $guarded = ['id'];
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function employees()
     {
         return $this->hasMany(Employee::class);

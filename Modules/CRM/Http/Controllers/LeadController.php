@@ -2,12 +2,12 @@
 
 namespace Modules\CRM\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Modules\CRM\Models\Lead;
-use Modules\CRM\Models\LeadStatus;
-use App\Models\User;
-use Modules\CRM\Models\CrmClient;
 use Illuminate\Routing\Controller;
+use Modules\CRM\Models\LeadStatus;
 
 
 class LeadController extends Controller
@@ -28,7 +28,7 @@ class LeadController extends Controller
             ->get()
             ->groupBy('status_id');
 
-        $clients = CrmClient::all();
+        $clients = Client::all();
         $users = User::all();
 
 

@@ -14,6 +14,11 @@ return new class extends Migration
         Schema::create('chance_sources', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }

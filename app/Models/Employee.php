@@ -19,6 +19,11 @@ class Employee extends Model
 
     protected $guarded = ['id'];
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);

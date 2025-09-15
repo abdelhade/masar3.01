@@ -5,12 +5,11 @@ namespace Modules\CRM\Models;
 use App\Models\User;
 use App\Models\Client;
 use Spatie\MediaLibrary\HasMedia;
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
-
-
 
 class Task extends Model  implements HasMedia
 {
@@ -23,6 +22,11 @@ class Task extends Model  implements HasMedia
         'status' => TaskStatusEnum::class,
         'due_date' => 'date',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function client()
     {
@@ -42,6 +46,11 @@ class Task extends Model  implements HasMedia
     public function taskType()
     {
         return $this->belongsTo(\Modules\CRM\Models\TaskType::class, 'task_type_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
     public function registerMediaConversions(?Media $media = null): void

@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class CostCenter extends Model
 {
-    protected $guarded = [];
+    protected $guarded = ['id'];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
     public function operHead()
     {
         return $this->belongsTo(OperHead::class, 'cost_center');

@@ -2,6 +2,7 @@
 
 namespace Modules\Rentals\Models;
 
+use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
 class RentalsBuilding extends Model
@@ -12,11 +13,17 @@ class RentalsBuilding extends Model
         'floors',
         'area',
         'details',
+        'branch_id',
     ];
 
     protected $casts = [
         'floors' => 'integer',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
 
     public function units()
     {
@@ -26,5 +33,10 @@ class RentalsBuilding extends Model
     public function accBuilding()
     {
         return $this->hasMany(RentalsUnit::class, 'building_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

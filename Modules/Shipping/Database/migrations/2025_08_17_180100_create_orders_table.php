@@ -16,6 +16,11 @@ class CreateOrdersTable extends Migration
             $table->string('customer_name');
             $table->text('customer_address');
             $table->enum('delivery_status', ['pending', 'assigned', 'in_transit', 'delivered']);
+
+            $table->foreignId('branch_id')->nullable()
+                ->constrained('branches')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }
