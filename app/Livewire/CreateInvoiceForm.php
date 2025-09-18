@@ -431,20 +431,23 @@ class CreateInvoiceForm extends Component
         $effect = 0;
 
         if ($this->type == 10) { // فاتورة مبيعات
-            $effect = $netTotal - $receivedAmount; // طرح المبلغ المدفوع
+            $effect = $netTotal - $receivedAmount; // يزيد الرصيد بالباقي (مديونية العميل)
         } elseif ($this->type == 11) { // فاتورة مشتريات
-            $effect = -$netTotal;
+            $effect = - ($netTotal - $receivedAmount); // يقل الرصيد بالمستحق (مديونيتك للمورد)
         } elseif ($this->type == 12) { // مردود مبيعات
-            $effect = -$netTotal + $receivedAmount; // إضافة المبلغ المدفوع
+            $effect = -$netTotal + $receivedAmount; // يقل المديونية - المدفوع
         } elseif ($this->type == 13) { // مردود مشتريات
-            $effect = $netTotal;
+            $effect = $netTotal - $receivedAmount; // يزيد الرصيد بالمردود - المدفوع (إرجاع جزء من الدفع)
         }
 
         $this->balanceAfterInvoice = $this->currentBalance + $effect;
+
+        // $this->checkCashAccount($this->acc1_id);
     }
 
     public function updatedReceivedFromClient()
     {
+        $this->calculateTotals();
         $this->calculateBalanceAfterInvoice();
     }
 
@@ -534,6 +537,7 @@ class CreateInvoiceForm extends Component
 
         $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
         $this->dispatch('focus-quantity', ['index' => $newRowIndex]);
+        $this->calculateTotals();
     }
 
     public function updatedBarcodeTerm($value)
@@ -1106,6 +1110,10 @@ class CreateInvoiceForm extends Component
                 text: 'قيمة الفاتورة لا يمكن أن تكون صفرًا.',
                 icon: 'error'
             );
+        }
+
+        if ($this->showBalance) {
+            $this->calculateBalanceAfterInvoice();
         }
     }
 
