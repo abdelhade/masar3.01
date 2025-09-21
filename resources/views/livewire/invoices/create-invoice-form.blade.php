@@ -67,7 +67,7 @@
                         </div>
                     @endif
 
-                    <x-branches::branch-select :branches="$branches" model="branch_id" />
+                    {{-- <x-branches::branch-select :branches="$branches" model="branch_id" /> --}}
 
                     @if ($type == 14)
                         <div class="col-lg-1">
@@ -233,24 +233,24 @@
         // دالة للتحقق من إمكانية الوصول للعنصر
         function isElementAccessible(element) {
             if (!element) return false;
-            
+
             // التحقق من أن العنصر مرئي وغير مخفي
             const style = window.getComputedStyle(element);
             if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
                 return false;
             }
-            
+
             // التحقق من أن العنصر غير معطل
             if (element.disabled || element.readOnly) {
                 return false;
             }
-            
+
             // التحقق من أن العنصر داخل viewport
             const rect = element.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) {
                 return false;
             }
-            
+
             return true;
         }
 
@@ -273,10 +273,10 @@
                 `discount_${rowIndex}`,
                 `sub_value_${rowIndex}`
             ];
-            
+
             const currentId = currentElement.id;
             const currentIndex = fieldOrder.indexOf(currentId);
-            
+
             // البحث عن العنصر التالي في نفس الصف
             for (let i = currentIndex + 1; i < fieldOrder.length; i++) {
                 const nextElement = document.getElementById(fieldOrder[i]);
@@ -284,7 +284,7 @@
                     return nextElement;
                 }
             }
-            
+
             return null;
         }
 
@@ -297,14 +297,14 @@
                 `discount_${nextRowIndex}`,
                 `sub_value_${nextRowIndex}`
             ];
-            
+
             for (let fieldId of nextRowFields) {
                 const element = document.getElementById(fieldId);
                 if (element && isElementAccessible(element)) {
                     return element;
                 }
             }
-            
+
             return null;
         }
 
@@ -319,7 +319,7 @@
                 'input[id="final_price"]',
                 'button[type="submit"]'
             ];
-            
+
             return findNextAccessibleElement(currentElement, allFormElements);
         }
 
@@ -343,31 +343,31 @@
         // دالة للعثور على آخر حقل متاح في الجدول
         function findLastAvailableTableField() {
             const allTableFields = [];
-            
+
             // جمع جميع حقول الجدول
             ['quantity_', 'price_', 'discount_', 'sub_value_'].forEach(function(prefix) {
                 document.querySelectorAll(`input[id^="${prefix}"]`).forEach(function(field) {
                     allTableFields.push(field);
                 });
             });
-            
+
             // العثور على آخر حقل متاح
             for (let i = allTableFields.length - 1; i >= 0; i--) {
                 if (isElementAccessible(allTableFields[i])) {
                     return allTableFields[i];
                 }
             }
-            
+
             return null;
         }
 
         // دالة للتنقل الذكي
         function smartNavigate(currentElement) {
             let nextElement = null;
-            
+
             // تحديد نوع العنصر الحالي
             const currentId = currentElement.id;
-            
+
             // إذا كان العنصر من حقول الجدول
             if (currentId.startsWith('quantity_') || currentId.startsWith('price_') || currentId.startsWith('discount_')) {
                 const index = currentId.split('_')[1];
@@ -388,12 +388,12 @@
                 // للعناصر الأخرى في النموذج
                 nextElement = findNextFormElement(currentElement);
             }
-            
+
             // إذا لم يوجد عنصر تالي، انتقل لأول حقل كمية متاح
             if (!nextElement) {
                 nextElement = findFirstAvailableQuantityField();
             }
-            
+
             // إذا لم يوجد أي عنصر متاح، انتقل لأول عنصر في النموذج
             if (!nextElement) {
                 const firstFormElement = document.querySelector('input[wire\\:model\\.live="searchTerm"]');
@@ -401,7 +401,7 @@
                     nextElement = firstFormElement;
                 }
             }
-            
+
             return nextElement;
         }
 
@@ -461,7 +461,8 @@
                         if (firstField.select) firstField.select();
                     } else {
                         // إذا لم يوجد حقول كمية، انتقل لأول عنصر في النموذج
-                        const firstFormElement = document.querySelector('input[wire\\:model\\.live="searchTerm"]');
+                        const firstFormElement = document.querySelector(
+                            'input[wire\\:model\\.live="searchTerm"]');
                         if (firstFormElement && isElementAccessible(firstFormElement)) {
                             firstFormElement.focus();
                             if (firstFormElement.select) firstFormElement.select();
@@ -599,7 +600,8 @@
         window.addEventListener('focus-quantity-field', event => {
             const index = event.detail;
             setTimeout(() => {
-                const field = document.getElementById(`quantity-${index}`) || document.getElementById(`quantity_${index}`);
+                const field = document.getElementById(`quantity-${index}`) || document.getElementById(
+                    `quantity_${index}`);
                 if (field && isElementAccessible(field)) {
                     field.focus();
                     if (field.select) field.select();

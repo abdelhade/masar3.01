@@ -113,13 +113,17 @@ class CreateInvoiceForm extends Component
         21 => 'تحويل من مخزن لمخزن',
         22 => 'امر حجز',
     ];
-    protected $listeners = ['account-created' => 'handleAccountCreated'];
+    protected $listeners = [
+        'account-created' => 'handleAccountCreated',
+        'branch-changed' => 'handleBranchChange'  // أضف هذا السطر
+    ];
 
     public function mount($type, $hash)
     {
         $this->branches = userBranches();
         if ($this->branches->isNotEmpty()) {
             $this->branch_id = $this->branches->first()->id;
+            $this->loadBranchFilteredData($this->branch_id);
         }
 
         $this->type = (int) $type;
@@ -315,6 +319,109 @@ class CreateInvoiceForm extends Component
             text: 'تم إضافة الحساب بنجاح وتم تحديده في الفاتورة.',
             icon: 'success'
         );
+    }
+
+    public function updatedBranchId($value)
+    {
+        $this->handleBranchChange($value);
+    }
+
+    public function handleBranchChange($branchId)
+    {
+        $this->loadBranchFilteredData($branchId);
+        $this->resetSelectedValues();
+
+        // $previousAcc1Id = $this->acc1_id;
+        $this->acc1_id = $this->acc1List->first()->id ?? null;
+
+        if ($this->showBalance && $this->acc1_id) {
+            $this->currentBalance = $this->getAccountBalance($this->acc1_id);
+            $this->calculateBalanceAfterInvoice();
+        } else {
+            $this->currentBalance = 0;
+        }
+
+        if ($this->type == 10 && $this->acc1_id) {
+            $this->recommendedItems = $this->getRecommendedItems($this->acc1_id);
+        } else {
+            $this->recommendedItems = [];
+        }
+
+        // Reload items based on the branch
+        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+            ->where(function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId)->orWhereNull('branch_id');
+            })
+            ->take(20)
+            ->get();
+
+        $this->calculateTotals();
+
+        $this->dispatch('branch-changed-completed', [
+            'branch_id' => $branchId,
+            'acc1_id' => $this->acc1_id,
+            'acc1List' => $this->acc1List->map(fn($item) => ['value' => $item->id, 'text' => $item->aname])->toArray(),
+            'currentBalance' => $this->currentBalance,
+        ]);
+    }
+
+    private function loadBranchFilteredData($branchId)
+    {
+        if (!$branchId) return;
+        $clientsAccounts = $this->getAccountsByCodeAndBranch('1103%', $branchId);
+        $suppliersAccounts = $this->getAccountsByCodeAndBranch('2101%', $branchId);
+        $wasted = $this->getAccountsByCodeAndBranch('55%', $branchId);
+        $accounts = $this->getAccountsByCodeAndBranch('1108%', $branchId);
+        $stores = $this->getAccountsByCodeAndBranch('1104%', $branchId);
+
+        // تحديد قائمة acc1 حسب نوع الفاتورة
+        if (in_array($this->type, [10, 12, 14, 16, 22])) {
+            $this->acc1List = $clientsAccounts; // العملاء مفلترين حسب الفرع
+        } elseif (in_array($this->type, [11, 13, 15, 17])) {
+            $this->acc1List = $suppliersAccounts; // الموردين مفلترين حسب الفرع
+        } elseif ($this->type == 18) {
+            $this->acc1List = $wasted;
+        } elseif (in_array($this->type, [19, 20])) {
+            $this->acc1List = $accounts;
+        } elseif ($this->type == 21) {
+            $this->acc1List = $stores;
+        }
+
+        $this->acc2List = $stores;
+        $this->employees = $this->getAccountsByCodeAndBranch('2102%', $branchId);
+        $this->deliverys = $this->getAccountsByCodeAndBranch('2102%', $branchId);
+
+        $this->cashAccounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('is_fund', 1)
+            ->where('branch_id', $branchId)
+            ->select('id', 'aname')
+            ->get();
+
+        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+            ->where(function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId)->orWhereNull('branch_id');
+            })
+            ->take(20)
+            ->get();
+    }
+
+    private function resetSelectedValues()
+    {
+        $this->acc2_id = $this->acc2List->first()->id ?? null;
+        $this->emp_id = $this->employees->first()->id ?? null;
+        $this->delivery_id = $this->deliverys->first()->id ?? null;
+        $this->cash_box_id = $this->cashAccounts->first()->id ?? null;
+    }
+
+    private function getAccountsByCodeAndBranch(string $code, $branchId)
+    {
+        return AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', $code)
+            ->where('branch_id', $branchId)
+            ->select('id', 'aname')
+            ->get();
     }
 
     // private function getFilteredItems()
