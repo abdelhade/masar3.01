@@ -35,7 +35,7 @@ class SaveInvoiceService
         foreach ($component->invoiceItems as $index => $item) {
             if (in_array($component->type, [10, 12, 18, 19, 21])) {
                 $availableQty = OperationItems::where('item_id', $item['item_id'])
-                    ->where('detail_store', $component->acc2_id)
+                    ->where('detail_store', $component->type == 21 ? $component->acc1_id : $component->acc2_id)
                     ->selectRaw('SUM(qty_in - qty_out) as total')
                     ->value('total') ?? 0;
 
@@ -145,7 +145,7 @@ class SaveInvoiceService
                     OperationItems::create([
                         'pro_tybe'      => $component->type,
                         'detail_store'  => $component->acc1_id, // <-- المخزن الأول (المُرسِل)
-                        'pro_id'        => $operation->id,
+                        'pro_id'        => $operation->id, // خل نستخدم id or pro_id
                         'item_id'       => $itemId,
                         'unit_id'       => $unitId,
                         'qty_in'        => 0,
@@ -165,7 +165,7 @@ class SaveInvoiceService
                     OperationItems::create([
                         'pro_tybe'      => $component->type,
                         'detail_store'  => $component->acc2_id, // <-- المخزن الثاني (المُستقبِل)
-                        'pro_id'        => $operation->id,
+                        'pro_id'        => $operation->id, // خل نستخدم id or pro_id
                         'item_id'       => $itemId,
                         'unit_id'       => $unitId,
                         'qty_in'        => $quantity, // <-- إضافة الكمية
@@ -203,11 +203,12 @@ class SaveInvoiceService
                     $profit = 0;
                 }
 
-                // إنشاء عنصر الفاتورة
+                // إنشاء عنصر الفاتورة لاى شئ غير التحويلات حاليا النوع 21
+                if ($component->type != 21) {
                 OperationItems::create([
                     'pro_tybe'      => $component->type,
                     'detail_store'  => $component->acc2_id,
-                    'pro_id'        => $operation->id,
+                    'pro_id'        => $operation->id, // خل نستخدم id or pro_id
                     'item_id'       => $itemId,
                     'unit_id'       => $unitId,
                     'qty_in'        => $qty_in,
@@ -219,8 +220,9 @@ class SaveInvoiceService
                     'notes'         => $invoiceItem['notes'] ?? null,
                     'is_stock'      => 1,
                     'profit'        => $profit,
-                    'branch_id' => $component->branch_id
-                ]);
+                        'branch_id' => $component->branch_id
+                    ]);
+                }
             }
 
             // تحديث إجمالي الربح

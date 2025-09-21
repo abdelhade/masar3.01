@@ -127,6 +127,7 @@
         </div>
     @endif
 
+    @if ($type != 21) {{-- إضافة الصندوق النقدية لا ينطبق على التحويلات --}}
     <div class="col-2">
         <div class="card border-primary">
 
@@ -161,17 +162,19 @@
             </div>
         </div>
     </div>
-
+    @endif {{-- إضافة الصندوق النقدية لا ينطبق على التحويلات --}}
     <div class="col-5">
         <div class="card border-primary">
             <div class="card-body">
+                @if ($type != 21) {{-- إضافة الإجمالي الفرعي لا ينطبق على التحويلات --}}
                 <div class="row mb-2">
                     <div class="col-3 text-right font-weight-bold">الإجمالي الفرعي:</div>
                     <div class="col-3 text-left text-primary">
                         {{ number_format($subtotal) }}
                     </div>
                 </div>
-                @if ($type != 18)
+                @endif {{-- إضافة الإجمالي الفرعي لا ينطبق على التحويلات --}}
+                @if ($type != 18 && $type != 21)
                     {{-- الخصم --}}
                     <div class="row mb-2 align-items-center">
                         <div class="col-2 text-right font-weight-bold">
@@ -236,19 +239,21 @@
                 @endif
                 <hr>
                 {{-- الإجمالي النهائي --}}
+                @if ($type != 21) {{-- إضافة الإجمالي النهائي لا ينطبق على التحويلات --}}
                 <div class="row mb-2">
                     <div class="col-3 text-right font-weight-bold">الإجمالي النهائي:</div>
                     <div class="col-3 text-left font-weight-bold fs-5 main-num">
                         {{ number_format($total_after_additional) }}
                     </div>
                 </div>
-
+                @endif {{-- إضافة الإجمالي النهائي لا ينطبق على التحويلات --}}
                 <div class="row mb-2">
+                    @if ($type != 21) {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
                     <div class="col-3 text-right font-weight-bold">المدفوع من العميل:</div>
                     <div class="col-3 text-left font-weight-bold fs-5">
                         {{ number_format($received_from_client) }}
                     </div>
-
+                    @endif {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
                     <div class="col-3 text-left">
                         <button type="submit" class="btn btn-lg btn-primary" wire:loading.attr="disabled">
                             <i class="fas fa-save"></i> حفظ الفاتورة
@@ -267,6 +272,7 @@
                 </div>
 
                 {{-- الباقي على العميل --}}
+                @if ($type != 21) {{-- إضافة الباقي لا ينطبق على التحويلات --}}
                 <div class="row">
                     <div class="col-3 text-right font-weight-bold">الباقي:</div>
                     <div class="col-3 text-left font-weight-bold text-danger">
@@ -276,7 +282,7 @@
                         {{ number_format(max($remaining, 0)) }}
                     </div>
                 </div>
-
+                @endif {{-- إضافة الباقي لا ينطبق على التحويلات --}}
             </div>
         </div>
     </div>

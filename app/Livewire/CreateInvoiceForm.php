@@ -462,7 +462,7 @@ class CreateInvoiceForm extends Component
         $this->currentSelectedItem = $item->id;
 
         $availableQtyInSelectedStore = OperationItems::where('item_id', $item->id)
-            ->where('detail_store', $this->acc2_id)
+            ->where('detail_store', $this->type == 21 ? $this->acc1_id : $this->acc2_id)
             ->selectRaw('SUM(qty_in - qty_out) as total')
             ->value('total') ?? 0;
 
@@ -472,7 +472,7 @@ class CreateInvoiceForm extends Component
 
         $unitName = $item->units->where('id', $unitId)->first()->name ?? '';
 
-        $selectedStoreName = AccHead::where('id', $this->acc2_id)->value('aname') ?? '';
+        $selectedStoreName = AccHead::where('id', $this->type == 21 ? $this->acc1_id : $this->acc2_id)->value('aname') ?? '';
 
         $lastPurchasePrice = OperationItems::where('item_id', $item->id)
             ->where('is_stock', 1)

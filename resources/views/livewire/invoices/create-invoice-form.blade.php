@@ -230,88 +230,205 @@
         });
         // });
 
+        // دالة للتحقق من إمكانية الوصول للعنصر
+        function isElementAccessible(element) {
+            if (!element) return false;
+            
+            // التحقق من أن العنصر مرئي وغير مخفي
+            const style = window.getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+                return false;
+            }
+            
+            // التحقق من أن العنصر غير معطل
+            if (element.disabled || element.readOnly) {
+                return false;
+            }
+            
+            // التحقق من أن العنصر داخل viewport
+            const rect = element.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        // دالة للعثور على العنصر التالي المتاح
+        function findNextAccessibleElement(currentElement, selectors) {
+            for (let selector of selectors) {
+                const element = document.querySelector(selector);
+                if (element && isElementAccessible(element) && element !== currentElement) {
+                    return element;
+                }
+            }
+            return null;
+        }
+
+        // دالة للعثور على العنصر التالي في نفس الصف
+        function findNextInRow(currentElement, rowIndex) {
+            const fieldOrder = [
+                `quantity_${rowIndex}`,
+                `price_${rowIndex}`,
+                `discount_${rowIndex}`,
+                `sub_value_${rowIndex}`
+            ];
+            
+            const currentId = currentElement.id;
+            const currentIndex = fieldOrder.indexOf(currentId);
+            
+            // البحث عن العنصر التالي في نفس الصف
+            for (let i = currentIndex + 1; i < fieldOrder.length; i++) {
+                const nextElement = document.getElementById(fieldOrder[i]);
+                if (nextElement && isElementAccessible(nextElement)) {
+                    return nextElement;
+                }
+            }
+            
+            return null;
+        }
+
+        // دالة للعثور على العنصر التالي في الصف التالي
+        function findNextInNextRow(currentRowIndex) {
+            const nextRowIndex = currentRowIndex + 1;
+            const nextRowFields = [
+                `quantity_${nextRowIndex}`,
+                `price_${nextRowIndex}`,
+                `discount_${nextRowIndex}`,
+                `sub_value_${nextRowIndex}`
+            ];
+            
+            for (let fieldId of nextRowFields) {
+                const element = document.getElementById(fieldId);
+                if (element && isElementAccessible(element)) {
+                    return element;
+                }
+            }
+            
+            return null;
+        }
+
+        // دالة للعثور على العنصر التالي في النموذج
+        function findNextFormElement(currentElement) {
+            const allFormElements = [
+                'input[wire\\:model\\.live="searchTerm"]',
+                'input[id="barcode-search"]',
+                'select[wire\\:model\\.live="selectedPriceType"]',
+                'select[wire\\:model="branch_id"]',
+                'select[wire\\:model="status"]',
+                'input[id="final_price"]',
+                'button[type="submit"]'
+            ];
+            
+            return findNextAccessibleElement(currentElement, allFormElements);
+        }
+
+        // دالة للعثور على أول حقل كمية متاح
+        function findFirstAvailableQuantityField() {
+            const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
+            for (let field of quantityFields) {
+                if (isElementAccessible(field)) {
+                    return field;
+                }
+            }
+            return null;
+        }
+
+        // دالة للتحقق من وجود عناصر في الجدول
+        function hasTableItems() {
+            const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
+            return quantityFields.length > 0;
+        }
+
+        // دالة للعثور على آخر حقل متاح في الجدول
+        function findLastAvailableTableField() {
+            const allTableFields = [];
+            
+            // جمع جميع حقول الجدول
+            ['quantity_', 'price_', 'discount_', 'sub_value_'].forEach(function(prefix) {
+                document.querySelectorAll(`input[id^="${prefix}"]`).forEach(function(field) {
+                    allTableFields.push(field);
+                });
+            });
+            
+            // العثور على آخر حقل متاح
+            for (let i = allTableFields.length - 1; i >= 0; i--) {
+                if (isElementAccessible(allTableFields[i])) {
+                    return allTableFields[i];
+                }
+            }
+            
+            return null;
+        }
+
+        // دالة للتنقل الذكي
+        function smartNavigate(currentElement) {
+            let nextElement = null;
+            
+            // تحديد نوع العنصر الحالي
+            const currentId = currentElement.id;
+            
+            // إذا كان العنصر من حقول الجدول
+            if (currentId.startsWith('quantity_') || currentId.startsWith('price_') || currentId.startsWith('discount_')) {
+                const index = currentId.split('_')[1];
+                nextElement = findNextInRow(currentElement, index);
+                if (!nextElement) {
+                    nextElement = findNextInNextRow(parseInt(index));
+                }
+                if (!nextElement) {
+                    nextElement = findNextFormElement(currentElement);
+                }
+            } else if (currentId.startsWith('sub_value_')) {
+                const index = currentId.split('_')[2];
+                nextElement = findNextInNextRow(parseInt(index));
+                if (!nextElement) {
+                    nextElement = findNextFormElement(currentElement);
+                }
+            } else {
+                // للعناصر الأخرى في النموذج
+                nextElement = findNextFormElement(currentElement);
+            }
+            
+            // إذا لم يوجد عنصر تالي، انتقل لأول حقل كمية متاح
+            if (!nextElement) {
+                nextElement = findFirstAvailableQuantityField();
+            }
+            
+            // إذا لم يوجد أي عنصر متاح، انتقل لأول عنصر في النموذج
+            if (!nextElement) {
+                const firstFormElement = document.querySelector('input[wire\\:model\\.live="searchTerm"]');
+                if (firstFormElement && isElementAccessible(firstFormElement)) {
+                    nextElement = firstFormElement;
+                }
+            }
+            
+            return nextElement;
+        }
+
         function addKeyboardListeners() {
             // إزالة المستمعات القديمة أولاً
             document.querySelectorAll('input[data-listener="true"]').forEach(function(field) {
                 field.removeAttribute('data-listener');
             });
 
-            // إضافة مستمعات جديدة لحقول الكمية
-            document.querySelectorAll('input[id^="quantity_"]').forEach(function(field) {
-                if (!field.hasAttribute('data-listener')) {
-                    field.setAttribute('data-listener', 'true');
-                    field.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const index = this.id.split('_')[1];
-                            const nextField = document.getElementById('price_' + index);
-                            if (nextField) {
-                                nextField.focus();
-                                nextField.select();
+            // إضافة مستمعات لجميع حقول الجدول (كمية، سعر، خصم، قيمة فرعية)
+            const tableFields = ['quantity_', 'price_', 'discount_', 'sub_value_'];
+            tableFields.forEach(function(prefix) {
+                document.querySelectorAll(`input[id^="${prefix}"]`).forEach(function(field) {
+                    if (!field.hasAttribute('data-listener')) {
+                        field.setAttribute('data-listener', 'true');
+                        field.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const nextElement = smartNavigate(this);
+                                if (nextElement) {
+                                    nextElement.focus();
+                                    if (nextElement.select) nextElement.select();
+                                }
                             }
-                        }
-                    });
-                }
-            });
-
-            // إضافة مستمعات لحقول السعر
-            document.querySelectorAll('input[id^="price_"]').forEach(function(field) {
-                if (!field.hasAttribute('data-listener')) {
-                    field.setAttribute('data-listener', 'true');
-                    field.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const index = this.id.split('_')[1];
-                            const nextField = document.getElementById('discount_' + index);
-                            if (nextField) {
-                                nextField.focus();
-                                nextField.select();
-                            }
-                        }
-                    });
-                }
-            });
-
-            // إضافة مستمعات لحقول الخصم
-            document.querySelectorAll('input[id^="discount_"]').forEach(function(field) {
-                if (!field.hasAttribute('data-listener')) {
-                    field.setAttribute('data-listener', 'true');
-                    field.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const index = this.id.split('_')[1];
-                            const nextField = document.getElementById('sub_value_' + index);
-                            if (nextField) {
-                                nextField.focus();
-                                nextField.select();
-                            }
-                        }
-                    });
-                }
-            });
-
-            // إضافة مستمعات لحقول القيمة الفرعية
-            document.querySelectorAll('input[id^="sub_value_"]').forEach(function(field) {
-                if (!field.hasAttribute('data-listener')) {
-                    field.setAttribute('data-listener', 'true');
-                    field.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const index = this.id.split('_')[2]; // sub_value_0 -> index = 0
-                            const nextIndex = parseInt(index) + 1;
-                            const nextQuantity = document.getElementById('quantity_' + nextIndex);
-                            if (nextQuantity) {
-                                nextQuantity.focus();
-                                nextQuantity.select();
-                            } else {
-                                // إذا لم يكن هناك صف تالي، انتقل لحقل البحث
-                                const searchField = document.querySelector(
-                                    'input[wire\\:model\\.live="searchTerm"]');
-                                if (searchField) searchField.focus();
-                            }
-                        }
-                    });
-                }
+                        });
+                    }
+                });
             });
 
             // دالة للتركيز على حقل الكمية بعد إضافة صنف من البحث
@@ -320,8 +437,35 @@
                     const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
                     if (quantityFields.length > 0) {
                         const lastField = quantityFields[quantityFields.length - 1];
-                        lastField.focus();
-                        lastField.select();
+                        if (isElementAccessible(lastField)) {
+                            lastField.focus();
+                            lastField.select();
+                        } else {
+                            // إذا كان آخر حقل غير متاح، ابحث عن آخر حقل متاح
+                            const lastAvailableField = findLastAvailableTableField();
+                            if (lastAvailableField) {
+                                lastAvailableField.focus();
+                                if (lastAvailableField.select) lastAvailableField.select();
+                            }
+                        }
+                    }
+                }, 150);
+            };
+
+            // دالة للتركيز على أول حقل متاح
+            window.focusFirstAvailableField = function() {
+                setTimeout(function() {
+                    const firstField = findFirstAvailableQuantityField();
+                    if (firstField) {
+                        firstField.focus();
+                        if (firstField.select) firstField.select();
+                    } else {
+                        // إذا لم يوجد حقول كمية، انتقل لأول عنصر في النموذج
+                        const firstFormElement = document.querySelector('input[wire\\:model\\.live="searchTerm"]');
+                        if (firstFormElement && isElementAccessible(firstFormElement)) {
+                            firstFormElement.focus();
+                            if (firstFormElement.select) firstFormElement.select();
+                        }
                     }
                 }, 150);
             };
@@ -408,29 +552,42 @@
                 });
             }
 
-            const finalPriceField = document.getElementById('final_price');
-            if (finalPriceField && !finalPriceField.hasAttribute('data-listener')) {
-                finalPriceField.setAttribute('data-listener', 'true');
-                finalPriceField.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        // مثلا تركيز على زر التأكيد
-                        const submitBtn = document.querySelector('button[type="submit"]');
-                        if (submitBtn) submitBtn.focus();
+            // إضافة مستمعات لجميع عناصر النموذج الأخرى
+            const formElements = [
+                'input[wire\\:model\\.live="searchTerm"]',
+                'input[id="barcode-search"]',
+                'select[wire\\:model\\.live="selectedPriceType"]',
+                'select[wire\\:model="branch_id"]',
+                'select[wire\\:model="status"]',
+                'input[id="final_price"]'
+            ];
+
+            formElements.forEach(function(selector) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(function(element) {
+                    if (!element.hasAttribute('data-listener')) {
+                        element.setAttribute('data-listener', 'true');
+                        element.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const nextElement = smartNavigate(this);
+                                if (nextElement) {
+                                    nextElement.focus();
+                                    if (nextElement.select) nextElement.select();
+                                }
+                            }
+                        });
                     }
                 });
-            }
+            });
         }
 
         window.addEventListener('focus-last-quantity-field', function() {
-            setTimeout(function() {
-                const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
-                if (quantityFields.length > 0) {
-                    const lastField = quantityFields[quantityFields.length - 1];
-                    lastField.focus();
-                    lastField.select();
-                }
-            }, 150);
+            window.focusLastQuantityField();
+        });
+
+        window.addEventListener('focus-first-available-field', function() {
+            window.focusFirstAvailableField();
         });
 
         window.addEventListener('focus-barcode-field', () => {
@@ -442,16 +599,25 @@
         window.addEventListener('focus-quantity-field', event => {
             const index = event.detail;
             setTimeout(() => {
-                document.getElementById(`quantity-${index}`)?.focus();
+                const field = document.getElementById(`quantity-${index}`) || document.getElementById(`quantity_${index}`);
+                if (field && isElementAccessible(field)) {
+                    field.focus();
+                    if (field.select) field.select();
+                } else {
+                    // إذا كان الحقل غير متاح، ابحث عن أول حقل متاح
+                    window.focusFirstAvailableField();
+                }
             }, 100);
         });
 
         window.focusBarcodeSearch = function() {
-            const barcodeInput = document.getElementById('barcode-search'); // تأكد من الـ ID
-            if (barcodeInput) {
+            const barcodeInput = document.getElementById('barcode-search');
+            if (barcodeInput && isElementAccessible(barcodeInput)) {
                 barcodeInput.focus();
             } else {
-                console.error('Barcode search field not found');
+                console.error('Barcode search field not found or not accessible');
+                // إذا كان حقل الباركود غير متاح، انتقل لأول حقل متاح
+                window.focusFirstAvailableField();
             }
         };
 
@@ -463,6 +629,21 @@
             });
 
             addKeyboardListeners();
+        });
+
+        // إضافة مستمع عام للتنقل بالـ Enter في جميع أنحاء الصفحة
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.type !== 'submit') {
+                // التحقق من أن العنصر الحالي لديه مستمع مخصص
+                if (!e.target.hasAttribute('data-listener')) {
+                    e.preventDefault();
+                    const nextElement = smartNavigate(e.target);
+                    if (nextElement) {
+                        nextElement.focus();
+                        if (nextElement.select) nextElement.select();
+                    }
+                }
+            }
         });
 
         document.addEventListener('livewire:init', () => {

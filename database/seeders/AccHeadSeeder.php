@@ -71,7 +71,7 @@ class AccHeadSeeder extends Seeder
             ['id'=>62,'code'=>'110401','deletable'=>0,'editable'=>1,'aname'=>'المخزن الرئيسي','is_stock'=>1,'is_fund'=>0,'parent_id'=>26,'is_basic'=>0,'employees_expensses'=>0],
             ['id'=>63,'code'=>'110501','deletable'=>0,'editable'=>1,'aname'=>'حافظة أوراق القبض','is_stock'=>0,'is_fund'=>0,'parent_id'=>27,'is_basic'=>0,'employees_expensses'=>0],
             ['id'=>64,'code'=>'210101','deletable'=>0,'editable'=>1,'aname'=>'المورد النقدي','is_stock'=>0,'is_fund'=>0,'parent_id'=>41,'is_basic'=>0,'employees_expensses'=>0],
-            ['id'=>65,'code'=>'210201','deletable'=>0,'editable'=>1,'aname'=>'الموظف النقدي','is_stock'=>0,'is_fund'=>0,'parent_id'=>42,'is_basic'=>0,'employees_expensses'=>0],
+            ['id'=>65,'code'=>'210201','deletable'=>0,'editable'=>1,'aname'=>'الموظف الإفتراضى','is_stock'=>0,'is_fund'=>0,'parent_id'=>42,'is_basic'=>0,'employees_expensses'=>0],
             ['id'=>66,'code'=>'210301','deletable'=>0,'editable'=>1,'aname'=>'حافظة أوراق الدفع','is_stock'=>0,'is_fund'=>0,'parent_id'=>43,'is_basic'=>0,'employees_expensses'=>0],
             ['id'=>67,'code'=>'5301','deletable'=>0,'editable'=>0,'aname'=>'رواتب الموظفين','is_stock'=>0,'is_fund'=>0,'parent_id'=>22,'is_basic'=>0,'employees_expensses'=>1],
             // حسابات الضرايب

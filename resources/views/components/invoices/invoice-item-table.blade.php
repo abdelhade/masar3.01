@@ -6,10 +6,12 @@
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الوحدة') }}</th>
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الكمية') }}</th>
             {{-- @if ($type != 18) --}}
+            @if ($type != 21) {{-- إضافة السعر لا ينطبق على التحويلات --}}
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('السعر') }}</th>
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الخصم') }}</th>
             {{-- @endif --}}
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('القيمة') }}</th>
+            @endif {{-- إضافة القيمة الفرعية لا ينطبق على التحويلات --}}
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('إجراء') }}</th>
         </tr>
     </thead>
@@ -66,26 +68,28 @@
                                     {{-- @if ($type != 18) --}}
                                     {{-- حقل السعر مع التنقل التلقائي --}}
                                     {{-- حقل السعر مع التنقل التلقائي --}}
-                                    <td style="width: 15%; font-size: 1.2em;">
-                                        <input type="number" step="0.01" min="0"
-                                            wire:model.blur="invoiceItems.{{ $index }}.price"
-                                            id="price_{{ $index }}"
-                                            placeholder="@if (in_array($type, [11, 15])) {{ __('سعر الشراء') }} @elseif($type == 18) {{ __('التكلفة') }} @else {{ __('السعر') }} @endif"
-                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"
-                                            class="form-control @error('invoiceItems.' . $index . '.price') is-invalid @enderror">
-                                        @error('invoiceItems.' . $index . '.price')
-                                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                        @enderror
-                                    </td>
-
-                                    {{-- حقل الخصم مع التنقل للصف التالي أو البحث --}}
-                                    <td style="width: 15%; font-size: 1.2em;">
-                                        <input type="number" step="0.01" min="0"
-                                            wire:model.blur="invoiceItems.{{ $index }}.discount"
-                                            id="discount_{{ $index }}" placeholder="{{ __('الخصم') }}"
-                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            onkeydown="if(event.key==='Enter'){
+                                    @if ($type != 21)
+                                        {{-- إضافة السعر لا ينطبق على التحويلات --}}
+                                        <td style="width: 15%; font-size: 1.2em;">
+                                            <input type="number" step="0.01" min="0"
+                                                wire:model.blur="invoiceItems.{{ $index }}.price"
+                                                id="price_{{ $index }}"
+                                                placeholder="@if (in_array($type, [11, 15])) {{ __('سعر الشراء') }} @elseif($type == 18) {{ __('التكلفة') }} @else {{ __('السعر') }} @endif"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"
+                                                class="form-control @error('invoiceItems.' . $index . '.price') is-invalid @enderror">
+                                            @error('invoiceItems.' . $index . '.price')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </td>
+                                        {{-- إضافة الخصم لا ينطبق على التحويلات --}}
+                                        {{-- حقل الخصم مع التنقل للصف التالي أو البحث --}}
+                                        <td style="width: 15%; font-size: 1.2em;">
+                                            <input type="number" step="0.01" min="0"
+                                                wire:model.blur="invoiceItems.{{ $index }}.discount"
+                                                id="discount_{{ $index }}" placeholder="{{ __('الخصم') }}"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                onkeydown="if(event.key==='Enter'){
                                                                 event.preventDefault();
                                                                 const subValueField = document.getElementById('sub_value_{{ $index }}');
                                                                 if(subValueField) {
@@ -93,16 +97,17 @@
                                                                     subValueField.select();
                                                                 }
                                                             }"
-                                            class="form-control">
-                                    </td>
-                                    {{-- @endif --}}
-                                    {{-- حقل القيمة الفرعية --}}
-                                    <td style="width: 15%; font-size: 1.2em;">
-                                        <input type="number" step="0.01" min="0"
-                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            wire:model.blur="invoiceItems.{{ $index }}.sub_value"
-                                            id="sub_value_{{ $index }}" placeholder="{{ __('القيمة') }}"
-                                            onkeydown="if(event.key==='Enter'){
+                                                class="form-control">
+                                        </td>
+                                        {{-- إضافة القيمة الفرعية لا ينطبق على التحويلات --}}
+                                        {{-- @endif --}}
+                                        {{-- حقل القيمة الفرعية --}}
+                                        <td style="width: 15%; font-size: 1.2em;">
+                                            <input type="number" step="0.01" min="0"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                wire:model.blur="invoiceItems.{{ $index }}.sub_value"
+                                                id="sub_value_{{ $index }}" placeholder="{{ __('القيمة') }}"
+                                                onkeydown="if(event.key==='Enter'){
                                                                 event.preventDefault();
                                                                 const nextQuantity = document.getElementById('quantity_{{ $index + 1 }}');
                                                                 if(nextQuantity) {
@@ -113,8 +118,9 @@
                                                                     if(searchField) searchField.focus();
                                                                 }
                                                             }"
-                                            class="form-control">
-                                    </td>
+                                                class="form-control">
+                                        </td>
+                                    @endif {{-- إضافة القيمة الفرعية لا ينطبق على التحويلات --}}
 
                                     {{-- زرّ الحذف --}}
                                     <td class="text-center" style="width: 10%; font-size: 1.2em;">
