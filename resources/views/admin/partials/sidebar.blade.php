@@ -53,6 +53,8 @@
 
             @include('components.sidebar.daily_progress')
 
+            @include('components.sidebar.inquiries')
+
         </ul>
     </div>
 </div>
