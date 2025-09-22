@@ -11,5 +11,6 @@
     "Progress": true,
     "Reports": true,
     "Branches": true,
-    "Accounts": true
+    "Accounts": true,
+    "Inquiries": true
 }

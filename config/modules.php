@@ -29,8 +29,8 @@ return [
         'files' => [
             'routes/web' => 'routes/web.php',
             'routes/api' => 'routes/api.php',
-            'views/index' => 'resources/views/index.blade.php',
-            'views/master' => 'resources/views/components/layouts/master.blade.php',
+            // 'views/index' => 'resources/views/index.blade.php',
+            // 'views/master' => 'resources/views/components/layouts/master.blade.php',
             'scaffold/config' => 'config/config.php',
             'composer' => 'composer.json',
             'assets/js/app' => 'resources/assets/js/app.js',
@@ -135,17 +135,17 @@ return [
             'component-class' => ['path' => 'app/View/Components', 'generate' => false],
             'emails' => ['path' => 'app/Emails', 'generate' => false],
             'event' => ['path' => 'app/Events', 'generate' => false],
-            'enums' => ['path' => 'app/Enums', 'generate' => false],
+            'enums' => ['path' => 'Enums', 'generate' => false],
             'exceptions' => ['path' => 'app/Exceptions', 'generate' => false],
             'jobs' => ['path' => 'app/Jobs', 'generate' => false],
             'helpers' => ['path' => 'app/Helpers', 'generate' => false],
             'interfaces' => ['path' => 'app/Interfaces', 'generate' => false],
             'listener' => ['path' => 'app/Listeners', 'generate' => false],
-            'model' => ['path' => 'app/Models', 'generate' => false],
+            'model' => ['path' => 'Models', 'generate' => true],
             'notifications' => ['path' => 'app/Notifications', 'generate' => false],
             'observer' => ['path' => 'app/Observers', 'generate' => false],
             'policies' => ['path' => 'app/Policies', 'generate' => false],
-            'provider' => ['path' => 'app/Providers', 'generate' => true],
+            'provider' => ['path' => 'Providers', 'generate' => true],
             'repository' => ['path' => 'app/Repositories', 'generate' => false],
             'resource' => ['path' => 'app/Transformers', 'generate' => false],
             'route-provider' => ['path' => 'app/Providers', 'generate' => true],
@@ -155,9 +155,9 @@ return [
             'traits' => ['path' => 'app/Traits', 'generate' => false],
 
             // app/Http/
-            'controller' => ['path' => 'app/Http/Controllers', 'generate' => true],
+            'controller' => ['path' => 'Http/Controllers', 'generate' => true],
             'filter' => ['path' => 'app/Http/Middleware', 'generate' => false],
-            'request' => ['path' => 'app/Http/Requests', 'generate' => false],
+            'request' => ['path' => 'Http/Requests', 'generate' => false],
 
             // config/
             'config' => ['path' => 'config', 'generate' => true],
