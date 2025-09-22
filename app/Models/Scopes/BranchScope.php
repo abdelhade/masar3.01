@@ -10,18 +10,25 @@ use Illuminate\Support\Facades\Auth;
 
 class BranchScope implements Scope
 {
+        protected static $cachedBranchIds = [];
+
     /**
      * Apply the scope to a given Eloquent query builder.
      */
     public function apply(Builder $builder, Model $model): void
     {
         if (Auth::check()) {
-            $activeBranches = Auth::user()
-                ->branches()
-                ->where('is_active', 1)
-                ->pluck('branches.id');
+            $userId = Auth::id();
 
-            $builder->whereIn($model->getTable() . '.branch_id', $activeBranches);
+            if (!isset(static::$cachedBranchIds[$userId])) {
+                static::$cachedBranchIds[$userId] = Auth::user()
+                    ->branches()
+                    ->where('is_active', 1)
+                    ->pluck('branches.id')
+                    ->toArray();
+            }
+
+            $builder->whereIn($model->getTable() . '.branch_id', static::$cachedBranchIds[$userId]);
         }
     }
 }

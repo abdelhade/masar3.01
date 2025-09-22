@@ -13,8 +13,10 @@ Route::get('/purchase/quotations-report', [InvoiceReportController::class, 'purc
 Route::get('/supplier/rfqs-report', [InvoiceReportController::class, 'supplierRfqsReport'])->name('supplier-rfqs-report');
 
 Route::group(['prefix' => 'invoices', 'as' => 'invoices.'], function () {
+
     Route::get('/convert-to-purchase/{id}', [InvoiceReportController::class, 'convertToPurchaseInvoice'])
         ->name('convert-to-purchase');
+
     Route::get('/convert-to-sales/{id}', [InvoiceReportController::class, 'convertToSalesInvoice'])
         ->name('convert-to-sales');
 });

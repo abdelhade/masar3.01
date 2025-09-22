@@ -118,11 +118,26 @@ class CreateInvoiceForm extends Component
         'branch-changed' => 'handleBranchChange'  // أضف هذا السطر
     ];
 
+    protected static $mountCache = [];
+
     public function mount($type, $hash)
     {
-        $this->branches = userBranches();
-        if ($this->branches->isNotEmpty()) {
-            $this->branch_id = $this->branches->first()->id;
+        $cacheKey = "{$type}_{$hash}";
+
+        if (!isset(static::$mountCache[$cacheKey])) {
+            $this->branches = userBranches();
+            if ($this->branches->isNotEmpty()) {
+                $this->branch_id = $this->branches->first()->id;
+                $this->loadBranchFilteredData($this->branch_id);
+            }
+            static::$mountCache[$cacheKey] = [
+                'branches' => $this->branches,
+                'branch_id' => $this->branch_id
+            ];
+        } else {
+            $cached = static::$mountCache[$cacheKey];
+            $this->branches = $cached['branches'];
+            $this->branch_id = $cached['branch_id'];
             $this->loadBranchFilteredData($this->branch_id);
         }
 
@@ -414,14 +429,22 @@ class CreateInvoiceForm extends Component
         $this->cash_box_id = $this->cashAccounts->first()->id ?? null;
     }
 
+    protected static $accountCache = [];
+
     private function getAccountsByCodeAndBranch(string $code, $branchId)
     {
-        return AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', $code)
-            ->where('branch_id', $branchId)
-            ->select('id', 'aname')
-            ->get();
+        $cacheKey = $code . '_' . $branchId;
+
+        if (!isset(static::$accountCache[$cacheKey])) {
+            static::$accountCache[$cacheKey] = AccHead::where('isdeleted', 0)
+                ->where('is_basic', 0)
+                ->where('code', 'like', $code)
+                ->where('branch_id', $branchId)
+                ->select('id', 'aname')
+                ->get();
+        }
+
+        return static::$accountCache[$cacheKey];
     }
 
     // private function getFilteredItems()
@@ -693,6 +716,8 @@ class CreateInvoiceForm extends Component
         $this->invoiceItems = array_values($this->invoiceItems);
         $this->calculateTotals();
     }
+
+    protected static $itemsCache = [];
 
     public function updatedSearchTerm($value)
     {

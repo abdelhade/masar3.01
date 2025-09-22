@@ -74,84 +74,89 @@ class InvoiceReportController extends Controller
 
     public function convertToPurchaseInvoice($id)
     {
-        try {
-            $originalInvoice = OperHead::with(['operationItems.item.units'])->find($id);
-            if (!$originalInvoice) {
-                return redirect()->back()->with('error', 'المستند الأصلي غير موجود');
-            }
 
-            if (!in_array($originalInvoice->pro_type, [15, 17])) {
-                return redirect()->back()->with('error', 'نوع المستند غير صحيح للتحويل إلى فاتورة مشتريات');
-            }
+        // try {
+        $originalInvoice = OperHead::with(['operationItems.item.units'])->find($id);
+        // dd($originalInvoice);
+        // if (!$originalInvoice) {
+        //     return redirect()->back()->with('error', 'المستند الأصلي غير موجود');
+        // }
 
-            $invoiceData = [
-                'type' => 11,
-                'original_invoice_id' => $originalInvoice->id,
-                'original_invoice_number' => $originalInvoice->pro_id,
-                'supplier_id' => $originalInvoice->acc1,
-                'store_id' => $originalInvoice->acc2,
-                'employee_id' => $originalInvoice->emp_id,
-                'notes' => 'تم التحويل من ' . ($originalInvoice->pro_type == 15 ? 'أمر شراء' : 'عرض سعر مورد') . ' رقم: ' . $originalInvoice->pro_id,
-                'invoice_date' => now()->format('Y-m-d'),
-            ];
+        // if (!in_array($originalInvoice->pro_type, [15, 17])) {
+        //     return redirect()->back()->with('error', 'نوع المستند غير صحيح للتحويل إلى فاتورة مشتريات');
+        // }
 
-            $itemsData = [];
-            foreach ($originalInvoice->operationItems as $item) {
-                if ($item->item && $item->unit_id) {
-                    $availableUnits = $item->item->units->map(function ($unit) {
-                        return (object) [
-                            'id' => $unit->id,
-                            'name' => $unit->name,
-                        ];
-                    });
+        $invoiceData = [
+            'type' => 11,
+            'original_invoice_id' => $originalInvoice->id,
+            'original_invoice_number' => $originalInvoice->pro_id,
+            'supplier_id' => $originalInvoice->acc1,
+            'store_id' => $originalInvoice->acc2,
+            'employee_id' => $originalInvoice->emp_id,
+            'notes' => 'تم التحويل من ' . ($originalInvoice->pro_type == 15 ? 'أمر شراء' : 'عرض سعر مورد') . ' رقم: ' . $originalInvoice->pro_id,
+            'invoice_date' => now()->format('Y-m-d'),
+        ];
 
-                    $quantity = $item->fat_quantity ?? $item->qty_in ?? 1;
-                    $price = $item->cost_price ?? $item->fat_price ?? 0;
-                    $itemDiscount = $item->item_discount ?? 0;
-                    $subValue = $item->detail_value ?? (($quantity * $price) - $itemDiscount);
-
-                    $itemsData[] = [
-                        'item_id' => $item->item_id,
-                        'unit_id' => $item->unit_id,
-                        'name' => $item->item->name ?? '',
-                        'quantity' => $quantity,
-                        'price' => $price,
-                        'discount' => $itemDiscount,
-                        'sub_value' => $subValue,
-                        'available_units' => $availableUnits,
+        $itemsData = [];
+        foreach ($originalInvoice->operationItems as $item) {
+            if ($item->item && $item->unit_id) {
+                $availableUnits = $item->item->units->map(function ($unit) {
+                    return (object) [
+                        'id' => $unit->id,
+                        'name' => $unit->name,
                     ];
-                }
+                });
+
+                $quantity = $item->fat_quantity ?? $item->qty_in ?? 1;
+                $price = $item->item_price ?? $item->fat_price ?? 0;
+                $itemDiscount = $item->item_discount ?? 0;
+                $subValue = $item->detail_value ?? (($quantity * $price) - $itemDiscount);
+
+                $itemsData[] = [
+                    'item_id' => $item->item_id,
+                    'unit_id' => $item->unit_id,
+                    'name' => $item->item->name ?? '',
+                    'quantity' => $quantity,
+                    'price' => $price,
+                    'discount' => $itemDiscount,
+                    'sub_value' => $subValue,
+                    'available_units' => $availableUnits,
+                ];
             }
-
-            if (empty($itemsData)) {
-                return redirect()->back()->with('error', 'لا توجد أصناف صالحة للتحويل في هذا المستند');
-            }
-
-            $sessionData = [
-                'invoice_data' => $invoiceData,
-                'items_data' => $itemsData,
-                'discount_percentage' => $originalInvoice->fat_disc_per ?? 0,
-                'additional_percentage' => $originalInvoice->fat_plus_per ?? 0,
-                'discount_value' => $originalInvoice->fat_disc ?? 0,
-                'additional_value' => $originalInvoice->fat_plus ?? 0,
-                'total_after_additional' => $originalInvoice->fat_net ?? 0,
-                'subtotal' => $originalInvoice->fat_total ?? 0,
-            ];
-
-            session()->put('convert_invoice_data', $sessionData);
-
-            if (!session()->has('convert_invoice_data')) {
-                return redirect()->back()->with('error', 'فشل في حفظ بيانات التحويل');
-            }
-
-            return redirect()->route('invoices.create', [
-                'type' => 11,
-                'hash' => md5(11)
-            ])->with('success', 'تم تحميل بيانات الطلب. يمكنك الآن التعديل عليها وحفظها كفاتورة مشتريات.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'حدث خطأ أثناء التحويل: ');
         }
+
+        if (empty($itemsData)) {
+            return redirect()->back()->with('error', 'لا توجد أصناف صالحة للتحويل في هذا المستند');
+        }
+
+        $sessionData = [
+            'invoice_data' => $invoiceData,
+            'items_data' => $itemsData,
+            'discount_percentage' => $originalInvoice->fat_disc_per ?? 0,
+            'additional_percentage' => $originalInvoice->fat_plus_per ?? 0,
+            'discount_value' => $originalInvoice->fat_disc ?? 0,
+            'additional_value' => $originalInvoice->fat_plus ?? 0,
+            'total_after_additional' => $originalInvoice->fat_net ?? 0,
+            'subtotal' => $originalInvoice->fat_total ?? 0,
+        ];
+
+dd(        $sessionData
+    );
+        session()->put('convert_invoice_data', $sessionData);
+
+        if (!session()->has('convert_invoice_data')) {
+            return redirect()->back()->with('error', 'فشل في حفظ بيانات التحويل');
+        }
+
+        return redirect()->route('invoices.create', [
+            'type' => 11,
+            'q' => md5(11)
+        ])->with('success', 'تم تحميل بيانات الطلب. يمكنك الآن التعديل عليها وحفظها كفاتورة مشتريات.');
+        // } catch (\Exception $e) {
+        //     return redirect()->back()->with('error', 'حدث خطأ أثناء التحويل: ');
+        // }
     }
+
     // دالة تحويل أمر البيع أو عرض السعر للعميل إلى صفحة إنشاء فاتورة مبيعات
     public function convertToSalesInvoice($id)
     {
