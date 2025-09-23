@@ -59,35 +59,35 @@ class ManufacturingInvoice extends Component
     public $activeTab = 'general_chat';
 
 
-    protected $rules = [
-        'invoiceDate' => 'required|date',
-        'rawAccount' => 'required',
-        'productAccount' => 'required',
-        'OperatingAccount' => 'required',
-        'employee' => 'required',
+    // protected $rules = [
+    //     'invoiceDate' => 'required|date',
+    //     'rawAccount' => 'required',
+    //     'productAccount' => 'required',
+    //     'OperatingAccount' => 'required',
+    //     'employee' => 'required',
 
-        'selectedProducts.*.product_id' => 'required',
-        'selectedProducts.*.quantity' => 'required|numeric|min:0.01',
-        'selectedProducts.*.unit_cost' => 'required|numeric|min:0',
-        'selectedProducts.*.cost_percentage' => 'required|numeric|min:0|max:100',
+    //     'selectedProducts.*.product_id' => 'required',
+    //     'selectedProducts.*.quantity' => 'required|numeric|min:0.01',
+    //     'selectedProducts.*.unit_cost' => 'required|numeric|min:0',
+    //     'selectedProducts.*.cost_percentage' => 'required|numeric|min:0|max:100',
 
-        'selectedRawMaterials.*.item_id' => 'required',
-        'selectedRawMaterials.*.quantity' => 'required|numeric|min:0.01',
-        'selectedRawMaterials.*.unit_cost' => 'required|numeric|min:0',
+    //     'selectedRawMaterials.*.item_id' => 'required',
+    //     'selectedRawMaterials.*.quantity' => 'required|numeric|min:0.01',
+    //     'selectedRawMaterials.*.unit_cost' => 'required|numeric|min:0',
 
-        'additionalExpenses.*.description' => 'required|string|min:3',
-        'additionalExpenses.*.amount' => 'required|numeric|min:0',
-    ];
+    //     'additionalExpenses.*.description' => 'required|string|min:3',
+    //     'additionalExpenses.*.amount' => 'required|numeric|min:0',
+    // ];
 
-    protected $messages = [
-        'selectedProducts.*.cost_percentage.max' => 'النسبة يجب ألا تزيد عن 100%',
-        'selectedProducts.*.cost_percentage.min' => 'النسبة يجب ألا تقل عن 0%',
-        'required' => 'هذا الحقل مطلوب',
-        'min' => 'القيمة أقل من المسموح',
-        'numeric' => 'يجب إدخال قيمة رقمية',
-        'employee.required' => 'يجب اختيار الموظف',
+    // protected $messages = [
+    //     'selectedProducts.*.cost_percentage.max' => 'النسبة يجب ألا تزيد عن 100%',
+    //     'selectedProducts.*.cost_percentage.min' => 'النسبة يجب ألا تقل عن 0%',
+    //     'required' => 'هذا الحقل مطلوب',
+    //     'min' => 'القيمة أقل من المسموح',
+    //     'numeric' => 'يجب إدخال قيمة رقمية',
+    //     'employee.required' => 'يجب اختيار الموظف',
 
-    ];
+    // ];
 
     public function mount()
     {
