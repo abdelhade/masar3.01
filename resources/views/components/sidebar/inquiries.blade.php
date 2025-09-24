@@ -6,6 +6,12 @@
     </a>
     <ul class="sub-menu mm-collapse" aria-expanded="false">
         <li class="nav-item">
+            <a class="nav-link" href="{{ route('inquiries.index') }}">
+                <i class="ti-control-record"></i>{{ __('Inquiries') }}
+            </a>
+        </li>
+
+        <li class="nav-item">
             <a class="nav-link" href="{{ route('inquiry.sources.index') }}">
                 <i class="ti-control-record"></i>{{ __('Inquiries Source') }}
             </a>
