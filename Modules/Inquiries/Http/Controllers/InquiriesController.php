@@ -2,8 +2,8 @@
 
 namespace Modules\Inquiries\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class InquiriesController extends Controller
 {
@@ -20,7 +20,7 @@ class InquiriesController extends Controller
      */
     public function create()
     {
-        return view('inquiries::create');
+        return view('inquiries::inquiries.create');
     }
 
     /**

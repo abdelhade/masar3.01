@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\City;
+
 class Town extends Model
 {
     protected $guarded = ['id'];
@@ -12,5 +13,4 @@ class Town extends Model
     {
         return $this->belongsTo(City::class);
     }
-
 }

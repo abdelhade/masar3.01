@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\State;
 use App\Models\Town;
-class City extends Model 
+
+class City extends Model
 {
 
     protected $table = 'cities';
@@ -20,5 +21,4 @@ class City extends Model
     {
         return $this->hasMany(Town::class);
     }
-
 }
