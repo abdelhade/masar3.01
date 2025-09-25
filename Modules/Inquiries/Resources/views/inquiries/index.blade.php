@@ -49,6 +49,11 @@
                                         <td>{{ $inquiry->status }}</td>
                                         <td>{{ $inquiry->quotation_state }}</td>
                                         <td>
+                                            <a class="btn btn-primary btn-icon-square-sm"
+                                                href="{{ route('inquiries.show', $inquiry->id) }}">
+                                                <i class="las la-eye"></i>
+                                            </a>
+
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('inquiries.edit', $inquiry->id) }}">
                                                 <i class="las la-edit"></i>

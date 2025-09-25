@@ -6,14 +6,16 @@ use Livewire\Component;
 use App\Enums\ClientType;
 use Livewire\WithFileUploads;
 use App\Models\{City, Town, Client};
-use Modules\Inquiries\Enums\{KonTitle, StatusForKon, InquiryStatus};
 use Modules\Progress\Models\ProjectProgress;
-use Modules\Inquiries\Enums\{KonPriorityEnum, ProjectSizeEnum, ClientPriorityEnum};
+use Modules\Inquiries\Enums\{KonPriorityEnum, ProjectSizeEnum, ClientPriorityEnum, QuotationStateEnum};
 use Modules\Inquiries\Models\{WorkType, Inquiry, InquirySource, SubmittalChecklist, ProjectDocument, WorkCondition};
 
-class CreateInquiry extends Component
+class EditInquiry extends Component
 {
     use WithFileUploads;
+
+    public $inquiryId;
+    public $inquiry;
 
     public $workTypeSteps = [1 => null];
     public $inquirySourceSteps = [1 => null];
@@ -44,11 +46,12 @@ class CreateInquiry extends Component
     public $submittingDate;
     public $totalProjectValue;
     public $quotationStateReason;
-    public $quotationState;
+
     public $totalSubmittalScore = 0;
     public $totalConditionsScore = 0;
     public $projectDifficulty = 1;
     public $documentFile;
+    public $existingDocuments = [];
 
     public $workTypes = [];
     public $inquirySources = [];
@@ -72,6 +75,7 @@ class CreateInquiry extends Component
 
     public $engineers = [];
     public $quotationStateOptions = [];
+    public $quotationState;
 
     public $projectDocuments = [
         ['name' => 'Soil report', 'checked' => false],
@@ -115,17 +119,34 @@ class CreateInquiry extends Component
         'getInquirySourceChildren' => 'emitInquirySourceChildren',
     ];
 
-    public function mount()
+    public function mount($id)
+    {
+        $this->inquiryId = $id;
+        $this->inquiry = Inquiry::with([
+            'submittalChecklists',
+            'workConditions',
+            'projectDocuments',
+            'workType',
+            'inquirySource'
+        ])->findOrFail($id);
+
+        $this->loadInitialData();
+        $this->populateFormData();
+        $this->buildWorkTypeHierarchy();
+        $this->buildInquirySourceHierarchy();
+        $this->loadExistingRelations();
+        $this->calculateScores();
+    }
+
+    private function loadInitialData()
     {
         $this->engineers = Client::where('type', ClientType::ENGINEER->value)->get()->toArray();
         $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
         $this->projectSizeOptions = ProjectSizeEnum::values();
-        $this->inquiryDate = now()->format('Y-m-d');
         $this->workTypes = WorkType::where('is_active', true)->whereNull('parent_id')->get()->toArray();
         $this->inquirySources = InquirySource::where('is_active', true)->whereNull('parent_id')->get()->toArray();
         $this->projects = ProjectProgress::all()->toArray();
         $this->cities = City::all()->toArray();
-        $this->towns = $this->cityId ? Town::where('city_id', $this->cityId)->get()->toArray() : [];
         $this->clients = Client::whereIn('type', [ClientType::Person->value, ClientType::Company->value])->get()->toArray();
         $this->mainContractors = Client::where('type', ClientType::MainContractor->value)->get()->toArray();
         $this->consultants = Client::where('type', ClientType::Consultant->value)->get()->toArray();
@@ -135,12 +156,141 @@ class CreateInquiry extends Component
         $this->konTitleOptions = Inquiry::getKonTitleOptions();
         $this->clientPriorityOptions = ClientPriorityEnum::values();
         $this->konPriorityOptions = KonPriorityEnum::values();
+    }
 
-        $this->status = InquiryStatus::JOB_IN_HAND->value;
-        $this->statusForKon = StatusForKon::EXTENSION->value;
-        $this->konTitle = KonTitle::MAIN_PILING_CONTRACTOR->value;
+    private function populateFormData()
+    {
+        $inquiry = $this->inquiry;
 
-        $this->calculateScores();
+        $this->inquiryName = $inquiry->inquiry_name;
+        $this->projectId = $inquiry->project_id;
+        $this->finalWorkType = $inquiry->final_work_type;
+        $this->finalInquirySource = $inquiry->final_inquiry_source;
+        $this->inquiryDate = $inquiry->inquiry_date?->format('Y-m-d');
+        $this->reqSubmittalDate = $inquiry->req_submittal_date?->format('Y-m-d');
+        $this->projectStartDate = $inquiry->project_start_date?->format('Y-m-d');
+        $this->cityId = $inquiry->city_id;
+        $this->townId = $inquiry->town_id;
+        $this->status = $inquiry->status?->value;
+        $this->statusForKon = $inquiry->status_for_kon?->value;
+        $this->konTitle = $inquiry->kon_title?->value;
+        $this->clientId = $inquiry->client_id;
+        $this->mainContractorId = $inquiry->main_contractor_id;
+        $this->consultantId = $inquiry->consultant_id;
+        $this->ownerId = $inquiry->owner_id;
+        $this->assignedEngineer = $inquiry->assigned_engineer_id;
+        $this->clientPriority = $inquiry->client_priority;
+        $this->konPriority = $inquiry->kon_priority;
+        $this->projectSize = $inquiry->project_size;
+        $this->quotationState = $inquiry->quotation_state;
+        $this->tenderNo = $inquiry->tender_number;
+        $this->tenderId = $inquiry->tender_id;
+        $this->estimationStartDate = $inquiry->estimation_start_date?->format('Y-m-d');
+        $this->estimationFinishedDate = $inquiry->estimation_finished_date?->format('Y-m-d');
+        $this->submittingDate = $inquiry->submitting_date?->format('Y-m-d');
+        $this->totalProjectValue = $inquiry->total_project_value;
+        $this->quotationStateReason = $inquiry->rejection_reason;
+
+        // Load existing documents
+        $this->existingDocuments = $inquiry->getMedia('inquiry-documents')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+                'size' => $media->size,
+                'url' => $media->getUrl()
+            ];
+        })->toArray();
+
+        // Load towns if city is selected
+        if ($this->cityId) {
+            $this->towns = Town::where('city_id', $this->cityId)->get()->toArray();
+        }
+    }
+
+    private function buildWorkTypeHierarchy()
+    {
+        if (!$this->inquiry->work_type_id) {
+            return;
+        }
+
+        $workType = $this->inquiry->workType;
+        $hierarchy = [];
+        $current = $workType;
+
+        while ($current) {
+            array_unshift($hierarchy, $current);
+            $current = $current->parent_id ? WorkType::find($current->parent_id) : null;
+        }
+
+        foreach ($hierarchy as $index => $type) {
+            $stepNum = $index + 1;
+            $this->workTypeSteps[$stepNum] = $type->id;
+            $this->selectedWorkPath[$index] = $type->name;
+        }
+    }
+
+    private function buildInquirySourceHierarchy()
+    {
+        if (!$this->inquiry->inquiry_source_id) {
+            return;
+        }
+
+        $inquirySource = $this->inquiry->inquirySource;
+        $hierarchy = [];
+        $current = $inquirySource;
+
+        while ($current) {
+            array_unshift($hierarchy, $current);
+            $current = $current->parent_id ? InquirySource::find($current->parent_id) : null;
+        }
+
+        foreach ($hierarchy as $index => $source) {
+            $stepNum = $index + 1;
+            $this->inquirySourceSteps[$stepNum] = $source->id;
+            $this->selectedInquiryPath[$index] = $source->name;
+        }
+    }
+
+    private function loadExistingRelations()
+    {
+        // Load submittal checklists
+        $existingSubmittals = $this->inquiry->submittalChecklists->pluck('name')->toArray();
+        foreach ($this->submittalChecklist as $index => $item) {
+            if (in_array($item['name'], $existingSubmittals)) {
+                $this->submittalChecklist[$index]['checked'] = true;
+            }
+        }
+
+        // Load work conditions
+        $existingConditions = $this->inquiry->workConditions->keyBy('name');
+        foreach ($this->workingConditions as $index => $condition) {
+            if ($existingConditions->has($condition['name'])) {
+                $this->workingConditions[$index]['checked'] = true;
+                $existingCondition = $existingConditions->get($condition['name']);
+                $this->workingConditions[$index]['value'] = $existingCondition->score ?? 0;
+
+                // Handle options
+                if (isset($condition['options'])) {
+                    $this->workingConditions[$index]['selectedOption'] = $existingCondition->score ?? 0;
+                }
+            }
+        }
+
+        // Load project documents
+        $existingDocuments = $this->inquiry->projectDocuments->pluck('name')->toArray();
+        foreach ($this->projectDocuments as $index => $document) {
+            if (in_array($document['name'], $existingDocuments)) {
+                $this->projectDocuments[$index]['checked'] = true;
+                // Load description for 'other' type
+                if ($document['name'] === 'other') {
+                    $otherDoc = $this->inquiry->projectDocuments->where('name', 'other')->first();
+                    if ($otherDoc && $otherDoc->pivot->description) {
+                        $this->projectDocuments[$index]['description'] = $otherDoc->pivot->description;
+                    }
+                }
+            }
+        }
     }
 
     public function updatedWorkTypeSteps($value, $key)
@@ -196,21 +346,17 @@ class CreateInquiry extends Component
         }
     }
 
-    // تحديث method للتعامل مع working conditions
     public function updatedWorkingConditions($value, $key)
     {
-        // التحقق من نوع التحديث
         $parts = explode('.', $key);
         $index = (int) $parts[0];
         $property = $parts[1] ?? 'checked';
 
         if ($property === 'checked') {
-            // إذا تم إلغاء التحديد، إعادة تعيين القيمة المختارة
             if (!$this->workingConditions[$index]['checked']) {
                 $this->workingConditions[$index]['selectedOption'] = null;
                 $this->workingConditions[$index]['value'] = 0;
             } else {
-                // إذا تم التحديد وله خيارات، استخدم القيمة الافتراضية
                 if (isset($this->workingConditions[$index]['options'])) {
                     if (!$this->workingConditions[$index]['selectedOption']) {
                         $firstOption = array_values($this->workingConditions[$index]['options'])[0];
@@ -218,23 +364,18 @@ class CreateInquiry extends Component
                         $this->workingConditions[$index]['value'] = $firstOption;
                     }
                 } else {
-                    // إذا لم تكن له خيارات، استخدم القيمة الافتراضية
                     $this->workingConditions[$index]['value'] = $this->workingConditions[$index]['value'] ?? 0;
                 }
             }
         } elseif ($property === 'selectedOption') {
-            // تحديث القيمة عند تغيير الخيار المحدد
             $this->workingConditions[$index]['value'] = $value;
         }
 
-        // إعادة حساب النتائج
         $this->calculateScores();
     }
 
-    // method جديد لحساب النتائج
     public function calculateScores()
     {
-        // حساب اسكور التقديمات
         $this->totalSubmittalScore = 0;
         foreach ($this->submittalChecklist as $item) {
             if ($item['checked']) {
@@ -242,7 +383,6 @@ class CreateInquiry extends Component
             }
         }
 
-        // حساب اسكور الشروط
         $this->totalConditionsScore = 0;
         foreach ($this->workingConditions as $condition) {
             if ($condition['checked']) {
@@ -250,7 +390,6 @@ class CreateInquiry extends Component
             }
         }
 
-        // حساب صعوبة المشروع
         $score = $this->totalConditionsScore;
         if ($score < 6) {
             $this->projectDifficulty = 1;
@@ -263,16 +402,13 @@ class CreateInquiry extends Component
         }
     }
 
-    // تحديث method للتعامل مع submittal checklist
     public function updatedSubmittalChecklist($value, $key)
     {
         $this->calculateScores();
     }
 
-    // إزالة الـ methods القديمة واستبدالها بـ methods جديدة
     public function updated($propertyName)
     {
-        // إعادة حساب النتائج عند أي تحديث في الـ checklists
         if (
             strpos($propertyName, 'submittalChecklist') !== false ||
             strpos($propertyName, 'workingConditions') !== false
@@ -293,33 +429,26 @@ class CreateInquiry extends Component
         $this->dispatch('inquirySourceChildrenLoaded', stepNum: $stepNum, children: $children);
     }
 
+    public function removeExistingDocument($documentId)
+    {
+        $media = $this->inquiry->getMedia('inquiry-documents')->where('id', $documentId)->first();
+        if ($media) {
+            $media->delete();
+            $this->existingDocuments = array_filter($this->existingDocuments, function ($doc) use ($documentId) {
+                return $doc['id'] != $documentId;
+            });
+            session()->flash('message', 'تم حذف الملف بنجاح!');
+        }
+    }
+
     public function save()
     {
-        // $this->validate([
-        //     'projectSize' => 'required|in:' . implode(',', ProjectSizeEnum::values()),
-        //     'projectId' => 'required|exists:project_progress,id',
-        //     'inquiryDate' => 'required|date',
-        //     'reqSubmittalDate' => 'nullable|date',
-        //     'projectStartDate' => 'nullable|date',
-        //     'cityId' => 'required|exists:cities,id',
-        //     'townId' => 'nullable|exists:towns,id',
-        //     'status' => 'required|in:' . implode(',', array_column(InquiryData::getStatusOptions(), 'value')),
-        //     'statusForKon' => 'nullable|in:' . implode(',', array_column(InquiryData::getStatusForKonOptions(), 'value')),
-        //     'konTitle' => 'required|in:' . implode(',', array_column(InquiryData::getKonTitleOptions(), 'value')),
-        //     'clientId' => 'nullable|exists:clients,id',
-        //     'mainContractorId' => 'nullable|exists:clients,id',
-        //     'consultantId' => 'nullable|exists:clients,id',
-        //     'ownerId' => 'nullable|exists:clients,id',
-        //     'assignedEngineer' => 'nullable|exists:clients,id',
-        //     'finalWorkType' => 'required|string',
-        //     'finalInquirySource' => 'required|string',
-        //     'documentFile' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:10240',
-        //     'quotationState' => 'required|in:' . implode(',', array_column(InquiryData::getQuotationStateOptions(), 'value')),
-        //     'clientPriority' => 'nullable|in:' . implode(',', ClientPriorityEnum::values()),
-        //     'konPriority' => 'nullable|in:' . implode(',', KonPriorityEnum::values()),
-        // ]);
-        $inquiry = Inquiry::create([
-            'inquiry_name' => 'Inquiry-' . now()->format('YmdHis'),
+        // Validation can be added here
+
+        $inquiry = $this->inquiry;
+
+        $inquiry->update([
+            'inquiry_name' => $this->inquiryName ?: ('Inquiry-' . now()->format('YmdHis')),
             'project_id' => $this->projectId,
             'work_type_id' => $this->workTypeSteps[array_key_last($this->workTypeSteps)] ?? null,
             'final_work_type' => $this->finalWorkType,
@@ -351,16 +480,22 @@ class CreateInquiry extends Component
             'estimation_finished_date' => $this->estimationFinishedDate,
             'submitting_date' => $this->submittingDate,
             'total_project_value' => $this->totalProjectValue,
-            'rejection_reason' => $this->quotationStateReason
+            'rejection_reason' => in_array($this->quotationState, [
+                QuotationStateEnum::REJECTED->value,
+                QuotationStateEnum::RE_ESTIMATION->value,
+            ]) ? $this->quotationStateReason : null,
         ]);
 
+        // Handle new document upload
         if ($this->documentFile) {
             $inquiry
                 ->addMedia($this->documentFile->getRealPath())
                 ->usingFileName($this->documentFile->getClientOriginalName())
                 ->toMediaCollection('inquiry-documents');
         }
-        // حفظ التقديمات في جدول submittal_checklists وجدول inquiry_submittal_checklist
+
+        // Sync submittal checklists
+        $inquiry->submittalChecklists()->detach();
         foreach ($this->submittalChecklist as $item) {
             if ($item['checked']) {
                 $submittal = SubmittalChecklist::firstOrCreate(
@@ -371,7 +506,8 @@ class CreateInquiry extends Component
             }
         }
 
-        // حفظ شروط العمل في جدول work_conditions وجدول inquiry_work_condition
+        // Sync work conditions
+        $inquiry->workConditions()->detach();
         foreach ($this->workingConditions as $condition) {
             if ($condition['checked']) {
                 $workCondition = WorkCondition::firstOrCreate(
@@ -382,7 +518,8 @@ class CreateInquiry extends Component
             }
         }
 
-        // حفظ الوثائق في جدول project_documents وجدول inquiry_project_document
+        // Sync project documents
+        $inquiry->projectDocuments()->detach();
         foreach ($this->projectDocuments as $document) {
             if ($document['checked']) {
                 $projectDocument = ProjectDocument::firstOrCreate(
@@ -395,12 +532,12 @@ class CreateInquiry extends Component
             }
         }
 
-        session()->flash('message', 'تم حفظ الاستفسار بنجاح!');
+        session()->flash('message', 'تم تحديث الاستفسار بنجاح!');
         return redirect()->route('inquiries.index');
     }
 
     public function render()
     {
-        return view('inquiries::livewire.create-inquiry');
+        return view('inquiries::livewire.edit-inquiry');
     }
 }

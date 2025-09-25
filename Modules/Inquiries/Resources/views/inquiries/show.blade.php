@@ -1,0 +1,498 @@
+ @extends('admin.dashboard')
+
+ @section('content')
+     @include('components.breadcrumb', [
+         'title' => __('تفاصيل الإستفسار'),
+         'items' => [
+             ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
+             ['label' => __('الإستفسارات'), 'url' => route('inquiries.index')],
+             ['label' => __('التفاصيل')],
+         ],
+     ])
+     <style>
+         body {
+             background-color: #f4f6f9;
+             font-family: 'Tajawal', sans-serif;
+         }
+
+         .card {
+             border-radius: 10px;
+             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+         }
+
+         .card-header {
+             background-color: #007bff;
+             color: white;
+             border-radius: 10px 10px 0 0;
+             padding: 1rem;
+         }
+
+         .card-title {
+             font-size: 1.5rem;
+             font-weight: bold;
+             margin-bottom: 0;
+         }
+
+         .badge {
+             font-size: 0.9rem;
+             padding: 0.5em 1em;
+         }
+
+         .section-title {
+             font-size: 1.25rem;
+             font-weight: 600;
+             color: #343a40;
+             margin-bottom: 1rem;
+         }
+
+         .info-row {
+             display: flex;
+             justify-content: space-between;
+             padding: 0.5rem 0;
+             border-bottom: 1px solid #e9ecef;
+         }
+
+         .info-label {
+             font-weight: bold;
+             color: #495057;
+         }
+
+         .info-value {
+             color: #212529;
+         }
+
+         .document-card {
+             transition: transform 0.2s;
+         }
+
+         .document-card:hover {
+             transform: scale(1.02);
+         }
+     </style>
+     <div class="container-fluid py-4">
+         <div class="row">
+             <div class="col-12">
+                 <div class="card shadow">
+                     <div class="card-header bg-primary text-white">
+                         <div class="d-flex justify-content-between align-items-center">
+                             <h4 class="card-title">
+                                 <i class="fas fa-info-circle me-2"></i>
+                                 تفاصيل الاستفسار: {{ $inquiry->inquiry_name }}
+                             </h4>
+                             <div>
+                                 <span class="badge bg-light text-dark">رقم الاستفسار: {{ $inquiry->id }}</span>
+                                 <a href="{{ route('inquiries.edit', $inquiry->id) }}" class="btn btn-sm btn-light ms-2">
+                                     <i class="fas fa-edit me-1"></i>
+                                     تعديل
+                                 </a>
+                                 <a href="{{ route('inquiries.index') }}" class="btn btn-sm btn-secondary">
+                                     <i class="fas fa-arrow-right me-1"></i>
+                                     العودة إلى القائمة
+                                 </a>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="card-body">
+                         <!-- Project Data Section -->
+
+                         <div class="row">
+                             <div class="col-4">
+                                 <div class="mb-4">
+                                     <h5 class="section-title">
+                                         <i class="fas fa-project-diagram me-2"></i>
+                                         بيانات المشروع
+                                     </h5>
+                                     <div class="card">
+                                         <div class="card-body">
+                                             <div class="info-row">
+                                                 <span class="info-label">اسم الاستفسار:</span>
+                                                 <span class="info-value">{{ $inquiry->inquiry_name }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">المشروع:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->project?->name ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">تاريخ الاستفسار:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->inquiry_date?->format('Y-m-d') ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">تاريخ التسليم المطلوب:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->req_submittal_date?->format('Y-m-d') ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">تاريخ بدء المشروع:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->project_start_date?->format('Y-m-d') ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">المدينة:</span>
+                                                 <span class="info-value">{{ $inquiry->city?->title ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">المنطقة:</span>
+                                                 <span class="info-value">{{ $inquiry->town?->title ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">حالة الاستفسار:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->status ? $inquiry->status->label() : 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">حالة KON:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->status_for_kon ? $inquiry->status_for_kon->label() : 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">عنوان KON:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->kon_title ? $inquiry->kon_title->label() : 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">حجم المشروع:</span>
+                                                 <span class="info-value">{{ $inquiry->project_size ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">أولوية العميل:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->client_priority ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">أولوية KON:</span>
+                                                 <span class="info-value">{{ $inquiry->kon_priority ?? 'غير محدد' }}</span>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                             <!-- Estimation Information Section -->
+                             <div class="col-4">
+                                 <div class="mb-4">
+                                     <h5 class="section-title">
+                                         <i class="fas fa-calculator me-2"></i>
+                                         معلومات التقدير
+                                     </h5>
+                                     <div class="card">
+                                         <div class="card-body">
+                                             <div class="info-row">
+                                                 <span class="info-label">رقم المناقصة:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->tender_number ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">معرف المناقصة:</span>
+                                                 <span class="info-value">{{ $inquiry->tender_id ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">تاريخ بدء التقدير:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->estimation_start_date?->format('Y-m-d') ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">تاريخ انتهاء التقدير:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->estimation_finished_date?->format('Y-m-d') ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">تاريخ التقديم:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->submitting_date?->format('Y-m-d') ?? 'غير محدد' }}</span>
+                                             </div>
+                                             <div class="info-row">
+                                                 <span class="info-label">القيمة الإجمالية:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->total_project_value ?? 'غير محدد' }}</span>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                             <div class="col-4">
+                                 <!-- Work Type and Inquiry Source Section -->
+                                 <div class="row mb-4">
+                                     <div class="col-md-6">
+                                         <h5 class="section-title">
+                                             <i class="fas fa-sitemap me-2"></i>
+                                             تصنيف العمل
+                                         </h5>
+                                         <div class="card">
+                                             <div class="card-body">
+                                                 <div class="info-row">
+                                                     <span class="info-label">المسار الهرمي:</span>
+                                                     <span
+                                                         class="info-value">{{ !empty($workTypePath) ? implode(' → ', $workTypePath) : 'غير محدد' }}</span>
+                                                 </div>
+                                                 <div class="info-row">
+                                                     <span class="info-label">الوصف النهائي:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->final_work_type ?? 'غير محدد' }}</span>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="col-md-6">
+                                         <h5 class="section-title">
+                                             <i class="fas fa-stream me-2"></i>
+                                             مصدر الاستفسار
+                                         </h5>
+                                         <div class="card">
+                                             <div class="card-body">
+                                                 <div class="info-row">
+                                                     <span class="info-label">المسار الهرمي:</span>
+                                                     <span
+                                                         class="info-value">{{ !empty($inquirySourcePath) ? implode(' → ', $inquirySourcePath) : 'غير محدد' }}</span>
+                                                 </div>
+                                                 <div class="info-row">
+                                                     <span class="info-label">الوصف النهائي:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->final_inquiry_source ?? 'غير محدد' }}</span>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- Stakeholders Section -->
+                         <div class="row">
+                             <div class="col-6">
+                                 <div class="mb-4">
+                                     <h5 class="section-title">
+                                         <i class="fas fa-users me-2"></i>
+                                         الأطراف المعنية
+                                     </h5>
+                                     <div class="card">
+                                         <div class="card-body">
+                                             <div class="row">
+                                                 <div class="info-row">
+                                                     <span class="info-label">العميل:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->client?->cname ?? 'غير محدد' }}</span>
+                                                 </div>
+                                                 <div class="info-row">
+                                                     <span class="info-label">المقاول الرئيسي:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->mainContractor?->cname ?? 'غير محدد' }}</span>
+                                                 </div>
+                                                 <div class="info-row">
+                                                     <span class="info-label">الاستشاري:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->consultant?->cname ?? 'غير محدد' }}</span>
+                                                 </div>
+                                                 <div class="info-row">
+                                                     <span class="info-label">المالك:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->owner?->cname ?? 'غير محدد' }}</span>
+                                                 </div>
+                                                 <div class="info-row">
+                                                     <span class="info-label">المهندس المعين:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->assignedEngineer?->cname ?? 'غير محدد' }}</span>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <div class="col-6">
+                                 <!-- Quotation State Section -->
+                                 <div class="mb-4">
+                                     <h5 class="section-title">
+                                         <i class="fas fa-file-invoice-dollar me-2"></i>
+                                         حالة عرض الأسعار
+                                     </h5>
+                                     <div class="card">
+                                         <div class="card-body">
+                                             <div class="info-row">
+                                                 <span class="info-label">حالة عرض الأسعار:</span>
+                                                 <span
+                                                     class="info-value">{{ $inquiry->quotation_state ? \Modules\Inquiries\Enums\QuotationStateEnum::from($inquiry->quotation_state)->label() : 'غير محدد' }}</span>
+                                             </div>
+                                             @if (
+                                                 $inquiry->quotation_state &&
+                                                     in_array($inquiry->quotation_state, [
+                                                         \Modules\Inquiries\Enums\QuotationStateEnum::REJECTED->value,
+                                                         \Modules\Inquiries\Enums\QuotationStateEnum::RE_ESTIMATION->value,
+                                                     ]))
+                                                 <div class="info-row">
+                                                     <span class="info-label">سبب الرفض:</span>
+                                                     <span
+                                                         class="info-value">{{ $inquiry->rejection_reason ?? 'غير محدد' }}</span>
+                                                 </div>
+                                             @endif
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+
+                         <!-- Documents Section -->
+                         <div class="mb-4">
+                             <h5 class="section-title">
+                                 <i class="fas fa-file-alt me-2"></i>
+                                 وثائق المشروع
+                             </h5>
+                             <div class="card">
+                                 <div class="card-body">
+                                     @if ($inquiry->projectDocuments->isNotEmpty())
+                                         <div class="row">
+                                             @foreach ($inquiry->projectDocuments as $document)
+                                                 <div class="col-md-2 mb-3">
+                                                     <div class="card document-card">
+                                                         <div class="card-body text-center">
+                                                             <i class="fas fa-file fa-2x text-primary mb-2"></i>
+                                                             <h6>{{ $document->name }}</h6>
+                                                             @if ($document->name === 'other' && $document->pivot->description)
+                                                                 <p class="text-muted">
+                                                                     {{ $document->pivot->description }}
+                                                                 </p>
+                                                             @endif
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             @endforeach
+                                         </div>
+                                     @else
+                                         <p class="text-muted">لا توجد وثائق متاحة</p>
+                                     @endif
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- Existing Documents Section -->
+                         <div class="mb-4">
+                             <h5 class="section-title">
+                                 <i class="fas fa-folder-open me-2"></i>
+                                 الوثائق المرفوعة
+                             </h5>
+                             <div class="card">
+                                 <div class="card-body">
+                                     @if ($inquiry->getMedia('inquiry-documents')->isNotEmpty())
+                                         <div class="row">
+                                             @foreach ($inquiry->getMedia('inquiry-documents') as $media)
+                                                 <div class="col-md-2 mb-3">
+                                                     <div class="card document-card">
+                                                         <div class="card-body text-center">
+                                                             <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                                                             <h6>{{ $media->file_name }}</h6>
+                                                             <p class="text-muted">
+                                                                 {{ number_format($media->size / 1024, 2) }} KB</p>
+                                                             <a href="{{ $media->getUrl() }}" target="_blank"
+                                                                 class="btn btn-sm btn-primary">
+                                                                 <i class="fas fa-eye me-1"></i>
+                                                                 عرض
+                                                             </a>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             @endforeach
+                                         </div>
+                                     @else
+                                         <p class="text-muted">لا توجد وثائق مرفوعة</p>
+                                     @endif
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- Submittal Checklist Section -->
+                         <div class="mb-4">
+                             <h5 class="section-title">
+                                 <i class="fas fa-check-square me-2"></i>
+                                 قائمة التقديمات المطلوبة
+                             </h5>
+                             <div class="card">
+                                 <div class="card-body">
+                                     @if ($inquiry->submittalChecklists->isNotEmpty())
+                                         <div class="row">
+                                             @foreach ($inquiry->submittalChecklists as $item)
+                                                 <div class="col-md-2 mb-3">
+                                                     <div class="card">
+                                                         <div class="card-body text-center">
+                                                             <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                                             <h6>{{ $item->name }}</h6>
+                                                             <p class="text-muted">القيمة: {{ $item->score }}</p>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             @endforeach
+                                         </div>
+                                         <div class="text-success fw-bold">
+                                             إجمالي السكور: <span
+                                                 class="badge bg-success">{{ $inquiry->total_submittal_check_list_score }}</span>
+                                         </div>
+                                     @else
+                                         <p class="text-muted">لا توجد تقديمات مطلوبة</p>
+                                     @endif
+                                 </div>
+                             </div>
+                         </div>
+
+                         <!-- Working Conditions Section -->
+                         <div class="mb-4">
+                             <h5 class="section-title">
+                                 <i class="fas fa-exclamation-triangle me-2"></i>
+                                 شروط العمل
+                             </h5>
+                             <div class="card">
+                                 <div class="card-body">
+                                     @if ($inquiry->workConditions->isNotEmpty())
+                                         <div class="row">
+                                             @foreach ($inquiry->workConditions as $condition)
+                                                 <div class="col-md-3 mb-3">
+                                                     <div class="card">
+                                                         <div class="card-body text-center">
+                                                             <i class="fas fa-tools fa-2x text-danger mb-2"></i>
+                                                             <h6>{{ $condition->name }}</h6>
+                                                             <p class="text-muted">القيمة: {{ $condition->score }}</p>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             @endforeach
+                                         </div>
+                                         <div class="row">
+                                             <div class="col-md-4 text-center">
+                                                 <i class="fas fa-list-check fa-2x text-primary mb-2"></i>
+                                                 <h6>إجمالي السكور للشروط</h6>
+                                                 <span
+                                                     class="badge bg-primary">{{ $inquiry->total_work_conditions_score }}</span>
+                                             </div>
+                                             <div class="col-md-4 text-center">
+                                                 <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                                                 <h6>صعوبة المشروع</h6>
+                                                 <span class="badge bg-warning">{{ $inquiry->project_difficulty }}</span>
+                                             </div>
+                                             <div class="col-md-4 text-center">
+                                                 <i class="fas fa-info-circle fa-2x text-info mb-2"></i>
+                                                 <h6>تصنيف الصعوبة</h6>
+                                                 <span
+                                                     class="badge @if ($inquiry->project_difficulty == 1) bg-success @elseif($inquiry->project_difficulty == 2) bg-warning @elseif($inquiry->project_difficulty == 3) bg-danger @else bg-dark @endif">
+                                                     @if ($inquiry->project_difficulty == 1)
+                                                         سهل
+                                                     @elseif($inquiry->project_difficulty == 2)
+                                                         متوسط
+                                                     @elseif($inquiry->project_difficulty == 3)
+                                                         صعب
+                                                     @else
+                                                         صعب جدًا
+                                                     @endif
+                                                 </span>
+                                             </div>
+                                         </div>
+                                     @else
+                                         <p class="text-muted">لا توجد شروط عمل</p>
+                                     @endif
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ @endsection
