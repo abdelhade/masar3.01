@@ -1,5 +1,27 @@
 <!-- Left Sidenav -->
 <div class="left-sidenav">
+    <style>
+        /* .menu-content a {
+            color: black !important;
+            background-color: rgb(250, 250, 250) !important;
+            border: rgb(143, 143, 143) solid 1px;
+        }
+
+        .menu-content li {
+            margin: 1px !important;
+        }
+
+        .menu-content a:hover {
+            color: white !important;
+            background-color:rgb(97, 139, 255) !important;
+            padding: 3px !important;
+
+        } */
+
+        /* .menu-content i{
+            font-size:40px !important;
+        } */
+    </style>
     <div class="menu-content h-100" data-simplebar>
         <ul class="metismenu left-sidenav-menu">
 

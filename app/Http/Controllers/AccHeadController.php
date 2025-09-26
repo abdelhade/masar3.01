@@ -182,7 +182,7 @@ class AccHeadController extends Controller
             'is_fund' => 'nullable',
             'rentable' => 'nullable',
             'employees_expensses' => 'nullable',
-            'parent_id' => 'nullable|integer',
+            'parent_id' => 'required|integer',
             'nature' => 'nullable|string|max:50',
             'kind' => 'nullable|string|max:50',
             'is_basic' => 'nullable',
