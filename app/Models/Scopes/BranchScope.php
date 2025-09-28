@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 
 class BranchScope implements Scope
@@ -18,6 +19,11 @@ class BranchScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         if (Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
+            $activeBranches = $user->branches()
+                ->where('is_active', 1)
+                ->pluck('branches.id');
             $userId = Auth::id();
 
             if (!isset(static::$cachedBranchIds[$userId])) {

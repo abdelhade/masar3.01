@@ -71,7 +71,7 @@ class SalaryCalculationService
 
         // Group attendances by date (extract date part only)
         $attendanceByDate = $attendances->groupBy(function ($attendance) {
-            return \Carbon\Carbon::parse($attendance->date)->format('Y-m-d');
+            return Carbon::parse($attendance->date)->format('Y-m-d');
         });
         // dd($attendanceByDate);
         // Process each day in the period

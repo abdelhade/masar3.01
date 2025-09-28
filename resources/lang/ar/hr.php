@@ -174,6 +174,7 @@ return [
     'leave_management' => 'إدارة الإجازات',
     'leave_balances' => 'رصيد الإجازات',
     'leave_requests' => 'طلبات الإجازة',
+    'leave_types' => 'أنواع الإجازات',
     'add_leave_request' => 'إضافة طلب إجازة',
     'edit_leave_request' => 'تعديل طلب الإجازة',
     'delete_leave_request' => 'حذف طلب الإجازة',

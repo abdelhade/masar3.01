@@ -193,6 +193,7 @@ return [
     'leave_management' => 'Leave Management',
     'leave_balances' => 'Leave Balances',
     'leave_requests' => 'Leave Requests',
+    'leave_types' => 'Leave Types',
     'cvs' => 'CVs',
     'cv_management' => 'CV Management',
 

@@ -13,4 +13,12 @@ class Branch extends Model
     {
         return $this->belongsToMany(User::class, 'branch_user');
     }
+
+    /**
+     * Scope a query to only include active branches.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

@@ -1,0 +1,11 @@
+{
+    "name": "Services",
+    "alias": "services",
+    "description": "Services Management Module - إدارة الخدمات",
+    "keywords": ["services", "خدمات", "service management"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Services\\Providers\\ServicesServiceProvider"
+    ],
+    "files": []
+}

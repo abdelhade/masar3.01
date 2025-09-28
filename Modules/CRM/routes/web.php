@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ClientController;
+
 use Modules\CRM\Http\Controllers\{
     ActivityController,
     ChanceSourceController,
     ClientContactController,
-    ClientController,
+    // ClientController,
     LeadController,
     LeadStatusController,
     StatisticsController,

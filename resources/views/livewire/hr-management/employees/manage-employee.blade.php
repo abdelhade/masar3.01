@@ -19,6 +19,8 @@ new class extends Component {
     public $showModal = false;
     public $isEdit = false;
     public $employeeId = null;
+    public $showViewModal = false;
+    public $viewEmployee = null;
     public $countries = [],
         $cities = [],
         $states = [],
@@ -127,6 +129,11 @@ new class extends Component {
     public function save()
     {
         try {
+            // Convert finger_print_id to integer before validation
+            if ($this->finger_print_id !== null && $this->finger_print_id !== '') {
+                $this->finger_print_id = (int)$this->finger_print_id;
+            }
+            
             $validated = $this->validate();
             if ($this->isEdit && $this->employeeId) {
                 Employee::find($this->employeeId)->update($validated);
@@ -156,6 +163,20 @@ new class extends Component {
             $this->$field = null;
         }
         $this->status = 'مفعل';
+    }
+
+    public function view($id)
+    {
+        $this->viewEmployee = Employee::with(['country', 'city', 'state', 'town', 'job', 'department', 'shift'])->find($id);
+        $this->showViewModal = true;
+        $this->dispatch('showViewModal');
+    }
+
+    public function closeView()
+    {
+        $this->showViewModal = false;
+        $this->viewEmployee = null;
+        $this->dispatch('hideViewModal');
     }
 }; ?>
 
@@ -219,16 +240,21 @@ new class extends Component {
 
                                             @canany(['تعديل الموظفيين', 'حذف الموظفيين'])
                                                 <td>
+                                                    <button wire:click="view({{ $employee->id }})"
+                                                        class="btn btn-info btn-sm me-1" title="{{ __('عرض') }}">
+                                                        <i class="las la-eye fa-lg"></i>
+                                                    </button>
                                                     @can('تعديل الموظفيين')
                                                         <a wire:click="edit({{ $employee->id }})"
-                                                            class="btn btn-success btn-sm">
+                                                            class="btn btn-success btn-sm me-1" title="{{ __('تعديل') }}">
                                                             <i class="las la-edit fa-lg"></i>
                                                         </a>
                                                     @endcan
                                                     @can('حذف الموظفيين')
                                                         <button type="button" class="btn btn-danger btn-sm"
                                                             wire:click="delete({{ $employee->id }})"
-                                                            onclick="confirm('هل أنت متأكد من حذف هذا الموظف؟') || event.stopImmediatePropagation()">
+                                                            onclick="confirm('هل أنت متأكد من حذف هذا الموظف؟') || event.stopImmediatePropagation()"
+                                                            title="{{ __('حذف') }}">
                                                             <i class="las la-trash fa-lg"></i>
                                                         </button>
                                                     @endcan
@@ -674,10 +700,223 @@ new class extends Component {
             </div>
         </div>
 
+        <!-- View Employee Modal -->
+        <div class="modal fade" wire:ignore.self id="viewEmployeeModal" tabindex="-1" aria-labelledby="viewEmployeeModalLabel"
+            aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title font-family-cairo fw-bold" id="viewEmployeeModalLabel">
+                            {{ __('عرض تفاصيل الموظف') }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($viewEmployee)
+                            <div class="container-fluid" style="direction: rtl;">
+                                <div class="row">
+                                    <!-- بيانات شخصية -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white card-title">
+                                                {{ __('بيانات شخصية') }}
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('الاسم') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->name }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('البريد الإلكتروني') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->email }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('رقم الهاتف') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->phone }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('النوع') }}:</label>
+                                                        <p class="form-control-plaintext">
+                                                            {{ $viewEmployee->gender == 'male' ? __('ذكر') : ($viewEmployee->gender == 'female' ? __('أنثى') : __('غير محدد')) }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('تاريخ الميلاد') }}:</label>
+                                                        <p class="form-control-plaintext">
+                                                            {{ $viewEmployee->date_of_birth ? $viewEmployee->date_of_birth->format('Y-m-d') : __('غير محدد') }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('الحالة') }}:</label>
+                                                        <p class="form-control-plaintext">
+                                                            <span class="badge {{ $viewEmployee->status == 'مفعل' ? 'bg-success' : 'bg-danger' }}">
+                                                                {{ $viewEmployee->status }}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                @if($viewEmployee->information)
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold">{{ __('معلومات إضافية') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->information }}</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- بيانات تفصيلية -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white card-title">
+                                                {{ __('بيانات تفصيلية') }}
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('البلد') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->country?->title ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('المحافظة') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->state?->title ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('المدينة') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->city?->title ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('المنطقة') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->town?->title ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- بيانات وظيفة -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white card-title">
+                                                {{ __('بيانات وظيفة') }}
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('الوظيفة') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->job?->title ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('القسم') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->department?->title ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('المستوى الوظيفي') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->job_level ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('مستوى التعليم') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->education ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('تاريخ التوظيف') }}:</label>
+                                                        <p class="form-control-plaintext">
+                                                            {{ $viewEmployee->date_of_hire ? $viewEmployee->date_of_hire->format('Y-m-d') : __('غير محدد') }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('تاريخ الانتهاء') }}:</label>
+                                                        <p class="form-control-plaintext">
+                                                            {{ $viewEmployee->date_of_fire ? $viewEmployee->date_of_fire->format('Y-m-d') : __('غير محدد') }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- بيانات المرتبات -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white card-title">
+                                                {{ __('بيانات المرتبات') }}
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('الشيفت') }}:</label>
+                                                        <p class="form-control-plaintext">
+                                                            {{ $viewEmployee->shift ? $viewEmployee->shift->start_time . ' - ' . $viewEmployee->shift->end_time : __('غير محدد') }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('المرتب') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->salary ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('نوع الاستحقاق') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->salary_type ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('رقم البصمة') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->finger_print_id ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('الاسم في البصمة') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->finger_print_name ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('باسورد الهاتف') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->password ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('الساعة الإضافي تحسب ك') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->additional_hour_calculation ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label fw-bold">{{ __('اليوم الإضافي يحسب ك') }}:</label>
+                                                        <p class="form-control-plaintext">{{ $viewEmployee->additional_day_calculation ?? __('غير محدد') }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeView">{{ __('إغلاق') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             document.addEventListener('livewire:initialized', () => {
                 let modalInstance = null;
+                let viewModalInstance = null;
                 const modalElement = document.getElementById('employeeModal');
+                const viewModalElement = document.getElementById('viewEmployeeModal');
 
                 Livewire.on('showModal', () => {
                     if (!modalInstance) {
@@ -692,8 +931,25 @@ new class extends Component {
                     }
                 });
 
+                Livewire.on('showViewModal', () => {
+                    if (!viewModalInstance) {
+                        viewModalInstance = new bootstrap.Modal(viewModalElement);
+                    }
+                    viewModalInstance.show();
+                });
+
+                Livewire.on('hideViewModal', () => {
+                    if (viewModalInstance) {
+                        viewModalInstance.hide();
+                    }
+                });
+
                 modalElement.addEventListener('hidden.bs.modal', function() {
                     modalInstance = null;
+                });
+
+                viewModalElement.addEventListener('hidden.bs.modal', function() {
+                    viewModalInstance = null;
                 });
             });
         </script>

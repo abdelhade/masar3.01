@@ -8,6 +8,7 @@ new class extends Component {
     use WithPagination;
 
     public $shiftId = null;
+    public $name = '';
     public $start_time = '';
     public $end_time = '';
     public $shift_type = '';
@@ -21,14 +22,34 @@ new class extends Component {
     public $shiftTypes = [];
     public $weekDays = [];
 
-    public function rules()
+    protected function rules()
     {
         return [
+            'name' => 'required|string|max:60|unique:shifts,name,' . $this->shiftId,
             'start_time' => 'required',
             'end_time' => 'required|after:start_time',
             'shift_type' => 'required|in:morning,evening,night',
             'days' => 'required|array|min:1',
             'notes' => 'nullable|string',
+        ];
+    }
+
+    protected function messages()
+    {
+        return [
+            'name.required' => __('The name field is required.'),
+            'name.string' => __('The name field must be a string.'),
+            'name.max' => __('The name field must be less than 60 characters.'),
+            'name.unique' => __('The name field must be unique.'),
+            'start_time.required' => __('The start time field is required.'),
+            'end_time.required' => __('The end time field is required.'),
+            'end_time.after' => __('The end time field must be after the start time field.'),
+            'shift_type.required' => __('The shift type field is required.'),
+            'shift_type.in' => __('The shift type field must be a valid shift type.'),
+            'days.required' => __('The days field is required.'),
+            'days.array' => __('The days field must be an array.'),
+            'days.min' => __('The days field must have at least 1 day.'),
+            'notes.string' => __('The notes field must be a string.'),
         ];
     }
 
@@ -64,7 +85,7 @@ new class extends Component {
     public function create()
     {
         $this->resetValidation();
-        $this->reset(['start_time', 'end_time', 'shift_type', 'notes', 'days', 'shiftId']);
+        $this->reset(['start_time', 'end_time', 'shift_type', 'notes', 'days', 'shiftId', 'name']);
         $this->isEdit = false;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -75,6 +96,7 @@ new class extends Component {
         $this->resetValidation();
         $shift = Shift::findOrFail($id);
         $this->shiftId = $shift->id;
+        $this->name = $shift->name;
         $this->start_time = $shift->start_time;
         $this->end_time = $shift->end_time;
         $this->shift_type = $shift->shift_type;
@@ -145,6 +167,7 @@ new class extends Component {
                 <table id="shifts-table" class="table text-center table-striped mb-0" style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
                         <tr>
+                            <th class="font-family-cairo fw-bold">{{ __('Name') }}</th>
                             <th class="font-family-cairo fw-bold">{{ __('Start Time') }}</th>
                             <th class="font-family-cairo fw-bold">{{ __('End Time') }}</th>
                             <th class="font-family-cairo fw-bold">{{ __('Shift Type') }}</th>
@@ -158,6 +181,7 @@ new class extends Component {
                     <tbody>
                         @forelse ($shifts as $shift)
                             <tr>
+                                <td class="font-family-cairo fw-bold">{{ $shift->name }}</td>
                                 <td class="font-family-cairo fw-bold">{{ $shift->start_time }}</td>
                                 <td class="font-family-cairo fw-bold">{{ $shift->end_time }}</td>
                                 <td class="font-family-cairo fw-bold">
@@ -216,6 +240,13 @@ new class extends Component {
                 </div>
                 <form wire:submit.prevent="save">
                     <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Name') }}</label>
+                            <input type="text" class="form-control" wire:model.defer="name" required>
+                            @error('name')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">{{ __('Start Time') }}</label>
                             <input type="time" class="form-control" wire:model.defer="start_time" required>

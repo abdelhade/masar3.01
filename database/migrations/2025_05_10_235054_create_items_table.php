@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
             $table->integer('tenant')->default(0);
             $table->integer('branch')->default(0);
-            $table->double('average_cost', 12, 2)->default(0);
+            $table->decimal('average_cost', 10, 2)->default(0);
             $table->integer('min_order_quantity')->default(0);
             $table->integer('max_order_quantity')->default(0);
             $table->index('name');

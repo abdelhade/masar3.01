@@ -6,6 +6,7 @@ use App\Models\Employee_Evaluation;
 use App\Models\Kpi;
 use Livewire\WithPagination;
 use Livewire\Attributes\Rule;
+use Carbon\Carbon;
 
 new class extends Component {
     use WithPagination;
@@ -23,7 +24,9 @@ new class extends Component {
     public $search = '';
     public $showDeleteModal = false;
     public $showEditModal = false;
+    public $showViewModal = false;
     public $evaluationId;
+    public $viewEvaluation = null;
 
     // KPI Scores (1-5)
     public $scores = [];
@@ -116,10 +119,10 @@ new class extends Component {
         $this->evaluationId = $id;
         $evaluation = Employee_Evaluation::with(['kpis'])->find($id);
         $this->employee_id = $evaluation->employee_id;
-        $this->evaluation_date = $evaluation->evaluation_date->format('Y-m-d');
+        $this->evaluation_date = $evaluation->evaluation_date ? Carbon::parse($evaluation->evaluation_date)->format('Y-m-d') : '';
         $this->direct_manager = $evaluation->direct_manager;
-        $this->evaluation_period_from = $evaluation->evaluation_period_from->format('Y-m-d');
-        $this->evaluation_period_to = $evaluation->evaluation_period_to->format('Y-m-d');
+        $this->evaluation_period_from = $evaluation->evaluation_period_from ? Carbon::parse($evaluation->evaluation_period_from)->format('Y-m-d') : '';
+        $this->evaluation_period_to = $evaluation->evaluation_period_to ? Carbon::parse($evaluation->evaluation_period_to)->format('Y-m-d') : '';
         foreach ($evaluation->kpis as $kpi) {
             $this->scores[$kpi->id] = $kpi->pivot->score ?? 0;
             $this->notes[$kpi->id] = $kpi->pivot->notes ? $kpi->pivot->notes : '';
@@ -184,6 +187,20 @@ new class extends Component {
     {
         $this->showDeleteModal = false;
         $this->dispatch('hide-delete-modal');
+    }
+
+    public function view($id)
+    {
+        $this->viewEvaluation = Employee_Evaluation::with(['employee', 'kpis'])->find($id);
+        $this->showViewModal = true;
+        $this->dispatch('show-view-modal');
+    }
+
+    public function closeView()
+    {
+        $this->showViewModal = false;
+        $this->viewEvaluation = null;
+        $this->dispatch('hide-view-modal');
     }
 }; ?>
 <div>
@@ -251,15 +268,19 @@ new class extends Component {
                                             <td>{{ $evaluation->final_rating }}</td>
                                             {{-- @canany(['تعديل معدلات اداء الموظفين', 'حذف معدلات اداء الموظفين']) --}}
                                             <td>
+                                                <button wire:click="view({{ $evaluation->id }})"
+                                                    class="btn btn-info btn-icon-square-sm me-1" title="{{ __('عرض') }}">
+                                                    <i class="las la-eye fa-lg"></i>
+                                                </button>
                                                 {{-- @can('تعديل معدلات أداء الموظفين') --}}
                                                 <button wire:click="edit({{ $evaluation->id }})"
-                                                    class="btn btn-success btn-icon-square-sm">
+                                                    class="btn btn-success btn-icon-square-sm me-1" title="{{ __('تعديل') }}">
                                                     <i class="las la-edit fa-lg"></i>
                                                 </button>
                                                 {{-- @endcan
                                                     @can('حذف معدلات أداء الموظفين') --}}
                                                 <button wire:click="confirmDelete({{ $evaluation->id }})"
-                                                    class="btn btn-danger btn-icon-square-sm">
+                                                    class="btn btn-danger btn-icon-square-sm" title="{{ __('حذف') }}">
                                                     <i class="las la-trash fa-lg"></i>
                                                 </button>
                                                 {{-- @endcan --}}
@@ -439,6 +460,113 @@ new class extends Component {
                 </div>
             </div>
         </div>
+
+        <!-- View Evaluation Modal -->
+        <div class="modal fade" id="viewModal" tabindex="-1" wire:ignore.self data-bs-backdrop="static"
+            data-bs-keyboard="false">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ __('عرض تفاصيل التقييم') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($viewEvaluation)
+                            <!-- Employee Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-3">{{ __('معلومات الموظف') }}</h6>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">{{ __('الاسم') }}:</label>
+                                    <p class="form-control-plaintext">{{ $viewEvaluation->employee->name }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">{{ __('المسمى الوظيفي') }}:</label>
+                                    <p class="form-control-plaintext">{{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">{{ __('القسم') }}:</label>
+                                    <p class="form-control-plaintext">{{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">{{ __('المدير المباشر') }}:</label>
+                                    <p class="form-control-plaintext">{{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Evaluation Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-3">{{ __('معلومات التقييم') }}</h6>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">{{ __('تاريخ التقييم') }}:</label>
+                                    <p class="form-control-plaintext">{{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">{{ __('فترة التقييم') }}:</label>
+                                    <p class="form-control-plaintext">
+                                        {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} - {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- KPI Scores -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-3">{{ __('نتائج التقييم') }}</h6>
+                                </div>
+                                <div class="col-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>{{ __('المعيار') }}</th>
+                                                    <th>{{ __('الوصف') }}</th>
+                                                    <th>{{ __('الدرجة') }}</th>
+                                                    <th>{{ __('ملاحظات') }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($viewEvaluation->kpis as $index => $kpi)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>{{ $kpi->name }}</td>
+                                                        <td>{{ $kpi->description }}</td>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-primary fs-6">{{ $kpi->pivot->score }}</span>
+                                                        </td>
+                                                        <td>{{ $kpi->pivot->notes ?? __('لا توجد ملاحظات') }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="table-success">
+                                                    <td colspan="3" class="text-end">
+                                                        <strong>{{ __('المجموع الكلي') }}</strong>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <strong class="fs-5">{{ $viewEvaluation->total_score }}</strong>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <strong class="fs-5">{{ $viewEvaluation->final_rating }}</strong>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeView">{{ __('إغلاق') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -447,6 +575,7 @@ new class extends Component {
         document.addEventListener('livewire:initialized', () => {
             const addEvaluationModal = new bootstrap.Modal(document.getElementById('addEvaluationModal'));
             const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
 
             window.addEventListener('show-evaluation-modal', event => {
                 addEvaluationModal.show();
@@ -462,6 +591,14 @@ new class extends Component {
 
             window.addEventListener('hide-delete-modal', event => {
                 deleteModal.hide();
+            });
+
+            window.addEventListener('show-view-modal', event => {
+                viewModal.show();
+            });
+
+            window.addEventListener('hide-view-modal', event => {
+                viewModal.hide();
             });
         });
     </script>

@@ -181,6 +181,7 @@
                     <a class="nav-link" href="{{ route('leaves.requests.index') }}">
                         <i class="ti-control-record"></i>{{ __('navigation.leave_requests') }}
                     </a>
+
                 </li>
             @endcan
         </ul>

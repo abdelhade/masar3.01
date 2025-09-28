@@ -187,7 +187,6 @@ class AttendanceProcessingManager extends Component
                 ->where('attendance_processing_id', $processingId)
                 ->orderBy('attendance_date')
                 ->get();
-                
             $this->showDetails = true;
             
         } catch (\Exception $e) {

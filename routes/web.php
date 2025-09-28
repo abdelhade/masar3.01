@@ -127,6 +127,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/requests/{requestId}/edit', function ($requestId) {
             return view('hr-management.leaves.leave-requests.edit', ['requestId' => $requestId]);
         })->name('leaves.requests.edit');
+        // Leave Types
+        Route::get('/leave-types', function () {
+            return view('hr-management.leaves.leave-types.manage-leave-types');
+        })->name('leaves.types.manage');
     });
     // ############################################################################################################
     // 📁 Projects

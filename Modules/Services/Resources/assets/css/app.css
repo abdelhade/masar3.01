@@ -1,0 +1,55 @@
+/* Services Module Styles */
+
+.services-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.services-card:hover {
+    transform: translateY(-2px);
+}
+
+.service-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.booking-status {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.service-duration {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.price-highlight {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.category-badge {
+    font-size: 0.75rem;
+    margin-right: 0.25rem;
+}
+
+/* RTL Support */
+[dir="rtl"] .category-badge {
+    margin-right: 0;
+    margin-left: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .service-image {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}

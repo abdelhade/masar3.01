@@ -193,6 +193,7 @@ return [
     'leave_management' => 'إدارة الإجازات',
     'leave_balances' => 'رصيد الإجازات',
     'leave_requests' => 'طلبات الإجازة',
+    'leave_types' => 'أنواع الإجازات',
     'cvs' => 'السير الذاتية',
     'cv_management' => 'السير الذاتية',
 
