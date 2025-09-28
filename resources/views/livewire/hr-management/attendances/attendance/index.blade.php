@@ -5,6 +5,7 @@ use App\Models\Attendance;
 use Livewire\WithPagination;
 use App\Models\Employee;
 use Livewire\Attributes\Computed;
+use Carbon\Carbon;
 
 new class extends Component {
     use WithPagination;
@@ -142,7 +143,7 @@ new class extends Component {
             'employee_attendance_finger_print_id' => $attendance->employee_attendance_finger_print_id,
             'employee_attendance_finger_print_name' => $attendance->employee_attendance_finger_print_name,
             'type' => $attendance->type,
-            'date' => $attendance->date?->format('Y-m-d'),
+            'date' => $attendance->date ? Carbon::parse($attendance->date)->format('Y-m-d') : '',
             'time' => $attendance->time,
             'location' => $attendance->location,
             'status' => $attendance->status,
@@ -204,7 +205,7 @@ new class extends Component {
             'employee_attendance_finger_print_name' => '',
             'type' => 'check_in',
             'date' => now()->format('Y-m-d'),
-            'time' => now()->format('H:i:s'),
+            'time' => '',
             'location' => '',
             'status' => 'pending',
             'notes' => '',
@@ -437,7 +438,7 @@ new class extends Component {
                             <div class="mb-3">
                                 <label
                                     class="form-label font-family-cairo fw-bold font-14">{{ __('الوقت') }}</label>
-                                <input type="time"
+                                <input type="time" wire:model="form.time"
                                     class="form-control
                                         @error('form.time') <span class=" text-danger">{{ $message }}</span> @enderror
                             </div>

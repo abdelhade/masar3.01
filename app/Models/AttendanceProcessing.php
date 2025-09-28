@@ -11,8 +11,8 @@ class AttendanceProcessing extends Model
     protected $guarded = ['id'];
     protected $table = 'attendance_processings';
     protected $casts = [
-        'period_start' => 'date',
-        'period_end' => 'date',
+        'period_start' => 'datetime',
+        'period_end' => 'datetime',
         'total_days' => 'integer',
         'working_days' => 'integer',
         'actual_work_days' => 'integer',

@@ -12,6 +12,6 @@
     "Reports": true,
     "Branches": true,
     "Accounts": true,
-    "Services": true
+    "Services": true,
     "Inquiries": true
 }

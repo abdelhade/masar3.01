@@ -54,7 +54,6 @@ class AttendanceProcessingDetail extends Model
             'holiday' => '<span class="badge bg-secondary">إجازة أسبوعية</span>',
             default => '<span class="badge bg-secondary">غير محدد</span>'
         };
-        return '<span class="badge bg-secondary">غير محدد</span>';
     }
 
     public function getWorkingDayBadgeAttribute(): string
@@ -99,12 +98,12 @@ class AttendanceProcessingDetail extends Model
 
     public function getFormattedCheckInTimeAttribute(): string
     {
-        return $this->check_in_time ? $this->check_in_time : '--';
+        return $this->check_in_time ? $this->check_in_time->format('H:i') : '--';
     }
 
     public function getFormattedCheckOutTimeAttribute(): string
     {
-        return $this->check_out_time ? $this->check_out_time : '--';
+        return $this->check_out_time ? $this->check_out_time->format('H:i') : '--';
     }
 
     public function getFormattedShiftTimeAttribute(): string
