@@ -50,9 +50,6 @@ class ClientRequest extends FormRequest
                 'email',
                 Rule::unique('clients', 'email')->ignore($clientId),
             ];
-        }, function ($input) use (&$rules) {
-            // إذا كان email فارغاً، لا تضف قاعدة unique
-            $rules['email'] = ['nullable', 'email'];
         });
 
         return $rules;

@@ -53,7 +53,7 @@ Route::get('/locale/{locale}', function (string $locale) {
 
 // test for dashboard
 Route::get('/admin/dashboard', function () {
-    return view('admin.index');
+    return view('admin.main-dashboard');
 })->middleware(['auth', 'verified'])->name('admin.dashboard');
 
 Route::get('/', function () {
@@ -208,6 +208,6 @@ Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/modules/attendance.php';
     require __DIR__ . '/modules/reports.php';
 
-    
+
 });
 require __DIR__ . '/auth.php';

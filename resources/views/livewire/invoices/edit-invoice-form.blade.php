@@ -276,7 +276,7 @@
             top: -5px;
             right: -5px;
             width: 120px;
-            height: 120px;
+            height: 82px;
             overflow: hidden;
             z-index: 10;
         }

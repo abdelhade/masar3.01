@@ -1,4 +1,4 @@
-@canany([
+{{-- @canany([
     'عرض قائمة الخصومات المسموح بها',
     'عرض قائمة الخصومات المكتسبة',
     'عرض خصم مسموح به',
@@ -11,7 +11,7 @@
             <span>{{ __('navigation.discounts') }}</span>
             <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
         </a>
-        <ul class="sub-menu mm-collapse" aria-expanded="false">
+        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
             @can('عرض قائمة الخصومات المسموح بها')
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('discounts.index', ['type' => 30]) }}">
@@ -41,6 +41,6 @@
                 </li>
             @endcan
 
-        </ul>
+        {{-- </ul>
     </li>
-@endcanany
+@endcanany --}}

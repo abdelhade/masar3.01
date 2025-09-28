@@ -36,46 +36,104 @@
                 </a>
 
             </li>
+            @php
+                $sidebarType = request()->get('sidebar', 'all');
+            @endphp
 
-            @include('components.sidebar.accounts')
+            @if ($sidebarType == 'all' || $sidebarType == 'accounts')
+                @include('components.sidebar.accounts')
+            @endif
 
-            @include('components.sidebar.items')
+            @if ($sidebarType == 'all' || $sidebarType == 'items')
+                @include('components.sidebar.items')
+            @endif
 
-            @include('components.sidebar.discounts')
+            @if ($sidebarType == 'all' || $sidebarType == 'discounts')
+                @include('components.sidebar.discounts')
+            @endif
 
-            @include('components.sidebar.manufacturing')
+            @if ($sidebarType == 'all' || $sidebarType == 'manufacturing')
+                @include('components.sidebar.manufacturing')
+            @endif
+            @if ($sidebarType == 'all' || $sidebarType == 'permissions')
+                @include('components.sidebar.permissions')
+            @endif
 
-            @include('components.sidebar.permissions')
+            @if ($sidebarType == 'all' || $sidebarType == 'crm')
+                @include('components.sidebar.crm')
+            @endif
 
-            @include('components.sidebar.crm')
+            @if ($sidebarType == 'all' || $sidebarType == 'sales-invoices')
+                @include('components.sidebar.sales-invoices')
+            @endif
 
-            @include('components.sidebar.invoices')
+            @if ($sidebarType == 'all' || $sidebarType == 'purshase-invoices')
+                @include('components.sidebar.invoices')
+            @endif
 
-            @include('components.sidebar.vouchers')
+            @if ($sidebarType == 'all' || $sidebarType == 'invoices')
+                @include('components.sidebar.invoices')
+            @endif
 
-            @include('components.sidebar.transfers')
+            @if ($sidebarType == 'all' || $sidebarType == 'vouchers')
+                @include('components.sidebar.vouchers')
+            @endif
 
-            @include('components.sidebar.multi-vouchers')
+            @if ($sidebarType == 'all' || $sidebarType == 'transfers')
+                @include('components.sidebar.transfers')
+            @endif
 
-            @include('components.sidebar.journals')
+            @if ($sidebarType == 'all' || $sidebarType == 'multi-vouchers')
+                @include('components.sidebar.merit-vouchers')
+            @endif
 
-            @include('components.sidebar.projects')
+            @if ($sidebarType == 'all' || $sidebarType == 'contract-journals')
+                @include('components.sidebar.contract-journals')
+            @endif
 
-            @include('components.sidebar.departments')
+            @if ($sidebarType == 'all' || $sidebarType == 'depreciation-journals')
+                @include('components.sidebar.multi-vouchers')
+            @endif
 
-            @include('components.sidebar.settings')
+            @if ($sidebarType == 'all' || $sidebarType == 'basic_journal-journals')
+                @include('components.sidebar.journals')
+            @endif
 
-            @include('components.sidebar.rentals')
+            @if ($sidebarType == 'all' || $sidebarType == 'projects')
+                @include('components.sidebar.projects')
+            @endif
 
-            @include('components.sidebar.service')
+            @if ($sidebarType == 'all' || $sidebarType == 'departments')
+                @include('components.sidebar.departments')
+            @endif
 
-            @include('components.sidebar.shipping')
+            @if ($sidebarType == 'all' || $sidebarType == 'settings')
+                @include('components.sidebar.settings')
+            @endif
 
-            @include('components.sidebar.POS')
+            @if ($sidebarType == 'all' || $sidebarType == 'rentals')
+                @include('components.sidebar.rentals')
+            @endif
 
-            @include('components.sidebar.daily_progress')
+            @if ($sidebarType == 'all' || $sidebarType == 'service')
+                @include('components.sidebar.service')
+            @endif
 
-            @include('components.sidebar.inquiries')
+            @if ($sidebarType == 'all' || $sidebarType == 'shipping')
+                @include('components.sidebar.shipping')
+            @endif
+
+            @if ($sidebarType == 'all' || $sidebarType == 'POS')
+                @include('components.sidebar.POS')
+            @endif
+
+            @if ($sidebarType == 'all' || $sidebarType == 'daily_progress')
+                @include('components.sidebar.daily_progress')
+            @endif
+
+            @if ($sidebarType == 'all' || $sidebarType == 'inquiries')
+                @include('components.sidebar.inquiries')
+            @endif
 
         </ul>
     </div>

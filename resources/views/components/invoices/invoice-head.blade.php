@@ -1,8 +1,13 @@
+<style>
+    .card-title {
+        padding-inline-start: 80px;
+    }
+</style>
 <div class="row">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
 
         <div class="d-flex align-items-center">
-            <h3 class="card-title fw-bold fs-2 m-0 me-3">
+            <h3 class="card-title fw-bold fs-2 m-0 ms-3">
                 {{ $titles[$type] }}
             </h3>
             @php
