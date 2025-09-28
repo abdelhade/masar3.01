@@ -73,20 +73,20 @@ class MultiVoucherController extends Controller
             case 40:
                 return [
                     $query()->where('employees_expensses', 1)->get(),
-                    $query()->where('code', 'like', '2022%')->get(),
+                    $query()->where('code', 'like', '2102%')->get(),
                 ];
 
             case 41:
                 return [
                     $query()->where('employees_expensses', 1)->get(),
-                    $query()->where('code', 'like', '2022%')->get(),
+                    $query()->where('code', 'like', '2102%')->get(),
                 ];
 
             case 42:
             case 43:
             case 44:
                 return [
-                    $query()->where('code', 'like', '2022%')->get(),
+                    $query()->where('code', 'like', '2102%')->get(),
                     $query()->where('employees_expensses', 1)->get(),
                 ];
 
@@ -309,7 +309,7 @@ class MultiVoucherController extends Controller
         $employees = \App\Models\AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
-            ->get();
+            ->get(); 
 
         // الحسابات حسب نوع العملية
         [$accounts1, $accounts2] = $this->getAccountsByType($pro_type);
