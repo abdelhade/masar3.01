@@ -28,5 +28,11 @@
         <i class="ti-control-record"></i>{{ __('Work Types') }}
     </a>
 </li>
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('difficulty-matrix.create') }}">
+        <i class="ti-control-record"></i>{{ __('Diffculty Matrix') }}
+    </a>
+</li>
 {{-- </ul>
 </li> --}}

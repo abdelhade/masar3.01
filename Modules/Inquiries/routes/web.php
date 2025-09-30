@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Inquiries\Http\Controllers\InquiriesController;
-use Modules\Inquiries\Http\Controllers\WorkTypeController;
-use Modules\Inquiries\Http\Controllers\InquirySourceController;
+use Modules\Inquiries\Livewire\DifficultyMatrix;
+use Modules\Inquiries\Http\Controllers\{WorkTypeController, InquiriesController, InquirySourceController, DifficultyMatrixController};
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -22,4 +21,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/tree', [WorkTypeController::class, 'getTreeData'])->name('tree');
         Route::get('/active', [WorkTypeController::class, 'getActiveWorkTypes'])->name('active');
     });
+
+    Route::get('/difficulty-matrix/create', [DifficultyMatrixController::class, 'create'])->name('difficulty-matrix.create');
 });

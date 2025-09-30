@@ -11,6 +11,7 @@ class ShiftSeeder extends Seeder
     {
         DB::table('shifts')->insert([
             [
+                'name' => 'Shift 1',
                 'start_time' => '08:00:00',
                 'end_time' => '16:00:00',
                 'days' => json_encode(['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday']),

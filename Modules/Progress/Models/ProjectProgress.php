@@ -10,16 +10,7 @@ class ProjectProgress extends Model
 {
     protected $table = 'projects';
 
-    protected $fillable = [
-        'name',
-        'description',
-        'client_id',
-        'start_date',
-        'end_date',
-        'status',
-        'working_zone',
-        'project_type_id',
-    ];
+    protected $guarded = ['id'];
 
     public function employees()
     {

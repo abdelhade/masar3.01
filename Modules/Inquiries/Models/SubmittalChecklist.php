@@ -11,6 +11,6 @@ class SubmittalChecklist extends Model
 
     public function inquiries(): BelongsToMany
     {
-        return $this->belongsToMany(InquiryData::class, 'inquiry_submittal_checklist');
+        return $this->belongsToMany(Inquiry::class, 'inquiry_submittal_checklist');
     }
 }

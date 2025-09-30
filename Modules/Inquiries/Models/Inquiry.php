@@ -96,6 +96,11 @@ class Inquiry extends Model implements HasMedia
         return $this->belongsTo(Project::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(InquiryComment::class)->with('user')->latest();
+    }
+
     public static function getStatusOptions()
     {
         return InquiryStatus::cases();
