@@ -185,6 +185,7 @@ class CreateInquiry extends Component
             $this->currentWorkTypeSteps = [1 => null];
             $this->currentWorkPath = [];
         }
+        $this->dispatch('workTypeAdded');
     }
 
     public function removeWorkType($index)
@@ -366,6 +367,7 @@ class CreateInquiry extends Component
 
     public function save()
     {
+        // dd($this->all());
         // التحقق من البيانات
         $this->validate([
             'projectId' => 'required|exists:projects,id',
@@ -401,17 +403,13 @@ class CreateInquiry extends Component
                 'work_type_id' => !empty($this->currentWorkTypeSteps)
                     ? end($this->currentWorkTypeSteps)
                     : null,
-                'final_work_type' => !empty($this->currentWorkPath)
-                    ? implode(' > ', $this->currentWorkPath)
-                    : null,
+                'final_work_type' => $this->finalWorkType,
 
                 // Inquiry Source - آخر خطوة محددة
                 'inquiry_source_id' => !empty($this->inquirySourceSteps)
                     ? end($this->inquirySourceSteps)
                     : null,
-                'final_inquiry_source' => !empty($this->selectedInquiryPath)
-                    ? implode(' > ', $this->selectedInquiryPath)
-                    : null,
+                'final_inquiry_source' =>  $this->finalInquirySource,
 
                 // العملاء
                 'client_id' => $this->clientId,

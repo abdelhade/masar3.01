@@ -51,6 +51,11 @@ class Inquiry extends Model implements HasMedia
         return $this->belongsTo(Client::class, 'owner_id')->where('type', ClientType::Owner->value);
     }
 
+    public function assignedEngineer()
+    {
+        return $this->belongsTo(Client::class, 'assigned_engineer_id')->where('type', ClientType::ENGINEER->value);
+    }
+
     public function city()
     {
         return $this->belongsTo(City::class);
@@ -84,11 +89,6 @@ class Inquiry extends Model implements HasMedia
     public function inquirySource()
     {
         return $this->belongsTo(InquirySource::class);
-    }
-
-    public function assignedEngineer()
-    {
-        return $this->belongsTo(Client::class, 'assigned_engineer');
     }
 
     public function project()

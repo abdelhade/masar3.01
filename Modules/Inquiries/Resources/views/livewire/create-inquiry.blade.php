@@ -38,19 +38,9 @@
                                                     <input type="checkbox"
                                                         wire:model="projectDocuments.{{ $index }}.checked"
                                                         id="document_{{ $index }}" class="form-check-input">
-                                                    <label for="document_{{ $index }}"
-                                                        class="form-check-label">
+                                                    <label for="document_{{ $index }}" class="form-check-label">
                                                         {{ $document['name'] }}
                                                     </label>
-                                                    {{-- @if ($document['name'] === 'other' && $projectDocuments[$index]['checked'])
-                                                                <input type="text"
-                                                                    wire:model="projectDocuments.{{ $index }}.description"
-                                                                    class="form-control mt-2"
-                                                                    placeholder="اكتب نوع الوثيقة...">
-                                                                @error('projectDocuments.' . $index . '.description')
-                                                                    <span class="text-danger">{{ $message }}</span>
-                                                                @enderror
-                                                            @endif --}}
                                                 </div>
                                             </div>
                                         @endforeach
@@ -184,6 +174,16 @@
                     }
                 });
             }
+            Livewire.on('workTypeAdded', () => {
+                // إعادة تعيين الـ select بتاع المرحلة الأولى
+                const step1Select = document.getElementById('step_1');
+                step1Select.value = ''; // إفراغ الاختيار
+                removeWorkTypeStepsAfter(1); // حذف كل المراحل بعد الأولى
+                // تحديث عرض المسار الحالي
+                Livewire.dispatch('updateCurrentWorkPath', {
+                    path: []
+                });
+            });
 
             Livewire.on('inquirySourceChildrenLoaded', ({
                 stepNum,
