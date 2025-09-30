@@ -203,4 +203,11 @@ class Employee extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    // polymorphic relationship with acchead model
+    public function account()
+    {
+        return $this->morphOne(AccHead::class, 'accountable');
+    }
+    
 }
