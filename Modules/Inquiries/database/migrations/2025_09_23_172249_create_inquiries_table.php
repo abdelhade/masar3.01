@@ -23,6 +23,7 @@ return new class extends Migration
 
             $table->foreignId('town_id')->nullable()->constrained('towns')->onDelete('set null');
             $table->foreignId('city_id')->nullable()->constrained('cities')->onDelete('set null');
+            $table->decimal('town_distance', 8, 2)->nullable();
 
             $table->enum('status', array_column(InquiryStatus::cases(), 'value'))->default(InquiryStatus::JOB_IN_HAND->value);
             $table->enum('status_for_kon', array_column(StatusForKon::cases(), 'value'))->nullable()->default(StatusForKon::EXTENSION->value);
@@ -39,8 +40,7 @@ return new class extends Migration
             $table->foreignId('owner_id')->nullable()->constrained('clients')->onDelete('set null');
             $table->foreignId('assigned_engineer_id')->nullable()->constrained('clients')->onDelete('set null');
 
-            $table->integer('total_submittal_check_list_score')->default(0);
-            $table->integer('total_work_conditions_score')->default(0);
+            $table->integer('total_check_list_score')->default(0);
             $table->integer('project_difficulty')->default(1);
 
             $table->string('tender_number')->nullable();
@@ -53,12 +53,16 @@ return new class extends Migration
 
             $table->enum('quotation_state', QuotationStateEnum::values())->nullable();
             $table->string('rejection_reason')->nullable();
-            $table->string('re_estimation_reason')->nullable();
 
             $table->enum('project_size', ProjectSizeEnum::values())->nullable();
 
             $table->enum('client_priority', ClientPriorityEnum::values())->nullable();
             $table->enum('kon_priority', KonPriorityEnum::values())->nullable();
+
+            //quotation info
+            $table->json('types')->nullable();
+            $table->json('unit')->nullable();
+            $table->string('type_note')->nullable();
 
             $table->timestamps();
         });

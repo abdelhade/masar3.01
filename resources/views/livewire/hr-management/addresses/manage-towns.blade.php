@@ -1,8 +1,7 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Models\Town;
-use App\Models\City;
+use App\Models\{Town, City};
 use Livewire\WithPagination;
 
 new class extends Component {
@@ -11,6 +10,7 @@ new class extends Component {
     public $towns;
     public $title = '';
     public $city_id = '';
+    public $distance = '';
     public $townId = null;
     public $showModal = false;
     public $isEdit = false;
@@ -22,6 +22,7 @@ new class extends Component {
         return [
             'title' => 'required|string|min:2|max:200|unique:towns,title,' . $this->townId,
             'city_id' => 'required|exists:cities,id',
+            'distance' => 'nullable|numeric|min:0',
         ];
     }
 
@@ -45,7 +46,7 @@ new class extends Component {
     public function create()
     {
         $this->resetValidation();
-        $this->reset(['title', 'city_id', 'townId']);
+        $this->reset(['title', 'city_id', 'townId', 'distance']);
         $this->isEdit = false;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -58,6 +59,7 @@ new class extends Component {
         $this->townId = $town->id;
         $this->title = $town->title;
         $this->city_id = $town->city_id;
+        $this->distance = $town->distance;
         $this->isEdit = true;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -190,6 +192,18 @@ new class extends Component {
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="mb-3">
+                            <label for="distance"
+                                class="form-label font-family-cairo fw-bold">{{ __('المسافة (كم)') }}</label>
+                            <input type="number" step="0.01"
+                                class="form-control @error('distance') is-invalid @enderror font-family-cairo fw-bold"
+                                id="distance" wire:model.defer="distance">
+                            @error('distance')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="mb-3">
                             <label for="city_id"
                                 class="form-label font-family-cairo fw-bold">{{ __('المدينة') }}</label>

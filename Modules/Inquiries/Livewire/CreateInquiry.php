@@ -30,8 +30,11 @@ class CreateInquiry extends Component
     public $inquiryDate;
     public $reqSubmittalDate;
     public $projectStartDate;
+
     public $cityId;
     public $townId;
+    public $townDistance;
+
     public $status;
     public $statusForKon;
     public $konTitle;
@@ -92,6 +95,23 @@ class CreateInquiry extends Component
         ['name' => 'shoring design', 'checked' => false],
         ['name' => 'other', 'checked' => false, 'description' => '']
     ];
+
+    public $types = [
+        ['name' => 'With material', 'checked' => false],
+        ['name' => 'Without materials', 'checked' => false],
+        ['name' => 'Rental only', 'checked' => false],
+    ];
+
+    public $units = [
+        ['name' => 'Liner Meter', 'checked' => false],
+        ['name' => 'Per pile', 'checked' => false],
+        ['name' => 'LumpSum', 'checked' => false],
+        ['name' => 'Per Month', 'checked' => false],
+        ['name' => 'Per week', 'checked' => false],
+        ['name' => 'Per hour', 'checked' => false],
+    ];
+
+    public $type_note = null;
 
     public $submittalChecklist = [];
     public $workingConditions = [];
@@ -289,7 +309,7 @@ class CreateInquiry extends Component
         $this->totalSubmittalScore = 0;
         foreach ($this->submittalChecklist as $item) {
             if ($item['checked']) {
-                $this->totalSubmittalScore += (int) $item['value'];
+                $this->totalSubmittalScore += (int) $item['value' ?? 0];
             }
         }
 
@@ -309,8 +329,10 @@ class CreateInquiry extends Component
             $this->projectDifficulty = 1;
         } elseif ($this->totalScore <= 10) {
             $this->projectDifficulty = 2;
-        } else {
+        } elseif ($this->totalScore <= 15) {
             $this->projectDifficulty = 3;
+        } else {
+            $this->projectDifficulty = 4;
         }
     }
 
@@ -323,6 +345,11 @@ class CreateInquiry extends Component
     // إزالة الـ methods القديمة واستبدالها بـ methods جديدة
     public function updated($propertyName)
     {
+        // لو المستخدم اختار منطقة
+        if ($propertyName === 'townId' && $this->townId) {
+            $town = Town::find($this->townId);
+            $this->townDistance = $town?->distance;
+        }
         // إعادة حساب النتائج عند أي تحديث في الـ checklists
         if (
             strpos($propertyName, 'submittalChecklist') !== false ||
@@ -390,14 +417,25 @@ class CreateInquiry extends Component
             'konPriority' => 'nullable',
             'documentFiles.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
         ]);
-
+        $selectedTypes = collect($this->types)->where('checked', true)->pluck('name')->toArray();
+        $selectedUnits = collect($this->units)->where('checked', true)->pluck('name')->toArray();
         try {
             DB::beginTransaction();
-
-            // 1. إنشاء الـ Inquiry
             $inquiry = Inquiry::create([
                 'inquiry_name' => 'Inquiry-' . now()->format('YmdHis'),
                 'project_id' => $this->projectId,
+
+                'inquiry_date' => $this->inquiryDate,
+                'req_submittal_date' => $this->reqSubmittalDate,
+                'project_start_date' => $this->projectStartDate,
+
+                'city_id' => $this->cityId,
+                'town_id' => $this->townId,
+                'town_distance' => $this->townDistance,
+
+                'status' => $this->status,
+                'status_for_kon' => $this->statusForKon,
+                'kon_title' => $this->konTitle,
 
                 // Work Type - آخر خطوة محددة
                 'work_type_id' => !empty($this->currentWorkTypeSteps)
@@ -411,50 +449,34 @@ class CreateInquiry extends Component
                     : null,
                 'final_inquiry_source' =>  $this->finalInquirySource,
 
-                // العملاء
                 'client_id' => $this->clientId,
                 'main_contractor_id' => $this->mainContractorId,
                 'consultant_id' => $this->consultantId,
                 'owner_id' => $this->ownerId,
                 'assigned_engineer_id' => $this->assignedEngineer,
 
-                // الموقع
-                'city_id' => $this->cityId,
-                'town_id' => $this->townId,
+                'total_check_list_score' => $this->totalScore,
+                'project_difficulty' => $this->projectDifficulty,
 
-                // التواريخ
-                'inquiry_date' => $this->inquiryDate,
-                'req_submittal_date' => $this->reqSubmittalDate,
-                'project_start_date' => $this->projectStartDate,
+                'tender_number' => $this->tenderNo,
+                'tender_id' => $this->tenderId,
+
                 'estimation_start_date' => $this->estimationStartDate,
                 'estimation_finished_date' => $this->estimationFinishedDate,
                 'submitting_date' => $this->submittingDate,
+                'total_project_value' => $this->totalProjectValue,
 
-                // الحالات
-                'status' => $this->status,
-                'status_for_kon' => $this->statusForKon,
-                'kon_title' => $this->konTitle,
+                'quotation_state' => $this->quotationState,
+                'rejection_reason' => $this->quotationStateReason,
 
-                // الأولويات
+                'project_size' => $this->projectSize,
+
                 'client_priority' => $this->clientPriority,
                 'kon_priority' => $this->konPriority,
 
-                // حجم المشروع
-                'project_size' => $this->projectSize,
-
-                // السكور والصعوبة
-                'total_submittal_check_list_score' => $this->totalSubmittalScore,
-                'total_work_conditions_score' => $this->totalConditionsScore,
-                'project_difficulty' => $this->projectDifficulty,
-
-                // بيانات العطاء
-                'tender_number' => $this->tenderNo,
-                'tender_id' => $this->tenderId,
-                'total_project_value' => $this->totalProjectValue,
-
-                // حالة التسعير
-                'quotation_state' => $this->quotationState,
-                'rejection_reason' => $this->quotationStateReason,
+                'types' => json_encode($selectedTypes),
+                'unit' => json_encode($selectedUnits),
+                'type_note' => $this->type_note,
             ]);
 
             // 2. حفظ الملفات المتعددة

@@ -18,7 +18,69 @@
                         <!-- Stakeholders Section -->
                         @include('inquiries::components.Stakeholders-Section')
                     </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card border-primary">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-list me-2"></i>
+                                        النوع (Type)
+                                    </h6>
+                                    <small class="d-block mt-1">اختر نوع أو أكثر</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        @foreach ($types as $index => $type)
+                                            <div class="col-md-4 mb-2">
+                                                <div class="form-check">
+                                                    <input type="checkbox"
+                                                        wire:model="types.{{ $index }}.checked"
+                                                        id="type_{{ $index }}" class="form-check-input">
+                                                    <label for="type_{{ $index }}" class="form-check-label">
+                                                        {{ $type['name'] }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
 
+                                    {{-- خانة ملاحظة --}}
+                                    <div class="mt-3">
+                                        <label class="form-label">ملاحظة (اختياري)</label>
+                                        <input type="text" wire:model="type_note" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="card border-success">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-balance-scale me-2"></i>
+                                        الوحدة (Unit)
+                                    </h6>
+                                    <small class="d-block mt-1">اختر وحدة أو أكثر</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        @foreach ($units as $index => $unit)
+                                            <div class="col-md-4 mb-2">
+                                                <div class="form-check">
+                                                    <input type="checkbox"
+                                                        wire:model="units.{{ $index }}.checked"
+                                                        id="unit_{{ $index }}" class="form-check-input">
+                                                    <label for="unit_{{ $index }}" class="form-check-label">
+                                                        {{ $unit['name'] }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row mb-4">
                         <!-- Project Documents Section -->
                         <div class="col-6">

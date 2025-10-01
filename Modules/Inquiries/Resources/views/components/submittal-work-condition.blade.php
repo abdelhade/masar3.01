@@ -25,10 +25,6 @@
                     @endif
                 @endforeach
             </div>
-            <div class="mt-3 fw-bold text-success">
-                <i class="fas fa-calculator me-2"></i>
-                إجمالي السكور للتقديمات: <span class="badge bg-success">{{ $totalSubmittalScore }}</span>
-            </div>
         </div>
     </div>
 </div>
@@ -105,6 +101,7 @@
                                         class="badge
                                             @if ($projectDifficulty == 1) bg-success
                                             @elseif ($projectDifficulty == 2) bg-warning
+                                            @elseif ($projectDifficulty == 3) bg-black
                                             @else bg-danger @endif">
                                         @if ($projectDifficulty == 1)
                                             سهل
@@ -112,6 +109,8 @@
                                             متوسط
                                         @elseif ($projectDifficulty == 3)
                                             صعب
+                                        @elseif ($projectDifficulty == 4)
+                                            صعب جدا
                                         @endif
                                     </span>
 

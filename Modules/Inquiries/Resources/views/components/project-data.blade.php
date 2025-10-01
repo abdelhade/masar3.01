@@ -52,34 +52,6 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">المدينة</label>
-                        <select wire:model.live="cityId" class="form-select">
-                            <option value="">اختر المدينة...</option>
-                            @foreach ($cities as $city)
-                                <option value="{{ $city['id'] }}">{{ $city['title'] }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('cityId')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">المنطقة</label>
-                        <select wire:model="townId" class="form-select">
-                            <option value="">اختر المنطقة...</option>
-                            @foreach ($towns as $town)
-                                <option value="{{ $town['id'] }}">{{ $town['title'] }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('townId')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
                     <div class="col-md-2 mb-3">
                         <label class="form-label fw-bold">حالة الاستفسار</label>
                         <select wire:model="status" class="form-select">
@@ -118,6 +90,43 @@
                             @endforeach
                         </select>
                         @error('konTitle')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">المدينة</label>
+                        <select wire:model.live="cityId" class="form-select">
+                            <option value="">اختر المدينة...</option>
+                            @foreach ($cities as $city)
+                                <option value="{{ $city['id'] }}">{{ $city['title'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('cityId')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">المنطقة</label>
+                        <select wire:model.live="townId" class="form-select">
+                            <option value="">اختر المنطقة...</option>
+                            @foreach ($towns as $town)
+                                <option value="{{ $town['id'] }}">{{ $town['title'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('townId')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-1 mb-3">
+                        <label class="form-label fw-bold">المسافة (كم)</label>
+                        <input type="number" step="0.01" wire:model="townDistance" class="form-control"
+                            placeholder="المسافة بالكيلومتر">
+                        @error('distance')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
