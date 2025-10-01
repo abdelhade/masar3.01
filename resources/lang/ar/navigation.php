@@ -144,8 +144,14 @@ return [
     'decrease_asset_value' => 'نقص في قيمة الأصل',
 
     // إدارة الحسابات
+    'accounts' => 'الحسابات',
     'accounts_management' => 'إدارة الحسابات',
     'account_management' => 'إدارة الحسابات',
+    'add_account' => 'إضافة حساب',
+    'all_accounts' => 'جميع الحسابات',
+    'account_types' => 'أنواع الحسابات',
+    'account_reports' => 'تقارير الحسابات',
+    'start_balance_management' => 'إدارة الرصيد الافتتاحي',
     'journal_entry' => 'قيد يومية',
     'daily_journal' => 'قيد يومية',
     'multi_journal_entry' => 'قيد يومية متعدد',
