@@ -1,17 +1,38 @@
 <li>
-    <div class="tree-item">
-        @if($account->children->count())
-            <span class="toggle-icon"><i class="fa fa-folder-open"></i></span>
-        @else
-            <span class="no-toggle-icon"></span>
-        @endif
+    <div class="tree-item {{ $account->is_basic == 1 ? 'basic-account' : '' }}">
+        <div class="account-info">
+            @if ($account->children->count())
+                <i class="fas fa-folder-open text-warning" style="font-size: 1.3rem;"></i>
+            @else
+                <i class="fas fa-file-invoice-dollar text-info" style="font-size: 1.2rem;"></i>
+            @endif
 
-        <span style="font-size: 1.2rem;" class="account-name {{ $account->is_basic == 1 ? 'text-primary' : '' }}">{{ $account->code }}-{{ $account->aname }} - ( {{ $account->is_basic == 1 ? $account->children->count() : '' }}) -- {{ $account->balance }}</span>
+            <span class="account-code">{{ $account->code }}</span>
+            <span class="account-name">{{ $account->aname }}</span>
+
+            @if ($account->is_basic == 1)
+                <span class="basic-badge">حساب أساسي</span>
+            @endif
+
+            @if ($account->is_basic == 1 && $account->children->count())
+                <span class="children-count">{{ $account->children->count() }}</span>
+            @endif
+
+            <span class="account-balance {{ $account->balance < 0 ? 'negative' : '' }}">
+                {{ number_format($account->balance, 2) }}
+            </span>
+        </div>
+
+        @if ($account->children->count())
+            <span class="toggle-icon">
+                <i class="fas fa-minus"></i>
+            </span>
+        @endif
     </div>
 
-    @if($account->children->count())
-        <ul class="nested hidden">
-            @foreach($account->children as $child)
+    @if ($account->children->count())
+        <ul class="nested">
+            @foreach ($account->children as $child)
                 @include('reports.partials.account-node', ['account' => $child])
             @endforeach
         </ul>
