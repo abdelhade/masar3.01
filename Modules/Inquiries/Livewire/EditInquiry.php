@@ -21,6 +21,11 @@ class EditInquiry extends Component
     public $inquiryId;
     public $inquiry;
 
+    // Multi-worktype selection (match CreateInquiry)
+    public $selectedWorkTypes = [];
+    public $currentWorkTypeSteps = [1 => null];
+    public $currentWorkPath = [];
+
     public $workTypeSteps = [1 => null];
     public $inquirySourceSteps = [1 => null];
     public $selectedWorkPath = [];
@@ -136,13 +141,21 @@ class EditInquiry extends Component
             'projectDocuments',
             'workType',
             'inquirySource',
-            'comments.user'
+            'comments.user',
+            'project',
+            'client',
+            'mainContractor',
+            'consultant',
+            'owner',
+            'assignedEngineer',
+            'city',
+            'town'
         ])->findOrFail($id);
-
         $this->loadInitialData();
         $this->populateFormData();
         $this->buildWorkTypeHierarchy();
         $this->buildInquirySourceHierarchy();
+        $this->prepopulateCurrentWorkTypeSelection();
         $this->loadExistingRelations();
         $this->loadExistingComments();
         $this->calculateScores();
@@ -186,13 +199,17 @@ class EditInquiry extends Component
 
         $conditionsFromDB = WorkCondition::all();
         $this->workingConditions = $conditionsFromDB->map(function ($item) {
+            $options = $item->options;
+            if (is_string($options)) {
+                $options = json_decode($options, true) ?? null;
+            }
             return [
                 'id' => $item->id,
                 'name' => $item->name,
                 'checked' => false,
-                'options' => $item->options,
+                'options' => $options,
                 'selectedOption' => null,
-                'value' => $item->options ? 0 : $item->score,
+                'value' => $options ? 0 : $item->score,
                 'default_score' => $item->score
             ];
         })->toArray();
@@ -287,6 +304,38 @@ class EditInquiry extends Component
         }
     }
 
+    private function prepopulateCurrentWorkTypeSelection(): void
+    {
+        if (!empty($this->workTypeSteps)) {
+            $this->currentWorkTypeSteps = [];
+            $this->currentWorkPath = [];
+            foreach ($this->workTypeSteps as $idx => $typeId) {
+                if ($typeId) {
+                    $this->currentWorkTypeSteps['step_' . $idx] = $typeId;
+                    $type = WorkType::find($typeId);
+                    if ($type) {
+                        $this->currentWorkPath[$idx] = $type->name;
+                    }
+                }
+            }
+
+            if (!empty($this->currentWorkPath)) {
+                $this->selectedWorkTypes = [
+                    [
+                        'steps' => $this->currentWorkTypeSteps,
+                        'path' => array_values($this->currentWorkPath),
+                        'final_description' => '',
+                    ],
+                ];
+            }
+
+            // Dispatch event for JS to build steps
+            if (!empty($this->currentWorkTypeSteps)) {
+                $this->dispatch('prepopulateWorkTypes', steps: $this->currentWorkTypeSteps, path: $this->currentWorkPath);
+            }
+        }
+    }
+
     private function buildInquirySourceHierarchy()
     {
         if (!$this->inquiry->inquiry_source_id) {
@@ -307,6 +356,50 @@ class EditInquiry extends Component
             $this->inquirySourceSteps[$stepNum] = $source->id;
             $this->selectedInquiryPath[$index] = $source->name;
         }
+
+        // Dispatch event for JS
+        if (!empty($this->inquirySourceSteps)) {
+            $this->dispatch('prepopulateInquirySources', steps: $this->inquirySourceSteps, path: $this->selectedInquiryPath);
+        }
+    }
+
+    // إضافة: updatedCurrentWorkTypeSteps (مفقود، من Create)
+    public function updatedCurrentWorkTypeSteps($value, $key)
+    {
+        $stepNum = (int) str_replace('step_', '', $key);
+        $this->currentWorkTypeSteps = array_slice($this->currentWorkTypeSteps, 0, $stepNum + 1, true);
+
+        if ($value) {
+            $selectedWorkType = WorkType::where('is_active', true)->find($value);
+            if ($selectedWorkType) {
+                $this->currentWorkPath = array_slice($this->currentWorkPath, 0, $stepNum, true);
+                $this->currentWorkPath[$stepNum] = $selectedWorkType->name;
+            }
+        } else {
+            $this->currentWorkPath = array_slice($this->currentWorkPath, 0, $stepNum, true);
+        }
+    }
+
+    public function addWorkType(): void
+    {
+        if (!empty($this->currentWorkTypeSteps) && end($this->currentWorkTypeSteps)) {
+            $this->selectedWorkTypes[] = [
+                'steps' => $this->currentWorkTypeSteps,
+                'path' => $this->currentWorkPath,
+                'final_description' => '',
+            ];
+
+            $this->currentWorkTypeSteps = [1 => null];
+            $this->currentWorkPath = [];
+        }
+
+        $this->dispatch('workTypeAdded');
+    }
+
+    public function removeWorkType(int $index): void
+    {
+        unset($this->selectedWorkTypes[$index]);
+        $this->selectedWorkTypes = array_values($this->selectedWorkTypes);
     }
 
     private function loadExistingRelations()
@@ -324,11 +417,13 @@ class EditInquiry extends Component
                 $this->workingConditions[$index]['checked'] = true;
                 $existingCondition = $existingConditions->get($condition['id']);
 
-                if (isset($condition['options'])) {
-                    $this->workingConditions[$index]['selectedOption'] = $existingCondition->pivot->value ?? $existingCondition->score;
-                    $this->workingConditions[$index]['value'] = $existingCondition->pivot->value ?? $existingCondition->score;
-                } else {
-                    $this->workingConditions[$index]['value'] = $existingCondition->score;
+                if ($existingCondition) {
+                    if (isset($condition['options']) && is_array($condition['options'])) {
+                        $this->workingConditions[$index]['selectedOption'] = $existingCondition->pivot?->value ?? $existingCondition->score;
+                        $this->workingConditions[$index]['value'] = $existingCondition->pivot?->value ?? $existingCondition->score;
+                    } else {
+                        $this->workingConditions[$index]['value'] = $existingCondition->score;
+                    }
                 }
             }
         }
@@ -338,7 +433,7 @@ class EditInquiry extends Component
             $found = $existingDocuments->where('name', $document['name'])->first();
             if ($found) {
                 $this->projectDocuments[$index]['checked'] = true;
-                if ($document['name'] === 'other' && $found->pivot->description) {
+                if ($document['name'] === 'other' && $found->pivot?->description) {
                     $this->projectDocuments[$index]['description'] = $found->pivot->description;
                 }
             }
@@ -407,73 +502,24 @@ class EditInquiry extends Component
         }
     }
 
-    public function updatedWorkTypeSteps($value, $key)
-    {
-        $stepNum = (int) str_replace('step_', '', $key);
-        $this->workTypeSteps = array_slice($this->workTypeSteps, 0, $stepNum + 1, true);
-
-        if ($value) {
-            $selectedWorkType = WorkType::where('is_active', true)->find($value);
-            if ($selectedWorkType) {
-                $this->selectedWorkPath = array_slice($this->selectedWorkPath, 0, $stepNum, true);
-                $this->selectedWorkPath[$stepNum] = $selectedWorkType->name;
-            }
-        } else {
-            $this->selectedWorkPath = array_slice($this->selectedWorkPath, 0, $stepNum, true);
-        }
-    }
-
-    public function updatedInquirySourceSteps($value, $key)
-    {
-        $stepNum = (int) str_replace('inquiry_source_step_', '', $key);
-        $this->inquirySourceSteps = array_slice($this->inquirySourceSteps, 0, $stepNum + 1, true);
-
-        if ($value) {
-            $selectedInquirySource = InquirySource::where('is_active', true)->find($value);
-            if ($selectedInquirySource) {
-                $this->selectedInquiryPath = array_slice($this->selectedInquiryPath, 0, $stepNum, true);
-                $this->selectedInquiryPath[$stepNum] = $selectedInquirySource->name;
-            }
-        } else {
-            $this->selectedInquiryPath = array_slice($this->selectedInquiryPath, 0, $stepNum, true);
-        }
-    }
-
-    public function updatedCityId($value)
-    {
-        $this->townId = null;
-        $this->towns = $value ? Town::where('city_id', $value)->get()->toArray() : [];
-    }
-
-    public function updatedProjectDocuments($value, $key)
-    {
-        $parts = explode('.', $key);
-        if (count($parts) === 2) {
-            $index = $parts[0];
-            $property = $parts[1];
-            if (isset($this->projectDocuments[$index])) {
-                $this->projectDocuments[$index][$property] = $value;
-                if ($this->projectDocuments[$index]['name'] === 'other' && $property === 'checked' && !$value) {
-                    $this->projectDocuments[$index]['description'] = '';
-                }
-            }
-        }
-    }
-
     public function updatedWorkingConditions($value, $key)
     {
         $parts = explode('.', $key);
         $index = (int) $parts[0];
         $property = $parts[1] ?? 'checked';
 
+        if (!isset($this->workingConditions[$index])) {
+            return;
+        }
+
         if ($property === 'checked') {
             if (!$this->workingConditions[$index]['checked']) {
                 $this->workingConditions[$index]['selectedOption'] = null;
                 $this->workingConditions[$index]['value'] = 0;
             } else {
-                if (isset($this->workingConditions[$index]['options'])) {
+                if (isset($this->workingConditions[$index]['options']) && is_array($this->workingConditions[$index]['options'])) {
                     if (!$this->workingConditions[$index]['selectedOption']) {
-                        $firstOption = array_values($this->workingConditions[$index]['options'])[0];
+                        $firstOption = array_values($this->workingConditions[$index]['options'])[0] ?? null;
                         $this->workingConditions[$index]['selectedOption'] = $firstOption;
                         $this->workingConditions[$index]['value'] = $firstOption;
                     }
@@ -549,6 +595,43 @@ class EditInquiry extends Component
         $this->dispatch('inquirySourceChildrenLoaded', stepNum: $stepNum, children: $children);
     }
 
+    public function updatedInquirySourceSteps($value, $key)
+    {
+        $stepNum = (int) str_replace('inquiry_source_step_', '', $key);
+        $this->inquirySourceSteps = array_slice($this->inquirySourceSteps, 0, $stepNum + 1, true);
+
+        if ($value) {
+            $selectedInquirySource = InquirySource::where('is_active', true)->find($value);
+            if ($selectedInquirySource) {
+                $this->selectedInquiryPath = array_slice($this->selectedInquiryPath, 0, $stepNum, true);
+                $this->selectedInquiryPath[$stepNum] = $selectedInquirySource->name;
+            }
+        } else {
+            $this->selectedInquiryPath = array_slice($this->selectedInquiryPath, 0, $stepNum, true);
+        }
+    }
+
+    public function updatedCityId($value)
+    {
+        $this->townId = null;
+        $this->towns = $value ? Town::where('city_id', $value)->get()->toArray() : [];
+    }
+
+    public function updatedProjectDocuments($value, $key)
+    {
+        $parts = explode('.', $key);
+        if (count($parts) === 2) {
+            $index = $parts[0];
+            $property = $parts[1];
+            if (isset($this->projectDocuments[$index])) {
+                $this->projectDocuments[$index][$property] = $value;
+                if ($this->projectDocuments[$index]['name'] === 'other' && $property === 'checked' && !$value) {
+                    $this->projectDocuments[$index]['description'] = '';
+                }
+            }
+        }
+    }
+
     public function save()
     {
         $this->validate([
@@ -579,10 +662,19 @@ class EditInquiry extends Component
         try {
             DB::beginTransaction();
 
+            // إصلاح: استخدم currentWorkTypeSteps زي الإنشاء
+            $selectedWorkTypeId = null;
+            if (!empty($this->currentWorkTypeSteps)) {
+                $selectedWorkTypeId = end($this->currentWorkTypeSteps) ?: null;
+            }
+            if (!$selectedWorkTypeId && !empty($this->workTypeSteps)) {
+                $selectedWorkTypeId = end($this->workTypeSteps) ?: null;
+            }
+
             $this->inquiry->update([
                 'inquiry_name' => $this->inquiryName ?: ('Inquiry-' . now()->format('YmdHis')),
                 'project_id' => $this->projectId,
-                'work_type_id' => !empty($this->workTypeSteps) ? end($this->workTypeSteps) : null,
+                'work_type_id' => $selectedWorkTypeId,
                 'final_work_type' => $this->finalWorkType,
                 'inquiry_source_id' => !empty($this->inquirySourceSteps) ? end($this->inquirySourceSteps) : null,
                 'final_inquiry_source' => $this->finalInquirySource,

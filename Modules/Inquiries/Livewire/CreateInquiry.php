@@ -422,7 +422,7 @@ class CreateInquiry extends Component
         try {
             DB::beginTransaction();
             $inquiry = Inquiry::create([
-                'inquiry_name' => 'Inquiry-' . now()->format('YmdHis'),
+                'inquiry_name' => $this->inquiryName,
                 'project_id' => $this->projectId,
 
                 'inquiry_date' => $this->inquiryDate,

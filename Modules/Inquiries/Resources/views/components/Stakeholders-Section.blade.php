@@ -24,7 +24,7 @@
                                         \App\Enums\ClientType::Company->value,
                                     ],
                                 ]"
-                                :additional-data="['type' => \App\Enums\ClientType::Person->value]" :key="'client-select'" />
+                                :selected-id="$clientId" :additional-data="['type' => \App\Enums\ClientType::Person->value]" :key="'client-select'" />
                         </div>
                     </div>
 
@@ -35,7 +35,7 @@
                                 <i class="fas fa-hard-hat fa-2x text-warning"></i>
                             </div>
                             <livewire:app::searchable-select :model="App\Models\Client::class" label-field="cname"
-                                wire-model="mainContractorId" label="المقاول الرئيسي"
+                                wire-model="mainContractorId" label="المقاول الرئيسي" :selected-id="$mainContractorId"
                                 placeholder="ابحث أو أضف مقاول جديد..." :where="[
                                     'type' => \App\Enums\ClientType::MainContractor->value,
                                 ]" :additional-data="[
@@ -52,12 +52,12 @@
                                 <i class="fas fa-user-graduate fa-2x text-info"></i>
                             </div>
                             <livewire:app::searchable-select :model="App\Models\Client::class" label-field="cname"
-                                wire-model="consultantId" label="الاستشاري" :where="[
-                                    'type' => \App\Enums\ClientType::Consultant->value,
-                                ]" :additional-data="[
+                                wire-model="consultantId" label="الاستشاري" :selected-id="$consultantId" :where="[
                                     'type' => \App\Enums\ClientType::Consultant->value,
                                 ]"
-                                :key="'consultant-select'" />
+                                :additional-data="[
+                                    'type' => \App\Enums\ClientType::Consultant->value,
+                                ]" :key="'consultant-select'" />
                         </div>
                     </div>
 
@@ -68,7 +68,7 @@
                             </div>
                             <livewire:app::searchable-select :model="App\Models\Client::class" label-field="cname" wire-model="ownerId"
                                 label="المالك" placeholder="ابحث عن المالك أو أضف جديد..." :where="['type' => \App\Enums\ClientType::Owner->value]"
-                                :additional-data="['type' => \App\Enums\ClientType::Owner->value]" :key="'owner-select'" />
+                                :selected-id="$ownerId" :additional-data="['type' => \App\Enums\ClientType::Owner->value]" :key="'owner-select'" />
                         </div>
                     </div>
                 </div>

@@ -41,7 +41,11 @@ class SearchableSelect extends Component
 
         // تطبيق الشروط الإضافية
         foreach ($this->where as $field => $value) {
-            $query->where($field, $value);
+            if (is_array($value)) {
+                $query->whereIn($field, $value);
+            } else {
+                $query->where($field, $value);
+            }
         }
 
         $this->items = $query->get()->map(function ($item) {

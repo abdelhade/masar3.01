@@ -68,6 +68,11 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
+
+                                            <button class="btn btn-info btn-icon-square-sm" data-bs-toggle="modal"
+                                                data-bs-target="#commentModal-{{ $inquiry->id }}">
+                                                <i class="las la-comment"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 @empty
@@ -86,7 +91,34 @@
                     </div>
                 </div>
             </div>
-
+            <!-- مودال التعليقات -->
+            @forelse ($inquiries as $inquiry)
+                <div class="modal fade" id="commentModal-{{ $inquiry->id }}" tabindex="-1"
+                    aria-labelledby="commentModalLabel-{{ $inquiry->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="commentModalLabel-{{ $inquiry->id }}">
+                                    <i class="fas fa-comments me-2"></i>
+                                    تعليقات الاستفسار: {{ $inquiry->inquiry_name }}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <livewire:inquiries::inquiry-comments :inquiryId="$inquiry->id" />
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-2"></i>
+                                    إغلاق
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+            @endforelse
         </div>
     </div>
 @endsection

@@ -128,7 +128,7 @@
                     <!-- Estimation Information Section -->
                     @include('inquiries::components.estimation-information')
 
-                    <!-- Temporary Comments Section - NEW -->
+                    <!-- Temporary Comments Section -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="card border-info">
@@ -140,7 +140,6 @@
                                     <small class="d-block mt-1">التعليقات المحفوظة والتعليقات الجديدة</small>
                                 </div>
                                 <div class="card-body">
-                                    <!-- التعليقات الموجودة من قبل -->
                                     @if (!empty($existingComments))
                                         <div class="mb-4">
                                             <h6 class="fw-bold text-primary mb-3">
@@ -149,7 +148,8 @@
                                             </h6>
                                             <div class="existing-comments-list">
                                                 @foreach ($existingComments as $comment)
-                                                    <div class="alert alert-secondary d-flex justify-content-between align-items-start mb-2">
+                                                    <div
+                                                        class="alert alert-secondary d-flex justify-content-between align-items-start mb-2">
                                                         <div class="flex-grow-1">
                                                             <div class="mb-1">
                                                                 <strong>
@@ -176,17 +176,16 @@
                                         <hr>
                                     @endif
 
-                                    <!-- Form لإضافة تعليق جديد -->
                                     <div class="mb-3">
                                         <label for="newTempComment" class="form-label fw-bold">
                                             <i class="fas fa-pen me-2"></i>
                                             أضف ملاحظة جديدة
                                         </label>
                                         <div class="input-group">
-                                            <textarea wire:model="newTempComment" id="newTempComment"
-                                                class="form-control" rows="2"
+                                            <textarea wire:model="newTempComment" id="newTempComment" class="form-control" rows="2"
                                                 placeholder="اكتب ملاحظاتك هنا..."></textarea>
-                                            <button type="button" wire:click="addTempComment" class="btn btn-primary">
+                                            <button type="button" wire:click="addTempComment"
+                                                class="btn btn-primary">
                                                 <i class="fas fa-plus"></i>
                                                 إضافة
                                             </button>
@@ -196,7 +195,6 @@
                                         @enderror
                                     </div>
 
-                                    <!-- عرض التعليقات المؤقتة (قبل الحفظ) -->
                                     @if (!empty($tempComments))
                                         <div class="mt-3">
                                             <h6 class="fw-bold text-success mb-3">
@@ -205,7 +203,8 @@
                                             </h6>
                                             <div class="comments-list">
                                                 @foreach ($tempComments as $index => $comment)
-                                                    <div class="alert alert-info d-flex justify-content-between align-items-start mb-2">
+                                                    <div
+                                                        class="alert alert-info d-flex justify-content-between align-items-start mb-2">
                                                         <div class="flex-grow-1">
                                                             <div class="mb-1">
                                                                 <strong>
@@ -216,11 +215,13 @@
                                                                     <i class="fas fa-clock me-1"></i>
                                                                     {{ \Carbon\Carbon::parse($comment['created_at'])->format('Y-m-d H:i') }}
                                                                 </small>
-                                                                <span class="badge bg-warning text-dark ms-2">جديد</span>
+                                                                <span
+                                                                    class="badge bg-warning text-dark ms-2">جديد</span>
                                                             </div>
                                                             <p class="mb-0">{{ $comment['comment'] }}</p>
                                                         </div>
-                                                        <button type="button" wire:click="removeTempComment({{ $index }})"
+                                                        <button type="button"
+                                                            wire:click="removeTempComment({{ $index }})"
                                                             class="btn btn-sm btn-outline-danger ms-2">
                                                             <i class="fas fa-times"></i>
                                                         </button>
@@ -277,7 +278,7 @@
             }
 
             function removeWorkTypeStepsAfter(stepNum) {
-                const stepsToRemove = stepsWrapper.querySelectorAll('[data-step]');
+                const stepsToRemove = stepsWrapper ? stepsWrapper.querySelectorAll('[data-step]') : [];
                 stepsToRemove.forEach(step => {
                     const stepNumber = parseInt(step.getAttribute('data-step'));
                     if (stepNumber > stepNum) {
@@ -286,7 +287,49 @@
                 });
             }
 
-            Livewire.on('workTypeChildrenLoaded', ({stepNum, children}) => {
+            // إصلاح: prepopulate محدث ليبني الـ steps تدريجيًا
+            Livewire.on('prepopulateWorkTypes', ({
+                steps,
+                path
+            }) => {
+                let currentStepNum = 1;
+                const stepKeys = Object.keys(steps).sort((a, b) => parseInt(a.replace('step_', '')) -
+                    parseInt(b.replace('step_', '')));
+                stepKeys.forEach(key => {
+                    const stepNum = parseInt(key.replace('step_', ''));
+                    const typeId = steps[key];
+                    if (typeId && stepNum === currentStepNum) {
+                        // حدث الـ select الحالي
+                        const currentSelect = document.getElementById(`step_${currentStepNum}`);
+                        if (currentSelect) {
+                            currentSelect.value = typeId;
+                        }
+
+                        // جلب children للـ step التالي
+                        if (stepNum < stepKeys.length) {
+                            const parentId = typeId;
+                            Livewire.dispatch('getWorkTypeChildren', {
+                                stepNum: stepNum,
+                                parentId: parentId
+                            });
+                            currentStepNum++;
+                        }
+
+                        // حدث path display
+                        const pathDisplay = document.getElementById('path_display');
+                        if (pathDisplay && path && path.length > 0) {
+                            pathDisplay.innerHTML =
+                                `<i class="fas fa-route me-1"></i> المسار الحالي: ${path.join(' → ')}`;
+                            pathDisplay.classList.add('text-success');
+                        }
+                    }
+                });
+            });
+
+            Livewire.on('workTypeChildrenLoaded', ({
+                stepNum,
+                children
+            }) => {
                 if (children.length === 0) {
                     return;
                 }
@@ -303,23 +346,24 @@
                             <span class="badge bg-primary me-2">${nextStepNum}</span>
                             التصنيف ${nextStepNum}
                         </label>
-                        <select wire:model.live="workTypeSteps.step_${nextStepNum}" id="step_${nextStepNum}" class="form-select">
+                        <select wire:model.live="currentWorkTypeSteps.step_${nextStepNum}" id="step_${nextStepNum}" class="form-select">
                             <option value="">اختر الخطوة ${nextStepNum}...</option>
                         </select>
                     `;
 
-                    workTypesRow.appendChild(stepItem);
+                    if (workTypesRow) workTypesRow.appendChild(stepItem);
 
+                    // إضافة: listener للـ change في الـ new step
                     const select = document.getElementById(`step_${nextStepNum}`);
-                    select.addEventListener('change', function() {
-                        const selectedId = this.value;
-                        if (selectedId) {
+                    if (select) {
+                        select.addEventListener('change', function() {
+                            const selectedId = this.value;
                             removeWorkTypeStepsAfter(nextStepNum);
-                            createWorkTypeStepItem(nextStepNum + 1, selectedId);
-                        } else {
-                            removeWorkTypeStepsAfter(nextStepNum);
-                        }
-                    });
+                            if (selectedId) {
+                                createWorkTypeStepItem(nextStepNum + 1, selectedId);
+                            }
+                        });
+                    }
                 }
 
                 const select = document.getElementById(`step_${nextStepNum}`);
@@ -331,7 +375,19 @@
                 }
             });
 
-            // Inquiry Sources Hierarchical Selection
+            // Handle step_1 change
+            const step1 = document.getElementById('step_1');
+            if (step1) {
+                step1.addEventListener('change', function() {
+                    const selectedId = this.value;
+                    removeWorkTypeStepsAfter(1);
+                    if (selectedId) {
+                        createWorkTypeStepItem(2, selectedId);
+                    }
+                });
+            }
+
+            // Inquiry Sources (مش محتاج تعديل كبير، بس ضمنت التوافق)
             const inquiryStepsWrapper = document.getElementById('inquiry_sources_steps_wrapper');
             const inquirySourcesRow = document.getElementById('inquiry_sources_row');
 
@@ -343,7 +399,8 @@
             }
 
             function removeInquirySourceStepsAfter(stepNum) {
-                const stepsToRemove = inquiryStepsWrapper.querySelectorAll('[data-step]');
+                const stepsToRemove = inquiryStepsWrapper ? inquiryStepsWrapper.querySelectorAll('[data-step]') :
+            [];
                 stepsToRemove.forEach(step => {
                     const stepNumber = parseInt(step.getAttribute('data-step'));
                     if (stepNumber > stepNum) {
@@ -352,7 +409,46 @@
                 });
             }
 
-            Livewire.on('inquirySourceChildrenLoaded', ({stepNum, children}) => {
+            // prepopulate for Inquiry Sources
+            Livewire.on('prepopulateInquirySources', ({
+                steps,
+                path
+            }) => {
+                let currentStepNum = 1;
+                const stepKeys = Object.keys(steps).sort((a, b) => parseInt(a.replace(
+                    'inquiry_source_step_', '')) - parseInt(b.replace('inquiry_source_step_', '')));
+                stepKeys.forEach(key => {
+                    const stepNum = parseInt(key.replace('inquiry_source_step_', ''));
+                    const sourceId = steps[key];
+                    if (sourceId && stepNum === currentStepNum) {
+                        const currentSelect = document.getElementById(
+                            `inquiry_source_step_${currentStepNum}`);
+                        if (currentSelect) {
+                            currentSelect.value = sourceId;
+                        }
+
+                        if (stepNum < stepKeys.length) {
+                            const parentId = sourceId;
+                            Livewire.dispatch('getInquirySourceChildren', {
+                                stepNum: stepNum,
+                                parentId: parentId
+                            });
+                            currentStepNum++;
+                        }
+
+                        const pathDisplay = document.getElementById('inquiry_sources_path_display');
+                        if (pathDisplay && path && path.length > 0) {
+                            pathDisplay.innerHTML =
+                                `<i class="fas fa-route text-warning me-1"></i> المسار المختار: ${path.join(' → ')}`;
+                        }
+                    }
+                });
+            });
+
+            Livewire.on('inquirySourceChildrenLoaded', ({
+                stepNum,
+                children
+            }) => {
                 if (children.length === 0) {
                     return;
                 }
@@ -375,18 +471,18 @@
                         </select>
                     `;
 
-                    inquirySourcesRow.appendChild(stepItem);
+                    if (inquirySourcesRow) inquirySourcesRow.appendChild(stepItem);
 
                     const select = document.getElementById(`inquiry_source_step_${nextStepNum}`);
-                    select.addEventListener('change', function() {
-                        const selectedId = this.value;
-                        if (selectedId) {
+                    if (select) {
+                        select.addEventListener('change', function() {
+                            const selectedId = this.value;
                             removeInquirySourceStepsAfter(nextStepNum);
-                            createInquirySourceStepItem(nextStepNum + 1, selectedId);
-                        } else {
-                            removeInquirySourceStepsAfter(nextStepNum);
-                        }
-                    });
+                            if (selectedId) {
+                                createInquirySourceStepItem(nextStepNum + 1, selectedId);
+                            }
+                        });
+                    }
                 }
 
                 const select = document.getElementById(`inquiry_source_step_${nextStepNum}`);
@@ -397,18 +493,6 @@
                     });
                 }
             });
-
-            // Handle step_1 change
-            const step1 = document.getElementById('step_1');
-            if (step1) {
-                step1.addEventListener('change', function() {
-                    const selectedId = this.value;
-                    removeWorkTypeStepsAfter(1);
-                    if (selectedId) {
-                        createWorkTypeStepItem(2, selectedId);
-                    }
-                });
-            }
 
             // Handle inquiry_source_step_1 change
             const inquiryStep1 = document.getElementById('inquiry_source_step_1');

@@ -24,7 +24,8 @@
                     <div class="col-md-3 mb-3">
                         <div class="card-body text-center">
                             <livewire:app::searchable-select :model="Modules\Progress\Models\ProjectProgress::class" label-field="name" wire-model="projectId"
-                                label="المشروع" placeholder="ابحث عن المشروع أو أضف جديد..." :key="'project-select'" />
+                                label="المشروع" placeholder="ابحث عن المشروع أو أضف جديد..." :key="'project-select'"
+                                 :selected-id="$projectId" />
                         </div>
                     </div>
 
