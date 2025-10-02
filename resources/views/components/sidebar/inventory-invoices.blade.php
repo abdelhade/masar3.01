@@ -8,7 +8,7 @@
     $viewPermissions = collect($inventory)->map(fn($label) => 'عرض ' . $label)->toArray();
 @endphp
 
-@canany($viewPermissions)
+{{-- @canany($viewPermissions)
     <li class="li-main border-bottom pb-1 mb-2">
         <a href="javascript:void(0);">
             <i data-feather="archive" style="color:#f39c12" class="align-self-center menu-icon"></i>
@@ -16,7 +16,7 @@
             <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
         </a>
 
-        <ul class="sub-menu mm-collapse" aria-expanded="false">
+        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
             @foreach ($inventory as $type => $label)
                 @can('عرض ' . $label)
                     <li class="nav-item">
@@ -26,6 +26,6 @@
                     </li>
                 @endcan
             @endforeach
-        </ul>
+        {{-- </ul>
     </li>
-@endcanany
+@endcanany --}}
