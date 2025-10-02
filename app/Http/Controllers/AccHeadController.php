@@ -17,20 +17,20 @@ class AccHeadController extends Controller
 {
     // خريطة ربط الأكواد بأنواع الحسابات
     private const ACCOUNT_TYPE_MAP = [
-        '1103' => 'client',
-        '2101' => 'supplier',
-        '1101' => 'fund',
-        '1102' => 'bank',
-        '57' => 'expense',
-        '42' => 'revenue',
-        '2104' => 'creditor',
-        '1106' => 'debtor',
-        '31' => 'partner',
-        '32' => 'current-partner',
-        '12' => 'asset',
-        '2102' => 'employee',
-        '1104' => 'warhouse',
-        '1202' => 'rentable',
+        '1103' => 'clients',
+        '2101' => 'suppliers',
+        '1101' => 'funds',
+        '1102' => 'banks',
+        '57' => 'expenses',
+        '42' => 'revenues',
+        '2104' => 'creditors',
+        '1106' => 'debtors',
+        '31' => 'partners',
+        '32' => 'current-partners',
+        '12' => 'assets',
+        '2102' => 'employees',
+        '1104' => 'warhouses',
+        '1202' => 'rentables',
     ];
 
     public function __construct()
@@ -58,9 +58,8 @@ class AccHeadController extends Controller
     {
         $type = $request->query('type');
         $accountsQuery = AccHead::query()
-            ->where('is_basic', 0)
-            ->where('isdeleted', 0)
-            ->where('editable', 1);
+            ->where('is_basic', 0);
+          
 
         if ($type) {
             // Get account type ID from accounts_types table
@@ -73,7 +72,7 @@ class AccHeadController extends Controller
 
         $accounts = $accountsQuery->with('accountType')
             ->get([
-                'id', 'code', 'balance', 'address', 'phone', 'aname', 
+                'id', 'code','acc_type', 'balance', 'address', 'phone', 'aname', 
                 'is_basic', 'is_stock', 'is_fund', 'employees_expensses', 
                 'deletable', 'editable', 'rentable', 'acc_type'
             ]);
@@ -162,7 +161,16 @@ class AccHeadController extends Controller
             'state_id' => 'nullable|integer|exists:states,id',
             'town_id' => 'nullable|integer|exists:towns,id',
             'branch_id' => 'required|exists:branches,id',
+            'acc_type' => 'nullable|integer|exists:accounts_types,id',
         ]);
+
+        if (isset($validated['acc_type']) && !empty($validated['acc_type'])) {
+            $account_type = $validated['acc_type'];
+        } else {
+            // جلب parent account
+            $parentAccount = \App\Models\AccHead::find($validated['parent_id']);
+            $account_type = $parentAccount ? $parentAccount->acc_type : null;
+        }
 
         try {
             DB::beginTransaction();
@@ -207,6 +215,7 @@ class AccHeadController extends Controller
                 'state_id' => $validated['state_id'] ?? null,
                 'town_id' => $validated['town_id'] ?? null,
                 'branch_id' => $validated['branch_id'],
+                'acc_type' => $validated['acc_type'],
             ]);
 
             if (($validated['reserve'] ?? 0) == 1) {
@@ -248,6 +257,8 @@ class AccHeadController extends Controller
             'crtime' => now(),
             'mdtime' => now(),
             'branch_id' => $branchId,
+            'account_id' => $asset->id,
+            'acc_type' => 15,
         ]);
 
         $lastExp = AccHead::where('parent_id', 77)
@@ -265,7 +276,72 @@ class AccHeadController extends Controller
             'crtime' => now(),
             'mdtime' => now(),
             'branch_id' => $branchId,
+            'account_id' => $asset->id,
+            'acc_type' => 16,
         ]);
+    }
+
+    /**
+     * Update all depreciation accounts linked to a specific asset account
+     * تحديث جميع حسابات الإهلاك المرتبطة بحساب أصل معين
+     */
+    private function updateDepreciationAccounts(AccHead $asset, int $branchId): void
+    {
+        // Update all depreciation accounts (type 15) linked to this asset
+        AccHead::where('account_id', $asset->id)
+            ->where('acc_type', 15)
+            ->update([
+                'aname' => 'مجمع إهلاك ' . $asset->aname,
+                'branch_id' => $branchId,
+                'mdtime' => now(),
+            ]);
+
+        // Update all expense accounts (type 16) linked to this asset
+        AccHead::where('account_id', $asset->id)
+            ->where('acc_type', 16)
+            ->update([
+                'aname' => 'مصروف إهلاك ' . $asset->aname,
+                'branch_id' => $branchId,
+                'mdtime' => now(),
+            ]);
+    }
+
+    /**
+     * Public method to update depreciation accounts for a specific asset
+     * طريقة عامة لتحديث حسابات الإهلاك لأصل معين
+     */
+    public function updateAssetDepreciationAccounts(Request $request, $assetId)
+    {
+        try {
+            $asset = AccHead::findOrFail($assetId);
+            
+            // Validate that this is actually an asset account
+            if (!str_starts_with($asset->code, '12')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'هذا ليس حساب أصل صحيح'
+                ], 400);
+            }
+            
+            DB::beginTransaction();
+            
+            $this->updateDepreciationAccounts($asset, $asset->branch_id);
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث حسابات الإهلاك بنجاح'
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث حسابات الإهلاك: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     private function determineParentType(?int $parentId): ?string
@@ -318,9 +394,7 @@ class AccHeadController extends Controller
     public function edit($id)
     {
         $account = AccHead::findOrFail($id);
-
         $parent = substr($account->code, 0, -3);
-
         $resacs = DB::table('acc_head')
             ->where('is_basic', 1)
             ->where('code', 'like', $parent . '%')
@@ -331,8 +405,120 @@ class AccHeadController extends Controller
         $states = State::all()->pluck('title', 'id');
         $towns = Town::all()->pluck('title', 'id');
         $accountTypes = AccountsType::all();
+        $branches = userBranches();
+        return view('accounts.edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes', 'branches'));
+    }
 
-        return view('accounts.edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes'));
+    public function update(Request $request, $id)
+    {
+        $account = AccHead::findOrFail($id);
+        
+        $validated = $request->validate([
+            'aname' => 'required|string|max:100|unique:acc_head,aname,' . $id,
+            'phone' => 'nullable|string|max:15',
+            'address' => 'nullable|string|max:250',
+            'e_mail' => 'nullable|email|max:100',
+            'constant' => 'nullable|string|max:50',
+            'is_stock' => 'nullable|boolean',
+            'is_fund' => 'nullable|boolean',
+            'rentable' => 'nullable|boolean',
+            'employees_expensses' => 'nullable|boolean',
+            'parent_id' => 'required|integer|exists:acc_head,id',
+            'nature' => 'nullable|string|max:50',
+            'kind' => 'nullable|string|max:50',
+            'acc_type' => 'nullable|integer',
+            'is_basic' => 'nullable|boolean',
+            'secret' => 'nullable|boolean',
+            'info' => 'nullable|string|max:500',
+            'zatca_name' => 'nullable|string|max:100',
+            'vat_number' => 'nullable|string|max:50',
+            'national_id' => 'nullable|string|max:50',
+            'zatca_address' => 'nullable|string|max:250',
+            'company_type' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:50',
+            'country_id' => 'nullable|integer|exists:countries,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'state_id' => 'nullable|integer|exists:states,id',
+            'town_id' => 'nullable|integer|exists:towns,id',
+            'branch_id' => 'required|exists:branches,id',
+            'reserve' => 'nullable|boolean', // Added for depreciation accounts handling
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // تحديث البيانات الأساسية
+            $account->update([
+                'aname' => $validated['aname'],
+                'phone' => $validated['phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'e_mail' => $validated['e_mail'] ?? null,
+                'constant' => $validated['constant'] ?? null,
+                'is_stock' => $validated['is_stock'] ?? 0,
+                'is_fund' => $validated['is_fund'] ?? 0,
+                'rentable' => $validated['rentable'] ?? 0,
+                'employees_expensses' => $validated['employees_expensses'] ?? 0,
+                'parent_id' => $validated['parent_id'],
+                'nature' => $validated['nature'] ?? null,
+                'kind' => $validated['kind'] ?? null,
+                'acc_type' => $validated['acc_type'] ?? null,
+                'is_basic' => $validated['is_basic'] ?? 0,
+                'secret' => $validated['secret'] ?? 0,
+                'mdtime' => now(),
+                'info' => $validated['info'] ?? null,
+                'zatca_name' => $validated['zatca_name'] ?? null,
+                'vat_number' => $validated['vat_number'] ?? null,
+                'national_id' => $validated['national_id'] ?? null,
+                'zatca_address' => $validated['zatca_address'] ?? null,
+                'company_type' => $validated['company_type'] ?? null,
+                'nationality' => $validated['nationality'] ?? null,
+                'country_id' => $validated['country_id'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'state_id' => $validated['state_id'] ?? null,
+                'town_id' => $validated['town_id'] ?? null,
+                'branch_id' => $validated['branch_id'],
+            ]);
+
+            // Check if this is an asset account (starts with '12') and update related depreciation accounts
+            if (str_starts_with($account->code, '12')) {
+                // Always update existing depreciation accounts when asset name changes
+                $this->updateDepreciationAccounts($account, $validated['branch_id']);
+            }
+
+            // Handle depreciation accounts for assets (create new ones if reserve = 1)
+            if (($validated['reserve'] ?? 0) == 1) {
+                // Check if depreciation accounts already exist for this asset
+                $existingDepreciationAccount = AccHead::where('account_id', $account->id)
+                    ->where('acc_type', 15) // Depreciation account type
+                    ->first();
+                
+                $existingExpenseAccount = AccHead::where('account_id', $account->id)
+                    ->where('acc_type', 16) // Expense account type
+                    ->first();
+                
+                // Only create new depreciation accounts if they don't exist
+                if (!$existingDepreciationAccount || !$existingExpenseAccount) {
+                    $this->createDepreciationAccounts($account, $validated['branch_id']);
+                }
+            }
+
+            // تحديد نوع الحساب الأب للإعادة التوجيه
+            $parentType = $this->determineParentType($validated['parent_id']);
+
+            DB::commit();
+
+            return redirect()
+                ->route('accounts.index', ['type' => $parentType])
+                ->with('success', __('messages.updated_successfully'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث الحساب: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)

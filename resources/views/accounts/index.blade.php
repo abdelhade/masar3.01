@@ -3,37 +3,37 @@
 
     @php
         $permissionTypes = [
-            'client' => 'العملاء',
-            'supplier' => 'الموردين',
-            'fund' => 'الصناديق',
-            'bank' => 'البنوك',
-            'employee' => 'الموظفين',
-            'store' => 'المخازن',
-            'expense' => 'المصروفات',
-            'revenue' => 'الإيرادات',
-            'creditor' => 'دائنين متنوعين',
-            'depitor' => 'مدينين متنوعين',
-            'partner' => 'الشركاء',
-            'current-partner' => 'جارى الشركاء',
-            'asset' => 'الأصول الثابتة',
-            'rentable' => 'الأصول القابلة للتأجير',
+            'clients' => 'العملاء',
+            'suppliers' => 'الموردين',
+            'funds' => 'الصناديق',
+            'banks' => 'البنوك',
+            'employees' => 'الموظفين',
+            'warhouses' => 'المخازن',
+            'expenses' => 'المصروفات',
+            'revenues' => 'الايرادات',
+            'creditors' => 'دائنين متنوعين',
+            'debtors' => 'مدينين متنوعين',
+            'partners' => 'الشركاء',
+            'current-partners' => 'جارى الشركاء',
+            'assets' => 'الأصول الثابتة',
+            'rentables' => 'الأصول القابلة للتأجير',
         ];
 
         $parentCodes = [
-            'client' => '1103', // العملاء
-            'supplier' => '2101', // الموردين
-            'bank' => '1102', // البنوك
-            'fund' => '1101', // الصناديق
-            'store' => '1104', // المخازن
-            'expense' => '5', // المصروفات
-            'revenue' => '42', // الإيرادات
-            'creditor' => '2104', // دائنين اخرين
-            'depitor' => '1106', // مدينين آخرين
-            'partner' => '31', // الشريك الرئيسي
-            'current-partner' => '3201', // جاري الشريك
-            'asset' => '12', // الأصول
-            'employee' => '2102', // الموظفين
-            'rentable' => '1202', // مباني (أصل قابل للإيجار)
+            'clients' => '1103', // العملاء
+            'suppliers' => '2101', // الموردين
+            'banks' => '1102', // البنوك
+            'funds' => '1101', // الصناديق
+            'warhouses' => '1104', // المخازن
+            'expenses' => '5', // المصروفات
+            'revenues' => '42', // الايرادات
+            'creditors' => '2104', // دائنين اخرين
+            'debtors' => '1106', // مدينين آخرين
+            'partners' => '31', // الشريك الرئيسي
+            'current-partners' => '3201', // جاري الشريك
+            'assets' => '12', // الأصول
+            'employees' => '2102', // الموظفين
+            'rentables' => '1202', // مباني (أصل قابل للإيجار)
         ];
 
         $type = request('type');
@@ -66,13 +66,11 @@
         {{-- الأكشنات (إضافة + بحث) --}}
         <div class="row mt-3 justify-content-between align-items-center">
             <div class="col-md-3">
-                @if ($parentCode)
                     @can("إضافة $permName")
                         <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
                             <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
                         </a>
                     @endcan
-                @endif
             </div>
 
             <div class="col-md-4 text-end">

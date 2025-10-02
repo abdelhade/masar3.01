@@ -16,6 +16,7 @@
         'multi-vouchers' => ['components.sidebar.merit-vouchers'],
         'contract-journals' => ['components.sidebar.contract-journals'],
         'Assets-operations' => ['components.sidebar.multi-vouchers'],
+        'depreciation' => ['components.sidebar.depreciation'],
         'basic_journal-journals' => ['components.sidebar.journals'],
         'projects' => ['components.sidebar.projects'],
         'departments' => ['components.sidebar.departments'],
@@ -106,6 +107,9 @@
                 @endif
                 @if($allowed === 'all' || in_array('components.sidebar.multi-vouchers', $allowed))
                     @include('components.sidebar.multi-vouchers')
+                @endif
+                @if($allowed === 'all' || in_array('components.sidebar.depreciation', $allowed))
+                    @include('components.sidebar.depreciation')
                 @endif
                 @if($allowed === 'all' || in_array('components.sidebar.journals', $allowed))
                     @include('components.sidebar.journals')

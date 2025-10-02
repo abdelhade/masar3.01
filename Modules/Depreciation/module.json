@@ -1,0 +1,11 @@
+{
+    "name": "Depreciation",
+    "alias": "depreciation",
+    "description": "Module for asset depreciation management.",
+    "keywords": ["depreciation", "assets"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Depreciation\\Providers\\DepreciationServiceProvider"
+    ],
+    "files": []
+}

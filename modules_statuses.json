@@ -14,5 +14,6 @@
     "Accounts": true,
     "Services": true,
     "Inquiries": true,
+    "Depreciation": true,
     "App": true
 }
