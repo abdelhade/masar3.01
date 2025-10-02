@@ -26,7 +26,8 @@ class AccountsTypesSeeder extends Seeder
         DB::table('accounts_types')->updateOrInsert(['id' => 12], ['name' => 'current-partners']);
         DB::table('accounts_types')->updateOrInsert(['id' => 13], ['name' => 'assets']);
         DB::table('accounts_types')->updateOrInsert(['id' => 14], ['name' => 'rentables']);
-
+        DB::table('accounts_types')->updateOrInsert(['id' => 15], ['name' => 'accumulated-depreciations']);
+        DB::table('accounts_types')->updateOrInsert(['id' => 16], ['name' => 'depreciation-expenses']);
     }
 }
 

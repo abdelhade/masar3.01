@@ -12,6 +12,26 @@
                     $parent = request()->get('parent');
                     $isClientOrSupplier = in_array($parent, ['1103', '2101']); // تحديد ما إذا كان حساب عميل أو مورد
                 @endphp
+                @php
+                    // خريطة تربط parent_id بنوع الحساب
+                    $parentTypeMap = [
+                        '1103' => '1', // العملاء
+                        '2101' => '2', // الموردين
+                        '1101' => '3', // الصناديق
+                        '1102' => '4', // البنوك
+                        '2102' => '5', //الموظفين
+                        '1104' => '6', // المخازن
+                        '5'    => '7', // المصروفات
+                        '42'   => '8', // الإيرادات
+                        '2104' => '9', // دائنين اخرين
+                        '1106' => '10', // مدينين آخرين
+                        '31'   => '11', // الشريك الرئيسي
+                        '32'   => '12', // جاري الشريك
+                        '12'   => '13', // الأصول
+                        '1202' => '14', // الأصول القابلة للتأجير
+                    ];
+                    $type = $parentTypeMap[$parent] ?? '0';
+                @endphp
 
                 <section class="content">
                     @if (in_array($parent, [
@@ -46,7 +66,16 @@
                                                 @endforeach
                                             </ul>
                                         </div>
-                                    @endif
+                                    @endif      
+                                             
+                                                <input 
+                                                    type="text" 
+                                                    class="form-control font-bold" 
+                                                    id="type" 
+                                                    name="acc_type" 
+                                                    value="{{ $type }}" 
+                                                    readonly hidden
+                                                >
 
                                     <div class="row">
                                         <div class="col-md-4">

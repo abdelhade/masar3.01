@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('acc_head', function (Blueprint $table) {
             $table->string('accountable_type')->nullable();
-            $table->unsignedBigInteger('accountable_id')->nullable();
-            $table->index(['accountable_type', 'accountable_id']);
+            $table->unsignedBigInteger('account_id')->nullable();
+            $table->index(['accountable_type', 'account_id']);
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
     {
         Schema::table('acc_head', function (Blueprint $table) {
             $table->dropColumn('accountable_type');
-            $table->dropColumn('accountable_id');
-            $table->dropIndex(['accountable_type', 'accountable_id']);
+            $table->dropColumn('account_id');
+            $table->dropIndex(['accountable_type', 'account_id']);
         });
     }
 };
