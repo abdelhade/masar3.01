@@ -5,8 +5,9 @@ namespace App\Models;
 use App\Enums\ClientType;
 use Modules\CRM\Models\Lead;
 use Modules\Branches\Models\Branch;
-use Illuminate\Database\Eloquent\Model;
 use Modules\Inquiries\Models\Inquiry;
+use Modules\CRM\Models\ClientCategory;
+use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
@@ -60,5 +61,10 @@ class Client extends Model
     public function projectsAsMainContractor()
     {
         return $this->hasMany(Inquiry::class, 'main_contractor_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(ClientCategory::class, 'client_category_id');
     }
 }

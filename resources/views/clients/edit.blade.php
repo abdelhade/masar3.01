@@ -161,7 +161,7 @@
                             {{-- النوع والحالة --}}
                             <div class="row g-3">
                                 <!-- حقل النوع -->
-                                <div class="mb-3 col-lg-4">
+                                <div class="mb-3 col-lg-3">
                                     <label class="form-label" for="type">الصفه</label>
                                     <select class="form-control" id="type" name="type">
                                         @foreach (\App\Enums\ClientType::cases() as $case)
@@ -177,7 +177,7 @@
                                 </div>
 
 
-                                <div class="col-lg-4 col-md-6">
+                                <div class="col-lg-3 col-md-6">
                                     <label class="form-label">النوع</label>
                                     <select name="gender" id="gender" class="form-select">
                                         <option value="">اختر النوع</option>
@@ -189,9 +189,24 @@
                                     </select>
                                 </div>
 
+                                <div class="mb-3 col-lg-3">
+                                    <label class="form-label">تصنيف العميل</label>
+                                    <select name="client_category_id" class="form-select">
+                                        <option value="">اختر التصنيف</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}"
+                                                {{ old('client_category_id', $client->client_category_id) == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('client_category_id')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                </div>
 
                                 <!-- حقل الحالة -->
-                                <div class="col-lg-4 col-md-6">
+                                <div class="col-lg-3 col-md-6">
                                     <label class="form-label">الحالة</label>
                                     <div class="status-container d-flex align-items-center justify-content-between">
                                         <span class="status-label">نشط</span>
@@ -202,7 +217,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 

@@ -31,7 +31,7 @@
             </div> --}}
 
             @foreach ($statuses as $status)
-                <div class="status-column" data-status-id="{{ $status->id }}"
+                <div class="status-column" data-status-id="{{ $status->id }}" wire:key="status-{{ $status->id }}"
                     style="width: 300px; flex: 0 0 auto; border-bottom-color: {{ $status->color }};
                max-height: 76vh; display: flex; flex-direction: column; margin-right: 15px;">
 
@@ -41,7 +41,7 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="leads-count">
-                                {{ isset($leads[$status->id]) ? number_format($leads[$status->id]->sum('amount')) : '0.00' }}
+                                {{ !empty($leads[$status->id]) ? number_format(collect($leads[$status->id])->sum('amount')) : '0.00' }}
                                 ج.م
                             </span>
 
@@ -62,9 +62,9 @@
 
                     <div class="leads-container" data-status-id="{{ $status->id }}"
                         style="overflow-y: auto; flex: 1 1 0; min-height: 200px;">
-                        @if (isset($leads[$status->id]))
+                        @if (!empty($leads[$status->id]))
                             @foreach ($leads[$status->id] as $lead)
-                                <div class="lead-card" draggable="true" data-lead-id="{{ $lead['id'] }}"
+                                <div class="lead-card" draggable="true" data-lead-id="{{ $lead['id'] }}" wire:key="lead-{{ $lead['id'] }}"
                                     style="border-right-color: {{ $status->color }}">
                                     <div class="lead-title">{{ $lead['title'] }}</div>
                                     <div class="lead-info">
@@ -264,7 +264,7 @@
                             <select class="form-control" wire:model="editingLead.client_id">
                                 <option value="">اختر العميل</option>
                                 @foreach ($clients as $client)
-                                    <option value="{{ $client->id }}">{{ $client->cname }}</option>
+                                    <option value="{{ is_array($client) ? $client['id'] : $client->id }}">{{ is_array($client) ? $client['cname'] : $client->cname }}</option>
                                 @endforeach
                             </select>
                             @error('editingLead.client_id')

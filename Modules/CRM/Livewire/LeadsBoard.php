@@ -88,7 +88,7 @@ class LeadsBoard extends Component
         }
 
         $this->loadData();
-        $this->clients = Client::all();
+        $this->clients = Client::select('id', 'cname')->get()->toArray();
         $this->users = User::all();
         $this->sources = ChanceSource::all();
     }
@@ -159,8 +159,8 @@ class LeadsBoard extends Component
             $this->selectClient($newClient->id, $newClient->cname);
 
             session()->flash('message', 'تم إنشاء العميل "' . $newClient->cname . '" واختياره.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء إنشاء العميل: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ أثناء إنشاء العميل: ');
         }
     }
 
@@ -179,7 +179,8 @@ class LeadsBoard extends Component
         try {
             $this->statuses = LeadStatus::orderBy('order_column')->get();
 
-            $this->leads = Lead::with(['client', 'status', 'assignedTo', 'source'])
+            // حوّل التجميعة إلى مصفوفة لضمان تزامن Livewire بشكل صحيح بعد الإضافة/التحديث
+            $grouped = Lead::with(['client', 'status', 'assignedTo', 'source'])
                 ->get()
                 ->groupBy('status_id')
                 ->map(function ($leads) {
@@ -193,12 +194,14 @@ class LeadsBoard extends Component
                             'assigned_to' => $lead->assignedTo ? $lead->assignedTo->only('name') : null,
                             'description' => $lead->description
                         ];
-                    });
+                    })->values();
                 });
-        } catch (\Exception $e) {
+
+            $this->leads = $grouped->toArray();
+        } catch (\Exception) {
             $this->statuses = collect([]);
-            $this->leads = collect([]);
-            session()->flash('error', 'حدث خطأ في تحميل البيانات: ' . $e->getMessage());
+            $this->leads = [];
+            session()->flash('error', 'حدث خطأ في تحميل البيانات: ');
         }
     }
     public function showCreateClientForm()
@@ -228,12 +231,12 @@ class LeadsBoard extends Component
                 'address' => null,
                 'created_by' => Auth::id(),
             ]);
-            $this->clients = Client::all();
+            $this->clients = Client::select('id', 'cname')->get()->toArray();
             $this->newLead['client_id'] = $newClient->id;
             $this->hideCreateClientForm();
             session()->flash('message', 'تم إنشاء العميل بنجاح!');
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء إنشاء العميل: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ أثناء إنشاء العميل: ');
         }
     }
 
@@ -253,8 +256,8 @@ class LeadsBoard extends Component
 
                 session()->flash('message', 'تم تحديث حالة الفرصة بنجاح!');
             }
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ في تحديث الحالة: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ في تحديث الحالة: ');
         }
     }
 
@@ -284,8 +287,8 @@ class LeadsBoard extends Component
             ];
 
             $this->showEditModal = true;
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ في تحميل بيانات الفرصة: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ في تحميل بيانات الفرصة: ');
         }
     }
 
@@ -324,8 +327,8 @@ class LeadsBoard extends Component
             $this->closeModal();
             $this->loadData();
             session()->flash('message', 'تم تحديث الفرصة بنجاح!');
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء تحديث الفرصة: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ أثناء تحديث الفرصة: ');
         }
     }
 
@@ -357,8 +360,8 @@ class LeadsBoard extends Component
                 })
             ];
             $this->showReportModal = true;
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ في تحميل التقرير: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ في تحميل التقرير: ');
         }
     }
 
@@ -398,13 +401,21 @@ class LeadsBoard extends Component
                 $leadData['source_id'] = $leadData['source'];
                 unset($leadData['source']);
             }
+            // تأكيد تعيين الفرع ليمر عبر BranchScope
+            if (empty($leadData['branch_id'])) {
+                $leadData['branch_id'] = optional(Auth::user())
+                    ->branches()
+                    ->where('branches.is_active', 1)
+                    ->value('branches.id');
+            }
             Lead::create($leadData);
             $this->closeModal();
             $this->loadData();
+            $this->dispatch('lead-added');
 
             session()->flash('message', 'تم إضافة الفرصة بنجاح!');
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء إضافة الفرصة: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ أثناء إضافة الفرصة: ');
         }
     }
 
@@ -449,8 +460,8 @@ class LeadsBoard extends Component
                 $this->loadData();
                 session()->flash('message', 'تم حذف الفرصة بنجاح!');
             }
-        } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء حذف الفرصة: ' . $e->getMessage());
+        } catch (\Exception) {
+            session()->flash('error', 'حدث خطأ أثناء حذف الفرصة: ');
         }
     }
 

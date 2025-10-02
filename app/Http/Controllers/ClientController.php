@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\ClientRequest;
 use Illuminate\Support\Facades\Auth;
+use Modules\CRM\Models\ClientCategory;
 use RealRashid\SweetAlert\Facades\Alert;
 
 
@@ -32,7 +33,8 @@ class ClientController extends Controller
     public function create()
     {
         $branches = userBranches();
-        return view('clients.create', compact('branches'));
+        $categories = ClientCategory::all();
+        return view('clients.create', compact('branches', 'categories'));
     }
 
     public function store(ClientRequest $request)
@@ -64,7 +66,8 @@ class ClientController extends Controller
     public function edit($id)
     {
         $client = Client::findOrFail($id);
-        return view('clients.edit', compact('client'));
+        $categories = ClientCategory::all();
+        return view('clients.edit', compact('client', 'categories'));
     }
 
     public function update(ClientRequest $request, $id)

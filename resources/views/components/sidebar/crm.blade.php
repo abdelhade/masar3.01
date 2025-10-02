@@ -33,6 +33,11 @@
         </a>
     </li>
 @endcan
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('client.categories.index') }}">
+        <i class="ti-control-record"></i>{{ __('Clients Categories') }}
+    </a>
+</li>
 @can('عرض حالات الفرص')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('lead-status.index') }}">

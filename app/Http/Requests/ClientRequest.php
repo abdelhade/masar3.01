@@ -36,6 +36,7 @@ class ClientRequest extends FormRequest
             'tenant'           => 'nullable|integer',
             'branch'           => 'nullable|integer',
             'branch_id' => 'required|exists:branches,id',
+            'client_category_id' => 'nullable|exists:client_categories,id',
             'type' => [
                 'required',
                 'integer',
