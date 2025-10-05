@@ -13,7 +13,14 @@
             <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
         </a>
         <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
-@can('عرض اهلاك الاصل')
+   <li class="nav-item">
+        <a class="nav-link" href="{{ route('depreciation.index') }}">
+            <i class="ti-control-record"></i>قائمة الاصول
+        </a>
+    </li>
+
+
+            @can('عرض اهلاك الاصل')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'depreciation']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.depreciation') }}

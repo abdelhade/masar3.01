@@ -240,6 +240,7 @@
             iconColor: "#00695C",
             route: "{{ route('vouchers.index') }}"
         },
+   
 
         {
             name: "التحويلات النقديه",
@@ -267,7 +268,7 @@
             icon: "building",
             iconBg: "#E8F5E8",
             iconColor: "#2E7D32",
-            route: "{{ route('multi-vouchers.index', ['type' => 'basic_journal']) }}"
+            route: "{{ route('depreciation.index') }}"
         },
         {
             name: "أدارة الحسابات",

@@ -5,158 +5,224 @@ namespace Modules\Depreciation\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\AccHead;
+use App\Models\JournalDetail;
+use App\Models\JournalHead;
+use App\Models\OperHead;
 use Modules\Branches\Models\Branch;
-use Modules\Depreciation\Models\DepreciationItem;
+use Modules\Depreciation\Models\AccountAsset;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DepreciationManager extends Component
 {
     use WithPagination;
 
     public $showModal = false;
+    public $selectedAccount = null;
     public $editMode = false;
     public $itemId = null;
 
-    // Form fields
-    public $name = '';
+    // Asset form fields
+    public $asset_name = '';
     public $purchase_date = '';
-    public $cost = '';
-    public $useful_life = '';
+    public $purchase_cost = '';
     public $salvage_value = 0;
+    
+    // Depreciation form fields
+    public $annual_depreciation_amount = '';
     public $depreciation_method = 'straight_line';
-    public $asset_account_id = null;
-    public $branch_id = null;
+    public $useful_life_years = '';
+    public $depreciation_date = '';
     public $notes = '';
-    public $is_active = true;
+    public $schedulePreview = [];
 
     // Search and filter
     public $search = '';
     public $filterBranch = '';
-    public $filterMethod = '';
     public $filterStatus = '';
+    public $selectedAssets = [];
+    public $selectAll = false;
 
     protected $rules = [
-        'name' => 'required|string|max:255',
-        'purchase_date' => 'required|date',
-        'cost' => 'required|numeric|min:0',
-        'useful_life' => 'required|integer|min:1|max:100',
+        'asset_name' => 'nullable|string|max:255',
+        'purchase_date' => 'nullable|date',
+        'purchase_cost' => 'nullable|numeric|min:0',
         'salvage_value' => 'nullable|numeric|min:0',
-        'depreciation_method' => 'required|in:straight_line,double_declining,sum_of_years',
-        'asset_account_id' => 'nullable|exists:acc_head,id',
-        'branch_id' => 'required|exists:branches,id',
-        'notes' => 'nullable|string|max:1000',
-        'is_active' => 'boolean',
+        'annual_depreciation_amount' => 'nullable|numeric|min:0.01',
+        'depreciation_method' => 'nullable|in:straight_line,double_declining,sum_of_years',
+        'useful_life_years' => 'nullable|integer|min:1|max:100',
+        'depreciation_date' => 'nullable|date',
+        'notes' => 'nullable|string|max:500',
     ];
 
     protected $messages = [
-        'name.required' => 'اسم الأصل مطلوب',
-        'purchase_date.required' => 'تاريخ الشراء مطلوب',
-        'cost.required' => 'تكلفة الأصل مطلوبة',
-        'useful_life.required' => 'العمر الإنتاجي مطلوب',
-        'branch_id.required' => 'الفرع مطلوب',
+        'annual_depreciation_amount.min' => 'مبلغ الإهلاك يجب أن يكون أكبر من صفر',
+        'useful_life_years.min' => 'العمر الإنتاجي يجب أن يكون سنة واحدة على الأقل',
+        'useful_life_years.max' => 'العمر الإنتاجي لا يمكن أن يتجاوز 100 سنة',
+        'asset_name.string' => 'اسم الأصل يجب أن يكون نصاً',
+        'asset_name.max' => 'اسم الأصل لا يجب أن يتجاوز 255 حرفاً',
+        'purchase_date.date' => 'تاريخ الشراء غير صالح',
+        'purchase_cost.numeric' => 'تكلفة الشراء يجب أن تكون رقماً',
+        'purchase_cost.min' => 'تكلفة الشراء لا يمكن أن تكون سالبة',
+        'salvage_value.numeric' => 'قيمة الخردة يجب أن تكون رقماً',
+        'salvage_value.min' => 'قيمة الخردة لا يمكن أن تكون سالبة',
+        'annual_depreciation_amount.numeric' => 'مبلغ الإهلاك السنوي يجب أن يكون رقماً',
+        'depreciation_method.in' => 'طريقة الإهلاك المحددة غير صحيحة',
+        'useful_life_years.integer' => 'العمر الإنتاجي يجب أن يكون عدداً صحيحاً',
+        'depreciation_date.date' => 'تاريخ الإهلاك غير صالح',
+        'notes.string' => 'حقل الملاحظات يجب أن يكون نصاً',
+        'notes.max' => 'الملاحظات لا يجب أن تتجاوز 500 حرف',
     ];
 
     public function mount()
     {
-        $this->branch_id = auth()->user()->branch_id ?? null;
+        $this->depreciation_date = now()->format('Y-m-d');
+        $this->recalculateSchedulePreview();
     }
 
     public function render()
     {
-        $depreciationItems = DepreciationItem::query()
-            ->with(['assetAccount', 'depreciationAccount', 'expenseAccount', 'branch'])
+        // Get assets from accounts_assets table with their related account data
+        $accountAssets = AccountAsset::query()
+            ->with(['accHead', 'depreciationAccount', 'expenseAccount', 'accHead.branch'])
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
+                $query->whereHas('accHead', function ($q) {
+                    $q->where('aname', 'like', '%' . $this->search . '%');
+                })->orWhere('asset_name', 'like', '%' . $this->search . '%');
             })
             ->when($this->filterBranch, function ($query) {
-                $query->where('branch_id', $this->filterBranch);
-            })
-            ->when($this->filterMethod, function ($query) {
-                $query->where('depreciation_method', $this->filterMethod);
-            })
-            ->when($this->filterStatus !== '', function ($query) {
-                $query->where('is_active', $this->filterStatus);
+                $query->whereHas('accHead', function ($q) {
+                    $q->where('branch_id', $this->filterBranch);
+                });
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // Get asset accounts (starting with code '12')
-        $assetAccounts = AccHead::where('code', 'like', '12%')
+        // Get asset accounts for creating new assets
+        $assetAccounts = AccHead::query()
+            ->where('acc_type', 13)
+            ->where('is_basic', 0)
             ->where('isdeleted', 0)
+            ->whereDoesntHave('accountAsset') // Only accounts without existing asset records
             ->orderBy('aname')
             ->get();
 
         $branches = Branch::orderBy('name')->get();
 
         return view('depreciation::livewire.depreciation-manager', [
-            'depreciationItems' => $depreciationItems,
+            'accountAssets' => $accountAssets,
             'assetAccounts' => $assetAccounts,
             'branches' => $branches,
         ]);
     }
 
-    public function create()
+    public function selectAccountForDepreciation($accountId)
     {
+        $this->selectedAccount = AccHead::findOrFail($accountId);
         $this->resetForm();
-        $this->editMode = false;
+        // Set purchase cost from account balance
+        $this->purchase_cost = (string) ($this->selectedAccount->balance ?? '');
         $this->showModal = true;
+        $this->recalculateSchedulePreview();
     }
 
-    public function edit($id)
+    public function createAssetRecord($accountId)
     {
-        $item = DepreciationItem::findOrFail($id);
+        $this->selectedAccount = AccHead::findOrFail($accountId);
+        $this->resetForm();
+        $this->editMode = false;
+        // Set purchase cost from account balance for new asset records
+        $this->purchase_cost = (string) ($this->selectedAccount->balance ?? '');
+        $this->showModal = true;
+        $this->recalculateSchedulePreview();
+    }
+
+    public function editAsset($assetId)
+    {
+        $asset = AccountAsset::with('accHead')->findOrFail($assetId);
         
-        $this->itemId = $item->id;
-        $this->name = $item->name;
-        $this->purchase_date = $item->purchase_date->format('Y-m-d');
-        $this->cost = $item->cost;
-        $this->useful_life = $item->useful_life;
-        $this->salvage_value = $item->salvage_value;
-        $this->depreciation_method = $item->depreciation_method;
-        $this->asset_account_id = $item->asset_account_id;
-        $this->branch_id = $item->branch_id;
-        $this->notes = $item->notes;
-        $this->is_active = $item->is_active;
+        $this->selectedAccount = $asset->accHead;
+        $this->asset_name = $asset->asset_name;
+        $this->purchase_date = $asset->purchase_date ? $asset->purchase_date->format('Y-m-d') : '';
+        $this->purchase_cost = $asset->purchase_cost;
+        $this->salvage_value = $asset->salvage_value;
+        $this->useful_life_years = $asset->useful_life_years;
+        $this->depreciation_method = $asset->depreciation_method;
+        $this->annual_depreciation_amount = $asset->annual_depreciation;
+        $this->depreciation_date = $asset->depreciation_start_date ? $asset->depreciation_start_date->format('Y-m-d') : now()->format('Y-m-d');
+        $this->notes = $asset->notes;
+        $this->itemId = $asset->id;
         
         $this->editMode = true;
         $this->showModal = true;
+        $this->recalculateSchedulePreview();
     }
 
-    public function save()
+    public function processDepreciation()
     {
+        if (!$this->selectedAccount) {
+            $this->addError('selectedAccount', 'يرجى اختيار حساب الأصل أولاً.');
+            return;
+        }
+
         $this->validate();
 
         try {
             DB::beginTransaction();
 
-            $data = [
-                'name' => $this->name,
+            // Create or update AccountAsset record
+            $assetData = [
+                'acc_head_id' => $this->selectedAccount->id,
+                'asset_name' => $this->asset_name ?: $this->selectedAccount->aname,
                 'purchase_date' => $this->purchase_date,
-                'cost' => $this->cost,
-                'useful_life' => $this->useful_life,
+                'purchase_cost' => $this->purchase_cost ?: 0,
                 'salvage_value' => $this->salvage_value ?: 0,
-                'depreciation_method' => $this->depreciation_method,
-                'asset_account_id' => $this->asset_account_id,
-                'branch_id' => $this->branch_id,
+                'useful_life_years' => $this->useful_life_years,
+                'depreciation_method' => $this->depreciation_method ?: 'straight_line',
+                'annual_depreciation' => $this->annual_depreciation_amount ?: 0,
+                'depreciation_start_date' => $this->depreciation_date,
+                'last_depreciation_date' => $this->depreciation_date,
+                'is_active' => true,
                 'notes' => $this->notes,
-                'is_active' => $this->is_active,
             ];
 
-            // Calculate annual depreciation
-            $data['annual_depreciation'] = ($this->cost - ($this->salvage_value ?: 0)) / $this->useful_life;
-
-            if ($this->editMode) {
-                $item = DepreciationItem::findOrFail($this->itemId);
-                $item->update($data);
-                $message = 'تم تحديث بيانات الإهلاك بنجاح';
+            if ($this->editMode && $this->itemId) {
+                // Update existing asset
+                $asset = AccountAsset::findOrFail($this->itemId);
+                $asset->update($assetData);
+                $message = 'تم تحديث بيانات الأصل بنجاح';
             } else {
-                $item = DepreciationItem::create($data);
-                $message = 'تم إضافة الأصل للإهلاك بنجاح';
+                // Create new asset record
+                $asset = AccountAsset::create($assetData);
+                $message = 'تم إنشاء سجل الأصل بنجاح';
+            }
+
+            // Find or create depreciation accounts
+            $depreciationAccounts = $this->getOrCreateDepreciationAccounts($this->selectedAccount);
+            
+            // Update asset with depreciation account references
+            $asset->update([
+                'depreciation_account_id' => $depreciationAccounts['accumulated_depreciation']->id,
+                'expense_account_id' => $depreciationAccounts['expense_depreciation']->id,
+            ]);
+            
+            // Only create depreciation voucher if annual depreciation amount is provided
+            if ($this->annual_depreciation_amount && $this->annual_depreciation_amount > 0) {
+                // Create depreciation voucher entry
+                $this->createDepreciationVoucher(
+                    $this->selectedAccount,
+                    $depreciationAccounts['accumulated_depreciation'],
+                    $depreciationAccounts['expense_depreciation'],
+                    $this->annual_depreciation_amount
+                );
+
+                // Update accumulated depreciation in asset record
+                $asset->increment('accumulated_depreciation', $this->annual_depreciation_amount);
                 
-                // Auto-link with depreciation accounts if asset account is selected
-                if ($this->asset_account_id) {
-                    $this->linkDepreciationAccounts($item);
-                }
+                $message .= ' وتم إنشاء قيد الإهلاك';
+            } else {
+                $message .= ' (بدون إهلاك)';
             }
 
             DB::commit();
@@ -170,6 +236,8 @@ class DepreciationManager extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
+            // Surface the error inside the modal as validation-style message
+            $this->addError('general', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
             $this->dispatch('alert', [
                 'type' => 'error',
                 'message' => 'حدث خطأ: ' . $e->getMessage()
@@ -177,67 +245,240 @@ class DepreciationManager extends Component
         }
     }
 
-    private function linkDepreciationAccounts(DepreciationItem $item)
+    // Live updates to schedule preview when inputs change
+    public function updatedPurchaseCost()
     {
-        // Find related depreciation accounts
-        $depreciationAccount = AccHead::where('account_id', $this->asset_account_id)
+        $this->recalculateSchedulePreview();
+    }
+
+    public function updatedUsefulLifeYears()
+    {
+        $this->recalculateSchedulePreview();
+    }
+
+    public function updatedDepreciationMethod()
+    {
+        $this->recalculateSchedulePreview();
+    }
+
+    public function updatedDepreciationDate()
+    {
+        $this->recalculateSchedulePreview();
+    }
+
+    private function recalculateSchedulePreview(): void
+    {
+        $asset = (object) [
+            'purchase_cost' => (float)($this->purchase_cost ?: 0),
+            'salvage_value' => (float)0, // not exposed in the form per user request
+            'useful_life_years' => (int)($this->useful_life_years ?: 0),
+            'depreciation_method' => $this->depreciation_method ?: 'straight_line',
+            'depreciation_start_date' => $this->depreciation_date ?: now()->format('Y-m-d'),
+        ];
+
+        $this->schedulePreview = $this->calculateDepreciationSchedulePreview($asset);
+    }
+
+    private function calculateDepreciationSchedulePreview(object $asset): array
+    {
+        $schedule = [];
+
+        if (!$asset->useful_life_years || !$asset->purchase_cost) {
+            return $schedule;
+        }
+
+        $startDate = $asset->depreciation_start_date ? Carbon::parse($asset->depreciation_start_date) : now();
+        $depreciableAmount = $asset->purchase_cost - ($asset->salvage_value ?? 0);
+        $currentBookValue = $asset->purchase_cost;
+        $accumulatedDepreciation = 0;
+
+        for ($year = 1; $year <= $asset->useful_life_years; $year++) {
+            $yearStartDate = $startDate->copy()->addYears($year - 1);
+            $yearEndDate = $startDate->copy()->addYears($year)->subDay();
+
+            $annualDepreciation = $this->calculateYearlyDepreciationPreview(
+                $asset,
+                $currentBookValue,
+                $accumulatedDepreciation,
+                $depreciableAmount,
+                $year
+            );
+
+            if ($annualDepreciation <= 0) {
+                break;
+            }
+
+            $accumulatedDepreciation += $annualDepreciation;
+            $currentBookValue -= $annualDepreciation;
+
+            if ($accumulatedDepreciation > $depreciableAmount) {
+                $annualDepreciation -= ($accumulatedDepreciation - $depreciableAmount);
+                $accumulatedDepreciation = $depreciableAmount;
+                $currentBookValue = $asset->salvage_value ?? 0;
+            }
+
+            $schedule[] = [
+                'year' => $year,
+                'start_date' => $yearStartDate->format('Y-m-d'),
+                'end_date' => $yearEndDate->format('Y-m-d'),
+                'beginning_book_value' => $currentBookValue + $annualDepreciation,
+                'annual_depreciation' => $annualDepreciation,
+                'accumulated_depreciation' => $accumulatedDepreciation,
+                'ending_book_value' => $currentBookValue,
+                'percentage' => $depreciableAmount > 0 ? ($annualDepreciation / $depreciableAmount) * 100 : 0,
+            ];
+
+            if ($accumulatedDepreciation >= $depreciableAmount) {
+                break;
+            }
+        }
+
+        return $schedule;
+    }
+
+    private function calculateYearlyDepreciationPreview(object $asset, float $currentBookValue, float $accumulatedDepreciation, float $depreciableAmount, int $year): float
+    {
+        switch ($asset->depreciation_method) {
+            case 'straight_line':
+                return $depreciableAmount / max($asset->useful_life_years, 1);
+            case 'double_declining':
+                $rate = 2 / max($asset->useful_life_years, 1);
+                $depreciation = $currentBookValue * $rate;
+                $remainingDepreciable = $depreciableAmount - $accumulatedDepreciation;
+                return min($depreciation, $remainingDepreciable);
+            case 'sum_of_years':
+                $sumOfYears = ($asset->useful_life_years * ($asset->useful_life_years + 1)) / 2;
+                $remainingYears = $asset->useful_life_years - ($year - 1);
+                return ($depreciableAmount * $remainingYears) / max($sumOfYears, 1);
+            default:
+                return $depreciableAmount / max($asset->useful_life_years, 1);
+        }
+    }
+
+    private function getOrCreateDepreciationAccounts(AccHead $assetAccount)
+    {
+        // Find accumulated depreciation account (acc_type = 15)
+        $accumulatedDepreciation = AccHead::where('account_id', $assetAccount->id)
             ->where('acc_type', 15)
             ->first();
-            
-        $expenseAccount = AccHead::where('account_id', $this->asset_account_id)
+
+        if (!$accumulatedDepreciation) {
+            $accumulatedDepreciation = AccHead::create([
+                'aname' => 'مجمع إهلاك ' . $assetAccount->aname,
+                'code' => $this->generateAccountCode(15, $assetAccount->branch_id),
+                'acc_type' => 15,
+                'account_id' => $assetAccount->id,
+                'branch_id' => $assetAccount->branch_id,
+                'is_basic' => 0,
+                'isdeleted' => 0,
+            ]);
+        }
+
+        // Find expense depreciation account (acc_type = 16)
+        $expenseDepreciation = AccHead::where('account_id', $assetAccount->id)
             ->where('acc_type', 16)
             ->first();
 
-        if ($depreciationAccount || $expenseAccount) {
-            $item->update([
-                'depreciation_account_id' => $depreciationAccount?->id,
-                'expense_account_id' => $expenseAccount?->id,
+        if (!$expenseDepreciation) {
+            $expenseDepreciation = AccHead::create([
+                'aname' => 'مصروف إهلاك ' . $assetAccount->aname,
+                'code' => $this->generateAccountCode(16, $assetAccount->branch_id),
+                'acc_type' => 16,
+                'account_id' => $assetAccount->id,
+                'branch_id' => $assetAccount->branch_id,
+                'is_basic' => 0,
+                'isdeleted' => 0,
             ]);
         }
+
+        return [
+            'accumulated_depreciation' => $accumulatedDepreciation,
+            'expense_depreciation' => $expenseDepreciation,
+        ];
     }
 
-    public function delete($id)
+    private function createDepreciationVoucher(AccHead $assetAccount, AccHead $accumulatedAccount, AccHead $expenseAccount, $amount)
     {
-        try {
-            $item = DepreciationItem::findOrFail($id);
-            $item->delete();
-            
-            $this->dispatch('alert', [
-                'type' => 'success',
-                'message' => 'تم حذف الأصل بنجاح'
-            ]);
-        } catch (\Exception $e) {
-            $this->dispatch('alert', [
-                'type' => 'error',
-                'message' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()
-            ]);
-        }
+        // Get next operation ID
+        $lastProId = OperHead::where('pro_type', 61)->max('pro_id') ?? 0;
+        $newProId = $lastProId + 1;
+
+        // Create operation header
+        $oper = OperHead::create([
+            'pro_id' => $newProId,
+            'pro_date' => $this->depreciation_date,
+            'pro_type' => 61, // قيد يومية
+            'acc1' => $expenseAccount->id,
+            'acc2' => $accumulatedAccount->id,
+            'pro_value' => $amount,
+            'details' => 'قيد إهلاك ' . $assetAccount->aname . ' - ' . $this->notes,
+            'info' => 'قيد إهلاك تلقائي',
+            'user' => Auth::id(),
+            'branch_id' => $assetAccount->branch_id,
+            'isdeleted' => 0,
+        ]);
+
+        // Get next journal ID
+        $lastJournalId = JournalHead::max('journal_id') ?? 0;
+        $newJournalId = $lastJournalId + 1;
+
+        // Create journal header
+        $journalHead = JournalHead::create([
+            'journal_id' => $newJournalId,
+            'total' => $amount,
+            'op_id' => $oper->id,
+            'pro_type' => 61,
+            'date' => $this->depreciation_date,
+            'details' => 'قيد إهلاك ' . $assetAccount->aname,
+            'user' => Auth::id(),
+            'branch_id' => $assetAccount->branch_id,
+        ]);
+
+        // Debit: Expense Account (مصروف الإهلاك)
+        JournalDetail::create([
+            'journal_id' => $newJournalId,
+            'account_id' => $expenseAccount->id,
+            'debit' => $amount,
+            'credit' => 0,
+            'type' => 0, // مدين
+            'info' => 'مصروف إهلاك ' . $assetAccount->aname,
+            'op_id' => $oper->id,
+            'isdeleted' => 0,
+            'branch_id' => $assetAccount->branch_id,
+        ]);
+
+        // Credit: Accumulated Depreciation Account (مجمع الإهلاك)
+        JournalDetail::create([
+            'journal_id' => $newJournalId,
+            'account_id' => $accumulatedAccount->id,
+            'debit' => 0,
+            'credit' => $amount,
+            'type' => 1, // دائن
+            'info' => 'مجمع إهلاك ' . $assetAccount->aname,
+            'op_id' => $oper->id,
+            'isdeleted' => 0,
+            'branch_id' => $assetAccount->branch_id,
+        ]);
+
+        return $oper;
     }
 
-    public function calculateDepreciation($id)
+    private function generateAccountCode($accType, $branchId)
     {
-        try {
-            $item = DepreciationItem::findOrFail($id);
-            
-            // Calculate current year depreciation
-            $yearsUsed = now()->diffInYears($item->purchase_date);
-            $totalDepreciation = min($yearsUsed * $item->annual_depreciation, $item->cost - $item->salvage_value);
-            
-            $item->update([
-                'accumulated_depreciation' => $totalDepreciation
-            ]);
-            
-            $this->dispatch('alert', [
-                'type' => 'success',
-                'message' => 'تم حساب الإهلاك المتراكم بنجاح'
-            ]);
-            
-        } catch (\Exception $e) {
-            $this->dispatch('alert', [
-                'type' => 'error',
-                'message' => 'حدث خطأ أثناء حساب الإهلاك: ' . $e->getMessage()
-            ]);
+        // Generate a unique account code based on account type and branch
+        $prefix = $accType . str_pad($branchId, 2, '0', STR_PAD_LEFT);
+        $lastAccount = AccHead::where('code', 'like', $prefix . '%')
+            ->orderBy('code', 'desc')
+            ->first();
+        
+        if ($lastAccount) {
+            $lastNumber = (int)substr($lastAccount->code, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
         }
+        
+        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     public function closeModal()
@@ -249,15 +490,16 @@ class DepreciationManager extends Component
     private function resetForm()
     {
         $this->itemId = null;
-        $this->name = '';
+        $this->editMode = false;
+        $this->asset_name = '';
         $this->purchase_date = '';
-        $this->cost = '';
-        $this->useful_life = '';
+        $this->purchase_cost = '';
         $this->salvage_value = 0;
-        $this->depreciation_method = 'straight_line';
-        $this->asset_account_id = null;
+        $this->annual_depreciation_amount = '';
+        $this->depreciation_method = '';
+        $this->useful_life_years = '';
+        $this->depreciation_date = now()->format('Y-m-d');
         $this->notes = '';
-        $this->is_active = true;
         $this->resetErrorBag();
     }
 
@@ -271,13 +513,111 @@ class DepreciationManager extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterMethod()
+    public function updatedSelectAll($value)
     {
-        $this->resetPage();
+        if ($value) {
+            $this->selectedAssets = $this->getVisibleAssetIds();
+        } else {
+            $this->selectedAssets = [];
+        }
     }
 
-    public function updatingFilterStatus()
+    public function updatedSelectedAssets()
     {
-        $this->resetPage();
+        $this->selectAll = count($this->selectedAssets) === count($this->getVisibleAssetIds());
+    }
+
+    private function getVisibleAssetIds()
+    {
+        return AccountAsset::query()
+            ->with(['accHead'])
+            ->when($this->search, function ($query) {
+                $query->whereHas('accHead', function ($q) {
+                    $q->where('aname', 'like', '%' . $this->search . '%');
+                })->orWhere('asset_name', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->filterBranch, function ($query) {
+                $query->whereHas('accHead', function ($q) {
+                    $q->where('branch_id', $this->filterBranch);
+                });
+            })
+            ->pluck('id')
+            ->toArray();
+    }
+
+    public function bulkDepreciation()
+    {
+        if (empty($this->selectedAssets)) {
+            $this->dispatch('alert', [
+                'type' => 'warning',
+                'message' => 'يرجى اختيار أصل واحد على الأقل'
+            ]);
+            return;
+        }
+
+        $processedCount = 0;
+        $totalAmount = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($this->selectedAssets as $assetId) {
+                $asset = AccountAsset::with('accHead')->find($assetId);
+                
+                if (!$asset || !$asset->annual_depreciation) {
+                    continue;
+                }
+
+                // Calculate monthly depreciation if not done this month
+                $monthlyDepreciation = $asset->annual_depreciation / 12;
+                $lastDepreciation = $asset->last_depreciation_date ? 
+                    Carbon::parse($asset->last_depreciation_date) : 
+                    Carbon::parse($asset->depreciation_start_date);
+
+                if ($lastDepreciation->format('Y-m') >= now()->format('Y-m')) {
+                    continue; // Already processed this month
+                }
+
+                // Get or create depreciation accounts
+                $depreciationAccounts = $this->getOrCreateDepreciationAccounts($asset->accHead);
+                
+                // Create depreciation voucher
+                $this->createDepreciationVoucher(
+                    $asset->accHead,
+                    $depreciationAccounts['accumulated_depreciation'],
+                    $depreciationAccounts['expense_depreciation'],
+                    $monthlyDepreciation
+                );
+
+                // Update asset
+                $asset->increment('accumulated_depreciation', $monthlyDepreciation);
+                $asset->update([
+                    'last_depreciation_date' => now(),
+                    'depreciation_account_id' => $depreciationAccounts['accumulated_depreciation']->id,
+                    'expense_account_id' => $depreciationAccounts['expense_depreciation']->id,
+                ]);
+
+                $processedCount++;
+                $totalAmount += $monthlyDepreciation;
+            }
+
+            DB::commit();
+            
+            $this->selectedAssets = [];
+            $this->selectAll = false;
+            
+            $this->dispatch('alert', [
+                'type' => 'success',
+                'message' => "تم معالجة {$processedCount} أصل بإجمالي " . number_format($totalAmount, 2)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => 'حدث خطأ أثناء المعالجة المجمعة: ' . $e->getMessage()
+            ]);
+        }
     }
 }

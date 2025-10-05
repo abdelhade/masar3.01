@@ -259,7 +259,7 @@
                     </div>
                     <div>
                         <strong>أنشئ بواسطة:</strong>
-                        <span class="ms-2">{{ $project->createdBy->name }}</span>
+                        <span class="ms-2">{{ '--' }}</span>
                     </div>
                 </div>
                 
@@ -269,7 +269,7 @@
                     </div>
                     <div>
                         <strong>تم التحديث بواسطة:</strong>
-                        <span class="ms-2">{{ $project->updatedBy->name }}</span>
+                        <span class="ms-2"></span>
                     </div>
                 </div>
             </div>

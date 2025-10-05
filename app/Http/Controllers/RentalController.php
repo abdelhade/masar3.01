@@ -24,7 +24,7 @@ class RentalController extends Controller
     public function create()
     {
         // جلب الحسابات المتاحة للتأجير
-        $equipments = AccHead::where('rentable', 1)
+        $equipments = AccHead:: where('code', 'like', '1202%')
             ->get();
 
         // جلب المشاريع

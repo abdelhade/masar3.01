@@ -18,8 +18,8 @@ class DepreciationItemsSeeder extends Seeder
             return;
         }
 
-        // Get some asset accounts (starting with code '12')
-        $assetAccounts = AccHead::where('code', 'like', '12%')
+        // Get some asset accounts (acc_type = 11)
+        $assetAccounts = AccHead::where('acc_type', 13)
             ->where('isdeleted', 0)
             ->take(3)
             ->get();

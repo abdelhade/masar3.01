@@ -35,11 +35,14 @@ class DepreciationServiceProvider extends ServiceProvider
     protected function registerLivewireComponents(): void
     {
         Livewire::component('depreciation::depreciation-manager', \Modules\Depreciation\Livewire\DepreciationManager::class);
+        Livewire::component('depreciation::depreciation-schedule', \Modules\Depreciation\Livewire\DepreciationSchedule::class);
     }
 
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            \Modules\Depreciation\Console\Commands\CalculateDepreciationCommand::class,
+        ]);
     }
 
     protected function registerCommandSchedules(): void

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Modules\Branches\Models\Branch;
+use Modules\Depreciation\Models\AccountAsset;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class AccHead extends Model
 {
@@ -96,6 +98,30 @@ class AccHead extends Model
     public function accountable()
     {
         return $this->morphTo();
-    }   
+    }
+
+    /**
+     * One-to-one relationship with AccountAsset.
+     */
+    public function accountAsset(): HasOne
+    {
+        return $this->hasOne(AccountAsset::class, 'acc_head_id');
+    }
+
+    /**
+     * Check if this account is an asset account.
+     */
+    public function isAssetAccount(): bool
+    {
+        return $this->acc_type == 11 && $this->is_basic == 0;
+    }
+
+    /**
+     * Check if this account has depreciation settings.
+     */
+    public function hasDepreciationSettings(): bool
+    {
+        return $this->accountAsset()->exists();
+    }
 
 }

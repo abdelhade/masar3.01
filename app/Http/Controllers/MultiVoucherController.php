@@ -30,7 +30,7 @@ class MultiVoucherController extends Controller
             ->get();
         return view('multi-vouchers.index', compact('multis'));
     }
-
+  
     public function create(Request $request)
     {
         $branches = userBranches();
@@ -122,7 +122,7 @@ class MultiVoucherController extends Controller
 
             case 50:
                 return [
-                    $query()->where('code', 'like', '1101%')->get(),
+                    $query()->where('acc_type', '13')->get(),
                     $query()->get()
                 ];
 
@@ -130,20 +130,19 @@ class MultiVoucherController extends Controller
             case 52:
             case 53:
                 return [
+                    $query()->where('acc_type', '13')->get(),
                     $query()->get(),
-                    $query()->where('code', 'like', '1101%')->get()
                 ];
 
             case 54:
                 return [
-                    $query()->where('code', 'like', '1101%')->get(),
-                    $query()->get()
+                    $query()->get(),
+                    $query()->where('acc_type', '13')->get(),
                 ];
-
             case 55:
                 return [
-                    $query()->where('code', 'like', '1101%')->get(),
-                    $query()->where('code', 'like', '2101%')->get()
+                    $query()->where('acc_type', '13')->get(),
+                    $query()->where('acc_type', '14')->get(),
                 ];
 
             default:

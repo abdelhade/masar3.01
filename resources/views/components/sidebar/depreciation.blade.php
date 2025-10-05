@@ -12,6 +12,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="{{ route('depreciation.schedule') }}">
+                    <i class="ti-control-record"></i>{{ __('جدولة الإهلاك') }}
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('depreciation.report') }}">
                     <i class="ti-control-record"></i>{{ __('تقرير الإهلاك') }}
                 </a>
@@ -23,4 +28,4 @@
             </li>
         </ul>
     </li>
-@endcan
+@endcan 

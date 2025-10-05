@@ -6,11 +6,13 @@
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('الرئيسية') }}</a></li>
-                <li class="breadcrumb-item active">{{ __('إدارة إهلاك الأصول') }}</li>
+                <li class="breadcrumb-item"><a href="{{ route('depreciation.index') }}">{{ __('إدارة الإهلاك') }}</a></li>
+                <li class="breadcrumb-item active">{{ __('جدولة الإهلاك') }}</li>
             </ol>
         </nav>
 
-        @livewire('depreciation::depreciation-manager')
+        <!-- Main Content -->
+        @livewire('depreciation::depreciation-schedule')
     </div>
 
     @push('styles')
@@ -36,7 +38,7 @@
         }
         
         .progress-bar {
-            background-color: #28a745;
+            background-color: #007bff;
             color: white;
             font-size: 12px;
             line-height: 20px;
@@ -46,15 +48,8 @@
             backdrop-filter: blur(3px);
         }
         
-        .form-label {
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        .alert-info {
-            background-color: #d1ecf1;
-            border-color: #bee5eb;
-            color: #0c5460;
+        .badge {
+            font-size: 0.8em;
         }
     </style>
     @endpush

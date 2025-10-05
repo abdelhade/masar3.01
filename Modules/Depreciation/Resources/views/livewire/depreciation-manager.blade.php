@@ -1,29 +1,31 @@
-<!-- Header -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="text-primary">
-                <i class="fas fa-calculator me-2"></i>
-                {{ __('إدارة إهلاك الأصول') }}
-            </h2>
-            <button wire:click="create" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>
-                {{ __('إضافة أصل جديد') }}
-            </button>
+<div>
+<div>
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-primary">
+                    <i class="fas fa-calculator me-2"></i>
+                    {{ __('إدارة إهلاك الأصول') }}
+                </h2>
+                <div class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ __('اختر حساب أصل من القائمة لتطبيق الإهلاك عليه') }}
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <label class="form-label">{{ __('البحث') }}</label>
                     <input wire:model.live.debounce.300ms="search" type="text" class="form-control" 
-                           placeholder="{{ __('البحث بالاسم...') }}">
+                           placeholder="{{ __('البحث باسم الحساب...') }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <label class="form-label">{{ __('الفرع') }}</label>
                     <select wire:model.live="filterBranch" class="form-select">
                         <option value="">{{ __('جميع الفروع') }}</option>
@@ -32,24 +34,27 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ __('طريقة الإهلاك') }}</label>
-                    <select wire:model.live="filterMethod" class="form-select">
-                        <option value="">{{ __('جميع الطرق') }}</option>
-                        <option value="straight_line">{{ __('القسط الثابت') }}</option>
-                        <option value="double_declining">{{ __('الرصيد المتناقص المضاعف') }}</option>
-                        <option value="sum_of_years">{{ __('مجموع السنوات') }}</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ __('الحالة') }}</label>
-                    <select wire:model.live="filterStatus" class="form-select">
-                        <option value="">{{ __('جميع الحالات') }}</option>
-                        <option value="1">{{ __('نشط') }}</option>
-                        <option value="0">{{ __('غير نشط') }}</option>
-                    </select>
-                </div>
             </div>
+            
+            <!-- Bulk Actions -->
+            @if(!empty($selectedAssets))
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <span>{{ __('تم اختيار') }} {{ count($selectedAssets) }} {{ __('أصل') }}</span>
+                            <div>
+                                <button wire:click="bulkDepreciation" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-calculator me-1"></i>
+                                    {{ __('معالجة مجمعة') }}
+                                </button>
+                                <button wire:click="$set('selectedAssets', []); $set('selectAll', false)" class="btn btn-outline-secondary btn-sm">
+                                    {{ __('إلغاء التحديد') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -60,57 +65,46 @@
                 <table class="table table-striped table-hover">
                     <thead class="table-primary">
                         <tr>
-                            <th>{{ __('الاسم') }}</th>
+                            <th width="50">
+                                <input type="checkbox" wire:model="selectAll" class="form-check-input">
+                            </th>
+                            <th>{{ __('اسم الأصل') }}</th>
+                            <th>{{ __('حساب الأصل') }}</th>
                             <th>{{ __('تاريخ الشراء') }}</th>
                             <th>{{ __('التكلفة') }}</th>
-                            <th>{{ __('العمر الإنتاجي') }}</th>
                             <th>{{ __('الإهلاك السنوي') }}</th>
                             <th>{{ __('الإهلاك المتراكم') }}</th>
                             <th>{{ __('القيمة الدفترية') }}</th>
-                            <th>{{ __('نسبة الإهلاك') }}</th>
                             <th>{{ __('الحالة') }}</th>
                             <th>{{ __('الإجراءات') }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($depreciationItems as $item)
+                        @forelse($accountAssets as $asset)
                             <tr>
                                 <td>
+                                    <input type="checkbox" wire:model="selectedAssets" value="{{ $asset->id }}" class="form-check-input">
+                                </td>
+                                <td>
                                     <div class="d-flex flex-column">
-                                        <strong>{{ $item->name }}</strong>
-                                        @if($item->assetAccount)
-                                            <small class="text-muted">
-                                                {{ $item->assetAccount->code }} - {{ $item->assetAccount->aname }}
-                                            </small>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>{{ $item->purchase_date->format('Y-m-d') }}</td>
-                                <td>{{ number_format($item->cost, 2) }}</td>
-                                <td>{{ $item->useful_life }} {{ __('سنوات') }}</td>
-                                <td>{{ number_format($item->annual_depreciation, 2) }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <span>{{ number_format($item->accumulated_depreciation, 2) }}</span>
-                                        <button wire:click="calculateDepreciation({{ $item->id }})" 
-                                                class="btn btn-sm btn-outline-info ms-2" 
-                                                title="{{ __('إعادة حساب') }}">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>{{ number_format($item->getNetBookValue(), 2) }}</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar" 
-                                             style="width: {{ $item->getDepreciationPercentage() }}%"
-                                             role="progressbar">
-                                            {{ number_format($item->getDepreciationPercentage(), 1) }}%
-                                        </div>
+                                        <strong>{{ $asset->asset_name ?: $asset->accHead->aname }}</strong>
+                                        <small class="text-muted">{{ $asset->accHead->code }}</small>
                                     </div>
                                 </td>
                                 <td>
-                                    @if($item->is_active)
+                                    <span class="badge bg-info">{{ $asset->accHead->aname }}</span>
+                                </td>
+                                <td>
+                                    {{ $asset->purchase_date ? $asset->purchase_date->format('Y-m-d') : '-' }}
+                                </td>
+                                <td>{{ number_format($asset->purchase_cost, 2) }}</td>
+                                <td>{{ number_format($asset->annual_depreciation, 2) }}</td>
+                                <td>{{ number_format($asset->accumulated_depreciation, 2) }}</td>
+                                <td>
+                                    <strong class="text-primary">{{ number_format($asset->getNetBookValue(), 2) }}</strong>
+                                </td>
+                                <td>
+                                    @if($asset->is_active)
                                         <span class="badge bg-success">{{ __('نشط') }}</span>
                                     @else
                                         <span class="badge bg-secondary">{{ __('غير نشط') }}</span>
@@ -118,16 +112,15 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" dir="ltr">
-                                        <button wire:click="edit({{ $item->id }})" 
+                                        <button wire:click="editAsset({{ $asset->id }})" 
                                                 class="btn btn-sm btn-outline-primary" 
                                                 title="{{ __('تعديل') }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button wire:click="delete({{ $item->id }})" 
-                                                class="btn btn-sm btn-outline-danger"
-                                                onclick="return confirm('{{ __('هل أنت متأكد من الحذف؟') }}')"
-                                                title="{{ __('حذف') }}">
-                                            <i class="fas fa-trash"></i>
+                                        <button wire:click="selectAccountForDepreciation({{ $asset->accHead->id }})" 
+                                                class="btn btn-sm btn-outline-success" 
+                                                title="{{ __('إهلاك إضافي') }}">
+                                            <i class="fas fa-calculator"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -136,8 +129,11 @@
                             <tr>
                                 <td colspan="10" class="text-center py-4">
                                     <div class="text-muted">
-                                        <i class="fas fa-calculator fa-3x mb-3"></i>
-                                        <p>{{ __('لا توجد أصول للإهلاك') }}</p>
+                                        <i class="fas fa-building fa-3x mb-3"></i>
+                                        <p>{{ __('لا توجد أصول مسجلة') }}</p>
+                                        @if($assetAccounts->count() > 0)
+                                            <p class="small">{{ __('يمكنك إضافة أصل جديد من الحسابات أدناه') }}</p>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -146,9 +142,39 @@
                 </table>
             </div>
 
+            <!-- Available Asset Accounts Section -->
+            @if($assetAccounts->count() > 0)
+                <div class="mt-4">
+                    <h5 class="text-muted mb-3">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        {{ __('حسابات أصول متاحة للإضافة') }}
+                    </h5>
+                    <div class="row">
+                        @foreach($assetAccounts as $account)
+                            <div class="col-md-4 mb-2">
+                                <div class="card border-dashed border-primary">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>{{ $account->aname }}</strong>
+                                                <br><small class="text-muted">{{ $account->code }}</small>
+                                            </div>
+                                            <button wire:click="createAssetRecord({{ $account->id }})" 
+                                                    class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-plus"></i> إضافة
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <!-- Pagination -->
             <div class="d-flex justify-content-center mt-3">
-                {{ $depreciationItems->links() }}
+                {{ $accountAssets->links() }}
             </div>
         </div>
     </div>
@@ -157,157 +183,199 @@
     @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
+                <div class="modal-content position-relative">
+                    <!-- Loading Overlay during save (hidden by default to avoid flash) -->
+                    <div wire:loading.delay wire:target="processDepreciation"
+                         wire:loading.class.remove="d-none" wire:loading.class="d-flex"
+                         class="position-absolute top-0 start-0 w-100 h-100 d-none align-items-center justify-content-center"
+                         style="background: rgba(255,255,255,0.6); z-index: 10;">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border text-primary me-2" role="status" aria-hidden="true"></div>
+                            <strong>{{ __('جاري الحفظ...') }}</strong>
+                        </div>
+                    </div>
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            @if($editMode)
-                                {{ __('تعديل بيانات الإهلاك') }}
-                            @else
-                                {{ __('إضافة أصل جديد للإهلاك') }}
-                            @endif
+                            {{ __('إهلاك الأصل') }}: {{ $selectedAccount?->aname }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
                     <div class="modal-body">
-                        <form wire:submit.prevent="save">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('اسم الأصل') }} *</label>
-                                        <input wire:model="name" type="text" class="form-control @error('name') is-invalid @enderror">
-                                        @error('name')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>{{ __('الرجاء تصحيح الأخطاء التالية:') }}</strong>
+                                </div>
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        @error('general')
+                            <div class="alert alert-danger">
+                                <i class="fas fa-times-circle me-2"></i>
+                                {{ $message }}
+                            </div>
+                        @enderror
+                        <form wire:submit.prevent="processDepreciation">
+                            <div class="mb-4">
+                                <h6 class="text-primary border-bottom pb-2">{{ __('بيانات الإهلاك') }}</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('تاريخ الشراء') }}</label>
+                                            <input wire:model="purchase_date" type="date" 
+                                                   class="form-control @error('purchase_date') is-invalid @enderror">
+                                            @error('purchase_date')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('تاريخ أول إهلاك') }}</label>
+                                            <input wire:model="depreciation_date" type="date" 
+                                                   class="form-control @error('depreciation_date') is-invalid @enderror">
+                                            @error('depreciation_date')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('تكلفة الشراء (من حساب الأصل)') }}</label>
+                                            <input wire:model="purchase_cost" type="number" step="0.01" 
+                                                   class="form-control @error('purchase_cost') is-invalid @enderror" readonly
+                                                   placeholder="{{ __('تُجلب تلقائياً من رصيد الحساب') }}">
+                                            @error('purchase_cost')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <small class="text-muted">{{ __('القيمة مأخوذة من رصيد حساب الأصل الحالي') }}</small>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('تاريخ الشراء') }} *</label>
-                                        <input wire:model="purchase_date" type="date" class="form-control @error('purchase_date') is-invalid @enderror">
-                                        @error('purchase_date')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('قيمة الإهلاك السنوي') }}</label>
+                                            <input wire:model="annual_depreciation_amount" type="number" step="0.01" 
+                                                   class="form-control @error('annual_depreciation_amount') is-invalid @enderror">
+                                            @error('annual_depreciation_amount')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('القيمة القابلة للإهلاك') }}</label>
+                                            <input type="text" class="form-control" value="{{ number_format(max(($purchase_cost ?: 0) - 0, 0), 2) }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('طريقة الإهلاك') }}</label>
+                                            <select wire:model="depreciation_method" class="form-select @error('depreciation_method') is-invalid @enderror">
+                                                <option value="straight_line">{{ __('القسط الثابت') }}</option>
+                                                <option value="double_declining">{{ __('الرصيد المتناقص المضاعف') }}</option>
+                                                <option value="sum_of_years">{{ __('مجموع السنوات') }}</option>
+                                            </select>
+                                            @error('depreciation_method')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('عدد سنوات الإهلاك') }}</label>
+                                            <input wire:model="useful_life_years" type="number" min="1" 
+                                                   class="form-control @error('useful_life_years') is-invalid @enderror">
+                                            @error('useful_life_years')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('التكلفة') }} *</label>
-                                        <input wire:model="cost" type="number" step="0.01" class="form-control @error('cost') is-invalid @enderror">
-                                        @error('cost')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('قيمة الخردة') }}</label>
-                                        <input wire:model="salvage_value" type="number" step="0.01" class="form-control @error('salvage_value') is-invalid @enderror">
-                                        @error('salvage_value')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('العمر الإنتاجي (بالسنوات)') }} *</label>
-                                        <input wire:model="useful_life" type="number" min="1" class="form-control @error('useful_life') is-invalid @enderror">
-                                        @error('useful_life')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('طريقة الإهلاك') }} *</label>
-                                        <select wire:model="depreciation_method" class="form-select @error('depreciation_method') is-invalid @enderror">
-                                            <option value="straight_line">{{ __('القسط الثابت') }}</option>
-                                            <option value="double_declining">{{ __('الرصيد المتناقص المضاعف') }}</option>
-                                            <option value="sum_of_years">{{ __('مجموع السنوات') }}</option>
-                                        </select>
-                                        @error('depreciation_method')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary border-bottom pb-2">{{ __('جدول الإهلاك المتوقع') }}</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover table-sm">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th>{{ __('السنة') }}</th>
+                                                <th>{{ __('من تاريخ') }}</th>
+                                                <th>{{ __('إلى تاريخ') }}</th>
+                                                <th>{{ __('القيمة الدفترية في البداية') }}</th>
+                                                <th>{{ __('إهلاك السنة') }}</th>
+                                                <th>{{ __('الإهلاك المتراكم') }}</th>
+                                                <th>{{ __('القيمة الدفترية في النهاية') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($schedulePreview as $row)
+                                                <tr>
+                                                    <td><strong>{{ $row['year'] }}</strong></td>
+                                                    <td>{{ $row['start_date'] }}</td>
+                                                    <td>{{ $row['end_date'] }}</td>
+                                                    <td>{{ number_format($row['beginning_book_value'], 2) }}</td>
+                                                    <td class="text-danger">{{ number_format($row['annual_depreciation'], 2) }}</td>
+                                                    <td class="text-warning">{{ number_format($row['accumulated_depreciation'], 2) }}</td>
+                                                    <td class="text-success">{{ number_format($row['ending_book_value'], 2) }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="7" class="text-center text-muted">{{ __('لا توجد بيانات كافية لحساب الجدولة') }}</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('حساب الأصل') }}</label>
-                                        <select wire:model="asset_account_id" class="form-select @error('asset_account_id') is-invalid @enderror">
-                                            <option value="">{{ __('اختر حساب الأصل') }}</option>
-                                            @foreach($assetAccounts as $account)
-                                                <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->aname }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('asset_account_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                            @if($annual_depreciation_amount && $annual_depreciation_amount > 0)
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>{{ __('سيتم إنشاء القيد التالي:') }}</h6>
+                                    <table class="table table-sm mb-0">
+                                        <tr>
+                                            <td><strong>{{ __('من حـ/ مصروف إهلاك') }} {{ $selectedAccount?->aname }}</strong></td>
+                                            <td class="text-end">{{ number_format($annual_depreciation_amount, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>{{ __('إلى حـ/ مجمع إهلاك') }} {{ $selectedAccount?->aname }}</strong></td>
+                                            <td class="text-end">{{ number_format($annual_depreciation_amount, 2) }}</td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('الفرع') }} *</label>
-                                        <select wire:model="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
-                                            <option value="">{{ __('اختر الفرع') }}</option>
-                                            @foreach($branches as $branch)
-                                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('branch_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('ملاحظات') }}</label>
-                                        <textarea wire:model="notes" class="form-control @error('notes') is-invalid @enderror" rows="3"></textarea>
-                                        @error('notes')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="form-check">
-                                        <input wire:model="is_active" type="checkbox" class="form-check-input" id="is_active">
-                                        <label class="form-check-label" for="is_active">
-                                            {{ __('نشط') }}
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if($cost && $useful_life && $salvage_value !== null)
-                                <div class="alert alert-info mt-3">
-                                    <strong>{{ __('الإهلاك السنوي المحسوب:') }}</strong>
-                                    {{ number_format(($cost - $salvage_value) / $useful_life, 2) }}
+                            @else
+                                <div class="alert alert-warning">
+                                    <h6><i class="fas fa-exclamation-triangle me-2"></i>{{ __('ملاحظة:') }}</h6>
+                                    <p class="mb-0">{{ __('لن يتم إنشاء قيد إهلاك لأن مبلغ الإهلاك السنوي فارغ. يمكنك إضافة الإهلاك لاحقاً من خلال تعديل الأصل.') }}</p>
                                 </div>
                             @endif
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                        <button type="button" class="btn btn-secondary" wire:click="closeModal" wire:loading.attr="disabled" wire:target="processDepreciation">
                             {{ __('إلغاء') }}
                         </button>
-                        <button type="button" class="btn btn-primary" wire:click="save">
-                            @if($editMode)
-                                {{ __('تحديث') }}
+                        <button type="button" class="btn btn-success" wire:click="processDepreciation" wire:loading.attr="disabled" wire:target="processDepreciation">
+                            <span wire:loading.delay.inline wire:target="processDepreciation" class="me-2">
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            </span>
+                            @if($annual_depreciation_amount && $annual_depreciation_amount > 0)
+                                <i class="fas fa-calculator me-2"></i>
+                                {{ __('إنشاء الأصل مع الإهلاك') }}
                             @else
-                                {{ __('حفظ') }}
+                                <i class="fas fa-plus me-2"></i>
+                                {{ __('إنشاء الأصل فقط') }}
                             @endif
                         </button>
                     </div>
@@ -315,6 +383,7 @@
             </div>
         </div>
     @endif
+</div>
 
 @push('scripts')
 <script>
