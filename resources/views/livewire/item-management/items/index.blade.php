@@ -5,10 +5,15 @@ use App\Models\Item;
 use App\Models\Price;
 use App\Models\Note;
 use App\Models\NoteDetails;
-use App\Helpers\ItemViewModel;
+use App\Support\ItemDataTransformer;
 use App\Models\AccHead;
 use App\Models\OperationItems;
 use Livewire\WithPagination;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\Computed;
+use App\Services\ItemsQueryService;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 new class extends Component {
     use WithPagination;
@@ -16,14 +21,28 @@ new class extends Component {
 
     public $selectedUnit = [];
     public $displayItemData = [];
+    public $perPage = 100; // Flexible pagination
+    
+    // Lazy-loaded data caches
+    public $loadedPriceData = [];
+    public $loadedNoteData = [];
+    
+    // Base quantities cache for current page
+    public $baseQuantities = [];
+    
+    #[Locked]
     public $priceTypes;
+    #[Locked]
     public $noteTypes;
     public $search = '';
+    #[Locked]
     public $warehouses;
     public $selectedWarehouse = null;
     public $selectedPriceType = '';
+    #[Locked]
     public $groups;
     public $selectedGroup = null;
+    #[Locked]
     public $categories;
     public $selectedCategory = null;
     
@@ -49,11 +68,29 @@ new class extends Component {
 
     public function mount()
     {
-        $this->priceTypes = Price::all()->pluck('name', 'id');
-        $this->noteTypes = Note::all()->pluck('name', 'id');
-        $this->warehouses = AccHead::where('code', 'like', '1104%')->where('is_basic', 0)->orderBy('id')->get();
-        $this->groups = NoteDetails::where('note_id', 1)->pluck('name', 'id');
-        $this->categories = NoteDetails::where('note_id', 2)->pluck('name', 'id');
+        // Cache static data for 60 minutes
+        $this->priceTypes = Cache::remember('price_types', 3600, function () {
+            return Price::all()->pluck('name', 'id');
+        });
+        
+        $this->noteTypes = Cache::remember('note_types', 3600, function () {
+            return Note::all()->pluck('name', 'id');
+        });
+        
+        $this->warehouses = Cache::remember('warehouses_1104', 3600, function () {
+            return AccHead::where('code', 'like', '1104%')
+                ->where('is_basic', 0)
+                ->orderBy('id')
+                ->get();
+        });
+        
+        $this->groups = Cache::remember('note_groups', 3600, function () {
+            return NoteDetails::where('note_id', 1)->pluck('name', 'id');
+        });
+        
+        $this->categories = Cache::remember('note_categories', 3600, function () {
+            return NoteDetails::where('note_id', 2)->pluck('name', 'id');
+        });
         
         // Initialize note visibility - all notes visible by default
         foreach ($this->noteTypes as $noteId => $noteName) {
@@ -66,41 +103,34 @@ new class extends Component {
         }
     }
 
-    public function getItemsProperty()
+    #[Computed]
+    public function items()
     {
-        return Item::with([
-            'units' => function ($query) {
-                $query->orderBy('pivot_u_val');
-            },
-            'prices',
-            'barcodes',
-            'notes',
-        ])
-            ->when($this->search, function ($query) {
-                $query
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('code', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('barcodes', function ($q) {
-                        $q->where('barcode', 'like', '%' . $this->search . '%');
-                    });
-            })
-            ->when($this->selectedGroup, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 1) // Groups have note_id = 1
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                        });
-                });
-            })
-            ->when($this->selectedCategory, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 2) // Categories have note_id = 2
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                        });
-                });
-            })
-            ->paginate(100);
+        $queryService = new ItemsQueryService();
+        $items = $queryService->buildFilteredQuery($this->search, (int)$this->selectedGroup, (int)$this->selectedCategory)
+            ->paginate($this->perPage);
+        
+        // Load base quantities for all items in current page
+        $this->baseQuantities = $queryService->getBaseQuantitiesForItems(
+            $items->pluck('id')->all(), 
+            (int)$this->selectedWarehouse
+        );
+        
+        // Pre-calculate display data for all items in current page
+        $this->prepareDisplayData($items);
+        
+        return $items;
+    }
+    
+    protected function prepareDisplayData($items)
+    {
+        foreach ($items as $item) {
+            if (!isset($this->selectedUnit[$item->id])) {
+                $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
+                $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
+            }
+            $this->calculateAndStoreDisplayData($item);
+        }
     }
 
     public function getTotalQuantityProperty()
@@ -109,56 +139,13 @@ new class extends Component {
             return 0;
         }
 
-        // Get all filtered items without pagination
-        $allFilteredItems = Item::with([
-            'units' => function ($query) {
-                $query->orderBy('pivot_u_val');
-            },
-            'prices',
-            'barcodes',
-            'notes',
-        ])
-            ->when($this->search, function ($query) {
-                $query
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('code', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('barcodes', function ($q) {
-                        $q->where('barcode', 'like', '%' . $this->search . '%');
-                    });
-            })
-            ->when($this->selectedGroup, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 1) // Groups have note_id = 1
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                        });
-                });
-            })
-            ->when($this->selectedCategory, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 2) // Categories have note_id = 2
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                        });
-                });
-            })
-            ->get();
-
-        $total = 0;
-        foreach ($allFilteredItems as $item) {
-            // Get default unit for this item
-            $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
-            $selectedUnitId = $defaultUnit ? $defaultUnit->id : null;
-
-            // Create ItemViewModel for this item
-            $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
-            $formattedQuantity = $viewModel->getFormattedQuantity();
-
-            if (isset($formattedQuantity['quantity']['integer'])) {
-                $total += $formattedQuantity['quantity']['integer'];
-            }
-        }
-        return $total;
+        $queryService = new ItemsQueryService();
+        return $queryService->getTotalQuantity(
+            $this->search, 
+            (int)$this->selectedGroup, 
+            (int)$this->selectedCategory,
+            (int)$this->selectedWarehouse
+        );
     }
 
     public function getTotalAmountProperty()
@@ -167,66 +154,16 @@ new class extends Component {
             return 0;
         }
 
-        // Get all filtered items without pagination
-        $allFilteredItems = Item::with([
-            'units' => function ($query) {
-                $query->orderBy('pivot_u_val');
-            },
-            'prices',
-            'barcodes',
-            'notes',
-        ])
-            ->when($this->search, function ($query) {
-                $query
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('code', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('barcodes', function ($q) {
-                        $q->where('barcode', 'like', '%' . $this->search . '%');
-                    });
-            })
-            ->when($this->selectedGroup, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 1) // Groups have note_id = 1
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                        });
-                });
-            })
-            ->when($this->selectedCategory, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 2) // Categories have note_id = 2
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                        });
-                });
-            })
-            ->get();
-
-        $total = 0;
-        foreach ($allFilteredItems as $item) {
-            // Get default unit for this item
-            $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
-            $selectedUnitId = $defaultUnit ? $defaultUnit->id : null;
-
-            // Create ItemViewModel for this item
-            $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
-            $formattedQuantity = $viewModel->getFormattedQuantity();
-            $quantity = $formattedQuantity['quantity']['integer'] ?? 0;
-
-            // Get unit price based on selected price type
-            if ($this->selectedPriceType === 'cost') {
-                $unitPrice = $viewModel->getUnitCostPrice() ?? 0;
-            } elseif ($this->selectedPriceType === 'average_cost') {
-                $unitPrice = $viewModel->getUnitAverageCost() ?? 0;
-            } else {
-                $unitSalePrices = $viewModel->getUnitSalePrices();
-                $unitPrice = $unitSalePrices[$this->selectedPriceType]['price'] ?? 0;
-            }
-
-            $total += $quantity * $unitPrice;
-        }
-        return $total;
+        $queryService = new ItemsQueryService();
+        return $queryService->getTotalAmount(
+            $this->search, 
+            (int)$this->selectedGroup, 
+            (int)$this->selectedCategory, 
+            $this->selectedPriceType,
+            (int)$this->selectedWarehouse
+        );
     }
+
 
     public function getTotalItemsProperty()
     {
@@ -234,77 +171,55 @@ new class extends Component {
             return 0;
         }
 
-        // Get all filtered items without pagination
-        $allFilteredItems = Item::with([
-            'units' => function ($query) {
-                $query->orderBy('pivot_u_val');
-            },
-            'prices',
-            'barcodes',
-            'notes',
-        ])
-            ->when($this->search, function ($query) {
-                $query
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('code', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('barcodes', function ($q) {
-                        $q->where('barcode', 'like', '%' . $this->search . '%');
-                    });
-            })
-            ->when($this->selectedGroup, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 1) // Groups have note_id = 1
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedGroup);
-                        });
-                });
-            })
-            ->when($this->selectedCategory, function ($query) {
-                $query->whereHas('notes', function ($q) {
-                    $q->where('note_id', 2) // Categories have note_id = 2
-                        ->where('note_detail_name', function ($subQuery) {
-                            $subQuery->select('name')->from('note_details')->where('id', $this->selectedCategory);
-                        });
-                });
-            })
-            ->get();
-
-        $count = 0;
-        foreach ($allFilteredItems as $item) {
-            // Get default unit for this item
-            $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
-            $selectedUnitId = $defaultUnit ? $defaultUnit->id : null;
-
-            // Create ItemViewModel for this item
-            $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
-            $formattedQuantity = $viewModel->getFormattedQuantity();
-
-            // Count items that have valid quantity data
-            if (isset($formattedQuantity['quantity']['integer'])) {
-                $count++;
-            }
-        }
-        return $count;
+        $queryService = new ItemsQueryService();
+        return $queryService->getTotalItems(
+            $this->search, 
+            (int)$this->selectedGroup, 
+            (int)$this->selectedCategory,
+            (int)$this->selectedWarehouse
+        );
     }
+
 
     public function updatedSearch()
     {
         $this->resetPage();
+        $this->clearLazyLoadedData();
     }
 
     public function updatedSelectedWarehouse()
     {
         $this->resetPage();
+        $this->clearLazyLoadedData();
     }
 
     public function updatedSelectedGroup()
     {
         $this->resetPage();
+        $this->clearLazyLoadedData();
     }
 
     public function updatedSelectedCategory()
     {
         $this->resetPage();
+        $this->clearLazyLoadedData();
+    }
+    
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+        $this->clearLazyLoadedData();
+    }
+    
+    /**
+     * Clear lazy-loaded data cache
+     * Called when filters change or page changes
+     */
+    protected function clearLazyLoadedData()
+    {
+        $this->loadedPriceData = [];
+        $this->loadedNoteData = [];
+        $this->baseQuantities = [];
     }
 
     public function clearFilters()
@@ -315,44 +230,91 @@ new class extends Component {
         $this->selectedCategory = null;
         $this->resetPage();
     }
-
-    public function calculateAndStoreDisplayData($itemId)
+    
+    public function setPerPage($value)
     {
-        $item = $this->items->firstWhere('id', $itemId);
+        $this->perPage = in_array($value, [25, 50, 100, 200]) ? $value : 50;
+        $this->resetPage();
+    }
+    
+    /**
+     * Lazy load price data for a specific price type
+     * Only loads data for items on current page
+     */
+    public function loadPriceColumn($priceId)
+    {
+        if (isset($this->loadedPriceData[$priceId])) {
+            return; // Already loaded
+        }
+        
+        $itemIds = $this->items->pluck('id');
+        
+        if ($itemIds->isEmpty()) {
+            $this->loadedPriceData[$priceId] = [];
+            return;
+        }
+        
+        $prices = DB::table('item_prices')
+            ->whereIn('item_id', $itemIds)
+            ->where('price_id', $priceId)
+            ->get()
+            ->keyBy('item_id');
+        
+        $this->loadedPriceData[$priceId] = $prices;
+    }
+    
+    /**
+     * Lazy load note data for a specific note type
+     * Only loads data for items on current page
+     */
+    public function loadNoteColumn($noteId)
+    {
+        if (isset($this->loadedNoteData[$noteId])) {
+            return; // Already loaded
+        }
+        
+        $itemIds = $this->items->pluck('id');
+        
+        if ($itemIds->isEmpty()) {
+            $this->loadedNoteData[$noteId] = [];
+            return;
+        }
+        
+        $notes = DB::table('item_notes')
+            ->whereIn('item_id', $itemIds)
+            ->where('note_id', $noteId)
+            ->get()
+            ->keyBy('item_id');
+        
+        $this->loadedNoteData[$noteId] = $notes;
+    }
+
+    public function calculateAndStoreDisplayData($item)
+    {
         if (!$item) {
-            $this->displayItemData[$itemId] = [];
             return;
         }
 
-        $selectedUnitId = $this->selectedUnit[$itemId];
-        $viewModel = new ItemViewModel($this->selectedWarehouse, $item, $selectedUnitId);
-
+        $itemId = $item->id;
+        $selectedUnitId = $this->selectedUnit[$itemId] ?? null;
+        
+        // Get base quantity from cache
+        $baseQty = $this->baseQuantities[$itemId] ?? 0;
+        
+        // Use lightweight transformer with precomputed base quantity
+        $transformedData = ItemDataTransformer::transform($item, (int)$selectedUnitId, (int)$this->selectedWarehouse, $baseQty);
+        
+        // Ensure all price types are present
         $unitSalePricesData = [];
         if ($selectedUnitId) {
-            $rawPrices = $viewModel->getUnitSalePrices();
+            $rawPrices = $transformedData['unitSalePrices'];
             foreach ($this->priceTypes as $priceTypeId => $priceTypeName) {
                 $unitSalePricesData[$priceTypeId] = $rawPrices[$priceTypeId] ?? ['name' => $priceTypeName, 'price' => null];
             }
+            $transformedData['unitSalePrices'] = $unitSalePricesData;
         }
 
-        $this->displayItemData[$itemId] = [
-            'id' => $item->id,
-            'code' => $item->code,
-            'name' => $item->name,
-            'unitOptions' => $viewModel->getUnitOptions(),
-            'formattedQuantity' => $viewModel->getFormattedQuantity(),
-            'unitCostPrice' => $viewModel->getUnitCostPrice(),
-            'unitAverageCost' => $viewModel->getUnitAverageCost(),
-            'quantityCost' => $viewModel->getQuantityCost(),
-            'quantityAverageCost' => $viewModel->getQuantityAverageCost(),
-            'unitSalePrices' => $unitSalePricesData,
-            'unitBarcodes' => $selectedUnitId ? $viewModel->getUnitBarcode() : [],
-            'itemNotes' => $item->notes
-                ->mapWithKeys(function ($note) {
-                    return [$note->id => $note->pivot->note_detail_name];
-                })
-                ->all(),
-        ];
+        $this->displayItemData[$itemId] = $transformedData;
     }
 
     public function getVisibleColumnsCountProperty()
@@ -393,7 +355,13 @@ new class extends Component {
             $itemId = (int) $parts[1];
 
             if (isset($this->selectedUnit[$itemId])) {
-                $this->calculateAndStoreDisplayData($itemId);
+                // Load the item with its relationships
+                $item = Item::with(['units', 'prices', 'barcodes', 'notes'])
+                    ->find($itemId);
+                    
+                if ($item) {
+                    $this->calculateAndStoreDisplayData($item);
+                }
             }
         }
     }
@@ -476,7 +444,13 @@ new class extends Component {
     public function toggleNote($noteId)
     {
         if (isset($this->visibleNotes[$noteId])) {
-            $this->visibleNotes[$noteId] = !$this->visibleNotes[$noteId];
+            $wasVisible = $this->visibleNotes[$noteId];
+            $this->visibleNotes[$noteId] = !$wasVisible;
+            
+            // Lazy load data when making column visible
+            if (!$wasVisible && $this->visibleNotes[$noteId]) {
+                $this->loadNoteColumn($noteId);
+            }
         }
         $this->dispatch('$refresh');
     }
@@ -500,7 +474,13 @@ new class extends Component {
     public function togglePrice($priceId)
     {
         if (isset($this->visiblePrices[$priceId])) {
-            $this->visiblePrices[$priceId] = !$this->visiblePrices[$priceId];
+            $wasVisible = $this->visiblePrices[$priceId];
+            $this->visiblePrices[$priceId] = !$wasVisible;
+            
+            // Lazy load data when making column visible
+            if (!$wasVisible && $this->visiblePrices[$priceId]) {
+                $this->loadPriceColumn($priceId);
+            }
         }
         $this->dispatch('$refresh');
     }
@@ -532,11 +512,25 @@ new class extends Component {
         // Update columns
         $this->visibleColumns = $columns;
         
-        // Update prices
+        // Update prices and lazy load newly visible ones
+        $previousPrices = $this->visiblePrices;
         $this->visiblePrices = $prices;
+        foreach ($prices as $priceId => $isVisible) {
+            if ($isVisible && !($previousPrices[$priceId] ?? false)) {
+                // Newly visible - lazy load
+                $this->loadPriceColumn($priceId);
+            }
+        }
         
-        // Update notes
+        // Update notes and lazy load newly visible ones
+        $previousNotes = $this->visibleNotes;
         $this->visibleNotes = $notes;
+        foreach ($notes as $noteId => $isVisible) {
+            if ($isVisible && !($previousNotes[$noteId] ?? false)) {
+                // Newly visible - lazy load
+                $this->loadNoteColumn($noteId);
+            }
+        }
         
         // Clear display data to force recalculation
         $this->displayItemData = [];
@@ -706,6 +700,20 @@ new class extends Component {
 
                 
                 <div class="card-body">
+                    {{-- Pagination Control --}}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label font-family-cairo fw-bold mb-0">عرض:</label>
+                            <select wire:model.live="perPage" class="form-select form-select-sm font-family-cairo fw-bold" style="width: auto;">
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="200">200</option>
+                            </select>
+                            <span class="font-family-cairo fw-bold">سجل</span>
+                        </div>
+                    </div>
+                    
                     {{-- Active Filters Display --}}
                     @if ($search || $selectedWarehouse || $selectedGroup || $selectedCategory)
                         <div class="alert alert-info mb-3" x-data="{ show: true }" x-show="show">
@@ -735,7 +743,7 @@ new class extends Component {
                         </div>
                     @endif
 
-                    <div class="table-responsive" style="overflow-x: auto;" wire:loading.class="opacity-50">
+                    <div class="table-responsive" style="overflow-x: auto; max-height: 70vh; overflow-y: auto;" wire:loading.class="opacity-50">
                         <div wire:loading class="position-absolute top-50 start-50 translate-middle">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">جاري التحميل...</span>
@@ -749,9 +757,27 @@ new class extends Component {
                                     background-color: #ffc107 !important;
                                     /* لون warning */
                                 }
+                                
+                                /* Fixed header styles */
+                                .table-responsive {
+                                    position: relative;
+                                }
+                                
+                                .table thead th {
+                                    position: sticky;
+                                    top: 0;
+                                    background-color: #f8f9fa !important;
+                                    z-index: 10;
+                                    border-bottom: 2px solid #dee2e6;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                }
+                                
+                                /* Ensure proper stacking context */
+                                .table-responsive {
+                                    z-index: 1;
+                                }
                             </style>
                             <thead class="table-light text-center align-middle">
-
                                 <tr>
                                     <th class="font-family-cairo text-center fw-bold">#</th>
                                     @if($visibleColumns['code'])
@@ -801,11 +827,7 @@ new class extends Component {
                             <tbody>
                                 @forelse ($this->items as $item)
                                     @php
-                                        if (!isset($this->selectedUnit[$item->id])) {
-                                            $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
-                                            $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
-                                        }
-                                        $this->calculateAndStoreDisplayData($item->id);
+                                        // Data already prepared in getItemsProperty()
                                         $itemData = $this->displayItemData[$item->id] ?? [];
                                     @endphp
                                     @if (!empty($itemData))
@@ -827,14 +849,16 @@ new class extends Component {
                                             @if($visibleColumns['units'])
                                                 <td class="font-family-cairo text-center fw-bold">
                                                     @if (!empty($itemData['unitOptions']))
-                                                        <select class="form-select font-family-cairo fw-bold font-14"
-                                                            wire:model.live="selectedUnit.{{ $item->id }}"
-                                                            style="min-width: 105px;">
-                                                            @foreach ($itemData['unitOptions'] as $option)
-                                                                <option value="{{ $option['value'] }}">
-                                                                    {{ $option['label'] }}</option>
-                                                            @endforeach
-                                                        </select>
+                                                        <div wire:loading.class="opacity-50" wire:target="selectedUnit.{{ $item->id }}">
+                                                            <select class="form-select font-family-cairo fw-bold font-14"
+                                                                wire:model.live.debounce.150ms="selectedUnit.{{ $item->id }}"
+                                                                style="min-width: 105px;">
+                                                                @foreach ($itemData['unitOptions'] as $option)
+                                                                    <option value="{{ $option['value'] }}">
+                                                                        {{ $option['label'] }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
                                                     @else
                                                         <span class="font-family-cairo fw-bold font-14">لا يوجد وحدات</span>
                                                     @endif

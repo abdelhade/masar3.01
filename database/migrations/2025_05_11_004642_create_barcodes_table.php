@@ -20,7 +20,7 @@ class CreateBarcodesTable extends Migration
             $table->string('barcode', 25)->unique()->required(); // barcode
             $table->tinyInteger('isdeleted')->default(0); // isdeleted
             $table->integer('tenant')->default(0); // tenant
-            $table->integer('branch')->default(0); // branch
+            $table->integer('branch_id')->nullable(); // branch
             $table->timestamps(); // created_at, updated_at
         });
     }

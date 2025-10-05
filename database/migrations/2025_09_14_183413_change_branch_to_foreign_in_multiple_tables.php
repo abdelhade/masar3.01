@@ -25,7 +25,6 @@ return new class extends Migration {
             'items',
             'units',
             'journal_types',
-            'barcodes',
             'cost_centers',
             'pro_types',
             'operhead',

@@ -25,10 +25,11 @@ class Barcode extends Model
         'branch_id'
     ];
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-    }
+    // BranchScope removed to make barcodes available globally
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    // }
 
     /**
      * Get the unit that owns the Barcode.
