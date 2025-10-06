@@ -32,6 +32,7 @@ class SearchableSelect extends Component
 
         if ($this->selectedId) {
             $this->loadSelectedItem();
+            $this->search = $this->selectedText; // عرض الاسم المختار
         }
     }
 
@@ -84,7 +85,7 @@ class SearchableSelect extends Component
     {
         $this->selectedId = $id;
         $this->selectedText = $text;
-        $this->search = '';
+        $this->search = $text; // عرض الاسم المختار في حقل البحث
         $this->showDropdown = false;
 
         // إرسال القيمة للكومبوننت الأب
@@ -92,6 +93,28 @@ class SearchableSelect extends Component
             'wireModel' => $this->wireModel,
             'value' => $id
         ]);
+    }
+
+    public function updatedSelectedId($value)
+    {
+        if ($value) {
+            $this->loadSelectedItem();
+            $this->search = $this->selectedText; // عرض الاسم في حقل البحث
+        } else {
+            $this->search = '';
+            $this->selectedText = '';
+        }
+    }
+
+    public function refreshItems()
+    {
+        $this->loadItems();
+
+        // إذا كان هناك عنصر محدد، تحديث النص المعروض
+        if ($this->selectedId) {
+            $this->loadSelectedItem();
+            $this->search = $this->selectedText;
+        }
     }
 
     public function createNew()
@@ -146,10 +169,6 @@ class SearchableSelect extends Component
             'wireModel' => $this->wireModel,
             'value' => null
         ]);
-    }
-    public function refreshItems()
-    {
-        $this->loadItems();
     }
 
     public function render()

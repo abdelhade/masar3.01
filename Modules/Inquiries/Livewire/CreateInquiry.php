@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\{City, Town, Client};
 use Illuminate\Support\Facades\Auth;
+use Modules\CRM\Models\ClientCategory;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Inquiries\Enums\{KonTitle, StatusForKon, InquiryStatus};
 use Modules\Inquiries\Enums\{KonPriorityEnum, ProjectSizeEnum, ClientPriorityEnum};
@@ -60,6 +61,9 @@ class CreateInquiry extends Component
 
     public $totalScore = 0;
 
+    public $modalClientType = null;
+    public $modalClientTypeLabel = '';
+
     public $workTypes = [];
     public $inquirySources = [];
     public $projects = [];
@@ -83,6 +87,7 @@ class CreateInquiry extends Component
     public $clientPriorityOptions = [];
     public $konPriorityOptions = [];
 
+    public $clientCategories = [];
     public $engineers = [];
     public $quotationStateOptions = [];
 
@@ -111,6 +116,26 @@ class CreateInquiry extends Component
         ['name' => 'Per hour', 'checked' => false],
     ];
 
+    public $newClient = [
+        'cname' => '',
+        'email' => '',
+        'phone' => '',
+        'phone2' => '',
+        'company' => '',
+        'address' => '',
+        'address2' => '',
+        'date_of_birth' => '',
+        'national_id' => '',
+        'contact_person' => '',
+        'contact_phone' => '',
+        'contact_relation' => '',
+        'info' => '',
+        'job' => '',
+        'gender' => '',
+        'is_active' => true,
+        'type' => null,
+    ];
+
     public $type_note = null;
 
     public $submittalChecklist = [];
@@ -119,8 +144,8 @@ class CreateInquiry extends Component
     protected $listeners = [
         'getWorkTypeChildren' => 'emitWorkTypeChildren',
         'getInquirySourceChildren' => 'emitInquirySourceChildren',
-        'itemSelected' => 'handleItemSelected', // جديد
-
+        'itemSelected' => 'handleItemSelected',
+        'openClientModal' => 'openClientModal',
     ];
 
     public function mount()
@@ -148,8 +173,9 @@ class CreateInquiry extends Component
         $this->statusForKon = StatusForKon::EXTENSION->value;
         $this->konTitle = KonTitle::MAIN_PILING_CONTRACTOR->value;
 
-        $this->tenderNo = 'T-' . rand(100, 999);
-        $this->tenderId = $this->tenderNo . '-' . now()->format('Y');
+        $lastTender = Inquiry::latest('id')->first();
+        $nextNumber = $lastTender ? $lastTender->id + 1 : 1;
+        $this->tenderNo = 'T-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
         $submittalsFromDB = SubmittalChecklist::all();
         $this->submittalChecklist = $submittalsFromDB->map(function ($item) {
@@ -175,8 +201,30 @@ class CreateInquiry extends Component
             ];
         })->toArray();
 
+        $this->clientCategories = ClientCategory::all()->toArray();
+
         $this->documentFiles = [];
         $this->calculateScores();
+    }
+
+    public function generateTenderId()
+    {
+        // جلب اسم آخر نوع عمل مختار (لو موجود)
+        $workTypeName = '';
+        if (!empty($this->currentWorkPath)) {
+            $workTypeName = end($this->currentWorkPath);
+        } elseif (!empty($this->selectedWorkTypes)) {
+            $workTypeName = end($this->selectedWorkTypes)['path']
+                ? end(end($this->selectedWorkTypes)['path'])
+                : '';
+        }
+
+        // جلب اسم المدينة والمنطقة
+        $cityName = $this->cityId ? City::find($this->cityId)?->title : '';
+        $townName = $this->townId ? Town::find($this->townId)?->title : '';
+
+        // دمجهم مع رقم المناقصة
+        $this->tenderId = trim("{$this->tenderNo} - {$workTypeName} - {$cityName} - {$townName}", ' -');
     }
 
     public function handleItemSelected($data)
@@ -228,6 +276,7 @@ class CreateInquiry extends Component
         } else {
             $this->currentWorkPath = array_slice($this->currentWorkPath, 0, $stepNum, true);
         }
+        $this->generateTenderId();
     }
 
     public function updatedInquirySourceSteps($value, $key)
@@ -250,6 +299,7 @@ class CreateInquiry extends Component
     {
         $this->townId = null;
         $this->towns = $value ? Town::where('city_id', $value)->get()->toArray() : [];
+        $this->generateTenderId();
     }
 
     public function updatedProjectDocuments($value, $key)
@@ -392,9 +442,161 @@ class CreateInquiry extends Component
         $this->tempComments = array_values($this->tempComments);
     }
 
+    public function openClientModal($type)
+    {
+        $this->modalClientType = $type;
+        $clientTypeEnum = ClientType::tryFrom($type);
+        $this->modalClientTypeLabel = $clientTypeEnum ? $clientTypeEnum->label() : 'عميل';
+        $this->newClient = [
+            'cname' => '',
+            'email' => '',
+            'phone' => '',
+            'phone2' => '',
+            'company' => '',
+            'address' => '',
+            'address2' => '',
+            'date_of_birth' => '',
+            'national_id' => '',
+            'contact_person' => '',
+            'contact_phone' => '',
+            'contact_relation' => '',
+            'info' => '',
+            'job' => '',
+            'gender' => '',
+            'is_active' => true,
+            'type' => $type,
+        ];
+
+        $this->resetValidation();
+    }
+
+    public function saveNewClient()
+    {
+        $this->validate([
+            'newClient.cname' => 'required|string|max:255',
+            'newClient.phone' => 'required|string|max:20',
+            'newClient.email' => 'nullable|email|unique:clients,email',
+            'newClient.gender' => 'required|in:male,female',
+        ], [
+            'newClient.cname.required' => 'اسم العميل مطلوب',
+            'newClient.phone.required' => 'رقم الهاتف مطلوب',
+            'newClient.email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
+            'newClient.email.unique' => 'البريد الإلكتروني مستخدم بالفعل',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $client = Client::create([
+                'cname' => $this->newClient['cname'],
+                'email' => $this->newClient['email'],
+                'phone' => $this->newClient['phone'],
+                'phone2' => $this->newClient['phone2'],
+                'company' => $this->newClient['company'],
+                'address' => $this->newClient['address'],
+                'address2' => $this->newClient['address2'],
+                'date_of_birth' => $this->newClient['date_of_birth'],
+                'national_id' => $this->newClient['national_id'],
+                'contact_person' => $this->newClient['contact_person'],
+                'contact_phone' => $this->newClient['contact_phone'],
+                'contact_relation' => $this->newClient['contact_relation'],
+                'info' => $this->newClient['info'],
+                'job' => $this->newClient['job'],
+                'gender' => $this->newClient['gender'],
+                'client_category_id' => $this->newClient['client_category_id'],
+                'is_active' => $this->newClient['is_active'] ?? true,
+                'type' => $this->modalClientType,
+                'created_by' => Auth::id(),
+                'tenant' => Auth::user()->tenant ?? 0,
+                'branch' => Auth::user()->branch ?? 0,
+                'branch_id' => Auth::user()->branch_id ?? 1,
+            ]);
+
+            Log::info('القيم عند الحفظ:', $this->newClient);
+
+            switch ($this->modalClientType) {
+                case ClientType::Person->value:
+                case ClientType::Company->value:
+                    $this->clientId = $client->id;
+                    break;
+                case ClientType::MainContractor->value:
+                    $this->mainContractorId = $client->id;
+                    break;
+                case ClientType::Consultant->value:
+                    $this->consultantId = $client->id;
+                    break;
+                case ClientType::Owner->value:
+                    $this->ownerId = $client->id;
+                    break;
+                case ClientType::ENGINEER->value:
+                    $this->assignedEngineer = $client->id;
+                    break;
+            }
+
+            DB::commit();
+
+            $this->dispatch('closeClientModal');
+
+            // Force refresh the component
+            $this->refreshClientLists();
+
+            session()->flash('message', 'تم إضافة ' . $this->modalClientTypeLabel . ' بنجاح');
+
+            $this->resetClientForm();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('خطأ في إضافة عميل: ' . $e->getMessage());
+            session()->flash('error', 'حدث خطأ أثناء إضافة ' . $this->modalClientTypeLabel . ': ' . $e->getMessage());
+        }
+    }
+
+    private function refreshClientLists()
+    {
+        $this->clients = Client::whereIn('type', [ClientType::Person->value, ClientType::Company->value])->get()->toArray();
+        $this->mainContractors = Client::where('type', ClientType::MainContractor->value)->get()->toArray();
+        $this->consultants = Client::where('type', ClientType::Consultant->value)->get()->toArray();
+        $this->owners = Client::where('type', ClientType::Owner->value)->get()->toArray();
+        $this->engineers = Client::where('type', ClientType::ENGINEER->value)->get()->toArray();
+        $this->clientCategories = ClientCategory::all()->toArray();
+    }
+
+    private function getWireModelForClientType()
+    {
+        return match ($this->modalClientType) {
+            ClientType::Person->value, ClientType::Company->value => 'clientId',
+            ClientType::MainContractor->value => 'mainContractorId',
+            ClientType::Consultant->value => 'consultantId',
+            ClientType::Owner->value => 'ownerId',
+            ClientType::ENGINEER->value => 'assignedEngineer',
+            default => 'clientId'
+        };
+    }
+
+    private function resetClientForm()
+    {
+        $this->newClient = [
+            'cname' => '',
+            'email' => '',
+            'phone' => '',
+            'phone2' => '',
+            'company' => '',
+            'address' => '',
+            'address2' => '',
+            'date_of_birth' => '',
+            'national_id' => '',
+            'contact_person' => '',
+            'contact_phone' => '',
+            'contact_relation' => '',
+            'info' => '',
+            'job' => '',
+            'gender' => '',
+            'is_active' => true,
+            'type' => null,
+        ];
+    }
+
     public function save()
     {
-        // dd($this->all());
+        dd($this->all());
         // التحقق من البيانات
         $this->validate([
             'projectId' => 'required|exists:projects,id',

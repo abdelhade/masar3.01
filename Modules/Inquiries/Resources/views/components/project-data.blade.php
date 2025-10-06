@@ -21,34 +21,24 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-3 mb-3">
-                        <div class="card-body text-center">
-                            <livewire:app::searchable-select :model="Modules\Progress\Models\ProjectProgress::class" label-field="name" wire-model="projectId"
-                                label="المشروع" placeholder="ابحث عن المشروع أو أضف جديد..." :key="'project-select'"
-                                 :selected-id="$projectId" />
-                        </div>
+                    <div class="col-md-3 mb-3 d-flex flex-column">
+                        <label class="form-label fw-bold">المشروع</label>
+                        <livewire:app::searchable-select :model="Modules\Progress\Models\ProjectProgress::class" label-field="name" wire-model="projectId"
+                            placeholder="ابحث عن المشروع أو أضف جديد..." :key="'project-select'" :selected-id="$projectId" />
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">تاريخ الاستفسار</label>
-                        <input type="date" wire:model="inquiryDate" class="form-control">
-                        @error('inquiryDate')
+                        <label class="form-label fw-bold">رقم المناقصة</label>
+                        <input type="text" wire:model="tenderNo" class="form-control" readonly>
+                        @error('tenderNo')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
 
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">تاريخ التسليم المطلوب</label>
-                        <input type="date" wire:model="reqSubmittalDate" class="form-control">
-                        @error('reqSubmittalDate')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">تاريخ بدء المشروع</label>
-                        <input type="date" wire:model="projectStartDate" class="form-control">
-                        @error('projectStartDate')
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">معرف المناقصة</label>
+                        <input type="text" wire:model="tenderId" class="form-control" readonly>
+                        @error('tenderId')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
@@ -123,11 +113,35 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-1 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label class="form-label fw-bold">المسافة (كم)</label>
                         <input type="number" step="0.01" wire:model="townDistance" class="form-control"
                             placeholder="المسافة بالكيلومتر">
                         @error('distance')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">تاريخ الاستفسار</label>
+                        <input type="date" wire:model="inquiryDate" class="form-control">
+                        @error('inquiryDate')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">تاريخ التسليم </label>
+                        <input type="date" wire:model="reqSubmittalDate" class="form-control">
+                        @error('reqSubmittalDate')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">تاريخ بدء المشروع</label>
+                        <input type="date" wire:model="projectStartDate" class="form-control">
+                        @error('projectStartDate')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>

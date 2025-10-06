@@ -8,9 +8,10 @@
             <!-- حقل البحث -->
             <div class="input-group">
                 <input type="text" class="form-control" wire:model.live="search" placeholder="{{ $placeholder }}"
-                    autocomplete="off" wire:focus="$set('showDropdown', true)">
+                    autocomplete="off" wire:focus="$set('showDropdown', true)"
+                    @blur="setTimeout(() => { $wire.showDropdown = false }, 200)">
 
-                @if ($search && $selectedId)
+                @if ($selectedId)
                     <div class="input-group-append">
                         <button type="button" class="btn btn-outline-secondary" wire:click="clearSelection"
                             title="مسح">
@@ -21,13 +22,13 @@
             </div>
 
             <!-- قائمة نتائج البحث -->
-            @if ($showDropdown && $search)
+            @if ($showDropdown && $search && !$selectedId)
                 <div class="dropdown-menu show w-100" style="max-height: 300px; overflow-y: auto;">
                     @if (count($filteredItems) > 0)
                         <!-- العناصر الموجودة -->
                         @foreach ($filteredItems as $item)
                             <button type="button" class="dropdown-item d-flex align-items-center"
-                                wire:click="selectItem({{ $item['id'] }}, '{{ $item['text'] }}')">
+                                wire:click="selectItem({{ $item['id'] }}, '{{ addslashes($item['text']) }}')">
                                 <i class="fas fa-check-circle text-muted me-2"></i>
                                 <span>{{ $item['text'] }}</span>
                             </button>
@@ -44,7 +45,7 @@
                     @endif
 
                     <!-- رسالة عدم وجود نتائج -->
-                    @if (count($filteredItems) === 0 && collect($filteredItems)->contains('text', $search))
+                    @if (count($filteredItems) === 0 && !collect($filteredItems)->contains('text', $search))
                         <div class="dropdown-item text-muted">
                             <i class="fas fa-search me-2"></i>
                             <span>لا توجد نتائج</span>

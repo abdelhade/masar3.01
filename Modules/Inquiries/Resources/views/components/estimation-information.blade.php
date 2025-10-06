@@ -12,23 +12,6 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">رقم المناقصة</label>
-                        <input type="text" wire:model="tenderNo" class="form-control" readonly>
-                        @error('tenderNo')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">معرف المناقصة</label>
-                        <input type="text" wire:model="tenderId" class="form-control" readonly>
-                        @error('tenderId')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-
-                    <div class="col-md-3 mb-3">
                         <label class="form-label fw-bold">تاريخ البدء</label>
                         <input type="date" wire:model="estimationStartDate" class="form-control">
                         @error('startDate')
