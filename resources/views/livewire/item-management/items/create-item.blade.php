@@ -7,6 +7,8 @@ use App\Models\Item;
 use App\Models\AccHead;
 use App\Models\Note;
 use App\Models\NoteDetails;
+use App\Models\Varibal;
+use App\Models\VaribalValue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Validate;
@@ -19,7 +21,21 @@ new class extends Component {
     public $prices;
     public $notes;
     public $additionalBarcodes = [];
-    // public $editingBarcodeIndex = null;
+    public $hasVaribals = false;
+    public $varibals = [];
+    public $varibalValues = [];
+    public $selectedVaribalCombinations = [];
+    public $newCombinationText = '';
+    public $editingCombinationKey = null;
+    public $editingCombinationText = '';
+    public $selectedRowVaribal = null;
+    public $selectedColVaribal = null;
+    public $combinationUnitRows = [];
+    public $activeCombination = null;
+    public $showBarcodeModal = false;
+    public $currentBarcodeUnitIndex = null;
+    public $currentBarcodeCombination = null;
+    public $modalBarcodeData = [];
 
     // Modal properties
     public $showModal = false;
@@ -27,7 +43,7 @@ new class extends Component {
     public $modalTitle = '';
     public $modalData = [
         'name' => '',
-        'note_id' => null
+        'note_id' => null,
     ];
 
     // Basic item information
@@ -46,8 +62,10 @@ new class extends Component {
         $this->units = Unit::all();
         $this->prices = Price::all();
         $this->notes = Note::with('noteDetails')->get();
+        $this->varibals = Varibal::with('varibalValues')->get();
         $this->addUnitRow();
         $this->item['code'] = Item::max('code') + 1 ?? 1;
+        $this->item['type'] = 1;
     }
 
     protected function rules()
@@ -152,17 +170,116 @@ new class extends Component {
         try {
             DB::beginTransaction();
             
+            if ($this->hasVaribals && count($this->selectedVaribalCombinations) > 0) {
+                // Save items with variations
+                $this->saveItemsWithVariations();
+            } else {
+                // Save single item
             $itemModel = Item::create($this->item);
             $this->attachUnits($itemModel);
             $this->createBarcodes($itemModel);
             $this->attachPrices($itemModel);
             $this->attachNotes($itemModel);
+            }
             
             DB::commit();
             $this->handleSuccess();
         } catch (\Exception $e) {
             DB::rollBack();
             $this->handleError($e);
+            Log::error('Error saving item', [
+                'error' => $e->getMessage(),
+                'item' => $this->item,
+                'unitRows' => $this->unitRows,
+                'selectedVaribalCombinations' => $this->selectedVaribalCombinations,
+                'combinationUnitRows' => $this->combinationUnitRows,
+            ]);
+        }
+    }
+
+    private function saveItemsWithVariations()
+    {
+        $baseCode = $this->item['code'];
+        $combinationIndex = 1;
+        
+        foreach ($this->selectedVaribalCombinations as $combinationKey => $combination) {
+            // Create item name with variation
+            $itemName = $this->getCombinationDisplayName($combinationKey);
+            
+            // Create unique code for each combination
+            $combinationSuffix = str_pad($combinationIndex, 2, '0', STR_PAD_LEFT);
+            $uniqueCode = $baseCode . $combinationSuffix;
+            
+            // Create item data
+            $itemData = $this->item;
+            $itemData['name'] = $itemName;
+            $itemData['code'] = $uniqueCode;
+            
+            // Create the item
+            $itemModel = Item::create($itemData);
+            
+            // Attach units, barcodes, prices, and notes for this combination
+            if (isset($this->combinationUnitRows[$combinationKey])) {
+                $this->attachCombinationUnits($itemModel, $combinationKey);
+                $this->createCombinationBarcodes($itemModel, $combinationKey);
+                $this->attachCombinationPrices($itemModel, $combinationKey);
+            }
+            
+            $this->attachNotes($itemModel);
+            $combinationIndex++;
+        }
+    }
+
+    private function attachCombinationUnits($itemModel, $combinationKey)
+    {
+        $unitsSync = [];
+        foreach ($this->combinationUnitRows[$combinationKey] as $unitRow) {
+            $unitsSync[$unitRow['unit_id']] = [
+                'u_val' => $unitRow['u_val'],
+                'cost' => $unitRow['cost'],
+            ];
+        }
+        $itemModel->units()->attach($unitsSync);
+    }
+
+    private function createCombinationBarcodes($itemModel, $combinationKey)
+    {
+        $barcodesToCreate = [];
+        $baseCode = $itemModel->code;
+        
+        foreach ($this->combinationUnitRows[$combinationKey] as $unitRowIndex => $unitRow) {
+            if (!empty($unitRow['barcodes'])) {
+                foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode) {
+                    if (!empty($barcode)) {
+                        $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $barcode];
+                    }
+                }
+            } else {
+                // Generate unique barcode for each unit in each combination
+                $uniqueBarcode = $baseCode . ($unitRowIndex + 1);
+                $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $uniqueBarcode];
+            }
+        }
+        $itemModel->barcodes()->createMany($barcodesToCreate);
+    }
+
+    private function getCombinationSuffix($combinationKey)
+    {
+        // Generate a unique suffix for each combination
+        $combinationIndex = array_search($combinationKey, array_keys($this->selectedVaribalCombinations));
+        if ($combinationIndex === false) {
+            $combinationIndex = 0;
+        }
+        return str_pad($combinationIndex + 1, 2, '0', STR_PAD_LEFT);
+    }
+
+    private function attachCombinationPrices($itemModel, $combinationKey)
+    {
+        foreach ($this->combinationUnitRows[$combinationKey] as $unitRow) {
+            $prices = collect($unitRow['prices'])->mapWithKeys(fn($price, $id) => [$id => ['unit_id' => $unitRow['unit_id'], 'price' => $price]])->all();
+            foreach ($prices as $price_id => $price) {
+                $itemModel->prices()->attach($price_id, ['unit_id' => $price['unit_id'], 'price' => $price['price']]);
+            }
         }
     }
 
@@ -218,20 +335,23 @@ new class extends Component {
 
     private function attachNotes($itemModel)
     {
-        $notesData = collect($this->item['notes'])->mapWithKeys(fn($noteDetailName, $noteId) => [$noteId => ['note_detail_name' => $noteDetailName]])->all();
+        $notesData = collect($this->item['notes'] ?? [])
+            ->mapWithKeys(fn($noteDetailName, $noteId) => [$noteId => ['note_detail_name' => $noteDetailName]])
+            ->all();
         $itemModel->notes()->attach($notesData);
-        Log::info('Notes synced successfully');
+        // Notes synced successfully
     }
 
     private function handleSuccess()
     {
-        Log::info('Transaction committed successfully');
+        // Transaction committed successfully
         $this->creating = false;
         session()->flash('success', 'تم إنشاء الصنف بنجاح!');
     }
 
     private function handleError(\Exception $e)
     {
+        // Error saving item
         Log::error('Error saving item', [
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
@@ -243,44 +363,11 @@ new class extends Component {
 
     public function edit($itemId)
     {
-        // $itemModel = MyItem::with(['units'])->find($itemId);
-        // $this->item = [
-        //     'id' => $itemModel->id,
-        //     'name' => $itemModel->name,
-        //     'code' => $itemModel->code,
-        //     'details' => $itemModel->details,
-        //     'type' => $itemModel->type,
-        //     'group_id' => $itemModel->group_id,
-        //     'category_id' => $itemModel->category_id,
-        //     'supplier_id' => $itemModel->supplier_id,
-        //     'location_id' => $itemModel->location_id,
-        // ];
-
-        // // Set unit rows
-        // $this->unitRows = [];
-        // foreach ($itemModel->units as $unit) {
-        //     $this->unitRows[] = [
-        //         'u_val' => $unit->pivot->u_val,
-        //         'last_cost' => $unit->pivot->last_cost,
-        //         'barcode' => $unit->pivot->barcode,
-        //         'unit_id' => $unit->id,
-        //     ];
-        // }
-
-        // if (empty($this->unitRows)) {
-        //     $this->addUnitRow();
-        // }
-
-        // $this->isEditing = true;
-        // $this->openModal();
-        // dd($this->showModal,$this->isEditing,$itemId);
+        // 
     }
 
     public function addAdditionalBarcode($unitRowIndex)
     {
-        // if (count($this->unitRows[$unitRowIndex]['barcodes']) < 2) {
-        //     $this->addBarcodeField($unitRowIndex);
-        // }
         $this->dispatch('open-modal', 'add-barcode-modal.' . $unitRowIndex);
     }
 
@@ -387,7 +474,7 @@ new class extends Component {
             $this->modalTitle = 'إنشاء وحدة جديدة';
         } elseif ($type === 'note_detail' && $noteId) {
             $note = Note::find($noteId);
-            $this->modalTitle = 'إضافة جديد' .' '. '[ ' . $note->name . ' ]';
+            $this->modalTitle = 'إضافة جديد' . ' ' . '[ ' . $note->name . ' ]';
             $this->modalData['note_id'] = $noteId;
         }
         
@@ -407,7 +494,7 @@ new class extends Component {
     {
         $this->modalData = [
             'name' => '',
-            'note_id' => null
+            'note_id' => null,
         ];
     }
 
@@ -444,7 +531,6 @@ new class extends Component {
                 $this->units = Unit::all();
                 
                 session()->flash('success', 'تم إنشاء الوحدة بنجاح!');
-                
             } elseif ($this->modalType === 'note_detail' && $this->modalData['note_id']) {
                 // Create new note detail
                 $noteDetail = NoteDetails::create([
@@ -460,7 +546,6 @@ new class extends Component {
 
             DB::commit();
             $this->closeModal();
-            
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error saving modal data', [
@@ -471,6 +556,423 @@ new class extends Component {
             session()->flash('error', 'حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.');
         }
     }
+
+    // Varibal management methods
+    public function toggleVaribalCombination($rowVaribalId, $rowValueId, $colVaribalId, $colValueId)
+    {
+        $key = $rowVaribalId . '_' . $rowValueId . '_' . $colVaribalId . '_' . $colValueId;
+        
+        if (isset($this->selectedVaribalCombinations[$key])) {
+            unset($this->selectedVaribalCombinations[$key]);
+        } else {
+            $this->selectedVaribalCombinations[$key] = [
+                'row_varibal_id' => $rowVaribalId,
+                'row_value_id' => $rowValueId,
+                'col_varibal_id' => $colVaribalId,
+                'col_value_id' => $colValueId,
+            ];
+        }
+    }
+
+    public function isVaribalCombinationSelected($rowVaribalId, $rowValueId, $colVaribalId, $colValueId)
+    {
+        $key = $rowVaribalId . '_' . $rowValueId . '_' . $colVaribalId . '_' . $colValueId;
+        return isset($this->selectedVaribalCombinations[$key]);
+    }
+
+    public function getVaribalCombinations()
+    {
+        $combinations = [];
+        
+        if (empty($this->selectedVaribalCombinations)) {
+            return $combinations;
+        }
+
+        // Convert selected combinations to readable format
+        foreach ($this->selectedVaribalCombinations as $key => $combination) {
+            if (isset($combination['row_varibal_id'])) {
+                // Grid-based combination
+                $rowVaribal = $this->varibals->find($combination['row_varibal_id']);
+                $colVaribal = $this->varibals->find($combination['col_varibal_id']);
+                $rowValue = $rowVaribal ? $rowVaribal->varibalValues->find($combination['row_value_id']) : null;
+                $colValue = $colVaribal ? $colVaribal->varibalValues->find($combination['col_value_id']) : null;
+                
+                if ($rowValue && $colValue) {
+                    $combinations[] = [
+                        'key' => $key,
+                        'display' => $rowValue->value . ' - ' . $colValue->value,
+                        'type' => 'grid',
+                    ];
+                }
+            } else {
+                // Text-based combination
+                $combinations[] = [
+                    'key' => $key,
+                    'display' => $combination,
+                    'type' => 'text',
+                ];
+            }
+        }
+
+        return $combinations;
+    }
+
+    public function addTextCombination()
+    {
+        if (!empty(trim($this->newCombinationText))) {
+            $key = 'text_' . time() . '_' . rand(1000, 9999);
+            $this->selectedVaribalCombinations[$key] = trim($this->newCombinationText);
+            $this->newCombinationText = '';
+            session()->flash('success', 'تم إضافة التوليفة بنجاح!');
+        }
+    }
+
+    public function removeCombination($key)
+    {
+        if (isset($this->selectedVaribalCombinations[$key])) {
+            unset($this->selectedVaribalCombinations[$key]);
+            session()->flash('success', 'تم حذف التوليفة بنجاح!');
+        }
+    }
+
+    public function startEditingCombination($key)
+    {
+        if (isset($this->selectedVaribalCombinations[$key]) && is_string($this->selectedVaribalCombinations[$key])) {
+            $this->editingCombinationKey = $key;
+            $this->editingCombinationText = $this->selectedVaribalCombinations[$key];
+        }
+    }
+
+    public function saveEditingCombination()
+    {
+        if ($this->editingCombinationKey && !empty(trim($this->editingCombinationText))) {
+            $this->selectedVaribalCombinations[$this->editingCombinationKey] = trim($this->editingCombinationText);
+            $this->cancelEditingCombination();
+            session()->flash('success', 'تم تحديث التوليفة بنجاح!');
+        }
+    }
+
+    public function cancelEditingCombination()
+    {
+        $this->editingCombinationKey = null;
+        $this->editingCombinationText = '';
+    }
+
+    public function updatedSelectedRowVaribal()
+    {
+        // Clear grid combinations when row varibal changes
+        $this->clearGridCombinations();
+    }
+
+    public function updatedSelectedColVaribal()
+    {
+        // Clear grid combinations when column varibal changes
+        $this->clearGridCombinations();
+    }
+
+    public function updatedHasVaribals()
+    {
+        if (!$this->hasVaribals) {
+            // Reset all combinations when varibals are disabled
+            $this->selectedVaribalCombinations = [];
+            $this->selectedRowVaribal = null;
+            $this->selectedColVaribal = null;
+            $this->newCombinationText = '';
+            $this->editingCombinationKey = null;
+            $this->editingCombinationText = '';
+            $this->combinationUnitRows = [];
+            $this->activeCombination = null;
+        }
+    }
+
+    private function clearGridCombinations()
+    {
+        // Remove only grid-based combinations, keep text combinations
+        $this->selectedVaribalCombinations = array_filter($this->selectedVaribalCombinations, function ($combination) {
+            return is_string($combination); // Keep only text combinations
+        });
+    }
+
+    public function getRowVaribalValues()
+    {
+        if (!$this->selectedRowVaribal) {
+            return collect();
+        }
+        $varibal = $this->varibals->find($this->selectedRowVaribal);
+        return $varibal ? $varibal->varibalValues : collect();
+    }
+
+    public function getColVaribalValues()
+    {
+        if (!$this->selectedColVaribal) {
+            return collect();
+        }
+        $varibal = $this->varibals->find($this->selectedColVaribal);
+        return $varibal ? $varibal->varibalValues : collect();
+    }
+
+    public function selectCombination($combinationKey)
+    {
+        $this->activeCombination = $combinationKey;
+        
+        // Initialize unit rows for this combination if not exists
+        if (!isset($this->combinationUnitRows[$combinationKey])) {
+            $this->combinationUnitRows[$combinationKey] = [];
+            $this->addCombinationUnitRow($combinationKey);
+        }
+        
+        // Ensure each combination has completely independent data
+        $this->ensureCombinationDataIndependence($combinationKey);
+    }
+
+    private function ensureCombinationDataIndependence($combinationKey)
+    {
+        // Make sure each combination has its own independent data structure
+        if (!isset($this->combinationUnitRows[$combinationKey])) {
+            $this->combinationUnitRows[$combinationKey] = [];
+        }
+        
+        // Initialize empty arrays for each combination if not exists
+        foreach ($this->combinationUnitRows[$combinationKey] as $index => $unitRow) {
+            if (!isset($this->combinationUnitRows[$combinationKey][$index]['barcodes'])) {
+                $this->combinationUnitRows[$combinationKey][$index]['barcodes'] = [];
+            }
+            if (!isset($this->combinationUnitRows[$combinationKey][$index]['prices'])) {
+                $this->combinationUnitRows[$combinationKey][$index]['prices'] = [];
+            }
+        }
+    }
+
+    public function updatedActiveCombination()
+    {
+        // Clear any shared data when switching combinations
+        // Each combination should have its own independent data
+    }
+
+    public function addCombinationUnitRow($combinationKey)
+    {
+        if (!isset($this->combinationUnitRows[$combinationKey])) {
+            $this->combinationUnitRows[$combinationKey] = [];
+        }
+        
+        // Create completely independent data for this combination
+        $newUnitRow = [
+            'unit_id' => $this->units->first()->id,
+            'u_val' => 1,
+            'cost' => 0,
+            'barcodes' => [],
+            'prices' => [],
+        ];
+        
+        // Initialize prices array for this combination only
+        foreach ($this->prices as $price) {
+            $newUnitRow['prices'][$price->id] = 0;
+        }
+        
+        // Add initial barcode for the new unit
+        $unitIndex = count($this->combinationUnitRows[$combinationKey]);
+        $combinationSuffix = $this->getCombinationSuffix($combinationKey);
+        $uniqueBarcode = $this->item['code'] . $combinationSuffix . ($unitIndex + 1);
+        $newUnitRow['barcodes'][] = $uniqueBarcode;
+        
+        // Ensure barcodes array is properly initialized
+        if (!isset($newUnitRow['barcodes'])) {
+            $newUnitRow['barcodes'] = [];
+        }
+        
+        $this->combinationUnitRows[$combinationKey][] = $newUnitRow;
+    }
+
+    public function updateCombinationUnitsCostAndPrices($combinationKey, $index)
+    {
+        if (!isset($this->combinationUnitRows[$combinationKey][$index])) {
+            return;
+        }
+
+        if ($index != 0 && isset($this->combinationUnitRows[$combinationKey][$index]['u_val']) && $this->combinationUnitRows[$combinationKey][$index]['u_val'] != null) {
+            $this->combinationUnitRows[$combinationKey][$index]['cost'] = $this->combinationUnitRows[$combinationKey][$index]['u_val'] * $this->combinationUnitRows[$combinationKey][0]['cost'];
+            foreach ($this->prices as $price) {
+                $basePrice = $this->combinationUnitRows[$combinationKey][0]['prices'][$price->id] ?? 0;
+                $this->combinationUnitRows[$combinationKey][$index]['prices'][$price->id] = $this->combinationUnitRows[$combinationKey][$index]['u_val'] * $basePrice;
+            }
+        } elseif ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['u_val'])) {
+            $this->validate([
+                'combinationUnitRows.' . $combinationKey . '.0.u_val' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    'distinct',
+                    function ($attribute, $value, $fail) {
+                        if ($value != 1) {
+                            $fail('معامل التحويل للوحدة الأساسية يجب أن يكون 1.');
+                        }
+                    },
+                ],
+            ]);
+        }
+    }
+
+    public function updateCombinationUnitsCost($combinationKey, $index)
+    {
+        if (!isset($this->combinationUnitRows[$combinationKey][$index])) {
+            return;
+        }
+
+        if ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['cost']) && $this->combinationUnitRows[$combinationKey][$index]['cost'] != null) {
+            foreach ($this->combinationUnitRows[$combinationKey] as $unitRowIndex => $unitRow) {
+                if ($unitRowIndex != $index) {
+                    $baseCost = $this->combinationUnitRows[$combinationKey][0]['cost'] ?? 0;
+                    $this->combinationUnitRows[$combinationKey][$unitRowIndex]['cost'] = $unitRow['u_val'] * $baseCost;
+                }
+            }
+        }
+    }
+
+    public function updateCombinationPrices($combinationKey, $index, $priceId)
+    {
+        if (!isset($this->combinationUnitRows[$combinationKey][$index])) {
+            return;
+        }
+
+        if ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['prices'][$priceId])) {
+            $basePrice = $this->combinationUnitRows[$combinationKey][0]['prices'][$priceId] ?? 0;
+            foreach ($this->combinationUnitRows[$combinationKey] as $unitRowIndex => $unitRow) {
+                if ($unitRowIndex != $index) {
+                    $this->combinationUnitRows[$combinationKey][$unitRowIndex]['prices'][$priceId] = $unitRow['u_val'] * $basePrice;
+                }
+            }
+        }
+    }
+
+    public function addCombinationBarcode($combinationKey, $unitRowIndex)
+    {
+        if (!isset($this->combinationUnitRows[$combinationKey][$unitRowIndex])) {
+            return;
+        }
+
+        $barcodeIndex = count($this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes']);
+        $uniqueBarcode = $this->item['code'] . ($unitRowIndex + 1) . ($barcodeIndex + 1);
+        $this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes'][] = $uniqueBarcode;
+    }
+
+    public function removeCombinationBarcode($combinationKey, $unitRowIndex, $barcodeIndex)
+    {
+        if (isset($this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes'][$barcodeIndex])) {
+            unset($this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes'][$barcodeIndex]);
+            $this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes'] = array_values($this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes']);
+        }
+    }
+
+    public function openBarcodeModal($combinationKey, $unitRowIndex)
+    {
+        $this->currentBarcodeCombination = $combinationKey;
+        $this->currentBarcodeUnitIndex = $unitRowIndex;
+        $existingBarcodes = $this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes'] ?? [];
+        $this->modalBarcodeData = array_values(array_slice($existingBarcodes, 1));
+        $this->showBarcodeModal = true;
+        $this->dispatch('open-modal', 'barcodeModal');
+
+        // Opening barcode modal
+    }
+
+    public function closeBarcodeModal()
+    {
+        // closeBarcodeModal invoked
+        
+        $this->showBarcodeModal = false;
+        $this->dispatch('close-modal', 'barcodeModal');
+        $this->currentBarcodeCombination = null;
+        $this->currentBarcodeUnitIndex = null;
+        $this->modalBarcodeData = [];
+    }
+
+    public function addModalBarcode()
+    {
+        // addModalBarcode invoked
+        
+        if (!is_array($this->modalBarcodeData)) {
+            $this->modalBarcodeData = [];
+        }
+        // Reassign to trigger Livewire re-render reliably
+        $this->modalBarcodeData = array_values(array_merge($this->modalBarcodeData, ['']));
+        
+        // Added modal barcode
+        
+        // Optional: focus last input
+        // $this->dispatch('auto-focus', 'modalBarcodeInput.' . (count($this->modalBarcodeData) - 1));
+    }
+
+    public function removeModalBarcode($index)
+    {
+        // removeModalBarcode invoked
+        
+        if (isset($this->modalBarcodeData[$index])) {
+            unset($this->modalBarcodeData[$index]);
+            $this->modalBarcodeData = array_values($this->modalBarcodeData);
+            
+            // Removed modal barcode
+
+            // Component will re-render via state change
+        }
+    }
+
+    public function saveAdditionalBarcodes()
+    {
+        // saveAdditionalBarcodes invoked
+        
+        if ($this->currentBarcodeCombination && $this->currentBarcodeUnitIndex !== null) {
+            $unit =& $this->combinationUnitRows[$this->currentBarcodeCombination][$this->currentBarcodeUnitIndex];
+            $existing = $unit['barcodes'] ?? [];
+            $base = $existing[0] ?? null;
+            $additional = [];
+            foreach ($this->modalBarcodeData as $barcode) {
+                $barcode = trim((string) $barcode);
+                if ($barcode !== '') {
+                    $additional[] = $barcode;
+                }
+            }
+            $additional = array_values(array_unique($additional));
+            $unit['barcodes'] = array_values(array_filter(array_merge([$base], $additional), fn($b) => $b !== null && $b !== ''));
+        }
+        
+        $this->closeBarcodeModal();
+    }
+
+    public function removeCombinationUnitRow($combinationKey, $index)
+    {
+        if (isset($this->combinationUnitRows[$combinationKey][$index])) {
+            unset($this->combinationUnitRows[$combinationKey][$index]);
+            $this->combinationUnitRows[$combinationKey] = array_values($this->combinationUnitRows[$combinationKey]);
+        }
+    }
+
+    public function getActiveCombinationUnitRows()
+    {
+        if ($this->activeCombination && isset($this->combinationUnitRows[$this->activeCombination])) {
+            return $this->combinationUnitRows[$this->activeCombination];
+        }
+        return [];
+    }
+
+    public function getCombinationDisplayName($combinationKey)
+    {
+        if (isset($this->selectedVaribalCombinations[$combinationKey])) {
+            $combination = $this->selectedVaribalCombinations[$combinationKey];
+            if (is_string($combination)) {
+                return $this->item['name'] . ' - ' . $combination;
+            } elseif (isset($combination['row_varibal_id'])) {
+                $rowVaribal = $this->varibals->find($combination['row_varibal_id']);
+                $colVaribal = $this->varibals->find($combination['col_varibal_id']);
+                $rowValue = $rowVaribal ? $rowVaribal->varibalValues->find($combination['row_value_id']) : null;
+                $colValue = $colVaribal ? $colVaribal->varibalValues->find($combination['col_value_id']) : null;
+                
+                if ($rowValue && $colValue) {
+                    return $this->item['name'] . ' - ' . $rowValue->value . ' - ' . $colValue->value;
+                }
+            }
+        }
+        return $this->item['name'];
+    }
 }; ?>
 
 <div>
@@ -480,18 +982,7 @@ new class extends Component {
             <h5 class="">
                 {{ 'إضافة صنف جديد' }}</h5>
         </div>
-        @if (session()->has('success'))
-            <div class="alert alert-success font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session()->has('error'))
-            <div class="alert alert-danger font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
-                {{ session('error') }}
-            </div>
-        @endif
+        @include('livewire.item-management.items.partials.alerts')
         <div class="">
             <form wire:submit.prevent="save" wire:loading.attr="disabled" wire:target="save"
                 wire:loading.class="opacity-50">
@@ -511,10 +1002,12 @@ new class extends Component {
                             </div>
                             <div class="col-md-1 mb-3">
                                 <label for="type" class="form-label font-family-cairo fw-bold">نوع الصنف</label>
-                                <select wire:model="item.type" class="form-select font-family-cairo fw-bold" id="type">
+                                <select wire:model="item.type" class="form-select font-family-cairo fw-bold"
+                                    id="type">
                                     <option class="font-family-cairo fw-bold" value="">إختر</option>
                                     @foreach (ItemType::cases() as $type)
-                                        <option class="font-family-cairo fw-bold" value="{{ $type->value }}">{{ $type->label() }}</option>
+                                        <option class="font-family-cairo fw-bold" value="{{ $type->value }}">
+                                            {{ $type->label() }}</option>
                                     @endforeach
                                 </select>
                                 @error('item.type')
@@ -536,19 +1029,19 @@ new class extends Component {
                                     <label for="type"
                                         class="form-label font-family-cairo fw-bold">{{ $note->name }}</label>
                                     <div class="input-group">
-                                        <button type="button"
-                                            class="btn btn-outline-success font-family-cairo fw-bold"
+                                        <button type="button" class="btn btn-outline-success font-family-cairo fw-bold"
                                             wire:click="openModal('note_detail', {{ $note->id }})"
-                                            @if (!$creating) disabled @endif
-                                            title="إضافة جديد">
+                                            @if (!$creating) disabled @endif title="إضافة جديد">
                                             <i class="las la-plus"></i>
                                         </button>
                                         <select wire:model="item.notes.{{ $note->id }}"
                                             @if (!$creating) disabled readonly @endif
-                                            class="form-select font-family-cairo fw-bold" id="note-{{ $note->id }}">
+                                            class="form-select font-family-cairo fw-bold"
+                                            id="note-{{ $note->id }}">
                                             <option class="font-family-cairo fw-bold" value="">إختر</option>
                                             @foreach ($note->noteDetails as $noteDetail)
-                                                <option class="font-family-cairo fw-bold" value="{{ $noteDetail->name }}">
+                                                <option class="font-family-cairo fw-bold"
+                                                    value="{{ $noteDetail->name }}">
                                                     {{ $noteDetail->name }}
                                                 </option>
                                             @endforeach
@@ -567,209 +1060,22 @@ new class extends Component {
                                     <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
+                            {{-- check box for decision if item will have varibals --}}
+                            <div class="col-md-1 mb-3">
+                                <input type="checkbox" wire:model.live="hasVaribals" class="form-check-input"
+                                    id="hasVaribals">
+                                <label for="hasVaribals" class="form-label font-family-cairo fw-bold">له متغيرات</label>
+                            </div>
                         </div>
+                        @include('livewire.item-management.items.partials.varibals-grid')
                     </div>
                 </fieldset>
+
+                <!-- Combination Units Section -->
+                @include('livewire.item-management.items.partials.combination-units')
+
                 <!-- Units Repeater Section -->
-                <fieldset class="shadow-sm mt-2">
-                    <div class="col-md-12 p-2">
-                        @if ($creating)
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <h6 class="font-family-cairo fw-bold mb-0">وحدات الصنف</h6>
-                                    <button type="button"
-                                        class="btn btn-outline-success btn-sm font-family-cairo fw-bold mt-3"
-                                        wire:click="openModal('unit')"
-                                        title="إنشاء وحدة جديدة">
-                                        <i class="las la-plus"></i> إنشاء وحدة جديدة
-                                    </button>
-                                </div>
-                                <button type="button" class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                    wire:click="addUnitRow">
-                                    <i class="las la-plus"></i> إضافة وحدة للصنف
-                                </button>
-                            </div>
-                        @endif
-                        <div class="table-responsive" style="overflow-x: auto;">
-                            <table class="table table-striped mb-0" style="min-width: 1200px;">
-                                <thead class="table-light text-center align-middle">
-
-                                    <tr>
-                                        <th class="font-family-cairo text-center fw-bold">الوحدة</th>
-                                        <th class="font-family-cairo text-center fw-bold">معامل التحويل</th>
-                                        <th class="font-family-cairo text-center fw-bold">التكلفة</th>
-                                        @foreach ($prices as $price)
-                                            <th class="font-family-cairo fw-bold">{{ $price->name }}</th>
-                                        @endforeach
-                                        <th class="font-family-cairo text-center fw-bold">باركود</th>
-                                        <th class="font-family-cairo text-center fw-bold">XX</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($unitRows as $index => $unitRow)
-                                        <tr>
-                                            <td class="font-family-cairo fw-bold font-14 text-center">
-                                                <select wire:model.live="unitRows.{{ $index }}.unit_id"
-                                                    @if (!$creating) disabled readonly @endif
-                                                    class="form-select font-family-cairo fw-bold font-14"
-                                                    style="min-width: 100px; height: 50px;">
-                                                    <option class="font-family-cairo fw-bold" value="">
-                                                        إختر</option>
-                                                    @foreach ($units as $unit)
-                                                        <option class="font-family-cairo fw-bold"
-                                                            value="{{ $unit->id }}">
-                                                            {{ $unit->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error("unitRows.{$index}.unit_id")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            <td class="text-center">
-                                                <input type="number" onclick="this.select()"
-                                                    @if (!$creating) disabled readonly @endif
-                                                    wire:model="unitRows.{{ $index }}.u_val"
-                                                    wire:keyup.debounce.300ms="updateUnitsCostAndPrices({{ $index }})"
-                                                    class="form-control font-family-cairo fw-bold" min="1"
-                                                    step="0.0001" style="min-width: 150px;">
-                                                @error("unitRows.{$index}.u_val")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            <td>
-                                                <input type="number" onclick="this.select()"
-                                                    @if (!$creating) disabled readonly @endif
-                                                    wire:model="unitRows.{{ $index }}.cost"
-                                                    wire:keyup.debounce.300ms="updateUnitsCost({{ $index }})"
-                                                    class="form-control font-family-cairo fw-bold" step="0.0001"
-                                                    style="min-width: 150px;">
-                                                @error("unitRows.{$index}.cost")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            @foreach ($prices as $price)
-                                                <td class="text-center">
-                                                    <input type="number" onclick="this.select()"
-                                                        @if (!$creating) disabled readonly @endif
-                                                        wire:model="unitRows.{{ $index }}.prices.{{ $price->id }}"
-                                                        class="form-control font-family-cairo fw-bold" step="0.0001"
-                                                        style="min-width: 150px;">
-                                                    @error("unitRows.{$index}.prices.{$price->id}")
-                                                        <span
-                                                            class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                    @enderror
-                                                </td>
-                                            @endforeach
-                                            <td class="d-flex text-center flex-column gap-1 mt-4">
-                                                <input type="text" onclick="this.select()"
-                                                    @if (!$creating) disabled readonly @endif
-                                                    wire:model.live="unitRows.{{ $index }}.barcodes.0"
-                                                    class="form-control font-family-cairo fw-bold" maxlength="25"
-                                                    style="min-width: 150px;">
-                                                {{-- add button to add more barcodes --}}
-                                                @if ($creating)
-                                                    <button type="button"
-                                                        class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                                        wire:click="addAdditionalBarcode({{ $index }})">
-                                                        <i class="las la-plus"></i> باركود إضافى
-                                                    </button>
-                                                @endif
-                                                @if (!$creating)
-                                                    <button type="button"
-                                                        class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                                        wire:click="showBarcodes({{ $index }})">
-                                                        <i class="las la-plus"></i> عرض الباركود
-                                                    </button>
-                                                @endif
-                                                @error("unitRows.{$index}.barcodes.{$index}")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold font-12">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            <td class="font-family-cairo fw-bold font-14 text-center">
-                                                @if ($creating)
-                                                    <button type="button"
-                                                        class="btn btn-danger btn-icon-square-sm float-end"
-                                                        wire:click="removeUnitRow({{ $index }})">
-                                                        <i class="far fa-trash-alt"></i>
-                                                    </button>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <!-- Additional Barcode Modal -->
-                                        <div wire:ignore.self class="modal fade"
-                                            id="add-barcode-modal.{{ $index }}" tabindex="-1"
-                                            aria-labelledby="addBarcodeModalLabel" aria-hidden="true"
-                                            data-bs-backdrop="static" data-bs-keyboard="false">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="font-family-cairo fw-bold text-white"
-                                                            id="addBarcodeModalLabel">
-                                                            إضافة وتعديل الباركود
-                                                        </h5>
-                                                        <button type="button" class="btn-close"
-                                                            data-bs-dismiss="modal"
-                                                            wire:click="cancelBarcodeUpdate({{ $index }})"
-                                                            aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="d-flex justify-content-end mb-2">
-                                                            @if ($creating)
-                                                                <button type="button"
-                                                                    class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                                                    wire:click="addBarcodeField({{ $index }})">
-                                                                    <i class="las la-plus"></i> إضافة باركود
-                                                                </button>
-                                                            @endif
-                                                        </div>
-
-                                                        @foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode)
-                                                            <div class="d-flex align-items-center mb-2"
-                                                                wire:key="{{ $index }}-barcode-{{ $barcodeIndex }}">
-                                                                <input type="text"
-                                                                    @if (!$creating) disabled readonly @endif
-                                                                    class="form-control font-family-cairo fw-bold"
-                                                                    wire:model.live="unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}"
-                                                                    id="unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}"
-                                                                    placeholder="أدخل الباركود">
-                                                                @if ($creating)
-                                                                    <button type="button"
-                                                                        class="btn btn-danger btn-sm ms-2"
-                                                                        wire:click="removeBarcodeField({{ $index }}, {{ $barcodeIndex }})">
-                                                                        <i class="far fa-trash-alt"></i>
-                                                                    </button>
-                                                                @endif
-                                                            </div>
-                                                            @error("unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}")
-                                                                <span
-                                                                    class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                            @enderror
-                                                        @endforeach
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        @if ($creating)
-                                                            <button type="button"
-                                                                class="btn btn-secondary font-family-cairo fw-bold"
-                                                                data-bs-dismiss="modal"
-                                                                wire:click="cancelBarcodeUpdate({{ $index }})">إلغاء</button>
-                                                            <button type="button"
-                                                                class="btn btn-primary font-family-cairo fw-bold"
-                                                                wire:click="saveBarcodes({{ $index }})">حفظ</button>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                </fieldset>
+                @include('livewire.item-management.items.partials.units-repeater')
 
                 <div class="container-fluid mt-3">
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
@@ -797,134 +1103,13 @@ new class extends Component {
     </div>
 
     {{-- Universal Modal for creating units and notes --}}
-    @if($showModal)
-    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <h5 class="modal-title font-family-cairo fw-bold text-white" id="universalModalLabel">
-                        {{ $modalTitle }}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" wire:click="closeModal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    @if (session()->has('success'))
-                        <div class="alert alert-success font-family-cairo fw-bold font-12 mb-3" x-data="{ show: true }" x-show="show"
-                            x-init="setTimeout(() => show = false, 3000)">
-                            {{ session('success') }}
+    @include('livewire.item-management.items.partials.universal-modal')
+
+    {{-- Barcode Modal inside root to keep single root element --}}
+    @include('livewire.item-management.items.partials.barcode-modal')
+
+
+    @include('livewire.item-management.items.partials.scripts')
+    @include('livewire.item-management.items.partials.styles')
+
                         </div>
-                    @endif
-                    @if (session()->has('error'))
-                        <div class="alert alert-danger font-family-cairo fw-bold font-12 mb-3" x-data="{ show: true }" x-show="show"
-                            x-init="setTimeout(() => show = false, 5000)">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-                    
-                    <form wire:submit.prevent="saveModalData">
-                        <div class="mb-3">
-                            <label for="modalName" class="form-label font-family-cairo fw-bold">الاسم</label>
-                            <input type="text" 
-                                   wire:model="modalData.name" 
-                                   class="form-control font-family-cairo fw-bold" 
-                                   id="modalName" 
-                                   placeholder="أدخل الاسم"
-                                   autofocus>
-                            @error('modalData.name')
-                                <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" 
-                            class="btn btn-secondary font-family-cairo fw-bold" 
-                            wire:click="closeModal">
-                        إلغاء
-                    </button>
-                    <button type="button" 
-                            class="btn btn-primary font-family-cairo fw-bold" 
-                            wire:click="saveModalData"
-                            wire:loading.attr="disabled"
-                            wire:target="saveModalData">
-                        <span wire:loading.remove wire:target="saveModalData">حفظ</span>
-                        <span wire:loading wire:target="saveModalData">جاري الحفظ...</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-    @endif
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('livewire:init', () => {
-            window.addEventListener('open-modal', event => {
-                let modal = new bootstrap.Modal(document.getElementById(event.detail[0]));
-                modal.show();
-            });
-
-            window.addEventListener('close-modal', event => {
-                let modal = bootstrap.Modal.getInstance(document.getElementById(event.detail[
-                    0]));
-                if (modal) {
-                    modal.hide();
-                }
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
-            });
-            // Auto-focus functionality
-            Livewire.on('auto-focus', function(inputId) {
-                // Add a small delay to ensure DOM is updated
-                setTimeout(() => {
-                    const element = document.getElementById(inputId);
-                    if (element) {
-                        element.focus();
-                    }
-                }, 100);
-            });
-
-            // منع زر الإدخال (Enter) من حفظ النموذج
-            document.querySelectorAll('form').forEach(function(form) {
-                form.addEventListener('keydown', function(e) {
-                    // إذا كان الزر Enter وتم التركيز على input وليس textarea أو زر
-                    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target
-                        .type !== 'submit' && e.target.type !== 'button') {
-                        e.preventDefault();
-                    }
-                });
-            });
-
-            // إغلاق المودال عند الضغط على Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    Livewire.dispatch('closeModal');
-                }
-            });
-
-            // إغلاق المودال عند النقر خارج المودال
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal-backdrop')) {
-                    Livewire.dispatch('closeModal');
-                }
-            });
-
-            // حفظ البيانات عند الضغط على Enter في المودال
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && document.querySelector('.modal.show')) {
-                    const modalInput = document.querySelector('.modal.show input[type="text"]');
-                    if (modalInput && modalInput === document.activeElement) {
-                        e.preventDefault();
-                        Livewire.dispatch('saveModalData');
-                    }
-                }
-            });
-        });
-
-
-    });
-</script>

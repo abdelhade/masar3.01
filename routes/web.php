@@ -38,7 +38,8 @@ use App\Http\Controllers\TransferController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductionOrderController;
-
+use App\Http\Controllers\VaribalController;
+use App\Http\Controllers\VaribalValueController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -137,6 +138,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('projects', ProjectController::class)->names('projects')->only('index', 'show', 'create', 'edit');
 
     // 📁 Items & Units & Prices & Notes
+
+    Route::resource('varibals', VaribalController::class)->names('varibals');
+    Route::get('varibalValues/{varibalId?}', [VaribalValueController::class, 'index'])->name('varibalValues.index');
     Route::resource('items', ItemController::class)->names('items')->only('index', 'create', 'edit');
     Route::get('items/{id}/json', [ItemController::class, 'getItemJson'])->name('items.json');
     Route::get('items/print', [ItemController::class, 'printItems'])->name('items.print');

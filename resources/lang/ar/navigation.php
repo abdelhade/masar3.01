@@ -30,6 +30,8 @@ return [
     'categories' => 'التصنيفات',
     'item_movement_report' => 'تقرير حركة صنف',
     'item_management' => 'إدارة الأصناف',
+    'varibals' => 'المتغيرات للأصناف',
+    'varibal_values' => 'قيم المتغيرات',
 
     // إدارة الخصومات
     'discounts' => 'الخصومات',

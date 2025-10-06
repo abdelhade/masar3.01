@@ -28,15 +28,18 @@
     </li>
 @endcan
 @canany([
-    'عرض المقاسات',
-    'عرض الطباعه',
     'عرض الاماكن',
-    'عرض المواقع',
     'عرض التصنيفات',
     'عرض
     المجموعات',
     ])
     <livewire:item-management.notes.notesNames />
+    <li class="nav-item">
+        <a class="nav-link font-family-cairo fw-bold" href="{{ route('varibals.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.varibals') }}
+        </a>
+    </li>
+    <livewire:item-management.varibals.varibalslinks />
 @endcan
 <!-- {{-- item movement --}}
                                                                                                                                                       @can('عرض تقرير حركة صنف')

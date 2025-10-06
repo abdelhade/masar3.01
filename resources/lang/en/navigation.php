@@ -30,7 +30,7 @@ return [
     'categories' => 'Categories',
     'item_movement_report' => 'Item Movement Report',
     'item_management' => 'Items Management',
-
+    'varibals' => 'Items Varibals',
     // Discounts Management
     'discounts' => 'Discounts',
     'allowed_discounts_list' => 'Allowed Discounts List',

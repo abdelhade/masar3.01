@@ -17,6 +17,8 @@ new class extends Component {
     public $units;
     public $prices;
     public $notes;
+    public $hasVaribals = false;
+    public $creating = true;
 
     public $item = [
         'type' => null,
@@ -34,7 +36,7 @@ new class extends Component {
     public $modalTitle = '';
     public $modalData = [
         'name' => '',
-        'note_id' => null
+        'note_id' => null,
     ];
 
     public function mount(Item $itemModel)
@@ -46,6 +48,7 @@ new class extends Component {
 
         $this->item = [
             'name' => $this->itemModel->name,
+            'type' => $this->itemModel->type->value,
             'code' => $this->itemModel->code,
             'info' => $this->itemModel->info,
             'notes' => $this->itemModel->notes->pluck('pivot.note_detail_name', 'id')->toArray(),
@@ -56,7 +59,7 @@ new class extends Component {
             $unitPrices = $this->itemModel->prices()->wherePivot('unit_id', $unit->id)->get()->pluck('pivot.price', 'id')->toArray();
 
             $barcodes = $this->itemModel->barcodes()->where('unit_id', $unit->id)->pluck('barcode')->filter()->values()->toArray();
-            
+
             // إذا لم يكن هناك باركودات، أضف باركود فارغ واحد
             if (empty($barcodes)) {
                 $barcodes = [''];
@@ -88,11 +91,17 @@ new class extends Component {
             'item.notes.*' => 'nullable',
             'unitRows.*.barcodes.*' => ['nullable', 'string', 'distinct', 'max:25', Rule::unique('barcodes', 'barcode')->where(fn($query) => $query->where('item_id', '!=', $this->itemModel->id))],
             'unitRows.*.cost' => 'required|numeric|min:0',
-            'unitRows.0.u_val' => ['required', 'numeric', 'min:1', 'distinct', function($attribute, $value, $fail) {
-                if ($value != 1) {
-                    $fail('معامل التحويل للوحدة الأساسية يجب أن يكون 1.');
-                }
-            }],
+            'unitRows.0.u_val' => [
+                'required',
+                'numeric',
+                'min:1',
+                'distinct',
+                function ($attribute, $value, $fail) {
+                    if ($value != 1) {
+                        $fail('معامل التحويل للوحدة الأساسية يجب أن يكون 1.');
+                    }
+                },
+            ],
             'unitRows.*.u_val' => 'required|numeric|min:0.0001',
             'unitRows.*.unit_id' => 'required|exists:units,id|distinct',
             'unitRows.*.prices.*' => 'required|numeric|min:0',
@@ -146,13 +155,13 @@ new class extends Component {
 
         try {
             DB::beginTransaction();
-            
+
             $this->updateItem();
             $this->syncUnits();
             $this->syncBarcodes();
             $this->syncPrices();
             $this->syncNotes();
-            
+
             DB::commit();
             $this->handleSuccess();
         } catch (\Exception $e) {
@@ -171,8 +180,10 @@ new class extends Component {
     {
         $unitsSync = [];
         foreach ($this->unitRows as $unitRow) {
-            if (empty($unitRow['unit_id'])) continue;
-            
+            if (empty($unitRow['unit_id'])) {
+                continue;
+            }
+
             $unitsSync[$unitRow['unit_id']] = [
                 'u_val' => $unitRow['u_val'],
                 'cost' => $unitRow['cost'],
@@ -186,7 +197,9 @@ new class extends Component {
     {
         $barcodesToCreate = [];
         foreach ($this->unitRows as $unitRowIndex => $unitRow) {
-            if (empty($unitRow['unit_id'])) continue;
+            if (empty($unitRow['unit_id'])) {
+                continue;
+            }
 
             $hasValidBarcode = false;
             if (!empty($unitRow['barcodes'])) {
@@ -197,7 +210,7 @@ new class extends Component {
                     }
                 }
             }
-            
+
             if (!$hasValidBarcode) {
                 $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $this->item['code'] . ($unitRowIndex + 1)];
             }
@@ -214,8 +227,10 @@ new class extends Component {
     {
         $pricesToSync = [];
         foreach ($this->unitRows as $unitRow) {
-            if (empty($unitRow['unit_id']) || empty($unitRow['prices'])) continue;
-            
+            if (empty($unitRow['unit_id']) || empty($unitRow['prices'])) {
+                continue;
+            }
+
             foreach ($unitRow['prices'] as $price_id => $price_value) {
                 $pricesToSync[] = ['price_id' => $price_id, 'unit_id' => $unitRow['unit_id'], 'price' => $price_value];
             }
@@ -305,15 +320,15 @@ new class extends Component {
     {
         $this->modalType = $type;
         $this->resetModalData();
-        
+
         if ($type === 'unit') {
             $this->modalTitle = 'إنشاء وحدة جديدة';
         } elseif ($type === 'note_detail' && $noteId) {
             $note = Note::find($noteId);
-            $this->modalTitle = 'إضافة جديد' .' '. '[ ' . $note->name . ' ]';
+            $this->modalTitle = 'إضافة جديد' . ' ' . '[ ' . $note->name . ' ]';
             $this->modalData['note_id'] = $noteId;
         }
-        
+
         $this->showModal = true;
     }
 
@@ -330,7 +345,7 @@ new class extends Component {
     {
         $this->modalData = [
             'name' => '',
-            'note_id' => null
+            'note_id' => null,
         ];
     }
 
@@ -362,28 +377,26 @@ new class extends Component {
                     'name' => $this->modalData['name'],
                     'code' => Unit::max('code') + 1 ?? 1,
                 ]);
-                
+
                 // Refresh units list
                 $this->units = Unit::all();
-                
+
                 session()->flash('success', 'تم إنشاء الوحدة بنجاح!');
-                
             } elseif ($this->modalType === 'note_detail' && $this->modalData['note_id']) {
                 // Create new note detail
                 $noteDetail = NoteDetails::create([
                     'note_id' => $this->modalData['note_id'],
                     'name' => $this->modalData['name'],
                 ]);
-                
+
                 // Refresh notes list
                 $this->notes = Note::with('noteDetails')->get();
-                
+
                 session()->flash('success', 'تم إضافة ' . $this->modalData['name'] . ' بنجاح!');
             }
 
             DB::commit();
             $this->closeModal();
-            
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error saving modal data', [
@@ -412,7 +425,7 @@ new class extends Component {
     {
         unset($this->unitRows[$unitRowIndex]['barcodes'][$barcodeIndex]);
         $this->unitRows[$unitRowIndex]['barcodes'] = array_values($this->unitRows[$unitRowIndex]['barcodes']);
-        
+
         // إذا لم يعد هناك باركودات، أضف باركود فارغ واحد
         if (empty($this->unitRows[$unitRowIndex]['barcodes'])) {
             $this->unitRows[$unitRowIndex]['barcodes'] = [''];
@@ -442,18 +455,7 @@ new class extends Component {
             <h5 class="">
                 {{ 'تعديل الصنف' }}</h5>
         </div>
-        @if (session()->has('success'))
-            <div class="alert alert-success font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session()->has('error'))
-            <div class="alert alert-danger font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
-                x-init="setTimeout(() => show = false, 3000)">
-                {{ session('error') }}
-            </div>
-        @endif
+        @include('livewire.item-management.items.partials.alerts')
         <div class="">
             <form wire:submit.prevent="update" wire:loading.attr="disabled" wire:target="update">
                 <!-- Basic Item Information -->
@@ -472,10 +474,12 @@ new class extends Component {
                             {{-- item type --}}
                             <div class="col-md-1 mb-3">
                                 <label for="type" class="form-label font-family-cairo fw-bold">نوع الصنف</label>
-                                <select wire:model="item.type" class="form-select font-family-cairo fw-bold" id="type">
+                                <select wire:model="item.type" class="form-select font-family-cairo fw-bold"
+                                    id="type">
                                     <option class="font-family-cairo fw-bold" value="">إختر</option>
                                     @foreach (ItemType::cases() as $type)
-                                        <option class="font-family-cairo fw-bold" value="{{ $type->value }}">{{ $type->label() }}</option>
+                                        <option class="font-family-cairo fw-bold" value="{{ $type->value }}">
+                                            {{ $type->label() }}</option>
                                     @endforeach
                                 </select>
                                 @error('item.type')
@@ -496,8 +500,7 @@ new class extends Component {
                                     <label for="type"
                                         class="form-label font-family-cairo fw-bold">{{ $note->name }}</label>
                                     <div class="input-group">
-                                        <button type="button"
-                                            class="btn btn-outline-success font-family-cairo fw-bold"
+                                        <button type="button" class="btn btn-outline-success font-family-cairo fw-bold"
                                             wire:click="openModal('note_detail', {{ $note->id }})"
                                             title="إضافة جديد">
                                             <i class="las la-plus"></i>
@@ -506,7 +509,8 @@ new class extends Component {
                                             class="form-select font-family-cairo fw-bold" id="note-{{ $note->id }}">
                                             <option class="font-family-cairo fw-bold" value="">إختر</option>
                                             @foreach ($note->noteDetails as $noteDetail)
-                                                <option class="font-family-cairo fw-bold" value="{{ $noteDetail->name }}">
+                                                <option class="font-family-cairo fw-bold"
+                                                    value="{{ $noteDetail->name }}">
                                                     {{ $noteDetail->name }}
                                                 </option>
                                             @endforeach
@@ -530,193 +534,7 @@ new class extends Component {
                         </div>
                     </div>
                 </fieldset>
-                <!-- Units Repeater Section -->
-                <fieldset class="shadow-sm mt-2">
-                    <div class="col-md-12 p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="d-flex align-items-center gap-2">
-                                <h6 class="font-family-cairo fw-bold mb-0">وحدات الصنف</h6>
-                                <button type="button"
-                                    class="btn btn-outline-success btn-sm font-family-cairo fw-bold mt-3"
-                                    wire:click="openModal('unit')"
-                                    title="إنشاء وحدة جديدة">
-                                    <i class="las la-plus"></i> إنشاء وحدة جديدة
-                                </button>
-                            </div>
-                            <button type="button" class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                wire:click="addUnitRow">
-                                <i class="las la-plus"></i> إضافة وحدة للصنف
-                            </button>
-                        </div>
-                        <div class="table-responsive" style="overflow-x: auto;">
-                            <table class="table table-striped mb-0" style="min-width: 1200px;">
-                                <thead class="table-light text-center align-middle">
-
-                                    <tr>
-                                        <th class="font-family-cairo fw-bold">الوحدة</th>
-                                        <th class="font-family-cairo fw-bold">معامل التحويل</th>
-                                        <th class="font-family-cairo fw-bold">التكلفة</th>
-                                        @foreach ($prices as $price)
-                                            <th class="font-family-cairo fw-bold">{{ $price->name }}</th>
-                                        @endforeach
-                                        <th class="font-family-cairo fw-bold">باركود</th>
-                                        <th class="font-family-cairo fw-bold">XX</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($unitRows as $index => $unitRow)
-                                        <tr wire:key="{{ $index }}">
-                                            <td>
-                                                <select wire:model.live="unitRows.{{ $index }}.unit_id"
-                                                    class="form-select font-family-cairo fw-bold"
-                                                    style="min-width: 100px;">
-                                                    <option class="font-family-cairo fw-bold" value="">
-                                                        إختر</option>
-                                                    @foreach ($units as $unit)
-                                                        <option class="font-family-cairo fw-bold"
-                                                            value="{{ $unit->id }}">
-                                                            {{ $unit->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                @error("unitRows.{$index}.unit_id")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            <td>
-                                                <input type="number" onclick="this.select()"
-                                                    wire:model="unitRows.{{ $index }}.u_val"
-                                                    wire:keyup.debounce.300ms="updateUnitsCostAndPrices({{ $index }})"
-                                                    class="form-control font-family-cairo fw-bold" min="1"
-                                                    step="0.0001"
-                                                    style="min-width: 150px;">
-                                                @error("unitRows.{$index}.u_val")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            <td>
-                                                <input type="number" onclick="this.select()"
-                                                    wire:model="unitRows.{{ $index }}.cost"
-                                                    wire:keyup.debounce.300ms="updateUnitsCost({{ $index }})"
-                                                    class="form-control font-family-cairo fw-bold"
-                                                    step="0.0001"
-                                                    style="min-width: 150px;">
-                                                @error("unitRows.{$index}.cost")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            @foreach ($prices as $price)
-                                                <td>
-                                                    <input type="number" onclick="this.select()"
-                                                        wire:model="unitRows.{{ $index }}.prices.{{ $price->id }}"
-                                                        class="form-control font-family-cairo fw-bold"
-                                                        step="0.0001"
-                                                        style="min-width: 150px;">
-                                                    @error("unitRows.{$index}.prices.{$price->id}")
-                                                        <span
-                                                            class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                    @enderror
-                                                </td>
-                                            @endforeach
-                                            <td class="d-flex text-center flex-column gap-1 mt-4">
-                                                <input type="text" onclick="this.select()"
-                                                    wire:model="unitRows.{{ $index }}.barcodes.0"
-                                                    class="form-control font-family-cairo fw-bold"
-                                                    maxlength="25" style="min-width: 150px;"
-                                                    placeholder="الباركود الأساسي">
-                                                {{-- add button to add more barcodes --}}
-                                                <button type="button"
-                                                    class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                                    wire:click="addAdditionalBarcode({{ $index }})">
-                                                    <i class="las la-plus"></i> باركود إضافى
-                                                </button>
-                                                @error("unitRows.{$index}.barcodes.0")
-                                                    <span
-                                                        class="text-danger font-family-cairo fw-bold font-12">{{ $message }}</span>
-                                                @enderror
-                                            </td>
-                                            <td>
-                                                <button type="button"  class="btn btn-danger btn-icon-square-sm float-end"
-                                                    wire:click="removeUnitRow({{ $index }})">
-                                                    <i class="far fa-trash-alt"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <!-- Additional Barcode Modal -->
-                                        <div wire:ignore.self class="modal fade"
-                                            id="add-barcode-modal.{{ $index }}" tabindex="-1"
-                                            aria-labelledby="addBarcodeModalLabel" aria-hidden="true"
-                                            data-bs-backdrop="static" data-bs-keyboard="false">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="font-family-cairo fw-bold text-white"
-                                                            id="addBarcodeModalLabel">
-                                                            إضافة وتعديل الباركود
-                                                        </h5>
-                                                        <button type="button" class="btn-close"
-                                                            data-bs-dismiss="modal"
-                                                            wire:click="cancelBarcodeUpdate({{ $index }})"
-                                                            aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="d-flex justify-content-end mb-2">
-                                                            <button type="button"
-                                                                class="btn btn-primary btn-sm font-family-cairo fw-bold"
-                                                                wire:click="addBarcodeField({{ $index }})">
-                                                                <i class="las la-plus"></i> إضافة باركود
-                                                            </button>
-                                                        </div>
-
-                                                        @foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode)
-                                                            @if($barcodeIndex > 0) {{-- عرض الباركودات الإضافية فقط (تخطي الباركود الأول) --}}
-                                                                <div class="d-flex align-items-center mb-2"
-                                                                    wire:key="{{ $index }}-barcode-{{ $barcodeIndex }}">
-                                                                    <input type="text"
-                                                                        class="form-control font-family-cairo fw-bold"
-                                                                        wire:model.live="unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}"
-                                                                        id="unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}"
-                                                                        placeholder="أدخل الباركود الإضافي">
-                                                                    <button type="button"
-                                                                        class="btn btn-danger btn-sm ms-2"
-                                                                        wire:click="removeBarcodeField({{ $index }}, {{ $barcodeIndex }})">
-                                                                        <i class="far fa-trash-alt"></i>
-                                                                    </button>
-                                                                </div>
-                                                                @error("unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}")
-                                                                    <span
-                                                                        class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                                                                @enderror
-                                                            @endif
-                                                        @endforeach
-                                                        
-                                                        {{-- إذا لم يكن هناك باركودات إضافية، أظهر رسالة --}}
-                                                        @if(count($unitRow['barcodes']) <= 1)
-                                                            <div class="text-center text-muted font-family-cairo fw-bold py-3">
-                                                                <i class="las la-info-circle"></i> لا توجد باركودات إضافية
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button"
-                                                            class="btn btn-secondary font-family-cairo fw-bold"
-                                                            data-bs-dismiss="modal"
-                                                            wire:click="cancelBarcodeUpdate({{ $index }})">إلغاء</button>
-                                                        <button type="button"
-                                                            class="btn btn-primary font-family-cairo fw-bold"
-                                                            wire:click="saveBarcodes({{ $index }})">حفظ</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                </fieldset>
+                @include('livewire.item-management.items.partials.units-repeater')
 
                 <div class="mt-3">
                     <button type="button" class="btn btn-secondary font-family-cairo fw-bold"
@@ -728,133 +546,8 @@ new class extends Component {
         </div>
     </div>
 
-    {{-- Universal Modal for creating units and notes --}}
-    @if($showModal)
-    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <h5 class="modal-title font-family-cairo fw-bold text-white" id="universalModalLabel">
-                        {{ $modalTitle }}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" wire:click="closeModal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    @if (session()->has('success'))
-                        <div class="alert alert-success font-family-cairo fw-bold font-12 mb-3" x-data="{ show: true }" x-show="show"
-                            x-init="setTimeout(() => show = false, 3000)">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-                    @if (session()->has('error'))
-                        <div class="alert alert-danger font-family-cairo fw-bold font-12 mb-3" x-data="{ show: true }" x-show="show"
-                            x-init="setTimeout(() => show = false, 5000)">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-                    
-                    <form wire:submit.prevent="saveModalData">
-                        <div class="mb-3">
-                            <label for="modalName" class="form-label font-family-cairo fw-bold">الاسم</label>
-                            <input type="text" 
-                                   wire:model="modalData.name" 
-                                   class="form-control font-family-cairo fw-bold" 
-                                   id="modalName" 
-                                   placeholder="أدخل الاسم"
-                                   autofocus>
-                            @error('modalData.name')
-                                <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" 
-                            class="btn btn-secondary font-family-cairo fw-bold" 
-                            wire:click="closeModal">
-                        إلغاء
-                    </button>
-                    <button type="button" 
-                            class="btn btn-primary font-family-cairo fw-bold" 
-                            wire:click="saveModalData"
-                            wire:loading.attr="disabled"
-                            wire:target="saveModalData">
-                        <span wire:loading.remove wire:target="saveModalData">حفظ</span>
-                        <span wire:loading wire:target="saveModalData">جاري الحفظ...</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-    @endif
+    @include('livewire.item-management.items.partials.universal-modal')
+    @include('livewire.item-management.items.partials.scripts')
+    @include('livewire.item-management.items.partials.styles')
+
 </div>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.addEventListener('livewire:init', () => {
-            window.addEventListener('open-modal', event => {
-                let modal = new bootstrap.Modal(document.getElementById(event.detail[0]));
-                modal.show();
-            });
-
-            window.addEventListener('close-modal', event => {
-                let modal = bootstrap.Modal.getInstance(document.getElementById(event.detail[0]));
-                if (modal) {
-                    modal.hide();
-                }
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
-            });
-
-            // Auto-focus functionality
-            Livewire.on('auto-focus', function(inputId) {
-                // Add a small delay to ensure DOM is updated
-                setTimeout(() => {
-                    const element = document.getElementById(inputId);
-                    if (element) {
-                        element.focus();
-                    }
-                }, 100);
-            });
-
-            // منع زر الإدخال (Enter) من حفظ النموذج
-            document.querySelectorAll('form').forEach(function(form) {
-                form.addEventListener('keydown', function(e) {
-                    // إذا كان الزر Enter وتم التركيز على input وليس textarea أو زر
-                    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.type !== 'submit' && e.target.type !== 'button') {
-                        e.preventDefault();
-                    }
-                });
-            });
-
-            // إغلاق المودال عند الضغط على Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    Livewire.dispatch('closeModal');
-                }
-            });
-
-            // إغلاق المودال عند النقر خارج المودال
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal-backdrop')) {
-                    Livewire.dispatch('closeModal');
-                }
-            });
-
-            // حفظ البيانات عند الضغط على Enter في المودال
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && document.querySelector('.modal.show')) {
-                    const modalInput = document.querySelector('.modal.show input[type="text"]');
-                    if (modalInput && modalInput === document.activeElement) {
-                        e.preventDefault();
-                        Livewire.dispatch('saveModalData');
-                    }
-                }
-            });
-        });
-    });
-</script>
-{{-- finshed --}}

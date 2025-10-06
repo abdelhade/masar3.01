@@ -46,7 +46,8 @@ class DatabaseSeeder extends Seeder
             LeaveTypeSeeder::class,
             RentalsProTypesSeeder::class,
             AttachUserToDefaultBranchSeeder::class,
-            DiffcultyMatrixSeeder::class
+            DiffcultyMatrixSeeder::class,
+            VaribalSeeder::class,
         ]);
     }
 }

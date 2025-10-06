@@ -30,7 +30,7 @@ return [
     'categories' => 'Catégories',
     'item_movement_report' => "Rapport de mouvement d'article",
     'item_management' => 'Gestion des articles',
-
+    
     // Gestion des remises
     'discounts' => 'Remises',
     'allowed_discounts_list' => 'Liste des remises autorisées',
