@@ -19,6 +19,7 @@ class Inquiry extends Model implements HasMedia
         'status' => InquiryStatus::class,
         'status_for_kon' => StatusForKon::class,
         'kon_title' => KonTitle::class,
+        'quotation_state' => QuotationStateEnum::class, // أضف هذا السطر
         'inquiry_date' => 'date',
         'req_submittal_date' => 'date',
         'project_start_date' => 'date',
@@ -79,6 +80,12 @@ class Inquiry extends Model implements HasMedia
     {
         return $this->belongsTo(WorkType::class);
     }
+
+    // public function workTypes()
+    // {
+    //     return $this->belongsToMany(WorkType::class, 'inquiry_work_type', 'inquiry_id', 'work_type_id')
+    //         ->withTimestamps();
+    // }
 
     public function inquirySource()
     {

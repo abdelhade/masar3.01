@@ -52,7 +52,7 @@ class InquiriesController extends Controller
             'projectDocuments',
             'submittalChecklists',
             'workConditions',
-            'comments.user', // إضافة التعليقات
+            'comments.user',
             'media'
         ])->findOrFail($id);
 
