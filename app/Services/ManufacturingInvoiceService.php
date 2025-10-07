@@ -594,7 +594,7 @@ class ManufacturingInvoiceService
             'branch_id' => $component->branch_id
         ]);
 
-        DB::commit();
+        // DB::commit();
 
         $component->isEditing = false;
         $component->originalInvoiceId = null;
