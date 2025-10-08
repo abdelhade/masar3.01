@@ -25,8 +25,19 @@
                 اضافه عميل جديد
                 <i class="fas fa-plus me-2"></i>
             </a>
-
             <br><br>
+            <x-app::excel-importer model="Client" :column-mapping="[
+                'cname' => 'cname',
+                'email' => 'email',
+                'phone' => 'phone',
+                'phone2' => 'phone2',
+                'address' => 'address',
+                'job' => 'job',
+                'gender' => 'gender',
+                'type' => 'type',
+                'national_id' => 'national_id',
+            ]" :validation-rules="[]" button-text="استيراد العملاء"
+                button-size="small" />
 
             <div class="card">
                 <div class="card-body">
