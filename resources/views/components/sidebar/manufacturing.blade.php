@@ -5,12 +5,18 @@
             <span>{{ __('navigation.manufacturing') }}</span>
             <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
         </a> --}}
-    <ul class="sub-menu mm-collapse" aria-expanded="false">
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('manufacturing.create') }}">
-                <i class="ti-control-record"></i>{{ __('navigation.manufacturing_invoice') }}
-            </a>
-        </li>
-        {{-- </ul>
+    {{-- <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('manufacturing.create') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.manufacturing_invoice') }}
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('manufacturing.stages.index') }}">
+            <i class="ti-control-record"></i>{{ __('مراحل التصنيع') }}
+        </a>
+    </li>
+    {{-- </ul>
     </li> --}}
-    @endcan
+@endcan

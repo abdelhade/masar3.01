@@ -40,7 +40,8 @@ class InquiriesController extends Controller
     {
         $inquiry = Inquiry::with([
             'project',
-            'workType',
+            'workType', // الـ work type الرئيسي
+            'workTypes', // ⭐ كل الـ work types (Many-to-Many)
             'inquirySource',
             'client',
             'mainContractor',
@@ -52,11 +53,11 @@ class InquiriesController extends Controller
             'projectDocuments',
             'submittalChecklists',
             'workConditions',
-            'comments.user', // إضافة التعليقات
+            'comments.user',
             'media'
         ])->findOrFail($id);
 
-        // Build hierarchical paths for work type and inquiry source
+        // ⭐ بناء المسار الهرمي للـ Work Type الرئيسي (لو موجود)
         $workTypePath = [];
         $currentWorkType = $inquiry->workType;
         while ($currentWorkType) {
@@ -65,6 +66,33 @@ class InquiriesController extends Controller
         }
         $workTypePath = array_reverse($workTypePath);
 
+        // ⭐ بناء قائمة بكل الـ Work Types مع المسارات الهرمية
+        $allWorkTypes = [];
+        if ($inquiry->workTypes->isNotEmpty()) {
+            foreach ($inquiry->workTypes as $workType) {
+                $hierarchyPath = json_decode($workType->pivot->hierarchy_path, true);
+
+                if ($hierarchyPath && is_array($hierarchyPath)) {
+                    // بناء المسار النصي
+                    $pathNames = [];
+                    foreach ($hierarchyPath as $stepId) {
+                        $wt = \Modules\Inquiries\Models\WorkType::find($stepId);
+                        if ($wt) {
+                            $pathNames[] = $wt->name;
+                        }
+                    }
+
+                    $allWorkTypes[] = [
+                        'work_type' => $workType,
+                        'hierarchy_path' => $pathNames,
+                        'description' => $workType->pivot->description ?? '',
+                        'order' => $workType->pivot->order ?? 0
+                    ];
+                }
+            }
+        }
+
+        // بناء المسار الهرمي للـ Inquiry Source
         $inquirySourcePath = [];
         $currentInquirySource = $inquiry->inquirySource;
         while ($currentInquirySource) {
@@ -73,7 +101,12 @@ class InquiriesController extends Controller
         }
         $inquirySourcePath = array_reverse($inquirySourcePath);
 
-        return view('inquiries::inquiries.show', compact('inquiry', 'workTypePath', 'inquirySourcePath'));
+        return view('inquiries::inquiries.show', compact(
+            'inquiry',
+            'workTypePath',
+            'allWorkTypes', // ⭐ إضافة المتغير الجديد
+            'inquirySourcePath'
+        ));
     }
 
 

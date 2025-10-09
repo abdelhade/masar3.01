@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Livewire;
+namespace Modules\Manufacturing\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use App\Services\ManufacturingInvoiceService;
+use Modules\Manufacturing\Services\ManufacturingInvoiceService;
 use App\Models\{Item, OperHead, AccHead, OperationItems, Expense};
 
 class ManufacturingInvoice extends Component
@@ -1059,9 +1059,8 @@ class ManufacturingInvoice extends Component
         $service = new ManufacturingInvoiceService();
         return $service->saveManufacturingInvoice($this);
     }
-
     public function render()
     {
-        return view('livewire.invoices.manufacturing-invoice');
+        return view('manufacturing::livewire.manufacturing-invoice');
     }
 }

@@ -23,6 +23,7 @@ class CreateInquiry extends Component
     public $currentWorkTypeSteps = [1 => null];
     public $currentWorkPath = [];
 
+    public $difficultyPercentage = 0;
     public $selectedInquiryPath = [];
     public $inquirySourceSteps = [1 => null];
     public $finalWorkType = '';
@@ -345,18 +346,17 @@ class CreateInquiry extends Component
         $this->calculateScores();
     }
 
-    // method جديد لحساب النتائج
     public function calculateScores()
     {
-        // حساب اسكور التقديمات
+        // حساب اسكور التقديمات المحدد
         $this->totalSubmittalScore = 0;
         foreach ($this->submittalChecklist as $item) {
             if ($item['checked']) {
-                $this->totalSubmittalScore += (int) $item['value' ?? 0];
+                $this->totalSubmittalScore += (int) ($item['value'] ?? 0);
             }
         }
 
-        // حساب اسكور الشروط
+        // حساب اسكور الشروط المحدد
         $this->totalConditionsScore = 0;
         foreach ($this->workingConditions as $condition) {
             if ($condition['checked']) {
@@ -364,19 +364,48 @@ class CreateInquiry extends Component
             }
         }
 
-        // حساب السكور الإجمالي (مجموع الاتنين)
+        // حساب السكور الإجمالي المحدد
         $this->totalScore = $this->totalSubmittalScore + $this->totalConditionsScore;
 
-        // حساب صعوبة المشروع بناءً على السكور الإجمالي
-        if ($this->totalScore < 6) {
-            $this->projectDifficulty = 1;
-        } elseif ($this->totalScore <= 10) {
-            $this->projectDifficulty = 2;
-        } elseif ($this->totalScore <= 15) {
-            $this->projectDifficulty = 3;
-        } else {
-            $this->projectDifficulty = 4;
+        // ========== حساب النسبة المئوية ==========
+
+        // حساب مجموع كل الـ submittals المتاحة
+        $maxSubmittalScore = 0;
+        foreach ($this->submittalChecklist as $item) {
+            $maxSubmittalScore += (int) ($item['value'] ?? 0);
         }
+
+        // حساب مجموع كل الـ conditions المتاحة
+        $maxConditionsScore = 0;
+        foreach ($this->workingConditions as $condition) {
+            if (isset($condition['options'])) {
+                // لو عنده options، ناخد أعلى قيمة
+                $maxConditionsScore += max(array_values($condition['options']));
+            } else {
+                // لو مفيش options، ناخد الـ default score
+                $maxConditionsScore += (int) ($condition['default_score'] ?? 0);
+            }
+        }
+
+        // مجموع كل الـ scores المتاحة
+        $maxTotalScore = $maxSubmittalScore + $maxConditionsScore;
+
+        // حساب النسبة المئوية
+        $percentage = $maxTotalScore > 0 ? ($this->totalScore / $maxTotalScore) * 100 : 0;
+
+        // تحديد صعوبة المشروع بناءً على النسبة المئوية
+        if ($percentage < 25) {
+            $this->projectDifficulty = 1; // سهل (أقل من 25%)
+        } elseif ($percentage < 50) {
+            $this->projectDifficulty = 2; // متوسط (25% - 50%)
+        } elseif ($percentage < 75) {
+            $this->projectDifficulty = 3; // صعب (50% - 75%)
+        } else {
+            $this->projectDifficulty = 4; // صعب جداً (75% فأكثر)
+        }
+
+        // اختياري: حفظ النسبة المئوية في property لعرضها
+        $this->difficultyPercentage = round($percentage, 2);
     }
 
     // تحديث method للتعامل مع submittal checklist
@@ -629,9 +658,7 @@ class CreateInquiry extends Component
                 'kon_title' => $this->konTitle,
 
                 // Work Type - آخر خطوة محددة
-                'work_type_id' => !empty($this->currentWorkTypeSteps)
-                    ? end($this->currentWorkTypeSteps)
-                    : null,
+                'work_type_id' =>  $this->getMainWorkTypeId(),
                 'final_work_type' => $this->finalWorkType,
 
                 // Inquiry Source - آخر خطوة محددة
@@ -667,6 +694,8 @@ class CreateInquiry extends Component
 
                 'type_note' => $this->type_note,
             ]);
+
+            $this->saveAllWorkTypes($inquiry);
 
             if ($this->projectImage) {
                 $inquiry
@@ -750,7 +779,6 @@ class CreateInquiry extends Component
                 } else {
                 }
             }
-
             // 6. حفظ التعليقات المؤقتة
             foreach ($this->tempComments as $tempComment) {
                 InquiryComment::create([
@@ -766,6 +794,54 @@ class CreateInquiry extends Component
             DB::rollBack();
             return back();
         }
+    }
+
+    private function saveAllWorkTypes($inquiry)
+    {
+        $order = 0;
+
+        // حفظ الـ Work Types المختارة والمضافة
+        foreach ($this->selectedWorkTypes as $workType) {
+            $lastStepId = end($workType['steps']);
+            if ($lastStepId) {
+                $inquiry->workTypes()->attach($lastStepId, [
+                    'hierarchy_path' => json_encode($workType['steps']),
+                    'description' => $workType['final_description'] ?? '',
+                    'order' => $order++
+                ]);
+            }
+        }
+
+        // حفظ الـ Work Type الحالي (لو موجود ومختلف)
+        if (!empty($this->currentWorkTypeSteps) && end($this->currentWorkTypeSteps)) {
+            $currentLastId = end($this->currentWorkTypeSteps);
+
+            // تحقق إنه مش موجود في المختارين
+            $alreadyExists = collect($this->selectedWorkTypes)->contains(function ($wt) use ($currentLastId) {
+                return end($wt['steps']) == $currentLastId;
+            });
+
+            if (!$alreadyExists) {
+                $inquiry->workTypes()->attach($currentLastId, [
+                    'hierarchy_path' => json_encode($this->currentWorkTypeSteps),
+                    'description' => $this->finalWorkType ?? '',
+                    'order' => $order
+                ]);
+            }
+        }
+    }
+
+    private function getMainWorkTypeId()
+    {
+        // لو في work types مختارة، خد آخر واحد
+        if (!empty($this->selectedWorkTypes)) {
+            return end($this->selectedWorkTypes)['steps'][array_key_last(end($this->selectedWorkTypes)['steps'])];
+        }
+        // لو في current work type
+        if (!empty($this->currentWorkTypeSteps)) {
+            return end($this->currentWorkTypeSteps);
+        }
+        return null;
     }
 
     public function render()

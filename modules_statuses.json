@@ -15,6 +15,11 @@
     "Services": true,
     "Inquiries": true,
     "Depreciation": true,
+<<<<<<< HEAD
     "Checks": true,
     "App": true
+=======
+    "App": true,
+    "Manufacturing": true
+>>>>>>> origin/main
 }
