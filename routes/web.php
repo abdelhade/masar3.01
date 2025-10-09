@@ -20,7 +20,6 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\JournalSummeryController;
 use App\Http\Controllers\KpiController;
-use App\Http\Controllers\ManufacturingController;
 use App\Http\Controllers\MultiJournalController;
 use App\Http\Controllers\MultiVoucherController;
 use App\Http\Controllers\NoteController;
@@ -190,7 +189,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('multi-vouchers', MultiVoucherController::class)->names('multi-vouchers');
     Route::resource('multi-journals', MultiJournalController::class)->names('multi-journals');
 
-    Route::resource('manufacturing', ManufacturingController::class)->names('manufacturing');
     Route::resource('production-orders', ProductionOrderController::class)->names('production-orders');
     Route::resource('rentals', RentalController::class)->names('rentals');
     Route::resource('inventory-balance', InventoryStartBalanceController::class)->names('inventory-balance');

@@ -15,5 +15,6 @@
     "Services": true,
     "Inquiries": true,
     "Depreciation": true,
-    "App": true
+    "App": true,
+    "Manufacturing": true
 }

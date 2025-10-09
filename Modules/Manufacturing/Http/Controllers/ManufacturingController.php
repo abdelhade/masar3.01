@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Modules\Manufacturing\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -19,7 +19,7 @@ class ManufacturingController extends Controller
      */
     public function index()
     {
-        return view('manufacturing.index');
+        return view('manufacturing::manufacturing.index');
     }
 
     /**
@@ -27,7 +27,7 @@ class ManufacturingController extends Controller
      */
     public function create()
     {
-        return view('manufacturing.create');
+        return view('manufacturing::manufacturing.create');
     }
 
     /**
@@ -51,7 +51,7 @@ class ManufacturingController extends Controller
      */
     public function edit(string $id)
     {
-        return view('manufacturing.edit', compact('id'));
+        return view('manufacturing::manufacturing.edit', compact('id'));
     }
 
     /**
