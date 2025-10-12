@@ -179,203 +179,204 @@ class ManufacturingInvoiceService
         //     return false;
         // }
 
-        // try {
-        //     DB::beginTransaction();
-        $operation = OperHead::create([
-            'pro_id' => $component->pro_id,
-            'pro_type' => 59,
-            'acc1' => $component->rawAccount,
-            'acc2' => $component->productAccount,
-            'emp_id' => $component->employee,
-            'store_id' =>  $component->productAccount,
-            'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج، 1 للفاتورة العادية
-            'is_finance' => 0,
-            'is_manager' => 0,
-            'expected_time' => $component->actualTime ?? null,
-            'is_journal' => $isTemplate ? 0 : 1, // 0 للنموذج، 1 للفاتورة العادية
-            'pro_date' => $component->invoiceDate,
-            'pro_value' => $component->totalManufacturingCost,
-            'fat_net' => $component->totalManufacturingCost,
-            'info' => $component->description,
-            'user' => Auth::id(),
-            'branch_id' => $component->branch_id,
-
-            'is_template' => $isTemplate ? 1 : 0, // إضافة هذا الحقل إذا كان موجوداً في الجدول
-        ]);
-
-        foreach ($component->selectedRawMaterials as $raw) {
-            OperationItems::create([
-                'pro_tybe' => 59,
-                'detail_store' => $component->rawAccount,
-                'pro_id' => $operation->id,
-                'item_id' => $raw['item_id'],
-                'unit_id' => $raw['unit_id'] ?? null,
-                'qty_in' => 0,
-                'qty_out' => $isTemplate ? 0 : $raw['quantity'], // 0 للنموذج
-                'item_price' => $raw['unit_cost'],
-                'cost_price' => $raw['unit_cost'],
-                'detail_value' => $raw['total_cost'],
-                'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج
-                'branch_id' => $component->branch_id
+        try {
+            DB::beginTransaction();
+            $operation = OperHead::create([
+                'pro_id' => $component->pro_id,
+                'pro_type' => 59,
+                'acc1' => $component->rawAccount,
+                'acc2' => $component->productAccount,
+                'emp_id' => $component->employee,
+                'store_id' =>  $component->productAccount,
+                'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج، 1 للفاتورة العادية
+                'is_finance' => 0,
+                'is_manager' => 0,
+                'expected_time' => $component->actualTime ?? null,
+                'is_journal' => $isTemplate ? 0 : 1, // 0 للنموذج، 1 للفاتورة العادية
+                'pro_date' => $component->invoiceDate,
+                'pro_value' => $component->totalManufacturingCost,
+                'fat_net' => $component->totalManufacturingCost,
+                'info' => $component->description,
+                'user' => Auth::id(),
+                'branch_id' => $component->branch_id,
+                'manufacturing_order_id' => $component->order_id,
+                'manufacturing_stage_id' => $component->stage_id,
+                'is_template' => $isTemplate ? 1 : 0, // إضافة هذا الحقل إذا كان موجوداً في الجدول
             ]);
-        }
 
-        foreach ($component->selectedProducts as $product) {
-
-            $item = Item::find($product['product_id']);
-            if ($item) {
-                // حساب المتوسط الجديد
-                $oldQuantity = $item->inventory->quantity ?? 0;
-                $oldAverage = $item->average_cost ?? 0;
-                $newQuantity = $product['quantity'];
-                $newCost = $product['average_cost'];
-
-                // الصيغة: (الكمية القديمة * المتوسط القديم) + (الكمية الجديدة * التكلفة الجديدة) / (الكمية القديمة + الجديدة)
-                $totalCost = ($oldQuantity * $oldAverage) + ($newQuantity * $newCost);
-                $totalQuantity = $oldQuantity + $newQuantity;
-
-                $newAverage = $totalQuantity > 0 ? $totalCost / $totalQuantity : 0;
-
-                // تحديث سعر الشراء المتوسط
-                $item->update([
-                    'average_cost' => $newAverage
+            foreach ($component->selectedRawMaterials as $raw) {
+                OperationItems::create([
+                    'pro_tybe' => 59,
+                    'detail_store' => $component->rawAccount,
+                    'pro_id' => $operation->id,
+                    'item_id' => $raw['item_id'],
+                    'unit_id' => $raw['unit_id'] ?? null,
+                    'qty_in' => 0,
+                    'qty_out' => $isTemplate ? 0 : $raw['quantity'], // 0 للنموذج
+                    'item_price' => $raw['unit_cost'],
+                    'cost_price' => $raw['unit_cost'],
+                    'detail_value' => $raw['total_cost'],
+                    'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج
+                    'branch_id' => $component->branch_id
                 ]);
             }
-            OperationItems::create([
-                'pro_tybe' => 59,
-                'detail_store' => $component->productAccount,
-                'pro_id' => $operation->id,
-                'item_id' => $product['product_id'],
-                'unit_id' => $product['unit_id'] ?? null,
-                'qty_in' => $isTemplate ? 0 : $product['quantity'], // 0 للنموذج
-                'qty_out' => 0,
-                'item_price' => $product['average_cost'],
-                'cost_price' => $product['average_cost'],
-                'detail_value' => $product['total_cost'],
-                'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج
-                'branch_id' => $component->branch_id
-            ]);
-        }
 
-        if (!$isTemplate) {
-            $journalId = (JournalHead::max('journal_id') ?? 0) + 1;
-            $totalRaw = $component->totalRawMaterialsCost;
-            // $totalRowProducts = collect($component->selectedProducts)->sum('total_cost');
-            $totalExpenses = $component->totalAdditionalExpenses;
-            // $totalManufacturing = $component->totalManufacturingCost;
+            foreach ($component->selectedProducts as $product) {
 
-            JournalHead::create([
-                'journal_id' => $journalId,
-                'total' => $totalRaw,
-                'date' => $component->invoiceDate,
-                'op_id' => $operation->id,
-                'pro_type' => 59,
-                'details' => 'صرف مواد خام للتصنيع',
-                'user' => Auth::id(),
-                'branch_id' => $component->branch_id
-            ]);
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $component->OperatingAccount,
-                'debit' => $totalRaw,
-                'credit' => 0,
-                'type' => 1,
-                'info' => 'صرف مواد خام للتصنيع',
-                'op_id' => $operation->id,
-                'branch_id' => $component->branch_id
-            ]);
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $component->rawAccount,
-                'debit' => 0,
-                'credit' => $totalRaw,
-                'type' => 1,
-                'info' => 'صرف مواد خام للتصنيع',
-                'op_id' => $operation->id,
-                'branch_id' => $component->branch_id
-            ]);
+                $item = Item::find($product['product_id']);
+                if ($item) {
+                    // حساب المتوسط الجديد
+                    $oldQuantity = $item->inventory->quantity ?? 0;
+                    $oldAverage = $item->average_cost ?? 0;
+                    $newQuantity = $product['quantity'];
+                    $newCost = $product['average_cost'];
 
-            if ($totalExpenses > 0 && isset($component->additionalExpenses)) {
-                $journalId++;
+                    // الصيغة: (الكمية القديمة * المتوسط القديم) + (الكمية الجديدة * التكلفة الجديدة) / (الكمية القديمة + الجديدة)
+                    $totalCost = ($oldQuantity * $oldAverage) + ($newQuantity * $newCost);
+                    $totalQuantity = $oldQuantity + $newQuantity;
+
+                    $newAverage = $totalQuantity > 0 ? $totalCost / $totalQuantity : 0;
+
+                    // تحديث سعر الشراء المتوسط
+                    $item->update([
+                        'average_cost' => $newAverage
+                    ]);
+                }
+                OperationItems::create([
+                    'pro_tybe' => 59,
+                    'detail_store' => $component->productAccount,
+                    'pro_id' => $operation->id,
+                    'item_id' => $product['product_id'],
+                    'unit_id' => $product['unit_id'] ?? null,
+                    'qty_in' => $isTemplate ? 0 : $product['quantity'], // 0 للنموذج
+                    'qty_out' => 0,
+                    'item_price' => $product['average_cost'],
+                    'cost_price' => $product['average_cost'],
+                    'detail_value' => $product['total_cost'],
+                    'is_stock' => $isTemplate ? 0 : 1, // 0 للنموذج
+                    'branch_id' => $component->branch_id
+                ]);
+            }
+
+            if (!$isTemplate) {
+                $journalId = (JournalHead::max('journal_id') ?? 0) + 1;
+                $totalRaw = $component->totalRawMaterialsCost;
+                // $totalRowProducts = collect($component->selectedProducts)->sum('total_cost');
+                $totalExpenses = $component->totalAdditionalExpenses;
+                // $totalManufacturing = $component->totalManufacturingCost;
 
                 JournalHead::create([
                     'journal_id' => $journalId,
-                    'total' => $totalExpenses,
+                    'total' => $totalRaw,
                     'date' => $component->invoiceDate,
                     'op_id' => $operation->id,
                     'pro_type' => 59,
-                    'details' => 'مصاريف إضافية للتصنيع',
+                    'details' => 'صرف مواد خام للتصنيع',
                     'user' => Auth::id(),
                     'branch_id' => $component->branch_id
-
                 ]);
                 JournalDetail::create([
                     'journal_id' => $journalId,
                     'account_id' => $component->OperatingAccount,
-                    'debit' => $totalExpenses,
+                    'debit' => $totalRaw,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => 'مصاريف إضافية للتصنيع',
+                    'info' => 'صرف مواد خام للتصنيع',
+                    'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->rawAccount,
+                    'debit' => 0,
+                    'credit' => $totalRaw,
+                    'type' => 1,
+                    'info' => 'صرف مواد خام للتصنيع',
                     'op_id' => $operation->id,
                     'branch_id' => $component->branch_id
                 ]);
 
-                foreach ($component->additionalExpenses as $expense) {
+                if ($totalExpenses > 0 && isset($component->additionalExpenses)) {
+                    $journalId++;
+
+                    JournalHead::create([
+                        'journal_id' => $journalId,
+                        'total' => $totalExpenses,
+                        'date' => $component->invoiceDate,
+                        'op_id' => $operation->id,
+                        'pro_type' => 59,
+                        'details' => 'مصاريف إضافية للتصنيع',
+                        'user' => Auth::id(),
+                        'branch_id' => $component->branch_id
+
+                    ]);
                     JournalDetail::create([
                         'journal_id' => $journalId,
-                        'account_id' => $expense['account_id'],
-                        'debit' => 0,
-                        'credit' => $expense['amount'],
+                        'account_id' => $component->OperatingAccount,
+                        'debit' => $totalExpenses,
+                        'credit' => 0,
                         'type' => 1,
                         'info' => 'مصاريف إضافية للتصنيع',
                         'op_id' => $operation->id,
                         'branch_id' => $component->branch_id
                     ]);
+
+                    foreach ($component->additionalExpenses as $expense) {
+                        JournalDetail::create([
+                            'journal_id' => $journalId,
+                            'account_id' => $expense['account_id'],
+                            'debit' => 0,
+                            'credit' => $expense['amount'],
+                            'type' => 1,
+                            'info' => 'مصاريف إضافية للتصنيع',
+                            'op_id' => $operation->id,
+                            'branch_id' => $component->branch_id
+                        ]);
+                    }
                 }
+
+                $journalId++;
+                JournalHead::create([
+                    'journal_id' => $journalId,
+                    'total' => $totalRaw,
+                    'date' => $component->invoiceDate,
+                    'op_id' => $operation->id,
+                    'pro_type' => 59,
+                    'details' => 'إنتاج منتجات تامة',
+                    'user' => Auth::id(),
+                    'branch_id' => $component->branch_id
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->productAccount,
+                    'debit' => $totalRaw,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'إنتاج منتجات تامة',
+                    'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->OperatingAccount,
+                    'debit' => 0,
+                    'credit' => $totalRaw,
+                    'type' => 1,
+                    'info' => 'إنتاج منتجات تامة',
+                    'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id
+                ]);
             }
+            DB::commit();
+            // dd($component->all());
 
-            $journalId++;
-            JournalHead::create([
-                'journal_id' => $journalId,
-                'total' => $totalRaw,
-                'date' => $component->invoiceDate,
-                'op_id' => $operation->id,
-                'pro_type' => 59,
-                'details' => 'إنتاج منتجات تامة',
-                'user' => Auth::id(),
-                'branch_id' => $component->branch_id
-            ]);
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $component->productAccount,
-                'debit' => $totalRaw,
-                'credit' => 0,
-                'type' => 1,
-                'info' => 'إنتاج منتجات تامة',
-                'op_id' => $operation->id,
-                'branch_id' => $component->branch_id
-            ]);
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $component->OperatingAccount,
-                'debit' => 0,
-                'credit' => $totalRaw,
-                'type' => 1,
-                'info' => 'إنتاج منتجات تامة',
-                'op_id' => $operation->id,
-                'branch_id' => $component->branch_id
-            ]);
+            $component->dispatch('success-swal', title: 'تم الحفظ!', text: 'تم حفظ فاتورة التصنيع بنجاح.', icon: 'success');
+            return $operation->id;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $component->dispatch('error-swal', title: 'خطأ !', text: 'حدث خطا اثناء الحفظ.', icon: 'error');
+            return back()->withInput();
         }
-        // DB::commit();
-        // dd($component->all());
-
-        $component->dispatch('success-swal', title: 'تم الحفظ!', text: 'تم حفظ فاتورة التصنيع بنجاح.', icon: 'success');
-        return $operation->id;
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-        //     $component->dispatch('error-swal', title: 'خطأ !', text: 'حدث خطا اثناء الحفظ.', icon: 'error');
-        //     return back()->withInput();
-        // }
     }
 
     public function updateManufacturingInvoice($component, $invoiceId)
@@ -416,7 +417,9 @@ class ManufacturingInvoiceService
                 'fat_net' => $component->totalManufacturingCost,
                 'info' => $component->description,
                 'user' => Auth::id(),
-                'branch_id' => $component->branch_id
+                'branch_id' => $component->branch_id,
+                'manufacturing_order_id' => $component->order_id,
+                'manufacturing_stage_id' => $component->stage_id,
             ]);
 
             // 4. إنشاء بيانات المواد الخام الجديدة
