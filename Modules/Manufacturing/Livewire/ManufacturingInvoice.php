@@ -49,6 +49,9 @@ class ManufacturingInvoice extends Component
     public $branch_id;
     public $branches;
 
+    public $order_id;
+    public $stage_id;
+
     public $productAccount = '';
     public $Stors = [];
     public $OperatingCenter;
@@ -90,6 +93,8 @@ class ManufacturingInvoice extends Component
 
     public function mount()
     {
+        $this->order_id = request()->query('order_id');
+        $this->stage_id = request()->query('stage_id');
 
         $this->branches = userBranches();
         if ($this->branches->isNotEmpty()) {

@@ -120,6 +120,15 @@
                                                                 </div>
 
                                                                 <div class="col-md-6 text-md-end mt-3 mt-md-0">
+
+                                                                    <a href="{{ route('manufacturing.create', ['order_id' => $viewing_order->id, 'stage_id' => $stage->id]) }}"
+                                                                        class="btn btn-sm btn-success"
+                                                                        title="إنشاء فاتورة تصنيع">
+                                                                        <i class="las la-file-invoice"></i>
+                                                                        <span class="d-none d-lg-inline ms-1">انشاء
+                                                                            فاتورة</span>
+                                                                    </a>
+
                                                                     <div class="btn-group" role="group">
                                                                         @foreach (\Modules\Manufacturing\Enums\ManufacturingStageStatus::cases() as $status)
                                                                             <button type="button"
@@ -132,6 +141,8 @@
                                                                                     class="d-none d-lg-inline ms-1">{{ $status->label() }}</span>
                                                                             </button>
                                                                         @endforeach
+
+
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -152,11 +163,11 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-gradient-primary text-white">
-                            <h4 class="mb-0 fw-bold">
+                        <div class="card-header">
+                            <h1 class="mb-0 fw-bold">
                                 <i class="las la-{{ $order_id ? 'edit' : 'plus-circle' }} me-2"></i>
                                 {{ $order_id ? 'تعديل أمر تصنيع' : 'إنشاء أمر تصنيع جديد' }}
-                            </h4>
+                            </h1>
                         </div>
 
                         <div class="card-body p-4">
