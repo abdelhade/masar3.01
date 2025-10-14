@@ -1,214 +1,207 @@
 <div>
-    <form wire:submit.prevent="save">
-        {{-- 🗺️ حاسبة المسافة بين موقعين من الخريطة --}}
-        <div class="card border-primary mb-4 shadow">
-            <div class="card-header text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-geo-alt-fill me-2"></i>
-                    حساب المسافة بين موقعين
-                </h5>
-                <small>حدد كلا الموقعين من الخريطة</small>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    {{-- ✅ الموقع الأول (من) --}}
-                    <div class="col-lg-5">
-                        <div class="card h-100 border-success">
-                            <div class="card-header bg-success bg-opacity-10 border-success">
-                                <h6 class="mb-0">
-                                    <i class="bi bi-geo-fill text-success"></i>
-                                    الموقع الأول (نقطة البداية)
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                @if ($fromLocation)
-                                    <div class="mb-3">
-                                        <div class="d-flex align-items-start">
-                                            <i class="bi bi-pin-map-fill text-success fs-4 me-2"></i>
-                                            <div class="flex-grow-1">
-                                                <p class="mb-1 fw-bold">{{ $fromLocation }}</p>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-compass"></i>
-                                                    {{ number_format($fromLocationLat, 6) }},
-                                                    {{ number_format($fromLocationLng, 6) }}
-                                                </small>
-                                            </div>
+    <div class="card border-primary mb-4 shadow">
+        <div class="card-header">
+            <small>حدد كلا الموقعين من الخريطة</small>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                {{-- ✅ الموقع الأول (من) --}}
+                <div class="col-lg-5">
+                    <div class="card h-100 border-success">
+                        <div class="card-header bg-success bg-opacity-10 border-success">
+                            <h6 class="mb-0">
+                                <i class="bi bi-geo-fill text-success"></i>
+                                الموقع الأول (نقطة البداية)
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            @if ($fromLocation)
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-pin-map-fill text-success fs-4 me-2"></i>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 fw-bold">{{ $fromLocation }}</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-compass"></i>
+                                                {{ number_format($fromLocationLat, 6) }},
+                                                {{ number_format($fromLocationLng, 6) }}
+                                            </small>
                                         </div>
                                     </div>
-                                @else
-                                    <div class="text-center text-muted py-4">
-                                        <i class="bi bi-map fs-1 mb-3 d-block"></i>
-                                        <p>لم يتم تحديد الموقع الأول بعد</p>
-                                    </div>
-                                @endif
-
-                                <div class="d-grid gap-2">
-                                    <button type="button" class="btn btn-success btn-lg" wire:click="openFromMapModal">
-                                        <i class="bi bi-map me-2"></i>
-                                        {{ $fromLocation ? 'تغيير الموقع' : 'اختر من الخريطة' }}
-                                    </button>
-
-                                    @if ($fromLocation && $fromLocation !== 'Abu Dhabi, UAE')
-                                        <button type="button" class="btn btn-outline-secondary"
-                                            wire:click="resetFromLocation">
-                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
-                                            إعادة لأبوظبي
-                                        </button>
-                                    @endif
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- السهم والمسافة --}}
-                    <div class="col-lg-2 d-flex align-items-center justify-content-center">
-                        <div class="text-center">
-                            <i class="bi bi-arrow-left-right text-primary mb-3" style="font-size: 3rem;"></i>
-
-                            @if ($calculatedDistance)
-                                <div class="mb-2">
-                                    <div class="badge bg-success fs-5 px-3 py-2">
-                                        <i class="bi bi-rulers me-1"></i>
-                                        {{ $calculatedDistance }} كم
-                                    </div>
-                                </div>
-
-                                @if ($calculatedDuration)
-                                    <div class="badge bg-info fs-6 px-3 py-2">
-                                        <i class="bi bi-clock me-1"></i>
-                                        {{ $calculatedDuration }}
-                                    </div>
-                                @endif
                             @else
-                                <small class="text-muted d-block">
-                                    حدد الموقعين<br>لحساب المسافة
-                                </small>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- ✅ الموقع الثاني (إلى) --}}
-                    <div class="col-lg-5">
-                        <div class="card h-100 border-danger">
-                            <div class="card-header bg-danger bg-opacity-10 border-danger">
-                                <h6 class="mb-0">
-                                    <i class="bi bi-geo text-danger"></i>
-                                    الموقع الثاني (نقطة النهاية)
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                @if ($toLocation)
-                                    <div class="mb-3">
-                                        <div class="d-flex align-items-start">
-                                            <i class="bi bi-pin-map text-danger fs-4 me-2"></i>
-                                            <div class="flex-grow-1">
-                                                <p class="mb-1 fw-bold">{{ $toLocation }}</p>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-compass"></i>
-                                                    {{ number_format($toLocationLat, 6) }},
-                                                    {{ number_format($toLocationLng, 6) }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="text-center text-muted py-4">
-                                        <i class="bi bi-map fs-1 mb-3 d-block"></i>
-                                        <p>لم يتم تحديد الموقع الثاني بعد</p>
-                                    </div>
-                                @endif
-
-                                <div class="d-grid gap-2">
-                                    <button type="button" class="btn btn-danger btn-lg" wire:click="openToMapModal">
-                                        <i class="bi bi-map me-2"></i>
-                                        {{ $toLocation ? 'تغيير الموقع' : 'اختر من الخريطة' }}
-                                    </button>
-
-                                    @if ($toLocation)
-                                        <button type="button" class="btn btn-outline-secondary"
-                                            wire:click="resetToLocation">
-                                            <i class="bi bi-x-lg me-1"></i>
-                                            إعادة تعيين
-                                        </button>
-                                    @endif
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-map fs-1 mb-3 d-block"></i>
+                                    <p>لم يتم تحديد الموقع الأول بعد</p>
                                 </div>
+                            @endif
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success btn-lg" wire:click="openFromMapModal">
+                                    <i class="bi bi-map me-2"></i>
+                                    {{ $fromLocation ? 'تغيير الموقع' : 'اختر من الخريطة' }}
+                                </button>
+
+                                @if ($fromLocation && $fromLocation !== 'Abu Dhabi, UAE')
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        wire:click="resetFromLocation">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                        إعادة لأبوظبي
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- زر حساب المسافة --}}
-                @if ($fromLocationLat && $toLocationLat)
-                    <div class="row mt-4">
-                        <div class="col-12 text-center">
-                            <button type="button" class="btn btn-primary btn-lg px-5" wire:click="calculateDistance"
-                                wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="calculateDistance">
-                                    <i class="bi bi-calculator me-2"></i>
-                                    احسب المسافة
-                                </span>
-                                <span wire:loading wire:target="calculateDistance">
-                                    <span class="spinner-border spinner-border-sm me-2"></span>
-                                    جاري الحساب...
-                                </span>
-                            </button>
+                {{-- السهم والمسافة --}}
+                <div class="col-lg-2 d-flex align-items-center justify-content-center">
+                    <div class="text-center">
+                        <i class="bi bi-arrow-left-right text-primary mb-3" style="font-size: 3rem;"></i>
 
-                            <button type="button" class="btn btn-outline-secondary btn-lg ms-2" wire:click="resetAll">
-                                <i class="bi bi-arrow-counterclockwise me-1"></i>
-                                إعادة تعيين الكل
-                            </button>
+                        @if ($calculatedDistance)
+                            <div class="mb-2">
+                                <div class="badge bg-success fs-5 px-3 py-2">
+                                    <i class="bi bi-rulers me-1"></i>
+                                    {{ $calculatedDistance }} كم
+                                </div>
+                            </div>
+
+                            @if ($calculatedDuration)
+                                <div class="badge bg-info fs-6 px-3 py-2">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ $calculatedDuration }}
+                                </div>
+                            @endif
+                        @else
+                            <small class="text-muted d-block">
+                                حدد الموقعين<br>لحساب المسافة
+                            </small>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ✅ الموقع الثاني (إلى) --}}
+                <div class="col-lg-5">
+                    <div class="card h-100 border-danger">
+                        <div class="card-header bg-danger bg-opacity-10 border-danger">
+                            <h6 class="mb-0">
+                                <i class="bi bi-geo text-danger"></i>
+                                الموقع الثاني (نقطة النهاية)
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            @if ($toLocation)
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-pin-map text-danger fs-4 me-2"></i>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 fw-bold">{{ $toLocation }}</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-compass"></i>
+                                                {{ number_format($toLocationLat, 6) }},
+                                                {{ number_format($toLocationLng, 6) }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-map fs-1 mb-3 d-block"></i>
+                                    <p>لم يتم تحديد الموقع الثاني بعد</p>
+                                </div>
+                            @endif
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-danger btn-lg" wire:click="openToMapModal">
+                                    <i class="bi bi-map me-2"></i>
+                                    {{ $toLocation ? 'تغيير الموقع' : 'اختر من الخريطة' }}
+                                </button>
+
+                                @if ($toLocation)
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        wire:click="resetToLocation">
+                                        <i class="bi bi-x-lg me-1"></i>
+                                        إعادة تعيين
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     </div>
-                @endif
+                </div>
+            </div>
 
-                {{-- نتائج الحساب التفصيلية --}}
-                @if ($calculatedDistance)
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="alert alert-success border-2 border-success shadow-sm" role="alert">
-                                <div class="row align-items-center">
-                                    <div class="col-md-1 text-center">
-                                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                                    </div>
-                                    <div class="col-md-11">
-                                        <h5 class="alert-heading mb-3">
-                                            <i class="bi bi-graph-up-arrow me-2"></i>
-                                            نتائج حساب المسافة
-                                        </h5>
-                                        <div class="row g-3">
-                                            <div class="col-md-4">
-                                                <div class="p-3 bg-white rounded">
-                                                    <small class="text-muted d-block mb-1">من</small>
-                                                    <strong class="text-success">
-                                                        <i class="bi bi-geo-fill me-1"></i>
-                                                        {{ Str::limit($fromLocation, 30) }}
-                                                    </strong>
-                                                </div>
+            {{-- زر حساب المسافة --}}
+            @if ($fromLocationLat && $toLocationLat)
+                <div class="row mt-4">
+                    <div class="col-12 text-center">
+                        <button type="button" class="btn btn-primary btn-lg px-5" wire:click="calculateDistance"
+                            wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="calculateDistance">
+                                <i class="bi bi-calculator me-2"></i>
+                                احسب المسافة
+                            </span>
+                            <span wire:loading wire:target="calculateDistance">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                جاري الحساب...
+                            </span>
+                        </button>
+
+                        <button type="button" class="btn btn-outline-secondary btn-lg ms-2" wire:click="resetAll">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            إعادة تعيين الكل
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            {{-- نتائج الحساب التفصيلية --}}
+            @if ($calculatedDistance)
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="alert alert-success border-2 border-success shadow-sm" role="alert">
+                            <div class="row align-items-center">
+                                <div class="col-md-1 text-center">
+                                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                                </div>
+                                <div class="col-md-11">
+                                    <h5 class="alert-heading mb-3">
+                                        <i class="bi bi-graph-up-arrow me-2"></i>
+                                        نتائج حساب المسافة
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="p-3 bg-white rounded">
+                                                <small class="text-muted d-block mb-1">من</small>
+                                                <strong class="text-success">
+                                                    <i class="bi bi-geo-fill me-1"></i>
+                                                    {{ Str::limit($fromLocation, 30) }}
+                                                </strong>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="p-3 bg-white rounded">
-                                                    <small class="text-muted d-block mb-1">إلى</small>
-                                                    <strong class="text-danger">
-                                                        <i class="bi bi-geo me-1"></i>
-                                                        {{ Str::limit($toLocation, 30) }}
-                                                    </strong>
-                                                </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 bg-white rounded">
+                                                <small class="text-muted d-block mb-1">إلى</small>
+                                                <strong class="text-danger">
+                                                    <i class="bi bi-geo me-1"></i>
+                                                    {{ Str::limit($toLocation, 30) }}
+                                                </strong>
                                             </div>
-                                            <div class="col-md-2">
-                                                <div class="p-3 bg-white rounded text-center">
-                                                    <small class="text-muted d-block mb-1">المسافة</small>
-                                                    <strong class="text-primary fs-5">
-                                                        {{ $calculatedDistance }} كم
-                                                    </strong>
-                                                </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="p-3 bg-white rounded text-center">
+                                                <small class="text-muted d-block mb-1">المسافة</small>
+                                                <strong class="text-primary fs-5">
+                                                    {{ $calculatedDistance }} كم
+                                                </strong>
                                             </div>
-                                            <div class="col-md-2">
-                                                <div class="p-3 bg-white rounded text-center">
-                                                    <small class="text-muted d-block mb-1">الوقت</small>
-                                                    <strong class="text-info">
-                                                        {{ $calculatedDuration ?? 'N/A' }}
-                                                    </strong>
-                                                </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="p-3 bg-white rounded text-center">
+                                                <small class="text-muted d-block mb-1">الوقت</small>
+                                                <strong class="text-info">
+                                                    {{ $calculatedDuration ?? 'N/A' }}
+                                                </strong>
                                             </div>
                                         </div>
                                     </div>
@@ -216,10 +209,10 @@
                             </div>
                         </div>
                     </div>
-                @endif
-            </div>
+                </div>
+            @endif
         </div>
-    </form>
+    </div>
 
     {{-- ✅ Map Picker Modal (موحد للموقعين) --}}
     @if ($showMapModal)

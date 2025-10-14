@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.settings')
+    @include('components.sidebar.departments')
 @endsection
 @section('content')
     @include('components.breadcrumb', [
@@ -12,5 +12,5 @@
 
 
 <livewire:hr-management.addresses.manage-towns />
- 
+
 @endsection

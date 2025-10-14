@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\{City, Town, Client};
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
-
 use Modules\CRM\Models\ClientCategory;
 use Modules\Inquiries\Models\ProjectSize;
 use Modules\Progress\Models\ProjectProgress;
@@ -48,7 +47,6 @@ class CreateInquiry extends Component
     public $calculatedDistance = null;
     public $calculatedDuration = null;
 
-    // ✅ للتحكم في الـ Modal
     public $showMapModal = false;
     public $mapModalType = ''; // 'from' أو 'to'
 
@@ -153,7 +151,7 @@ class CreateInquiry extends Component
         'itemSelected' => 'handleItemSelected',
         'openClientModal' => 'openClientModal',
         'locationSelected' => 'handleLocationSelected',
-        'locationPicked' => 'handleLocationPicked',
+        // 'locationPicked' => 'handleLocationPicked',
     ];
 
     public function mount()
@@ -165,8 +163,6 @@ class CreateInquiry extends Component
         $this->workTypes = WorkType::where('is_active', true)->whereNull('parent_id')->get()->toArray();
         $this->inquirySources = InquirySource::where('is_active', true)->whereNull('parent_id')->get()->toArray();
         $this->projects = ProjectProgress::all()->toArray();
-        // $this->cities = City::all()->toArray();
-        // $this->towns = $this->cityId ? Town::where('city_id', $this->cityId)->get()->toArray() : [];
         $this->clients = Client::whereIn('type', [ClientType::Person->value, ClientType::Company->value])->get()->toArray();
         $this->mainContractors = Client::where('type', ClientType::MainContractor->value)->get()->toArray();
         $this->consultants = Client::where('type', ClientType::Consultant->value)->get()->toArray();
@@ -331,15 +327,11 @@ class CreateInquiry extends Component
         ]);
     }
 
-    /**
-     * ✅ فتح الـ Modal لاختيار الموقع الثاني
-     */
     public function openToMapModal()
     {
         $this->mapModalType = 'to';
         $this->showMapModal = true;
 
-        // الموقع الافتراضي للموقع الثاني (دبي كمثال)
         $defaultLat = $this->toLocationLat ?? 25.20485;
         $defaultLng = $this->toLocationLng ?? 55.27078;
 
@@ -351,23 +343,15 @@ class CreateInquiry extends Component
         ]);
     }
 
-    /**
-     * ✅ إغلاق الـ Modal
-     */
     public function closeMapModal()
     {
         $this->showMapModal = false;
         $this->mapModalType = '';
     }
 
-    /**
-     * ✅ معالجة اختيار الموقع من الخريطة (موحد للموقعين)
-     */
     #[On('locationPicked')]
     public function handleLocationPickedEvent(...$args)
     {
-        Log::info('Received locationPicked event', ['args' => $args]);
-
         // تحويل المعاملات إلى مصفوفة
         $data = [
             'type' => $args[0] ?? null,
@@ -383,13 +367,6 @@ class CreateInquiry extends Component
     public function handleLocationPicked($type, $address, $lat, $lng)
     {
         if (!$type || !$address || !$lat || !$lng) {
-            Log::error('Invalid location data received', [
-                'type' => $type,
-                'address' => $address,
-                'lat' => $lat,
-                'lng' => $lng
-            ]);
-            session()->flash('error', 'البيانات المستلمة غير صالحة. يرجى المحاولة مرة أخرى.');
             return;
         }
 
@@ -397,26 +374,10 @@ class CreateInquiry extends Component
             $this->fromLocation = $address;
             $this->fromLocationLat = $lat;
             $this->fromLocationLng = $lng;
-
-            Log::info('✅ تم تحديث الموقع الأول', [
-                'location' => $this->fromLocation,
-                'lat' => $this->fromLocationLat,
-                'lng' => $this->fromLocationLng
-            ]);
-
-            session()->flash('success', 'تم تحديد الموقع الأول بنجاح');
         } else {
             $this->toLocation = $address;
             $this->toLocationLat = $lat;
             $this->toLocationLng = $lng;
-
-            Log::info('✅ تم تحديث الموقع الثاني', [
-                'location' => $this->toLocation,
-                'lat' => $this->toLocationLat,
-                'lng' => $this->toLocationLng
-            ]);
-
-            session()->flash('success', 'تم تحديد الموقع الثاني بنجاح');
         }
 
         $this->closeMapModal();
@@ -426,9 +387,6 @@ class CreateInquiry extends Component
         }
     }
 
-    /**
-     * ✅ حساب المسافة بين الموقعين
-     */
     public function calculateDistance()
     {
         if (!$this->fromLocationLat || !$this->fromLocationLng) {
@@ -454,32 +412,18 @@ class CreateInquiry extends Component
             if ($result) {
                 $this->calculatedDistance = $result['distance'];
                 $this->calculatedDuration = $result['duration'] ?? null;
-
-                session()->flash('success', "✅ تم حساب المسافة: {$this->calculatedDistance} كم");
-
-                Log::info('✅ تم حساب المسافة بنجاح', [
-                    'from' => $this->fromLocation,
-                    'to' => $this->toLocation,
-                    'distance' => $this->calculatedDistance,
-                    'duration' => $this->calculatedDuration
-                ]);
-
                 // حفظ الموقع في قاعدة البيانات (اختياري)
                 $this->storeLocationInDatabase();
             } else {
                 session()->flash('error', 'فشل حساب المسافة. يرجى المحاولة مرة أخرى.');
             }
-        } catch (\Exception $e) {
-            Log::error('❌ خطأ في حساب المسافة', [
-                'error' => $e->getMessage()
-            ]);
-            session()->flash('error', 'حدث خطأ في حساب المسافة: ' . $e->getMessage());
+        } catch (\Exception) {
+
+            session()->flash('error', 'حدث خطأ في حساب المسافة: ');
         }
     }
 
-    /**
-     * ✅ إعادة تعيين النموذج
-     */
+
     public function resetAll()
     {
         $this->fromLocation = 'Abu Dhabi, UAE';
@@ -492,13 +436,8 @@ class CreateInquiry extends Component
 
         $this->calculatedDistance = null;
         $this->calculatedDuration = null;
-
-        session()->flash('success', 'تم إعادة تعيين جميع المواقع');
     }
 
-    /**
-     * ✅ إعادة تعيين الموقع الأول
-     */
     public function resetFromLocation()
     {
         $this->fromLocation = 'Abu Dhabi, UAE';
@@ -507,13 +446,8 @@ class CreateInquiry extends Component
 
         $this->calculatedDistance = null;
         $this->calculatedDuration = null;
-
-        session()->flash('success', 'تم إعادة تعيين الموقع الأول');
     }
 
-    /**
-     * ✅ إعادة تعيين الموقع الثاني
-     */
     public function resetToLocation()
     {
         $this->toLocation = '';
@@ -522,15 +456,14 @@ class CreateInquiry extends Component
 
         $this->calculatedDistance = null;
         $this->calculatedDuration = null;
-
-        session()->flash('success', 'تم إعادة تعيين الموقع الثاني');
     }
 
-    /**
-     * حفظ الموقع في قاعدة البيانات
-     */
     private function storeLocationInDatabase()
     {
+        if (!$this->calculatedDistance) {
+            return;
+        }
+
         try {
             $emirate = $this->extractEmirateFromAddress($this->toLocation) ?: 'Abu Dhabi';
 
@@ -553,7 +486,7 @@ class CreateInquiry extends Component
                 ]
             );
 
-            Town::updateOrCreate(
+            $town =  Town::updateOrCreate(
                 ['title' => $this->toLocation],
                 [
                     'latitude' => $this->toLocationLat,
@@ -562,10 +495,9 @@ class CreateInquiry extends Component
                     'distance_from_headquarters' => $this->calculatedDistance
                 ]
             );
-
-            Log::info('✅ تم حفظ الموقع في قاعدة البيانات');
+            return [$city, $town];
         } catch (\Exception $e) {
-            Log::error('❌ خطأ في حفظ الموقع: ' . $e->getMessage());
+            session()->flash('error', 'حدث خطأ أثناء حفظ الموقع: ');
         }
     }
 
@@ -885,6 +817,7 @@ class CreateInquiry extends Component
 
     public function save()
     {
+        // dd($this->all());
         // $this->validate([
         //     'projectId' => 'required|exists:projects,id',
         //     'inquiryDate' => 'required|date',
@@ -906,8 +839,11 @@ class CreateInquiry extends Component
         //     'konPriority' => 'nullable',
         //     'documentFiles.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
         // ]);
+
         try {
             DB::beginTransaction();
+            list($city, $town) = $this->storeLocationInDatabase();
+
             $inquiry = Inquiry::create([
                 'project_id' => $this->projectId,
 
@@ -915,9 +851,9 @@ class CreateInquiry extends Component
                 'req_submittal_date' => $this->reqSubmittalDate,
                 'project_start_date' => $this->projectStartDate,
 
-                'city_id' => $this->cityId,
-                'town_id' => $this->townId,
-                'town_distance' => $this->townDistance,
+                'city_id' => $city->id,
+                'town_id' => $town->id,
+                'town_distance' => $this->calculatedDistance,
 
                 'status' => $this->status,
                 'status_for_kon' => $this->statusForKon,
