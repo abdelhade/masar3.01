@@ -25,7 +25,7 @@ class LogUserLogin
         // منع التكرار لو نفس session_id موجود بالفعل
         if (!LoginSession::where('session_id', $sessionId)->exists()) {
             LoginSession::create([
-                'user_id'    => $event->user->id,
+                'user_id'    => $event->user->getAuthIdentifier(),
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
                 'device'     => request()->header('User-Agent'),

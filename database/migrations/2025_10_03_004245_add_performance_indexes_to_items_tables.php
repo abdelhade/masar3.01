@@ -66,12 +66,39 @@ return new class extends Migration
      */
     private function hasIndex(string $table, string $indexName): bool
     {
-        $indexes = DB::select("SHOW INDEXES FROM {$table}");
-        foreach ($indexes as $index) {
-            if ($index->Key_name === $indexName) {
-                return true;
+        try {
+            // For MySQL/MariaDB
+            if (DB::getDriverName() === 'mysql') {
+                $indexes = DB::select("SHOW INDEXES FROM {$table}");
+                foreach ($indexes as $index) {
+                    if ($index->Key_name === $indexName) {
+                        return true;
+                    }
+                }
             }
+            // For SQLite
+            elseif (DB::getDriverName() === 'sqlite') {
+                $indexes = DB::select("PRAGMA index_list({$table})");
+                foreach ($indexes as $index) {
+                    if ($index->name === $indexName) {
+                        return true;
+                    }
+                }
+            }
+            // For PostgreSQL
+            elseif (DB::getDriverName() === 'pgsql') {
+                $indexes = DB::select("
+                    SELECT indexname 
+                    FROM pg_indexes 
+                    WHERE tablename = ? AND indexname = ?
+                ", [$table, $indexName]);
+                return count($indexes) > 0;
+            }
+        } catch (Exception $e) {
+            // If we can't check, assume it doesn't exist
+            return false;
         }
+        
         return false;
     }
 };

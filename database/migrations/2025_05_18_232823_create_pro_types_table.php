@@ -12,7 +12,7 @@ return new class extends Migration
 public function up()
 {
     Schema::create('pro_types', function (Blueprint $table) {
-        $table->unsignedInteger('id')->autoIncrement()->primary();
+        $table->id();
         $table->string('pname', 200)->nullable()->unique();
         $table->string('ptext', 200)->nullable()->unique();
         $table->string('ptype', 200)->nullable();

@@ -31,7 +31,7 @@ new class extends Component {
         'type' => 'check_in',
         'date' => '',
         'time' => '',
-        'location' => '',
+        'location' => null, // تغيير من string إلى null للـ JSON
         'status' => 'pending',
         'notes' => '',
     ];
@@ -121,11 +121,20 @@ new class extends Component {
             'form.type' => 'required|in:check_in,check_out',
             'form.date' => 'required|date',
             'form.time' => 'required',
-            'form.location' => 'nullable|string',
+            'form.location' => 'nullable|json',
             'form.status' => 'required|in:pending,approved,rejected',
             'form.notes' => 'nullable|string',
         ]);
-        Attendance::create([...$this->form]);
+        
+        // تحويل location من JSON string إلى array قبل الحفظ
+        $data = $this->form;
+        if (isset($data['location']) && is_string($data['location']) && !empty($data['location'])) {
+            $locationString = (string) $data['location'];
+            $decoded = json_decode($locationString, true);
+            $data['location'] = $decoded !== null ? $decoded : $data['location'];
+        }
+        
+        Attendance::create($data);
         $this->showCreateModal = false;
         $this->resetForm();
         session()->flash('success', __('تم إضافة الحضور بنجاح'));
@@ -166,11 +175,20 @@ new class extends Component {
             'form.type' => 'required|in:check_in,check_out',
             'form.date' => 'required|date',
             'form.time' => 'required',
-            'form.location' => 'nullable|string',
+            'form.location' => 'nullable|json',
             'form.status' => 'required|in:pending,approved,rejected',
             'form.notes' => 'nullable|string',
         ]);
-        $attendance->update($this->form);
+        
+        // تحويل location من JSON string إلى array قبل الحفظ
+        $data = $this->form;
+        if (isset($data['location']) && is_string($data['location']) && !empty($data['location'])) {
+            $locationString = (string) $data['location'];
+            $decoded = json_decode($locationString, true);
+            $data['location'] = $decoded !== null ? $decoded : $data['location'];
+        }
+        
+        $attendance->update($data);
         $this->showEditModal = false;
         $this->resetForm();
         session()->flash('success', __('تم تعديل الحضور بنجاح'));
@@ -206,7 +224,7 @@ new class extends Component {
             'type' => 'check_in',
             'date' => now()->format('Y-m-d'),
             'time' => '',
-            'location' => '',
+            'location' => null, // تغيير من string إلى null للـ JSON
             'status' => 'pending',
             'notes' => '',
         ];
@@ -315,7 +333,19 @@ new class extends Component {
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->time }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->location ?? '-' }}</td>
+                                        <td class="font-family-cairo fw-bold">
+                                            @if($attendance->location)
+                                                @if(is_array($attendance->location))
+                                                    <small class="text-muted">
+                                                        {{ $attendance->location['address'] ?? 'إحداثيات: ' . $attendance->location['latitude'] . ', ' . $attendance->location['longitude'] }}
+                                                    </small>
+                                                @else
+                                                    {{ $attendance->location }}
+                                                @endif
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                         <td class="font-family-cairo fw-bold">
                                             @if ($attendance->status == 'pending')
                                                 <span
@@ -648,5 +678,75 @@ new class extends Component {
     @endif
 
 </div>
+
+@push('scripts')
+<script src="{{ asset('assets/js/location-tracker.js') }}"></script>
+<script>
+let locationTracker = null;
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // الحصول على Google API Key من الخادم
+    const googleApiKey = '{{ config("services.google.maps_api_key") }}';
+    
+    locationTracker = new LocationTracker();
+    await locationTracker.init(googleApiKey);
+    await locationTracker.restoreTracking();
+});
+
+// التقاط الموقع عند فتح Modal للإضافة أو التعديل
+document.addEventListener('livewire:init', () => {
+    Livewire.on('openCreateModal', async () => {
+        await captureLocation('check_in');
+    });
+    
+    Livewire.on('openEditModal', async () => {
+        // لا نلتقط موقع جديد عند التعديل، نبقي على الموقع القديم
+    });
+});
+
+async function captureLocation(type, mode = 'create') {
+    if (!locationTracker) {
+        console.error('LocationTracker not initialized');
+        return;
+    }
+    
+    try {
+        const location = await locationTracker.captureLocationForAttendance(type);
+        
+        // تحديث Livewire component
+        @this.set('form.location', JSON.stringify(location));
+        
+        // تحديث العرض
+        const displayField = mode === 'edit' ? 'location-display-edit' : 'location-display';
+        const displayElement = document.getElementById(displayField);
+        if (displayElement) {
+            displayElement.value = location.address || `إحداثيات: ${location.latitude}, ${location.longitude}`;
+        }
+        
+        // إظهار رسالة نجاح
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم التقاط الموقع',
+                text: 'تم حفظ موقعك بنجاح',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    } catch (error) {
+        console.error('Error capturing location:', error);
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ في التقاط الموقع',
+                text: 'تأكد من السماح بالوصول للموقع',
+                confirmButtonText: 'حسناً'
+            });
+        }
+    }
+}
+</script>
+@endpush
 
 </div>

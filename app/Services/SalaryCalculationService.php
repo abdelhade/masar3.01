@@ -184,8 +184,8 @@ class SalaryCalculationService
         }
 
         // Separate check-ins and check-outs (handle both English and Arabic)
-        $checkIns = $attendances->whereIn('type', 'check_in');
-        $checkOuts = $attendances->whereIn('type', 'check_out');
+        $checkIns = $attendances->whereIn('type', ['check_in']);
+        $checkOuts = $attendances->whereIn('type', ['check_out']);
         // dd($checkIns, $checkOuts);
         $firstCheckIn = $checkIns->sortBy('time')->first();
         $lastCheckOut = $checkOuts->sortByDesc('time')->first();

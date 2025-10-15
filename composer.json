@@ -32,7 +32,7 @@
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-settings": "^3.2",
         "barryvdh/laravel-dompdf": "^2.1",
-        "maatwebsite/excel": "^3.2"
+        "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

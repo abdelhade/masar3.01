@@ -160,6 +160,11 @@
 
     @vite(['resources/js/app.js'])
     
+    <!-- User ID for Location Tracking -->
+    @auth
+        <meta name="user-id" content="{{ auth()->id() }}">
+    @endauth
+    
     <!-- Livewire Styles -->
     @livewireStyles
 
