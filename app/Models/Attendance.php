@@ -12,6 +12,7 @@ class Attendance extends Model
     protected $casts = [
         'date' => 'date',
         'time' => 'string', // Cast as string since it's a time field
+        'location' => 'array', // تغيير من string إلى array للـ JSON
     ];
 
     protected static function booted()

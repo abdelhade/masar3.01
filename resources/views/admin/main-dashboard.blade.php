@@ -1,4 +1,6 @@
 <title>Massar | Dashboard</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="user-id" content="{{ auth()->id() }}">
 
 <!-- External Stylesheets -->
 <link rel="stylesheet" href="{{ asset('assets/css/dashboard-main.css') }}">
@@ -276,4 +278,20 @@
         </div>
     `;
     }
+</script>
+
+<!-- Location Tracking Scripts -->
+<script src="{{ asset('assets/js/location-tracker.js') }}"></script>
+<script>
+    @auth
+        document.addEventListener('DOMContentLoaded', async function() {
+            const googleApiKey = '{{ config("services.google.maps_api_key") }}';
+            
+            if (typeof LocationTracker !== 'undefined') {
+                const locationTracker = new LocationTracker();
+                localStorage.removeItem('location_tracking');
+                await locationTracker.init(googleApiKey);
+            }
+        });
+    @endauth
 </script>

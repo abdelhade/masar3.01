@@ -35,17 +35,28 @@ return new class extends Migration {
         ];
 
         foreach ($tables as $tableName) {
-            Schema::table($tableName, function (Blueprint $table) use ($tableName) {
+            // Check if table exists before trying to modify it
+            if (Schema::hasTable($tableName)) {
+                Schema::table($tableName, function (Blueprint $table) use ($tableName) {
 
                 if (Schema::hasColumn($tableName, 'branch')) {
+                    // For SQLite, we need to drop the index first
+                    if ($tableName === 'acc_head') {
+                        $table->dropIndex('acc_head_branch_index');
+                    }
                     $table->dropColumn('branch');
                 }
-                $table->foreignId('branch_id')
-                    ->nullable()
-                    ->default(1)
-                    ->constrained('branches')
-                    ->nullOnDelete();
-            });
+                    
+                    // Only add branch_id if it doesn't exist
+                    if (!Schema::hasColumn($tableName, 'branch_id')) {
+                        $table->foreignId('branch_id')
+                            ->nullable()
+                            ->default(1)
+                            ->constrained('branches')
+                            ->nullOnDelete();
+                    }
+                });
+            }
         }
     }
 

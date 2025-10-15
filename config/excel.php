@@ -1,7 +1,7 @@
 <?php
 
-use Maatwebsite\Excel\Excel;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
+// use Maatwebsite\Excel\Excel;
+// use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 return [
     'exports' => [
@@ -128,7 +128,7 @@ return [
             'enclosure'        => '"',
             'escape_character' => '\\',
             'contiguous'       => false,
-            'input_encoding'   => Csv::GUESS_ENCODING,
+            'input_encoding'   => 'UTF-8', // Csv::GUESS_ENCODING,
         ],
 
         /*
@@ -178,21 +178,21 @@ return [
     |
     */
     'extension_detector' => [
-        'xlsx'     => Excel::XLSX,
-        'xlsm'     => Excel::XLSX,
-        'xltx'     => Excel::XLSX,
-        'xltm'     => Excel::XLSX,
-        'xls'      => Excel::XLS,
-        'xlt'      => Excel::XLS,
-        'ods'      => Excel::ODS,
-        'ots'      => Excel::ODS,
-        'slk'      => Excel::SLK,
-        'xml'      => Excel::XML,
-        'gnumeric' => Excel::GNUMERIC,
-        'htm'      => Excel::HTML,
-        'html'     => Excel::HTML,
-        'csv'      => Excel::CSV,
-        'tsv'      => Excel::TSV,
+        'xlsx'     => 'Xlsx', // Excel::XLSX,
+        'xlsm'     => 'Xlsx', // Excel::XLSX,
+        'xltx'     => 'Xlsx', // Excel::XLSX,
+        'xltm'     => 'Xlsx', // Excel::XLSX,
+        'xls'      => 'Xls', // Excel::XLS,
+        'xlt'      => 'Xls', // Excel::XLS,
+        'ods'      => 'Ods', // Excel::ODS,
+        'ots'      => 'Ods', // Excel::ODS,
+        'slk'      => 'Slk', // Excel::SLK,
+        'xml'      => 'Xml', // Excel::XML,
+        'gnumeric' => 'Gnumeric', // Excel::GNUMERIC,
+        'htm'      => 'Html', // Excel::HTML,
+        'html'     => 'Html', // Excel::HTML,
+        'csv'      => 'Csv', // Excel::CSV,
+        'tsv'      => 'Tsv', // Excel::TSV,
 
         /*
         |--------------------------------------------------------------------------
@@ -203,7 +203,7 @@ return [
         | Available options: Excel::MPDF | Excel::TCPDF | Excel::DOMPDF
         |
         */
-        'pdf'      => Excel::DOMPDF,
+        'pdf'      => 'DomPDF', // Excel::DOMPDF,
     ],
 
     /*
@@ -224,7 +224,7 @@ return [
     |
     */
     'value_binder'       => [
-        'default' => Maatwebsite\Excel\DefaultValueBinder::class,
+        'default' => 'PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder',
     ],
 
     'cache'        => [
