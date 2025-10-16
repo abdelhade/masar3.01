@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\{DB, Auth};
 use App\Http\Requests\CreatDiscountRequest;
 use App\Models\{AccHead, OperHead, JournalHead, JournalDetail};
 
-
 class DiscountController extends Controller
 {
     //     public function __construct()
@@ -397,5 +396,184 @@ class DiscountController extends Controller
             Alert::toast('حدث خطأ أثناء حذف الخصم', 'error');
             return back();
         }
+    }
+
+    public function generalStatistics(Request $request)
+    {
+        // إجمالي عدد الخصومات
+        $query = OperHead::query();
+        $totalDiscounts = $query->count();
+
+        // إجمالي قيمة الخصومات
+        $totalValue = $query->sum('pro_value');
+
+        // متوسط قيمة الخصم
+        $avgValue = $totalDiscounts > 0 ? round($totalValue / $totalDiscounts, 2) : 0;
+
+        // أعلى وأقل قيمة خصم
+        $maxDiscount = $query->max('pro_value') ?? 0;
+        $minDiscount = $query->min('pro_value') ?? 0;
+
+        // الخصومات خلال الشهر الحالي
+        $currentMonthDiscounts = OperHead::whereYear('pro_date', date('Y'))
+            ->whereMonth('pro_date', date('m'))
+            ->count();
+
+        $currentMonthValue = OperHead::whereYear('pro_date', date('Y'))
+            ->whereMonth('pro_date', date('m'))
+            ->sum('pro_value');
+
+        // الخصومات خلال السنة الحالية
+        $currentYearDiscounts = OperHead::whereYear('pro_date', date('Y'))
+            ->count();
+
+        $currentYearValue = OperHead::whereYear('pro_date', date('Y'))
+            ->sum('pro_value');
+
+        // أكثر 5 حسابات حصلت على خصومات
+        $topAccounts = OperHead::selectRaw('COALESCE(acc1, acc2) as account_id, COUNT(*) as count, SUM(pro_value) as total')
+            ->groupBy('account_id')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->with(['acc1Head:id,aname', 'acc2Head:id,aname'])
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->acc1Head->aname ?? $item->acc2Head->aname ?? 'غير معروف',
+                    'count' => $item->count,
+                    'total' => $item->total
+                ];
+            });
+
+        // الخصومات حسب الأشهر (آخر 6 أشهر)
+        $monthlyDiscounts = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = date('Y-m', strtotime("-$i months"));
+            $month = date('m', strtotime("-$i months"));
+            $year = date('Y', strtotime("-$i months"));
+
+            $count = OperHead::whereYear('pro_date', $year)
+                ->whereMonth('pro_date', $month)
+                ->count();
+
+            $value = OperHead::whereYear('pro_date', $year)
+                ->whereMonth('pro_date', $month)
+                ->sum('pro_value');
+
+            $monthName = [
+                '01' => 'يناير',
+                '02' => 'فبراير',
+                '03' => 'مارس',
+                '04' => 'أبريل',
+                '05' => 'مايو',
+                '06' => 'يونيو',
+                '07' => 'يوليو',
+                '08' => 'أغسطس',
+                '09' => 'سبتمبر',
+                '10' => 'أكتوبر',
+                '11' => 'نوفمبر',
+                '12' => 'ديسمبر'
+            ][$month] ?? '';
+
+            $monthlyDiscounts[] = [
+                'month' => date('M Y', strtotime($date)),
+                'month_ar' => $monthName . ' ' . $year,
+                'count' => $count,
+                'value' => $value
+            ];
+        }
+
+        // نطاقات القيم
+        $valueRanges = DB::table('operhead')
+            ->select(
+                DB::raw('CASE
+                    WHEN pro_value < 100 THEN "أقل من 100"
+                    WHEN pro_value >= 100 AND pro_value < 500 THEN "100 - 500"
+                    WHEN pro_value >= 500 AND pro_value < 1000 THEN "500 - 1000"
+                    WHEN pro_value >= 1000 AND pro_value < 5000 THEN "1000 - 5000"
+                    ELSE "أكثر من 5000"
+                    END as value_range'),
+                DB::raw('COUNT(*) as count'),
+                DB::raw('SUM(pro_value) as total')
+            )
+            ->groupBy('value_range')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'range' => $item->value_range,
+                    'count' => $item->count,
+                    'total' => $item->total
+                ];
+            });
+
+
+        // أحدث الخصومات
+        $recentDiscounts = OperHead::with(['acc1Head:id,aname', 'acc2Head:id,aname'])
+            ->orderByDesc('pro_date')
+            ->limit(10)
+            ->get()
+            ->map(function ($discount) {
+                return [
+                    'id' => $discount->id,
+                    'pro_id' => $discount->pro_id,
+                    'account_name' => $discount->acc1Head->aname ?? $discount->acc2Head->aname ?? '-',
+                    'value' => $discount->pro_value,
+                    'date' => $discount->pro_date,
+                    'info' => $discount->info ?? '-'
+                ];
+            });
+
+        // إحصائيات حسب الفرع
+        $branchStats = OperHead::select('branch_id', DB::raw('COUNT(*) as count'), DB::raw('SUM(pro_value) as total'))
+            ->groupBy('branch_id')
+            ->with('branch:id,name')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'branch_name' => $item->branch->name ?? 'غير محدد',
+                    'count' => $item->count,
+                    'total' => $item->total
+                ];
+            });
+
+        // مقارنة بين الشهر الحالي والشهر السابق
+        $lastMonthDiscounts = OperHead::whereYear('pro_date', date('Y', strtotime('-1 month')))
+            ->whereMonth('pro_date', date('m', strtotime('-1 month')))
+            ->count();
+
+        $lastMonthValue = OperHead::whereYear('pro_date', date('Y', strtotime('-1 month')))
+            ->whereMonth('pro_date', date('m', strtotime('-1 month')))
+            ->sum('pro_value');
+
+        $countChange = $lastMonthDiscounts > 0
+            ? round((($currentMonthDiscounts - $lastMonthDiscounts) / $lastMonthDiscounts) * 100, 2)
+            : 0;
+
+        $valueChange = $lastMonthValue > 0
+            ? round((($currentMonthValue - $lastMonthValue) / $lastMonthValue) * 100, 2)
+            : 0;
+
+        $statistics = compact(
+            'totalDiscounts',
+            'totalValue',
+            'avgValue',
+            'maxDiscount',
+            'minDiscount',
+            'currentMonthDiscounts',
+            'currentMonthValue',
+            'currentYearDiscounts',
+            'currentYearValue',
+            'topAccounts',
+            'monthlyDiscounts',
+            'valueRanges',
+            'recentDiscounts',
+            'branchStats',
+            'lastMonthDiscounts',
+            'lastMonthValue',
+            'countChange',
+            'valueChange'
+        );
+
+        return view('discounts.statistics', compact('statistics'));
     }
 }

@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
-use Illuminate\Routing\Controller;
+use App\Models\Note;
+use App\Models\Unit;
+use App\Enums\ItemType;
+use App\Models\Varibal;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
 {
@@ -98,5 +103,128 @@ class ItemController extends Controller
             'fromDate' => $request->get('fromDate', now()->startOfMonth()->toDateString()),
             'toDate' => $request->get('toDate', now()->endOfMonth()->toDateString()),
         ]);
+    }
+
+    public function getStatistics()
+    {
+
+        // إجمالي الأصناف
+        $totalItems = Item::count();
+
+        // الأصناف حسب النوع
+        $itemsByType = Item::select('type', DB::raw('count(*) as count'))
+            ->groupBy('type')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->type->label() => $item->count];
+            })
+            ->toArray();
+
+        // الأصناف ذات المتغيرات
+        // $itemsWithVariations = Item::whereHas('varibals')->count();
+        // $itemsWithoutVariations = $totalItems - $itemsWithVariations;
+
+        // إجمالي الوحدات والباركود
+        $totalUnits = Unit::count();
+        $totalBarcodes = DB::table('barcodes')->count();
+
+        // متوسط الوحدات والباركود لكل صنف
+        $avgUnitsPerItem = $totalItems > 0
+            ? round(DB::table('item_units')->count() / $totalItems, 2)
+            : 0;
+        $avgBarcodesPerItem = $totalItems > 0
+            ? round($totalBarcodes / $totalItems, 2)
+            : 0;
+
+        // إجمالي الملاحظات والمتغيرات
+        $totalNotes = Note::count();
+        $totalVaribals = Varibal::count();
+
+        // أكثر الوحدات استخداماً
+        $mostUsedUnits = DB::table('item_units')
+            ->join('units', 'item_units.unit_id', '=', 'units.id')
+            ->select('units.name', DB::raw('count(*) as usage_count'))
+            ->groupBy('units.id', 'units.name')
+            ->orderByDesc('usage_count')
+            ->limit(5)
+            ->get();
+
+        // الأصناف التي تحتوي على أكثر عدد من الوحدات
+        $itemsWithMostUnits = Item::withCount('units')
+            ->orderByDesc('units_count')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'units_count' => $item->units_count
+                ];
+            });
+
+        // أحدث الأصناف المضافة
+        $recentItems = Item::latest()
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'code' => $item->code,
+                    'type' => $item->type->label(),
+                    'created_at' => $item->created_at->format('Y-m-d')
+                ];
+            });
+
+        // نطاقات الأسعار
+        $priceRanges = DB::table('item_prices')
+            ->select(
+                DB::raw('CASE
+                    WHEN price < 10 THEN "أقل من 10"
+                    WHEN price >= 10 AND price < 50 THEN "10 - 50"
+                    WHEN price >= 50 AND price < 100 THEN "50 - 100"
+                    WHEN price >= 100 AND price < 500 THEN "100 - 500"
+                    ELSE "أكثر من 500"
+                END as price_range'),
+                DB::raw('count(DISTINCT item_id) as count')
+            )
+            ->groupBy('price_range')
+            ->get()
+            ->pluck('count', 'price_range')
+            ->toArray();
+
+        // إحصائيات التكلفة
+        $costStats = DB::table('item_units')
+            ->selectRaw('
+                MIN(cost) as min_cost,
+                MAX(cost) as max_cost,
+                AVG(cost) as avg_cost
+            ')
+            ->first();
+
+        $statistics = compact(
+            'totalItems',
+            'itemsByType',
+            // 'itemsWithVariations',
+            // 'itemsWithoutVariations',
+            'totalUnits',
+            'totalBarcodes',
+            'avgUnitsPerItem',
+            'avgBarcodesPerItem',
+            'totalNotes',
+            'totalVaribals',
+            'mostUsedUnits',
+            'itemsWithMostUnits',
+            'recentItems',
+            'priceRanges',
+            'costStats'
+        );
+
+        return view('item-management.items.items-statistics', $statistics);
+    }
+
+
+    public function refresh()
+    {
+        return redirect()->route('items.statistics')->with('success', 'تم تحديث الإحصائيات بنجاح!');
     }
 }
