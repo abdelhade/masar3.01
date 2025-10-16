@@ -170,6 +170,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('invoice/view/{operationId}', [InvoiceController::class, 'view'])->name('invoice.view');
     // 📁 Transfer Route
     Route::resource('transfers', TransferController::class)->names('transfers');
+    Route::get('/discounts/general-statistics', [DiscountController::class, 'generalStatistics'])->name('discounts.general-statistics');
     Route::resource('discounts', DiscountController::class)->names('discounts');
 
     // abdelhade
@@ -210,6 +211,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/purchases/statistics', [InvoiceController::class, 'purchasesStatistics'])->name('purchases.statistics');
     Route::get('/inventory/statistics', [InvoiceController::class, 'inventoryStatistics'])->name('inventory.statistics');
     Route::get('/accounts/basic-data-statistics', [AccHeadController::class, 'basicDataStatistics'])->name('accounts.basic-data-statistics');
+
+    Route::get('/items/statistics', [ItemController::class, 'getStatistics'])->name('items.statistics');
+    Route::get('/items/statistics/refresh', [ItemController::class, 'refresh'])->name('items.statistics.refresh');
+
 
     require __DIR__ . '/modules/magicals.php';
     require __DIR__ . '/modules/cheques.php';

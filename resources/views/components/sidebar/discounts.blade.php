@@ -7,7 +7,16 @@
             <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
         </a>
         <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
+
+
+
+
 @can('عرض قائمة الخصومات المسموح بها')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('discounts.general-statistics') }}">
+            <i class="ti-control-record"></i>{{ __('Discounts.Statistics') }}
+        </a>
+    </li>
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.index', ['type' => 30]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discounts') }}

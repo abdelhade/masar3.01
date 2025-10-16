@@ -6,6 +6,12 @@
             <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
         </a>
         <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
+<li class="nav-item">
+    <a class="nav-link font-family-cairo fw-bold" href="{{ route('items.statistics') }}">
+        <i class="ti-control-record"></i>{{ __('Items Statistics') }}
+    </a>
+</li>
+
 @can('عرض الوحدات')
     <li class="nav-item">
         <a class="nav-link font-family-cairo fw-bold" href="{{ route('units.index') }}">
@@ -44,10 +50,10 @@
 <!-- {{-- item movement --}}
                                                                                                                                                       @can('عرض تقرير حركة صنف')
     <li class="nav-item">
-                                     <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                     <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
-                                     </a>
-                                      </li>
+                                         <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
+                                         <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
+                                         </a>
+                                          </li>
 @endcan
                                                                                                                                                                     {{-- item movement --}} -->
 {{-- </ul>
