@@ -210,4 +210,15 @@ class Employee extends Model
         return $this->morphOne(AccHead::class, 'accountable');
     }
     
+    // Accessors for finger print data
+    public function getFingerPrintIdAttribute($value)
+    {
+        return $value ?: $this->id;
+    }
+    
+    public function getFingerPrintNameAttribute($value)
+    {
+        return $value ?: $this->name;
+    }
+    
 }

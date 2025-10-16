@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\PersistSidebarSelection::class,
         ]);
+        
+        // تسجيل middleware للموظفين
+        $middleware->alias([
+            'employee.auth' => \App\Http\Middleware\EmployeeAuth::class,
+        ]);
     })->withCommands([
         \Modules\Inquiries\Console\TestGoogleMapsCommand::class,
 

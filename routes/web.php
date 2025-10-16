@@ -39,6 +39,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductionOrderController;
 use App\Http\Controllers\VaribalController;
 use App\Http\Controllers\VaribalValueController;
+use App\Http\Controllers\MobileAttendanceController;
+use App\Http\Controllers\EmployeeAuthController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -207,7 +209,6 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/api/location/history', [App\Http\Controllers\LocationController::class, 'getHistory'])->name('api.location.history')->middleware(['auth:web', 'throttle:60,1']);
 
-
     Route::resource('pos-shifts', PosShiftController::class)->names('pos-shifts');
     Route::resource('pos-vouchers', PosVouchersController::class)->names('pos-vouchers');
     Route::get('pos-vouchers/get-items-by-note-detail', [PosVouchersController::class, 'getItemsByNoteDetail'])->name('pos-vouchers.get-items-by-note-detail');
@@ -221,4 +222,29 @@ Route::middleware(['auth'])->group(function () {
 
 
 });
+
+// ===== Employee Mobile Routes (خارج auth middleware) =====
+// Employee Login Routes
+Route::get('/mobile/employee-login', function () {
+    return view('mobile.employee-login');
+})->name('mobile.employee-login');
+
+// Employee Auth API Routes
+Route::post('/api/employee/login', [EmployeeAuthController::class, 'login'])->name('api.employee.login');
+Route::post('/api/employee/logout', [EmployeeAuthController::class, 'logout'])->name('api.employee.logout');
+Route::get('/api/employee/check-auth', [EmployeeAuthController::class, 'checkAuth'])->name('api.employee.check-auth');
+Route::get('/api/employee/current', [EmployeeAuthController::class, 'getCurrentEmployee'])->name('api.employee.current');
+
+// Mobile Attendance Routes
+Route::get('/mobile/attendance', function () {
+    return view('mobile.attendance');
+})->middleware(['employee.auth'])->name('mobile.attendance');
+
+// Mobile Attendance API Routes
+Route::post('/api/attendance/record', [MobileAttendanceController::class, 'recordAttendance'])->middleware(['employee.auth'])->name('api.attendance.record');
+Route::get('/api/attendance/last', [MobileAttendanceController::class, 'getLastAttendance'])->middleware(['employee.auth'])->name('api.attendance.last');
+Route::get('/api/attendance/history', [MobileAttendanceController::class, 'getAttendanceHistory'])->middleware(['employee.auth'])->name('api.attendance.history');
+Route::get('/api/attendance/stats', [MobileAttendanceController::class, 'getAttendanceStats'])->middleware(['employee.auth'])->name('api.attendance.stats');
+Route::get('/api/attendance/can-record', [MobileAttendanceController::class, 'canRecordAttendance'])->middleware(['employee.auth'])->name('api.attendance.can-record');
+
 require __DIR__ . '/auth.php';

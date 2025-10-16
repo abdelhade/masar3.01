@@ -74,6 +74,16 @@ class User extends Authenticatable
     {
         return $this->employee?->id;
     }
+    
+    public function getFingerPrintIdAttribute()
+    {
+        return $this->employee?->finger_print_id ?: $this->id;
+    }
+    
+    public function getFingerPrintNameAttribute()
+    {
+        return $this->employee?->finger_print_name ?: $this->name;
+    }
 
     public function receivesBroadcastNotificationsOn()
     {
