@@ -8,15 +8,6 @@
     $viewPermissions = collect($inventory)->map(fn($label) => 'عرض ' . $label)->toArray();
 @endphp
 
-{{-- @canany($viewPermissions)
-    <li class="li-main border-bottom pb-1 mb-2">
-        <a href="javascript:void(0);">
-            <i data-feather="archive" style="color:#f39c12" class="align-self-center menu-icon"></i>
-            <span>{{ __('ادارة المخزون') }}</span>
-            <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-        </a>
-
-        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
 <li class="nav-item">
     <a class="nav-link" href="{{ route('inventory.statistics') }}">
         <i class="ti-control-record"></i>Inventory Statistics
@@ -31,6 +22,3 @@
         </li>
     @endcan
 @endforeach
-{{-- </ul>
-    </li>
-@endcanany --}}

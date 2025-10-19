@@ -1,18 +1,3 @@
-{{-- @canany(['عرض العملاء', 'عرض الموردين', 'عرض الصناديق', 'عرض البنوك', 'عرض الموظفين', 'عرض المخازن', 'عرض المصروفات', 'عرض الايرادات', 'عرض دائنين متنوعين', 'عرض مدينين متنوعين', 'عرض الشركاء', 'عرض جارى الشركاء', 'عرض الأصول الثابتة', 'عرض الأصول القابلة للتأجير'])
-<li class="li-main">
-    <a href="javascript: void(0);">
-        <i data-feather="database" style="color:#4e73df" class="align-self-center menu-icon"></i>
-        <span>{{ __('navigation.accounts') }}</span>
-        <span class="menu-arrow">
-            <i class="mdi mdi-chevron-right"></i>
-        </span>
-    </a>
-    <ul class="sub-menu mm-collapse" aria-expanded="false">
-
-        {{-- Account Management --}}
-{{-- <li class="menu-label my-2">{{ __('navigation.account_management') }}</li>  --}}
-
-
 <li class="nav-item">
     <a class="nav-link" href="{{ route('accounts.basic-data-statistics') }}">
         <i class="ti-list"></i>{{ __('إحصائيات البيانات الأساسية') }}
@@ -25,7 +10,6 @@
         </a>
     </li>
 @endcan
-
 
 @can('عرض العملاء')
     <li class="nav-item">
@@ -174,9 +158,6 @@
     </li>
 @endcan
 
-{{-- Account Reports --}}
-{{-- <li class="menu-label my-2">{{ __('navigation.account_reports') }}</li> --}}
-
 @can('عرض تقرير حركة الحساب')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.account-movement-report') }}">
@@ -200,7 +181,3 @@
         </a>
     </li>
 @endcan
-{{--
-</ul>
-</li>
-@endcanany --}}

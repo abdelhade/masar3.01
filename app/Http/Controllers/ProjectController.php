@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AccHead;
-use App\Models\OperHead;
-use App\Models\Project;
+use App\Models\{AccHead, Project, OperHead};
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\{DB, Auth, Cache};
 
 class ProjectController extends Controller
 {
@@ -16,7 +15,7 @@ class ProjectController extends Controller
         $this->middleware('can:عرض المشاريع')->only(['index']);
         $this->middleware('can:إضافة المشاريع')->only(['create', 'store']);
         $this->middleware('can:تعديل المشاريع')->only(['update', 'edit']);
-        $this->middleware('can:حذف العملاء')->only(['destroy']); // ده خاص بالعملاء، هل تقصدي المشاريع؟
+        $this->middleware('can:حذف العملاء')->only(['destroy']);
     }
 
     public function index()
@@ -49,7 +48,7 @@ class ProjectController extends Controller
 
         $operations = OperHead::where('project_id', $id)->get();
         $equipments = AccHead::where('rent_to', $id)->get();
-        
+
         // للحصول على عمليات المعدات لكل معدة
         $equipmentOperations = collect();
         foreach ($equipments as $equipment) {
@@ -61,11 +60,11 @@ class ProjectController extends Controller
                 ]);
             }
         }
-        
+
         $vouchers = OperHead::where('project_id', $id)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('pro_type', 1)
-                      ->orWhere('pro_type', 2);
+                    ->orWhere('pro_type', 2);
             })
             ->get();
 
@@ -94,5 +93,65 @@ class ProjectController extends Controller
     public function destroy(Project $project)
     {
         //
+    }
+
+    public function statistics()
+    {
+        // خريطة حالات المشاريع
+        $statusMap = [
+            'pending' => ['title' => 'قيد الانتظار', 'color' => 'warning', 'icon' => 'la-hourglass-start'],
+            'in_progress' => ['title' => 'قيد التنفيذ', 'color' => 'primary', 'icon' => 'la-cogs'],
+            'completed' => ['title' => 'مكتمل', 'color' => 'success', 'icon' => 'la-check-circle'],
+            'cancelled' => ['title' => 'ملغي', 'color' => 'danger', 'icon' => 'la-times-circle'],
+        ];
+
+        // Use Cache for 1 hour (TTL in seconds) and produce stable zero-filled stats
+        $cacheKey = 'project_statistics_' . Auth::id(); // user-scoped cache key
+        $statisticsData = Cache::remember($cacheKey, 60 * 60, function () use ($statusMap) {
+            // إحصائيات حسب الحالة (عدد المشاريع ومتوسط المدة المتوقعة بالأيام)
+            $raw = Project::select(
+                'status',
+                DB::raw('COUNT(*) as count'),
+                DB::raw('AVG(DATEDIFF(end_date, start_date)) as avg_duration')
+            )
+                ->groupBy('status')
+                ->get()
+                ->keyBy('status')
+                ->map(function ($item) use ($statusMap) {
+                    return [
+                        'title' => $statusMap[$item->status]['title'] ?? $item->status,
+                        'count' => (int) $item->count,
+                        'avg_duration' => $item->avg_duration !== null ? round($item->avg_duration, 1) : 0,
+                        'color' => $statusMap[$item->status]['color'] ?? 'secondary',
+                        'icon' => $statusMap[$item->status]['icon'] ?? 'la-project-diagram',
+                    ];
+                })->toArray();
+
+            // Prepare defaults for all statuses so view and charts have stable data
+            $defaults = [];
+            foreach ($statusMap as $key => $cfg) {
+                $defaults[$key] = [
+                    'title' => $cfg['title'],
+                    'count' => 0,
+                    'avg_duration' => 0,
+                    'color' => $cfg['color'] ?? 'secondary',
+                    'icon' => $cfg['icon'] ?? 'la-project-diagram',
+                ];
+            }
+
+            // Merge actual stats into defaults preserving order
+            $sortedStatistics = array_replace($defaults, $raw);
+
+            // إجمالي الكلي (عدد المشاريع)
+            $overallTotal = Project::count();
+
+            return compact('sortedStatistics', 'overallTotal');
+        });
+
+        // استخراج البيانات من الـ Cache
+        $sortedStatistics = $statisticsData['sortedStatistics'];
+        $overallTotal = $statisticsData['overallTotal'];
+
+        return view('projects.statistics', compact('sortedStatistics', 'overallTotal'));
     }
 }
