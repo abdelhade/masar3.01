@@ -45,3 +45,9 @@
         <i class="ti-control-record"></i>{{ __('Project Size') }}
     </a>
 </li>
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('inquiries.dashboard.statistics') }}">
+        <i class="ti-bar-chart"></i>{{ __('Inquiries Statistics') }}
+    </a>
+</li>

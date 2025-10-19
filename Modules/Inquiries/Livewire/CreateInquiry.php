@@ -851,8 +851,8 @@ class CreateInquiry extends Component
                 'req_submittal_date' => $this->reqSubmittalDate,
                 'project_start_date' => $this->projectStartDate,
 
-                'city_id' => $city->id,
-                'town_id' => $town->id,
+                'city_id' => $city->id ?? null,
+                'town_id' => $town->id ?? null,
                 'town_distance' => $this->calculatedDistance,
 
                 'status' => $this->status,

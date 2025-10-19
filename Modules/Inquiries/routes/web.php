@@ -8,7 +8,8 @@ use Modules\Inquiries\Http\Controllers\{
     InquirySourceController,
     DifficultyMatrixController,
     QuotationInfoController,
-    InquiryDocumentController
+    InquiryDocumentController,
+    InquiryStatisticsController
 };
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -43,4 +44,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('/difficulty-matrix/create', [DifficultyMatrixController::class, 'create'])->name('difficulty-matrix.create');
+    Route::get('dashboard/statistics/workout', [InquiryStatisticsController::class, 'index'])
+        ->name('inquiries.dashboard.statistics');
 });

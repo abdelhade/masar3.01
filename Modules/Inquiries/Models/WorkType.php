@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class WorkType extends Model
 {
     protected $fillable = ['name', 'parent_id', 'is_active'];
-    
+
     protected $casts = [
         'is_active' => 'boolean',
         'created_at' => 'datetime',
@@ -32,5 +32,15 @@ class WorkType extends Model
     public function ancestors()
     {
         return $this->belongsTo(self::class, 'parent_id')->with('ancestors');
+    }
+
+    public function inquiries()
+    {
+        return $this->belongsToMany(
+            Inquiry::class,
+            'inquiry_work_type',
+            'work_type_id',
+            'inquiry_id'
+        );
     }
 }

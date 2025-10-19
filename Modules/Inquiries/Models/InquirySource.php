@@ -33,4 +33,10 @@ class InquirySource extends Model
     {
         return $this->belongsTo(self::class, 'parent_id')->with('ancestors');
     }
+
+
+    public function inquiries()
+    {
+        return $this->hasMany(Inquiry::class, 'inquiry_source_id');
+    }
 }
