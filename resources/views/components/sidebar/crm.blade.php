@@ -1,12 +1,3 @@
-{{-- @canany(['عرض العملااء', 'عرض مصدر الفرص', 'عرض جهات اتصال الشركات', 'عرض حالات الفرص', 'عرض الفرص'])
-    <li class="li-main">
-        <a href="javascript: void(0);">
-            <i data-feather="grid" class="align-self-center menu-icon"></i>
-            <span>{{ __('navigation.crm') }}</span>
-            <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-        </a>
-        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
-
 <li class="nav-item">
     <a class="nav-link" href="{{ route('statistics.index') }}">
         <i class="ti-control-record"></i>{{ __('navigation.statistics') }}
@@ -74,6 +65,3 @@
         <i class="ti-control-record"></i>{{ __('navigation.activities') }}
     </a>
 </li>
-{{-- </ul>
-    </li>
-@endcanany --}}

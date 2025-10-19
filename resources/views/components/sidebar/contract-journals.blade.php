@@ -1,21 +1,3 @@
-{{-- @canany([
-    'عرض سند قبض متعدد',
-    'عرض اتفاقية خدمة',
-    'عرض مصروفات مستحقة',
-    'عرض ايرادات مستحقة',
-    'عرض احتساب
-    عمولة بنكية',
-    'عرض عقد بيع',
-    'عرض توزيع الارباح علي الشركا',
-])
-    <li class="li-main">
-        <a href="javascript: void(0);">
-            <i data-feather="clock" style="color:#6f42c1" class="align-self-center menu-icon"></i>
-            <span>{{ __('navigation.accruals') }}</span>
-            <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-        </a>
-        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
-
 @can('عرض اتفاقية خدمة')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('multi-vouchers.create', ['type' => 'contract']) }}">
@@ -57,8 +39,4 @@
             <i class="ti-control-record"></i>{{ __('navigation.partner_profit_sharing') }}
         </a>
     </li>
-    {{-- </ul> --}}
-
-    {{-- </li> --}}
 @endcan
-{{-- @endcanany --}}

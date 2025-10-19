@@ -1,4 +1,4 @@
-@php
+{{-- @php
     $sections = [
         'ادارة المبيعات' => [
             10 => 'فاتورة مبيعات',
@@ -51,4 +51,4 @@
             </ul>
         </li>
     @endcanany
-@endforeach
+@endforeach --}}

@@ -1,19 +1,3 @@
-{{-- @canany([
-    'عرض قيد يومية',
-    'عرض قيد يوميه متعدد',
-    'عرض قيود يومية عمليات',
-    'عرض قيود يوميه عمليات متعدده',
-    'عرض قيود
-    يوميه حسابات',
-    'عرض تسجيل الارصده الافتتاحيه للمخازن',
-])
-    <li class="li-main">
-        <a href="javascript: void(0);">
-            <i data-feather="bar-chart-2" style="color:#007bff" class="align-self-center menu-icon"></i>
-            <span>{{ __('navigation.account_management') }}</span>
-            <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-        </a>
-        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
 @can('عرض قيد يومية')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('journal.statistics') }}">
@@ -85,7 +69,3 @@
         <i class="ti-control-record"></i>{{ __('navigation.balance_sheet') }}
     </a>
 </li>
-{{-- balance sheet --}}
-{{-- </ul>
-    </li>
-@endcanany --}}

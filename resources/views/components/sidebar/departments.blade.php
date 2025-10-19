@@ -1,28 +1,3 @@
-{{-- @canany([
-    'عرض الادارات و الاقسام',
-    'عرض الوظائف',
-    'عرض الدول',
-    'عرض المحافظات',
-    'عرض المدن',
-    'عرض المناطق',
-    'عرض الورديات',
-    'عرض الموظفيين',
-    'عرض المعدلات',
-    'عرض تقييم الموظفين',
-    'عرض انواع العقود',
-    'عرض العقود',
-    'عرض
-    البصمات',
-    'عرض معالجه الحضور والانصراف',
-])
-    <li class="li-main">
-        <a href="javascript: void(0);">
-            <i data-feather="grid" class="align-self-center menu-icon"></i>
-            <span>{{ __('navigation.human_resources') }}</span>
-            <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-        </a>
-
-        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
 @can('عرض الادارات و الاقسام')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('departments.index') }}">
@@ -193,7 +168,3 @@
         <i class="ti-control-record"></i>{{ __('navigation.cv_management') }}
     </a>
 </li>
-{{-- </ul>
-    </li>
-
-@endcanany --}}

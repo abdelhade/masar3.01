@@ -1,10 +1,3 @@
-{{-- <li class="li-main">
-    <a href="javascript: void(0);">
-        <i data-feather="truck" class="align-self-center menu-icon"></i>
-        <span>{{ __('navigation.daily_progress') }}</span>
-        <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-    </a>
-    <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
 <li class="nav-item">
     <a class="nav-link" href="{{ route('project.types.index') }}">
         <i class="ti-control-record"></i>{{ __('navigation.project_types') }}
@@ -42,6 +35,3 @@
         <i class="ti-control-record"></i>{{ __('navigation.daily_progress') }}
     </a>
 </li>
-
-{{-- </ul>
-</li> --}}

@@ -1,9 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Rentals\Http\Controllers\RentalsStatisticsController;
 use Modules\Rentals\Http\Controllers\{RentalsUnitController, RentalsBuildingController, RentalsLeaseController};
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('rentals/statistics/overview', [RentalsStatisticsController::class, 'index'])
+        ->name('rentals.statistics');
+
     Route::resource('buildings', RentalsBuildingController::class)->names('rentals.buildings');
     Route::resource('rentals-units', RentalsUnitController::class)->names('rentals.units')->except(['create']);
 
@@ -11,4 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('rentals-units.create');
 
     Route::resource('rentals-leases', RentalsLeaseController::class)->names('rentals.leases');
+
+    Route::post('/dashboard/refresh', [RentalsStatisticsController::class, 'refreshCache'])
+        ->name('dashboard.refresh');
 });

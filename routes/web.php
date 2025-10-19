@@ -138,6 +138,7 @@ Route::middleware(['auth'])->group(function () {
     });
     // ############################################################################################################
     // 📁 Projects
+    Route::get('projects/statistics', [ProjectController::class, 'statistics'])->name('projects.statistics');
     Route::resource('projects', ProjectController::class)->names('projects')->only('index', 'show', 'create', 'edit');
 
     // 📁 Items & Units & Prices & Notes

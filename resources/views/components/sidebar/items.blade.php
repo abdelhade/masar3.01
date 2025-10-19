@@ -1,11 +1,3 @@
-{{-- @canany(['عرض الوحدات', 'عرض التصنيفات', 'عرض الأسعار', 'عرض الأصناف'])
-    <li class="li-main">
-        <a href="javascript: void(0);">
-            <i data-feather="box" style="color:#1cc88a" class="align-self-center menu-icon"></i>
-            <span>{{ __('navigation.items') }}</span>
-            <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
-        </a>
-        <ul class="sub-menu mm-collapse" aria-expanded="false"> --}}
 <li class="nav-item">
     <a class="nav-link font-family-cairo fw-bold" href="{{ route('items.statistics') }}">
         <i class="ti-control-record"></i>{{ __('Items Statistics') }}
@@ -47,15 +39,3 @@
     </li>
     <livewire:item-management.varibals.varibalslinks />
 @endcan
-<!-- {{-- item movement --}}
-                                                                                                                                                      @can('عرض تقرير حركة صنف')
-    <li class="nav-item">
-                                         <a class="nav-link font-family-cairo fw-bold" href="{{ route('item-movement') }}">
-                                         <i class="ti-control-record"></i>{{ __('navigation.item_movement_report') }}
-                                         </a>
-                                          </li>
-@endcan
-                                                                                                                                                                    {{-- item movement --}} -->
-{{-- </ul>
-    </li> --}}
-{{-- @endcanany --}}
