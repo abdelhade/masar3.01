@@ -7,7 +7,7 @@
 @section('content')
     @include('components.breadcrumb', [
         'title' => __('جهات اتصال الشركات'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('مصدر الفرص')]],
+        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('جهات اتصال الشركات')]],
     ])
     <div class="row">
         <div class="col-lg-12">

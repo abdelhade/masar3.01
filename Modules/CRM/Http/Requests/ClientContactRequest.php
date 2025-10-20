@@ -17,8 +17,10 @@ class ClientContactRequest extends FormRequest
         return [
             'client_id' => [
                 'required',
-                'exists:clients,id',
-                Rule::exists('clients', 'id')->where('type', 'company'),
+                Rule::exists('clients', 'id')
+                    ->where(function ($query) {
+                        $query->whereIn('type', [2, 3, 4, 5, 6]);
+                    }),
             ],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],

@@ -1,3 +1,17 @@
+@php
+    if (isset($filters) && !empty($filters)) {
+        $query = $model::query();
+
+        foreach ($filters as $key => $value) {
+            $query->whereIn($key, array_map('intval', (array) $value));
+        }
+
+        $options = $query->get();
+    } else {
+        $options = $options ?? $model::all();
+    }
+@endphp
+
 <div class="mb-3">
     <label class="form-label" for="{{ $name }}">{{ $label }}</label>
     <select class="select2-dynamic {{ $class }}" id="{{ $name }}" name="{{ $name }}"

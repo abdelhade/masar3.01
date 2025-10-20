@@ -41,6 +41,26 @@
                 $('form').submit();
             }
         });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // منع إرسال الفورم
+
+                const formElements = Array.from(document.querySelectorAll('input, select, textarea, button'))
+                    .filter(el =>
+                        !el.disabled &&
+                        el.type !== 'hidden' &&
+                        el.type !== 'checkbox' && // تجاهل التشيكبوكس
+                        el.offsetParent !== null
+                    );
+
+                const currentIndex = formElements.indexOf(document.activeElement);
+
+                if (currentIndex > -1 && currentIndex < formElements.length - 1) {
+                    formElements[currentIndex + 1].focus();
+                }
+            }
+        });
     </script>
     {{--
     <script>

@@ -50,6 +50,8 @@ class CreateInquiry extends Component
     public $showMapModal = false;
     public $mapModalType = ''; // 'from' أو 'to'
 
+    public $cityId;
+    public $townId;
 
     public $status;
     public $statusForKon;
