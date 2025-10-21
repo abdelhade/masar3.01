@@ -87,6 +87,7 @@ trait HandlesInvoiceData
                 ]),
                 'notes' => $item->notes // ✅ نقل الملاحظات
             ];
+            // dd($this->invoiceItems);
         }
 
         // ✅ نقل بيانات الفاتورة
@@ -101,6 +102,9 @@ trait HandlesInvoiceData
         $this->additional_percentage = $sourceInvoice->fat_plus_per ?? 0;
         $this->additional_value = $sourceInvoice->fat_plus ?? 0;
         $this->total_after_additional = $sourceInvoice->pro_value;
+        // أضف نقل التواريخ:
+        $this->pro_date = $sourceInvoice->pro_date;
+        $this->accural_date = $sourceInvoice->accural_date;
     }
 
     protected function handleConvertData($convertData)

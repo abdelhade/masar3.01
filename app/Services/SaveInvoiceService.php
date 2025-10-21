@@ -255,6 +255,11 @@ class SaveInvoiceService
 
                 // إنشاء عنصر الفاتورة لاى شئ غير التحويلات حاليا النوع 21
                 if ($component->type != 21) {
+                    // معالجة خاصة لطلب الاحتياج - يجب أن نضع الكمية في qty_out (اعتباره صرف احتياج)
+                    if ($component->type == 25) {
+                        $qty_in =  $quantity;
+                        $qty_out = 0;
+                    }
                     OperationItems::create([
                         'pro_tybe'      => $component->type,
                         'detail_store'  => $component->acc2_id,

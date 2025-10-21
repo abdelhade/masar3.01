@@ -120,6 +120,18 @@ class InvoiceWorkflowController extends Controller
             return back()->with('error', 'لا يمكن الانتقال إلى مرحلة سابقة أو الحالية');
         }
 
+        // التحقق إذا المرحلة موجودة مسبقاً كي لا ينشئها مرتين
+        // $existingStage = OperHead::where(function($q) use ($root) {
+        //     $q->where('origin_id', $root->id)
+        //         ->orWhere('parent_id', $root->id)
+        //         ->orWhere('op2', $root->id);
+        // })->where('pro_type', $nextType)->first();
+
+        // if ($existingStage) {
+        //     return redirect()->route('invoices.edit', $existingStage->id)
+        //         ->with('info', 'تم فتح المرحلة الموجودة مسبقاً.');
+        // }
+
         // ✅ تحديث workflow_state للـ root
         $root->update([
             'workflow_state' => $nextWorkflowState,
@@ -141,7 +153,7 @@ class InvoiceWorkflowController extends Controller
             'parent_id' => $root->id,
             'origin_id' => $root->origin_id ?: $root->id,
             'branch_id' => $root->branch_id,
-            'source_pro_id' => $root->pro_id,
+            'source_pro_id' => $root->pro_id, // أضف هذه
             'info' => 'تم إنشاء من ' . $this->titles[$root->pro_type] . ' #' . $root->id,
         ];
 
