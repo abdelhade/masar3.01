@@ -258,6 +258,7 @@ class InvoiceController extends Controller
             20 => 'حذف أمر إضافة',
             21 => 'حذف تحويل من مخزن لمخزن',
             22 => 'حذف أمر حجز',
+            25 => 'حذف أمر حجز',
         ];
 
         if (!isset($permissions[$type])) {

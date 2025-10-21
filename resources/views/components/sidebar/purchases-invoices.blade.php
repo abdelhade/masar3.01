@@ -24,3 +24,9 @@
     </li>
     {{-- @endcan --}}
 @endforeach
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('invoices.track.search') }}">
+        <i class="ti-control-record"></i> تتبع مسار الفاتورة
+    </a>
+</li>
