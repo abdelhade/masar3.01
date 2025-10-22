@@ -265,19 +265,3 @@
         window.location.href = route;
     }
 </script>
-
-<!-- Location Tracking Scripts -->
-<script src="{{ asset('assets/js/location-tracker.js') }}"></script>
-<script>
-    @auth
-        document.addEventListener('DOMContentLoaded', async function() {
-            const googleApiKey = '{{ config("services.google.maps_api_key") }}';
-            
-            if (typeof LocationTracker !== 'undefined') {
-                const locationTracker = new LocationTracker();
-                localStorage.removeItem('location_tracking');
-                await locationTracker.init(googleApiKey);
-            }
-        });
-    @endauth
-</script>

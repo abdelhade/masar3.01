@@ -15,9 +15,14 @@ class Employee extends Model
         'date_of_birth' => 'date',
         'date_of_hire' => 'date',
         'date_of_fire' => 'date',
+        'password' => 'hashed',
     ];
 
     protected $guarded = ['id'];
+
+    protected $hidden = [
+        'password',
+    ];
 
     protected static function booted()
     {

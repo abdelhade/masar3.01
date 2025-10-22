@@ -23,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'employee.auth' => \App\Http\Middleware\EmployeeAuth::class,
         ]);
+        
+        // تسجيل middleware groups
+        $middleware->group('employee', [
+            \App\Http\Middleware\EmployeeAuth::class,
+        ]);
     })->withCommands([
         \Modules\Inquiries\Console\TestGoogleMapsCommand::class,
 

@@ -26,7 +26,11 @@ class EmployeeAuthController extends Controller
             ]);
 
             if ($validator->fails()) {
-                Log::warning('Validation failed:', $validator->errors()->toArray());
+                 Log::warning('[Mobile Employee Login] Validation failed', [
+                    'errors' => $validator->errors()->toArray(),
+                    'ip' => $request->ip(),
+                    'ua' => $request->userAgent(),
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'بيانات غير صحيحة',
@@ -42,9 +46,10 @@ class EmployeeAuthController extends Controller
                                 ->first();
 
             if (!$employee) {
-                Log::warning('Employee not found:', [
+                Log::warning('[Mobile Employee Login] Employee not found', [
                     'finger_print_id' => $request->finger_print_id,
-                    'finger_print_name' => $request->finger_print_name
+                    'finger_print_name' => $request->finger_print_name,
+                    'ip' => $request->ip(),
                 ]);
                 return response()->json([
                     'success' => false,
@@ -55,6 +60,10 @@ class EmployeeAuthController extends Controller
 
             // التحقق من حالة الموظف
             if ($employee->status !== 'مفعل') {
+                Log::notice('[Mobile Employee Login] Inactive employee tried to login', [
+                    'employee_id' => $employee->id,
+                    'status' => $employee->status,
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'حساب الموظف معطل. يرجى التواصل مع الإدارة'
@@ -63,6 +72,10 @@ class EmployeeAuthController extends Controller
 
             // التحقق من كلمة المرور
             if (!$employee->password || !Hash::check($request->password, $employee->password)) {
+                Log::warning('[Mobile Employee Login] Wrong password', [
+                    'employee_id' => $employee->id,
+                    'finger_print_id' => $employee->finger_print_id,
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'كلمة المرور غير صحيحة'
@@ -79,6 +92,10 @@ class EmployeeAuthController extends Controller
 
             // إرجاع بيانات الموظف
             
+            Log::info('[Mobile Employee Login] Login successful', [
+                'employee_id' => $employee->id,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم تسجيل الدخول بنجاح',
@@ -102,7 +119,10 @@ class EmployeeAuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            
+            Log::error('[Mobile Employee Login] Exception during login', [
+                'message' => $e->getMessage(),
+                'trace' => collect($e->getTrace())->take(5)->toArray(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في تسجيل الدخول'
@@ -125,12 +145,19 @@ class EmployeeAuthController extends Controller
                 'employee_logged_in'
             ]);
 
+            Log::info('[Mobile Employee Login] Logout successful', [
+                'employee_id' => $request->session()->get('employee_id'),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم تسجيل الخروج بنجاح'
             ]);
 
         } catch (\Exception $e) {
+            Log::error('[Mobile Employee Login] Exception during logout', [
+                'message' => $e->getMessage(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في تسجيل الخروج',
@@ -202,6 +229,9 @@ class EmployeeAuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('[Mobile Employee Login] Exception during auth check', [
+                'message' => $e->getMessage(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في التحقق من تسجيل الدخول',
@@ -258,11 +288,57 @@ class EmployeeAuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('[Mobile Employee Login] Exception while fetching current employee', [
+                'message' => $e->getMessage(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في جلب بيانات الموظف',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * استقبال أخطاء العميل (الموبايل) وكتابتها في Laravel log
+     */
+    public function logClientError(Request $request)
+    {
+        try {
+            $payload = $request->all();
+            
+            // التحقق من صحة البيانات
+            $validator = Validator::make($payload, [
+                'message' => 'required|string|max:1000',
+                'context' => 'nullable|array'
+            ]);
+
+            if ($validator->fails()) {
+                Log::warning('[Mobile Employee Login] Invalid client error payload', [
+                    'errors' => $validator->errors()->toArray(),
+                    'payload' => $payload,
+                    'ip' => $request->ip(),
+                ]);
+                return response()->json(['ok' => false, 'message' => 'Invalid payload'], 400);
+            }
+
+            // تسجيل الخطأ
+            Log::error('[Mobile Employee Login] Client error', [
+                'message' => $payload['message'],
+                'context' => $payload['context'] ?? [],
+                'ip' => $request->ip(),
+                'ua' => $request->userAgent(),
+                'timestamp' => now()->toISOString(),
+            ]);
+
+            return response()->json(['ok' => true]);
+            
+        } catch (\Exception $e) {
+            Log::error('[Mobile Employee Login] Exception in logClientError', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['ok' => false, 'message' => 'Internal error'], 500);
         }
     }
 }

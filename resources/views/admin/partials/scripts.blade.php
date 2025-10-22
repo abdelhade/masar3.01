@@ -56,41 +56,4 @@ document.addEventListener('DOMContentLoaded', function() {
  <!-- Livewire Scripts -->
  @livewireScripts
 
- <!-- Location Tracking Scripts -->
- <script src="{{ asset('assets/js/location-tracker.js') }}"></script>
- <script>
-     // تهيئة التتبع عند تسجيل الدخول
-     @auth
-         document.addEventListener('DOMContentLoaded', async function() {
-             console.log('LocationTracker: بدء تحميل نظام تتبع الموقع...');
-             
-             const googleApiKey = '{{ config("services.google.maps_api_key") }}';
-             console.log('LocationTracker: Google API Key:', googleApiKey ? 'موجود' : 'غير موجود');
-             
-             if (typeof LocationTracker === 'undefined') {
-                 console.error('LocationTracker: فئة LocationTracker غير موجودة!');
-                 return;
-             }
-             
-             const locationTracker = new LocationTracker();
-             
-             try {
-                 console.log('LocationTracker: بدء تهيئة النظام...');
-                 
-                 // مسح أي تتبع سابق قد يكون بإحداثيات خاطئة
-                 console.log('LocationTracker: مسح التتبع السابق لضمان دقة الموقع...');
-                 localStorage.removeItem('location_tracking');
-                 
-                 // بدء تتبع جديد دائماً لضمان الحصول على الموقع الصحيح
-                 console.log('LocationTracker: بدء تتبع جديد...');
-                 await locationTracker.init(googleApiKey);
-                 
-                 console.log('LocationTracker: تم تهيئة نظام تتبع الموقع بنجاح');
-             } catch (error) {
-                 console.error('LocationTracker: فشل في تهيئة نظام تتبع الموقع:', error);
-             }
-         });
-     @endauth
- </script>
-
  @stack('scripts')

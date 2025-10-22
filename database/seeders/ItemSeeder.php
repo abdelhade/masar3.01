@@ -1,3 +1,4 @@
+
 <?php
 
 namespace Database\Seeders;
@@ -118,3 +119,4 @@ class ItemSeeder extends Seeder
         $this->command->info('Successfully seeded 1000 items with units, barcodes, and prices!');
     }
 }
+

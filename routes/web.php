@@ -224,10 +224,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/overall', [ReportController::class, 'overall'])->name('reports.overall');
     Route::get('home', [HomeController::class, 'index'])->name('home.index');
 
-    // API routes لتتبع الموقع (بدون CSRF)
-    Route::post('/api/location/track', [App\Http\Controllers\LocationController::class, 'storeTracking'])->name('api.location.track')->middleware(['auth:web', 'throttle:60,1']);
-
-    Route::get('/api/location/history', [App\Http\Controllers\LocationController::class, 'getHistory'])->name('api.location.history')->middleware(['auth:web', 'throttle:60,1']);
 
     Route::resource('pos-shifts', PosShiftController::class)->names('pos-shifts');
     Route::resource('pos-vouchers', PosVouchersController::class)->names('pos-vouchers');

@@ -12,8 +12,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         * {
@@ -521,6 +519,40 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // إخفاء رسائل console.log غير المرغوب فيها
+        (function() {
+            const originalLog = console.log;
+            const originalDebug = console.debug;
+            const originalWarn = console.warn;
+            
+            console.log = function(...args) {
+                const message = args.join(' ');
+                // تجاهل الرسائل التي تحتوي على هذه الكلمات
+                if (message.includes('false disabled installed not_installed cannot_run ready_to_run running')) {
+                    return;
+                }
+                originalLog.apply(console, args);
+            };
+            
+            console.debug = function(...args) {
+                const message = args.join(' ');
+                // تجاهل رسائل debug غير المرغوب فيها
+                if (message.includes('false disabled installed not_installed cannot_run ready_to_run running')) {
+                    return;
+                }
+                originalDebug.apply(console, args);
+            };
+            
+            console.warn = function(...args) {
+                const message = args.join(' ');
+                // تجاهل رسائل warning غير المرغوب فيها
+                if (message.includes('false disabled installed not_installed cannot_run ready_to_run running')) {
+                    return;
+                }
+                originalWarn.apply(console, args);
+            };
+        })();
+        
         let currentEmployee = null;
         
         // تهيئة الصفحة
@@ -539,34 +571,57 @@
             document.body.style.overflow = 'hidden';
             
             // التركيز على أول حقل
-            document.getElementById('fingerPrintId').focus();
+            const fingerPrintIdField = document.getElementById('fingerPrintId');
+            if (fingerPrintIdField) {
+                fingerPrintIdField.focus();
+            }
+            
+            // تحسين الأداء - إخفاء رسائل console غير المرغوب فيها
+            console.clear();
         }
         
         function setupEventListeners() {
             // تسجيل الدخول
-            document.getElementById('employeeLoginForm').addEventListener('submit', handleLogin);
+            const loginForm = document.getElementById('employeeLoginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
             
             // Enter key navigation
-            document.getElementById('fingerPrintId').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    document.getElementById('fingerPrintName').focus();
-                }
-            });
+            const fingerPrintIdField = document.getElementById('fingerPrintId');
+            const fingerPrintNameField = document.getElementById('fingerPrintName');
+            const passwordField = document.getElementById('password');
             
-            document.getElementById('fingerPrintName').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    document.getElementById('password').focus();
-                }
-            });
+            if (fingerPrintIdField) {
+                fingerPrintIdField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (fingerPrintNameField) {
+                            fingerPrintNameField.focus();
+                        }
+                    }
+                });
+            }
             
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleLogin(e);
-                }
-            });
+            if (fingerPrintNameField) {
+                fingerPrintNameField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (passwordField) {
+                            passwordField.focus();
+                        }
+                    }
+                });
+            }
+            
+            if (passwordField) {
+                passwordField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin(e);
+                    }
+                });
+            }
         }
         
         async function handleLogin(e) {
@@ -626,7 +681,7 @@
                 }
                 
             } catch (error) {
-                showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى');
+                showError(`حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى. [${error.message}]`);
                 return; // إيقاف التنفيذ عند حدوث خطأ
             } finally {
                 showLoading(false);
@@ -637,44 +692,61 @@
             const loading = document.getElementById('loading');
             const loginBtn = document.getElementById('loginBtn');
             
-            if (show) {
-                loading.style.display = 'block';
-                loginBtn.disabled = true;
-                loginBtn.style.opacity = '0.6';
-            } else {
-                loading.style.display = 'none';
-                loginBtn.disabled = false;
-                loginBtn.style.opacity = '1';
+            if (loading && loginBtn) {
+                if (show) {
+                    loading.style.display = 'block';
+                    loginBtn.disabled = true;
+                    loginBtn.style.opacity = '0.6';
+                } else {
+                    loading.style.display = 'none';
+                    loginBtn.disabled = false;
+                    loginBtn.style.opacity = '1';
+                }
             }
         }
         
         function showError(message) {
             hideMessages(); // إخفاء جميع الرسائل أولاً
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            
-            // إخفاء الرسالة بعد 5 ثواني
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                
+                // إخفاء الرسالة بعد 5 ثواني
+                setTimeout(() => {
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
         
         function showSuccess(message) {
             hideMessages(); // إخفاء جميع الرسائل أولاً
             const successDiv = document.getElementById('successMessage');
-            successDiv.textContent = message;
-            successDiv.style.display = 'block';
-            
-            // إخفاء الرسالة بعد 3 ثواني
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 3000);
+            if (successDiv) {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+                
+                // إخفاء الرسالة بعد 3 ثواني
+                setTimeout(() => {
+                    if (successDiv) {
+                        successDiv.style.display = 'none';
+                    }
+                }, 3000);
+            }
         }
         
         function hideMessages() {
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'none';
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+            if (successDiv) {
+                successDiv.style.display = 'none';
+            }
         }
         
         function showEmployeeInfo(employee) {
@@ -682,15 +754,17 @@
             const employeeName = document.getElementById('employeeName');
             const employeeDetails = document.getElementById('employeeDetails');
             
-            employeeName.textContent = employee.name;
-            employeeDetails.innerHTML = `
-                <strong>رقم الموظف:</strong> ${employee.id}<br>
-                <strong>المنصب:</strong> ${employee.position || 'غير محدد'}<br>
-                <strong>القسم:</strong> ${employee.department?.name || 'غير محدد'}<br>
-                <strong>الحالة:</strong> ${employee.status}
-            `;
-            
-            employeeInfo.style.display = 'block';
+            if (employeeInfo && employeeName && employeeDetails) {
+                employeeName.textContent = employee.name;
+                employeeDetails.innerHTML = `
+                    <strong>رقم الموظف:</strong> ${employee.id}<br>
+                    <strong>المنصب:</strong> ${employee.position || 'غير محدد'}<br>
+                    <strong>القسم:</strong> ${employee.department?.name || 'غير محدد'}<br>
+                    <strong>الحالة:</strong> ${employee.status}
+                `;
+                
+                employeeInfo.style.display = 'block';
+            }
         }
         
         // منع إغلاق الصفحة أثناء التحميل

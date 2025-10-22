@@ -11,6 +11,8 @@ use App\Models\Town;
 use App\Models\Department;
 use App\Models\EmployeesJob;
 use App\Models\Shift;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 new class extends Component {
     use WithPagination, WithFileUploads;
@@ -135,6 +137,15 @@ new class extends Component {
             }
             
             $validated = $this->validate();
+            
+            // Hash password if it exists and is not empty
+            if (!empty($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            } else {
+                // Remove password from validated data if it's empty
+                unset($validated['password']);
+            }
+            
             if ($this->isEdit && $this->employeeId) {
                 Employee::find($this->employeeId)->update($validated);
                 session()->flash('success', __('تم تحديث الموظف بنجاح.'));

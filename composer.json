@@ -55,7 +55,8 @@
         },
         "files": [
             "Modules/Settings/Helpers/HelperSettings.php",
-            "app/Helpers/BranchHelper.php"
+            "app/Helpers/BranchHelper.php",
+            "app/Helpers/FormatHelper.php"
         ]
     },
     "autoload-dev": {

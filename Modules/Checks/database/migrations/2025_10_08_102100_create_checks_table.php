@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('checks', function (Blueprint $table) {
             $table->id();
             $table->string('check_number', 50)->unique();
-            $table->integer('bank_id')->unique();
+            $table->string('bank_name', 100);
 
             $table->string('account_number', 50);
             $table->string('account_holder_name', 100);

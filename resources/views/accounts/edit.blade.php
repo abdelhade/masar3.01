@@ -99,6 +99,17 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
+                                            <label for="branch_id">{{ __('الفرع') }}</label>
+                                            <select class="form-control font-bold" name="branch_id" id="branch_id">
+                                                <option value="">{{ __('اختر الفرع') }}</option>
+                                                @foreach ($branches as $branch)
+                                                    <option value="{{ $branch->id }}" {{ $account->branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
                                             <label for="phone">{{ __('تليفون') }}</label>
                                             <input class="form-control font-bold" type="text" name="phone" id="phone" value="{{ $account->phone }}">
                                         </div>
@@ -210,8 +221,9 @@
                             </div>
                             <div class="card-footer">
                                 <div class="d-flex justify-content-start">
-                                    <button class="btn btn-success btn-block m-1" type="submit">{{ __('تحديث') }}</button>
-                                    <a href="{{ route('accounts.index') }}" class="btn btn-secondary btn-block m-1">{{ __('رجوع') }}</a>
+                                    <button class="btn btn-success m-1" type="submit">
+                                        <i class="las la-save"></i> {{ __('تحديث') }}
+                                    </button>
                                 </div>
                             </div>
                         </div>

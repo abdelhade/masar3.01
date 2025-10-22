@@ -135,6 +135,18 @@
 
                                         <div class="col-md-4">
                                             <div class="form-group">
+                                                <label for="branch_id">{{ __('الفرع') }}</label>
+                                                <select class="form-control font-bold" name="branch_id" id="branch_id">
+                                                    <option value="">{{ __('اختر الفرع') }}</option>
+                                                    @foreach ($branches as $branch)
+                                                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="form-group">
                                                 <label for="phone">{{ __('تليفون') }}</label>
                                                 <input class="form-control font-bold" type="text" name="phone"
                                                     id="phone" placeholder="{{ __('التليفون او تليفون المسؤول') }}">
@@ -277,10 +289,9 @@
 
                                 <div class="card-footer">
                                     <div class="d-flex justify-content-start">
-                                        <button class="btn btn-primary btn-block m-1" type="submit">تأكيد <i
-                                                class="las la-save"></i></button>
-                                        <button class="btn btn-danger btn-block m-1" type="reset">مسح<i
-                                                class="las la-times"></i> </button>
+                                        <button class="btn btn-success m-1" type="submit">
+                                            <i class="las la-save"></i> تأكيد
+                                        </button>
                                     </div>
                                 </div>
                             </div>

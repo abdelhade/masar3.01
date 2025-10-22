@@ -90,8 +90,4 @@ class User extends Authenticatable
         return 'App.Models.User.' . $this->id;
     }
 
-    public function locationTrackings()
-    {
-        return $this->hasMany(UserLocationTracking::class);
-    }
 }
