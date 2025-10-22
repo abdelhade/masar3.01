@@ -120,14 +120,50 @@
                         </div>
                     </div>
 
-                    <div class="col-md-2 mb-3">
-                        <livewire:app::searchable-select :model="App\Models\Client::class" label-field="cname" :selected-id="$assignedEngineer"
-                            wire-model="assignedEngineer" label="المهندس" placeholder="ابحث عن المهندس أو أضف جديد..."
-                            :where="[
-                                'type' => \App\Enums\ClientType::ENGINEER->value,
-                            ]" :additional-data="[
-                                'type' => \App\Enums\ClientType::ENGINEER->value,
-                            ]" :key="'engineer-select'" />
+                    <!-- المهندس -->
+                    <div class="col-md-3 mb-3 d-flex flex-column">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-user-cog fa-2x text-dark"></i>
+                            </div>
+                            <label class="form-label fw-bold">المهندس</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <div class="flex-grow-1">
+                                    <livewire:app::searchable-select :model="App\Models\Client::class" label-field="cname"
+                                        wire-model="assignedEngineer" placeholder="ابحث عن المهندس أو أضف جديد..."
+                                        :selected-id="$assignedEngineer" :key="'engineer-select'" />
+                                </div>
+                                <button type="button" class="btn btn-sm btn-dark" wire:click="openClientModal(5)"
+                                    title="إضافة مهندس جديد">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            @if ($assignedEngineer)
+                                @php
+                                    $engineer = \App\Models\Client::find($assignedEngineer);
+                                @endphp
+                                @if ($engineer)
+                                    <div class="card mt-3 bg-light">
+                                        <div class="card-body p-2 text-start">
+                                            <small class="d-block"><strong>الاسم:</strong>
+                                                {{ $engineer->cname }}</small>
+                                            @if ($engineer->phone)
+                                                <small class="d-block"><strong>الهاتف:</strong>
+                                                    {{ $engineer->phone }}</small>
+                                            @endif
+                                            @if ($engineer->email)
+                                                <small class="d-block"><strong>البريد:</strong>
+                                                    {{ $engineer->email }}</small>
+                                            @endif
+                                            @if ($engineer->address)
+                                                <small class="d-block"><strong>العنوان:</strong>
+                                                    {{ $engineer->address }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
                     </div>
 
                     <div class="col-md-2 mb-3">

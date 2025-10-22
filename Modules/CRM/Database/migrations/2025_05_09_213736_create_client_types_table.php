@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('client_types', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('title')->unique();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->timestamps();
         });

@@ -38,22 +38,22 @@ class Inquiry extends Model implements HasMedia
 
     public function mainContractor()
     {
-        return $this->belongsTo(Client::class, 'main_contractor_id')->where('type', ClientType::MainContractor->value);
+        return $this->belongsTo(Client::class, 'main_contractor_id');
     }
 
     public function consultant()
     {
-        return $this->belongsTo(Client::class, 'consultant_id')->where('type', ClientType::Consultant->value);
+        return $this->belongsTo(Client::class, 'consultant_id');
     }
 
     public function owner()
     {
-        return $this->belongsTo(Client::class, 'owner_id')->where('type', ClientType::Owner->value);
+        return $this->belongsTo(Client::class, 'owner_id');
     }
 
     public function assignedEngineer()
     {
-        return $this->belongsTo(Client::class, 'assigned_engineer_id')->where('type', ClientType::ENGINEER->value);
+        return $this->belongsTo(Client::class, 'assigned_engineer_id');
     }
 
     public function city()
