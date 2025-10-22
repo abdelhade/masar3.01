@@ -166,34 +166,31 @@
                             {{-- النوع والحالة --}}
                             <div class="row g-3">
                                 <!-- حقل النوع -->
-                                <div class="mb-3 col-lg-3">
-                                    <label class="form-label" for="type">الصفه</label>
-                                    <select class="form-control" id="type" name="type">
-                                        @foreach (\App\Enums\ClientType::cases() as $case)
-                                            <option value="{{ $case->value }}"
-                                                {{ old('type', $client->type?->value ?? '') == $case->value ? 'selected' : '' }}>
-                                                {{ $case->label() }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('type')
-                                        <small class="text-danger">{{ $message }}</small>
-                                    @enderror
-                                </div>
-
-
-                                <div class="col-lg-3 col-md-6">
-                                    <label class="form-label">النوع</label>
-                                    <select name="client_type_id" id="client_type_id" class="form-select" required>
+                                <!-- نوع العميل -->
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">{{ __('نوع العميل') }}</label>
+                                    <select name="client_type_id" class="form-select" required>
                                         <option value="">{{ __('اختر نوع العميل') }}</option>
                                         @foreach ($clientTypes as $type)
                                             <option value="{{ $type->id }}"
-                                                {{ $client->client_type_id == $type->id ? 'selected' : '' }}>
-                                                {{ $type->name }}
+                                                {{ old('client_type_id', $client->client_type_id) == $type->id ? 'selected' : '' }}>
+                                                {{ $type->title }}
                                             </option>
                                         @endforeach
                                     </select>
+                                </div>
 
+                                <!-- الجنس -->
+                                <div class="col-lg-3 col-md-6">
+                                    <label class="form-label">النوع</label>
+                                    <select name="gender" id="gender" class="form-select">
+                                        <option value="">اختر النوع</option>
+                                        <option value="male"
+                                            {{ old('gender', $client->gender) == 'male' ? 'selected' : '' }}>ذكر</option>
+                                        <option value="female"
+                                            {{ old('gender', $client->gender) == 'female' ? 'selected' : '' }}>أنثى
+                                        </option>
+                                    </select>
                                 </div>
 
                                 <div class="mb-3 col-lg-3">
@@ -242,23 +239,3 @@
         </div>
     </div>
 @endsection
-@push('scripts')
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const typeSelect = document.getElementById("type");
-            const genderSelect = document.getElementById("gender");
-
-            function toggleGender() {
-                if (parseInt(typeSelect.value) === {{ \App\Enums\ClientType::Company->value }}) {
-                    genderSelect.disabled = true;
-                    genderSelect.value = "";
-                } else {
-                    genderSelect.disabled = false;
-                }
-            }
-
-            toggleGender();
-            typeSelect.addEventListener("change", toggleGender);
-        });
-    </script>
-@endpush

@@ -29,7 +29,7 @@
                         <div class="row">
                             <div class="mb-3 col-lg-4">
                                 <x-dynamic-search name="client_id" label="الشركة" column="cname" model="App\Models\Client"
-                                    placeholder="ابحث عن شركة..." :required="true" :selected="$contact->client_id" :filters="['type' => [2, 3, 4, 5, 6]]" />
+                                    placeholder="ابحث عن شركة..." :required="true" :selected="$contact->client_id" />
                             </div>
 
                             <div class="mb-3 col-lg-4">

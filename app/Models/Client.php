@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\ClientType;
 use Modules\CRM\Models\Lead;
+use Modules\CRM\Models\ClientType;
 use Modules\Branches\Models\Branch;
 use Modules\Inquiries\Models\Inquiry;
 use Modules\CRM\Models\ClientCategory;
@@ -40,7 +40,6 @@ class Client extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
-        'type' => ClientType::class,
     ];
 
 

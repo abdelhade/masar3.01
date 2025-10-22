@@ -33,7 +33,6 @@ class ClientController extends Controller
 
     public function create()
     {
-
         $branches = userBranches();
         $clientTypes = ClientType::all();
         $categories = ClientCategory::all();

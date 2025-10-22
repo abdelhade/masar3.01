@@ -40,13 +40,14 @@ class StatisticsController extends Controller
     private function getClientStatistics()
     {
         // Single query to get all client statistics
-        $clientStats = Client::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN type = "person" THEN 1 ELSE 0 END) as person_count,
-            SUM(CASE WHEN type = "company" THEN 1 ELSE 0 END) as company_count,
-            SUM(CASE WHEN MONTH(created_at) = ? AND YEAR(created_at) = ? THEN 1 ELSE 0 END) as new_this_month
-        ', [Carbon::now()->month, Carbon::now()->year])
+        $clientStats = Client::leftJoin('client_types', 'clients.client_type_id', '=', 'client_types.id')
+            ->selectRaw('
+        COUNT(*) as total,
+        SUM(CASE WHEN client_types.title = "person" THEN 1 ELSE 0 END) as person_count,
+        SUM(CASE WHEN client_types.title = "company" THEN 1 ELSE 0 END) as company_count
+    ')
             ->first();
+
 
         // Get active clients count with single query
         $activeClients = Client::whereExists(function ($query) {

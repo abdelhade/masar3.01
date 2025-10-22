@@ -159,7 +159,7 @@
                                         @foreach ($clientTypes as $type)
                                             <option value="{{ $type->id }}"
                                                 {{ old('client_type_id') == $type->id ? 'selected' : '' }}>
-                                                {{ $type->name }}
+                                                {{ $type->title }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -222,25 +222,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const typeSelect = document.getElementById("type");
-            const genderSelect = document.getElementById("gender");
-
-            function toggleGender() {
-
-                if (parseInt(typeSelect.value) === 2) {
-                    genderSelect.disabled = true;
-                    genderSelect.value = "";
-                } else {
-                    genderSelect.disabled = false;
-                }
-            }
-
-            toggleGender();
-            typeSelect.addEventListener("change", toggleGender);
-        });
-    </script>
-@endpush
