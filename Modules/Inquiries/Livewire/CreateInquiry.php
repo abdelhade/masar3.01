@@ -3,13 +3,12 @@
 namespace Modules\Inquiries\Livewire;
 
 use Livewire\Component;
-use App\Enums\ClientType;
+use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\{City, Town, Client};
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\On;
 use Modules\CRM\Models\ClientCategory;
 use Modules\Inquiries\Models\ProjectSize;
 use Modules\Progress\Models\ProjectProgress;
@@ -158,17 +157,48 @@ class CreateInquiry extends Component
 
     public function mount()
     {
-        $this->engineers = Client::where('type', ClientType::ENGINEER->value)->get()->toArray();
+        try {
+            DB::beginTransaction();
+            $clientTypes = [
+                ['id' => 1, 'title' => 'Person'],
+                ['id' => 2, 'title' => 'Main Contractor'],
+                ['id' => 3, 'title' => 'Consultant'],
+                ['id' => 4, 'title' => 'Owner'],
+                ['id' => 5, 'title' => 'Engineer'],
+            ];
+
+            foreach ($clientTypes as $type) {
+                \Modules\CRM\Models\ClientType::firstOrCreate(
+                    ['title' => $type['title']], // البحث بناءً على العنوان
+                    [
+                        'id' => $type['id'],
+                        'title' => $type['title'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                        'branch_id' => Auth::user()->branch_id ?? 1,
+                    ]
+                );
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to initialize client types: ' . $e->getMessage());
+        }
+        $this->engineers = Client::with('clientType')->get()->toArray();
         $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
         $this->projectSizeOptions = ProjectSize::pluck('name', 'id')->toArray();
         $this->inquiryDate = now()->format('Y-m-d');
         $this->workTypes = WorkType::where('is_active', true)->whereNull('parent_id')->get()->toArray();
         $this->inquirySources = InquirySource::where('is_active', true)->whereNull('parent_id')->get()->toArray();
         $this->projects = ProjectProgress::all()->toArray();
-        $this->clients = Client::whereIn('type', [ClientType::Person->value, ClientType::Company->value])->get()->toArray();
-        $this->mainContractors = Client::where('type', ClientType::MainContractor->value)->get()->toArray();
-        $this->consultants = Client::where('type', ClientType::Consultant->value)->get()->toArray();
-        $this->owners = Client::where('type', ClientType::Owner->value)->get()->toArray();
+
+        $this->clients = Client::with('clientType')->get()->toArray();
+        $this->mainContractors = Client::with('clientType')->get()->toArray();
+        $this->consultants = Client::with('clientType')->get()->toArray();
+        $this->owners = Client::with('clientType')->get()->toArray();
+        $this->engineers = Client::with('clientType')->get()->toArray();
+
         $this->statusOptions = Inquiry::getStatusOptions();
         $this->statusForKonOptions = Inquiry::getStatusForKonOptions();
         $this->konTitleOptions = Inquiry::getKonTitleOptions();
@@ -718,11 +748,41 @@ class CreateInquiry extends Component
         $this->tempComments = array_values($this->tempComments);
     }
 
-    public function openClientModal($type)
+    public function openClientModal($type = null)
     {
-        $this->modalClientType = $type;
-        $clientTypeEnum = ClientType::tryFrom($type);
-        $this->modalClientTypeLabel = $clientTypeEnum ? $clientTypeEnum->label() : 'عميل';
+        if (!$type) {
+            // session()->flash('error', 'يرجى تحديد نوع العميل');
+            return;
+        }
+
+        $clientTypes = [
+            1 => 'Person',
+            2 => 'Main Contractor',
+            3 => 'Consultant',
+            4 => 'Owner',
+            5 => 'Engineer',
+        ];
+
+        if (!isset($clientTypes[$type])) {
+            // session()->flash('error', 'نوع العميل غير صالح');
+            return;
+        }
+
+        // تحقق إذا كان النوع موجود بناءً على العنوان
+        $clientType = \Modules\CRM\Models\ClientType::firstOrCreate(
+            ['title' => $clientTypes[$type]],
+            [
+                'id' => $type,
+                'title' => $clientTypes[$type],
+                'created_at' => now(),
+                'updated_at' => now(),
+                'branch_id' => Auth::user()->branch_id ?? 1,
+            ]
+        );
+
+        $this->modalClientType = $clientType->id;
+        $this->modalClientTypeLabel = $clientType->title;
+
         $this->newClient = [
             'cname' => '',
             'email' => '',
@@ -739,11 +799,13 @@ class CreateInquiry extends Component
             'info' => '',
             'job' => '',
             'gender' => '',
+            'client_category_id' => null,
             'is_active' => true,
-            'type' => $type,
+            'client_type_id' => $clientType->id,
         ];
 
         $this->resetValidation();
+        $this->dispatch('openClientModal');
     }
 
     public function saveNewClient()
@@ -753,15 +815,21 @@ class CreateInquiry extends Component
             'newClient.phone' => 'required|string|max:20',
             'newClient.email' => 'nullable|email|unique:clients,email',
             'newClient.gender' => 'required|in:male,female',
+            'modalClientType' => 'required|integer|min:1',
         ], [
             'newClient.cname.required' => 'اسم العميل مطلوب',
             'newClient.phone.required' => 'رقم الهاتف مطلوب',
             'newClient.email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
             'newClient.email.unique' => 'البريد الإلكتروني مستخدم بالفعل',
+            'modalClientType.required' => 'نوع العميل مطلوب',
+            'modalClientType.integer' => 'نوع العميل يجب أن يكون رقمًا صحيحًا',
         ]);
 
         try {
             DB::beginTransaction();
+
+            $clientType = \Modules\CRM\Models\ClientType::findOrFail($this->modalClientType);
+
             $client = Client::create([
                 'cname' => $this->newClient['cname'],
                 'email' => $this->newClient['email'],
@@ -778,71 +846,75 @@ class CreateInquiry extends Component
                 'info' => $this->newClient['info'],
                 'job' => $this->newClient['job'],
                 'gender' => $this->newClient['gender'],
-                'client_category_id' => $this->newClient['client_category_id'],
+                'client_category_id' => $this->newClient['client_category_id'] ?? null,
                 'is_active' => $this->newClient['is_active'] ?? true,
-                'type' => $this->modalClientType,
+                'client_type_id' => $this->modalClientType,
                 'created_by' => Auth::id(),
                 'tenant' => Auth::user()->tenant ?? 0,
                 'branch' => Auth::user()->branch ?? 0,
                 'branch_id' => Auth::user()->branch_id ?? 1,
             ]);
-
-            Log::info('القيم عند الحفظ:', $this->newClient);
-
-            switch ($this->modalClientType) {
-                case ClientType::Person->value:
-                case ClientType::Company->value:
+            switch ($clientType->title) {
+                case 'Person':
+                case 'Company':
                     $this->clientId = $client->id;
                     break;
-                case ClientType::MainContractor->value:
+                case 'Main Contractor':
                     $this->mainContractorId = $client->id;
                     break;
-                case ClientType::Consultant->value:
+                case 'Consultant':
                     $this->consultantId = $client->id;
                     break;
-                case ClientType::Owner->value:
+                case 'Owner':
                     $this->ownerId = $client->id;
                     break;
-                case ClientType::ENGINEER->value:
+                case 'Engineer':
                     $this->assignedEngineer = $client->id;
                     break;
+                default:
+                    $this->clientId = $client->id;
             }
 
             DB::commit();
 
             $this->dispatch('closeClientModal');
-
-            // Force refresh the component
             $this->refreshClientLists();
 
-            session()->flash('message', 'تم إضافة ' . $this->modalClientTypeLabel . ' بنجاح');
+            session()->flash('message', 'تم إضافة ' . $clientType->title . ' بنجاح');
 
             $this->resetClientForm();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('خطأ في إضافة عميل: ' . $e->getMessage());
-            session()->flash('error', 'حدث خطأ أثناء إضافة ' . $this->modalClientTypeLabel . ': ' . $e->getMessage());
+            session()->flash('error', 'حدث خطأ أثناء إضافة ');
         }
     }
 
     private function refreshClientLists()
     {
-        $this->clients = Client::whereIn('type', [ClientType::Person->value, ClientType::Company->value])->get()->toArray();
-        $this->mainContractors = Client::where('type', ClientType::MainContractor->value)->get()->toArray();
-        $this->consultants = Client::where('type', ClientType::Consultant->value)->get()->toArray();
-        $this->owners = Client::where('type', ClientType::Owner->value)->get()->toArray();
-        $this->engineers = Client::where('type', ClientType::ENGINEER->value)->get()->toArray();
+        $allClients = Client::with('clientType')->get()->toArray();
+
+        $this->clients = $allClients;
+        $this->mainContractors = $allClients;
+        $this->consultants = $allClients;
+        $this->owners = $allClients;
+        $this->engineers = $allClients; // تأكد إن المهندسين بيتحدثوا
         $this->clientCategories = ClientCategory::all()->toArray();
     }
 
     private function getWireModelForClientType()
     {
-        return match ($this->modalClientType) {
-            ClientType::Person->value, ClientType::Company->value => 'clientId',
-            ClientType::MainContractor->value => 'mainContractorId',
-            ClientType::Consultant->value => 'consultantId',
-            ClientType::Owner->value => 'ownerId',
-            ClientType::ENGINEER->value => 'assignedEngineer',
+        $clientType = \Modules\CRM\Models\ClientType::find($this->modalClientType);
+
+        if (!$clientType) {
+            return 'clientId'; // default
+        }
+
+        return match ($clientType->title) {
+            'Person', 'Company' => 'clientId',
+            'Main Contractor' => 'mainContractorId',
+            'Consultant' => 'consultantId',
+            'Owner' => 'ownerId',
+            'Engineer' => 'assignedEngineer',
             default => 'clientId'
         };
     }
@@ -866,8 +938,10 @@ class CreateInquiry extends Component
             'job' => '',
             'gender' => '',
             'is_active' => true,
-            'type' => null,
+            'client_type_id' => null,
         ];
+        $this->modalClientType = null;
+        $this->modalClientTypeLabel = '';
     }
 
     public function save()
