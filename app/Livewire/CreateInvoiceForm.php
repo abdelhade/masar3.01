@@ -9,6 +9,7 @@ use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use App\Services\SaveInvoiceService;
 use Modules\Settings\Models\PublicSetting;
+use Modules\Invoices\Models\InvoiceTemplate;
 use App\Models\{OperHead, OperationItems, AccHead, Price, Item, Barcode, JournalDetail};
 
 class CreateInvoiceForm extends Component
@@ -99,6 +100,10 @@ class CreateInvoiceForm extends Component
 
     public $recommendedItems = [];
 
+    public $availableTemplates;
+    public $selectedTemplateId = null;
+    public $currentTemplate = null;
+
     public $titles = [
         10 => 'فاتوره مبيعات',
         11 => 'فاتورة مشتريات',
@@ -127,6 +132,64 @@ class CreateInvoiceForm extends Component
         $this->op2 = request()->get('op2');
 
         $this->initializeInvoice($type, $hash);
+        $this->loadTemplatesForType();
+    }
+
+    public function loadTemplatesForType()
+    {
+        $this->availableTemplates = InvoiceTemplate::getForType($this->type);
+
+        // تحديد النموذج الافتراضي
+        $defaultTemplate = InvoiceTemplate::getDefaultForType($this->type);
+
+        if ($defaultTemplate) {
+            $this->selectedTemplateId = $defaultTemplate->id;
+            $this->currentTemplate = $defaultTemplate;
+        } elseif ($this->availableTemplates->isNotEmpty()) {
+            $firstTemplate = $this->availableTemplates->first();
+            $this->selectedTemplateId = $firstTemplate->id;
+            $this->currentTemplate = $firstTemplate;
+        }
+    }
+
+    /**
+     * تغيير النموذج المختار
+     */
+    public function updatedSelectedTemplateId($templateId)
+    {
+        $this->currentTemplate = InvoiceTemplate::find($templateId);
+
+        if (!$this->currentTemplate) {
+            $this->currentTemplate = InvoiceTemplate::getDefaultForType($this->type);
+        }
+
+        $this->dispatch('template-changed', [
+            'template' => $this->currentTemplate->toArray()
+        ]);
+    }
+
+    /**
+     * التحقق من ظهور عمود معين
+     */
+    public function shouldShowColumn(string $columnKey): bool
+    {
+        if (!$this->currentTemplate) {
+            return true; // إذا لم يكن هناك نموذج، أظهر كل الأعمدة
+        }
+
+        return $this->currentTemplate->hasColumn($columnKey);
+    }
+
+    /**
+     * الحصول على الأعمدة المرئية
+     */
+    public function getVisibleColumns(): array
+    {
+        if (!$this->currentTemplate) {
+            return [];
+        }
+
+        return $this->currentTemplate->visible_columns ?? [];
     }
 
     public function handleAccountCreated($data)

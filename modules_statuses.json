@@ -17,5 +17,6 @@
     "Depreciation": true,
     "Checks": true,
     "App": true,
-    "Manufacturing": true
+    "Manufacturing": true,
+    "Invoices": true
 }

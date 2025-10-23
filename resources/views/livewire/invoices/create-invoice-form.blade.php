@@ -4,9 +4,27 @@
             <form wire:submit="saveForm">
 
                 @include('components.invoices.invoice-head')
-
+                {{-- أضف هذا في بداية الـ row الخاص بالبحث في الـ View --}}
                 <div class="row">
-                    <div class="col-lg-4 mb-3" style="position: relative;">
+
+                    @if ($availableTemplates->isNotEmpty())
+                        <div class="col-lg-1">
+                            <label for="selectedTemplate">{{ __('نموذج الفاتورة') }}</label>
+                            <select wire:model.live="selectedTemplateId" id="selectedTemplate"
+                                class="form-control @error('selectedTemplateId') is-invalid @enderror">
+                                @foreach ($availableTemplates as $template)
+                                    <option value="{{ $template->id }}">
+                                        {{ $template->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('selectedTemplateId')
+                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                            @enderror
+                        </div>
+                    @endif
+
+                    <div class="col-lg-3 mb-3" style="position: relative;">
                         <label>ابحث عن صنف</label>
                         <input type="text" wire:model.live="searchTerm" class="form-control frst"
                             placeholder="ابدأ بكتابة اسم الصنف..." autocomplete="off"
