@@ -192,4 +192,8 @@ return [
 
     'attributes' => [],
 
+    // KPI related messages
+    'kpi_weights_total' => 'مجموع الأوزان النسبية لمعدلات الأداء يجب أن يكون 100% بالضبط.',
+    'kpi_weights_required' => 'يجب تحديد الوزن النسبي لمعدل الأداء المحدد.',
+
 ];

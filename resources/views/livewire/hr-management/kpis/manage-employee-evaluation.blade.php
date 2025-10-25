@@ -50,25 +50,40 @@ new class extends Component {
                 })
                 ->latest()
                 ->paginate(10),
-            'kpis' => Kpi::all(),
+            'kpis' => $this->employee_id ? Employee::find($this->employee_id)?->kpis ?? collect() : collect(),
         ];
     }
 
     public function calculateTotalScore()
     {
-        $this->total_score = array_sum($this->scores);
+        $totalScore = 0;
+        if ($this->employee_id) {
+            $employee = Employee::find($this->employee_id);
+            if ($employee) {
+                foreach ($this->scores as $kpi_id => $score) {
+                    $kpi = $employee->kpis()->where('kpi_id', $kpi_id)->first();
+                    if ($kpi) {
+                        $weight = $kpi->pivot->weight_percentage;
+                        $contribution = ($score / 100) * $weight;
+                        $totalScore += $contribution;
+                    }
+                }
+            }
+        }
+        $this->total_score = round(min($totalScore, 100), 2);
         $this->calculateFinalRating();
     }
 
     public function calculateFinalRating()
     {
         $this->final_rating = match (true) {
-            $this->total_score >= 60 => __('ممتاز'),
-            $this->total_score >= 50 => __('جيد جدا'),
-            $this->total_score >= 40 => __('جيد'),
-            $this->total_score >= 30 => __('مقبول'),
-            $this->total_score >= 20 => __('ضعيف'),
-            default => __('ضعيف'),
+            $this->total_score >= 85 => __('ممتاز'),
+            $this->total_score >= 75 => __('جيد جدا'),
+            $this->total_score >= 60 => __('جيد'),
+            $this->total_score >= 50 => __('مقبول'),
+            $this->total_score >= 35 => __('ضعيف'),
+            $this->total_score >= 20 => __('ضعيف جدا'),
+            default => __('غير مقبول'),
         };
     }
 
@@ -94,7 +109,7 @@ new class extends Component {
             'evaluation_period_from' => 'required|date',
             'evaluation_period_to' => 'required|date|after:evaluation_period_from',
             'direct_manager' => 'nullable|string|max:255',
-            'scores.*' => 'required|integer|min:1|max:50',
+            'scores.*' => 'required|numeric|min:0|max:100',
         ]);
 
         $evaluation = Employee_Evaluation::create([
@@ -110,8 +125,8 @@ new class extends Component {
             $evaluation->kpis()->attach($kpi_id, ['score' => $score, 'notes' => $this->notes[$kpi_id] ?? '']);
         }
         session()->flash('message', __('تم حفظ التقييم بنجاح'));
+        $this->resetForm();
         $this->dispatch('hide-evaluation-modal');
-        $this->reset();
     }
 
     public function edit($id)
@@ -141,7 +156,7 @@ new class extends Component {
             'evaluation_period_from' => 'required|date',
             'evaluation_period_to' => 'required|date|after:evaluation_period_from',
             'direct_manager' => 'nullable|string|max:255',
-            'scores.*' => 'required|integer|min:1|max:50',
+            'scores.*' => 'required|numeric|min:0|max:100',
         ]);
 
         $evaluation = Employee_Evaluation::find($this->evaluationId);
@@ -160,7 +175,7 @@ new class extends Component {
         }
 
         $this->showEditModal = false;
-        $this->reset();
+        $this->resetForm();
         session()->flash('message', __('تم تحديث التقييم بنجاح'));
         $this->dispatch('hide-evaluation-modal');
     }
@@ -201,6 +216,24 @@ new class extends Component {
         $this->showViewModal = false;
         $this->viewEvaluation = null;
         $this->dispatch('hide-view-modal');
+    }
+
+    public function resetForm()
+    {
+        $this->employee_id = '';
+        $this->evaluation_date = now()->format('Y-m-d');
+        $this->direct_manager = '';
+        $this->job_title = '';
+        $this->department = '';
+        $this->evaluation_period_from = now()->startOfMonth()->format('Y-m-d');
+        $this->evaluation_period_to = now()->endOfMonth()->format('Y-m-d');
+        $this->total_score = 0;
+        $this->final_rating = '';
+        $this->scores = [];
+        $this->notes = [];
+        $this->selectedEvaluation = null;
+        $this->showEditModal = false;
+        $this->evaluationId = null;
     }
 }; ?>
 <div>
@@ -386,7 +419,9 @@ new class extends Component {
                                             <th>#</th>
                                             <th>{{ __('المعيار') }}</th>
                                             <th>{{ __('الوصف') }}</th>
-                                            <th>{{ __('التقييم') }} (1-5)</th>
+                                            <th>{{ __('الوزن') }}</th>
+                                            <th>{{ __('التقييم') }} (0-100)</th>
+                                            <th>{{ __('المساهمة') }}</th>
                                             <th>{{ __('ملاحظات') }}</th>
                                         </tr>
                                     </thead>
@@ -396,13 +431,25 @@ new class extends Component {
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $kpi->name }}</td>
                                                 <td>{{ $kpi->description }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">{{ $kpi->pivot->weight_percentage }}%</span>
+                                                </td>
                                                 <td>
                                                     <input type="number" wire:model="scores.{{ $kpi->id }}"
                                                         wire:change="calculateTotalScore" class="form-control"
-                                                        min="1" max="5">
+                                                        min="0" max="100" step="1">
                                                     @error('scores.' . $kpi->id)
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
+                                                </td>
+                                                <td class="text-center">
+                                                    @if(isset($scores[$kpi->id]) && $scores[$kpi->id] !== '')
+                                                        <span class="badge bg-success">
+                                                            {{ number_format(($scores[$kpi->id] / 100) * $kpi->pivot->weight_percentage, 2) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <input type="text" class="form-control"
@@ -413,7 +460,7 @@ new class extends Component {
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <td colspan="3" class="text-end">
+                                            <td colspan="4" class="text-end">
                                                 <strong>{{ __('المجموع الكلي') }}</strong>
                                             </td>
                                             <td class="text-center">
@@ -422,6 +469,7 @@ new class extends Component {
                                             <td class="text-center">
                                                 <strong>{{ $final_rating }}</strong>
                                             </td>
+                                            <td></td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -475,47 +523,77 @@ new class extends Component {
                             <!-- Employee Information -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <h6 class="text-primary mb-3">{{ __('معلومات الموظف') }}</h6>
+                                    <h6 class="text-primary mb-3">
+                                        <i class="las la-user me-2"></i>{{ __('معلومات الموظف') }}
+                                    </h6>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('الاسم') }}:</label>
-                                    <p class="form-control-plaintext">{{ $viewEvaluation->employee->name }}</p>
+                                <div class="col-md-4">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-muted mb-2">{{ __('الاسم') }}</h6>
+                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->name }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('المسمى الوظيفي') }}:</label>
-                                    <p class="form-control-plaintext">{{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
+                                <div class="col-md-4">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-muted mb-2">{{ __('المسمى الوظيفي') }}</h6>
+                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('القسم') }}:</label>
-                                    <p class="form-control-plaintext">{{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('المدير المباشر') }}:</label>
-                                    <p class="form-control-plaintext">{{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
+                                <div class="col-md-4">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-muted mb-2">{{ __('القسم') }}</h6>
+                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Evaluation Information -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <h6 class="text-primary mb-3">{{ __('معلومات التقييم') }}</h6>
+                                    <h6 class="text-primary mb-3">
+                                        <i class="las la-calendar me-2"></i>{{ __('معلومات التقييم') }}
+                                    </h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-muted mb-2">{{ __('تاريخ التقييم') }}</h6>
+                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-muted mb-2">{{ __('المدير المباشر') }}</h6>
+                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('تاريخ التقييم') }}:</label>
-                                    <p class="form-control-plaintext">{{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('فترة التقييم') }}:</label>
-                                    <p class="form-control-plaintext">
-                                        {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} - {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
-                                    </p>
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-muted mb-2">{{ __('فترة التقييم') }}</h6>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} - {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- KPI Scores -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <h6 class="text-primary mb-3">{{ __('نتائج التقييم') }}</h6>
+                                    <h6 class="text-primary mb-3">
+                                        <i class="las la-chart-bar me-2"></i>{{ __('نتائج التقييم') }}
+                                    </h6>
                                 </div>
                                 <div class="col-12">
                                     <div class="table-responsive">
@@ -525,18 +603,33 @@ new class extends Component {
                                                     <th>#</th>
                                                     <th>{{ __('المعيار') }}</th>
                                                     <th>{{ __('الوصف') }}</th>
+                                                    <th>{{ __('الوزن') }}</th>
                                                     <th>{{ __('الدرجة') }}</th>
+                                                    <th>{{ __('المساهمة') }}</th>
                                                     <th>{{ __('ملاحظات') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($viewEvaluation->kpis as $index => $kpi)
+                                                    @php
+                                                        // Get the employee's KPI with weight from employee_kpis table
+                                                        $employeeKpi = $viewEvaluation->employee->kpis()->where('kpi_id', $kpi->id)->first();
+                                                        $weight = $employeeKpi ? $employeeKpi->pivot->weight_percentage : 0;
+                                                        $score = $kpi->pivot->score ?? 0;
+                                                        $contribution = ($score / 100) * $weight;
+                                                    @endphp
                                                     <tr>
                                                         <td>{{ $index + 1 }}</td>
                                                         <td>{{ $kpi->name }}</td>
                                                         <td>{{ $kpi->description }}</td>
                                                         <td class="text-center">
-                                                            <span class="badge bg-primary fs-6">{{ $kpi->pivot->score }}</span>
+                                                            <span class="badge bg-info fs-6">{{ $weight }}%</span>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-primary fs-6">{{ $score }}</span>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-success fs-6">{{ number_format($contribution, 2) }}</span>
                                                         </td>
                                                         <td>{{ $kpi->pivot->notes ?? __('لا توجد ملاحظات') }}</td>
                                                     </tr>
@@ -544,15 +637,16 @@ new class extends Component {
                                             </tbody>
                                             <tfoot>
                                                 <tr class="table-success">
-                                                    <td colspan="3" class="text-end">
-                                                        <strong>{{ __('المجموع الكلي') }}</strong>
+                                                    <td colspan="4" class="text-end">
+                                                        <strong class="fs-5">{{ __('المجموع الكلي') }}</strong>
                                                     </td>
                                                     <td class="text-center">
-                                                        <strong class="fs-5">{{ $viewEvaluation->total_score }}</strong>
+                                                        <strong class="fs-4 text-primary">{{ number_format($viewEvaluation->total_score, 2) }}</strong>
                                                     </td>
                                                     <td class="text-center">
-                                                        <strong class="fs-5">{{ $viewEvaluation->final_rating }}</strong>
+                                                        <span class="badge bg-success fs-5 px-3 py-2">{{ $viewEvaluation->final_rating }}</span>
                                                     </td>
+                                                    <td></td>
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -599,6 +693,11 @@ new class extends Component {
 
             window.addEventListener('hide-view-modal', event => {
                 viewModal.hide();
+            });
+
+            // Reset form when modal is hidden
+            document.getElementById('addEvaluationModal').addEventListener('hidden.bs.modal', function () {
+                @this.call('resetForm');
             });
         });
     </script>

@@ -14,4 +14,9 @@ class Kpi extends Model
     {
         return $this->belongsToMany(Employee_Evaluation::class, 'employeeEvaluation_kpis', 'kpi_id', 'employee_evaluation_id')->withPivot('score', 'notes');
     }
+
+    public function employees(): BelongsToMany
+    {
+        return $this->belongsToMany(Employee::class, 'employee_kpis', 'kpi_id', 'employee_id')->withPivot('weight_percentage');
+    }
 }
