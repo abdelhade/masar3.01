@@ -242,29 +242,33 @@ class Employee extends Model implements HasMedia
     {
         return $this->belongsToMany(Kpi::class, 'employee_kpis', 'employee_id', 'kpi_id')->withPivot('weight_percentage');
     }
-    
+
     /**
-     * Get the first media URL with Laragon URL correction
+     * Get the employee's image URL or fallback to placeholder
+     * Works correctly in both local (Laragon) and production environments
+     * Automatically detects and handles production symlink issues
      */
-    public function getFirstMediaUrlFixed($collectionName = 'default')
+    public function getImageUrlAttribute(): ?string
     {
-        $url = $this->getFirstMediaUrl($collectionName);
+        $media = $this->getFirstMedia('employee_images');
         
-        if ($url && str_contains($url, 'localhost')) {
-            // Get the current request information
-            $currentHost = request()->getHost();
-            $currentPort = request()->getPort();
-            $currentScheme = request()->getScheme();
-            
-            // Build the correct URL
-            $portSuffix = ($currentPort && $currentPort != 80 && $currentPort != 443) ? ':' . $currentPort : '';
-            $correctBaseUrl = $currentScheme . '://' . $currentHost . $portSuffix;
-            
-            // Replace the localhost URL with the correct one
-            $url = str_replace('http://localhost', $correctBaseUrl, $url);
+        // If no media exists, return the fallback URL
+        if (!$media) {
+            return asset('assets/images/avatar-placeholder.svg');
+        }
+        
+        // Get the standard URL from Spatie
+        $url = $media->getUrl();
+        
+        // For production environments, check if symlink is working
+        if (
+            !str_contains(config('app.url'), 'localhost') &&
+            !str_contains(config('app.url'), 'massar1.02.test:81')
+        ) {
+            $baseUrl = config('app.url');
+            $url = $baseUrl . '/storage/app/public/' . $media->id . '/' . $media->file_name;
         }
         
         return $url;
     }
-    
 }

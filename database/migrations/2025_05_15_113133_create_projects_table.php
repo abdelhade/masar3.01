@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
-
             $table->unsignedBigInteger('client_id')->nullable();
             $table->tinyInteger('working_days')->default(5);
             $table->tinyInteger('daily_work_hours')->default(8);

@@ -52,7 +52,7 @@ new class extends Component {
     public $kpi_ids = [],
         $kpi_weights = [];
     public $selected_kpi_id = '';
-    
+
     // Image URL for current employee
     public $currentImageUrl = null;
 
@@ -140,6 +140,9 @@ new class extends Component {
         $this->jobs = EmployeesJob::all();
         $this->shifts = Shift::all();
         $this->kpis = Kpi::all();
+        $this->currentImageUrl = null;
+        $this->selectedFileName = '';
+        $this->selectedFileSize = '';
     }
 
     public function updatingSearch()
@@ -149,10 +152,7 @@ new class extends Component {
 
     public function getEmployeesProperty()
     {
-        return Employee::with('media')
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
-            ->orderByDesc('id')
-            ->paginate(10);
+        return Employee::with('media')->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))->orderByDesc('id')->paginate(10);
     }
 
     public function create()
@@ -169,10 +169,10 @@ new class extends Component {
         $this->resetValidation();
         $employee = Employee::with('media')->findOrFail($id);
         $this->employeeId = $employee->id;
-        
-        // Set current image URL for Alpine.js with URL correction for Laragon
-        $this->currentImageUrl = $employee->getFirstMediaUrlFixed('employee_images') ?: null;
-        
+
+        // Set current image URL using the accessor (works in both local and production)
+        $this->currentImageUrl = $employee->image_url;
+
         foreach (['name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'kpi_ids', 'kpi_weights'] as $field) {
             if (in_array($field, ['date_of_birth', 'date_of_hire', 'date_of_fire'])) {
                 $this->$field = $employee->$field ? $employee->$field->format('Y-m-d') : null;
@@ -180,7 +180,7 @@ new class extends Component {
                 $this->$field = $employee->$field;
             }
         }
-        
+
         // Clear any previous upload and don't load password in edit mode - leave it empty for security
         $this->password = null;
 
@@ -238,7 +238,7 @@ new class extends Component {
                     unset($validated['password']);
                 } else {
                     // In create mode, password is required
-                unset($validated['password']);
+                    unset($validated['password']);
                 }
             }
 
@@ -287,11 +287,9 @@ new class extends Component {
                 if ($this->isEdit) {
                     $employee->clearMediaCollection('employee_images');
                 }
-                
+
                 // Add new image
-                $employee->addMedia($imageFile->getRealPath())
-                    ->usingName($imageFile->getClientOriginalName())
-                    ->toMediaCollection('employee_images');
+                $employee->addMedia($imageFile->getRealPath())->usingName($imageFile->getClientOriginalName())->toMediaCollection('employee_images');
             }
             $this->showModal = false;
         } catch (\Throwable $th) {
@@ -309,7 +307,7 @@ new class extends Component {
 
     public function resetEmployeeFields()
     {
-        foreach (['employeeId', 'name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'password', 'additional_hour_calculation', 'additional_day_calculation', 'selected_kpi_id'] as $field) {
+        foreach (['employeeId', 'name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'password', 'additional_hour_calculation', 'additional_day_calculation', 'selected_kpi_id', 'selectedFileName', 'selectedFileSize'] as $field) {
             $this->$field = null;
         }
 
@@ -329,6 +327,7 @@ new class extends Component {
     {
         $this->showViewModal = false;
         $this->viewEmployee = null;
+        $this->currentImageUrl = null;
     }
 
     public function closeModal()
@@ -337,7 +336,7 @@ new class extends Component {
         $this->resetValidation();
         $this->resetEmployeeFields();
         $this->image = null;
-        
+        $this->currentImageUrl = null;
     }
 
     public function updated($propertyName)
@@ -359,7 +358,7 @@ new class extends Component {
                 $this->kpi_ids[] = $this->selected_kpi_id;
                 $this->kpi_weights[$this->selected_kpi_id] = 0;
                 $this->selected_kpi_id = '';
-                
+
                 // Dispatch event to clear Alpine.js selection
                 $this->dispatch('kpiAdded');
 
@@ -394,7 +393,7 @@ new class extends Component {
             return $id != $kpiId;
         });
         unset($this->kpi_weights[$kpiId]);
-        
+
         $this->dispatch('notify', [
             'type' => 'success',
             'message' => __('تم حذف معدل الأداء بنجاح.'),
@@ -402,18 +401,16 @@ new class extends Component {
     }
 }; ?>
 
-<div style="font-family: 'Cairo', sans-serif; direction: rtl;" 
-     x-data="employeeManager({
-        showModal: $wire.entangle('showModal'),
-        showViewModal: $wire.entangle('showViewModal'),
-        kpiIds: $wire.entangle('kpi_ids'),
-        kpiWeights: $wire.entangle('kpi_weights'),
-        selectedKpiId: $wire.entangle('selected_kpi_id'),
-        currentImageUrl: $wire.entangle('currentImageUrl'),
-        kpis: @js($kpis),
-        isEdit: $wire.entangle('isEdit')
-     })" 
-     x-init="init()">
+<div style="font-family: 'Cairo', sans-serif; direction: rtl;" x-data="employeeManager({
+    showModal: $wire.entangle('showModal'),
+    showViewModal: $wire.entangle('showViewModal'),
+    kpiIds: $wire.entangle('kpi_ids'),
+    kpiWeights: $wire.entangle('kpi_weights'),
+    selectedKpiId: $wire.entangle('selected_kpi_id'),
+    currentImageUrl: $wire.entangle('currentImageUrl'),
+    kpis: @js($kpis),
+    isEdit: $wire.entangle('isEdit')
+})" x-init="init()">
 
     <!-- Notification Container -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 60px;">
@@ -429,8 +426,7 @@ new class extends Component {
                 x-transition:enter-end="opacity-100 transform translate-x-0"
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100 transform translate-x-0"
-                x-transition:leave-end="opacity-0 transform translate-x-full" 
-                role="alert">
+                x-transition:leave-end="opacity-0 transform translate-x-full" role="alert">
                 <i class="fas me-2"
                     :class="{
                         'fa-check-circle': notification.type === 'success',
@@ -448,7 +444,7 @@ new class extends Component {
                 {{ session('success') }}
             </div>
         @endif
-        
+
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -461,7 +457,7 @@ new class extends Component {
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
                         style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
                 </div>
-                
+
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive" style="overflow-x: auto;">
@@ -547,51 +543,51 @@ new class extends Component {
             <div>
                 <!-- Backdrop -->
                 <div class="modal-backdrop fade show" @click="closeEmployeeModal()"></div>
-                
-                <!-- Modal -->
-                <div class="modal fade show" 
-                     style="display: block; z-index: 1056;" 
-             tabindex="-1"
-             role="dialog"
-                     @click.self="closeEmployeeModal()">
-                    <div class="modal-dialog modal-fullscreen" role="document">
-                <div class="modal-content">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                            <h5 class="modal-title font-family-cairo fw-bold">
-                                <span x-text="isEdit ? '{{ __('تعديل موظف') }}' : '{{ __('إضافة موظف') }}'"></span>
-                        </h5>
-                            <button type="button" class="btn-close m-3" @click="closeEmployeeModal()" aria-label="إغلاق"></button>
-                    </div>
-                        
-                        <div class="modal-body">
-                        @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                            
-                            <form wire:submit.prevent="save" @keydown.enter.prevent="">
-                                @include('livewire.hr-management.employees.partials.employee-form')
-                            </form>
-                                    </div>
 
-                    <!-- Modal Footer -->
-                    <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-secondary btn-md" @click="closeEmployeeModal()">
-                            {{ __('إلغاء') }}
-                        </button>
-                            <button type="button" class="btn btn-primary btn-md" @click="$wire.save()">
-                                <span x-text="isEdit ? '{{ __('تحديث') }}' : '{{ __('حفظ') }}'"></span>
-                        </button>
+                <!-- Modal -->
+                <div class="modal fade show" style="display: block; z-index: 1056;" tabindex="-1" role="dialog"
+                    @click.self="closeEmployeeModal()">
+                    <div class="modal-dialog modal-fullscreen" role="document">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h5 class="modal-title font-family-cairo fw-bold">
+                                    <span
+                                        x-text="isEdit ? '{{ __('تعديل موظف') }}' : '{{ __('إضافة موظف') }}'"></span>
+                                </h5>
+                                <button type="button" class="btn-close m-3" @click="closeEmployeeModal()"
+                                    aria-label="إغلاق"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                @if ($errors->any())
+                                    <div class="alert alert-danger">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                <form wire:submit.prevent="save" @keydown.enter.prevent="">
+                                    @include('livewire.hr-management.employees.partials.employee-form')
+                                </form>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-secondary btn-md"
+                                    @click="closeEmployeeModal()">
+                                    {{ __('إلغاء') }}
+                                </button>
+                                <button type="button" class="btn btn-primary btn-md" @click="$wire.save()">
+                                    <span x-text="isEdit ? '{{ __('تحديث') }}' : '{{ __('حفظ') }}'"></span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
             </div>
         </template>
 
@@ -600,178 +596,287 @@ new class extends Component {
             <div>
                 <!-- Backdrop -->
                 <div class="modal-backdrop fade show" @click="closeViewEmployeeModal()"></div>
-                
-                <!-- Modal -->
-                <div class="modal fade show" 
-                     style="display: block; z-index: 1056;" 
-             tabindex="-1"
-             role="dialog"
-                     @click.self="closeViewEmployeeModal()">
-                    <div class="modal-dialog modal-fullscreen" role="document">
-                <div class="modal-content">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                            <h5 class="modal-title font-family-cairo fw-bold">
-                            {{ __('عرض تفاصيل الموظف') }}
-                        </h5>
-                            <button type="button" class="btn-close m-3" @click="closeViewEmployeeModal()" aria-label="إغلاق"></button>
-                    </div>
-                        
-                    <div class="modal-body">
-                        @if ($viewEmployee)
-                            @include('livewire.hr-management.employees.partials.employee-view')
-                        @else
-                            <div class="alert alert-danger">
-                                <strong>Error:</strong> No employee data loaded
-                            </div>
-                        @endif
-                    </div>
 
-                    <!-- Modal Footer -->
-                    <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-secondary btn-md" @click="closeViewEmployeeModal()">
-                            {{ __('إغلاق') }}
-                        </button>
+                <!-- Modal -->
+                <div class="modal fade show" style="display: block; z-index: 1056;" tabindex="-1" role="dialog"
+                    @click.self="closeViewEmployeeModal()">
+                    <div class="modal-dialog modal-fullscreen" role="document">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h5 class="modal-title font-family-cairo fw-bold">
+                                    {{ __('عرض تفاصيل الموظف') }}
+                                </h5>
+                                <button type="button" class="btn-close m-3" @click="closeViewEmployeeModal()"
+                                    aria-label="إغلاق"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                @if ($viewEmployee)
+                                    @include('livewire.hr-management.employees.partials.employee-view')
+                                @else
+                                    <div class="alert alert-danger">
+                                        <strong>Error:</strong> No employee data loaded
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-secondary btn-md"
+                                    @click="closeViewEmployeeModal()">
+                                    {{ __('إغلاق') }}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                </div>
                 </div>
             </div>
         </template>
-            </div>
-        </div>
+    </div>
+    @foreach ($this->employees as $employee)
+        {{ $employee->id }} - {{ $employee->image_url }} <br>
+    @endforeach
+</div>
 
 <!-- Alpine.js Component Definition -->
 @push('scripts')
-        <script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('employeeManager', (config) => ({
-        // State synced with Livewire
-        showModal: config.showModal,
-        showViewModal: config.showViewModal,
-        kpiIds: config.kpiIds,
-        kpiWeights: config.kpiWeights,
-        selectedKpiId: config.selectedKpiId,
-        currentImageUrl: config.currentImageUrl,
-        isEdit: config.isEdit,
-        
-        // Local state
-        kpis: config.kpis,
-        activeTab: 'personal',
-        notifications: [],
-        imagePreview: null,
-        showPassword: false,
-        
-        // KPI Search state
-        kpiSearch: '',
-        kpiSearchOpen: false,
-        kpiSearchIndex: -1,
-        
-        // Computed
-        get totalKpiWeight() {
-                        let total = 0;
-            this.kpiIds.forEach(kpiId => {
-                total += parseInt(this.kpiWeights[kpiId]) || 0;
-            });
-            return total;
-        },
-        
-        get weightStatus() {
-            if (this.totalKpiWeight === 100) return 'success';
-            if (this.totalKpiWeight > 100) return 'danger';
-            return 'warning';
-        },
-        
-        get weightMessage() {
-            if (this.totalKpiWeight === 100) {
-                return 'ممتاز! تم اكتمال النسبة بنجاح. يمكنك الآن حفظ البيانات.';
-            } else if (this.totalKpiWeight > 100) {
-                return `المجموع الحالي ${this.totalKpiWeight}% أكبر من 100%. يرجى تقليل الأوزان.`;
-                            } else {
-                return `المجموع الحالي ${this.totalKpiWeight}% أقل من 100%. يرجى إكمال الأوزان.`;
-            }
-        },
-        
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('employeeManager', (config) => ({
+                // State synced with Livewire
+                showModal: config.showModal,
+                showViewModal: config.showViewModal,
+                kpiIds: config.kpiIds,
+                kpiWeights: config.kpiWeights,
+                selectedKpiId: config.selectedKpiId,
+                currentImageUrl: config.currentImageUrl,
+                isEdit: config.isEdit,
+
+                // Local state
+                kpis: config.kpis,
+                activeTab: 'personal',
+                notifications: [],
+                imagePreview: null,
+                showPassword: false,
+                selectedFileName: '',
+                selectedFileSize: '',
+                isDragging: false,
+                imageLoading: false,
+
+                // KPI Search state
+                kpiSearch: '',
+                kpiSearchOpen: false,
+                kpiSearchIndex: -1,
+
+                // Computed
+                get totalKpiWeight() {
+                    let total = 0;
+                    this.kpiIds.forEach(kpiId => {
+                        total += parseInt(this.kpiWeights[kpiId]) || 0;
+                    });
+                    return total;
+                },
+
+                get weightStatus() {
+                    if (this.totalKpiWeight === 100) return 'success';
+                    if (this.totalKpiWeight > 100) return 'danger';
+                    return 'warning';
+                },
+
+                get weightMessage() {
+                    if (this.totalKpiWeight === 100) {
+                        return 'ممتاز! تم اكتمال النسبة بنجاح. يمكنك الآن حفظ البيانات.';
+                    } else if (this.totalKpiWeight > 100) {
+                        return `المجموع الحالي ${this.totalKpiWeight}% أكبر من 100%. يرجى تقليل الأوزان.`;
+                    } else {
+                        return `المجموع الحالي ${this.totalKpiWeight}% أقل من 100%. يرجى إكمال الأوزان.`;
+                    }
+                },
+
                 get availableKpis() {
                     return this.kpis.filter(kpi => !this.kpiIds.includes(kpi.id));
                 },
-                
-        get filteredKpis() {
-            if (!this.kpiSearch) return this.availableKpis;
-            const search = this.kpiSearch.toLowerCase();
+
+                get filteredKpis() {
+                    if (!this.kpiSearch) return this.availableKpis;
+                    const search = this.kpiSearch.toLowerCase();
                     return this.availableKpis.filter(kpi =>
-                kpi.name.toLowerCase().includes(search) || 
-                (kpi.description && kpi.description.toLowerCase().includes(search))
+                        kpi.name.toLowerCase().includes(search) ||
+                        (kpi.description && kpi.description.toLowerCase().includes(search))
                     );
                 },
-                
+
                 // Methods
                 init() {
-            // Listen for Livewire notifications
-            this.$wire.on('notify', (data) => {
-                this.addNotification(data.type, data.message);
-            });
-            
-            // Listen for KPI added event to clear selection
-            this.$wire.on('kpiAdded', () => {
-                this.clearKpiSelection();
-                console.log('✅ KPI added, selection cleared');
-            });
-            
-            // Watch for modal body overflow
-            this.$watch('showModal', (value) => {
-                document.body.classList.toggle('modal-open', value);
-            });
-            
-            this.$watch('showViewModal', (value) => {
-                document.body.classList.toggle('modal-open', value);
-            });
-        },
-        
-        addNotification(type, message) {
-            const id = Date.now();
-            this.notifications.push({ id, type, message });
-            setTimeout(() => {
-                this.notifications = this.notifications.filter(n => n.id !== id);
-            }, 3000);
-        },
-        
-        closeEmployeeModal() {
-            this.showModal = false;
-            this.$wire.closeModal();
-            this.resetImagePreview();
-        },
-        
-        closeViewEmployeeModal() {
-            this.showViewModal = false;
-            this.$wire.closeView();
-        },
-        
-        switchTab(tab) {
-            this.activeTab = tab;
-        },
-        
-        // Image handling
-        handleImageChange(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.imagePreview = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        },
-        
-        resetImagePreview() {
-            this.imagePreview = null;
-        },
-        
-        togglePassword() {
-            this.showPassword = !this.showPassword;
-        },
-        
-        // KPI Management
+                    // Listen for Livewire notifications
+                    this.$wire.on('notify', (data) => {
+                        this.addNotification(data.type, data.message);
+                    });
+
+                    // Listen for KPI added event to clear selection
+                    this.$wire.on('kpiAdded', () => {
+                        this.clearKpiSelection();
+                        console.log('✅ KPI added, selection cleared');
+                    });
+
+                    // Watch for modal body overflow
+                    this.$watch('showModal', (value) => {
+                        document.body.classList.toggle('modal-open', value);
+                    });
+
+                    this.$watch('showViewModal', (value) => {
+                        document.body.classList.toggle('modal-open', value);
+                    });
+                },
+
+                addNotification(type, message) {
+                    const id = Date.now();
+                    this.notifications.push({
+                        id,
+                        type,
+                        message
+                    });
+                    setTimeout(() => {
+                        this.notifications = this.notifications.filter(n => n.id !== id);
+                    }, 3000);
+                },
+
+                closeEmployeeModal() {
+                    this.showModal = false;
+                    this.resetImagePreview();
+                    this.$wire.closeModal();
+                },
+
+                closeViewEmployeeModal() {
+                    this.showViewModal = false;
+                    this.$wire.closeView();
+                },
+
+                switchTab(tab) {
+                    this.activeTab = tab;
+                },
+
+                // Image handling
+                handleImageChange(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // Validate file type
+                        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+                        if (!validTypes.includes(file.type)) {
+                            this.addNotification('error',
+                                'نوع الملف غير مدعوم. يرجى اختيار صورة (JPG, PNG, GIF)');
+                            event.target.value = '';
+                            return;
+                        }
+
+                        // Validate file size (2MB = 2 * 1024 * 1024 bytes)
+                        const maxSize = 2 * 1024 * 1024;
+                        if (file.size > maxSize) {
+                            this.addNotification('error',
+                                'حجم الصورة كبير جداً. الحد الأقصى 2 ميجابايت');
+                            event.target.value = '';
+                            return;
+                        }
+
+                        // Set file info
+                        this.selectedFileName = file.name;
+                        this.selectedFileSize = this.formatFileSize(file.size);
+
+                        // Create preview
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.imagePreview = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                handleImageDrop(event) {
+                    const file = event.dataTransfer.files[0];
+                    if (file) {
+                        // Validate file type
+                        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+                        if (!validTypes.includes(file.type)) {
+                            this.addNotification('error',
+                                'نوع الملف غير مدعوم. يرجى اختيار صورة (JPG, PNG, GIF)');
+                            return;
+                        }
+
+                        // Validate file size
+                        const maxSize = 2 * 1024 * 1024;
+                        if (file.size > maxSize) {
+                            this.addNotification('error',
+                                'حجم الصورة كبير جداً. الحد الأقصى 2 ميجابايت');
+                            return;
+                        }
+
+                        // Set file to input and trigger Livewire upload
+                        const input = document.getElementById('employee-image-input');
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        input.files = dataTransfer.files;
+
+                        // Trigger change event for Livewire
+                        input.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+
+                        // Set file info
+                        this.selectedFileName = file.name;
+                        this.selectedFileSize = this.formatFileSize(file.size);
+
+                        // Create preview
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.imagePreview = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+
+                        this.addNotification('success', 'تم اختيار الصورة بنجاح');
+                    }
+                },
+
+                removeImage() {
+                    // Clear preview and file info
+                    this.imagePreview = null;
+                    this.selectedFileName = '';
+                    this.selectedFileSize = '';
+                    this.currentImageUrl = null;
+
+                    // Clear file input
+                    const input = document.getElementById('employee-image-input');
+                    if (input) {
+                        input.value = '';
+                    }
+
+                    // Clear Livewire model
+                    this.$wire.set('image', null);
+
+                    this.addNotification('info', 'تم حذف الصورة');
+                },
+
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+                },
+
+                resetImagePreview() {
+                    this.imagePreview = null;
+                    this.selectedFileName = '';
+                    this.selectedFileSize = '';
+                    this.isDragging = false;
+                    this.imageLoading = false;
+                },
+
+                togglePassword() {
+                    this.showPassword = !this.showPassword;
+                },
+
+                // KPI Management
                 getKpiName(kpiId) {
                     const kpi = this.kpis.find(k => k.id == kpiId);
                     return kpi ? kpi.name : '';
@@ -782,37 +887,36 @@ document.addEventListener('alpine:init', () => {
                     return kpi && kpi.description ? kpi.description.substring(0, 50) + '...' : '';
                 },
 
-        selectKpi(kpi) {
-            this.selectedKpiId = kpi.id;
-            this.kpiSearchOpen = false;
-            this.kpiSearch = '';
-            this.kpiSearchIndex = -1;
-        },
-        
-        clearKpiSelection() {
-            this.selectedKpiId = '';
-            this.kpiSearch = '';
-        },
-        
-        navigateKpiDown() {
-            if (this.kpiSearchIndex < this.filteredKpis.length - 1) {
-                this.kpiSearchIndex++;
-            }
-        },
-        
-        navigateKpiUp() {
-            if (this.kpiSearchIndex > 0) {
-                this.kpiSearchIndex--;
-            }
-        },
-        
-        selectCurrentKpi() {
-            if (this.kpiSearchIndex >= 0 && this.kpiSearchIndex < this.filteredKpis.length) {
-                this.selectKpi(this.filteredKpis[this.kpiSearchIndex]);
+                selectKpi(kpi) {
+                    this.selectedKpiId = kpi.id;
+                    this.kpiSearchOpen = false;
+                    this.kpiSearch = '';
+                    this.kpiSearchIndex = -1;
+                },
+
+                clearKpiSelection() {
+                    this.selectedKpiId = '';
+                    this.kpiSearch = '';
+                },
+
+                navigateKpiDown() {
+                    if (this.kpiSearchIndex < this.filteredKpis.length - 1) {
+                        this.kpiSearchIndex++;
+                    }
+                },
+
+                navigateKpiUp() {
+                    if (this.kpiSearchIndex > 0) {
+                        this.kpiSearchIndex--;
+                    }
+                },
+
+                selectCurrentKpi() {
+                    if (this.kpiSearchIndex >= 0 && this.kpiSearchIndex < this.filteredKpis.length) {
+                        this.selectKpi(this.filteredKpis[this.kpiSearchIndex]);
                     }
                 }
             }));
         });
-        </script>
+    </script>
 @endpush
-

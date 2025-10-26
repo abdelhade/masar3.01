@@ -1,4 +1,4 @@
-{{-- Employee Form with Alpine.js Tabs --}}
+
 <div class="container-fluid" style="direction: rtl;">
     <!-- Navigation Tabs - Alpine.js -->
     <ul class="nav nav-tabs mb-3" role="tablist">
@@ -7,7 +7,8 @@
                     :class="{ 'active': activeTab === 'personal' }"
                     @click="switchTab('personal')"
                     type="button">
-                <i class="fas fa-user me-2"></i>{{ __('البيانات الشخصية') }}
+                <i class="fas fa-user me-2"></i><?php echo e(__('البيانات الشخصية')); ?>
+
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -15,7 +16,8 @@
                     :class="{ 'active': activeTab === 'location' }"
                     @click="switchTab('location')"
                     type="button">
-                <i class="fas fa-map-marker-alt me-2"></i>{{ __('الموقع') }}
+                <i class="fas fa-map-marker-alt me-2"></i><?php echo e(__('الموقع')); ?>
+
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -23,7 +25,8 @@
                     :class="{ 'active': activeTab === 'job' }"
                     @click="switchTab('job')"
                     type="button">
-                <i class="fas fa-briefcase me-2"></i>{{ __('الوظيفة') }}
+                <i class="fas fa-briefcase me-2"></i><?php echo e(__('الوظيفة')); ?>
+
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -31,7 +34,8 @@
                     :class="{ 'active': activeTab === 'salary' }"
                     @click="switchTab('salary')"
                     type="button">
-                <i class="fas fa-money-bill-wave me-2"></i>{{ __('المرتبات') }}
+                <i class="fas fa-money-bill-wave me-2"></i><?php echo e(__('المرتبات')); ?>
+
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -39,7 +43,8 @@
                     :class="{ 'active': activeTab === 'attendance' }"
                     @click="switchTab('attendance')"
                     type="button">
-                <i class="fas fa-clock me-2"></i>{{ __('الحضور') }}
+                <i class="fas fa-clock me-2"></i><?php echo e(__('الحضور')); ?>
+
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -47,7 +52,8 @@
                     :class="{ 'active': activeTab === 'kpi' }"
                     @click="switchTab('kpi')"
                     type="button">
-                <i class="fas fa-chart-line me-2"></i>{{ __('معدلات الأداء') }}
+                <i class="fas fa-chart-line me-2"></i><?php echo e(__('معدلات الأداء')); ?>
+
             </button>
         </li>
     </ul>
@@ -65,115 +71,191 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-user me-2"></i>{{ __('البيانات الأساسية') }}
+                                <i class="fas fa-user me-2"></i><?php echo e(__('البيانات الأساسية')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('الاسم الكامل') }}
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('الاسم الكامل')); ?>
+
                                         <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" wire:model.defer="name"
-                                        placeholder="{{ __('أدخل الاسم الكامل') }}">
-                                    @error('name')
+                                        placeholder="<?php echo e(__('أدخل الاسم الكامل')); ?>">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('البريد الإلكتروني') }}
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('البريد الإلكتروني')); ?>
+
                                         <span class="text-danger">*</span></label>
                                     <input type="email" class="form-control" wire:model.defer="email"
-                                        placeholder="{{ __('أدخل البريد الإلكتروني') }}">
-                                    @error('email')
+                                        placeholder="<?php echo e(__('أدخل البريد الإلكتروني')); ?>">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('رقم الهاتف') }}
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('رقم الهاتف')); ?>
+
                                         <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" wire:model.defer="phone"
-                                        placeholder="{{ __('أدخل رقم الهاتف') }}">
-                                    @error('phone')
+                                        placeholder="<?php echo e(__('أدخل رقم الهاتف')); ?>">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('رقم الهوية') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('رقم الهوية')); ?></label>
                                     <input type="text" class="form-control" wire:model.defer="nationalId"
-                                        placeholder="{{ __('أدخل رقم الهوية') }}">
-                                    @error('nationalId')
+                                        placeholder="<?php echo e(__('أدخل رقم الهوية')); ?>">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['nationalId'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('النوع') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('النوع')); ?></label>
                                     <select class="form-select" wire:model.defer="gender">
-                                        <option value="">{{ __('اختر النوع') }}</option>
-                                        <option value="male">{{ __('ذكر') }}</option>
-                                        <option value="female">{{ __('أنثى') }}</option>
+                                        <option value=""><?php echo e(__('اختر النوع')); ?></option>
+                                        <option value="male"><?php echo e(__('ذكر')); ?></option>
+                                        <option value="female"><?php echo e(__('أنثى')); ?></option>
                                     </select>
-                                    @error('gender')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['gender'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('تاريخ الميلاد') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('تاريخ الميلاد')); ?></label>
                                     <input type="date" class="form-control" wire:model.defer="date_of_birth">
-                                    @error('date_of_birth')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['date_of_birth'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('الحالة الاجتماعية') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('الحالة الاجتماعية')); ?></label>
                                     <select class="form-select" wire:model.defer="marital_status">
-                                        <option value="">{{ __('اختر الحالة') }}</option>
-                                        <option value="غير متزوج">{{ __('غير متزوج') }}</option>
-                                        <option value="متزوج">{{ __('متزوج') }}</option>
-                                        <option value="مطلق">{{ __('مطلق') }}</option>
-                                        <option value="أرمل">{{ __('أرمل') }}</option>
+                                        <option value=""><?php echo e(__('اختر الحالة')); ?></option>
+                                        <option value="غير متزوج"><?php echo e(__('غير متزوج')); ?></option>
+                                        <option value="متزوج"><?php echo e(__('متزوج')); ?></option>
+                                        <option value="مطلق"><?php echo e(__('مطلق')); ?></option>
+                                        <option value="أرمل"><?php echo e(__('أرمل')); ?></option>
                                     </select>
-                                    @error('marital_status')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['marital_status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('مستوى التعليم') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('مستوى التعليم')); ?></label>
                                     <select class="form-select" wire:model.defer="education">
-                                        <option value="">{{ __('اختر المستوى') }}</option>
-                                        <option value="دبلوم">{{ __('دبلوم') }}</option>
-                                        <option value="بكالوريوس">{{ __('بكالوريوس') }}</option>
-                                        <option value="ماجستير">{{ __('ماجستير') }}</option>
-                                        <option value="دكتوراه">{{ __('دكتوراه') }}</option>
+                                        <option value=""><?php echo e(__('اختر المستوى')); ?></option>
+                                        <option value="دبلوم"><?php echo e(__('دبلوم')); ?></option>
+                                        <option value="بكالوريوس"><?php echo e(__('بكالوريوس')); ?></option>
+                                        <option value="ماجستير"><?php echo e(__('ماجستير')); ?></option>
+                                        <option value="دكتوراه"><?php echo e(__('دكتوراه')); ?></option>
                                     </select>
-                                    @error('education')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['education'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('معلومات إضافية') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('معلومات إضافية')); ?></label>
                                     <textarea class="form-control" rows="3" wire:model.defer="information"
-                                        placeholder="{{ __('أدخل أي معلومات إضافية...') }}"></textarea>
-                                    @error('information')
+                                        placeholder="<?php echo e(__('أدخل أي معلومات إضافية...')); ?>"></textarea>
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['information'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -183,7 +265,8 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-success text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-image me-2"></i>{{ __('الصورة الشخصية') }}
+                                <i class="fas fa-image me-2"></i><?php echo e(__('الصورة الشخصية')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body text-center py-3">
@@ -191,14 +274,14 @@
                                 <div class="position-relative d-inline-block">
                                     <template x-if="imagePreview">
                                         <img :src="imagePreview"
-                                            alt="{{ __('صورة الموظف') }}"
+                                            alt="<?php echo e(__('صورة الموظف')); ?>"
                                             class="rounded-circle border border-3 border-light shadow"
                                             style="width: 120px; height: 120px; object-fit: cover;">
                                     </template>
                                     <template x-if="!imagePreview && isEdit && currentImageUrl">
                                         <div style="position: relative;">
                                             <img :src="currentImageUrl"
-                                                alt="{{ __('صورة الموظف') }}"
+                                                alt="<?php echo e(__('صورة الموظف')); ?>"
                                                 class="rounded-circle border border-3 border-light shadow"
                                                 style="width: 120px; height: 120px; object-fit: cover; display: none;"
                                                 x-on:load="
@@ -221,16 +304,16 @@
                                             
                                             <!-- Placeholder (shown on error) -->
                                             <div style="display: none; text-align: center;">
-                                                <img src="{{ asset('assets/images/avatar-placeholder.svg') }}"
-                                                    alt="{{ __('صورة الموظف') }}"
+                                                <img src="<?php echo e(asset('assets/images/avatar-placeholder.svg')); ?>"
+                                                    alt="<?php echo e(__('صورة الموظف')); ?>"
                                                     class="rounded-circle border border-3 border-light shadow"
                                                     style="width: 120px; height: 120px; object-fit: cover;">
                                             </div>
                                         </div>
                                     </template>
                                     <template x-if="!imagePreview && (!isEdit || !currentImageUrl)">
-                                        <img src="{{ asset('assets/images/avatar-placeholder.svg') }}"
-                                            alt="{{ __('صورة الموظف') }}"
+                                        <img src="<?php echo e(asset('assets/images/avatar-placeholder.svg')); ?>"
+                                            alt="<?php echo e(__('صورة الموظف')); ?>"
                                             class="rounded-circle border border-3 border-light shadow"
                                             style="width: 120px; height: 120px; object-fit: cover;">
                                     </template>
@@ -250,34 +333,52 @@
                                 <div wire:loading wire:target="image" class="progress mt-2" style="height: 20px;">
                                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
                                          role="progressbar" style="width: 100%">
-                                        <span class="fw-bold">{{ __('جاري الرفع...') }}</span>
+                                        <span class="fw-bold"><?php echo e(__('جاري الرفع...')); ?></span>
                                     </div>
                                 </div>
 
                                 <small class="text-muted d-block mt-1">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    {{ __('الحد الأقصى: 2 ميجابايت') }} | {{ __('الأنواع: JPG, PNG, GIF') }}
+                                    <?php echo e(__('الحد الأقصى: 2 ميجابايت')); ?> | <?php echo e(__('الأنواع: JPG, PNG, GIF')); ?>
+
                                 </small>
 
-                                @error('image')
+                                <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['image'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                     <div class="alert alert-danger py-2 mt-2" role="alert">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                        <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                     </div>
-                                @enderror
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                             </div>
                             <div class="mb-2">
-                                <label class="form-label fw-bold text-dark">{{ __('حالة الموظف') }}
+                                <label class="form-label fw-bold text-dark"><?php echo e(__('حالة الموظف')); ?>
+
                                     <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold" wire:model.defer="status">
-                                    <option value="">{{ __('اختر الحالة') }}</option>
-                                    <option value="مفعل">{{ __('مفعل') }}</option>
-                                    <option value="معطل">{{ __('معطل') }}</option>
+                                    <option value=""><?php echo e(__('اختر الحالة')); ?></option>
+                                    <option value="مفعل"><?php echo e(__('مفعل')); ?></option>
+                                    <option value="معطل"><?php echo e(__('معطل')); ?></option>
                                 </select>
-                                @error('status')
+                                <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                     <div class="text-danger small mt-1">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                        <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                     </div>
-                                @enderror
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                             </div>
                         </div>
                     </div>
@@ -294,66 +395,99 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-info text-white py-2">
                     <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                        <i class="fas fa-map-marker-alt me-2"></i>{{ __('الموقع الجغرافي') }}
+                        <i class="fas fa-map-marker-alt me-2"></i><?php echo e(__('الموقع الجغرافي')); ?>
+
                     </h6>
                 </div>
                 <div class="card-body py-3">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark">{{ __('البلد') }}</label>
+                            <label class="form-label fw-bold text-dark"><?php echo e(__('البلد')); ?></label>
                             <select class="form-select" wire:model.defer="country_id">
-                                <option value="">{{ __('اختر البلد') }}</option>
-                                @foreach ($countries as $country)
-                                    <option value="{{ $country->id }}">{{ $country->title }}</option>
-                                @endforeach
+                                <option value=""><?php echo e(__('اختر البلد')); ?></option>
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $countries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($country->id); ?>"><?php echo e($country->title); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                             </select>
-                            @error('country_id')
+                            <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['country_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                 <div class="text-danger small mt-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                    <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                 </div>
-                            @enderror
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark">{{ __('المحافظة') }}</label>
+                            <label class="form-label fw-bold text-dark"><?php echo e(__('المحافظة')); ?></label>
                             <select class="form-select" wire:model.defer="state_id">
-                                <option value="">{{ __('اختر المحافظة') }}</option>
-                                @foreach ($states as $state)
-                                    <option value="{{ $state->id }}">{{ $state->title }}</option>
-                                @endforeach
+                                <option value=""><?php echo e(__('اختر المحافظة')); ?></option>
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $states; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $state): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($state->id); ?>"><?php echo e($state->title); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                             </select>
-                            @error('state_id')
+                            <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['state_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                 <div class="text-danger small mt-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                    <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                 </div>
-                            @enderror
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark">{{ __('المدينة') }}</label>
+                            <label class="form-label fw-bold text-dark"><?php echo e(__('المدينة')); ?></label>
                             <select class="form-select" wire:model.defer="city_id">
-                                <option value="">{{ __('اختر المدينة') }}</option>
-                                @foreach ($cities as $city)
-                                    <option value="{{ $city->id }}">{{ $city->title }}</option>
-                                @endforeach
+                                <option value=""><?php echo e(__('اختر المدينة')); ?></option>
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $cities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $city): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($city->id); ?>"><?php echo e($city->title); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                             </select>
-                            @error('city_id')
+                            <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['city_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                 <div class="text-danger small mt-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                    <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                 </div>
-                            @enderror
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark">{{ __('المنطقة') }}</label>
+                            <label class="form-label fw-bold text-dark"><?php echo e(__('المنطقة')); ?></label>
                             <select class="form-select" wire:model.defer="town_id">
-                                <option value="">{{ __('اختر المنطقة') }}</option>
-                                @foreach ($towns as $town)
-                                    <option value="{{ $town->id }}">{{ $town->title }}</option>
-                                @endforeach
+                                <option value=""><?php echo e(__('اختر المنطقة')); ?></option>
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $towns; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $town): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($town->id); ?>"><?php echo e($town->title); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                             </select>
-                            @error('town_id')
+                            <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['town_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                 <div class="text-danger small mt-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                    <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                 </div>
-                            @enderror
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                         </div>
                     </div>
                 </div>
@@ -371,52 +505,77 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-warning text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-briefcase me-2"></i>{{ __('الوظيفة والقسم') }}
+                                <i class="fas fa-briefcase me-2"></i><?php echo e(__('الوظيفة والقسم')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('الوظيفة') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('الوظيفة')); ?></label>
                                     <select class="form-select" wire:model.defer="job_id">
-                                        <option value="">{{ __('اختر الوظيفة') }}</option>
-                                        @foreach ($jobs as $job)
-                                            <option value="{{ $job->id }}">{{ $job->title }}</option>
-                                        @endforeach
+                                        <option value=""><?php echo e(__('اختر الوظيفة')); ?></option>
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $jobs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $job): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($job->id); ?>"><?php echo e($job->title); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                                     </select>
-                                    @error('job_id')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['job_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('القسم') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('القسم')); ?></label>
                                     <select class="form-select" wire:model.defer="department_id">
-                                        <option value="">{{ __('اختر القسم') }}</option>
-                                        @foreach ($departments as $department)
-                                            <option value="{{ $department->id }}">{{ $department->title }}</option>
-                                        @endforeach
+                                        <option value=""><?php echo e(__('اختر القسم')); ?></option>
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $departments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $department): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($department->id); ?>"><?php echo e($department->title); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                                     </select>
-                                    @error('department_id')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['department_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('المستوى الوظيفي') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('المستوى الوظيفي')); ?></label>
                                     <select class="form-select" wire:model.defer="job_level">
-                                        <option value="">{{ __('اختر المستوى') }}</option>
-                                        <option value="مبتدئ">{{ __('مبتدئ') }}</option>
-                                        <option value="متوسط">{{ __('متوسط') }}</option>
-                                        <option value="محترف">{{ __('محترف') }}</option>
+                                        <option value=""><?php echo e(__('اختر المستوى')); ?></option>
+                                        <option value="مبتدئ"><?php echo e(__('مبتدئ')); ?></option>
+                                        <option value="متوسط"><?php echo e(__('متوسط')); ?></option>
+                                        <option value="محترف"><?php echo e(__('محترف')); ?></option>
                                     </select>
-                                    @error('job_level')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['job_level'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -426,28 +585,45 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-secondary text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-calendar-alt me-2"></i>{{ __('تواريخ التوظيف') }}
+                                <i class="fas fa-calendar-alt me-2"></i><?php echo e(__('تواريخ التوظيف')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('تاريخ التوظيف') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('تاريخ التوظيف')); ?></label>
                                     <input type="date" class="form-control" wire:model.defer="date_of_hire">
-                                    @error('date_of_hire')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['date_of_hire'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('تاريخ الانتهاء') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('تاريخ الانتهاء')); ?></label>
                                     <input type="date" class="form-control" wire:model.defer="date_of_fire">
-                                    @error('date_of_fire')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['date_of_fire'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -467,39 +643,56 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-success text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-money-bill-wave me-2"></i>{{ __('المرتب الأساسي') }}
+                                <i class="fas fa-money-bill-wave me-2"></i><?php echo e(__('المرتب الأساسي')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('المرتب') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('المرتب')); ?></label>
                                     <div class="input-group">
                                         <span class="input-group-text">ر.س</span>
                                         <input type="number" class="form-control" wire:model.defer="salary"
                                             placeholder="0.00" step="0.01">
                                     </div>
-                                    @error('salary')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['salary'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('نوع الاستحقاق') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('نوع الاستحقاق')); ?></label>
                                     <select class="form-select" wire:model.defer="salary_type">
-                                        <option value="">{{ __('اختر نوع الاستحقاق') }}</option>
-                                        <option value="ساعات عمل فقط">{{ __('ساعات عمل فقط') }}</option>
-                                        <option value="ساعات عمل و إضافي يومى">{{ __('ساعات عمل و إضافي يومى') }}</option>
-                                        <option value="ساعات عمل و إضافي للمده">{{ __('ساعات عمل و إضافي للمده') }}</option>
-                                        <option value="حضور فقط">{{ __('حضور فقط') }}</option>
-                                        <option value="إنتاج فقط">{{ __('إنتاج فقط') }}</option>
+                                        <option value=""><?php echo e(__('اختر نوع الاستحقاق')); ?></option>
+                                        <option value="ساعات عمل فقط"><?php echo e(__('ساعات عمل فقط')); ?></option>
+                                        <option value="ساعات عمل و إضافي يومى"><?php echo e(__('ساعات عمل و إضافي يومى')); ?></option>
+                                        <option value="ساعات عمل و إضافي للمده"><?php echo e(__('ساعات عمل و إضافي للمده')); ?></option>
+                                        <option value="حضور فقط"><?php echo e(__('حضور فقط')); ?></option>
+                                        <option value="إنتاج فقط"><?php echo e(__('إنتاج فقط')); ?></option>
                                     </select>
-                                    @error('salary_type')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['salary_type'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -509,36 +702,53 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-info text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-calculator me-2"></i>{{ __('حسابات إضافية') }}
+                                <i class="fas fa-calculator me-2"></i><?php echo e(__('حسابات إضافية')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('الساعة الإضافي تحسب ك') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('الساعة الإضافي تحسب ك')); ?></label>
                                     <div class="input-group">
                                         <input type="number" class="form-control"
                                             wire:model.defer="additional_hour_calculation" placeholder="0.00" step="0.01">
                                         <span class="input-group-text">ساعة</span>
                                     </div>
-                                    @error('additional_hour_calculation')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['additional_hour_calculation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('اليوم الإضافي يحسب ك') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('اليوم الإضافي يحسب ك')); ?></label>
                                     <div class="input-group">
                                         <input type="number" class="form-control"
                                             wire:model.defer="additional_day_calculation" placeholder="0.00" step="0.01">
                                         <span class="input-group-text">يوم</span>
                                     </div>
-                                    @error('additional_day_calculation')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['additional_day_calculation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -558,46 +768,72 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-clock me-2"></i>{{ __('نظام الحضور') }}
+                                <i class="fas fa-clock me-2"></i><?php echo e(__('نظام الحضور')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('الشيفت') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('الشيفت')); ?></label>
                                     <select class="form-select" wire:model.defer="shift_id">
-                                        <option value="">{{ __('اختر الشيفت') }}</option>
-                                        @foreach ($shifts as $shift)
-                                            <option value="{{ $shift->id }}">
-                                                {{ $shift->start_time }} - {{ $shift->end_time }}
+                                        <option value=""><?php echo e(__('اختر الشيفت')); ?></option>
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $shifts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $shift): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <option value="<?php echo e($shift->id); ?>">
+                                                <?php echo e($shift->start_time); ?> - <?php echo e($shift->end_time); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                                     </select>
-                                    @error('shift_id')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['shift_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('رقم البصمة') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('رقم البصمة')); ?></label>
                                     <input type="number" class="form-control" wire:model.defer="finger_print_id"
-                                        placeholder="{{ __('أدخل رقم البصمة') }}" min="0">
-                                    @error('finger_print_id')
+                                        placeholder="<?php echo e(__('أدخل رقم البصمة')); ?>" min="0">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['finger_print_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('الاسم في البصمة') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('الاسم في البصمة')); ?></label>
                                     <input type="text" class="form-control" wire:model.defer="finger_print_name"
-                                        placeholder="{{ __('أدخل الاسم في البصمة') }}">
-                                    @error('finger_print_name')
+                                        placeholder="<?php echo e(__('أدخل الاسم في البصمة')); ?>">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['finger_print_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -607,26 +843,35 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-warning text-white py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                                <i class="fas fa-mobile-alt me-2"></i>{{ __('نظام الهاتف المحمول') }}
+                                <i class="fas fa-mobile-alt me-2"></i><?php echo e(__('نظام الهاتف المحمول')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold text-dark">{{ __('باسورد الهاتف') }}</label>
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('باسورد الهاتف')); ?></label>
                                     <div class="input-group">
                                         <input :type="showPassword ? 'text' : 'password'" class="form-control"
                                             wire:model.defer="password" 
-                                            :placeholder="$wire.isEdit ? '{{ __('اتركه فارغاً للحفاظ على الباسورد الحالي') }}' : '{{ __('أدخل باسورد الهاتف') }}'">
+                                            :placeholder="$wire.isEdit ? '<?php echo e(__('اتركه فارغاً للحفاظ على الباسورد الحالي')); ?>' : '<?php echo e(__('أدخل باسورد الهاتف')); ?>'">
                                         <button class="btn btn-outline-secondary" type="button" @click="togglePassword()">
                                             <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
                                         </button>
                                     </div>
-                                    @error('password')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -644,7 +889,8 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-primary text-white py-2">
                     <h6 class="card-title mb-0 font-family-cairo fw-bold">
-                        <i class="fas fa-chart-line me-2"></i>{{ __('معدلات الأداء للموظف') }}
+                        <i class="fas fa-chart-line me-2"></i><?php echo e(__('معدلات الأداء للموظف')); ?>
+
                     </h6>
                 </div>
                 <div class="card-body py-3">
@@ -652,13 +898,15 @@
                     <div class="card border-primary mb-3">
                         <div class="card-header bg-light py-2">
                             <h6 class="card-title mb-0 font-family-cairo fw-bold text-primary">
-                                <i class="fas fa-plus me-2"></i>{{ __('إضافة معدل أداء جديد') }}
+                                <i class="fas fa-plus me-2"></i><?php echo e(__('إضافة معدل أداء جديد')); ?>
+
                             </h6>
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-3">
                                 <div class="col-md-8">
-                                    <label class="form-label fw-bold text-dark">{{ __('اختر معدل الأداء') }}
+                                    <label class="form-label fw-bold text-dark"><?php echo e(__('اختر معدل الأداء')); ?>
+
                                         <span class="text-danger">*</span></label>
                                     <div class="position-relative">
                                         <div class="input-group">
@@ -670,7 +918,7 @@
                                                 @keydown.arrow-down.prevent="navigateKpiDown()"
                                                 @keydown.arrow-up.prevent="navigateKpiUp()"
                                                 @keydown.enter.prevent="selectCurrentKpi()"
-                                                :placeholder="selectedKpiId ? '' : '{{ __('ابحث عن معدل الأداء...') }}'"
+                                                :placeholder="selectedKpiId ? '' : '<?php echo e(__('ابحث عن معدل الأداء...')); ?>'"
                                                 autocomplete="off">
                                             <button class="btn btn-outline-secondary" type="button"
                                                 @click="kpiSearchOpen = !kpiSearchOpen">
@@ -679,7 +927,7 @@
                                             <button class="btn btn-outline-danger" type="button"
                                                 x-show="selectedKpiId"
                                                 @click="clearKpiSelection()"
-                                                title="{{ __('مسح الاختيار') }}">
+                                                title="<?php echo e(__('مسح الاختيار')); ?>">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
@@ -707,24 +955,35 @@
                                         <div x-show="kpiSearchOpen && kpiSearch && filteredKpis.length === 0"
                                             class="position-absolute w-100 bg-white border rounded shadow-lg mt-1 p-3 text-center text-muted"
                                             style="z-index: 1000;">
-                                            <i class="fas fa-search me-2"></i>{{ __('لا توجد نتائج') }}
+                                            <i class="fas fa-search me-2"></i><?php echo e(__('لا توجد نتائج')); ?>
+
                                         </div>
                                     </div>
-                                    @error('selected_kpi_id')
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['selected_kpi_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                         <div class="text-danger small mt-1">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                            <i class="fas fa-exclamation-triangle me-1"></i><?php echo e($message); ?>
+
                                         </div>
-                                    @enderror
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end">
                                     <button type="button" class="btn btn-primary btn-lg w-100"
                                         @click="$wire.addKpi()" wire:loading.attr="disabled" 
                                         :disabled="!selectedKpiId">
                                         <span wire:loading.remove wire:target="addKpi">
-                                            <i class="fas fa-plus me-2"></i>{{ __('إضافة') }}
+                                            <i class="fas fa-plus me-2"></i><?php echo e(__('إضافة')); ?>
+
                                         </span>
                                         <span wire:loading wire:target="addKpi">
-                                            <i class="fas fa-spinner fa-spin me-2"></i>{{ __('جاري الإضافة...') }}
+                                            <i class="fas fa-spinner fa-spin me-2"></i><?php echo e(__('جاري الإضافة...')); ?>
+
                                         </span>
                                     </button>
                                 </div>
@@ -736,7 +995,8 @@
                     <template x-if="kpiIds.length > 0">
                         <div>
                             <h6 class="fw-bold text-dark mb-3">
-                                <i class="fas fa-list me-2"></i>{{ __('معدلات الأداء المضافة') }}
+                                <i class="fas fa-list me-2"></i><?php echo e(__('معدلات الأداء المضافة')); ?>
+
                             </h6>
                             <div class="row g-3 mb-3">
                                 <template x-for="kpiId in kpiIds" :key="kpiId">
@@ -750,12 +1010,12 @@
                                                         <small class="text-muted" x-text="getKpiDescription(kpiId)"></small>
                                                     </div>
                                                     <button type="button" class="btn btn-outline-danger btn-sm"
-                                                        @click="$wire.removeKpi(kpiId)" title="{{ __('حذف') }}">
+                                                        @click="$wire.removeKpi(kpiId)" title="<?php echo e(__('حذف')); ?>">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
                                                 <div class="mt-2">
-                                                    <label class="form-label fw-bold text-dark small">{{ __('الوزن النسبي') }}</label>
+                                                    <label class="form-label fw-bold text-dark small"><?php echo e(__('الوزن النسبي')); ?></label>
                                                     <div class="input-group input-group-sm">
                                                         <input type="number" class="form-control" :value="kpiWeights[kpiId] || 0"
                                                             @input="kpiWeights[kpiId] = parseInt($event.target.value) || 0"
@@ -800,7 +1060,8 @@
                                                 'text-danger': totalKpiWeight > 100,
                                                 'text-warning': totalKpiWeight < 100
                                             }">
-                                            <i class="fas fa-calculator me-2"></i>{{ __('المجموع الحالي للأوزان') }}
+                                            <i class="fas fa-calculator me-2"></i><?php echo e(__('المجموع الحالي للأوزان')); ?>
+
                                         </h6>
                                         <span class="badge text-white"
                                             :class="{
@@ -829,7 +1090,8 @@
                     <template x-if="kpiIds.length === 0">
                         <div class="alert alert-info text-center">
                             <i class="fas fa-info-circle me-2"></i>
-                            {{ __('لم يتم إضافة أي معدلات أداء بعد. استخدم النموذج أعلاه لإضافة معدلات الأداء.') }}
+                            <?php echo e(__('لم يتم إضافة أي معدلات أداء بعد. استخدم النموذج أعلاه لإضافة معدلات الأداء.')); ?>
+
                         </div>
                     </template>
                 </div>
@@ -837,3 +1099,4 @@
         </div>
     </div>
 </div>
+<?php /**PATH D:\laragon\www\massar1.02\resources\views/livewire/hr-management/employees/partials/employee-form.blade.php ENDPATH**/ ?>

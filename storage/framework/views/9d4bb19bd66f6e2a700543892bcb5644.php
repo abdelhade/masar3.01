@@ -11,63 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
-    #[Validate('required|string|email')]
-    public string $email = '';
-
-    #[Validate('required|string')]
-    public string $password = '';
-
-    public bool $remember = false;
-
-    protected $rules = [
-        'email' => 'required|string|email',
-        'password' => 'required|string',
-    ];
-
-    public function login(): void
-    {
-        $this->validate();
-
-        $this->ensureIsNotRateLimited();
-
-        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
-            ]);
-        }
-
-        RateLimiter::clear($this->throttleKey());
-        Session::regenerate();
-
-        $this->redirectRoute('admin.dashboard');
-    }
-
-    protected function ensureIsNotRateLimited(): void
-    {
-        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
-        }
-
-        event(new Lockout(request()));
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        throw ValidationException::withMessages([
-            'email' => __('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
-    }
-
-    protected function throttleKey(): string
-    {
-        return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
-    }
-}; ?>
+?>
 
 <div>
     <title>مسار لادارة المشاريع</title>
@@ -581,7 +525,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <!-- Header -->
             <div class="modern-header">
                 <div class="modern-logo">
-                    <img src="{{ asset('assets/images/masarlogo.jpg') }}" alt="{{ __('logo') }}" class="">
+                    <img src="<?php echo e(asset('assets/images/masarlogo.jpg')); ?>" alt="<?php echo e(__('logo')); ?>" class="">
                 </div>
                 <h1 class="modern-title">مسار لادارة المشاريع</h1>
                 <p class="modern-subtitle">سجل الدخول للمتابعة</p>
@@ -595,16 +539,30 @@ new #[Layout('components.layouts.auth')] class extends Component {
                         <label class="modern-label" for="email">البريد الإلكتروني</label>
                         <div class="modern-input-container">
                             <input type="email" id="email"
-                                class="modern-input @error('email') is-invalid @enderror"
+                                class="modern-input <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                                 placeholder="email@example.com" required wire:model="email" autocomplete="email">
                             <i class="fas fa-envelope modern-input-icon"></i>
                         </div>
-                        @error('email')
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                             <div class="modern-error">
                                 <i class="fas fa-exclamation-circle"></i>
-                                <span>{{ __('يرجى إدخال بريد إلكتروني صحيح') }}</span>
+                                <span><?php echo e(__('يرجى إدخال بريد إلكتروني صحيح')); ?></span>
                             </div>
-                        @enderror
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
 
                     <!-- Password -->
@@ -624,7 +582,8 @@ new #[Layout('components.layouts.auth')] class extends Component {
                             <span class="modern-checkmark"></span>
                         </div>
                         <label class="modern-remember-label" for="remember">
-                            {{ __('تذكرني') }}
+                            <?php echo e(__('تذكرني')); ?>
+
                         </label>
                     </div>
 
@@ -644,8 +603,8 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
             <!-- Footer -->
             <div class="modern-footer">
-                <span>نظام مسار © {{ date('Y') }}</span>
+                <span>نظام مسار © <?php echo e(date('Y')); ?></span>
             </div>
         </div>
     </div>
-</div>
+</div><?php /**PATH D:\laragon\www\massar1.02\resources\views\livewire/auth/login.blade.php ENDPATH**/ ?>
