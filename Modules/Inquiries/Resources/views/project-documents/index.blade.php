@@ -6,18 +6,18 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('وثائق المشروع'),
+        'title' => __('Project Documents'),
         'items' => [
-            ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
-            ['label' => __('وثائق المشروع')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Project Documents')],
         ],
     ])
 
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('إضافة المستندات') --}}
+            {{-- @can('Add Documents') --}}
             <a href="{{ route('inquiry.documents.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                {{ __('إضافة جديدة') }}
+                {{ __('Add New') }}
                 <i class="fas fa-plus me-2"></i>
             </a>
             {{-- @endcan --}}
@@ -28,16 +28,17 @@
                     <div class="table-responsive" style="overflow-x: auto;">
 
                         <x-table-export-actions table-id="project-documents-table" filename="project-documents"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                            excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                            print-label="{{ __('Print') }}" />
 
                         <table id="project-documents-table" class="table table-striped mb-0 text-center align-middle"
                             style="min-width: 1000px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('اسم الوثيقة') }}</th>
-                                    {{-- @canany(['تعديل المستندات', 'حذف المستندات']) --}}
-                                    <th>{{ __('العمليات') }}</th>
+                                    <th>{{ __('Document Name') }}</th>
+                                    {{-- @canany(['Edit Documents', 'Delete Documents']) --}}
+                                    <th>{{ __('Actions') }}</th>
                                     {{-- @endcanany --}}
                                 </tr>
                             </thead>
@@ -46,19 +47,19 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $doc->name }}</td>
-                                        {{-- @canany(['تعديل المستندات', 'حذف المستندات']) --}}
+                                        {{-- @canany(['Edit Documents', 'Delete Documents']) --}}
                                         <td>
-                                            {{-- @can('تعديل المستندات') --}}
+                                            {{-- @can('Edit Documents') --}}
                                             <a href="{{ route('inquiry.documents.edit', $doc->id) }}"
                                                 class="btn btn-success btn-icon-square-sm">
                                                 <i class="las la-edit"></i>
                                             </a>
                                             {{-- @endcan
 
-                                                @can('حذف المستندات') --}}
-                                            <form action="{{ route('inquiry.documents.destroy', $doc->id) }}" method="POST"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا المستند؟');">
+                                                @can('Delete Documents') --}}
+                                            <form action="{{ route('inquiry.documents.destroy', $doc->id) }}"
+                                                method="POST" style="display:inline-block;"
+                                                onsubmit="return confirm('{{ __('Are you sure you want to delete this document?') }}');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-icon-square-sm">
@@ -75,7 +76,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                {{ __('لا توجد بيانات') }}
+                                                {{ __('No data available') }}
                                             </div>
                                         </td>
                                     </tr>

@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('إضافة مصدر استعلام'),
+        'title' => __('Add Inquiry Source'),
         'items' => [
-            ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
-            ['label' => __('مصادر الاستعلام'), 'url' => route('inquiry.sources.index')],
-            ['label' => __('إضافة')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Inquiry Sources'), 'url' => route('inquiry.sources.index')],
+            ['label' => __('Add')],
         ],
     ])
 
@@ -157,7 +157,7 @@
 
         <div class="mb-3" id="pathDisplay" style="display: none;">
             <div class="d-flex align-items-center flex-wrap">
-                <strong class="me-2">المسار الحالي:</strong>
+                <strong class="me-2">{{ __('Current Path:') }}</strong>
                 <div id="pathBreadcrumb"></div>
             </div>
         </div>
@@ -166,9 +166,11 @@
             <div class="col-lg-6">
                 <div class="tree-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-sitemap me-2"></i>شجرة المصادر</h5>
+                        <h5 class="mb-0">
+                            <i class="fas fa-sitemap me-2"></i>{{ __('Source Tree') }}
+                        </h5>
                         <button class="btn btn-primary btn-sm" onclick="addRootSource()">
-                            <i class="fas fa-plus me-1"></i>إضافة مصدر رئيسي
+                            <i class="fas fa-plus me-1"></i>{{ __('Add Main Source') }}
                         </button>
                     </div>
 
@@ -186,10 +188,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>الاسم</th>
-                                    <th>المستوى</th>
-                                    <th>الحالة</th>
-                                    <th>العمليات</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Level') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="text-center">
