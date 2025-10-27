@@ -6,9 +6,13 @@ use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Employee extends Model
+class Employee extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     protected $table = 'employees';
 
     protected $casts = [
@@ -27,6 +31,14 @@ class Employee extends Model
     protected static function booted()
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('employee_images')
+            ->singleFile() // Only one image per employee
+            ->useFallbackUrl(asset('assets/images/avatar-placeholder.svg'))
+            ->useFallbackPath(public_path('assets/images/avatar-placeholder.svg'));
     }
 
     public function department(): BelongsTo
@@ -225,5 +237,38 @@ class Employee extends Model
     {
         return $value ?: $this->name;
     }
-    
+
+    public function kpis(): BelongsToMany
+    {
+        return $this->belongsToMany(Kpi::class, 'employee_kpis', 'employee_id', 'kpi_id')->withPivot('weight_percentage');
+    }
+
+    /**
+     * Get the employee's image URL or fallback to placeholder
+     * Works correctly in both local (Laragon) and production environments
+     * Automatically detects and handles production symlink issues
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $media = $this->getFirstMedia('employee_images');
+        
+        // If no media exists, return the fallback URL
+        if (!$media) {
+            return asset('assets/images/avatar-placeholder.svg');
+        }
+        
+        // Get the standard URL from Spatie
+        $url = $media->getUrl();
+        
+        // For production environments, check if symlink is working
+        if (
+            !str_contains(config('app.url'), 'localhost') &&
+            !str_contains(config('app.url'), 'massar1.02.test:81')
+        ) {
+            $baseUrl = config('app.url');
+            $url = $baseUrl . '/storage/app/public/' . $media->id . '/' . $media->file_name;
+        }
+        
+        return $url;
+    }
 }

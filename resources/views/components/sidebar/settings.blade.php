@@ -1,4 +1,10 @@
 <li class="nav-item">
+    <a class="nav-link" href="{{ route('mysettings.index') }}">
+        <i class="ti-control-record"></i>{{ __('Settings') }}
+    </a>
+</li>
+
+<li class="nav-item">
     <a class="nav-link" href="{{ route('barcode.print.settings.edit') }}">
         <i class="ti-control-record"></i>{{ __('navigation.barcode_settings') }}
     </a>

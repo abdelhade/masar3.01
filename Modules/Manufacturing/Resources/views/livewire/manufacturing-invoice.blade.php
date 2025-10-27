@@ -66,16 +66,18 @@
 
                             <div class="flex items-center">
 
-                                <button wire:click="openSaveTemplateModal"
-                                    class="btn btn-info px-5 py-3 text-lg font-bold">
-                                    حفظ كنموذج <i class="fas fa-save"></i>
-                                </button>
+                                @if (setting('manufacture_enable_template_saving'))
+                                    <button wire:click="openSaveTemplateModal"
+                                        class="btn btn-info px-5 py-3 text-lg font-bold">
+                                        حفظ كنموذج <i class="fas fa-save"></i>
+                                    </button>
 
-                                <!-- زر اختيار نموذج -->
-                                <button wire:click="openLoadTemplateModal"
-                                    class="btn btn-warning px-5 py-3 text-lg font-bold">
-                                    اختيار نموذج <i class="fas fa-folder-open"></i>
-                                </button>
+                                    <!-- زر اختيار نموذج -->
+                                    <button wire:click="openLoadTemplateModal"
+                                        class="btn btn-warning px-5 py-3 text-lg font-bold">
+                                        اختيار نموذج <i class="fas fa-folder-open"></i>
+                                    </button>
+                                @endif
 
                                 <button wire:click="adjustCostsByPercentage"
                                     class="btn btn-primary px-5 py-3 text-lg font-bold"
@@ -475,14 +477,18 @@
                                             المواد الخام
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link py-1 px-2 {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active' : '' }}"
-                                            id="group_chat_tab" data-bs-toggle="pill" href="#group_chat"
-                                            onclick="setActiveTab('group_chat')"
-                                            wire:click="$set('activeTab', 'group_chat')">
-                                            المصروفات
-                                        </a>
-                                    </li>
+
+                                    @if (setting('manufacture_enable_expenses'))
+                                        <li class="nav-item">
+                                            <a class="nav-link py-1 px-2 {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active' : '' }}"
+                                                id="group_chat_tab" data-bs-toggle="pill" href="#group_chat"
+                                                onclick="setActiveTab('group_chat')"
+                                                wire:click="$set('activeTab', 'group_chat')">
+                                                المصروفات
+                                            </a>
+                                        </li>
+                                    @endif
+
                                 </ul>
 
                                 <div class="chat-list" data-simplebar="init">
@@ -671,137 +677,142 @@
                                                                     </div>
                                                                 </div>
                                                             </div><!--end general chat-->
-
-                                                            <!-- تاب المصروفات -->
-                                                            <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active show' : '' }}"
-                                                                id="group_chat">
-                                                                <div class="col-12">
-                                                                    <div class="card h-100">
-                                                                        <div
-                                                                            class="card-header  bg-opacity-10 border-0">
+                                                            @if (setting('manufacture_enable_expenses'))
+                                                                <!-- تاب المصروفات -->
+                                                                <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active show' : '' }}"
+                                                                    id="group_chat">
+                                                                    <div class="col-12">
+                                                                        <div class="card h-100">
                                                                             <div
-                                                                                class="d-flex justify-content-between align-items-center">
+                                                                                class="card-header  bg-opacity-10 border-0">
+                                                                                <div
+                                                                                    class="d-flex justify-content-between align-items-center">
 
-                                                                                <button wire:click="addExpense"
-                                                                                    class="btn btn-primary btn-sm">
-                                                                                    إضافة مصروف
-                                                                                </button>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div class="bg-light rounded-3 p-3 mx-3 mb-3"
-                                                                            style="max-height: 190px; overflow-y: auto; overflow-x: hidden;">
-                                                                            @if (count($additionalExpenses) === 0)
-                                                                                <div class="text-center py-5">
-                                                                                    <i class="fas fa-money-bill-wave text-muted mb-3"
-                                                                                        style="font-size: 2rem;"></i>
-                                                                                    <h5 class="text-muted">لا توجد
-                                                                                        مصاريف إضافية</h5>
-                                                                                    <p class="text-muted small">أضف
-                                                                                        المصاريف الإضافية للتصنيع</p>
+                                                                                    <button wire:click="addExpense"
+                                                                                        class="btn btn-primary btn-sm">
+                                                                                        إضافة مصروف
+                                                                                    </button>
                                                                                 </div>
-                                                                            @else
-                                                                                <div class="row">
-                                                                                    {{-- الجزء الخاص بإدخال المصروفات --}}
-                                                                                    <div class="col-md-8">
-                                                                                        <table
-                                                                                            class="table table-bordered table-sm">
-                                                                                            <thead>
-                                                                                                <tr>
-                                                                                                    <th>المبلغ</th>
-                                                                                                    <th>الحساب</th>
-                                                                                                    <th>الوصف</th>
-                                                                                                    <th>حذف</th>
-                                                                                                </tr>
-                                                                                            </thead>
-                                                                                            <tbody
-                                                                                                id="additional_expenses_table_body">
-                                                                                                @foreach ($additionalExpenses as $index => $expense)
-                                                                                                    <tr>
-                                                                                                        <td>
-                                                                                                            <input
-                                                                                                                type="number"
-                                                                                                                wire:model.live.debounce.300="additionalExpenses.{{ $index }}.amount"
-                                                                                                                min="0"
-                                                                                                                step="0.01"
-                                                                                                                placeholder="0.00"
-                                                                                                                class="form-control form-control-sm @error('additionalExpenses.' . $index . '.amount') is-invalid @enderror"
-                                                                                                                style="padding:2px;height:30px;">
-                                                                                                            @error('additionalExpenses.'
-                                                                                                                . $index .
-                                                                                                                '.amount')
-                                                                                                                <div class="invalid-feedback"
-                                                                                                                    style="font-size: 0.8em;">
-                                                                                                                    {{ $message }}
-                                                                                                                </div>
-                                                                                                            @enderror
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <select
-                                                                                                                wire:model="additionalExpenses.{{ $index }}.account_id"
-                                                                                                                class="form-control form-control-sm"
-                                                                                                                style="padding:2px;height:30px;">
-                                                                                                                @foreach ($expenseAccountList as $keyExpense => $valueExpense)
-                                                                                                                    <option
-                                                                                                                        value="{{ $keyExpense }}">
-                                                                                                                        {{ $valueExpense }}
-                                                                                                                    </option>
-                                                                                                                @endforeach
-                                                                                                            </select>
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <input
-                                                                                                                type="text"
-                                                                                                                wire:model="additionalExpenses.{{ $index }}.description"
-                                                                                                                placeholder="وصف المصروف"
-                                                                                                                class="form-control form-control-sm @error('additionalExpenses.' . $index . '.description') is-invalid @enderror"
-                                                                                                                style="padding:2px;height:30px;">
-                                                                                                            @error('additionalExpenses.'
-                                                                                                                . $index .
-                                                                                                                '.description')
-                                                                                                                <div class="invalid-feedback"
-                                                                                                                    style="font-size: 0.8em;">
-                                                                                                                    {{ $message }}
-                                                                                                                </div>
-                                                                                                            @enderror
-                                                                                                        </td>
-                                                                                                        <td
-                                                                                                            class="text-center">
-                                                                                                            <button
-                                                                                                                wire:click="removeExpense({{ $index }})"
-                                                                                                                class="btn btn-danger btn-sm"
-                                                                                                                style="height:30px;padding:2px 8px;">
-                                                                                                                <i
-                                                                                                                    class="fa fa-trash"></i>
-                                                                                                            </button>
-                                                                                                        </td>
-                                                                                                    </tr>
-                                                                                                @endforeach
-                                                                                            </tbody>
-                                                                                        </table>
+                                                                            </div>
+
+                                                                            <div class="bg-light rounded-3 p-3 mx-3 mb-3"
+                                                                                style="max-height: 190px; overflow-y: auto; overflow-x: hidden;">
+                                                                                @if (count($additionalExpenses) === 0)
+                                                                                    <div class="text-center py-5">
+                                                                                        <i class="fas fa-money-bill-wave text-muted mb-3"
+                                                                                            style="font-size: 2rem;"></i>
+                                                                                        <h5 class="text-muted">لا توجد
+                                                                                            مصاريف إضافية</h5>
+                                                                                        <p class="text-muted small">أضف
+                                                                                            المصاريف الإضافية للتصنيع
+                                                                                        </p>
                                                                                     </div>
+                                                                                @else
+                                                                                    <div class="row">
+                                                                                        {{-- الجزء الخاص بإدخال المصروفات --}}
+                                                                                        <div class="col-md-8">
+                                                                                            <table
+                                                                                                class="table table-bordered table-sm">
+                                                                                                <thead>
+                                                                                                    <tr>
+                                                                                                        <th>المبلغ</th>
+                                                                                                        <th>الحساب</th>
+                                                                                                        <th>الوصف</th>
+                                                                                                        <th>حذف</th>
+                                                                                                    </tr>
+                                                                                                </thead>
+                                                                                                <tbody
+                                                                                                    id="additional_expenses_table_body">
+                                                                                                    @foreach ($additionalExpenses as $index => $expense)
+                                                                                                        <tr>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="number"
+                                                                                                                    wire:model.live.debounce.300="additionalExpenses.{{ $index }}.amount"
+                                                                                                                    min="0"
+                                                                                                                    step="0.01"
+                                                                                                                    placeholder="0.00"
+                                                                                                                    class="form-control form-control-sm @error('additionalExpenses.' . $index . '.amount') is-invalid @enderror"
+                                                                                                                    style="padding:2px;height:30px;">
+                                                                                                                @error('additionalExpenses.'
+                                                                                                                    . $index
+                                                                                                                    .
+                                                                                                                    '.amount')
+                                                                                                                    <div class="invalid-feedback"
+                                                                                                                        style="font-size: 0.8em;">
+                                                                                                                        {{ $message }}
+                                                                                                                    </div>
+                                                                                                                @enderror
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <select
+                                                                                                                    wire:model="additionalExpenses.{{ $index }}.account_id"
+                                                                                                                    class="form-control form-control-sm"
+                                                                                                                    style="padding:2px;height:30px;">
+                                                                                                                    @foreach ($expenseAccountList as $keyExpense => $valueExpense)
+                                                                                                                        <option
+                                                                                                                            value="{{ $keyExpense }}">
+                                                                                                                            {{ $valueExpense }}
+                                                                                                                        </option>
+                                                                                                                    @endforeach
+                                                                                                                </select>
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    wire:model="additionalExpenses.{{ $index }}.description"
+                                                                                                                    placeholder="وصف المصروف"
+                                                                                                                    class="form-control form-control-sm @error('additionalExpenses.' . $index . '.description') is-invalid @enderror"
+                                                                                                                    style="padding:2px;height:30px;">
+                                                                                                                @error('additionalExpenses.'
+                                                                                                                    . $index
+                                                                                                                    .
+                                                                                                                    '.description')
+                                                                                                                    <div class="invalid-feedback"
+                                                                                                                        style="font-size: 0.8em;">
+                                                                                                                        {{ $message }}
+                                                                                                                    </div>
+                                                                                                                @enderror
+                                                                                                            </td>
+                                                                                                            <td
+                                                                                                                class="text-center">
+                                                                                                                <button
+                                                                                                                    wire:click="removeExpense({{ $index }})"
+                                                                                                                    class="btn btn-danger btn-sm"
+                                                                                                                    style="height:30px;padding:2px 8px;">
+                                                                                                                    <i
+                                                                                                                        class="fa fa-trash"></i>
+                                                                                                                </button>
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    @endforeach
+                                                                                                </tbody>
+                                                                                            </table>
+                                                                                        </div>
 
-                                                                                    {{-- الجزء الخاص بإجمالي المصروفات --}}
-                                                                                    <div class="col-md-4">
-                                                                                        <div class="card p-3 bg-light">
-                                                                                            <h6 class="mb-3 fw-bold">
-                                                                                                إجمالي المصروفات
-                                                                                                الإضافية</h6>
-                                                                                            <p
-                                                                                                class="fs-5 text-success">
-                                                                                                {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
+                                                                                        {{-- الجزء الخاص بإجمالي المصروفات --}}
+                                                                                        <div class="col-md-4">
+                                                                                            <div
+                                                                                                class="card p-3 bg-light">
+                                                                                                <h6
+                                                                                                    class="mb-3 fw-bold">
+                                                                                                    إجمالي المصروفات
+                                                                                                    الإضافية</h6>
+                                                                                                <p
+                                                                                                    class="fs-5 text-success">
+                                                                                                    {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
 
-                                                                                                جنيه
-                                                                                            </p>
+                                                                                                    جنيه
+                                                                                                </p>
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            @endif
+                                                                                @endif
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            </div><!--end group chat-->
-
+                                                                </div><!--end group chat-->
+                                                            @endif
                                                         </div><!--end tab-content-->
                                                     </div>
                                                 </div>

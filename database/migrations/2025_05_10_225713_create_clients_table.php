@@ -35,8 +35,9 @@ return new class extends Migration
             $table->boolean('is_active')->default(0);
             $table->integer('created_by')->default(0);
 
-            $table->enum('type', ['person', 'company'])->default('person');
+            $table->unsignedBigInteger('client_type_id')->nullable();
 
+            $table->foreign('client_type_id')->references('id')->on('client_types')->onDelete('set null');
             $table->integer('tenant')->default(0);
             $table->integer('branch')->default(0);
             $table->timestamps();

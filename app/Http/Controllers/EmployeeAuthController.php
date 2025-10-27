@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Log;
 
 class EmployeeAuthController extends Controller
 {
@@ -23,54 +22,96 @@ class EmployeeAuthController extends Controller
                 'finger_print_id' => 'required|integer',
                 'finger_print_name' => 'required|string|max:255',
                 'password' => 'required|string'
+            ], [
+                'finger_print_id.required' => 'رقم البصمة مطلوب',
+                'finger_print_id.integer' => 'رقم البصمة يجب أن يكون رقماً صحيحاً',
+                'finger_print_name.required' => 'اسم البصمة مطلوب',
+                'finger_print_name.string' => 'اسم البصمة يجب أن يكون نصاً',
+                'finger_print_name.max' => 'اسم البصمة طويل جداً',
+                'password.required' => 'كلمة المرور مطلوبة',
+                'password.string' => 'كلمة المرور يجب أن تكون نصاً'
             ]);
 
             if ($validator->fails()) {
-                Log::warning('Validation failed:', $validator->errors()->toArray());
+                $errors = $validator->errors();
+                $errorMessages = [];
+                
+                if ($errors->has('finger_print_id')) {
+                    $errorMessages[] = $errors->first('finger_print_id');
+                }
+                if ($errors->has('finger_print_name')) {
+                    $errorMessages[] = $errors->first('finger_print_name');
+                }
+                if ($errors->has('password')) {
+                    $errorMessages[] = $errors->first('password');
+                }
+                
                 return response()->json([
                     'success' => false,
-                    'message' => 'بيانات غير صحيحة',
+                    'message' => implode(' - ', $errorMessages),
                     'errors' => $validator->errors()
                 ], 422);
             }
 
             // البحث عن الموظف
-            
             $employee = Employee::where('finger_print_id', $request->finger_print_id)
                                 ->where('finger_print_name', $request->finger_print_name)
                                 ->with(['department', 'job', 'shift'])
                                 ->first();
 
             if (!$employee) {
-                Log::warning('Employee not found:', [
-                    'finger_print_id' => $request->finger_print_id,
-                    'finger_print_name' => $request->finger_print_name
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'رقم البصمة أو اسم البصمة غير صحيح'
-                ], 401);
+                // التحقق من وجود رقم البصمة فقط
+                $employeeByFingerId = Employee::where('finger_print_id', $request->finger_print_id)->first();
+                
+                if ($employeeByFingerId) {
+                    // رقم البصمة صحيح لكن اسم البصمة خطأ
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'اسم البصمة غير صحيح. يرجى التحقق من اسم البصمة المدخل',
+                        'error_type' => 'finger_print_name'
+                    ], 401);
+                } else {
+                    // رقم البصمة خطأ
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'رقم البصمة غير صحيح. يرجى التحقق من رقم البصمة المدخل',
+                        'error_type' => 'finger_print_id'
+                    ], 401);
+                }
             }
-            
 
             // التحقق من حالة الموظف
             if ($employee->status !== 'مفعل') {
+                $statusMessage = $employee->status === 'معطل' 
+                    ? 'حساب الموظف معطل. يرجى التواصل مع الإدارة لتفعيل الحساب'
+                    : 'حساب الموظف غير مفعل. يرجى التواصل مع الإدارة';
+                    
                 return response()->json([
                     'success' => false,
-                    'message' => 'حساب الموظف معطل. يرجى التواصل مع الإدارة'
+                    'message' => $statusMessage,
+                    'error_type' => 'account_disabled',
+                    'employee_status' => $employee->status
                 ], 403);
             }
 
             // التحقق من كلمة المرور
-            if (!$employee->password || !Hash::check($request->password, $employee->password)) {
+            if (!$employee->password) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'كلمة المرور غير صحيحة'
+                    'message' => 'لم يتم تعيين كلمة مرور لهذا الموظف. يرجى التواصل مع الإدارة',
+                    'error_type' => 'no_password'
+                ], 401);
+            }
+            
+            if (!Hash::check($request->password, $employee->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'كلمة المرور غير صحيحة. يرجى التحقق من كلمة المرور المدخلة',
+                    'error_type' => 'wrong_password'
                 ], 401);
             }
 
             // تسجيل دخول الموظف في الجلسة
-            
             Session::put('employee_id', $employee->id);
             Session::put('employee_name', $employee->name);
             Session::put('employee_finger_print_id', $employee->finger_print_id);
@@ -78,7 +119,6 @@ class EmployeeAuthController extends Controller
             Session::put('employee_logged_in', true);
 
             // إرجاع بيانات الموظف
-            
             return response()->json([
                 'success' => true,
                 'message' => 'تم تسجيل الدخول بنجاح',
@@ -102,7 +142,6 @@ class EmployeeAuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ في تسجيل الدخول'
@@ -133,8 +172,7 @@ class EmployeeAuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في تسجيل الخروج',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في تسجيل الخروج'
             ], 500);
         }
     }
@@ -204,8 +242,7 @@ class EmployeeAuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في التحقق من تسجيل الدخول',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في التحقق من تسجيل الدخول'
             ], 500);
         }
     }
@@ -260,9 +297,33 @@ class EmployeeAuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في جلب بيانات الموظف',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في جلب بيانات الموظف'
             ], 500);
+        }
+    }
+
+    /**
+     * استقبال أخطاء العميل (الموبايل) وكتابتها في Laravel log
+     */
+    public function logClientError(Request $request)
+    {
+        try {
+            $payload = $request->all();
+            
+            // التحقق من صحة البيانات
+            $validator = Validator::make($payload, [
+                'message' => 'required|string|max:1000',
+                'context' => 'nullable|array'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['ok' => false, 'message' => 'Invalid payload'], 400);
+            }
+
+            return response()->json(['ok' => true]);
+
+        } catch (\Exception $e) {
+            return response()->json(['ok' => false, 'message' => 'Internal error'], 500);
         }
     }
 }

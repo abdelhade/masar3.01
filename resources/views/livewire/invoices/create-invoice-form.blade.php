@@ -4,9 +4,27 @@
             <form wire:submit="saveForm">
 
                 @include('components.invoices.invoice-head')
-
+                {{-- أضف هذا في بداية الـ row الخاص بالبحث في الـ View --}}
                 <div class="row">
-                    <div class="col-lg-4 mb-3" style="position: relative;">
+
+                    @if ($availableTemplates->isNotEmpty())
+                        <div class="col-lg-1">
+                            <label for="selectedTemplate">{{ __('نموذج الفاتورة') }}</label>
+                            <select wire:model.live="selectedTemplateId" id="selectedTemplate"
+                                class="form-control @error('selectedTemplateId') is-invalid @enderror">
+                                @foreach ($availableTemplates as $template)
+                                    <option value="{{ $template->id }}">
+                                        {{ $template->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('selectedTemplateId')
+                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                            @enderror
+                        </div>
+                    @endif
+
+                    <div class="col-lg-3 mb-3" style="position: relative;">
                         <label>ابحث عن صنف</label>
                         <input type="text" wire:model.live="searchTerm" class="form-control frst"
                             placeholder="ابدأ بكتابة اسم الصنف..." autocomplete="off"
@@ -49,24 +67,24 @@
                             {{-- @elseif (strlen($barcodeTerm) > 0) --}}
                         @endif
                     </div>
-
-                    {{-- اختيار نوع السعر العام للفاتورة --}}
-                    @if (in_array($type, [10, 12, 14, 16, 22]))
-                        <div class="col-lg-1">
-                            <label for="selectedPriceType">{{ __('اختر نوع السعر للفاتورة') }}</label>
-                            <select wire:model.live="selectedPriceType"
-                                class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
-                                {{-- <option value="">{{ __('اختر نوع السعر') }}</option> --}}
-                                @foreach ($priceTypes as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            </select>
-                            @error('selectedPriceType')
-                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                            @enderror
-                        </div>
+                    @if (setting('invoice_select_price_type'))
+                        {{-- اختيار نوع السعر العام للفاتورة --}}
+                        @if (in_array($type, [10, 12, 14, 16, 22]))
+                            <div class="col-lg-1">
+                                <label for="selectedPriceType">{{ __('اختر نوع السعر للفاتورة') }}</label>
+                                <select wire:model.live="selectedPriceType"
+                                    class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
+                                    {{-- <option value="">{{ __('اختر نوع السعر') }}</option> --}}
+                                    @foreach ($priceTypes as $id => $name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('selectedPriceType')
+                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+                        @endif
                     @endif
-
                     {{-- <x-branches::branch-select :branches="$branches" model="branch_id" /> --}}
 
                     @if ($type == 14)
@@ -75,7 +93,8 @@
                             <select wire:model="status" id="status"
                                 class="form-control form-control-sm @error('status') is-invalid @enderror">
                                 @foreach ($statues as $statusCase)
-                                    <option value="{{ $statusCase->value }}">{{ $statusCase->translate() }}</option>
+                                    <option value="{{ $statusCase->value }}">{{ $statusCase->translate() }}
+                                    </option>
                                 @endforeach
                             </select>
                             @error('status')

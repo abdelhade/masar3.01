@@ -87,7 +87,7 @@ class InvoiceReportController extends Controller
         // }
 
         $invoiceData = [
-            'type' => 11,
+            'type' => [15, 11], // Changed from 11 (Purchase Invoice) to 15 (Purchase Order)
             'original_invoice_id' => $originalInvoice->id,
             'original_invoice_number' => $originalInvoice->pro_id,
             'supplier_id' => $originalInvoice->acc1,
@@ -140,8 +140,6 @@ class InvoiceReportController extends Controller
             'subtotal' => $originalInvoice->fat_total ?? 0,
         ];
 
-dd(        $sessionData
-    );
         session()->put('convert_invoice_data', $sessionData);
 
         if (!session()->has('convert_invoice_data')) {
@@ -149,8 +147,8 @@ dd(        $sessionData
         }
 
         return redirect()->route('invoices.create', [
-            'type' => 11,
-            'q' => md5(11)
+            'type' => [15, 11], // Changed from 11 (Purchase Invoice) to 15 (Purchase Order)
+            'q' => md5(15, 11)
         ])->with('success', 'تم تحميل بيانات الطلب. يمكنك الآن التعديل عليها وحفظها كفاتورة مشتريات.');
         // } catch (\Exception $e) {
         //     return redirect()->back()->with('error', 'حدث خطأ أثناء التحويل: ');

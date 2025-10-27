@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\ClientType;
 use Modules\CRM\Models\Lead;
+use Modules\CRM\Models\ClientType;
 use Modules\Branches\Models\Branch;
 use Modules\Inquiries\Models\Inquiry;
 use Modules\CRM\Models\ClientCategory;
@@ -30,7 +30,7 @@ class Client extends Model
         'tenant',
         'branch_id',
         'is_active',
-        'type'
+        'client_type_id',
     ];
 
     protected static function booted()
@@ -40,8 +40,13 @@ class Client extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
-        'type' => ClientType::class,
     ];
+
+
+    public function clientType()
+    {
+        return $this->belongsTo(ClientType::class, 'client_type_id');
+    }
 
     public function branch()
     {

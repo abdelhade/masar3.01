@@ -8,6 +8,7 @@ use Modules\CRM\Http\Controllers\{
     ChanceSourceController,
     ClientCategoryController,
     ClientContactController,
+    ClientTypeController,
     // ClientController,
     LeadController,
     LeadStatusController,
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::resource('client-contacts', ClientContactController::class)->names('client-contacts');
     Route::resource('activities', ActivityController::class)->names('activities');
     Route::resource('client-categories', ClientCategoryController::class)->names('client.categories');
+    Route::resource('client-types', ClientTypeController::class)->names('client-types');
 
     Route::resource('tasks', TaskController::class)->names('tasks');
     Route::resource('tasks-types', TaskTypeController::class)->names('tasks.types');

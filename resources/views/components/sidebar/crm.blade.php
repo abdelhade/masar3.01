@@ -29,6 +29,13 @@
         <i class="ti-control-record"></i>{{ __('Clients Categories') }}
     </a>
 </li>
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('client-types.index') }}">
+        <i class="ti-control-record"></i>{{ __('Clients Types') }}
+    </a>
+</li>
+
 @can('عرض حالات الفرص')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('lead-status.index') }}">

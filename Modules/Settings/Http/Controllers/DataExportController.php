@@ -81,30 +81,51 @@ class DataExportController extends Controller
             $filename = 'erp_database_' . date('Y-m-d_H-i-s') . '.sql';
             $filePath = storage_path('app/temp/' . $filename);
 
-            // التأكد من وجود مجلد temp
             if (!file_exists(storage_path('app/temp'))) {
                 mkdir(storage_path('app/temp'), 0777, true);
             }
 
-            $dbHost = config('database.connections.mysql.host');
-            $dbName = config('database.connections.mysql.database');
-            $dbUser = config('database.connections.mysql.username');
-            $dbPass = config('database.connections.mysql.password');
+            $tables = DB::select('SHOW TABLES');
+            $databaseName = DB::getDatabaseName();
+            $tableKey = 'Tables_in_' . $databaseName;
 
-            // استخدام mysqldump
-            $command = "mysqldump --host={$dbHost} --user={$dbUser} --password={$dbPass} {$dbName} > {$filePath}";
+            $sqlDump = "-- Database Export: {$databaseName}\n";
+            $sqlDump .= "-- Date: " . now()->toDateTimeString() . "\n\n";
 
-            exec($command, $output, $returnCode);
+            foreach ($tables as $table) {
+                $tableName = $table->$tableKey;
 
-            if ($returnCode === 0 && file_exists($filePath)) {
-                return response()->download($filePath)->deleteFileAfterSend(true);
-            } else {
-                return response()->json(['error' => 'فشل في تصدير قاعدة البيانات'], 500);
+                // تخطي جداول Laravel الداخلية
+                if (in_array($tableName, ['migrations', 'failed_jobs', 'password_resets'])) {
+                    continue;
+                }
+
+                // جلب بيانات الجدول
+                $rows = DB::table($tableName)->get();
+
+                if ($rows->isEmpty()) {
+                    continue;
+                }
+
+                foreach ($rows as $row) {
+                    $values = array_map(function ($value) {
+                        return is_null($value) ? 'NULL' : "'" . str_replace("'", "''", $value) . "'";
+                    }, (array) $row);
+
+                    $sqlDump .= "INSERT INTO `{$tableName}` (`" . implode('`,`', array_keys((array) $row)) . "`) VALUES (" . implode(',', $values) . ");\n";
+                }
+
+                $sqlDump .= "\n";
             }
+
+            file_put_contents($filePath, $sqlDump);
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return response()->json(['error' => 'حدث خطأ: ' . $e->getMessage()], 500);
         }
     }
+
 
     // دالة مساعدة لتحويل المصفوفة إلى CSV
     private function arrayToCsv($array)

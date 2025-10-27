@@ -1,48 +1,49 @@
 <?php
 
-use App\Http\Controllers\AccHeadController;
-use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\ContractController;
-use App\Http\Controllers\ContractTypeController;
-use App\Http\Controllers\CostCenterController;
-use App\Http\Controllers\CountryController;
+use Livewire\Volt\Volt;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CvController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\EmployeesJobController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InventoryStartBalanceController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\JournalController;
-use App\Http\Controllers\JournalSummeryController;
 use App\Http\Controllers\KpiController;
-use App\Http\Controllers\MultiJournalController;
-use App\Http\Controllers\MultiVoucherController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NoteController;
-use App\Http\Controllers\PosShiftController;
-use App\Http\Controllers\PosVouchersController;
-use App\Http\Controllers\VoucherController;
-use App\Http\Controllers\PriceController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\RentalController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\ShiftController;
-use App\Http\Controllers\StateController;
 use App\Http\Controllers\TownController;
-use App\Http\Controllers\TransferController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProductionOrderController;
+use App\Http\Controllers\PriceController;
+use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\RentalController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AccHeadController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\JournalController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\VaribalController;
-use App\Http\Controllers\VaribalValueController;
-use App\Http\Controllers\MobileAttendanceController;
+use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PosShiftController;
+use App\Http\Controllers\TransferController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CostCenterController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\PosVouchersController;
+use App\Http\Controllers\ContractTypeController;
 use App\Http\Controllers\EmployeeAuthController;
-use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
+use App\Http\Controllers\EmployeesJobController;
+use App\Http\Controllers\MultiJournalController;
+use App\Http\Controllers\MultiVoucherController;
+use App\Http\Controllers\VaribalValueController;
+use App\Http\Controllers\JournalSummeryController;
+use App\Http\Controllers\InvoiceWorkflowController;
+use App\Http\Controllers\ProductionOrderController;
+use App\Http\Controllers\MobileAttendanceController;
+use App\Http\Controllers\InventoryStartBalanceController;
 
 Route::get('/locale/{locale}', function (string $locale) {
     if (! in_array($locale, ['ar', 'en'], true)) {
@@ -171,6 +172,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class)->names('users');
     // 📁 Invoice Route
     Route::resource('invoices', InvoiceController::class)->names('invoices');
+
+    // list request orders (طلب احتياج)
+    Route::get('/invoices/requests', [InvoiceWorkflowController::class, 'index'])->name('invoices.requests.index');
+    Route::get('/invoices/track/search', [InvoiceWorkflowController::class, 'index'])->name('invoices.track.search');
+    Route::get('/invoices/track/{id}', [InvoiceWorkflowController::class, 'show'])->name('invoices.track');
+    Route::post('/invoices/confirm/{id}', [InvoiceWorkflowController::class, 'confirm'])->name('invoices.confirm');
+
     // 📁 Invoice Print Route
     Route::get('/invoice/print/{operation_id}', [InvoiceController::class, 'print'])->name('invoice.print');
     // 📁 Invoice View Route

@@ -16,6 +16,8 @@ class SaveInvoiceService
             return false;
         }
 
+
+
         $component->validate([
             'acc1_id' => 'required|exists:acc_head,id',
             'acc2_id' => 'required|exists:acc_head,id',
@@ -90,7 +92,8 @@ class SaveInvoiceService
                 'is_journal'     => $isJournal,
                 'is_stock'       => 1,
                 'pro_date'       => $component->pro_date,
-                'op2'            => 0,
+                // op2 may be provided by the create form when converting an existing operation
+                'op2'            => $component->op2 ?? request()->get('op2') ?? 0,
                 'pro_value'      => $component->total_after_additional,
                 'fat_net'        => $component->total_after_additional,
                 'price_list'     => $component->selectedPriceType,
@@ -112,21 +115,68 @@ class SaveInvoiceService
             // تحديث الفاتورة الحالية أو إنشاء جديدة
             if ($isEdit && $component->operationId) {
                 $operation = OperHead::findOrFail($component->operationId);
-
-                // حذف البيانات المرتبطة بالفاتورة القديمة
                 $this->deleteRelatedRecords($operation->id);
-
-                // تحديث بيانات رأس الفاتورة مع الاحتفاظ بـ pro_id الأصلي
-                $operationData['pro_id'] = $operation->pro_id; // الاحتفاظ بالرقم الأصلي
+                $operationData['pro_id'] = $operation->pro_id;
                 $operation->update($operationData);
-
-                // logger()->info('تم تحديث الفاتورة رقم: ' . $operation->id);
             } else {
-                // إنشاء فاتورة جديدة
                 $operationData['pro_id'] = $component->pro_id;
                 $operation = OperHead::create($operationData);
 
-                // logger()->info('تم إنشاء فاتورة جديدة رقم: ' . $operation->id);
+                if (!empty($operationData['op2'])) {
+                    $parentId = $operationData['op2'];
+                    $parent = OperHead::find($parentId);
+
+                    if ($parent) {
+                        $operation->parent_id = $parentId;
+                        $operation->origin_id = $parent->origin_id ?: $parentId;
+
+                        // ✅ تحديد workflow_state حسب النوع
+                        $operation->workflow_state = $this->getWorkflowStateByType($operation->pro_type);
+                        $operation->save();
+
+                        // ✅ تسجيل الانتقال
+                        $this->recordTransition(
+                            $parentId,
+                            $operation->id,
+                            $parent->workflow_state,
+                            $operation->workflow_state,
+                            Auth::id(),
+                            'convert_to_' . $operation->pro_type,
+                            $component->branch_id
+                        );
+
+                        // ✅ تحديث حالة الـ parent
+                        $parent->update([
+                            'workflow_state' => $this->getWorkflowStateByType($operation->pro_type),
+                            'is_locked' => 1 // قفل المستند الأصلي
+                        ]);
+
+                        // ✅ تحديث الـ root (أمر الاحتياج الأصلي)
+                        $rootId = $parent->origin_id ?: $parent->id;
+                        $root = OperHead::find($rootId);
+                        if ($root && $root->id != $parent->id) {
+                            $root->update([
+                                'workflow_state' => $this->getWorkflowStateByType($operation->pro_type),
+                                'is_locked' => 1 // قفل المستند الأصلي
+                            ]);
+
+                            // ✅ تسجيل انتقال إضافي للـ root
+                            $this->recordTransition(
+                                $rootId,
+                                $operation->id,
+                                $root->workflow_state,
+                                $this->getWorkflowStateByType($operation->pro_type),
+                                Auth::id(),
+                                'root_update_to_' . $operation->pro_type,
+                                $component->branch_id
+                            );
+                        }
+                    }
+                } else {
+                    // ✅ إذا كان مستند جديد بدون parent، نحدث الـ workflow_state مباشرة
+                    $operation->workflow_state = $this->getWorkflowStateByType($operation->pro_type);
+                    $operation->save();
+                }
             }
 
             // إضافة عناصر الفاتورة
@@ -205,21 +255,26 @@ class SaveInvoiceService
 
                 // إنشاء عنصر الفاتورة لاى شئ غير التحويلات حاليا النوع 21
                 if ($component->type != 21) {
-                OperationItems::create([
-                    'pro_tybe'      => $component->type,
-                    'detail_store'  => $component->acc2_id,
-                    'pro_id'        => $operation->id, // خل نستخدم id or pro_id
-                    'item_id'       => $itemId,
-                    'unit_id'       => $unitId,
-                    'qty_in'        => $qty_in,
-                    'qty_out'       => $qty_out,
-                    'item_price'    => $price,
-                    'cost_price'    => $itemCost,
-                    'item_discount' => $discount,
-                    'detail_value'  => $subValue,
-                    'notes'         => $invoiceItem['notes'] ?? null,
-                    'is_stock'      => 1,
-                    'profit'        => $profit,
+                    // معالجة خاصة لطلب الاحتياج - يجب أن نضع الكمية في qty_out (اعتباره صرف احتياج)
+                    if ($component->type == 25) {
+                        $qty_in =  $quantity;
+                        $qty_out = 0;
+                    }
+                    OperationItems::create([
+                        'pro_tybe'      => $component->type,
+                        'detail_store'  => $component->acc2_id,
+                        'pro_id'        => $operation->id, // خل نستخدم id or pro_id
+                        'item_id'       => $itemId,
+                        'unit_id'       => $unitId,
+                        'qty_in'        => $qty_in,
+                        'qty_out'       => $qty_out,
+                        'item_price'    => $price,
+                        'cost_price'    => $itemCost,
+                        'item_discount' => $discount,
+                        'detail_value'  => $subValue,
+                        'notes'         => $invoiceItem['notes'] ?? null,
+                        'is_stock'      => 1,
+                        'profit'        => $profit,
                         'branch_id' => $component->branch_id
                     ]);
                 }
@@ -260,6 +315,19 @@ class SaveInvoiceService
             );
             return false;
         }
+    }
+
+    private function getWorkflowStateByType($proType)
+    {
+        $states = [
+            25 => 1, // طلب احتياج → submitted
+            17 => 2, // عرض سعر من مورد → quoted
+            15 => 3, // أمر شراء → purchase_order
+            11 => 4, // فاتورة شراء → invoiced
+            19 => 5, // إذن صرف → transferred
+        ];
+
+        return $states[$proType] ?? 0;
     }
 
     private function updateAverageCost($itemId, $quantity, $subValue, $currentCost)
@@ -412,6 +480,32 @@ class SaveInvoiceService
         // قيد تكلفة البضاعة المباعة للمبيعات
         if (in_array($component->type, [10, 12, 19])) {
             $this->createCostOfGoodsJournal($component, $operation);
+        }
+    }
+
+    /**
+     * Record an operation transition between two operhead records for audit and workflow tracking.
+     */
+    private function recordTransition(?int $fromId, ?int $toId, ?int $fromState, ?int $toState, ?int $userId, string $action, ?int $branchId = null): void
+    {
+        if (!$fromId || !$toId) {
+            return;
+        }
+
+        try {
+            DB::table('operation_transitions')->insert([
+                'from_operhead_id' => $fromId,
+                'to_operhead_id' => $toId,
+                'from_state' => $fromState ?? 0,
+                'to_state' => $toState ?? 0,
+                'user_id' => $userId,
+                'action' => $action,
+                'notes' => null,
+                'created_at' => now(),
+                'branch_id' => $branchId,
+            ]);
+        } catch (\Exception) {
+            return;
         }
     }
 

@@ -101,7 +101,9 @@
                                 $accountType = 'supplier';
                             }
                         @endphp
-                        <livewire:accounts::account-creator :type="$accountType" :button-class="'btn btn-sm btn-success'" :button-text="$accountType === 'client' ? 'إضافة عميل' : 'إضافة مورد'" />
+                        @if (setting('invoice_show_add_clients_suppliers'))
+                            <livewire:accounts::account-creator :type="$accountType" :button-class="'btn btn-sm btn-success'" :button-text="$accountType === 'client' ? 'إضافة عميل' : 'إضافة مورد'" />
+                        @endif
                     @endif
                 </div>
                 @error('acc1_id')
@@ -168,21 +170,22 @@
                 @enderror
             </div>
 
-            {{-- تاريخ الاستحقاق --}}
-            @if ($type != 21)
-                {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
-                <div class="col-lg-1">
-                    <label for="accural_date" class="form-label"
-                        style="font-size: 1em;"">{{ __('تاريخ الاستحقاق') }}</label>
-                    <input type="date" wire:model="accural_date"
-                        class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('accural_date') is-invalid @enderror"
-                        style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                    @error('accural_date')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
-            @endif {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
-
+            @if (setting('invoice_use_due_date'))
+                {{-- تاريخ الاستحقاق --}}
+                @if ($type != 21)
+                    {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
+                    <div class="col-lg-1">
+                        <label for="accural_date" class="form-label"
+                            style="font-size: 1em;"">{{ __('تاريخ الاستحقاق') }}</label>
+                        <input type="date" wire:model="accural_date"
+                            class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('accural_date') is-invalid @enderror"
+                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
+                        @error('accural_date')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+                @endif {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
+            @endif
             {{-- رقم الفاتورة (pro_id) ثابت --}}
             <div class="col-lg-1 ">
                 <label for="pro_id" class="form-label" style="font-size: 1em;">{{ __('رقم الفاتورة') }}</label>

@@ -4,7 +4,7 @@
 @section('sidebar')
     @if (in_array($invoiceType, [10, 12, 14, 16, 22]))
         @include('components.sidebar.sales-invoices')
-    @elseif (in_array($invoiceType, [11, 13, 15, 17, 24]))
+    @elseif (in_array($invoiceType, [11, 13, 15, 17, 24, 25]))
         @include('components.sidebar.purchases-invoices')
     @elseif (in_array($invoiceType, [18, 19, 20, 21]))
         @include('components.sidebar.inventory-invoices')

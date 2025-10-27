@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ClientType;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -35,13 +34,9 @@ class ClientRequest extends FormRequest
             'is_active'        => 'boolean',
             'tenant'           => 'nullable|integer',
             'branch'           => 'nullable|integer',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id'        => 'nullable|exists:branches,id',
             'client_category_id' => 'nullable|exists:client_categories,id',
-            'type' => [
-                'required',
-                'integer',
-                Rule::in(array_map(fn($case) => $case->value, ClientType::cases())),
-            ],
+            'client_type_id'     => 'nullable|exists:client_types,id',
         ];
 
         // إضافة قاعدة التحقق لـ email فقط إذا تم إدخال قيمة

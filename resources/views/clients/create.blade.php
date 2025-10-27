@@ -152,19 +152,17 @@
                             {{-- النوع والحالة --}}
                             <div class="row g-3">
                                 <!-- حقل النوع -->
-                                <div class="mb-3 col-lg-3">
-                                    <label class="form-label" for="type">الصفه</label>
-                                    <select class="form-control" id="type" name="type">
-                                        @foreach (\App\Enums\ClientType::cases() as $case)
-                                            <option value="{{ $case->value }}"
-                                                {{ old('type', $client->type->value ?? '') == $case->value ? 'selected' : '' }}>
-                                                {{ $case->label() }}
+                                <div class="col-md-3 mb-3">
+                                    <label for="client_type_id" class="form-label">{{ __('نوع العميل') }}</label>
+                                    <select name="client_type_id" id="client_type_id" class="form-select" required>
+                                        <option value="">{{ __('اختر نوع العميل') }}</option>
+                                        @foreach ($clientTypes as $type)
+                                            <option value="{{ $type->id }}"
+                                                {{ old('client_type_id') == $type->id ? 'selected' : '' }}>
+                                                {{ $type->title }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('type')
-                                        <small class="text-danger">{{ $message }}</small>
-                                    @enderror
                                 </div>
 
                                 <div class="col-lg-3 col-md-6">
@@ -224,25 +222,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const typeSelect = document.getElementById("type");
-            const genderSelect = document.getElementById("gender");
-
-            function toggleGender() {
-
-                if (parseInt(typeSelect.value) === 2) {
-                    genderSelect.disabled = true;
-                    genderSelect.value = "";
-                } else {
-                    genderSelect.disabled = false;
-                }
-            }
-
-            toggleGender();
-            typeSelect.addEventListener("change", toggleGender);
-        });
-    </script>
-@endpush

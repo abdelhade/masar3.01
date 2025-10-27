@@ -134,6 +134,22 @@
                         @enderror
                     </div>
 
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">نوع العميل <span class="text-danger">*</span></label>
+                        <select class="form-select" wire:model="newClient.client_type_id" disabled>
+                            <option value="">-- اختر النوع --</option>
+                            @foreach (\Modules\CRM\Models\ClientType::all() as $type)
+                                <option value="{{ $type->id }}"
+                                    {{ $type->id == $modalClientType ? 'selected' : '' }}>
+                                    {{ $type->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('newClient.client_type_id')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
                     <div class="col-md-4 mb-3">
                         <label class="form-label">شخص للتواصل</label>
                         <input type="text" class="form-control" wire:model="newClient.contact_person"

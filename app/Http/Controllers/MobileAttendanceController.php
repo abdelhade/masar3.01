@@ -7,6 +7,8 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class MobileAttendanceController extends Controller
@@ -33,7 +35,8 @@ class MobileAttendanceController extends Controller
             $validator = Validator::make($request->all(), [
                 'type' => 'required|in:check_in,check_out',
                 'location' => 'nullable|string',
-                'notes' => 'nullable|string|max:500'
+                'notes' => 'nullable|string|max:500',
+                'project_code' => 'nullable|string|max:50'
             ]);
 
             if ($validator->fails()) {
@@ -62,11 +65,29 @@ class MobileAttendanceController extends Controller
             $locationData = null;
             if ($request->location) {
                 $decoded = json_decode($request->location, true);
-                $locationData = $decoded !== null ? $decoded : $request->location;
+                if ($decoded !== null) {
+                    // التحقق من صحة بيانات الموقع
+                    if (isset($decoded['latitude']) && isset($decoded['longitude'])) {
+                        // تقريب الإحداثيات لتقليل التباين
+                        $decoded['latitude'] = round($decoded['latitude'], 6);
+                        $decoded['longitude'] = round($decoded['longitude'], 6);
+                        
+                        // إضافة معلومات إضافية
+                        $decoded['captured_at'] = now()->toISOString();
+                        $decoded['source'] = 'mobile_gps';
+                        
+                        $locationData = $decoded;
+                    } else {
+                        $locationData = $request->location;
+                    }
+                } else {
+                    // إذا فشل التحويل، احفظ كـ string
+                    $locationData = $request->location;
+                }
             }
 
             // إنشاء سجل الحضور
-            $attendance = Attendance::create([
+            $attendanceData = [
                 'employee_id' => $employeeId,
                 'employee_attendance_finger_print_id' => $fingerPrintId,
                 'employee_attendance_finger_print_name' => $fingerPrintName,
@@ -76,8 +97,18 @@ class MobileAttendanceController extends Controller
                 'location' => $locationData,
                 'status' => 'pending', // افتراضياً قيد المراجعة
                 'notes' => $request->notes,
+                'project_code' => $request->project_code, // إضافة كود المشروع
                 'user_id' => null // لا يوجد user للموظفين
-            ]);
+            ];
+
+            // التحقق من اتصال قاعدة البيانات
+            try {
+                DB::connection()->getPdo();
+            } catch (\Exception $dbException) {
+                throw $dbException;
+            }
+
+            $attendance = Attendance::create($attendanceData);
 
             // إرجاع النتيجة
             return response()->json([
@@ -89,15 +120,23 @@ class MobileAttendanceController extends Controller
                     'date' => $attendance->date,
                     'time' => $attendance->time,
                     'status' => $attendance->status,
-                    'location' => $attendance->location
+                    'location' => $attendance->location,
+                    'project_code' => $attendance->project_code
                 ]
             ], 201);
 
         } catch (\Exception $e) {
+            // تحديد نوع الخطأ وإعطاء رسالة مناسبة
+            $errorMessage = 'حدث خطأ في تسجيل البصمة';
+            if (strpos($e->getMessage(), 'Data too long') !== false) {
+                $errorMessage = 'البيانات المرسلة كبيرة جداً. يرجى المحاولة مرة أخرى';
+            } elseif (strpos($e->getMessage(), 'SQLSTATE') !== false) {
+                $errorMessage = 'خطأ في قاعدة البيانات. يرجى المحاولة مرة أخرى';
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في تسجيل البصمة',
-                'error' => $e->getMessage()
+                'message' => $errorMessage
             ], 500);
         }
     }
@@ -138,15 +177,15 @@ class MobileAttendanceController extends Controller
                     'time' => $lastAttendance->time,
                     'status' => $lastAttendance->status,
                     'location' => $lastAttendance->location,
-                    'notes' => $lastAttendance->notes
+                    'notes' => $lastAttendance->notes,
+                    'project_code' => $lastAttendance->project_code
                 ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في جلب آخر بصمة',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في جلب آخر بصمة'
             ], 500);
         }
     }
@@ -195,7 +234,8 @@ class MobileAttendanceController extends Controller
                         'time' => $attendance->time,
                         'status' => $attendance->status,
                         'location' => $attendance->location,
-                        'notes' => $attendance->notes
+                        'notes' => $attendance->notes,
+                        'project_code' => $attendance->project_code
                     ];
                 })
             ]);
@@ -203,8 +243,7 @@ class MobileAttendanceController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في جلب تاريخ البصمات',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في جلب تاريخ البصمات'
             ], 500);
         }
     }
@@ -260,8 +299,7 @@ class MobileAttendanceController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في جلب إحصائيات البصمات',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في جلب إحصائيات البصمات'
             ], 500);
         }
     }
@@ -329,8 +367,7 @@ class MobileAttendanceController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في التحقق من إمكانية تسجيل البصمة',
-                'error' => $e->getMessage()
+                'message' => 'حدث خطأ في التحقق من إمكانية تسجيل البصمة'
             ], 500);
         }
     }

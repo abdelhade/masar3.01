@@ -3,7 +3,6 @@
 namespace Modules\CRM\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ClientContactRequest extends FormRequest
 {
@@ -15,13 +14,7 @@ class ClientContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'client_id' => [
-                'required',
-                Rule::exists('clients', 'id')
-                    ->where(function ($query) {
-                        $query->whereIn('type', [2, 3, 4, 5, 6]);
-                    }),
-            ],
+            'client_id' => ['required', 'exists:clients,id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
@@ -32,8 +25,8 @@ class ClientContactRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'client_id.required' => 'يرجى اختيار شركة.',
-            'client_id.exists' => 'الشركة المختارة غير موجودة أو غير صالحة.',
+            'client_id.required' => 'يرجى اختيار عميل.',
+            'client_id.exists' => 'العميل المختار غير موجود.',
             'name.required' => 'يرجى إدخال الاسم.',
             'email.required' => 'يرجى إدخال البريد الإلكتروني.',
             'email.email' => 'صيغة البريد الإلكتروني غير صحيحة.',

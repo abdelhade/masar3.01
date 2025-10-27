@@ -12,8 +12,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         * {
@@ -22,7 +20,7 @@
         
         body {
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #000000 0%, #1d1b1d 100%);
             min-height: 100vh;
             margin: 0;
             padding: 0;
@@ -87,8 +85,8 @@
         }
         
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #2d50ec;
+            box-shadow: 0 0 0 0.2rem rgba(10, 14, 250, 0.25);
             outline: none;
         }
         
@@ -123,7 +121,7 @@
             border-radius: 15px;
             font-size: 16px;
             font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #395dfc 0%, #1c32fa 100%);
             color: white;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -177,6 +175,25 @@
             display: none;
             font-size: 14px;
             line-height: 1.4;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .field-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+            animation: pulse 1s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
         
         .success-message {
@@ -494,7 +511,7 @@
             
             <button type="submit" class="login-btn" id="loginBtn">
                 <i class="fas fa-sign-in-alt"></i>
-                <span>تسجيل الدخول</span>
+                <span> تسجيل الدخول للبصمه</span>
             </button>
         </form>
         
@@ -521,6 +538,40 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // إخفاء رسائل console.log غير المرغوب فيها
+        (function() {
+            const originalLog = console.log;
+            const originalDebug = console.debug;
+            const originalWarn = console.warn;
+            
+            console.log = function(...args) {
+                const message = args.join(' ');
+                // تجاهل الرسائل التي تحتوي على هذه الكلمات
+                if (message.includes('false disabled installed not_installed cannot_run ready_to_run running')) {
+                    return;
+                }
+                originalLog.apply(console, args);
+            };
+            
+            console.debug = function(...args) {
+                const message = args.join(' ');
+                // تجاهل رسائل debug غير المرغوب فيها
+                if (message.includes('false disabled installed not_installed cannot_run ready_to_run running')) {
+                    return;
+                }
+                originalDebug.apply(console, args);
+            };
+            
+            console.warn = function(...args) {
+                const message = args.join(' ');
+                // تجاهل رسائل warning غير المرغوب فيها
+                if (message.includes('false disabled installed not_installed cannot_run ready_to_run running')) {
+                    return;
+                }
+                originalWarn.apply(console, args);
+            };
+        })();
+        
         let currentEmployee = null;
         
         // تهيئة الصفحة
@@ -539,34 +590,57 @@
             document.body.style.overflow = 'hidden';
             
             // التركيز على أول حقل
-            document.getElementById('fingerPrintId').focus();
+            const fingerPrintIdField = document.getElementById('fingerPrintId');
+            if (fingerPrintIdField) {
+                fingerPrintIdField.focus();
+            }
+            
+            // تحسين الأداء - إخفاء رسائل console غير المرغوب فيها
+            console.clear();
         }
         
         function setupEventListeners() {
             // تسجيل الدخول
-            document.getElementById('employeeLoginForm').addEventListener('submit', handleLogin);
+            const loginForm = document.getElementById('employeeLoginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
             
             // Enter key navigation
-            document.getElementById('fingerPrintId').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    document.getElementById('fingerPrintName').focus();
-                }
-            });
+            const fingerPrintIdField = document.getElementById('fingerPrintId');
+            const fingerPrintNameField = document.getElementById('fingerPrintName');
+            const passwordField = document.getElementById('password');
             
-            document.getElementById('fingerPrintName').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    document.getElementById('password').focus();
-                }
-            });
+            if (fingerPrintIdField) {
+                fingerPrintIdField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (fingerPrintNameField) {
+                            fingerPrintNameField.focus();
+                        }
+                    }
+                });
+            }
             
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleLogin(e);
-                }
-            });
+            if (fingerPrintNameField) {
+                fingerPrintNameField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (passwordField) {
+                            passwordField.focus();
+                        }
+                    }
+                });
+            }
+            
+            if (passwordField) {
+                passwordField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin(e);
+                    }
+                });
+            }
         }
         
         async function handleLogin(e) {
@@ -578,13 +652,31 @@
             
             // التحقق من البيانات المطلوبة
             if (!fingerPrintId || !fingerPrintName || !password) {
-                showError('يرجى ملء جميع الحقول المطلوبة');
+                let missingFields = [];
+                if (!fingerPrintId) missingFields.push('رقم البصمة');
+                if (!fingerPrintName) missingFields.push('اسم البصمة');
+                if (!password) missingFields.push('كلمة المرور');
+                
+                showError(`يرجى ملء الحقول التالية: ${missingFields.join('، ')}`);
+                
+                // التركيز على أول حقل فارغ
+                if (!fingerPrintId) {
+                    document.getElementById('fingerPrintId').focus();
+                } else if (!fingerPrintName) {
+                    document.getElementById('fingerPrintName').focus();
+                } else if (!password) {
+                    document.getElementById('password').focus();
+                }
                 return;
             }
             
             // إظهار Loading
             showLoading(true);
             hideMessages();
+            
+            // إضافة timeout للطلب
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 ثانية
             
             try {
                 // إرسال بيانات تسجيل الدخول
@@ -600,16 +692,23 @@
                         finger_print_id: parseInt(fingerPrintId),
                         finger_print_name: fingerPrintName,
                         password: password
-                    })
+                    }),
+                    signal: controller.signal
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                // إلغاء timeout
+                clearTimeout(timeoutId);
+                
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    console.error('JSON parse error:', jsonError);
+                    showError('حدث خطأ في استقبال البيانات من الخادم');
+                    return;
                 }
                 
-                const result = await response.json();
-                
-                if (result.success) {
+                if (response.ok && result.success) {
                     // نجح تسجيل الدخول
                     currentEmployee = result.data.employee;
                     showSuccess('تم تسجيل الدخول بنجاح');
@@ -621,12 +720,38 @@
                     }, 2000);
                     
                 } else {
-                    // فشل تسجيل الدخول
-                    showError(result.message || 'بيانات الدخول غير صحيحة');
+                    // فشل تسجيل الدخول - عرض الرسالة الواضحة
+                    if (result && result.message) {
+                        handleLoginError(result);
+                    } else {
+                        showError('حدث خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى');
+                    }
                 }
                 
             } catch (error) {
-                showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى');
+                console.error('Login error:', error);
+                
+                // إلغاء timeout
+                clearTimeout(timeoutId);
+                
+                // التحقق من نوع الخطأ
+                if (error.name === 'AbortError') {
+                    showError('انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى');
+                } else if (error.message.includes('HTTP error! status: 401')) {
+                    showError('بيانات الدخول غير صحيحة. يرجى التحقق من رقم البصمة واسم البصمة وكلمة المرور');
+                } else if (error.message.includes('HTTP error! status: 403')) {
+                    showError('حساب الموظف معطل. يرجى التواصل مع الإدارة لتفعيل الحساب');
+                } else if (error.message.includes('HTTP error! status: 422')) {
+                    showError('بيانات غير صحيحة. يرجى التحقق من جميع الحقول المطلوبة');
+                } else if (error.message.includes('HTTP error! status: 500')) {
+                    showError('حدث خطأ في الخادم. يرجى المحاولة لاحقاً أو التواصل مع الإدارة');
+                } else if (error.message.includes('Failed to fetch')) {
+                    showError('لا يمكن الاتصال بالخادم. يرجى التحقق من الاتصال بالإنترنت');
+                } else if (error.message.includes('NetworkError')) {
+                    showError('خطأ في الشبكة. يرجى التحقق من الاتصال بالإنترنت');
+                } else {
+                    showError('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى');
+                }
                 return; // إيقاف التنفيذ عند حدوث خطأ
             } finally {
                 showLoading(false);
@@ -637,44 +762,147 @@
             const loading = document.getElementById('loading');
             const loginBtn = document.getElementById('loginBtn');
             
-            if (show) {
-                loading.style.display = 'block';
-                loginBtn.disabled = true;
-                loginBtn.style.opacity = '0.6';
-            } else {
-                loading.style.display = 'none';
-                loginBtn.disabled = false;
-                loginBtn.style.opacity = '1';
+            if (loading && loginBtn) {
+                if (show) {
+                    loading.style.display = 'block';
+                    loginBtn.disabled = true;
+                    loginBtn.style.opacity = '0.6';
+                } else {
+                    loading.style.display = 'none';
+                    loginBtn.disabled = false;
+                    loginBtn.style.opacity = '1';
+                }
             }
         }
         
         function showError(message) {
             hideMessages(); // إخفاء جميع الرسائل أولاً
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                
+                // إخفاء الرسالة بعد 5 ثواني
+                setTimeout(() => {
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+        
+        function handleLoginError(result) {
+            // التحقق من وجود result
+            if (!result) {
+                showError('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى');
+                return;
+            }
             
-            // إخفاء الرسالة بعد 5 ثواني
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
+            const errorType = result.error_type;
+            let message = result.message || 'بيانات الدخول غير صحيحة';
+            
+            // تحسين الرسائل حسب نوع الخطأ
+            if (errorType === 'finger_print_id') {
+                message = 'رقم البصمة غير صحيح. يرجى التحقق من رقم البصمة المدخل';
+            } else if (errorType === 'finger_print_name') {
+                message = 'اسم البصمة غير صحيح. يرجى التحقق من اسم البصمة المدخل';
+            } else if (errorType === 'wrong_password') {
+                message = 'كلمة المرور غير صحيحة. يرجى التحقق من كلمة المرور المدخلة';
+            } else if (errorType === 'no_password') {
+                message = 'لم يتم تعيين كلمة مرور لهذا الموظف. يرجى التواصل مع الإدارة';
+            } else if (errorType === 'account_disabled') {
+                message = 'حساب الموظف معطل. يرجى التواصل مع الإدارة لتفعيل الحساب';
+            }
+            
+            // إظهار رسالة الخطأ
+            showError(message);
+            
+            // التركيز على الحقل المناسب حسب نوع الخطأ
+            switch (errorType) {
+                case 'finger_print_id':
+                    // التركيز على حقل رقم البصمة
+                    const fingerPrintIdField = document.getElementById('fingerPrintId');
+                    if (fingerPrintIdField) {
+                        fingerPrintIdField.focus();
+                        fingerPrintIdField.select();
+                        // إضافة تأثير بصري
+                        fingerPrintIdField.classList.add('field-error');
+                        setTimeout(() => {
+                            fingerPrintIdField.classList.remove('field-error');
+                        }, 3000);
+                    }
+                    break;
+                    
+                case 'finger_print_name':
+                    // التركيز على حقل اسم البصمة
+                    const fingerPrintNameField = document.getElementById('fingerPrintName');
+                    if (fingerPrintNameField) {
+                        fingerPrintNameField.focus();
+                        fingerPrintNameField.select();
+                        // إضافة تأثير بصري
+                        fingerPrintNameField.classList.add('field-error');
+                        setTimeout(() => {
+                            fingerPrintNameField.classList.remove('field-error');
+                        }, 3000);
+                    }
+                    break;
+                    
+                case 'wrong_password':
+                case 'no_password':
+                    // التركيز على حقل كلمة المرور
+                    const passwordField = document.getElementById('password');
+                    if (passwordField) {
+                        passwordField.focus();
+                        passwordField.select();
+                        // إضافة تأثير بصري
+                        passwordField.classList.add('field-error');
+                        setTimeout(() => {
+                            passwordField.classList.remove('field-error');
+                        }, 3000);
+                    }
+                    break;
+                    
+                case 'account_disabled':
+                    // لا نركز على أي حقل، فقط نعرض الرسالة
+                    console.log('Employee status:', result.employee_status);
+                    break;
+                    
+                default:
+                    // التركيز على أول حقل
+                    const firstField = document.getElementById('fingerPrintId');
+                    if (firstField) {
+                        firstField.focus();
+                    }
+                    break;
+            }
         }
         
         function showSuccess(message) {
             hideMessages(); // إخفاء جميع الرسائل أولاً
             const successDiv = document.getElementById('successMessage');
-            successDiv.textContent = message;
-            successDiv.style.display = 'block';
-            
-            // إخفاء الرسالة بعد 3 ثواني
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 3000);
+            if (successDiv) {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+                
+                // إخفاء الرسالة بعد 3 ثواني
+                setTimeout(() => {
+                    if (successDiv) {
+                        successDiv.style.display = 'none';
+                    }
+                }, 3000);
+            }
         }
         
         function hideMessages() {
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'none';
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+            if (successDiv) {
+                successDiv.style.display = 'none';
+            }
         }
         
         function showEmployeeInfo(employee) {
@@ -682,15 +910,17 @@
             const employeeName = document.getElementById('employeeName');
             const employeeDetails = document.getElementById('employeeDetails');
             
-            employeeName.textContent = employee.name;
-            employeeDetails.innerHTML = `
-                <strong>رقم الموظف:</strong> ${employee.id}<br>
-                <strong>المنصب:</strong> ${employee.position || 'غير محدد'}<br>
-                <strong>القسم:</strong> ${employee.department?.name || 'غير محدد'}<br>
-                <strong>الحالة:</strong> ${employee.status}
-            `;
-            
-            employeeInfo.style.display = 'block';
+            if (employeeInfo && employeeName && employeeDetails) {
+                employeeName.textContent = employee.name;
+                employeeDetails.innerHTML = `
+                    <strong>رقم الموظف:</strong> ${employee.id}<br>
+                    <strong>المنصب:</strong> ${employee.position || 'غير محدد'}<br>
+                    <strong>القسم:</strong> ${employee.department?.name || 'غير محدد'}<br>
+                    <strong>الحالة:</strong> ${employee.status}
+                `;
+                
+                employeeInfo.style.display = 'block';
+            }
         }
         
         // منع إغلاق الصفحة أثناء التحميل

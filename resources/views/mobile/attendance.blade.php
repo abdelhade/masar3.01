@@ -23,7 +23,7 @@
         
         body {
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1b1b22 0%, #383841 100%);
             min-height: 100vh;
             margin: 0;
             padding: 0;
@@ -74,52 +74,72 @@
         }
         
         .attendance-subtitle {
-            color: #666;
+            color: #856404;
             font-size: 13px;
             line-height: 1.4;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 10px 0;
+            text-align: center;
         }
         
         .user-info {
             background: #f8f9fa;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .user-avatar {
-            width: 70px;
-            height: 70px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
             color: white;
-            font-size: 28px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .user-content {
+            flex: 1;
+            min-width: 0;
         }
         
         .user-name {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .user-id {
             color: #666;
-            font-size: 13px;
+            font-size: 10px;
+            margin-bottom: 2px;
         }
         
         .user-details {
-            margin-top: 8px;
-            font-size: 11px;
+            font-size: 8px;
             color: #666;
-            line-height: 1.4;
+            line-height: 1.2;
         }
         
         .user-details div {
-            margin-bottom: 2px;
+            margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .attendance-type {
@@ -147,6 +167,8 @@
             align-items: center;
             justify-content: center;
         }
+
+        
         
         .type-btn.active {
             border-color: #28a745;
@@ -154,8 +176,19 @@
             color: white;
         }
         
+        .type-btn[data-type="check_out"].active {
+            border-color: #dc3545;
+            background: #dc3545;
+            color: white;
+        }
+        
         .type-btn:hover:not(.active) {
             border-color: #28a745;
+            transform: translateY(-2px);
+        }
+        
+        .type-btn[data-type="check_out"]:hover:not(.active) {
+            border-color: #dc3545;
             transform: translateY(-2px);
         }
         
@@ -193,7 +226,7 @@
         }
         
         .btn-checkout {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            background: #dc3545;
             color: white;
         }
         
@@ -519,28 +552,27 @@
             }
             
             .user-info {
-                padding: 12px;
-                margin-bottom: 15px;
+                padding: 6px;
+                margin-bottom: 8px;
+                gap: 8px;
             }
             
             .user-avatar {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                margin-bottom: 8px;
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
             }
             
             .user-name {
-                font-size: 14px;
-            }
-            
-            .user-id {
                 font-size: 11px;
             }
             
+            .user-id {
+                font-size: 9px;
+            }
+            
             .user-details {
-                font-size: 10px;
-                margin-top: 5px;
+                font-size: 7px;
             }
             
             .attendance-type {
@@ -697,7 +729,9 @@
             }
             
             .attendance-subtitle {
-                color: #cccccc;
+                color: #ffffff;
+                background: #664d03;
+                border: 1px solid #997404;
             }
             
             .user-info {
@@ -782,6 +816,23 @@
             }
         }
         
+        /* تحسينات لحقل كود المشروع */
+        #project-code {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        #project-code:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+        
+        .project-code-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+        }
+        
         /* تحسينات للشاشات الكبيرة جداً */
         @media (min-width: 768px) {
             .attendance-container {
@@ -861,13 +912,15 @@
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <div class="user-name" id="employeeName">المستخدم</div>
-                <div class="user-id">رقم الموظف: <span id="employeeId">-</span></div>
-                <div class="user-details">
-                    <div>رقم البصمة: <span id="fingerPrintId">-</span></div>
-                    <div>اسم البصمة: <span id="fingerPrintName">-</span></div>
-                    <div>المنصب: <span id="employeePosition">-</span></div>
-                    <div>القسم: <span id="employeeDepartment">-</span></div>
+                <div class="user-content">
+                    <div class="user-name" id="employeeName">المستخدم</div>
+                    <div class="user-id">رقم الموظف: <span id="employeeId">-</span></div>
+                    <div class="user-details">
+                        <div>رقم البصمة: <span id="fingerPrintId">-</span></div>
+                        <div>اسم البصمة: <span id="fingerPrintName">-</span></div>
+                        <div>المنصب: <span id="employeePosition">-</span></div>
+                        <div>القسم: <span id="employeeDepartment">-</span></div>
+                    </div>
                 </div>
             </div>
             
@@ -891,7 +944,7 @@
                 display: none;
             " id="location-help">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>تنبيه مهم:</strong> تحديد الموقع إجباري لتسجيل البصمة. يرجى السماح بالوصول للموقع في إعدادات المتصفح. 
+                <strong>تنبيه مهم:</strong> تحديد الموقع إجباري لتسجيل البصمة. يرجى السماح بالوصول  للموقع في إعدادات المتصفح و الهاتف. 
                 إذا كنت تستخدم HTTP، قد تحتاج إلى استخدام HTTPS لتحديد الموقع.
             </div>
             
@@ -900,13 +953,42 @@
                 <div class="type-buttons">
                     <div class="type-btn active" data-type="check_in">
                         <i class="fas fa-sign-in-alt type-icon"></i>
-                        <div class="type-label">دخول</div>
+                        <div class="type-label">بصمه دخول</div>
                     </div>
                     <div class="type-btn" data-type="check_out">
-                        <i class="fas fa-sign-out-alt type-icon"></i>
-                        <div class="type-label">خروج</div>
+                        <i class="fas fa-sign-out-alt type-icon" style="transform: scaleX(-1);"></i>
+                        <div class="type-label">بصمه خروج</div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- كود المشروع -->
+            <div class="project-code-section" style="margin-bottom: 15px;">
+                <label for="project-code" style="
+                    display: block; 
+                    font-size: 13px; 
+                    font-weight: bold; 
+                    color: #333; 
+                    margin-bottom: 8px;
+                    text-align: right;
+                ">كود المشروع (اختياري)</label>
+                <input type="text" 
+                       id="project-code" 
+                       name="project_code" 
+                       placeholder="أدخل كود المشروع..." 
+                       maxlength="50"
+                       style="
+                           width: 100%; 
+                           padding: 12px; 
+                           border: 2px solid #e9ecef; 
+                           border-radius: 10px; 
+                           font-size: 14px; 
+                           text-align: right;
+                           transition: border-color 0.3s ease;
+                           background: white;
+                       "
+                       onfocus="this.style.borderColor='#28a745'"
+                       onblur="this.style.borderColor='#e9ecef'">
             </div>
             
             <!-- زر تسجيل البصمة -->
@@ -1039,6 +1121,54 @@
             }
         }
         
+        // دالة للحصول على موقع أكثر دقة
+        async function getAccurateLocation() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 3;
+                const minAccuracy = 200; // دقة مقبولة بالمتر (أكثر واقعية)
+                
+                function tryGetLocation() {
+                    attempts++;
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            // التحقق من دقة الموقع
+                            if (position.coords.accuracy <= minAccuracy || attempts >= maxAttempts) {
+                                console.log(`الموقع محدد بدقة: ${position.coords.accuracy}m (محاولة ${attempts})`);
+                                resolve(position);
+                            } else {
+                                console.log(`دقة الموقع ضعيفة: ${position.coords.accuracy}m (محاولة ${attempts})`);
+                                if (attempts < maxAttempts) {
+                                    // محاولة أخرى مع إعدادات مختلفة
+                                    setTimeout(tryGetLocation, 2000);
+                                } else {
+                                    // قبول الموقع حتى لو كانت الدقة ضعيفة
+                                    console.log('قبول الموقع بالدقة المتاحة');
+                                    resolve(position);
+                                }
+                            }
+                        },
+                        (error) => {
+                            if (attempts < maxAttempts) {
+                                console.log(`فشل محاولة ${attempts}، إعادة المحاولة...`);
+                                setTimeout(tryGetLocation, 2000);
+                            } else {
+                                reject(error);
+                            }
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 20000,
+                            maximumAge: 0 // عدم استخدام الموقع المخزن
+                        }
+                    );
+                }
+                
+                tryGetLocation();
+            });
+        }
+
         async function getCurrentLocation() {
             try {
                 if (!navigator.geolocation) {
@@ -1053,17 +1183,8 @@
                 // إظهار رسالة تحميل
                 showLocationLoading();
                 
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(
-                        resolve, 
-                        reject, 
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 30000, // زيادة الوقت إلى 30 ثانية
-                            maximumAge: 60000 // السماح بالموقع المخزن لمدة دقيقة
-                        }
-                    );
-                });
+                // محاولة الحصول على موقع أكثر دقة
+                const position = await getAccurateLocation();
                 
                 currentLocation = {
                     latitude: position.coords.latitude,
@@ -1102,8 +1223,12 @@
                     return;
                 }
                 
+                // تحسين الإحداثيات لتقليل التباين
+                const roundedLat = Math.round(lat * 1000000) / 1000000; // 6 خانات عشرية
+                const roundedLng = Math.round(lng * 1000000) / 1000000;
+                
                 const response = await fetch(
-                    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=ar`
+                    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${roundedLat},${roundedLng}&key=${apiKey}&language=ar&result_type=street_address|route|locality|administrative_area_level_1|country`
                 );
                 
                 if (!response.ok) {
@@ -1113,23 +1238,51 @@
                 const data = await response.json();
                 
                 if (data.status === 'OK' && data.results.length > 0) {
-                    const address = data.results[0].formatted_address;
+                    // اختيار العنوان الأكثر تفصيلاً
+                    let address = data.results[0].formatted_address;
+                    
+                    // إذا كان العنوان طويل جداً، اختصار العنوان
+                    if (address.length > 100) {
+                        // البحث عن عنوان أقصر
+                        for (let i = 1; i < data.results.length && i < 3; i++) {
+                            if (data.results[i].formatted_address.length <= 100) {
+                                address = data.results[i].formatted_address;
+                                break;
+                            }
+                        }
+                    }
+                    
                     document.getElementById('location-address').textContent = address;
-                    document.getElementById('location-coordinates').textContent = 
-                        `إحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    
+                    // إضافة تحذير إذا كانت الدقة ضعيفة
+                    let accuracyText = `إحداثيات: ${roundedLat.toFixed(6)}, ${roundedLng.toFixed(6)} (دقة: ${currentLocation.accuracy.toFixed(1)}m)`;
+                    if (currentLocation.accuracy > 100) {
+                        accuracyText += ' ⚠️';
+                    }
+                    document.getElementById('location-coordinates').textContent = accuracyText;
                     
                     currentLocation.address = address;
+                    currentLocation.latitude = roundedLat;
+                    currentLocation.longitude = roundedLng;
                 } else {
                     console.warn('Google Maps API error:', data.status, data.error_message);
                     document.getElementById('location-address').textContent = 'الموقع محدد بنجاح';
-                    document.getElementById('location-coordinates').textContent = 
-                        `إحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    
+                    let accuracyText = `إحداثيات: ${roundedLat.toFixed(6)}, ${roundedLng.toFixed(6)} (دقة: ${currentLocation.accuracy.toFixed(1)}m)`;
+                    if (currentLocation.accuracy > 100) {
+                        accuracyText += ' ⚠️';
+                    }
+                    document.getElementById('location-coordinates').textContent = accuracyText;
                 }
             } catch (error) {
                 console.error('خطأ في الحصول على العنوان:', error);
                 document.getElementById('location-address').textContent = 'الموقع محدد بنجاح';
-                document.getElementById('location-coordinates').textContent = 
-                    `إحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                
+                let accuracyText = `إحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)} (دقة: ${currentLocation.accuracy.toFixed(1)}m)`;
+                if (currentLocation.accuracy > 100) {
+                    accuracyText += ' ⚠️';
+                }
+                document.getElementById('location-coordinates').textContent = accuracyText;
             }
         }
         
@@ -1207,6 +1360,35 @@
             btn.innerHTML = '<i class="fas fa-fingerprint"></i><span>انتظار تحديد الموقع...</span>';
         }
         
+        // دالة للتحقق من صحة الموقع
+        function validateLocation(location) {
+            if (!location || !location.latitude || !location.longitude) {
+                return false;
+            }
+            
+            // التحقق من صحة الإحداثيات
+            if (location.latitude < -90 || location.latitude > 90) {
+                return false;
+            }
+            
+            if (location.longitude < -180 || location.longitude > 180) {
+                return false;
+            }
+            
+            // التحقق من دقة الموقع (يجب أن تكون أقل من 500 متر - أكثر واقعية)
+            if (location.accuracy > 500) {
+                console.warn(`دقة الموقع ضعيفة جداً: ${location.accuracy}m`);
+                return false;
+            }
+            
+            // تحذير إذا كانت الدقة ضعيفة ولكن مقبولة
+            if (location.accuracy > 100) {
+                console.warn(`دقة الموقع ضعيفة ولكن مقبولة: ${location.accuracy}m`);
+            }
+            
+            return true;
+        }
+        
         async function recordAttendance() {
             if (!currentLocation) {
                 const result = await Swal.fire({
@@ -1243,16 +1425,29 @@
             showLoading(true);
             
             try {
+                // التحقق من صحة الموقع
+                if (!validateLocation(currentLocation)) {
+                    throw new Error('الموقع غير صحيح أو غير دقيق بما فيه الكفاية (دقة الموقع: ' + currentLocation.accuracy.toFixed(1) + ' متر)');
+                }
+                
+                // تحذير المستخدم إذا كانت الدقة ضعيفة
+                if (currentLocation.accuracy > 100) {
+                    console.warn(`تحذير: دقة الموقع ضعيفة (${currentLocation.accuracy.toFixed(1)}m) ولكن مقبولة للتسجيل`);
+                }
+                
                 // إعداد البيانات - الموقع إجباري
+                const projectCode = document.getElementById('project-code').value.trim();
                 const attendanceData = {
                     type: selectedType,
                     location: JSON.stringify({
                         latitude: currentLocation.latitude,
                         longitude: currentLocation.longitude,
                         accuracy: currentLocation.accuracy,
-                        address: currentLocation.address || null
+                        address: currentLocation.address || null,
+                        timestamp: new Date().toISOString()
                     }),
-                    notes: 'تم التسجيل من الموبايل مع تحديد الموقع'
+                    notes: 'تم التسجيل من الموبايل مع تحديد الموقع',
+                    project_code: projectCode || null
                 };
                 
                 // إرسال البيانات للخادم
@@ -1374,10 +1569,14 @@
                     const typeText = attendance.type === 'check_in' ? 'دخول' : 'خروج';
                     const date = new Date(attendance.date).toLocaleDateString('ar-SA');
                     const time = attendance.time;
-                    
+                    //  address
+                    const address = attendance.location.address;
+                    const projectCode = attendance.project_code ? `<br><small>كود المشروع: ${attendance.project_code}</small>` : '';
                     lastAttendanceInfo.innerHTML = `
                         <strong>${typeText}</strong> - ${date} في ${time}<br>
-                        <small>الحالة: ${getStatusText(attendance.status)}</small>
+                        <small>الموقع: ${address}</small><br>
+                        <small>الحالة: ${getStatusText(attendance.status)}</small>${projectCode}
+                        
                     `;
                 } else {
                     // لا توجد بصمة سابقة

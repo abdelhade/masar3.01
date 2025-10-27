@@ -3,111 +3,361 @@
 @section('sidebar')
     @include('components.sidebar.settings')
 @endsection
+
 @section('content')
-    <div class="card-body">
+    <div class="container-fluid p-3">
+        <!-- Compact Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+                <div class="settings-icon-wrapper me-3">
+                    <i class="bi bi-sliders2"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0 fw-bold">إعدادات النظام</h5>
+                    <small class="text-muted">إدارة التطبيق</small>
+                </div>
+            </div>
+            <div class="input-group" style="max-width: 300px;">
+                <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="settingSearch" class="form-control border-0 bg-light" placeholder="بحث سريع...">
+            </div>
+        </div>
+
         <form action="{{ route('mysettings.update') }}" method="POST">
             @csrf
             @method('POST')
 
-            <div class="mb-3">
-                <input type="text" id="settingSearch" class="form-control form-control-sm w-25"
-                    placeholder="ابحث عن إعداد...">
+            <!-- Modern Tabs Navigation -->
+            <div class="settings-tabs mb-3">
+                <div class="tabs-wrapper">
+                    @foreach ($cateries as $index => $category)
+                        @if ($category->publicSettings->count())
+                            <button class="tab-button {{ $index === 0 ? 'active' : '' }}" id="tab-{{ $category->id }}"
+                                data-bs-toggle="pill" data-bs-target="#content-{{ $category->id }}" type="button"
+                                role="tab">
+                                <i class="bi bi-folder2 me-2"></i>
+                                <span>{{ $category->name }}</span>
+                                <span
+                                    class="badge bg-white text-primary ms-2">{{ $category->publicSettings->count() }}</span>
+                            </button>
+                        @endif
+                    @endforeach
+                </div>
             </div>
 
-            <div class="accordion" id="settingsAccordion">
-                @foreach ($cateries as $category)
+            <!-- Tab Content -->
+            <div class="tab-content bg-white rounded-3 shadow-sm p-3" id="categoryTabContent">
+                @foreach ($cateries as $index => $category)
                     @if ($category->publicSettings->count())
-                        <div class="accordion-item mb-3 border">
-                            <h2 class="accordion-header" id="heading-{{ $category->id }}">
-                                <button class="accordion-button collapsed fw-bold bg-light text-primary" type="button"
-                                    data-bs-toggle="collapse" data-bs-target="#collapse-{{ $category->id }}"
-                                    aria-expanded="false" aria-controls="collapse-{{ $category->id }}">
-                                    <i class="bi bi-folder text-secondary me-2"></i>{{ $category->name }}
-                                </button>
-                            </h2>
-                            <div id="collapse-{{ $category->id }}" class="accordion-collapse collapse"
-                                aria-labelledby="heading-{{ $category->id }}" data-bs-parent="#settingsAccordion">
-                                <div class="accordion-body p-3">
-                                    <div class="table-responsive">
-                                        <table
-                                            class="table table-bordered table-sm align-middle text-center settings-table">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    @for ($i = 0; $i < 3; $i++)
-                                                        <th style="min-width: 120px">الاسم</th>
-                                                        <th style="min-width: 160px">القيمة</th>
-                                                    @endfor
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @php $settings = $category->publicSettings->values(); @endphp
-                                                @for ($i = 0; $i < $settings->count(); $i += 3)
-                                                    <tr>
-                                                        @for ($col = 0; $col < 3; $col++)
-                                                            @php $index = $i + $col; @endphp
-                                                            @if (isset($settings[$index]))
-                                                                <td class="fw-semibold">{{ $settings[$index]->label }}</td>
-                                                                <td>
-                                                                    @if ($settings[$index]->input_type === 'boolean')
-                                                                        <div class="d-flex justify-content-center">
-                                                                            <input type="hidden"
-                                                                                name="settings[{{ $settings[$index]->key }}]"
-                                                                                value="0">
-                                                                            <div class="form-check form-switch">
-                                                                                <input class="form-check-input"
-                                                                                    type="checkbox" role="switch"
-                                                                                    name="settings[{{ $settings[$index]->key }}]"
-                                                                                    value="1"
-                                                                                    id="switch-{{ $settings[$index]->key }}"
-                                                                                    {{ $settings[$index]->value ? 'checked' : '' }}
-                                                                                    style="transform: scale(1.2); cursor: pointer;">
-                                                                            </div>
-                                                                        </div>
-                                                                    @else
-                                                                        <input
-                                                                            type="{{ $settings[$index]->input_type === 'number' ? 'number' : $settings[$index]->input_type }}"
-                                                                            name="settings[{{ $settings[$index]->key }}]"
-                                                                            value="{{ $settings[$index]->value }}"
-                                                                            class="form-control form-control-sm text-center mx-auto"
-                                                                            style="max-width: 160px;">
-                                                                    @endif
-                                                                </td>
-                                                            @else
-                                                                <td></td>
-                                                                <td></td>
-                                                            @endif
-                                                        @endfor
-                                                    </tr>
-                                                @endfor
-                                            </tbody>
-                                        </table>
+                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="content-{{ $category->id }}"
+                            role="tabpanel">
+                            @php $settings = $category->publicSettings->values(); @endphp
+
+                            <div class="settings-grid">
+                                @foreach ($settings as $setting)
+                                    <div class="setting-item">
+                                        <div class="setting-content">
+                                            <div class="setting-label">
+                                                <i class="bi bi-dot text-primary"></i>
+                                                <span class="fw-semibold">{{ $setting->label }}</span>
+                                            </div>
+                                            <div class="setting-input">
+                                                @if ($setting->input_type === 'boolean')
+                                                    <input type="hidden" name="settings[{{ $setting->key }}]"
+                                                        value="0">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            name="settings[{{ $setting->key }}]" value="1"
+                                                            id="switch-{{ $setting->key }}"
+                                                            {{ $setting->value ? 'checked' : '' }}>
+                                                    </div>
+                                                @else
+                                                    <input
+                                                        type="{{ $setting->input_type === 'number' ? 'number' : $setting->input_type }}"
+                                                        name="settings[{{ $setting->key }}]" value="{{ $setting->value }}"
+                                                        class="form-control form-control-sm">
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                @endforeach
                             </div>
                         </div>
                     @endif
                 @endforeach
             </div>
 
-            {{-- @if ($cateries->sum(fn($category) => $category->publicSettings->count()) > 0) --}}
-            <div class="text-end mt-4">
-                <button type="submit" class="btn btn-primary px-4">حفظ الإعدادات</button>
+            <!-- Compact Save Button -->
+            <div class="d-flex justify-content-end mt-3 gap-2">
+                <button type="submit" class="btn btn-bg btn-primary btn-lg"
+                    style="padding: 15px 40px; font-size: 18px; border-radius: 10px;">
+                    <i class="bi bi-check-lg me-1"></i>حفظ التغييرات
+                </button>
             </div>
-            {{-- @endif --}}
         </form>
     </div>
 
+    <style>
+        /* Header Icon */
+        .settings-icon-wrapper {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
 
+        /* Modern Tabs */
+        .settings-tabs {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 12px;
+        }
 
+        .tabs-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
 
+        .tab-button {
+            flex: 0 0 calc(12.5% - 6px);
+            min-width: 120px;
+            color: #6c757d;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            border: none;
+            background: transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .tab-button:hover {
+            background: white;
+            color: #6366f1;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .tab-button .badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+
+        .tab-button.active .badge {
+            background: rgba(255, 255, 255, 0.3) !important;
+            color: white !important;
+        }
+
+        /* Compact Settings Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+            gap: 12px;
+        }
+
+        .setting-item:hover {
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            font-size: 0.9rem;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .setting-label i {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .setting-label .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .setting-input {
+            min-width: 120px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .setting-input .form-control {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .setting-input .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-switch .form-check-input {
+            width: 45px;
+            height: 24px;
+            cursor: pointer;
+            border: 2px solid #dee2e6;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: #6366f1;
+            border-color: #6366f1;
+        }
+
+        .form-switch .form-check-input:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-light {
+            border: 1px solid #dee2e6;
+            font-weight: 500;
+        }
+
+        /* Search Input */
+        #settingSearch {
+            font-size: 0.9rem;
+        }
+
+        #settingSearch:focus {
+            box-shadow: none;
+            background: white !important;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            border: 1px solid #e9ecef;
+            min-height: 400px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .tab-button {
+                flex: 0 0 calc(16.666% - 6px);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .tab-button {
+                flex: 0 0 calc(25% - 6px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-button {
+                flex: 0 0 calc(50% - 6px);
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+
+            .tab-button span:not(.badge) {
+                display: none;
+            }
+
+            .tab-button i {
+                margin: 0 !important;
+            }
+        }
+    </style>
 
     <script>
-        document.getElementById("settingSearch").addEventListener("input", function() {
-            let value = this.value.toLowerCase();
-            document.querySelectorAll(".settings-table tbody tr").forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+        // Tab switching functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                // Hide all tab panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+
+                // Show target tab pane
+                const targetId = this.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(targetId);
+                if (targetPane) {
+                    targetPane.classList.add('show', 'active');
+                }
             });
         });
-    </script>
 
+        // Search Functionality
+        document.getElementById("settingSearch").addEventListener("input", function() {
+            let value = this.value.toLowerCase();
+
+            document.querySelectorAll(".setting-item").forEach(item => {
+                let text = item.innerText.toLowerCase();
+                if (text.includes(value)) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        });
+
+        // Reset button functionality
+        document.querySelector('.btn-light').addEventListener('click', function() {
+            if (confirm('هل تريد إعادة تعيين جميع الإعدادات؟')) {
+                location.reload();
+            }
+        });
+    </script>
 @endsection

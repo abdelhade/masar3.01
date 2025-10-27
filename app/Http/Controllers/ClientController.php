@@ -7,6 +7,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Modules\CRM\Models\ClientType;
 use App\Http\Requests\ClientRequest;
 use Illuminate\Support\Facades\Auth;
 use Modules\CRM\Models\ClientCategory;
@@ -33,8 +34,9 @@ class ClientController extends Controller
     public function create()
     {
         $branches = userBranches();
+        $clientTypes = ClientType::all();
         $categories = ClientCategory::all();
-        return view('clients.create', compact('branches', 'categories'));
+        return view('clients.create', compact('branches', 'categories', 'clientTypes'));
     }
 
     public function store(ClientRequest $request)
@@ -67,8 +69,11 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
         $categories = ClientCategory::all();
-        return view('clients.edit', compact('client', 'categories'));
+        $clientTypes = ClientType::all();
+
+        return view('clients.edit', compact('client', 'categories', 'clientTypes'));
     }
+
 
     public function update(ClientRequest $request, $id)
     {

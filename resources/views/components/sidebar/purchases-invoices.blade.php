@@ -15,6 +15,12 @@
     </a>
 </li>
 
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('invoice-templates.index') }}">
+        <i class="ti-control-record"></i>نماذج الفواتير
+    </a>
+</li>
+
 @foreach ($purchases as $type => $label)
     {{-- @can('عرض ' . $label) --}}
     <li class="nav-item">
@@ -24,3 +30,9 @@
     </li>
     {{-- @endcan --}}
 @endforeach
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('invoices.track.search') }}">
+        <i class="ti-control-record"></i> تتبع مسار الفاتورة
+    </a>
+</li>

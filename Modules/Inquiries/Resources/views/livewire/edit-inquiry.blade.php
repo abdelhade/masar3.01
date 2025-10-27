@@ -424,8 +424,8 @@
                             </div>
                         </div>
 
-                        <!-- Stakeholders Section -->
                         <div class="row mb-4">
+                            <!-- Stakeholders Section -->
                             <div class="col-12">
                                 <div class="card border-dark">
                                     <div class="card-header">
@@ -449,19 +449,10 @@
                                                             <livewire:app::searchable-select :model="App\Models\Client::class"
                                                                 label-field="cname" wire-model="clientId"
                                                                 placeholder="ابحث عن العميل أو أضف جديد..."
-                                                                :where="[
-                                                                    'type' => [
-                                                                        \App\Enums\ClientType::Person->value,
-                                                                        \App\Enums\ClientType::Company->value,
-                                                                    ],
-                                                                ]" :selected-id="$clientId" :additional-data="[
-                                                                    'type' => \App\Enums\ClientType::Person->value,
-                                                                ]"
-                                                                :key="'client-select-edit-' . $inquiryId" />
+                                                                :selected-id="$clientId" :key="'client-select-edit-' . $inquiryId" />
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-primary"
-                                                            wire:click="$dispatch('openClientModal', { type: {{ \App\Enums\ClientType::Person->value }} })"
-                                                            title="إضافة عميل جديد">
+                                                            wire:click="openClientModal(1)" title="إضافة عميل جديد">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
                                                     </div>
@@ -507,18 +498,10 @@
                                                                 label-field="cname" wire-model="mainContractorId"
                                                                 :selected-id="$mainContractorId"
                                                                 placeholder="ابحث أو أضف مقاول جديد..."
-                                                                :where="[
-                                                                    'type' =>
-                                                                        \App\Enums\ClientType::MainContractor->value,
-                                                                ]" :additional-data="[
-                                                                    'type' =>
-                                                                        \App\Enums\ClientType::MainContractor->value,
-                                                                ]"
                                                                 :key="'contractor-select-edit-' . $inquiryId" />
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-warning"
-                                                            wire:click="$dispatch('openClientModal', { type: {{ \App\Enums\ClientType::MainContractor->value }} })"
-                                                            title="إضافة مقاول جديد">
+                                                            wire:click="openClientModal(2)" title="إضافة مقاول جديد">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
                                                     </div>
@@ -562,15 +545,10 @@
                                                         <div class="flex-grow-1">
                                                             <livewire:app::searchable-select :model="App\Models\Client::class"
                                                                 label-field="cname" wire-model="consultantId"
-                                                                :selected-id="$consultantId" :where="[
-                                                                    'type' => \App\Enums\ClientType::Consultant->value,
-                                                                ]" :additional-data="[
-                                                                    'type' => \App\Enums\ClientType::Consultant->value,
-                                                                ]"
-                                                                :key="'consultant-select-edit-' . $inquiryId" />
+                                                                :selected-id="$consultantId" :key="'consultant-select-edit-' . $inquiryId" />
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-info"
-                                                            wire:click="$dispatch('openClientModal', { type: {{ \App\Enums\ClientType::Consultant->value }} })"
+                                                            wire:click="openClientModal(3)"
                                                             title="إضافة استشاري جديد">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
@@ -616,16 +594,10 @@
                                                             <livewire:app::searchable-select :model="App\Models\Client::class"
                                                                 label-field="cname" wire-model="ownerId"
                                                                 placeholder="ابحث عن المالك أو أضف جديد..."
-                                                                :where="[
-                                                                    'type' => \App\Enums\ClientType::Owner->value,
-                                                                ]" :selected-id="$ownerId" :additional-data="[
-                                                                    'type' => \App\Enums\ClientType::Owner->value,
-                                                                ]"
-                                                                :key="'owner-select-edit-' . $inquiryId" />
+                                                                :selected-id="$ownerId" :key="'owner-select-edit-' . $inquiryId" />
                                                         </div>
                                                         <button type="button" class="btn btn-sm btn-success"
-                                                            wire:click="$dispatch('openClientModal', { type: {{ \App\Enums\ClientType::Owner->value }} })"
-                                                            title="إضافة مالك جديد">
+                                                            wire:click="openClientModal(4)" title="إضافة مالك جديد">
                                                             <i class="fas fa-plus"></i>
                                                         </button>
                                                     </div>
@@ -661,6 +633,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @include('inquiries::components.addClientModal')
 
                             <!-- Quotation Types Section -->
                             <div class="row mt-4">
@@ -1056,12 +1029,54 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-2 mb-3">
-                                                    <livewire:app::searchable-select :model="App\Models\Client::class"
-                                                        label-field="cname" :selected-id="$assignedEngineer"
-                                                        wire-model="assignedEngineer" label="المهندس"
-                                                        placeholder="ابحث عن المهندس أو أضف جديد..." :where="['type' => \App\Enums\ClientType::ENGINEER->value]"
-                                                        :additional-data="['type' => \App\Enums\ClientType::ENGINEER->value]" :key="'engineer-select-edit-' . $inquiryId" />
+                                                <div class="col-md-2 mb-3 d-flex flex-column">
+                                                    <div class="card-body text-center">
+                                                        <div class="mb-3">
+                                                            <i class="fas fa-user-cog fa-2x text-secondary"></i>
+                                                        </div>
+                                                        <label class="form-label fw-bold">المهندس المسؤول</label>
+                                                        <div class="d-flex gap-2 align-items-center">
+                                                            <div class="flex-grow-1">
+                                                                <livewire:app::searchable-select :model="App\Models\Client::class"
+                                                                    label-field="cname" wire-model="assignedEngineer"
+                                                                    placeholder="ابحث عن المهندس أو أضف جديد..."
+                                                                    :selected-id="$assignedEngineer" :key="'engineer-select-edit-' . $inquiryId" />
+                                                            </div>
+                                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                                wire:click="openClientModal(5)"
+                                                                title="إضافة مهندس جديد">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                        @if ($assignedEngineer)
+                                                            @php
+                                                                $engineer = \App\Models\Client::find($assignedEngineer);
+                                                            @endphp
+                                                            @if ($engineer)
+                                                                <div class="card mt-3 bg-light">
+                                                                    <div class="card-body p-2 text-start">
+                                                                        <small class="d-block"><strong>الاسم:</strong>
+                                                                            {{ $engineer->cname }}</small>
+                                                                        @if ($engineer->phone)
+                                                                            <small
+                                                                                class="d-block"><strong>الهاتف:</strong>
+                                                                                {{ $engineer->phone }}</small>
+                                                                        @endif
+                                                                        @if ($engineer->email)
+                                                                            <small
+                                                                                class="d-block"><strong>البريد:</strong>
+                                                                                {{ $engineer->email }}</small>
+                                                                        @endif
+                                                                        @if ($engineer->address)
+                                                                            <small
+                                                                                class="d-block"><strong>العنوان:</strong>
+                                                                                {{ $engineer->address }}</small>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

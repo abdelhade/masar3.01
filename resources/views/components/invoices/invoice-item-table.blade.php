@@ -1,141 +1,178 @@
 <table class="table table-striped mb-0" style="min-width: 1200px;">
     <thead class="table-light text-center align-middle">
-
         <tr>
-            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الصنف') }}</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الوحدة') }}</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الكمية') }}</th>
-            {{-- @if ($type != 18) --}}
-            @if ($type != 21) {{-- إضافة السعر لا ينطبق على التحويلات --}}
-            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('السعر') }}</th>
-            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الخصم') }}</th>
-            {{-- @endif --}}
-            <th class="font-family-cairo fw-bold font-14 text-center">{{ __('القيمة') }}</th>
-            @endif {{-- إضافة القيمة الفرعية لا ينطبق على التحويلات --}}
+            {{-- عرض الأعمدة بناءً على النموذج المختار --}}
+            @if ($this->shouldShowColumn('item_name'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الصنف') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('item_code'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الكود') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('barcode'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الباركود') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('unit'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الوحدة') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('quantity'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الكمية') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('price'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('السعر') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('discount'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('الخصم') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('sub_value'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('القيمة') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('notes'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('ملاحظات') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('expiry_date'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('تاريخ الانتهاء') }}</th>
+            @endif
+
+            @if ($this->shouldShowColumn('batch_number'))
+                <th class="font-family-cairo fw-bold font-14 text-center">{{ __('رقم الدفعة') }}</th>
+            @endif
+
             <th class="font-family-cairo fw-bold font-14 text-center">{{ __('إجراء') }}</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td colspan="7" style="padding:0; border:none;">
+            <td colspan="20" style="padding:0; border:none;">
                 <div style="max-height: 200px; overflow-y: auto; overflow-x: hidden;">
                     <table class="table mb-0" style="background: transparent;">
                         <tbody>
                             @forelse ($invoiceItems as $index => $row)
                                 <tr wire:key="invoice-row-{{ $index }}">
-                                    {{-- اختيار الصنف --}}
-                                    <td style="width: 18%; font-size: 1.2em;">
-                                        <span class="form-control"
-                                            wire:click="selectItemFromTable({{ $row['item_id'] }}, {{ $row['unit_id'] ?? '' }}, {{ $row['price'] ?? 0 }})"
-                                            style="cursor: pointer; font-size: 0.85em; height: 2em; padding: 1px 4px; display: block;">
-                                            {{ $row['name'] ?? 'غير محدد' }} {{-- 💡 استخدم $row['name'] مباشرةً --}}
-                                        </span>
-                                    </td>
+                                    {{-- اسم الصنف --}}
+                                    @if ($this->shouldShowColumn('item_name'))
+                                        <td style="width: 18%; font-size: 1.2em;">
+                                            <span class="form-control"
+                                                wire:click="selectItemFromTable({{ $row['item_id'] }}, {{ $row['unit_id'] ?? '' }}, {{ $row['price'] ?? 0 }})"
+                                                style="cursor: pointer; font-size: 0.85em; height: 2em; padding: 1px 4px; display: block;">
+                                                {{ $row['name'] ?? 'غير محدد' }}
+                                            </span>
+                                        </td>
+                                    @endif
 
-                                    {{-- اختيار الوحدة --}}
-                                    <td style="width: 15%; font-size: 1.2em;">
-                                        <select wire:model.live="invoiceItems.{{ $index }}.unit_id"
-                                            wire:key="unit-select-{{ $index }}-{{ $row['item_id'] ?? 'default' }}"
-                                            wire:change="updatePriceForUnit({{ $index }})"
-                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            class="form-control @error('invoiceItems.' . $index . '.unit_id') is-invalid @enderror">
-                                            @if (isset($row['available_units']) && $row['available_units']->count() > 0)
-                                                @foreach ($row['available_units'] as $unit)
-                                                    <option value="{{ $unit->id }}">
-                                                        {{ $unit->name }}</option>
-                                                @endforeach
-                                            @endif
-                                        </select>
-                                        @error('invoiceItems.' . $index . '.unit_id')
-                                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                        @enderror
-                                    </td>
+                                    {{-- كود الصنف --}}
+                                    @if ($this->shouldShowColumn('item_code'))
+                                        <td style="width: 10%; font-size: 1.2em;">
+                                            <span class="form-control"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;">
+                                                {{ $items->firstWhere('id', $row['item_id'])->code ?? '-' }}
+                                            </span>
+                                        </td>
+                                    @endif
 
-                                    {{-- حقل الكمية مع التنقل التلقائي --}}
-                                    <td style="width: 10%; font-size: 1.2em;">
-                                        <input type="number" min="1"
-                                            onblur="if(this.value === '') this.value = 0;"
-                                            wire:model.blur="invoiceItems.{{ $index }}.quantity"
-                                            id="quantity_{{ $index }}" placeholder="{{ __('الكمية') }}"
-                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('price_{{ $index }}')?.focus();document.getElementById('price_{{ $index }}')?.select();}"
-                                            class="form-control @error('invoiceItems.' . $index . '.quantity') is-invalid @enderror">
-                                        @error('invoiceItems.' . $index . '.quantity')
-                                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                        @enderror
-                                    </td>
+                                    {{-- الباركود --}}
+                                    @if ($this->shouldShowColumn('barcode'))
+                                        <td style="width: 12%; font-size: 1.2em;">
+                                            <span class="form-control"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;">
+                                                {{ $items->firstWhere('id', $row['item_id'])->barcodes->first()->barcode ?? '-' }}
+                                            </span>
+                                        </td>
+                                    @endif
 
-                                    {{-- @if ($type != 18) --}}
-                                    {{-- حقل السعر مع التنقل التلقائي --}}
-                                    {{-- حقل السعر مع التنقل التلقائي --}}
-                                    @if ($type != 21)
-                                        {{-- إضافة السعر لا ينطبق على التحويلات --}}
+                                    {{-- الوحدة --}}
+                                    @if ($this->shouldShowColumn('unit'))
+                                        <td style="width: 15%; font-size: 1.2em;">
+                                            <select wire:model.live="invoiceItems.{{ $index }}.unit_id"
+                                                wire:key="unit-select-{{ $index }}-{{ $row['item_id'] ?? 'default' }}"
+                                                wire:change="updatePriceForUnit({{ $index }})"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                class="form-control @error('invoiceItems.' . $index . '.unit_id') is-invalid @enderror">
+                                                @if (isset($row['available_units']) && $row['available_units']->count() > 0)
+                                                    @foreach ($row['available_units'] as $unit)
+                                                        <option value="{{ $unit->id }}">{{ $unit->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                        </td>
+                                    @endif
+
+                                    {{-- الكمية --}}
+                                    @if ($this->shouldShowColumn('quantity'))
+                                        <td style="width: 10%; font-size: 1.2em;">
+                                            <input type="number" min="1"
+                                                wire:model.blur="invoiceItems.{{ $index }}.quantity"
+                                                id="quantity_{{ $index }}" placeholder="{{ __('الكمية') }}"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                class="form-control">
+                                        </td>
+                                    @endif
+
+                                    {{-- السعر --}}
+                                    @if ($this->shouldShowColumn('price'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.price"
-                                                id="price_{{ $index }}"
-                                                placeholder="@if (in_array($type, [11, 15])) {{ __('سعر الشراء') }} @elseif($type == 18) {{ __('التكلفة') }} @else {{ __('السعر') }} @endif"
+                                                id="price_{{ $index }}" placeholder="{{ __('السعر') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('discount_{{ $index }}')?.focus();document.getElementById('discount_{{ $index }}')?.select();}"
-                                                class="form-control @error('invoiceItems.' . $index . '.price') is-invalid @enderror">
-                                            @error('invoiceItems.' . $index . '.price')
-                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                            @enderror
+                                                class="form-control">
                                         </td>
-                                        {{-- إضافة الخصم لا ينطبق على التحويلات --}}
-                                        {{-- حقل الخصم مع التنقل للصف التالي أو البحث --}}
+                                    @endif
+
+                                    {{-- الخصم --}}
+                                    @if ($this->shouldShowColumn('discount'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.discount"
                                                 id="discount_{{ $index }}" placeholder="{{ __('الخصم') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                onkeydown="if(event.key==='Enter'){
-                                                                event.preventDefault();
-                                                                const subValueField = document.getElementById('sub_value_{{ $index }}');
-                                                                if(subValueField) {
-                                                                    subValueField.focus();
-                                                                    subValueField.select();
-                                                                }
-                                                            }"
                                                 class="form-control">
                                         </td>
-                                        {{-- إضافة القيمة الفرعية لا ينطبق على التحويلات --}}
-                                        {{-- @endif --}}
-                                        {{-- حقل القيمة الفرعية --}}
+                                    @endif
+
+                                    {{-- القيمة الفرعية --}}
+                                    @if ($this->shouldShowColumn('sub_value'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
-                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 wire:model.blur="invoiceItems.{{ $index }}.sub_value"
                                                 id="sub_value_{{ $index }}" placeholder="{{ __('القيمة') }}"
-                                                onkeydown="if(event.key==='Enter'){
-                                                                event.preventDefault();
-                                                                const nextQuantity = document.getElementById('quantity_{{ $index + 1 }}');
-                                                                if(nextQuantity) {
-                                                                    nextQuantity.focus();
-                                                                    nextQuantity.select();
-                                                                } else {
-                                                                    const searchField = document.querySelector('input[wire\\:model\\.live=&quot;searchTerm&quot;]');
-                                                                    if(searchField) searchField.focus();
-                                                                }
-                                                            }"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control">
                                         </td>
-                                    @endif {{-- إضافة القيمة الفرعية لا ينطبق على التحويلات --}}
+                                    @endif
 
-                                    {{-- زرّ الحذف --}}
+                                    {{-- ملاحظات --}}
+                                    @if ($this->shouldShowColumn('notes'))
+                                        <td style="width: 20%; font-size: 1.2em;">
+                                            <input type="text"
+                                                wire:model.blur="invoiceItems.{{ $index }}.notes"
+                                                placeholder="{{ __('ملاحظات') }}"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                class="form-control">
+                                        </td>
+                                    @endif
+
+                                    {{-- زر الحذف --}}
                                     <td class="text-center" style="width: 10%; font-size: 1.2em;">
                                         <button type="button" wire:click="removeRow({{ $index }})"
                                             class="btn btn-danger btn-icon-square-sm"
-                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                            class="btn btn btn-danger"
-                                            onclick="return confirm('هل أنت متأكد من حذف هذا الصف؟')">
+                                            style="font-size: 0.85em; height: 2em; padding: 1px 4px;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="13">
+                                    <td colspan="20">
                                         <div class="alert alert-info text-center mb-0">
                                             لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
                                         </div>
@@ -148,4 +185,4 @@
             </td>
         </tr>
     </tbody>
-</table>
+</table>`

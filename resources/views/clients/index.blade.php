@@ -78,9 +78,7 @@
                                         <td>{{ $client->job }}</td>
                                         <td>{{ $client->date_of_birth?->format('Y-m-d') }}</td>
                                         <td>
-                                            <span class="badge bg-primary">
-                                                {{ $client->type->label() }}
-                                            </span>
+                                            {{ $client->clientType?->title ?? 'غير محدد' }}
                                         </td>
                                         <td>
                                             @if ($client->type === 'person')
