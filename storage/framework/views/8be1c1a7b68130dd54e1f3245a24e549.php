@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="user-id" content="{{ auth()->id() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <meta name="user-id" content="<?php echo e(auth()->id()); ?>">
     <title>تسجيل البصمة - Massar ERP</title>
     
     <!-- Bootstrap RTL -->
@@ -1214,7 +1214,7 @@
         async function getAddressFromCoordinates(lat, lng) {
             try {
                 // فحص إذا كان مفتاح Google Maps متوفر
-                const apiKey = '{{ config("services.google_maps.api_key") }}';
+                const apiKey = '<?php echo e(config("services.google_maps.api_key")); ?>';
                 if (!apiKey || apiKey === '') {
                     console.warn('مفتاح Google Maps API غير متوفر');
                     document.getElementById('location-address').textContent = 'الموقع محدد بنجاح';
@@ -1704,3 +1704,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\Laragon\laragon\www\massar1.02\resources\views/mobile/attendance.blade.php ENDPATH**/ ?>
