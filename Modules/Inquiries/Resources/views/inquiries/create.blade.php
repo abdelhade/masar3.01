@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'إنشاء استفسار جديد',
+        'title' => __('Create New Inquiry'),
         'items' => [
-            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
-            ['label' => 'الاستفسارات', 'url' => route('inquiries.index')],
-            ['label' => 'إنشاء جديد'],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Inquiries'), 'url' => route('inquiries.index')],
+            ['label' => __('Create New')],
         ],
     ])
     <livewire:inquiries::create-inquiry />

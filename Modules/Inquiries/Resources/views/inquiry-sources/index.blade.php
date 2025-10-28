@@ -206,7 +206,6 @@
 
     <script>
         let sourcesData = @json($sourcesTree);
-
         let selectedSource = null;
         let editingSource = null;
 
@@ -229,22 +228,22 @@
             }
 
             item.innerHTML = `
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <i class="fas fa-${source.children.length > 0 ? 'folder' : 'file'} me-2"></i>
-                        <span class="source-name">${source.name}</span>
-                        ${source.is_active ?
-                            '<span class="status-badge status-active ms-2">مفعل</span>' :
-                            '<span class="status-badge status-inactive ms-2">غير مفعل</span>'
-                        }
-                    </div>
-                    <div class="action-buttons">
-                        <button class="add-child-btn" onclick="addChild(${source.id})" title="إضافة فرع">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <i class="fas fa-${source.children.length > 0 ? 'folder' : 'file'} me-2"></i>
+                <span class="source-name">${source.name}</span>
+                ${source.is_active ?
+                    '<span class="status-badge status-active ms-2">{{ __('Active') }}</span>' :
+                    '<span class="status-badge status-inactive ms-2">{{ __('Inactive') }}</span>'
+                }
+            </div>
+            <div class="action-buttons">
+                <button class="add-child-btn" onclick="addChild(${source.id})" title="{{ __('Add Branch') }}">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+        `;
 
             item.addEventListener('click', (e) => {
                 if (!e.target.closest('.add-child-btn')) {
@@ -272,13 +271,7 @@
 
         function selectSource(source) {
             selectedSource = source;
-
-            // Remove previous selection
-            document.querySelectorAll('.tree-item.selected').forEach(item => {
-                item.classList.remove('selected');
-            });
-
-            // Add selection to current item
+            document.querySelectorAll('.tree-item.selected').forEach(item => item.classList.remove('selected'));
             document.querySelector(`[data-id="${source.id}"]`).classList.add('selected');
         }
 
@@ -289,7 +282,7 @@
 
             if (path.length > 1) {
                 pathDisplay.style.display = 'block';
-                pathBreadcrumb.innerHTML = path.map((item, index) => {
+                pathBreadcrumb.innerHTML = path.map((item) => {
                     return `<span class="breadcrumb-item">${item.name}</span>`;
                 }).join('<i class="fas fa-chevron-left mx-2"></i>');
             } else {
@@ -300,25 +293,19 @@
         function getSourcePath(source) {
             const path = [source];
             let current = source;
-
             while (current.parent_id) {
                 const parent = findSourceById(current.parent_id);
                 if (parent) {
                     path.unshift(parent);
                     current = parent;
-                } else {
-                    break;
-                }
+                } else break;
             }
-
             return path;
         }
 
         function findSourceById(id, sources = sourcesData) {
             for (const source of sources) {
-                if (source.id === id) {
-                    return source;
-                }
+                if (source.id === id) return source;
                 if (source.children) {
                     const found = findSourceById(id, source.children);
                     if (found) return found;
@@ -338,35 +325,33 @@
         }
 
         function showInlineForm(parent) {
-            // Remove any existing forms
             document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
 
             const form = document.createElement('div');
             form.className = 'inline-form';
             form.innerHTML = `
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">اسم المصدر</label>
-                        <input type="text" class="form-control" id="newSourceName" placeholder="أدخل اسم المصدر">
-                    </div>
-                    <div class="col-md-3 d-flex justify-content-center align-items-center">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="newSourceStatus" checked>
-                            <label class="form-check-label ms-2" for="newSourceStatus">الحالة</label>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button class="btn btn-success btn-sm me-2" onclick="saveNewSource(${parent ? parent.id : null})">
-                            <i class="fas fa-check me-1"></i>حفظ
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="cancelForm()">
-                            <i class="fas fa-times me-1"></i>إلغاء
-                        </button>
-                    </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">{{ __('Source Name') }}</label>
+                <input type="text" class="form-control" id="newSourceName" placeholder="{{ __('Enter Source Name') }}">
+            </div>
+            <div class="col-md-3 d-flex justify-content-center align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="newSourceStatus" checked>
+                    <label class="form-check-label ms-2" for="newSourceStatus">{{ __('Status') }}</label>
                 </div>
-                ${parent ? `<small class="text-muted">سيتم إضافة هذا المصدر كفرع من: ${parent.name}</small>` : ''}
-            `;
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-success btn-sm me-2" onclick="saveNewSource(${parent ? parent.id : null})">
+                    <i class="fas fa-check me-1"></i>{{ __('Save') }}
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="cancelForm()">
+                    <i class="fas fa-times me-1"></i>{{ __('Cancel') }}
+                </button>
+            </div>
+        </div>
+        ${parent ? `<small class="text-muted">{{ __('Will be added as a branch of') }}: ${parent.name}</small>` : ''}
+        `;
 
             if (parent) {
                 const parentElement = document.querySelector(`[data-id="${parent.id}"]`).closest('div');
@@ -390,7 +375,7 @@
             const name = document.getElementById('newSourceName').value.trim();
             const isActive = document.getElementById('newSourceStatus').checked;
             if (!name) {
-                alert('يرجى إدخال اسم المصدر');
+                alert('{{ __('Please enter source name') }}');
                 return;
             }
 
@@ -411,9 +396,7 @@
                     },
                     body: JSON.stringify(formData)
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
                     showToast(result.message, 'success');
                     await fetchSources();
@@ -421,9 +404,8 @@
                 } else {
                     showToast(result.message, 'error');
                 }
-
             } catch (error) {
-                showToast('حدث خطأ غير متوقع.', 'error');
+                showToast('{{ __('An unexpected error occurred.') }}', 'error');
             }
 
             cancelForm();
@@ -432,21 +414,12 @@
         async function fetchSources() {
             try {
                 const response = await fetch('/inquiry-sources/tree');
-                // تحقق من حالة الاستجابة
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const result = await response.json();
-
-                // تحقق من وجود البيانات في الاستجابة
-                if (result.success) {
-                    sourcesData = result.data;
-                } else {
-                    throw new Error(result.message || 'Failed to load data');
-                }
+                if (result.success) sourcesData = result.data;
+                else throw new Error(result.message || '{{ __('Failed to load data') }}');
             } catch (error) {
-                showToast('فشل في تحميل البيانات: ' + error.message, 'error');
+                showToast('{{ __('Failed to load data') }}: ' + error.message, 'error');
             }
         }
 
@@ -457,67 +430,58 @@
         function editSource(sourceId) {
             const source = findSourceById(sourceId);
             if (!source) return;
-
             editingSource = source;
-
-            // Remove any existing forms
             document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
 
             const sourceElement = document.querySelector(`[data-id="${sourceId}"]`);
             const form = document.createElement('div');
             form.className = 'edit-form';
             form.innerHTML = `
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">اسم المصدر</label>
-                        <input type="text" class="form-control" id="editSourceName" value="${source.name}">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">الحالة</label>
-                        <select class="form-select" id="editSourceStatus">
-                            <option value="true" ${source.is_active ? 'selected' : ''}>مفعل</option>
-                            <option value="false" ${!source.is_active ? 'selected' : ''}>غير مفعل</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button class="btn btn-warning btn-sm me-2" onclick="updateSource()">
-                            <i class="fas fa-save me-1"></i>تحديث
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="cancelForm()">
-                            <i class="fas fa-times me-1"></i>إلغاء
-                        </button>
-                    </div>
-                </div>
-            `;
-
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">{{ __('Source Name') }}</label>
+                <input type="text" class="form-control" id="editSourceName" value="${source.name}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ __('Status') }}</label>
+                <select class="form-select" id="editSourceStatus">
+                    <option value="true" ${source.is_active ? 'selected' : ''}>{{ __('Active') }}</option>
+                    <option value="false" ${!source.is_active ? 'selected' : ''}>{{ __('Inactive') }}</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-warning btn-sm me-2" onclick="updateSource()">
+                    <i class="fas fa-save me-1"></i>{{ __('Update') }}
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="cancelForm()">
+                    <i class="fas fa-times me-1"></i>{{ __('Cancel') }}
+                </button>
+            </div>
+        </div>
+        `;
             sourceElement.parentNode.insertBefore(form, sourceElement.nextSibling);
             document.getElementById('editSourceName').focus();
         }
 
         async function updateSource() {
             if (!editingSource) return;
-
             const name = document.getElementById('editSourceName').value.trim();
             const isActive = document.getElementById('editSourceStatus').value === 'true';
-
             if (!name) {
-                alert('يرجى إدخال اسم المصدر');
+                alert('{{ __('Please enter source name') }}');
                 return;
             }
-
             const formData = {
-                name: name,
+                name,
                 is_active: isActive,
                 _token: '{{ csrf_token() }}'
             };
-
-            // استخدم route التحديث وأرسل طلب PUT
             const url = '{{ route('inquiry.sources.update', ['inquiry_source' => ':id']) }}'.replace(':id',
                 editingSource.id);
 
             try {
                 const response = await fetch(url, {
-                    method: 'PUT', // أو PATCH
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
@@ -525,29 +489,24 @@
                     },
                     body: JSON.stringify(formData)
                 });
-
                 const result = await response.json();
                 if (result.success) {
                     showToast(result.message, 'success');
-                    await fetchSources(); // أعد تحميل البيانات من الخادم
-                    renderTree(); // أعد رسم الشجرة
+                    await fetchSources();
+                    renderTree();
                 } else {
-                    showToast(result.message || 'فشل التحديث', 'error');
+                    showToast(result.message || '{{ __('Failed to update') }}', 'error');
                 }
             } catch (error) {
-                showToast('حدث خطأ غير متوقع.', 'error');
+                showToast('{{ __('An unexpected error occurred.') }}', 'error');
             }
-
             cancelForm();
             editingSource = null;
         }
 
         async function deleteSource(sourceId) {
-            if (!confirm('هل أنت متأكد من حذف هذا المصدر؟ سيتم حذف جميع الفروع التابعة له.')) {
+            if (!confirm('{{ __('Are you sure you want to delete this source? All its branches will be deleted.') }}'))
                 return;
-            }
-
-            // استخدم route الحذف وأرسل طلب DELETE
             const url = '{{ route('inquiry.sources.destroy', ['inquiry_source' => ':id']) }}'.replace(':id', sourceId);
 
             try {
@@ -559,61 +518,56 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 });
-
                 const result = await response.json();
                 if (result.success) {
                     showToast(result.message, 'success');
-                    await fetchSources(); // أعد تحميل البيانات
-                    renderTree(); // أعد رسم الشجرة
+                    await fetchSources();
+                    renderTree();
                 } else {
-                    showToast(result.message || 'فشل الحذف', 'error');
+                    showToast(result.message || '{{ __('Failed to delete') }}', 'error');
                 }
             } catch (error) {
-                showToast('حدث خطأ غير متوقع.', 'error');
+                showToast('{{ __('An unexpected error occurred.') }}', 'error');
             }
         }
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
             let counter = 1;
 
             function addToTable(sources, level = 0) {
                 sources.forEach(source => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${counter++}</td>
-                        <td>
-                            ${'—'.repeat(level)}
-                            <i class="fas fa-${source.children.length > 0 ? 'folder' : 'file'} me-1"></i>
-                            ${source.name}
-                        </td>
-                        <td>
-                            <span class="badge bg-info">المستوى ${level + 1}</span>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                                <div class="form-check form-switch m-0">
-                                    <input class="form-check-input toggle-status" type="checkbox"
-                                        data-id="${source.id}" ${source.is_active ? 'checked' : ''}>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <button class="btn btn-success btn-sm me-1" onclick="editSource(${source.id})" title="تعديل">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteSource(${source.id})" title="حذف">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                <td>${counter++}</td>
+                <td>
+                    ${'—'.repeat(level)}
+                    <i class="fas fa-${source.children.length > 0 ? 'folder' : 'file'} me-1"></i>
+                    ${source.name}
+                </td>
+                <td>
+                    <span class="badge bg-info">{{ __('Level') }} ${level + 1}</span>
+                </td>
+                <td class="text-center align-middle">
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input toggle-status" type="checkbox"
+                                data-id="${source.id}" ${source.is_active ? 'checked' : ''}>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn btn-success btn-sm me-1" onclick="editSource(${source.id})" title="{{ __('Edit') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSource(${source.id})" title="{{ __('Delete') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+                `;
                     tbody.appendChild(row);
-
-                    if (source.children.length > 0) {
-                        addToTable(source.children, level + 1);
-                    }
+                    if (source.children.length > 0) addToTable(source.children, level + 1);
                 });
             }
 
@@ -625,26 +579,17 @@
             toast.className =
                 `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
             toast.style.cssText = 'top: 20px; left: 20px; z-index: 9999; min-width: 300px;';
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-                ${message}
-            `;
-
+            toast.innerHTML =
+                `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>${message}`;
             document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            setTimeout(() => toast.remove(), 3000);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTree();
-        });
+        document.addEventListener('DOMContentLoaded', () => renderTree());
 
-        document.addEventListener('change', async function(e) {
+        document.addEventListener('change', async (e) => {
             if (e.target.classList.contains('toggle-status')) {
                 const sourceId = e.target.dataset.id;
-
                 try {
                     const response = await fetch(`/inquiry-sources/${sourceId}/toggle-status`, {
                         method: 'POST',
@@ -653,17 +598,16 @@
                             'X-Requested-With': 'XMLHttpRequest'
                         }
                     });
-
                     const result = await response.json();
                     if (result.success) {
-                        showToast('تم تغيير الحالة بنجاح', 'success');
+                        showToast('{{ __('Status changed successfully') }}', 'success');
                         await fetchSources();
                         renderTree();
                     } else {
-                        showToast('فشل في تحديث الحالة', 'error');
+                        showToast('{{ __('Failed to update status') }}', 'error');
                     }
                 } catch (error) {
-                    showToast('حدث خطأ أثناء تحديث الحالة', 'error');
+                    showToast('{{ __('Error while updating status') }}', 'error');
                 }
             }
         });

@@ -59,14 +59,14 @@ class WorkTypeRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'اسم نوع العمل مطلوب',
-            'name.string' => 'اسم نوع العمل يجب أن يكون نص',
-            'name.max' => 'اسم نوع العمل يجب ألا يتجاوز 255 حرف',
-            'name.min' => 'اسم نوع العمل يجب أن يكون على الأقل حرفين',
-            'name.unique' => 'اسم نوع العمل موجود بالفعل في نفس المستوى',
-            'parent_id.integer' => 'معرف نوع العمل الأب يجب أن يكون رقم صحيح',
-            'parent_id.exists' => 'نوع العمل الأب المحدد غير موجود',
-            'is_active.boolean' => 'حالة التفعيل يجب أن تكون صحيحة أو خاطئة'
+            'name.required' => __('Work type name is required'),
+            'name.string' => __('Work type name must be a string'),
+            'name.max' => __('Work type name must not exceed 255 characters'),
+            'name.min' => __('Work type name must be at least 2 characters'),
+            'name.unique' => __('Work type name already exists at this level'),
+            'parent_id.integer' => __('Parent work type ID must be an integer'),
+            'parent_id.exists' => __('Selected parent work type does not exist'),
+            'is_active.boolean' => __('Activation status must be true or false'),
         ];
     }
 
@@ -76,9 +76,9 @@ class WorkTypeRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name' => 'اسم نوع العمل',
-            'parent_id' => 'نوع العمل الأب',
-            'is_active' => 'حالة التفعيل'
+            'name' => __('Work type name'),
+            'parent_id' => __('Parent work type'),
+            'is_active' => __('Activation status'),
         ];
     }
 

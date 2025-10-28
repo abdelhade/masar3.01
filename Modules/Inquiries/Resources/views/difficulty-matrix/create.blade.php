@@ -5,8 +5,8 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('مصفوفة الصعوبة'),
-        'items' => [['label' => __('الرئيسية'), 'url' => route('admin.dashboard')], ['label' => __('إنشاء')]],
+        'title' => __('Difficulty Matrix'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Create')]],
     ])
 
     <livewire:inquiries::difficulty-matrix />

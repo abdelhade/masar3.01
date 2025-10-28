@@ -24,11 +24,11 @@ enum QuotationStateEnum: string
     public function color(): string
     {
         return match ($this) {
-            self::APPROVED => 'success',   // أخضر
-            self::REJECTED => 'danger',   // أحمر
-            self::RE_ESTIMATION => 'warning', // أصفر
-            self::NEGLECTED => 'secondary', // رمادي
-            self::PROJECT_POSTPONEMENT => 'info', // أزرق
+            self::APPROVED => 'success',
+            self::REJECTED => 'danger',
+            self::RE_ESTIMATION => 'warning',
+            self::NEGLECTED => 'secondary',
+            self::PROJECT_POSTPONEMENT => 'info',
         };
     }
 

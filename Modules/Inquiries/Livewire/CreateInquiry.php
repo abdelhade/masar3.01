@@ -181,9 +181,9 @@ class CreateInquiry extends Component
             }
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             DB::rollBack();
-            Log::error('Failed to initialize client types: ' . $e->getMessage());
+            return;
         }
         $this->engineers = Client::with('clientType')->get()->toArray();
         $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
@@ -387,7 +387,7 @@ class CreateInquiry extends Component
             'type' => 'from',
             'lat' => $this->fromLocationLat,
             'lng' => $this->fromLocationLng,
-            'title' => 'اختر الموقع الأول (من)'
+            'title' => __('Select First Location (From)'),
         ]);
     }
 
@@ -403,7 +403,7 @@ class CreateInquiry extends Component
             'type' => 'to',
             'lat' => $defaultLat,
             'lng' => $defaultLng,
-            'title' => 'اختر الموقع الثاني (إلى)'
+            'title' => __('Select Second Location (To)'),
         ]);
     }
 
@@ -471,12 +471,12 @@ class CreateInquiry extends Component
     public function calculateDistance()
     {
         if (!$this->fromLocationLat || !$this->fromLocationLng) {
-            session()->flash('warning', 'يرجى اختيار الموقع الأول');
+            session()->flash('warning', __('Please Select First Location'));
             return;
         }
 
         if (!$this->toLocationLat || !$this->toLocationLng) {
-            session()->flash('warning', 'يرجى اختيار الموقع الثاني');
+            session()->flash('warning', __('Please Select Second Location'));
             return;
         }
 
@@ -496,11 +496,11 @@ class CreateInquiry extends Component
                 // حفظ الموقع في قاعدة البيانات (اختياري)
                 $this->storeLocationInDatabase();
             } else {
-                session()->flash('error', 'فشل حساب المسافة. يرجى المحاولة مرة أخرى.');
+                session()->flash('error', __('Failed To Calculate Distance. Please Try Again.'));
             }
         } catch (\Exception) {
 
-            session()->flash('error', 'حدث خطأ في حساب المسافة: ');
+            session()->flash('error', __('Error Calculating Distance: '));
         }
     }
 
@@ -582,7 +582,7 @@ class CreateInquiry extends Component
 
             return [$city, $town];
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء حفظ الموقع: ');
+            session()->flash('error', __('Error Saving Location: '));
         }
     }
 
@@ -817,12 +817,12 @@ class CreateInquiry extends Component
             'newClient.gender' => 'required|in:male,female',
             'modalClientType' => 'required|integer|min:1',
         ], [
-            'newClient.cname.required' => 'اسم العميل مطلوب',
-            'newClient.phone.required' => 'رقم الهاتف مطلوب',
-            'newClient.email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
-            'newClient.email.unique' => 'البريد الإلكتروني مستخدم بالفعل',
-            'modalClientType.required' => 'نوع العميل مطلوب',
-            'modalClientType.integer' => 'نوع العميل يجب أن يكون رقمًا صحيحًا',
+            'newClient.cname.required' => __('Client Name Required'),
+            'newClient.phone.required' => __('Phone Number Required'),
+            'newClient.email.email' => __('Invalid Email Format'),
+            'newClient.email.unique' => __('Email Already In Use'),
+            'modalClientType.required' => __('Client Type Required'),
+            'modalClientType.integer' => __('Client Type Must Be Integer'),
         ]);
 
         try {
@@ -880,12 +880,11 @@ class CreateInquiry extends Component
             $this->dispatch('closeClientModal');
             $this->refreshClientLists();
 
-            session()->flash('message', 'تم إضافة ' . $clientType->title . ' بنجاح');
-
+            session()->flash('message', __('Added Successfully', ['type' => $clientType->title]));
             $this->resetClientForm();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             DB::rollBack();
-            session()->flash('error', 'حدث خطأ أثناء إضافة ');
+            session()->flash('error', __('Error Adding '));
         }
     }
 
@@ -969,162 +968,162 @@ class CreateInquiry extends Component
         //     'documentFiles.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
         // ]);
 
-        try {
-            DB::beginTransaction();
-            list($city, $town) = $this->storeLocationInDatabase();
+        // try {
+        //     DB::beginTransaction();
+        list($city, $town) = $this->storeLocationInDatabase();
 
-            $inquiry = Inquiry::create([
-                'project_id' => $this->projectId,
+        $inquiry = Inquiry::create([
+            'project_id' => $this->projectId,
 
-                'inquiry_date' => $this->inquiryDate,
-                'req_submittal_date' => $this->reqSubmittalDate,
-                'project_start_date' => $this->projectStartDate,
+            'inquiry_date' => $this->inquiryDate,
+            'req_submittal_date' => $this->reqSubmittalDate,
+            'project_start_date' => $this->projectStartDate,
 
-                'city_id' => $city->id ?? null,
-                'town_id' => $town->id ?? null,
-                'town_distance' => $this->calculatedDistance,
+            'city_id' => $city->id ?? null,
+            'town_id' => $town->id ?? null,
+            'town_distance' => $this->calculatedDistance,
 
-                'status' => $this->status,
-                'status_for_kon' => $this->statusForKon,
-                'kon_title' => $this->konTitle,
+            'status' => $this->status,
+            'status_for_kon' => $this->statusForKon,
+            'kon_title' => $this->konTitle,
 
-                // Work Type - آخر خطوة محددة
-                'work_type_id' =>  $this->getMainWorkTypeId(),
-                'final_work_type' => $this->finalWorkType,
+            // Work Type - آخر خطوة محددة
+            'work_type_id' =>  $this->getMainWorkTypeId(),
+            'final_work_type' => $this->finalWorkType,
 
-                // Inquiry Source - آخر خطوة محددة
-                'inquiry_source_id' => !empty($this->inquirySourceSteps)
-                    ? end($this->inquirySourceSteps)
-                    : null,
-                'final_inquiry_source' =>  $this->finalInquirySource,
+            // Inquiry Source - آخر خطوة محددة
+            'inquiry_source_id' => !empty($this->inquirySourceSteps)
+                ? end($this->inquirySourceSteps)
+                : null,
+            'final_inquiry_source' =>  $this->finalInquirySource,
 
-                'client_id' => $this->clientId,
-                'main_contractor_id' => $this->mainContractorId,
-                'consultant_id' => $this->consultantId,
-                'owner_id' => $this->ownerId,
-                'assigned_engineer_id' => $this->assignedEngineer,
+            'client_id' => $this->clientId,
+            'main_contractor_id' => $this->mainContractorId,
+            'consultant_id' => $this->consultantId,
+            'owner_id' => $this->ownerId,
+            'assigned_engineer_id' => $this->assignedEngineer,
 
-                'total_check_list_score' => $this->totalScore,
-                'project_difficulty' => $this->projectDifficulty,
+            'total_check_list_score' => $this->totalScore,
+            'project_difficulty' => $this->projectDifficulty,
 
-                'tender_number' => $this->tenderNo,
-                'tender_id' => $this->tenderId,
+            'tender_number' => $this->tenderNo,
+            'tender_id' => $this->tenderId,
 
-                'estimation_start_date' => $this->estimationStartDate,
-                'estimation_finished_date' => $this->estimationFinishedDate,
-                'submitting_date' => $this->submittingDate,
-                'total_project_value' => $this->totalProjectValue,
+            'estimation_start_date' => $this->estimationStartDate,
+            'estimation_finished_date' => $this->estimationFinishedDate,
+            'submitting_date' => $this->submittingDate,
+            'total_project_value' => $this->totalProjectValue,
 
-                'quotation_state' => $this->quotationState,
-                'rejection_reason' => $this->quotationStateReason,
+            'quotation_state' => $this->quotationState,
+            'rejection_reason' => $this->quotationStateReason,
 
-                'project_size_id' => $this->projectSize,
+            'project_size_id' => $this->projectSize,
 
-                'client_priority' => $this->clientPriority,
-                'kon_priority' => $this->konPriority,
+            'client_priority' => $this->clientPriority,
+            'kon_priority' => $this->konPriority,
 
-                'type_note' => $this->type_note,
-            ]);
+            'type_note' => $this->type_note,
+        ]);
 
-            $this->saveAllWorkTypes($inquiry);
+        $this->saveAllWorkTypes($inquiry);
 
-            if ($this->projectImage) {
+        if ($this->projectImage) {
+            $inquiry
+                ->addMedia($this->projectImage->getRealPath())
+                ->usingFileName($this->projectImage->getClientOriginalName())
+                ->toMediaCollection('project-image'); // اسم المجموعة
+        }
+
+        // 2. حفظ الملفات المتعددة
+        if (!empty($this->documentFiles)) {
+            foreach ($this->documentFiles as $file) {
                 $inquiry
-                    ->addMedia($this->projectImage->getRealPath())
-                    ->usingFileName($this->projectImage->getClientOriginalName())
-                    ->toMediaCollection('project-image'); // اسم المجموعة
+                    ->addMedia($file->getRealPath())
+                    ->usingFileName($file->getClientOriginalName())
+                    ->toMediaCollection('inquiry-documents');
             }
+        }
 
-            // 2. حفظ الملفات المتعددة
-            if (!empty($this->documentFiles)) {
-                foreach ($this->documentFiles as $file) {
-                    $inquiry
-                        ->addMedia($file->getRealPath())
-                        ->usingFileName($file->getClientOriginalName())
-                        ->toMediaCollection('inquiry-documents');
+        // 3. حفظ Submittal Checklist
+        $submittalIds = [];
+        foreach ($this->submittalChecklist as $item) {
+            if (!empty($item['checked']) && isset($item['id'])) {
+                $submittalIds[] = $item['id'];
+            }
+        }
+        if (!empty($submittalIds)) {
+            $inquiry->submittalChecklists()->attach($submittalIds);
+        }
+
+        // 4. حفظ Working Conditions
+        $conditionIds = [];
+        foreach ($this->workingConditions as $condition) {
+            if (!empty($condition['checked']) && isset($condition['id'])) {
+                $conditionIds[] = $condition['id'];
+            }
+        }
+        if (!empty($conditionIds)) {
+            $inquiry->workConditions()->attach($conditionIds);
+        }
+
+        // 5. حفظ Project Documents
+        foreach ($this->projectDocuments as $document) {
+            if (!empty($document['checked'])) {
+                $projectDocument = InquiryDocument::firstOrCreate(
+                    ['name' => $document['name']]
+                );
+
+                $inquiry->projectDocuments()->attach($projectDocument->id, [
+                    'description' => $document['description'] ?? null
+                ]);
+            }
+        }
+
+        if (!empty($this->selectedQuotationUnits) && is_array($this->selectedQuotationUnits)) {
+            $attachments = []; // array للـ attach الجماعي
+
+            foreach ($this->selectedQuotationUnits as $typeId => $unitIds) {
+                // تأكد إن typeId valid (عدد > 0)
+                if (!is_numeric($typeId) || (int)$typeId <= 0) {
+                    continue; // تجاهل types غير صحيحة
                 }
-            }
+                $typeId = (int) $typeId; // cast لـ int
 
-            // 3. حفظ Submittal Checklist
-            $submittalIds = [];
-            foreach ($this->submittalChecklist as $item) {
-                if (!empty($item['checked']) && isset($item['id'])) {
-                    $submittalIds[] = $item['id'];
-                }
-            }
-            if (!empty($submittalIds)) {
-                $inquiry->submittalChecklists()->attach($submittalIds);
-            }
-
-            // 4. حفظ Working Conditions
-            $conditionIds = [];
-            foreach ($this->workingConditions as $condition) {
-                if (!empty($condition['checked']) && isset($condition['id'])) {
-                    $conditionIds[] = $condition['id'];
-                }
-            }
-            if (!empty($conditionIds)) {
-                $inquiry->workConditions()->attach($conditionIds);
-            }
-
-            // 5. حفظ Project Documents
-            foreach ($this->projectDocuments as $document) {
-                if (!empty($document['checked'])) {
-                    $projectDocument = InquiryDocument::firstOrCreate(
-                        ['name' => $document['name']]
-                    );
-
-                    $inquiry->projectDocuments()->attach($projectDocument->id, [
-                        'description' => $document['description'] ?? null
-                    ]);
-                }
-            }
-
-            if (!empty($this->selectedQuotationUnits) && is_array($this->selectedQuotationUnits)) {
-                $attachments = []; // array للـ attach الجماعي
-
-                foreach ($this->selectedQuotationUnits as $typeId => $unitIds) {
-                    // تأكد إن typeId valid (عدد > 0)
-                    if (!is_numeric($typeId) || (int)$typeId <= 0) {
-                        continue; // تجاهل types غير صحيحة
-                    }
-                    $typeId = (int) $typeId; // cast لـ int
-
-                    if (!empty($unitIds) && is_array($unitIds)) {
-                        foreach ($unitIds as $unitId => $isSelected) {
-                            // الفلترة الرئيسية: تأكد إن unitId valid و selected
-                            if ($isSelected === true || $isSelected === 1) {
-                                // تحقق من unitId: يبقى numeric، > 0، ومش string فاضية
-                                if (is_numeric($unitId) && (int)$unitId > 0) {
-                                    $unitId = (int) $unitId; // cast لـ int آمن
-                                    $attachments[$unitId] = ['quotation_type_id' => $typeId];
-                                }
-                                // لو $unitId مش numeric أو =0، هيتجاهل تلقائيًا
+                if (!empty($unitIds) && is_array($unitIds)) {
+                    foreach ($unitIds as $unitId => $isSelected) {
+                        // الفلترة الرئيسية: تأكد إن unitId valid و selected
+                        if ($isSelected === true || $isSelected === 1) {
+                            // تحقق من unitId: يبقى numeric، > 0، ومش string فاضية
+                            if (is_numeric($unitId) && (int)$unitId > 0) {
+                                $unitId = (int) $unitId; // cast لـ int آمن
+                                $attachments[$unitId] = ['quotation_type_id' => $typeId];
                             }
+                            // لو $unitId مش numeric أو =0، هيتجاهل تلقائيًا
                         }
                     }
                 }
-                // attach بس لو في attachments valid
-                if (!empty($attachments)) {
-                    $inquiry->quotationUnits()->attach($attachments);
-                } else {
-                }
             }
-            // 6. حفظ التعليقات المؤقتة
-            foreach ($this->tempComments as $tempComment) {
-                InquiryComment::create([
-                    'inquiry_id' => $inquiry->id,
-                    'user_id' => Auth::id(),
-                    'comment' => $tempComment['comment'],
-                ]);
+            // attach بس لو في attachments valid
+            if (!empty($attachments)) {
+                $inquiry->quotationUnits()->attach($attachments);
+            } else {
             }
-
-            DB::commit();
-            return redirect()->route('inquiries.index');
-        } catch (\Exception) {
-            DB::rollBack();
-            return back();
         }
+        // 6. حفظ التعليقات المؤقتة
+        foreach ($this->tempComments as $tempComment) {
+            InquiryComment::create([
+                'inquiry_id' => $inquiry->id,
+                'user_id' => Auth::id(),
+                'comment' => $tempComment['comment'],
+            ]);
+        }
+
+        // DB::commit();
+        return redirect()->route('inquiries.index');
+        // } catch (\Exception) {
+        //     DB::rollBack();
+        //     return back();
+        // }
     }
 
     private function saveAllWorkTypes($inquiry)

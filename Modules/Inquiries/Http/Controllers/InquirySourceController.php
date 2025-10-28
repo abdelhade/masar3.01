@@ -29,22 +29,20 @@ class InquirySourceController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم إنشاء المصدر بنجاح',
+                    'message' => __('Source created successfully'),
                     'source' => $this->formatSourceForResponse($source)
                 ]);
             }
-
-            Alert::toast('تم إنشاء المصدر بنجاح', 'success');
             return redirect()->route('inquiry.sources.index');
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'حدث خطأ أثناء الحفظ'
+                    'message' => __('Error during save')
                 ], 500);
             }
 
-            Alert::toast('حدث خطأ أثناء الحفظ', 'error');
+            Alert::toast(__('Error during save'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -59,11 +57,11 @@ class InquirySourceController extends Controller
                 if ($request->ajax()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'لا يمكن جعل المصدر فرع من نفسه أو من أحد فروعه'
+                        'message' => __('Cannot make source child of itself or its children')
                     ], 400);
                 }
 
-                Alert::toast('لا يمكن جعل المصدر فرع من نفسه أو من أحد فروعه', 'error');
+                Alert::toast(__('Cannot make source child of itself or its children'), 'error');
                 return redirect()->back()->withInput();
             }
 
@@ -72,22 +70,22 @@ class InquirySourceController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم تعديل المصدر بنجاح',
+                    'message' => __('Source updated successfully'),
                     'source' => $this->formatSourceForResponse($source)
                 ]);
             }
 
-            Alert::toast('تم تعديل المصدر بنجاح', 'success');
+            Alert::toast(__('Source updated successfully'), 'success');
             return redirect()->route('inquiry.sources.index');
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'حدث خطأ أثناء التعديل'
+                    'message' => __('Error during update')
                 ], 500);
             }
 
-            Alert::toast('حدث خطأ أثناء التعديل', 'error');
+            Alert::toast(__('Error during update'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -101,12 +99,12 @@ class InquirySourceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم حذف المصدر وجميع فروعه بنجاح'
+                'message' => __('Source and children deleted successfully')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء الحذف'
+                'message' => __('Error during delete')
             ], 500);
         }
     }
@@ -121,12 +119,12 @@ class InquirySourceController extends Controller
             return response()->json([
                 'success' => true,
                 'is_active' => $source->is_active,
-                'message' => $source->is_active ? 'تم تفعيل المصدر' : 'تم إلغاء تفعيل المصدر'
+                'message' => $source->is_active ? __('Source activated') : __('Source deactivated')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تغيير الحالة'
+                'message' => __('Error during status change')
             ], 500);
         }
     }

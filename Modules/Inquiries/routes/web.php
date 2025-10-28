@@ -46,4 +46,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/difficulty-matrix/create', [DifficultyMatrixController::class, 'create'])->name('difficulty-matrix.create');
     Route::get('dashboard/statistics/workout', [InquiryStatisticsController::class, 'index'])
         ->name('inquiries.dashboard.statistics');
+
+    Route::post('preferences/save', [InquiriesController::class, 'savePreferences'])->name('inquiries.preferences.save');
+    Route::post('preferences/reset', [InquiriesController::class, 'resetPreferences'])->name('inquiries.preferences.reset');
+
 });

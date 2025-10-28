@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'تعديل استفسار ',
+        'title' => __('Edit Inquiry'),
         'items' => [
-            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
-            ['label' => 'الاستفسارات', 'url' => route('inquiries.index')],
-            ['label' => 'تعديل'],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Inquiries'), 'url' => route('inquiries.index')],
+            ['label' => __('Edit')],
         ],
     ])
     <livewire:inquiries::edit-inquiry :id="$id" />

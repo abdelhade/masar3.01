@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\{OperHead, JournalHead, AccHead, Employee, Item, JournalDetail};
+use Illuminate\Support\Facades\Auth;
 
 class InvoiceController extends Controller
 {
@@ -201,7 +202,7 @@ class InvoiceController extends Controller
             abort(404, 'نوع العملية غير معروف');
         }
 
-        if (!auth()->user()->can($permissions[$type])) {
+        if (!Auth::user()->can($permissions[$type])) {
             abort(403, 'ليس لديك صلاحية لتعديل هذا النوع.');
         }
 
@@ -223,8 +224,8 @@ class InvoiceController extends Controller
         Log::info('Invoice edit accessed', [
             'invoice_id' => $invoice->id,
             'invoice_type' => $type,
-            'user_id' => auth()->id(),
-            'user_name' => auth()->user()->name,
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->name,
             'accessed_at' => now(),
         ]);
 
@@ -265,7 +266,7 @@ class InvoiceController extends Controller
             abort(404, 'نوع العملية غير معروف');
         }
 
-        if (!auth()->user()->can($permissions[$type])) {
+        if (!Auth::user()->can($permissions[$type])) {
             abort(403, 'ليس لديك صلاحية لحذف هذا النوع.');
         }
 
@@ -324,7 +325,7 @@ class InvoiceController extends Controller
             abort(404, 'نوع العملية غير معروف');
         }
 
-        if (!auth()->user()->can($permissions[$type])) {
+        if (!Auth::user()->can($permissions[$type])) {
             abort(403, 'ليس لديك صلاحية لطباعة هذا النوع.');
         }
 

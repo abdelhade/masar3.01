@@ -23,7 +23,7 @@
                             <div class="col-12">
                                 <div class="card border-dark">
                                     <div class="card-header ">
-                                        <h5>معلومات العروض السعرية المطلوبة</h5>
+                                        <h5>{{ __('Required Quotation Information') }}</h5>
                                     </div>
                                     <div class="card-body">
                                         {{-- Quotation Types & Units: Side by Side --}}
@@ -47,9 +47,8 @@
                                                                     </label>
                                                                 </div>
                                                             @empty
-                                                                <p class="text-muted small text-center mb-0">لا توجد
-                                                                    وحدات
-                                                                    لهذا النوع</p>
+                                                                <p class="text-muted small text-center mb-0">
+                                                                    {{ __('No units available for this type') }}</p>
                                                             @endforelse
                                                         </div>
                                                     </div>
@@ -58,10 +57,10 @@
                                         </div>
                                         <div class="row mt-3">
                                             <div class="col-12">
-                                                <label for="type_note" class="form-label">ملاحظات النوع
-                                                    (اختياري)</label>
+                                                <label for="type_note"
+                                                    class="form-label">{{ __('Type Notes (Optional)') }}</label>
                                                 <textarea class="form-control" id="type_note" rows="3" wire:model="type_note"
-                                                    placeholder="أدخل أي ملاحظات إضافية هنا..."></textarea>
+                                                    placeholder="{{ __('Enter any additional notes here...') }}"></textarea>
                                                 @error('type_note')
                                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                                 @enderror
@@ -82,9 +81,9 @@
                                     <div class="card-header">
                                         <h6 class="card-title mb-0">
                                             <i class="fas fa-file-alt me-2"></i>
-                                            وثائق المشروع
+                                            {{ __('Project Documents') }}
                                         </h6>
-                                        <small class="d-block mt-1">اختر الوثائق المتاحة</small>
+                                        <small class="d-block mt-1">{{ __('Select available documents') }}</small>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
@@ -121,11 +120,11 @@
                                 <div class="d-flex justify-content-between">
                                     <a href="{{ route('inquiries.index') }}" class="btn btn-secondary btn-lg">
                                         <i class="fas fa-times me-2"></i>
-                                        إلغاء
+                                        {{ __('Cancel') }}
                                     </a>
                                     <button type="submit" class="btn btn-primary btn-lg">
                                         <i class="fas fa-save me-2"></i>
-                                        حفظ الاستفسار
+                                        {{ __('Save Inquiry') }}
                                     </button>
                                 </div>
                             </div>
@@ -180,12 +179,12 @@
                         stepItem.innerHTML = `
                         <label class="form-label fw-bold">
                             <span class="badge bg-primary me-2">${nextStepNum}</span>
-                            التصنيف ${nextStepNum}
+                            Classification ${nextStepNum}
                         </label>
                         <select wire:model.live="currentWorkTypeSteps.step_${nextStepNum}" id="step_${nextStepNum}" class="form-select">
-                            <option value="">اختر الخطوة ${nextStepNum}...</option>
-                        </select>
-                    `;
+                            <option value="">Select step ${nextStepNum}...</option>
+                                </select>
+                             `;
 
                         workTypesRow.appendChild(stepItem);
 
@@ -203,7 +202,7 @@
 
                     const select = document.getElementById(`step_${nextStepNum}`);
                     if (select) {
-                        select.innerHTML = `<option value="">اختر الخطوة ${nextStepNum}...</option>`;
+                        select.innerHTML = `<option value="">Select step ${nextStepNum}...</option>`;
                         children.forEach(item => {
                             select.add(new Option(item.name, item.id));
                         });
@@ -263,7 +262,7 @@
                             المصدر ${nextStepNum}
                         </label>
                         <select wire:model.live="inquirySourceSteps.inquiry_source_step_${nextStepNum}" id="inquiry_source_step_${nextStepNum}" class="form-select">
-                            <option value="">اختر الخطوة ${nextStepNum}...</option>
+                            <option value="">Select step ${nextStepNum}...</option>
                         </select>
                     `;
 
@@ -283,7 +282,7 @@
 
                     const select = document.getElementById(`inquiry_source_step_${nextStepNum}`);
                     if (select) {
-                        select.innerHTML = `<option value="">اختر الخطوة ${nextStepNum}...</option>`;
+                        select.innerHTML = `<option value="">Select step ${nextStepNum}...</option>`;
                         children.forEach(item => {
                             select.add(new Option(item.name, item.id));
                         });

@@ -4,9 +4,9 @@
         <div class="card-header">
             <h6 class="card-title mb-0">
                 <i class="fas fa-comments me-2"></i>
-                التعليقات والملاحظات
+                {{ __('Comments and Notes') }}
             </h6>
-            <small class="d-block mt-1">{{ count($comments) }} تعليق</small>
+            <small class="d-block mt-1">{{ count($comments) }} {{ __('Comments') }}</small>
         </div>
         <div class="card-body">
             @if (session()->has('comment_success'))
@@ -22,17 +22,17 @@
                     <div class="mb-3">
                         <label for="newComment" class="form-label fw-bold">
                             <i class="fas fa-pen me-2"></i>
-                            أضف تعليق جديد
+                            {{ __('Add New Comment') }}
                         </label>
                         <textarea wire:model="newComment" id="newComment" class="form-control @error('newComment') is-invalid @enderror"
-                            rows="3" placeholder="اكتب تعليقك هنا..."></textarea>
+                            rows="3" placeholder="{{ __('Write your comment here...') }}"></textarea>
                         @error('newComment')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-paper-plane me-2"></i>
-                        إضافة التعليق
+                        {{ __('Add Comment') }}
                     </button>
                 </form>
             </div>
@@ -48,7 +48,7 @@
                                 <div>
                                     <h6 class="mb-1">
                                         <i class="fas fa-user-circle me-2 text-primary"></i>
-                                        {{ $comment['user']['name'] ?? 'مستخدم' }}
+                                        {{ $comment['user']['name'] ?? __('User') }}
                                     </h6>
                                     <small class="text-muted">
                                         <i class="fas fa-clock me-1"></i>
@@ -57,7 +57,7 @@
                                 </div>
                                 @if ($comment['user_id'] === auth()->id() || auth()->user()->hasRole('admin'))
                                     <button wire:click="deleteComment({{ $comment['id'] }})"
-                                        wire:confirm="هل أنت متأكد من حذف هذا التعليق؟"
+                                        wire:confirm="{{ __('Are you sure you want to delete this comment?') }}"
                                         class="btn btn-sm btn-outline-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -69,7 +69,7 @@
                 @empty
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        لا توجد تعليقات حتى الآن. كن أول من يضيف تعليق!
+                        {{ __('No comments yet. Be the first to add one!') }}
                     </div>
                 @endforelse
             </div>

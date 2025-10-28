@@ -13,6 +13,7 @@ class InquirySourceRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * Get the validation rules that apply to the request.
      */
@@ -25,15 +26,18 @@ class InquirySourceRequest extends FormRequest
         ];
     }
 
+    /**
+     * Get the validation error messages.
+     */
     public function messages(): array
     {
         return [
-            'name.required' => 'اسم المصدر مطلوب',
-            'name.string' => 'اسم المصدر يجب أن يكون نص',
-            'name.max' => 'اسم المصدر يجب ألا يزيد عن 255 حرف',
-            'parent_id.exists' => 'المصدر الأب غير موجود',
-            'is_active.required' => 'حقل الحالة مطلوب',
-            'is_active.boolean' => 'حقل الحالة يجب أن يكون صحيح أو خطأ',
+            'name.required' => __('Source name is required'),
+            'name.string' => __('Source name must be a string'),
+            'name.max' => __('Source name must not exceed 255 characters'),
+            'parent_id.exists' => __('Parent source does not exist'),
+            'is_active.required' => __('Status field is required'),
+            'is_active.boolean' => __('Status must be true or false'),
         ];
     }
 }

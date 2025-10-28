@@ -98,7 +98,7 @@ class DifficultyMatrix extends Component
         $this->resetSubmittalForm();
         $this->dispatch('swal:toast', [
             'type' => 'success',
-            'message' => 'تم إضافة التقديم بنجاح',
+            'message' => __('Submittal Added Success'),
         ]);
     }
 
@@ -131,7 +131,7 @@ class DifficultyMatrix extends Component
         $this->resetSubmittalForm();
         $this->dispatch('swal:toast', [
             'type' => 'success',
-            'message' => 'تم تعديل التقديم بنجاح',
+            'message' => __('Submittal Updated Success'),
         ]);
     }
 
@@ -141,7 +141,7 @@ class DifficultyMatrix extends Component
         $this->loadData();
         $this->dispatch('swal:toast', [
             'type' => 'success',
-            'message' => 'تم حذف التقديم بنجاح',
+            'message' => __('Submittal Deleted Success'),
         ]);
     }
 
@@ -172,7 +172,7 @@ class DifficultyMatrix extends Component
         $this->resetConditionForm();
         $this->dispatch('swal:toast', [
             'type' => 'success',
-            'message' => 'تم إضافة شرط العمل بنجاح',
+            'message' => __('Work Condition Added Success'),
         ]);
     }
 
@@ -219,7 +219,7 @@ class DifficultyMatrix extends Component
         $this->resetConditionForm();
         $this->dispatch('swal:toast', [
             'type' => 'success',
-            'message' => 'تم تعديل شرط العمل بنجاح',
+            'message' => __('Work Condition Updated Success'),
         ]);
     }
 
@@ -229,7 +229,7 @@ class DifficultyMatrix extends Component
         $this->loadData();
         $this->dispatch('swal:toast', [
             'type' => 'success',
-            'message' => 'تم حذف شرط العمل بنجاح',
+            'message' => __('Work Condition Deleted Success'),
         ]);
     }
 

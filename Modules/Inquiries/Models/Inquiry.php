@@ -186,4 +186,9 @@ class Inquiry extends Model implements HasMedia
         if ($score <= 15) return 3;
         return 4;
     }
+
+    public static function safeFrom(string $value): ?self
+    {
+        return self::tryFrom(strtolower($value));
+    }
 }

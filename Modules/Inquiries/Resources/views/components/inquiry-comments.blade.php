@@ -5,23 +5,23 @@
             <div class="card-header">
                 <h6 class="card-title mb-0">
                     <i class="fas fa-comments me-2"></i>
-                    التعليقات والملاحظات
+                    {{ __('Comments and Notes') }}
                 </h6>
-                <small class="d-block mt-1">سيتم حفظ التعليقات مع الاستفسار</small>
+                <small class="d-block mt-1">{{ __('Comments will be saved with the inquiry') }}</small>
             </div>
             <div class="card-body">
                 <!-- Form لإضافة تعليق -->
                 <div class="mb-3">
                     <label for="newTempComment" class="form-label fw-bold">
                         <i class="fas fa-pen me-2"></i>
-                        أضف ملاحظة
+                        {{ __('Add Note') }}
                     </label>
                     <div class="input-group">
                         <textarea wire:model="newTempComment" id="newTempComment" class="form-control" rows="2"
-                            placeholder="اكتب ملاحظاتك هنا..."></textarea>
+                            placeholder="{{ __('Write your notes here...') }}"></textarea>
                         <button type="button" wire:click="addTempComment" class="btn btn-primary">
                             <i class="fas fa-plus"></i>
-                            إضافة
+                            {{ __('Add') }}
                         </button>
                     </div>
                     @error('newTempComment')
@@ -57,7 +57,7 @@
                 @else
                     <div class="alert alert-secondary">
                         <i class="fas fa-info-circle me-2"></i>
-                        لا توجد ملاحظات. يمكنك إضافة ملاحظاتك قبل حفظ الاستفسار.
+                        {{ __('No notes available. You can add your notes before saving the inquiry.') }}
                     </div>
                 @endif
             </div>
