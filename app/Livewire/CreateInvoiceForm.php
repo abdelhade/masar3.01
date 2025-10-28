@@ -4,13 +4,11 @@ namespace App\Livewire;
 
 use App\Enums\ItemType;
 use Livewire\Component;
-use App\Enums\InvoiceStatus;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use App\Services\SaveInvoiceService;
-use Modules\Settings\Models\PublicSetting;
 use Modules\Invoices\Models\InvoiceTemplate;
-use App\Models\{OperHead, OperationItems, AccHead, Price, Item, Barcode, JournalDetail};
+use App\Models\{OperationItems, AccHead, Item, Barcode};
 
 class CreateInvoiceForm extends Component
 {
@@ -104,6 +102,9 @@ class CreateInvoiceForm extends Component
     public $selectedTemplateId = null;
     public $currentTemplate = null;
 
+    public $enableDimensionsCalculation = false;
+    public $dimensionsUnit = 'cm'; // cm أو m
+
     public $titles = [
         10 => 'فاتوره مبيعات',
         11 => 'فاتورة مشتريات',
@@ -128,8 +129,10 @@ class CreateInvoiceForm extends Component
 
     public function mount($type, $hash)
     {
-        // ✅ تحميل op2 من الـ request parameters
         $this->op2 = request()->get('op2');
+
+        $this->enableDimensionsCalculation = (setting('enable_dimensions_calculation') ?? '0') == '1';
+        $this->dimensionsUnit = setting('dimensions_unit', 'cm');
 
         $this->initializeInvoice($type, $hash);
         $this->loadTemplatesForType();
@@ -149,6 +152,32 @@ class CreateInvoiceForm extends Component
             $firstTemplate = $this->availableTemplates->first();
             $this->selectedTemplateId = $firstTemplate->id;
             $this->currentTemplate = $firstTemplate;
+        }
+    }
+
+    public function calculateQuantityFromDimensions($index)
+    {
+        if (!isset($this->invoiceItems[$index])) return;
+
+        $item = $this->invoiceItems[$index];
+        $length = (float) ($item['length'] ?? 0);
+        $width = (float) ($item['width'] ?? 0);
+        $height = (float) ($item['height'] ?? 0);
+        $density = (float) ($item['density'] ?? 1);
+
+        // إذا كانت جميع القيم موجودة
+        if ($length > 0 && $width > 0 && $height > 0) {
+            // حساب الكمية حسب الوحدة المختارة
+            $quantity = $length * $width * $height * $density;
+
+            // إذا كانت الوحدة سنتيمتر، نحول إلى متر مكعب
+            if ($this->dimensionsUnit === 'cm') {
+                $quantity = $quantity / 1000000; // تحويل من سم³ إلى م³
+            }
+
+            $this->invoiceItems[$index]['quantity'] = round($quantity, 3);
+            $this->recalculateSubValues();
+            $this->calculateTotals();
         }
     }
 
@@ -283,8 +312,6 @@ class CreateInvoiceForm extends Component
             'currentBalance' => $this->currentBalance,
         ]);
     }
-
-
 
     // private function getFilteredItems()
     // {
@@ -713,6 +740,11 @@ class CreateInvoiceForm extends Component
             'sub_value' => $price * $quantity, // quantity * price
             'discount' => 0,
             'available_units' => $availableUnits,
+
+            'length' => null,
+            'width' => null,
+            'height' => null,
+            'density' => 1,
         ];
 
         $this->updateSelectedItemData($item, $unitId, $price);
@@ -879,6 +911,11 @@ class CreateInvoiceForm extends Component
 
         $rowIndex = (int) $parts[0];
         $field = $parts[1];
+
+        if (in_array($field, ['length', 'width', 'height', 'density']) && $this->enableDimensionsCalculation) {
+            $this->calculateQuantityFromDimensions($rowIndex);
+            return;
+        }
 
         if ($field === 'quantity') {
             $this->quantityClickCount = 0; // إعادة تعيين عداد الضغطات

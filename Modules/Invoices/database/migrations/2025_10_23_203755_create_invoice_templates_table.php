@@ -16,6 +16,8 @@ return new class extends Migration
             $table->json('visible_columns');
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->json('column_widths')->nullable();
+            $table->json('column_order')->nullable();
             $table->timestamps();
         });
 

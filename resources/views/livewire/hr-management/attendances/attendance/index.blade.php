@@ -291,6 +291,7 @@ new class extends Component {
                                     <th class="font-family-cairo fw-bold">{{ __('التاريخ') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الوقت') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الموقع') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('المشروع') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('الحالة') }}</th>
                                     <th class="font-family-cairo fw-bold">{{ __('ملاحظات') }}</th>
                                     @canany(['حذف البصمات', 'تعديل البصمات'])
@@ -316,7 +317,8 @@ new class extends Component {
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->time }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">-</td>
+                                        <td class="font-family-cairo fw-bold">{{ $attendance->location_address ?? '-' }}</td>
+                                        <td class="font-family-cairo fw-bold">{{ $attendance->project_code ?? '-' }}</td>
                                         <td class="font-family-cairo fw-bold">
                                             @if ($attendance->status == 'pending')
                                                 <span

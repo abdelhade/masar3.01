@@ -351,7 +351,7 @@ class InvoiceController extends Controller
 
         $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22]) ? 'مدين' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'دائن' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'مدين' : 'غير محدد'));
 
-        return view('invoices.print-invoice', [
+        return view('invoices.print-invoice-2', [
             'pro_id' => $operation->pro_id,
             'pro_date' => $operation->pro_date,
             'accural_date' => $operation->accural_date,

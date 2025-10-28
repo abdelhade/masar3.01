@@ -33,6 +33,7 @@ class InvoiceTemplatesSeeder extends Seeder
                 'visible_columns' => [
                     'item_name',
                     'quantity',
+                    'price',
                     'sub_value'
                 ],
                 'invoice_types' => [10],
@@ -44,7 +45,6 @@ class InvoiceTemplatesSeeder extends Seeder
                 'description' => 'النموذج القياسي لفواتير المشتريات',
                 'visible_columns' => [
                     'item_name',
-                    'item_code',
                     'unit',
                     'quantity',
                     'price',
@@ -62,8 +62,7 @@ class InvoiceTemplatesSeeder extends Seeder
                     'unit',
                     'quantity',
                     'price',
-                    'sub_value',
-                    'notes'
+                    'sub_value'
                 ],
                 'invoice_types' => [12], // مردود مبيعات
                 'is_default' => true,
@@ -75,8 +74,7 @@ class InvoiceTemplatesSeeder extends Seeder
                 'visible_columns' => [
                     'item_name',
                     'unit',
-                    'quantity',
-                    'notes'
+                    'quantity'
                 ],
                 'invoice_types' => [21], // تحويل من مخزن لمخزن
                 'is_default' => true,
@@ -90,11 +88,27 @@ class InvoiceTemplatesSeeder extends Seeder
                     'quantity',
                     'price',
                     'discount',
-                    'sub_value',
-                    'notes'
+                    'sub_value'
                 ],
                 'invoice_types' => [24], // فاتورة خدمة
                 'is_default' => true,
+            ],
+            [
+                'name' => 'نموذج الخشب والمواد (بالأبعاد)',
+                'code' => 'wood_materials',
+                'description' => 'نموذج لحساب الكميات من الأبعاد (الطول × العرض × الارتفاع × الكثافة)',
+                'visible_columns' => [
+                    'item_name',
+                    'length',
+                    'width',
+                    'height',
+                    'density',
+                    'quantity',
+                    'price',
+                    'sub_value'
+                ],
+                'invoice_types' => [10, 11], // مبيعات ومشتريات
+                'is_default' => false,
             ],
         ];
 

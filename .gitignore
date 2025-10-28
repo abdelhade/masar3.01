@@ -23,6 +23,7 @@ yarn-error.log
 /.zed
 /storage/framework/cache/data/
 /storage/logs/*.log
+/storage
 *.sqlite
 database.zip
 .DS_Store

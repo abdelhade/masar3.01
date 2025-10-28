@@ -129,7 +129,15 @@ new class extends Component {
                 $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
                 $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
             }
-            $this->calculateAndStoreDisplayData($item);
+            
+            // Prepare Alpine.js data for client-side calculations
+            $itemId = $item->id;
+            $baseQty = $this->baseQuantities[$itemId] ?? 0;
+            $this->displayItemData[$itemId] = ItemDataTransformer::getItemDataForAlpine(
+                $item, 
+                (int)$this->selectedWarehouse, 
+                $baseQty
+            );
         }
     }
 
@@ -289,33 +297,6 @@ new class extends Component {
         $this->loadedNoteData[$noteId] = $notes;
     }
 
-    public function calculateAndStoreDisplayData($item)
-    {
-        if (!$item) {
-            return;
-        }
-
-        $itemId = $item->id;
-        $selectedUnitId = $this->selectedUnit[$itemId] ?? null;
-        
-        // Get base quantity from cache
-        $baseQty = $this->baseQuantities[$itemId] ?? 0;
-        
-        // Use lightweight transformer with precomputed base quantity
-        $transformedData = ItemDataTransformer::transform($item, (int)$selectedUnitId, (int)$this->selectedWarehouse, $baseQty);
-        
-        // Ensure all price types are present
-        $unitSalePricesData = [];
-        if ($selectedUnitId) {
-            $rawPrices = $transformedData['unitSalePrices'];
-            foreach ($this->priceTypes as $priceTypeId => $priceTypeName) {
-                $unitSalePricesData[$priceTypeId] = $rawPrices[$priceTypeId] ?? ['name' => $priceTypeName, 'price' => null];
-            }
-            $transformedData['unitSalePrices'] = $unitSalePricesData;
-        }
-
-        $this->displayItemData[$itemId] = $transformedData;
-    }
 
     public function getVisibleColumnsCountProperty()
     {
@@ -348,28 +329,7 @@ new class extends Component {
         return $count;
     }
 
-    public function updated($propertyName, $value)
-    {
-        if (str_starts_with($propertyName, 'selectedUnit.')) {
-            $parts = explode('.', $propertyName);
-            $itemId = (int) $parts[1];
 
-            if (isset($this->selectedUnit[$itemId])) {
-                // Load the item with its relationships
-                $item = Item::with(['units', 'prices', 'barcodes', 'notes'])
-                    ->find($itemId);
-                    
-                if ($item) {
-                    $this->calculateAndStoreDisplayData($item);
-                }
-            }
-        }
-    }
-
-    public function getComputedKey($itemId)
-    {
-        return 'item-' . $itemId . '-' . ($this->selectedUnit[$itemId] ?? 'no-unit');
-    }
 
     public function edit($itemId)
     {
@@ -405,107 +365,6 @@ new class extends Component {
         $this->dispatch('print-items');
     }
 
-    public function toggleColumn($column)
-    {
-        if (isset($this->visibleColumns[$column])) {
-            $this->visibleColumns[$column] = !$this->visibleColumns[$column];
-        }
-        $this->dispatch('$refresh');
-    }
-
-    public function showAllColumns()
-    {
-        foreach ($this->visibleColumns as $column => $value) {
-            $this->visibleColumns[$column] = true;
-        }
-        foreach ($this->visibleNotes as $noteId => $value) {
-            $this->visibleNotes[$noteId] = true;
-        }
-        foreach ($this->visiblePrices as $priceId => $value) {
-            $this->visiblePrices[$priceId] = true;
-        }
-        // Don't apply changes immediately, let user review and apply manually
-    }
-
-    public function hideAllColumns()
-    {
-        foreach ($this->visibleColumns as $column => $value) {
-            $this->visibleColumns[$column] = false;
-        }
-        foreach ($this->visibleNotes as $noteId => $value) {
-            $this->visibleNotes[$noteId] = false;
-        }
-        foreach ($this->visiblePrices as $priceId => $value) {
-            $this->visiblePrices[$priceId] = false;
-        }
-        // Don't apply changes immediately, let user review and apply manually
-    }
-
-    public function toggleNote($noteId)
-    {
-        if (isset($this->visibleNotes[$noteId])) {
-            $wasVisible = $this->visibleNotes[$noteId];
-            $this->visibleNotes[$noteId] = !$wasVisible;
-            
-            // Lazy load data when making column visible
-            if (!$wasVisible && $this->visibleNotes[$noteId]) {
-                $this->loadNoteColumn($noteId);
-            }
-        }
-        $this->dispatch('$refresh');
-    }
-
-    public function showAllNotes()
-    {
-        foreach ($this->visibleNotes as $noteId => $value) {
-            $this->visibleNotes[$noteId] = true;
-        }
-        // Don't apply changes immediately, let user review and apply manually
-    }
-
-    public function hideAllNotes()
-    {
-        foreach ($this->visibleNotes as $noteId => $value) {
-            $this->visibleNotes[$noteId] = false;
-        }
-        // Don't apply changes immediately, let user review and apply manually
-    }
-
-    public function togglePrice($priceId)
-    {
-        if (isset($this->visiblePrices[$priceId])) {
-            $wasVisible = $this->visiblePrices[$priceId];
-            $this->visiblePrices[$priceId] = !$wasVisible;
-            
-            // Lazy load data when making column visible
-            if (!$wasVisible && $this->visiblePrices[$priceId]) {
-                $this->loadPriceColumn($priceId);
-            }
-        }
-        $this->dispatch('$refresh');
-    }
-
-    public function showAllPrices()
-    {
-        foreach ($this->visiblePrices as $priceId => $value) {
-            $this->visiblePrices[$priceId] = true;
-        }
-        // Don't apply changes immediately, let user review and apply manually
-    }
-
-    public function hideAllPrices()
-    {
-        foreach ($this->visiblePrices as $priceId => $value) {
-            $this->visiblePrices[$priceId] = false;
-        }
-        // Don't apply changes immediately, let user review and apply manually
-    }
-
-    public function applyChanges()
-    {
-        // Get all checkbox values from the modal using JavaScript
-        $this->dispatch('collect-checkbox-values');
-    }
 
     public function updateVisibility($columns, $prices, $notes)
     {
@@ -637,60 +496,109 @@ new class extends Component {
 
                         {{-- Search and Filter Group --}}
                         <div class="d-flex flex-grow-1 flex-wrap align-items-center justify-content-end gap-2"
-                            style="min-width: 300px;">
+                            style="min-width: 300px;" 
+                            x-data="filtersComponent()"
+                            x-init="
+                                searchValue = @js($this->search);
+                                warehouseValue = @js($this->selectedWarehouse);
+                                groupValue = @js($this->selectedGroup);
+                                categoryValue = @js($this->selectedCategory);
+                            ">
                             {{-- Clear Filters Button --}}
                             <div class="d-flex align-items-end mt-4">
-                                <button type="button" wire:click="clearFilters" style="min-height: 50px;"
-                                    class="btn btn-outline-secondary btn-lg font-family-cairo fw-bold">
+                                <button type="button" @click="clearFilters()" style="min-height: 50px;"
+                                    class="btn btn-outline-secondary btn-lg font-family-cairo fw-bold"
+                                    wire:loading.attr="disabled" wire:target="clearFilters">
+                                    <span wire:loading.remove wire:target="clearFilters">
                                     <i class="fas fa-times me-1"></i>
                                     مسح الفلاتر
+                                    </span>
+                                    <span wire:loading wire:target="clearFilters">
+                                        <div class="spinner-border spinner-border-sm me-1" role="status">
+                                            <span class="visually-hidden">جاري التحميل...</span>
+                                        </div>
+                                        جاري التحميل...
+                                    </span>
                                 </button>
                             </div>
                             {{-- Search Input --}}
                             <div class="flex-grow-1">
                                 <label class="form-label font-family-cairo fw-bold font-12 mb-1">البحث:</label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                    <input type="text" wire:model.live.debounce.300ms="search"
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search" wire:loading.remove wire:target="search"></i>
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="search">
+                                            <span class="visually-hidden">جاري التحميل...</span>
+                                        </div>
+                                    </span>
+                                    <input type="text" x-model="searchValue" @input="updateSearch()"
                                         class="form-control font-family-cairo"
-                                        placeholder="بحث بالاسم, الكود, الباركود...">
+                                        placeholder="بحث بالاسم, الكود, الباركود..."
+                                        wire:loading.attr="disabled" wire:target="search">
                                 </div>
                             </div>
 
                             {{-- Warehouse Filter --}}
                             <div class="flex-grow-1">
                                 <label class="form-label font-family-cairo fw-bold font-12 mb-1">المخزن:</label>
-                                <select wire:model.live="selectedWarehouse"
-                                    class="form-select font-family-cairo fw-bold font-14">
+                                <div class="input-group">
+                                    <select x-model="warehouseValue" @change="updateWarehouse()"
+                                        class="form-select font-family-cairo fw-bold font-14"
+                                        wire:loading.attr="disabled" wire:target="selectedWarehouse">
                                     <option value="">كل المخازن</option>
                                     @foreach ($warehouses as $warehouse)
                                         <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
                                     @endforeach
                                 </select>
+                                    <span class="input-group-text">
+                                        <i class="fas fa-warehouse" wire:loading.remove wire:target="selectedWarehouse"></i>
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedWarehouse">
+                                            <span class="visually-hidden">جاري التحميل...</span>
+                                        </div>
+                                    </span>
+                                </div>
                             </div>
 
                             {{-- Group Filter --}}
                             <div class="flex-grow-1">
                                 <label class="form-label font-family-cairo fw-bold font-12 mb-1">المجموعة:</label>
-                                <select wire:model.live="selectedGroup"
-                                    class="form-select font-family-cairo fw-bold font-14">
+                                <div class="input-group">
+                                    <select x-model="groupValue" @change="updateGroup()"
+                                        class="form-select font-family-cairo fw-bold font-14"
+                                        wire:loading.attr="disabled" wire:target="selectedGroup">
                                     <option value="">كل المجموعات</option>
                                     @foreach ($groups as $id => $name)
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
+                                    <span class="input-group-text">
+                                        <i class="fas fa-layer-group" wire:loading.remove wire:target="selectedGroup"></i>
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedGroup">
+                                            <span class="visually-hidden">جاري التحميل...</span>
+                                        </div>
+                                    </span>
+                                </div>
                             </div>
 
                             {{-- Category Filter --}}
                             <div class="flex-grow-1">
                                 <label class="form-label font-family-cairo fw-bold font-12 mb-1">التصنيف:</label>
-                                <select wire:model.live="selectedCategory"
-                                    class="form-select font-family-cairo fw-bold font-14">
+                                <div class="input-group">
+                                    <select x-model="categoryValue" @change="updateCategory()"
+                                        class="form-select font-family-cairo fw-bold font-14"
+                                        wire:loading.attr="disabled" wire:target="selectedCategory">
                                     <option value="">كل التصنيفات</option>
                                     @foreach ($categories as $id => $name)
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
+                                    <span class="input-group-text">
+                                        <i class="fas fa-tags" wire:loading.remove wire:target="selectedCategory"></i>
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedCategory">
+                                            <span class="visually-hidden">جاري التحميل...</span>
+                                        </div>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -704,19 +612,40 @@ new class extends Component {
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center gap-2">
                             <label class="form-label font-family-cairo fw-bold mb-0">عرض:</label>
-                            <select wire:model.live="perPage" class="form-select form-select-sm font-family-cairo fw-bold" style="width: auto;">
+                            <div class="input-group" style="width: auto;">
+                                <select wire:model.live="perPage" class="form-select form-select-sm font-family-cairo fw-bold"
+                                    wire:loading.attr="disabled" wire:target="perPage">
                                 <option value="25">25</option>
                                 <option value="50">50</option>
                                 <option value="100">100</option>
                                 <option value="200">200</option>
                             </select>
+                                <span class="input-group-text">
+                                    <i class="fas fa-list" wire:loading.remove wire:target="perPage"></i>
+                                    <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="perPage">
+                                        <span class="visually-hidden">جاري التحميل...</span>
+                                    </div>
+                                </span>
+                            </div>
                             <span class="font-family-cairo fw-bold">سجل</span>
+                        </div>
+                        <div class="font-family-cairo fw-bold text-muted">
+                            <i class="fas fa-list me-1"></i>
+                            إجمالي النتائج: <span class="text-primary">{{ $this->items->total() }}</span>
                         </div>
                     </div>
                     
                     {{-- Active Filters Display --}}
                     @if ($search || $selectedWarehouse || $selectedGroup || $selectedCategory)
-                        <div class="alert alert-info mb-3" x-data="{ show: true }" x-show="show">
+                        <div class="alert alert-info mb-3" 
+                             x-data="{ show: true }" 
+                             x-show="show"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 transform translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100 transform translate-y-0"
+                             x-transition:leave-end="opacity-0 transform translate-y-2">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="font-family-cairo fw-bold">
                                     <i class="fas fa-filter me-2"></i>
@@ -743,12 +672,8 @@ new class extends Component {
                         </div>
                     @endif
 
-                    <div class="table-responsive" style="overflow-x: auto; max-height: 70vh; overflow-y: auto;" wire:loading.class="opacity-50">
-                        <div wire:loading class="position-absolute top-50 start-50 translate-middle">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">جاري التحميل...</span>
-                            </div>
-                        </div>
+                    <div class="table-responsive" style="overflow-x: auto; max-height: 70vh; overflow-y: auto;">
+                        
                         <table class="table table-striped mb-0 table-hover"
                             style="direction: rtl; font-family: 'Cairo', sans-serif;">
                             <style>
@@ -829,17 +754,26 @@ new class extends Component {
                                     @php
                                         // Data already prepared in getItemsProperty()
                                         $itemData = $this->displayItemData[$item->id] ?? [];
+                                        $selectedUnitId = $this->selectedUnit[$item->id] ?? null;
                                     @endphp
                                     @if (!empty($itemData))
-                                        <tr wire:key="{{ $this->getComputedKey($item->id) }}">
+                                         <tr wire:key="item-{{ $item->id }}-{{ $selectedUnitId ?? 'no-unit' }}" 
+                                             x-data="itemRow({{ json_encode($itemData) }}, {{ $selectedUnitId }})"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 transform scale-95"
+                                             x-transition:enter-end="opacity-100 transform scale-100"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="opacity-100 transform scale-100"
+                                             x-transition:leave-end="opacity-0 transform scale-95">
                                             <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
                                             
                                             @if($visibleColumns['code'])
-                                                <td class="font-family-cairo text-center fw-bold">{{ $itemData['code'] }}</td>
+                                                <td class="font-family-cairo text-center fw-bold" x-text="itemData.code"></td>
                                             @endif
                                             
                                             @if($visibleColumns['name'])
-                                                <td class="font-family-cairo text-center fw-bold">{{ $itemData['name'] }}
+                                                <td class="font-family-cairo text-center fw-bold">
+                                                    <span x-text="itemData.name"></span>
                                                     <a href="{{ route('item-movement', ['itemId' => $item->id]) }}">
                                                         <i class="las la-eye fa-lg text-primary" title="عرض حركات الصنف"></i>
                                                     </a>
@@ -848,57 +782,53 @@ new class extends Component {
                                             
                                             @if($visibleColumns['units'])
                                                 <td class="font-family-cairo text-center fw-bold">
-                                                    @if (!empty($itemData['unitOptions']))
-                                                        <div wire:loading.class="opacity-50" wire:target="selectedUnit.{{ $item->id }}">
+                                                     <template x-if="Object.keys(itemData.units).length > 0">
+                                                         <div>
                                                             <select class="form-select font-family-cairo fw-bold font-14"
-                                                                wire:model.live.debounce.150ms="selectedUnit.{{ $item->id }}"
+                                                                 x-model="selectedUnitId"
                                                                 style="min-width: 105px;">
-                                                                @foreach ($itemData['unitOptions'] as $option)
-                                                                    <option value="{{ $option['value'] }}">
-                                                                        {{ $option['label'] }}</option>
-                                                                @endforeach
+                                                                 <template x-for="[unitId, unit] in Object.entries(itemData.units)" :key="unitId">
+                                                                     <option :value="unitId" x-text="unit.name + ' [' + formatNumber(unit.u_val) + ']'"></option>
+                                                                 </template>
                                                             </select>
                                                         </div>
-                                                    @else
+                                                     </template>
+                                                    <template x-if="Object.keys(itemData.units).length === 0">
                                                         <span class="font-family-cairo fw-bold font-14">لا يوجد وحدات</span>
-                                                    @endif
+                                                    </template>
                                                 </td>
                                             @endif
                                             
                                             @if($visibleColumns['quantity'])
                                                 <td class="text-center fw-bold">
-                                                    @php $fq = $itemData['formattedQuantity']; @endphp
-                                                    {{ $fq['quantity']['integer'] }}
-                                                    @if (isset($fq['quantity']['remainder']) &&
-                                                            $fq['quantity']['remainder'] > 0 &&
-                                                            $fq['unitName'] !== $fq['smallerUnitName']
-                                                    )
-                                                        [{{ $fq['quantity']['remainder'] }} {{ $fq['smallerUnitName'] }}]
-                                                    @endif
+                                                    <span x-text="formattedQuantity.integer"></span>
+                                                    <template x-if="formattedQuantity.remainder > 0 && formattedQuantity.unitName !== formattedQuantity.smallerUnitName">
+                                                        <span x-text="'[' + formattedQuantity.remainder + ' ' + formattedQuantity.smallerUnitName + ']'"></span>
+                                                    </template>
                                                 </td>
                                             @endif
                                             
                                             @if($visibleColumns['average_cost'])
                                                 <td class="font-family-cairo text-center fw-bold">
-                                                    {{ formatCurrency($itemData['unitAverageCost']) }}
+                                                    <span x-text="formatCurrency(unitAverageCost)"></span>
                                                 </td>
                                             @endif
                                             
                                             @if($visibleColumns['quantity_average_cost'])
                                                 <td class="font-family-cairo text-center fw-bold">
-                                                    {{ formatCurrency($itemData['quantityAverageCost']) }}
+                                                    <span x-text="formatCurrency(quantityAverageCost)"></span>
                                                 </td>
                                             @endif
                                             
                                             @if($visibleColumns['last_cost'])
                                                 <td class="text-center fw-bold">
-                                                    {{ formatCurrency($itemData['unitCostPrice']) }}
+                                                    <span x-text="formatCurrency(unitCostPrice)"></span>
                                                 </td>
                                             @endif
                                             
                                             @if($visibleColumns['quantity_cost'])
                                                 <td class="text-center fw-bold">
-                                                    {{ formatCurrency($itemData['quantityCost']) }}
+                                                    <span x-text="formatCurrency(quantityCost)"></span>
                                                 </td>
                                             @endif
 
@@ -906,25 +836,24 @@ new class extends Component {
                                             @foreach ($this->priceTypes as $priceTypeId => $priceTypeName)
                                                 @if(isset($visiblePrices[$priceTypeId]) && $visiblePrices[$priceTypeId])
                                                     <td class="font-family-cairo text-center fw-bold">
-                                                        {{ isset($itemData['unitSalePrices'][$priceTypeId]['price']) ? formatCurrency($itemData['unitSalePrices'][$priceTypeId]['price']) : 'N/A' }}
+                                                        <span x-text="getPriceForType({{ $priceTypeId }})"></span>
                                                     </td>
                                                 @endif
                                             @endforeach
 
                                             @if($visibleColumns['barcode'])
                                                 <td class="font-family-cairo fw-bold text-center">
-                                                    @if (!empty($itemData['unitBarcodes']))
+                                                    <template x-if="currentBarcodes.length > 0">
                                                         <select class="form-select font-family-cairo fw-bold font-14"
                                                             style="min-width: 100px;">
-                                                            @foreach ($itemData['unitBarcodes'] as $barcode)
-                                                                <option value="{{ formatBarcode($barcode['barcode']) }}">
-                                                                    {{ formatBarcode($barcode['barcode']) }}
-                                                                </option>
-                                                            @endforeach
+                                                            <template x-for="barcode in currentBarcodes" :key="barcode.id">
+                                                                <option :value="barcode.barcode" x-text="barcode.barcode"></option>
+                                                            </template>
                                                         </select>
-                                                    @else
+                                                    </template>
+                                                    <template x-if="currentBarcodes.length === 0">
                                                         <span class="font-family-cairo fw-bold font-14">لا يوجد</span>
-                                                    @endif
+                                                    </template>
                                                 </td>
                                             @endif
 
@@ -932,7 +861,7 @@ new class extends Component {
                                             @foreach ($this->noteTypes as $noteTypeId => $noteTypeName)
                                                 @if(isset($visibleNotes[$noteTypeId]) && $visibleNotes[$noteTypeId])
                                                     <td class="font-family-cairo fw-bold text-center">
-                                                        {{ $itemData['itemNotes'][$noteTypeId] ?? '' }}
+                                                        <span x-text="itemData.notes[{{ $noteTypeId }}] || ''"></span>
                                                     </td>
                                                 @endif
                                             @endforeach
@@ -942,8 +871,9 @@ new class extends Component {
                                                     <td class="d-flex justify-content-center align-items-center gap-2 mt-2">
                                                         @can('تعديل الأصناف')
                                                             <button type="button" title="تعديل الصنف" class="btn btn-success btn-sm"
-                                                                wire:click="edit({{ $item->id }})"><i
-                                                                    class="las la-edit fa-lg"></i></button>
+                                                                wire:click="edit({{ $item->id }})">
+                                                                <i class="las la-edit fa-lg"></i>
+                                                            </button>
                                                         @endcan
                                                         @can('حذف الأصناف')
                                                             <button type="button" title="حذف الصنف" class="btn btn-danger btn-sm"
@@ -1037,8 +967,11 @@ new class extends Component {
                     
 
                     
-                    <div class="mt-3 d-flex justify-content-center">
+                    {{-- Pagination Links --}}
+                    <div class="mt-4 d-flex justify-content-center">
+                        <div class="font-family-cairo">
                         {{ $this->items->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1046,7 +979,14 @@ new class extends Component {
     </div>
 
     {{-- Column Visibility Modal --}}
-    <div class="modal fade" id="columnVisibilityModal" tabindex="-1" aria-labelledby="columnVisibilityModalLabel" aria-hidden="true" x-data="{}" @close-modal.window="$el.querySelector('.btn-close').click()">
+    <div class="modal fade" id="columnVisibilityModal" tabindex="-1" aria-labelledby="columnVisibilityModalLabel" aria-hidden="true" 
+         x-data="columnVisibilityModal()" 
+         x-init="
+            columns = @js($this->visibleColumns);
+            prices = @js($this->visiblePrices);
+            notes = @js($this->visibleNotes);
+         "
+         @close-modal.window="$el.querySelector('.btn-close').click()">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
@@ -1061,11 +1001,11 @@ new class extends Component {
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex gap-2 justify-content-center">
-                                <button type="button" onclick="showAllCheckboxes()" class="btn btn-success btn-sm font-family-cairo fw-bold">
+                                <button type="button" @click="showAllColumns()" class="btn btn-success btn-sm font-family-cairo fw-bold">
                                     <i class="fas fa-eye me-1"></i>
                                     إظهار الكل
                                 </button>
-                                <button type="button" onclick="hideAllCheckboxes()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
+                                <button type="button" @click="hideAllColumns()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
                                     <i class="fas fa-eye-slash me-1"></i>
                                     إخفاء الكل
                                 </button>
@@ -1081,32 +1021,32 @@ new class extends Component {
                                 الأعمدة الأساسية:
                             </h6>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_code" {{ $visibleColumns['code'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_code">
+                                <input class="form-check-input" type="checkbox" x-model="columns.code">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     الكود
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_name" {{ $visibleColumns['name'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_name">
+                                <input class="form-check-input" type="checkbox" x-model="columns.name">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     الاسم
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_units" {{ $visibleColumns['units'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_units">
+                                <input class="form-check-input" type="checkbox" x-model="columns.units">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     الوحدات
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_quantity" {{ $visibleColumns['quantity'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_quantity">
+                                <input class="form-check-input" type="checkbox" x-model="columns.quantity">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     الكمية
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_barcode" {{ $visibleColumns['barcode'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_barcode">
+                                <input class="form-check-input" type="checkbox" x-model="columns.barcode">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     الباركود
                                 </label>
                             </div>
@@ -1118,26 +1058,26 @@ new class extends Component {
                                 أعمدة التكلفة والأسعار:
                             </h6>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_average_cost" {{ $visibleColumns['average_cost'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_average_cost">
+                                <input class="form-check-input" type="checkbox" x-model="columns.average_cost">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     متوسط التكلفة
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_quantity_average_cost" {{ $visibleColumns['quantity_average_cost'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_quantity_average_cost">
+                                <input class="form-check-input" type="checkbox" x-model="columns.quantity_average_cost">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     تكلفة المتوسطة للكمية
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_last_cost" {{ $visibleColumns['last_cost'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_last_cost">
+                                <input class="form-check-input" type="checkbox" x-model="columns.last_cost">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     التكلفة الأخيرة
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="col_quantity_cost" {{ $visibleColumns['quantity_cost'] ? 'checked' : '' }}>
-                                <label class="form-check-label font-family-cairo fw-bold" for="col_quantity_cost">
+                                <input class="form-check-input" type="checkbox" x-model="columns.quantity_cost">
+                                <label class="form-check-label font-family-cairo fw-bold">
                                     تكلفة الكمية
                                 </label>
                             </div>
@@ -1154,11 +1094,11 @@ new class extends Component {
                                     أسعار البيع:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" onclick="showAllPrices()" class="btn btn-info btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="showAllPrices()" class="btn btn-info btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye me-1"></i>
                                         إظهار جميع الأسعار
                                     </button>
-                                    <button type="button" onclick="hideAllPrices()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="hideAllPrices()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
                                         إخفاء جميع الأسعار
                                     </button>
@@ -1168,8 +1108,8 @@ new class extends Component {
                             <div class="col-md-6">
                                 @foreach ($this->priceTypes as $priceId => $priceName)
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="price_{{ $priceId }}" {{ ($visiblePrices[$priceId] ?? false) ? 'checked' : '' }}>
-                                        <label class="form-check-label font-family-cairo fw-bold" for="price_{{ $priceId }}">
+                                        <input class="form-check-input" type="checkbox" x-model="prices['{{ $priceId }}']">
+                                        <label class="form-check-label font-family-cairo fw-bold">
                                             {{ $priceName }}
                                         </label>
                                     </div>
@@ -1188,8 +1128,8 @@ new class extends Component {
                                     العمليات:
                                 </h6>
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="col_actions" {{ $visibleColumns['actions'] ? 'checked' : '' }}>
-                                    <label class="form-check-label font-family-cairo fw-bold" for="col_actions">
+                                    <input class="form-check-input" type="checkbox" x-model="columns.actions">
+                                    <label class="form-check-label font-family-cairo fw-bold">
                                         العمليات (تعديل/حذف)
                                     </label>
                                 </div>
@@ -1207,11 +1147,11 @@ new class extends Component {
                                     الملاحظات:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" onclick="showAllNotes()" class="btn btn-success btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="showAllNotes()" class="btn btn-success btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye me-1"></i>
                                         إظهار جميع الملاحظات
                                     </button>
-                                    <button type="button" onclick="hideAllNotes()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="hideAllNotes()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
                                         إخفاء جميع الملاحظات
                                     </button>
@@ -1221,8 +1161,8 @@ new class extends Component {
                             <div class="col-md-6">
                                 @foreach ($this->noteTypes as $noteId => $noteName)
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="note_{{ $noteId }}" {{ ($visibleNotes[$noteId] ?? false) ? 'checked' : '' }}>
-                                        <label class="form-check-label font-family-cairo fw-bold" for="note_{{ $noteId }}">
+                                        <input class="form-check-input" type="checkbox" x-model="notes['{{ $noteId }}']">
+                                        <label class="form-check-label font-family-cairo fw-bold">
                                             {{ $noteName }}
                                         </label>
                                     </div>
@@ -1232,9 +1172,18 @@ new class extends Component {
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" wire:click="applyChanges">
-                        <i class="fas fa-check me-2"></i>
-                        تطبيق التغييرات
+                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" @click="applyChanges()"
+                            wire:loading.attr="disabled" wire:target="updateVisibility">
+                        <span wire:loading.remove wire:target="updateVisibility">
+                            <i class="fas fa-check me-2"></i>
+                            تطبيق التغييرات
+                        </span>
+                        <span wire:loading wire:target="updateVisibility">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">جاري التطبيق...</span>
+                            </div>
+                            جاري التطبيق...
+                        </span>
                     </button>
                     <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal">
                         إغلاق
@@ -1246,115 +1195,169 @@ new class extends Component {
 </div>
 
 <script>
-// Listen for Livewire event to collect checkbox values
-document.addEventListener('livewire:init', () => {
-    Livewire.on('collect-checkbox-values', () => {
-        collectAndSendValues();
-    });
-});
-
-function collectAndSendValues() {
-    // Collect column values
-    const columns = {
-        'code': document.getElementById('col_code').checked,
-        'name': document.getElementById('col_name').checked,
-        'units': document.getElementById('col_units').checked,
-        'quantity': document.getElementById('col_quantity').checked,
-        'barcode': document.getElementById('col_barcode').checked,
-        'average_cost': document.getElementById('col_average_cost').checked,
-        'quantity_average_cost': document.getElementById('col_quantity_average_cost').checked,
-        'last_cost': document.getElementById('col_last_cost').checked,
-        'quantity_cost': document.getElementById('col_quantity_cost').checked,
-        'actions': document.getElementById('col_actions').checked
-    };
-    
-    // Collect price values
-    const prices = {};
-    document.querySelectorAll('input[id^="price_"]').forEach(checkbox => {
-        const priceId = checkbox.id.replace('price_', '');
-        prices[priceId] = checkbox.checked;
-    });
-    
-    // Collect note values
-    const notes = {};
-    document.querySelectorAll('input[id^="note_"]').forEach(checkbox => {
-        const noteId = checkbox.id.replace('note_', '');
-        notes[noteId] = checkbox.checked;
-    });
-    
-    // Send to Livewire
-    @this.call('updateVisibility', columns, prices, notes);
+// Alpine.js component for item row calculations
+function itemRow(itemData, initialUnitId) {
+    return {
+        itemData: itemData,
+        selectedUnitId: initialUnitId,
+        
+        get selectedUnit() {
+            return this.itemData.units[this.selectedUnitId] || null;
+        },
+        
+        get selectedUVal() {
+            return this.selectedUnit?.u_val || 1;
+        },
+        
+        get currentUnitQuantity() {
+            return this.selectedUVal > 0 ? this.itemData.base_quantity / this.selectedUVal : 0;
+        },
+        
+        get formattedQuantity() {
+            const integer = this.selectedUVal > 0 ? Math.floor(this.itemData.base_quantity / this.selectedUVal) : 0;
+            const remainder = this.selectedUVal > 0 ? this.itemData.base_quantity % this.selectedUVal : 0;
+            
+            // Find smaller unit
+            const units = Object.values(this.itemData.units);
+            const smallerUnit = units.length > 0 ? units.reduce((min, unit) => 
+                unit.u_val < min.u_val ? unit : min
+            ) : null;
+            
+            return {
+                integer: integer,
+                remainder: remainder,
+                unitName: this.selectedUnit?.name || '',
+                smallerUnitName: smallerUnit?.name || ''
+            };
+        },
+        
+        get unitCostPrice() {
+            return this.selectedUnit?.cost || 0;
+        },
+        
+        get quantityCost() {
+            return this.currentUnitQuantity * this.unitCostPrice;
+        },
+        
+        get unitAverageCost() {
+            return this.itemData.average_cost * this.selectedUVal;
+        },
+        
+        get quantityAverageCost() {
+            return this.currentUnitQuantity * this.unitAverageCost;
+        },
+        
+        get currentBarcodes() {
+            return this.itemData.barcodes[this.selectedUnitId] || [];
+        },
+        
+        getPriceForType(priceTypeId) {
+            const unitPrices = this.itemData.prices[this.selectedUnitId] || {};
+            const price = unitPrices[priceTypeId];
+            return price ? this.formatCurrency(price.price) : 'N/A';
+        },
+        
+        formatCurrency(value) {
+            if (value === null || value === undefined) return '0.00';
+            return new Intl.NumberFormat('ar-SA', {
+                style: 'currency',
+                currency: 'SAR',
+                minimumFractionDigits: 2
+            }).format(value);
+        },
+        
+        formatNumber(value) {
+            if (value === null || value === undefined) return '0';
+            // Remove trailing zeros and decimal point if not needed
+            return parseFloat(value).toString();
+        }
+    }
 }
 
-function showAllCheckboxes() {
-    // Show all column checkboxes
-    document.getElementById('col_code').checked = true;
-    document.getElementById('col_name').checked = true;
-    document.getElementById('col_units').checked = true;
-    document.getElementById('col_quantity').checked = true;
-    document.getElementById('col_barcode').checked = true;
-    document.getElementById('col_average_cost').checked = true;
-    document.getElementById('col_quantity_average_cost').checked = true;
-    document.getElementById('col_last_cost').checked = true;
-    document.getElementById('col_quantity_cost').checked = true;
-    document.getElementById('col_actions').checked = true;
-    
-    // Show all price checkboxes
-    document.querySelectorAll('input[id^="price_"]').forEach(checkbox => {
-        checkbox.checked = true;
-    });
-    
-    // Show all note checkboxes
-    document.querySelectorAll('input[id^="note_"]').forEach(checkbox => {
-        checkbox.checked = true;
-    });
+// Alpine.js component for filters with debouncing
+function filtersComponent() {
+    return {
+        searchValue: '',
+        warehouseValue: '',
+        groupValue: '',
+        categoryValue: '',
+        searchTimeout: null,
+        
+        updateSearch() {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                this.$wire.set('search', this.searchValue);
+            }, 500);
+        },
+        
+        updateWarehouse() {
+            this.$wire.set('selectedWarehouse', this.warehouseValue);
+        },
+        
+        updateGroup() {
+            this.$wire.set('selectedGroup', this.groupValue);
+        },
+        
+        updateCategory() {
+            this.$wire.set('selectedCategory', this.categoryValue);
+        },
+        
+        clearFilters() {
+            this.searchValue = '';
+            this.warehouseValue = '';
+            this.groupValue = '';
+            this.categoryValue = '';
+            this.$wire.call('clearFilters');
+        }
+    }
 }
 
-function hideAllCheckboxes() {
-    // Hide all column checkboxes
-    document.getElementById('col_code').checked = false;
-    document.getElementById('col_name').checked = false;
-    document.getElementById('col_units').checked = false;
-    document.getElementById('col_quantity').checked = false;
-    document.getElementById('col_barcode').checked = false;
-    document.getElementById('col_average_cost').checked = false;
-    document.getElementById('col_quantity_average_cost').checked = false;
-    document.getElementById('col_last_cost').checked = false;
-    document.getElementById('col_quantity_cost').checked = false;
-    document.getElementById('col_actions').checked = false;
-    
-    // Hide all price checkboxes
-    document.querySelectorAll('input[id^="price_"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    
-    // Hide all note checkboxes
-    document.querySelectorAll('input[id^="note_"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
+// Alpine.js component for column visibility modal
+function columnVisibilityModal() {
+    return {
+        columns: {},
+        prices: {},
+        notes: {},
+        
+        showAllColumns() {
+            console.log('showAllColumns called', { columns: this.columns, prices: this.prices, notes: this.notes });
+            Object.keys(this.columns).forEach(key => this.columns[key] = true);
+            Object.keys(this.prices).forEach(key => this.prices[key] = true);
+            Object.keys(this.notes).forEach(key => this.notes[key] = true);
+        },
+        
+        hideAllColumns() {
+            console.log('hideAllColumns called', { columns: this.columns, prices: this.prices, notes: this.notes });
+            Object.keys(this.columns).forEach(key => this.columns[key] = false);
+            Object.keys(this.prices).forEach(key => this.prices[key] = false);
+            Object.keys(this.notes).forEach(key => this.notes[key] = false);
+        },
+        
+        showAllPrices() {
+            console.log('showAllPrices called', { prices: this.prices });
+            Object.keys(this.prices).forEach(key => this.prices[key] = true);
+        },
+        
+        hideAllPrices() {
+            console.log('hideAllPrices called', { prices: this.prices });
+            Object.keys(this.prices).forEach(key => this.prices[key] = false);
+        },
+        
+        showAllNotes() {
+            console.log('showAllNotes called', { notes: this.notes });
+            Object.keys(this.notes).forEach(key => this.notes[key] = true);
+        },
+        
+        hideAllNotes() {
+            console.log('hideAllNotes called', { notes: this.notes });
+            Object.keys(this.notes).forEach(key => this.notes[key] = false);
+        },
+        
+        applyChanges() {
+            console.log('applyChanges called', { columns: this.columns, prices: this.prices, notes: this.notes });
+            this.$wire.call('updateVisibility', this.columns, this.prices, this.notes);
+        }
+    }
 }
 
-function showAllPrices() {
-    document.querySelectorAll('input[id^="price_"]').forEach(checkbox => {
-        checkbox.checked = true;
-    });
-}
-
-function hideAllPrices() {
-    document.querySelectorAll('input[id^="price_"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-}
-
-function showAllNotes() {
-    document.querySelectorAll('input[id^="note_"]').forEach(checkbox => {
-        checkbox.checked = true;
-    });
-}
-
-function hideAllNotes() {
-    document.querySelectorAll('input[id^="note_"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-}
 </script>

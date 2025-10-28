@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
 class MobileAttendanceController extends Controller
@@ -18,11 +19,12 @@ class MobileAttendanceController extends Controller
      */
     public function recordAttendance(Request $request)
     {
+       
         try {
             // الحصول على بيانات الموظف من الجلسة
-            $employeeId = $request->get('current_employee_id');
-            $fingerPrintId = $request->get('current_employee_finger_print_id');
-            $fingerPrintName = $request->get('current_employee_finger_print_name');
+            $employeeId = Session::get('employee_id');
+            $fingerPrintId = Session::get('employee_finger_print_id');
+            $fingerPrintName = Session::get('employee_finger_print_name');
 
             if (!$employeeId) {
                 return response()->json([
@@ -147,7 +149,7 @@ class MobileAttendanceController extends Controller
     public function getLastAttendance(Request $request)
     {
         try {
-            $employeeId = $request->get('current_employee_id');
+            $employeeId = Session::get('employee_id');
             
             if (!$employeeId) {
                 return response()->json([
@@ -196,7 +198,7 @@ class MobileAttendanceController extends Controller
     public function getAttendanceHistory(Request $request)
     {
         try {
-            $employeeId = $request->get('current_employee_id');
+            $employeeId = Session::get('employee_id');
             
             if (!$employeeId) {
                 return response()->json([
@@ -254,7 +256,7 @@ class MobileAttendanceController extends Controller
     public function getAttendanceStats(Request $request)
     {
         try {
-            $employeeId = $request->get('current_employee_id');
+            $employeeId = Session::get('employee_id');
             
             if (!$employeeId) {
                 return response()->json([
@@ -310,7 +312,7 @@ class MobileAttendanceController extends Controller
     public function canRecordAttendance(Request $request)
     {
         try {
-            $employeeId = $request->get('current_employee_id');
+            $employeeId = Session::get('employee_id');
             
             if (!$employeeId) {
                 return response()->json([

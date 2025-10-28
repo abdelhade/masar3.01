@@ -1569,12 +1569,29 @@
                     const typeText = attendance.type === 'check_in' ? 'دخول' : 'خروج';
                     const date = new Date(attendance.date).toLocaleDateString('ar-SA');
                     const time = attendance.time;
-                    //  address
-                    const address = attendance.location.address;
+                    
+                    // التحقق من وجود الموقع والعنوان
+                    let locationText = 'غير محدد';
+                    if (attendance.location) {
+                        if (typeof attendance.location === 'string') {
+                            try {
+                                const locationData = JSON.parse(attendance.location);
+                                locationText = locationData.address || 'موقع محدد';
+                            } catch (e) {
+                                locationText = 'موقع محدد';
+                            }
+                        } else if (attendance.location && typeof attendance.location === 'object') {
+                            // إذا كان location هو object (array من Laravel)
+                            locationText = attendance.location.address || 'موقع محدد';
+                        } else {
+                            locationText = 'موقع محدد';
+                        }
+                    }
+                    
                     const projectCode = attendance.project_code ? `<br><small>كود المشروع: ${attendance.project_code}</small>` : '';
                     lastAttendanceInfo.innerHTML = `
                         <strong>${typeText}</strong> - ${date} في ${time}<br>
-                        <small>الموقع: ${address}</small><br>
+                        <small>الموقع: ${locationText}</small><br>
                         <small>الحالة: ${getStatusText(attendance.status)}</small>${projectCode}
                         
                     `;

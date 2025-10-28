@@ -51,6 +51,8 @@ class InvoiceTemplateController extends Controller
             'code' => $validated['code'],
             'description' => $validated['description'] ?? null,
             'visible_columns' => $validated['visible_columns'],
+            'column_widths' => $validated['column_widths'] ?? [],
+            'column_order' => $validated['column_order'] ?? [],
             'sort_order' => $validated['sort_order'] ?? 0,
             'is_active' => $validated['is_active'] ?? true,
         ]);
@@ -105,6 +107,8 @@ class InvoiceTemplateController extends Controller
             'code' => $validated['code'],
             'description' => $validated['description'] ?? null,
             'visible_columns' => $validated['visible_columns'],
+            'column_widths' => $validated['column_widths'] ?? [],
+            'column_order' => $validated['column_order'] ?? [],
             'sort_order' => $validated['sort_order'] ?? 0,
             'is_active' => $validated['is_active'] ?? true,
         ]);

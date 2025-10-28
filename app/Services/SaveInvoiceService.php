@@ -206,8 +206,11 @@ class SaveInvoiceService
                         'detail_value'  => $subValue,
                         'notes'         => $invoiceItem['notes'] ?? 'تحويل إلى مخزن ' . $component->acc2_id,
                         'is_stock'      => 1,
-                        'branch_id' => $component->branch_id
-
+                        'branch_id'     => $component->branch_id,
+                        'length'        => $invoiceItem['length'] ?? null,
+                        'width'         => $invoiceItem['width'] ?? null,
+                        'height'        => $invoiceItem['height'] ?? null,
+                        'density'       => $invoiceItem['density'] ?? 1,
                         // 'profit'        => $profit,
                     ]);
 
@@ -226,8 +229,12 @@ class SaveInvoiceService
                         'detail_value'  => $subValue,
                         'notes'         => $invoiceItem['notes'] ?? 'تحويل من مخزن ' . $component->acc1_id,
                         'is_stock'      => 1,
-                        'branch_id' => $component->branch_id
+                        'branch_id' => $component->branch_id,
                         // 'profit'        => $profit,
+                        'length'        => $invoiceItem['length'] ?? null,
+                        'width'         => $invoiceItem['width'] ?? null,
+                        'height'        => $invoiceItem['height'] ?? null,
+                        'density'       => $invoiceItem['density'] ?? 1,
                     ]);
                 }
 
@@ -275,7 +282,12 @@ class SaveInvoiceService
                         'notes'         => $invoiceItem['notes'] ?? null,
                         'is_stock'      => 1,
                         'profit'        => $profit,
-                        'branch_id' => $component->branch_id
+                        'branch_id'     => $component->branch_id,
+
+                        'length'        => $invoiceItem['length'] ?? null,
+                        'width'         => $invoiceItem['width'] ?? null,
+                        'height'        => $invoiceItem['height'] ?? null,
+                        'density'       => $invoiceItem['density'] ?? 1,
                     ]);
                 }
             }

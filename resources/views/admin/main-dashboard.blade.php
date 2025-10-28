@@ -231,7 +231,8 @@
             icon: "fingerprint",
             iconBg: "#E8F5E8",
             iconColor: "#2E7D32",
-            route: "{{ route('mobile.employee-login') }}"
+            route: "{{ route('mobile.employee-login') }}",
+            isNew: true
         },
     ];
 

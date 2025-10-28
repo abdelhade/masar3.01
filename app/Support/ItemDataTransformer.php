@@ -189,5 +189,65 @@ class ItemDataTransformer
             })
             ->all();
     }
+
+    /**
+     * Get item data for Alpine.js (all units, prices, barcodes)
+     */
+    public static function getItemDataForAlpine(Item $item, ?int $warehouseId = null, ?float $precomputedBaseQty = null): array
+    {
+        $baseQty = $precomputedBaseQty ?? self::getTotalBaseQuantity($item, $warehouseId);
+        
+        // Prepare all units data
+        $unitsData = [];
+        foreach ($item->units as $unit) {
+            $unitsData[$unit->id] = [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'u_val' => $unit->pivot->u_val ?? 1,
+                'cost' => $unit->pivot->cost ?? 0,
+            ];
+        }
+
+        // Prepare all prices data (grouped by unit_id)
+        $pricesData = [];
+        foreach ($item->prices as $price) {
+            $unitId = $price->pivot->unit_id;
+            if (!isset($pricesData[$unitId])) {
+                $pricesData[$unitId] = [];
+            }
+            $pricesData[$unitId][$price->id] = [
+                'id' => $price->id,
+                'name' => $price->name,
+                'price' => $price->pivot->price ?? 0,
+                'discount' => $price->pivot->discount ?? 0,
+                'tax_rate' => $price->pivot->tax_rate ?? 0,
+            ];
+        }
+
+        // Prepare all barcodes data (grouped by unit_id)
+        $barcodesData = [];
+        foreach ($item->barcodes as $barcode) {
+            $unitId = $barcode->unit_id;
+            if (!isset($barcodesData[$unitId])) {
+                $barcodesData[$unitId] = [];
+            }
+            $barcodesData[$unitId][] = [
+                'id' => $barcode->id,
+                'barcode' => $barcode->barcode,
+            ];
+        }
+
+        return [
+            'id' => $item->id,
+            'code' => $item->code,
+            'name' => $item->name,
+            'average_cost' => $item->average_cost,
+            'base_quantity' => $baseQty,
+            'units' => $unitsData,
+            'prices' => $pricesData,
+            'barcodes' => $barcodesData,
+            'notes' => self::getItemNotes($item),
+        ];
+    }
 }
 

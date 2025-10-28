@@ -6,11 +6,8 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('أنواع العمل'),
-        'items' => [
-            ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
-            ['label' => __('أنواع العمل')],
-        ],
+        'title' => __('Work Types'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Work Types')]],
     ])
 
     <style>
@@ -152,11 +149,12 @@
             animation: fadeIn 0.3s ease;
         }
     </style>
+
     <div class="container-fluid mt-4">
 
         <div class="mb-3" id="pathDisplay" style="display: none;">
             <div class="d-flex align-items-center flex-wrap">
-                <strong class="me-2">المسار الحالي:</strong>
+                <strong class="me-2">{{ __('Current Path:') }}</strong>
                 <div id="pathBreadcrumb"></div>
             </div>
         </div>
@@ -165,9 +163,9 @@
             <div class="col-lg-6">
                 <div class="tree-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-hard-hat me-2"></i>شجرة أنواع العمل</h5>
+                        <h5 class="mb-0"><i class="fas fa-hard-hat me-2"></i>{{ __('Work Types Tree') }}</h5>
                         <button class="btn btn-primary btn-sm" onclick="addRootWorkType()">
-                            <i class="fas fa-plus me-1"></i>إضافة نوع عمل رئيسي
+                            <i class="fas fa-plus me-1"></i>{{ __('Add Main Work Type') }}
                         </button>
                     </div>
 
@@ -185,10 +183,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>الاسم</th>
-                                    <th>المستوى</th>
-                                    <th>الحالة</th>
-                                    <th>العمليات</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Level') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="text-center">
@@ -201,30 +199,31 @@
         </div>
     </div>
 
-    <script>
-        let workTypesData = @json($workTypesTree);
-        let selectedWorkType = null;
-        let editingWorkType = null;
+    @push('scripts')
+        <script>
+            let workTypesData = @json($workTypesTree);
+            let selectedWorkType = null;
+            let editingWorkType = null;
 
-        function renderTree() {
-            const container = document.getElementById('treeContainer');
-            container.innerHTML = '';
-            workTypesData.forEach(workType => {
-                container.appendChild(createTreeItem(workType, 0));
-            });
-            renderTable();
-        }
-
-        function createTreeItem(workType, level) {
-            const item = document.createElement('div');
-            item.className = 'tree-item';
-            item.dataset.id = workType.id;
-
-            if (selectedWorkType && selectedWorkType.id === workType.id) {
-                item.classList.add('selected');
+            function renderTree() {
+                const container = document.getElementById('treeContainer');
+                container.innerHTML = '';
+                workTypesData.forEach(workType => {
+                    container.appendChild(createTreeItem(workType, 0));
+                });
+                renderTable();
             }
 
-            item.innerHTML = `
+            function createTreeItem(workType, level) {
+                const item = document.createElement('div');
+                item.className = 'tree-item';
+                item.dataset.id = workType.id;
+
+                if (selectedWorkType && selectedWorkType.id === workType.id) {
+                    item.classList.add('selected');
+                }
+
+                item.innerHTML = `
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <i class="fas fa-${workType.children.length > 0 ? 'hard-hat' : 'tools'} me-2"></i>
@@ -242,104 +241,104 @@
                 </div>
             `;
 
-            item.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-child-btn')) {
-                    selectWorkType(workType);
-                    updatePath(workType);
-                }
-            });
-
-            const container = document.createElement('div');
-            container.appendChild(item);
-
-            if (workType.children && workType.children.length > 0) {
-                const childrenContainer = document.createElement('div');
-                childrenContainer.className = 'tree-children';
-
-                workType.children.forEach(child => {
-                    childrenContainer.appendChild(createTreeItem(child, level + 1));
+                item.addEventListener('click', (e) => {
+                    if (!e.target.closest('.add-child-btn')) {
+                        selectWorkType(workType);
+                        updatePath(workType);
+                    }
                 });
 
-                container.appendChild(childrenContainer);
+                const container = document.createElement('div');
+                container.appendChild(item);
+
+                if (workType.children && workType.children.length > 0) {
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'tree-children';
+
+                    workType.children.forEach(child => {
+                        childrenContainer.appendChild(createTreeItem(child, level + 1));
+                    });
+
+                    container.appendChild(childrenContainer);
+                }
+
+                return container;
             }
 
-            return container;
-        }
+            function selectWorkType(workType) {
+                selectedWorkType = workType;
 
-        function selectWorkType(workType) {
-            selectedWorkType = workType;
+                // Remove previous selection
+                document.querySelectorAll('.tree-item.selected').forEach(item => {
+                    item.classList.remove('selected');
+                });
 
-            // Remove previous selection
-            document.querySelectorAll('.tree-item.selected').forEach(item => {
-                item.classList.remove('selected');
-            });
-
-            // Add selection to current item
-            document.querySelector(`[data-id="${workType.id}"]`).classList.add('selected');
-        }
-
-        function updatePath(workType) {
-            const path = getWorkTypePath(workType);
-            const pathDisplay = document.getElementById('pathDisplay');
-            const pathBreadcrumb = document.getElementById('pathBreadcrumb');
-
-            if (path.length > 1) {
-                pathDisplay.style.display = 'block';
-                pathBreadcrumb.innerHTML = path.map((item, index) => {
-                    return `<span class="breadcrumb-item">${item.name}</span>`;
-                }).join('<i class="fas fa-chevron-left mx-2"></i>');
-            } else {
-                pathDisplay.style.display = 'none';
+                // Add selection to current item
+                document.querySelector(`[data-id="${workType.id}"]`).classList.add('selected');
             }
-        }
 
-        function getWorkTypePath(workType) {
-            const path = [workType];
-            let current = workType;
+            function updatePath(workType) {
+                const path = getWorkTypePath(workType);
+                const pathDisplay = document.getElementById('pathDisplay');
+                const pathBreadcrumb = document.getElementById('pathBreadcrumb');
 
-            while (current.parent_id) {
-                const parent = findWorkTypeById(current.parent_id);
-                if (parent) {
-                    path.unshift(parent);
-                    current = parent;
+                if (path.length > 1) {
+                    pathDisplay.style.display = 'block';
+                    pathBreadcrumb.innerHTML = path.map((item, index) => {
+                        return `<span class="breadcrumb-item">${item.name}</span>`;
+                    }).join('<i class="fas fa-chevron-left mx-2"></i>');
                 } else {
-                    break;
+                    pathDisplay.style.display = 'none';
                 }
             }
 
-            return path;
-        }
+            function getWorkTypePath(workType) {
+                const path = [workType];
+                let current = workType;
 
-        function findWorkTypeById(id, workTypes = workTypesData) {
-            for (const workType of workTypes) {
-                if (workType.id === id) {
-                    return workType;
+                while (current.parent_id) {
+                    const parent = findWorkTypeById(current.parent_id);
+                    if (parent) {
+                        path.unshift(parent);
+                        current = parent;
+                    } else {
+                        break;
+                    }
                 }
-                if (workType.children) {
-                    const found = findWorkTypeById(id, workType.children);
-                    if (found) return found;
-                }
+
+                return path;
             }
-            return null;
-        }
 
-        function addRootWorkType() {
-            showInlineForm(null);
-        }
+            function findWorkTypeById(id, workTypes = workTypesData) {
+                for (const workType of workTypes) {
+                    if (workType.id === id) {
+                        return workType;
+                    }
+                    if (workType.children) {
+                        const found = findWorkTypeById(id, workType.children);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
 
-        function addChild(parentId) {
-            event.stopPropagation();
-            const parent = findWorkTypeById(parentId);
-            showInlineForm(parent);
-        }
+            function addRootWorkType() {
+                showInlineForm(null);
+            }
 
-        function showInlineForm(parent) {
-            // Remove any existing forms
-            document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
+            function addChild(parentId) {
+                event.stopPropagation();
+                const parent = findWorkTypeById(parentId);
+                showInlineForm(parent);
+            }
 
-            const form = document.createElement('div');
-            form.className = 'inline-form';
-            form.innerHTML = `
+            function showInlineForm(parent) {
+                // Remove any existing forms
+                document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
+
+                const form = document.createElement('div');
+                form.className = 'inline-form';
+                form.innerHTML = `
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">اسم نوع العمل</label>
@@ -364,104 +363,104 @@
                 ${parent ? `<small class="text-muted">سيتم إضافة نوع العمل كفرع من: ${parent.name}</small>` : ''}
             `;
 
-            if (parent) {
-                const parentElement = document.querySelector(`[data-id="${parent.id}"]`).closest('div');
-                const childrenContainer = parentElement.querySelector('.tree-children') ||
-                    (() => {
-                        const container = document.createElement('div');
-                        container.className = 'tree-children';
-                        parentElement.appendChild(container);
-                        return container;
-                    })();
-                childrenContainer.appendChild(form);
-            } else {
-                document.getElementById('treeContainer').insertBefore(form, document.getElementById('treeContainer')
-                    .firstChild);
-            }
-
-            document.getElementById('newWorkTypeName').focus();
-        }
-
-        async function saveNewWorkType(parentId) {
-            const name = document.getElementById('newWorkTypeName').value.trim();
-            const isActive = document.getElementById('newWorkTypeStatus').checked;
-
-            if (!name) {
-                alert('يرجى إدخال اسم نوع العمل');
-                return;
-            }
-
-            const formData = {
-                name: name,
-                parent_id: parentId,
-                is_active: isActive,
-                _token: '{{ csrf_token() }}'
-            };
-
-            try {
-                const response = await fetch('{{ route('work.types.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showToast(result.message, 'success');
-                    await fetchWorkTypes();
-                    renderTree();
+                if (parent) {
+                    const parentElement = document.querySelector(`[data-id="${parent.id}"]`).closest('div');
+                    const childrenContainer = parentElement.querySelector('.tree-children') ||
+                        (() => {
+                            const container = document.createElement('div');
+                            container.className = 'tree-children';
+                            parentElement.appendChild(container);
+                            return container;
+                        })();
+                    childrenContainer.appendChild(form);
                 } else {
-                    showToast(result.message, 'error');
+                    document.getElementById('treeContainer').insertBefore(form, document.getElementById('treeContainer')
+                        .firstChild);
                 }
 
-            } catch (error) {
-                showToast('حدث خطأ غير متوقع.', 'error');
+                document.getElementById('newWorkTypeName').focus();
             }
 
-            cancelForm();
-        }
+            async function saveNewWorkType(parentId) {
+                const name = document.getElementById('newWorkTypeName').value.trim();
+                const isActive = document.getElementById('newWorkTypeStatus').checked;
 
-        async function fetchWorkTypes() {
-            try {
-                const response = await fetch('/work-types/tree');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (!name) {
+                    alert('يرجى إدخال اسم نوع العمل');
+                    return;
                 }
 
-                const result = await response.json();
+                const formData = {
+                    name: name,
+                    parent_id: parentId,
+                    is_active: isActive,
+                    _token: '{{ csrf_token() }}'
+                };
 
-                if (result.success) {
-                    workTypesData = result.data;
-                } else {
-                    throw new Error(result.message || 'Failed to load data');
+                try {
+                    const response = await fetch('{{ route('work.types.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast(result.message, 'success');
+                        await fetchWorkTypes();
+                        renderTree();
+                    } else {
+                        showToast(result.message, 'error');
+                    }
+
+                } catch (error) {
+                    showToast('حدث خطأ غير متوقع.', 'error');
                 }
-            } catch (error) {
-                showToast('فشل في تحميل البيانات: ' + error.message, 'error');
+
+                cancelForm();
             }
-        }
 
-        function cancelForm() {
-            document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
-        }
+            async function fetchWorkTypes() {
+                try {
+                    const response = await fetch('/work-types/tree');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-        function editWorkType(workTypeId) {
-            const workType = findWorkTypeById(workTypeId);
-            if (!workType) return;
+                    const result = await response.json();
 
-            editingWorkType = workType;
+                    if (result.success) {
+                        workTypesData = result.data;
+                    } else {
+                        throw new Error(result.message || 'Failed to load data');
+                    }
+                } catch (error) {
+                    showToast('فشل في تحميل البيانات: ' + error.message, 'error');
+                }
+            }
 
-            // Remove any existing forms
-            document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
+            function cancelForm() {
+                document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
+            }
 
-            const workTypeElement = document.querySelector(`[data-id="${workTypeId}"]`);
-            const form = document.createElement('div');
-            form.className = 'edit-form';
-            form.innerHTML = `
+            function editWorkType(workTypeId) {
+                const workType = findWorkTypeById(workTypeId);
+                if (!workType) return;
+
+                editingWorkType = workType;
+
+                // Remove any existing forms
+                document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
+
+                const workTypeElement = document.querySelector(`[data-id="${workTypeId}"]`);
+                const form = document.createElement('div');
+                form.className = 'edit-form';
+                form.innerHTML = `
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">اسم نوع العمل</label>
@@ -485,96 +484,96 @@
                 </div>
             `;
 
-            workTypeElement.parentNode.insertBefore(form, workTypeElement.nextSibling);
-            document.getElementById('editWorkTypeName').focus();
-        }
-
-        async function updateWorkType() {
-            if (!editingWorkType) return;
-
-            const name = document.getElementById('editWorkTypeName').value.trim();
-            const isActive = document.getElementById('editWorkTypeStatus').value === 'true';
-
-            if (!name) {
-                alert('يرجى إدخال اسم نوع العمل');
-                return;
+                workTypeElement.parentNode.insertBefore(form, workTypeElement.nextSibling);
+                document.getElementById('editWorkTypeName').focus();
             }
 
-            const formData = {
-                name: name,
-                is_active: isActive,
-                _token: '{{ csrf_token() }}'
-            };
+            async function updateWorkType() {
+                if (!editingWorkType) return;
 
-            const url = '{{ route('work.types.update', ['work_type' => ':id']) }}'.replace(':id', editingWorkType.id);
+                const name = document.getElementById('editWorkTypeName').value.trim();
+                const isActive = document.getElementById('editWorkTypeStatus').value === 'true';
 
-            try {
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showToast(result.message, 'success');
-                    await fetchWorkTypes();
-                    renderTree();
-                } else {
-                    showToast(result.message || 'فشل التحديث', 'error');
+                if (!name) {
+                    alert('يرجى إدخال اسم نوع العمل');
+                    return;
                 }
-            } catch (error) {
-                showToast('حدث خطأ غير متوقع.', 'error');
-            }
 
-            cancelForm();
-            editingWorkType = null;
-        }
+                const formData = {
+                    name: name,
+                    is_active: isActive,
+                    _token: '{{ csrf_token() }}'
+                };
 
-        async function deleteWorkType(workTypeId) {
-            if (!confirm('هل أنت متأكد من حذف نوع العمل هذا؟ سيتم حذف جميع الفروع التابعة له.')) {
-                return;
-            }
+                const url = '{{ route('work.types.update', ['work_type' => ':id']) }}'.replace(':id', editingWorkType.id);
 
-            const url = '{{ route('work.types.destroy', ['work_type' => ':id']) }}'.replace(':id', workTypeId);
+                try {
+                    const response = await fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(formData)
+                    });
 
-            try {
-                const response = await fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast(result.message, 'success');
+                        await fetchWorkTypes();
+                        renderTree();
+                    } else {
+                        showToast(result.message || 'فشل التحديث', 'error');
                     }
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showToast(result.message, 'success');
-                    await fetchWorkTypes();
-                    renderTree();
-                } else {
-                    showToast(result.message || 'فشل الحذف', 'error');
+                } catch (error) {
+                    showToast('حدث خطأ غير متوقع.', 'error');
                 }
-            } catch (error) {
-                showToast('حدث خطأ غير متوقع.', 'error');
+
+                cancelForm();
+                editingWorkType = null;
             }
-        }
 
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+            async function deleteWorkType(workTypeId) {
+                if (!confirm('هل أنت متأكد من حذف نوع العمل هذا؟ سيتم حذف جميع الفروع التابعة له.')) {
+                    return;
+                }
 
-            let counter = 1;
+                const url = '{{ route('work.types.destroy', ['work_type' => ':id']) }}'.replace(':id', workTypeId);
 
-            function addToTable(workTypes, level = 0) {
-                workTypes.forEach(workType => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                try {
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast(result.message, 'success');
+                        await fetchWorkTypes();
+                        renderTree();
+                    } else {
+                        showToast(result.message || 'فشل الحذف', 'error');
+                    }
+                } catch (error) {
+                    showToast('حدث خطأ غير متوقع.', 'error');
+                }
+            }
+
+            function renderTable() {
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+
+                let counter = 1;
+
+                function addToTable(workTypes, level = 0) {
+                    workTypes.forEach(workType => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
                         <td>${counter++}</td>
                         <td>
                             ${'—'.repeat(level)}
@@ -601,63 +600,64 @@
                             </button>
                         </td>
                     `;
-                    tbody.appendChild(row);
+                        tbody.appendChild(row);
 
-                    if (workType.children.length > 0) {
-                        addToTable(workType.children, level + 1);
-                    }
-                });
+                        if (workType.children.length > 0) {
+                            addToTable(workType.children, level + 1);
+                        }
+                    });
+                }
+
+                addToTable(workTypesData);
             }
 
-            addToTable(workTypesData);
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className =
-                `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
-            toast.style.cssText = 'top: 20px; left: 20px; z-index: 9999; min-width: 300px;';
-            toast.innerHTML = `
+            function showToast(message, type) {
+                const toast = document.createElement('div');
+                toast.className =
+                    `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
+                toast.style.cssText = 'top: 20px; left: 20px; z-index: 9999; min-width: 300px;';
+                toast.innerHTML = `
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
                 ${message}
             `;
 
-            document.body.appendChild(toast);
+                document.body.appendChild(toast);
 
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTree();
-        });
-
-        document.addEventListener('change', async function(e) {
-            if (e.target.classList.contains('toggle-status')) {
-                const workTypeId = e.target.dataset.id;
-
-                try {
-                    const response = await fetch(`/work-types/${workTypeId}/toggle-status`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
-                    const result = await response.json();
-                    if (result.success) {
-                        showToast('تم تغيير الحالة بنجاح', 'success');
-                        await fetchWorkTypes();
-                        renderTree();
-                    } else {
-                        showToast('فشل في تحديث الحالة', 'error');
-                    }
-                } catch (error) {
-                    showToast('حدث خطأ أثناء تحديث الحالة', 'error');
-                }
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
             }
-        });
-    </script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                renderTree();
+            });
+
+            document.addEventListener('change', async function(e) {
+                if (e.target.classList.contains('toggle-status')) {
+                    const workTypeId = e.target.dataset.id;
+
+                    try {
+                        const response = await fetch(`/work-types/${workTypeId}/toggle-status`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            showToast('تم تغيير الحالة بنجاح', 'success');
+                            await fetchWorkTypes();
+                            renderTree();
+                        } else {
+                            showToast('فشل في تحديث الحالة', 'error');
+                        }
+                    } catch (error) {
+                        showToast('حدث خطأ أثناء تحديث الحالة', 'error');
+                    }
+                }
+            });
+        </script>
+    @endpush
 @endsection

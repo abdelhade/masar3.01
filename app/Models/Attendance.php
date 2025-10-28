@@ -41,6 +41,16 @@ class Attendance extends Model
         return $this->time ? $this->time : '';
     }
 
+    // Accessor to get location address
+    public function getLocationAddressAttribute()
+    {
+        if (!$this->location || !is_array($this->location)) {
+            return null;
+        }
+        
+        return $this->location['address'] ?? null;
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);

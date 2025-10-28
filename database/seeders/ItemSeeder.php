@@ -1,4 +1,3 @@
-
 <?php
 
 namespace Database\Seeders;
@@ -36,7 +35,7 @@ class ItemSeeder extends Seeder
 
         $this->command->info('Starting to seed 1000 items...');
 
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             // Generate realistic data
             $category = $faker->randomElement($arabicCategories);
             $product = $faker->randomElement($arabicProducts);

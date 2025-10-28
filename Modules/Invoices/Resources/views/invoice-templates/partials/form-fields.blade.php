@@ -1,4 +1,4 @@
-{{-- المعلومات الأساسية --}}
+{{-- المعلومات الأساسية (نفس الكود السابق) --}}
 <div class="row">
     <div class="col-md-6">
         <div class="form-group">
@@ -19,18 +19,13 @@
             @error('code')
                 <span class="invalid-feedback">{{ $message }}</span>
             @enderror
-            <small class="text-muted">مثال: sales_full, purchase_standard</small>
         </div>
     </div>
 </div>
 
 <div class="form-group">
     <label for="description">الوصف</label>
-    <textarea name="description" id="description" rows="2"
-        class="form-control @error('description') is-invalid @enderror">{{ old('description', $template->description ?? '') }}</textarea>
-    @error('description')
-        <span class="invalid-feedback">{{ $message }}</span>
-    @enderror
+    <textarea name="description" id="description" rows="2" class="form-control">{{ old('description', $template->description ?? '') }}</textarea>
 </div>
 
 <div class="row">
@@ -47,9 +42,7 @@
             <div class="custom-control custom-switch mt-4">
                 <input type="checkbox" name="is_active" value="1" class="custom-control-input" id="is_active"
                     {{ old('is_active', $template->is_active ?? true) ? 'checked' : '' }}>
-                <label class="custom-control-label" for="is_active">
-                    النموذج نشط
-                </label>
+                <label class="custom-control-label" for="is_active">النموذج نشط</label>
             </div>
         </div>
     </div>
@@ -66,15 +59,7 @@
                 <div class="custom-control custom-checkbox">
                     <input type="checkbox" name="invoice_types[]" value="{{ $typeId }}"
                         class="custom-control-input invoice-type-checkbox" id="type_{{ $typeId }}"
-                        {{ in_array(
-                            $typeId,
-                            old(
-                                'invoice_types',
-                                collect(optional($template)->invoiceTypes ?? [])->pluck('invoice_type')->toArray(),
-                            ),
-                        )
-                            ? 'checked'
-                            : '' }}>
+                        {{ in_array($typeId,old('invoice_types',collect(optional($template)->invoiceTypes ?? [])->pluck('invoice_type')->toArray()))? 'checked': '' }}>
                     <label class="custom-control-label" for="type_{{ $typeId }}">
                         {{ $typeName }} ({{ $typeId }})
                     </label>
@@ -93,33 +78,159 @@
             </div>
         @endforeach
     </div>
-    @error('invoice_types')
-        <span class="text-danger">{{ $message }}</span>
-    @enderror
 </div>
 
 <hr>
 
-{{-- اختيار الأعمدة المرئية --}}
+{{-- قسم الأعمدة مع الترتيب والعرض --}}
 <div class="form-group">
-    <label>الأعمدة المرئية <span class="text-danger">*</span></label>
-    <p class="text-muted">اختر الأعمدة التي ستظهر في جدول الفاتورة</p>
+    <label>الأعمدة المرئية وترتيبها <span class="text-danger">*</span></label>
+    <p class="text-muted">اسحب الأعمدة لترتيبها، وحدد عرض كل عمود</p>
 
-    <div class="row">
-        @foreach ($availableColumns as $columnKey => $columnName)
-            <div class="col-md-3">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" name="visible_columns[]" value="{{ $columnKey }}"
-                        class="custom-control-input" id="column_{{ $columnKey }}"
-                        {{ in_array($columnKey, old('visible_columns', $template->visible_columns ?? [])) ? 'checked' : '' }}>
-                    <label class="custom-control-label" for="column_{{ $columnKey }}">
-                        {{ $columnName }}
-                    </label>
-                </div>
-            </div>
-        @endforeach
+    <div id="columns-container" class="border rounded p-3 bg-light">
+        <div id="sortable-columns" class="list-group">
+            @php
+                $orderedColumns = old(
+                    'column_order',
+                    optional($template)->column_order ?? array_keys($availableColumns),
+                );
+                $selectedColumns = old('visible_columns', optional($template)->visible_columns ?? []);
+                $columnWidths = old('column_widths', optional($template)->column_widths ?? []);
+            @endphp
+
+            @foreach ($orderedColumns as $columnKey)
+                @if (isset($availableColumns[$columnKey]))
+                    <div class="list-group-item column-item" data-column="{{ $columnKey }}">
+                        <div class="row align-items-center">
+                            <div class="col-1 text-center">
+                                <i class="fas fa-grip-vertical text-muted" style="cursor: move;"></i>
+                            </div>
+
+                            <div class="col-3">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" name="visible_columns[]" value="{{ $columnKey }}"
+                                        class="custom-control-input column-checkbox" id="column_{{ $columnKey }}"
+                                        {{ in_array($columnKey, $selectedColumns) ? 'checked' : '' }}>
+                                    <label class="custom-control-label" for="column_{{ $columnKey }}">
+                                        {{ $availableColumns[$columnKey] }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-group mb-0">
+                                    <label class="small">عرض العمود (%)</label>
+                                    <input type="range" name="column_widths[{{ $columnKey }}]"
+                                        class="custom-range column-width-slider" min="5" max="30"
+                                        step="1" value="{{ $columnWidths[$columnKey] ?? 10 }}"
+                                        data-column="{{ $columnKey }}">
+                                </div>
+                            </div>
+
+                            <div class="col-2 text-center">
+                                <span class="badge badge-primary width-display" id="width_{{ $columnKey }}">
+                                    {{ $columnWidths[$columnKey] ?? 10 }}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="column_order[]" value="{{ $columnKey }}"
+                            class="column-order-input">
+                    </div>
+                @endif
+            @endforeach
+
+            {{-- إضافة الأعمدة غير الموجودة في الترتيب --}}
+            @foreach ($availableColumns as $columnKey => $columnName)
+                @if (!in_array($columnKey, $orderedColumns))
+                    <div class="list-group-item column-item" data-column="{{ $columnKey }}">
+                        <div class="row align-items-center">
+                            <div class="col-1 text-center">
+                                <i class="fas fa-grip-vertical text-muted" style="cursor: move;"></i>
+                            </div>
+
+                            <div class="col-3">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" name="visible_columns[]" value="{{ $columnKey }}"
+                                        class="custom-control-input column-checkbox" id="column_{{ $columnKey }}">
+                                    <label class="custom-control-label" for="column_{{ $columnKey }}">
+                                        {{ $columnName }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-group mb-0">
+                                    <label class="small">عرض العمود (%)</label>
+                                    <input type="range" name="column_widths[{{ $columnKey }}]"
+                                        class="custom-range column-width-slider" min="5" max="30"
+                                        step="1" value="10" data-column="{{ $columnKey }}">
+                                </div>
+                            </div>
+
+                            <div class="col-2 text-center">
+                                <span class="badge badge-primary width-display"
+                                    id="width_{{ $columnKey }}">10%</span>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="column_order[]" value="{{ $columnKey }}"
+                            class="column-order-input">
+                    </div>
+                @endif
+            @endforeach
+        </div>
     </div>
+
     @error('visible_columns')
         <span class="text-danger">{{ $message }}</span>
     @enderror
 </div>
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // تفعيل السحب والإفلات
+            var sortable = new Sortable(document.getElementById('sortable-columns'), {
+                animation: 150,
+                handle: '.fa-grip-vertical',
+                onEnd: function() {
+                    updateColumnOrder();
+                }
+            });
+
+            // تحديث ترتيب الأعمدة
+            function updateColumnOrder() {
+                $('#sortable-columns .column-item').each(function(index) {
+                    $(this).find('.column-order-input').val($(this).data('column'));
+                });
+            }
+
+            // تحديث عرض العمود عند تحريك السلايدر
+            $('.column-width-slider').on('input', function() {
+                var columnKey = $(this).data('column');
+                var width = $(this).val();
+                $('#width_' + columnKey).text(width + '%');
+            });
+
+            // إظهار/إخفاء خيار الافتراضي لأنواع الفواتير
+            $('.invoice-type-checkbox').each(function() {
+                const typeId = $(this).val();
+                if ($(this).is(':checked')) {
+                    $('#default_' + typeId).show();
+                }
+            });
+
+            $('.invoice-type-checkbox').on('change', function() {
+                const typeId = $(this).val();
+                if ($(this).is(':checked')) {
+                    $('#default_' + typeId).slideDown();
+                } else {
+                    $('#default_' + typeId).slideUp();
+                    $('#default_switch_' + typeId).prop('checked', false);
+                }
+            });
+        });
+    </script>
+@endpush
