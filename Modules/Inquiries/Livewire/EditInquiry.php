@@ -165,12 +165,6 @@ class EditInquiry extends Component
         $this->projects = ProjectProgress::all()->toArray();
         $this->cities = City::all()->toArray();
         $this->towns = $this->cityId ? Town::where('city_id', $this->cityId)->get()->toArray() : [];
-
-        // $this->clients = Client::whereIn('type', [ClientType::Person->value, ClientType::Company->value])->get()->toArray();
-        // $this->mainContractors = Client::where('type', ClientType::MainContractor->value)->get()->toArray();
-        // $this->consultants = Client::where('type', ClientType::Consultant->value)->get()->toArray();
-        // $this->owners = Client::where('type', ClientType::Owner->value)->get()->toArray();
-
         $this->statusOptions = Inquiry::getStatusOptions();
         $this->statusForKonOptions = Inquiry::getStatusForKonOptions();
         $this->konTitleOptions = Inquiry::getKonTitleOptions();
@@ -715,12 +709,12 @@ class EditInquiry extends Component
             'newClient.gender' => 'required|in:male,female',
             'modalClientType' => 'required|integer|min:1',
         ], [
-            'newClient.cname.required' => 'اسم العميل مطلوب',
-            'newClient.phone.required' => 'رقم الهاتف مطلوب',
-            'newClient.email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
-            'newClient.email.unique' => 'البريد الإلكتروني مستخدم بالفعل',
-            'modalClientType.required' => 'نوع العميل مطلوب',
-            'modalClientType.integer' => 'نوع العميل يجب أن يكون رقمًا صحيحًا',
+            'newClient.cname.required' => __('Client Name Required'),
+            'newClient.phone.required' => __('Phone Number Required'),
+            'newClient.email.email' => __('Invalid Email Format'),
+            'newClient.email.unique' => __('Email Already In Use'),
+            'modalClientType.required' => __('Client Type Required'),
+            'modalClientType.integer' => __('Client Type Must Be Integer'),
         ]);
 
         try {
@@ -779,12 +773,12 @@ class EditInquiry extends Component
             $this->dispatch('closeClientModal');
             $this->refreshClientLists();
 
-            session()->flash('message', 'تم إضافة ' . $clientType->title . ' بنجاح');
+            session()->flash('message', __('Added Successfully', ['type' => $clientType->title]));
 
             $this->resetClientForm();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'حدث خطأ أثناء إضافة ');
+            session()->flash('error', __('Error Adding '));
         }
     }
 
@@ -971,11 +965,11 @@ class EditInquiry extends Component
             }
             $this->calculateScores();
             DB::commit();
-            return redirect()->route('inquiries.index')->with('message', 'تم تحديث الاستفسار بنجاح!');
+            return redirect()->route('inquiries.index')->with('message', __('Inquiry Updated Success'));
         } catch (\Exception) {
             DB::rollBack();
-            Log::error('خطأ في تحديث الاستفسار: ');
-            return back()->with('error', 'حدث خطأ أثناء التحديث: ');
+            Log::error(__('Error Updating Inquiry: '));
+            return back()->with('error', __('Error During Update: '));
         }
     }
 

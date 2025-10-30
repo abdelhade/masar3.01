@@ -243,7 +243,7 @@ class Employee extends Model implements HasMedia
         return $this->belongsToMany(Kpi::class, 'employee_kpis', 'employee_id', 'kpi_id')->withPivot('weight_percentage');
     }
 
-    /**
+       /**
      * Get the employee's image URL or fallback to placeholder
      * Works correctly in both local (Laragon) and production environments
      * Automatically detects and handles production symlink issues
@@ -260,10 +260,14 @@ class Employee extends Model implements HasMedia
         // Get the standard URL from Spatie
         $url = $media->getUrl();
         
-        // For production environments, check if symlink is working
+
+         // For production environments, check if symlink is working
         if (
             !str_contains(config('app.url'), 'localhost') &&
-            !str_contains(config('app.url'), 'massar1.02.test:81')
+            !str_contains(config('app.url'), '127.0.0.1') &&
+            !str_contains(config('app.url'), 'http://massar1.02.test:81') &&
+            !str_contains(config('app.url'), 'https://massar1.02.test') &&
+            !str_contains(config('app.url'), 'https://massar1.02.test:8000')
         ) {
             $baseUrl = config('app.url');
             $url = $baseUrl . '/storage/app/public/' . $media->id . '/' . $media->file_name;

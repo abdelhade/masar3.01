@@ -229,12 +229,12 @@
                         <i class="fas fa-${workType.children.length > 0 ? 'hard-hat' : 'tools'} me-2"></i>
                         <span class="worktype-name">${workType.name}</span>
                         ${workType.is_active ?
-                            '<span class="status-badge status-active ms-2">مفعل</span>' :
-                            '<span class="status-badge status-inactive ms-2">غير مفعل</span>'
+                            '<span class="status-badge status-active ms-2">{{ __('Active') }}</span>' :
+                            '<span class="status-badge status-inactive ms-2">{{ __('Inactive') }}</span>'
                         }
                     </div>
                     <div class="action-buttons">
-                        <button class="add-child-btn" onclick="addChild(${workType.id})" title="إضافة فرع">
+                        <button class="add-child-btn" onclick="addChild(${workType.id})" title="{{ __('Add Branch') }}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -268,12 +268,10 @@
             function selectWorkType(workType) {
                 selectedWorkType = workType;
 
-                // Remove previous selection
                 document.querySelectorAll('.tree-item.selected').forEach(item => {
                     item.classList.remove('selected');
                 });
 
-                // Add selection to current item
                 document.querySelector(`[data-id="${workType.id}"]`).classList.add('selected');
             }
 
@@ -284,7 +282,7 @@
 
                 if (path.length > 1) {
                     pathDisplay.style.display = 'block';
-                    pathBreadcrumb.innerHTML = path.map((item, index) => {
+                    pathBreadcrumb.innerHTML = path.map((item) => {
                         return `<span class="breadcrumb-item">${item.name}</span>`;
                     }).join('<i class="fas fa-chevron-left mx-2"></i>');
                 } else {
@@ -333,7 +331,6 @@
             }
 
             function showInlineForm(parent) {
-                // Remove any existing forms
                 document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
 
                 const form = document.createElement('div');
@@ -341,26 +338,26 @@
                 form.innerHTML = `
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">اسم نوع العمل</label>
-                        <input type="text" class="form-control" id="newWorkTypeName" placeholder="أدخل اسم نوع العمل">
+                        <label class="form-label">{{ __('Work Type Name') }}</label>
+                        <input type="text" class="form-control" id="newWorkTypeName" placeholder="{{ __('Enter Work Type Name') }}">
                     </div>
                     <div class="col-md-3 d-flex justify-content-center align-items-center">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="newWorkTypeStatus" checked>
-                            <label class="form-check-label ms-2" for="newWorkTypeStatus">الحالة</label>
+                            <label class="form-check-label ms-2" for="newWorkTypeStatus">{{ __('Status') }}</label>
                         </div>
                     </div>
 
                     <div class="col-md-3 d-flex align-items-end">
                         <button class="btn btn-success btn-sm me-2" onclick="saveNewWorkType(${parent ? parent.id : null})">
-                            <i class="fas fa-check me-1"></i>حفظ
+                            <i class="fas fa-check me-1"></i>{{ __('Save') }}
                         </button>
                         <button class="btn btn-danger btn-sm" onclick="cancelForm()">
-                            <i class="fas fa-times me-1"></i>إلغاء
+                            <i class="fas fa-times me-1"></i>{{ __('Cancel') }}
                         </button>
                     </div>
                 </div>
-                ${parent ? `<small class="text-muted">سيتم إضافة نوع العمل كفرع من: ${parent.name}</small>` : ''}
+                ${parent ? `<small class="text-muted">{{ __('Will be added as a branch of') }}: ${parent.name}</small>` : ''}
             `;
 
                 if (parent) {
@@ -386,7 +383,7 @@
                 const isActive = document.getElementById('newWorkTypeStatus').checked;
 
                 if (!name) {
-                    alert('يرجى إدخال اسم نوع العمل');
+                    alert('{{ __('Please enter work type name') }}');
                     return;
                 }
 
@@ -419,7 +416,7 @@
                     }
 
                 } catch (error) {
-                    showToast('حدث خطأ غير متوقع.', 'error');
+                    showToast('{{ __('An unexpected error occurred.') }}', 'error');
                 }
 
                 cancelForm();
@@ -437,10 +434,10 @@
                     if (result.success) {
                         workTypesData = result.data;
                     } else {
-                        throw new Error(result.message || 'Failed to load data');
+                        throw new Error(result.message || '{{ __('Failed to load data') }}');
                     }
                 } catch (error) {
-                    showToast('فشل في تحميل البيانات: ' + error.message, 'error');
+                    showToast('{{ __('Failed to load data') }}: ' + error.message, 'error');
                 }
             }
 
@@ -454,34 +451,33 @@
 
                 editingWorkType = workType;
 
-                // Remove any existing forms
                 document.querySelectorAll('.inline-form, .edit-form').forEach(form => form.remove());
 
                 const workTypeElement = document.querySelector(`[data-id="${workTypeId}"]`);
                 const form = document.createElement('div');
                 form.className = 'edit-form';
                 form.innerHTML = `
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">اسم نوع العمل</label>
-                        <input type="text" class="form-control" id="editWorkTypeName" value="${workType.name}">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">الحالة</label>
-                        <select class="form-select" id="editWorkTypeStatus">
-                            <option value="true" ${workType.is_active ? 'selected' : ''}>مفعل</option>
-                            <option value="false" ${!workType.is_active ? 'selected' : ''}>غير مفعل</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button class="btn btn-warning btn-sm me-2" onclick="updateWorkType()">
-                            <i class="fas fa-save me-1"></i>تحديث
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="cancelForm()">
-                            <i class="fas fa-times me-1"></i>إلغاء
-                        </button>
-                    </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ __('Work Type Name') }}</label>
+                    <input type="text" class="form-control" id="editWorkTypeName" value="${workType.name}">
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ __('Status') }}</label>
+                    <select class="form-select" id="editWorkTypeStatus">
+                        <option value="true" ${workType.is_active ? 'selected' : ''}>{{ __('Active') }}</option>
+                        <option value="false" ${!workType.is_active ? 'selected' : ''}>{{ __('Inactive') }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-warning btn-sm me-2" onclick="updateWorkType()">
+                        <i class="fas fa-save me-1"></i>{{ __('Update') }}
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="cancelForm()">
+                        <i class="fas fa-times me-1"></i>{{ __('Cancel') }}
+                    </button>
+                </div>
+            </div>
             `;
 
                 workTypeElement.parentNode.insertBefore(form, workTypeElement.nextSibling);
@@ -495,7 +491,7 @@
                 const isActive = document.getElementById('editWorkTypeStatus').value === 'true';
 
                 if (!name) {
-                    alert('يرجى إدخال اسم نوع العمل');
+                    alert('{{ __('Please enter work type name') }}');
                     return;
                 }
 
@@ -524,10 +520,10 @@
                         await fetchWorkTypes();
                         renderTree();
                     } else {
-                        showToast(result.message || 'فشل التحديث', 'error');
+                        showToast(result.message || '{{ __('Failed to update') }}', 'error');
                     }
                 } catch (error) {
-                    showToast('حدث خطأ غير متوقع.', 'error');
+                    showToast('{{ __('An unexpected error occurred.') }}', 'error');
                 }
 
                 cancelForm();
@@ -535,7 +531,8 @@
             }
 
             async function deleteWorkType(workTypeId) {
-                if (!confirm('هل أنت متأكد من حذف نوع العمل هذا؟ سيتم حذف جميع الفروع التابعة له.')) {
+                if (!confirm(
+                        '{{ __('Are you sure you want to delete this work type? All its branches will be deleted.') }}')) {
                     return;
                 }
 
@@ -557,10 +554,10 @@
                         await fetchWorkTypes();
                         renderTree();
                     } else {
-                        showToast(result.message || 'فشل الحذف', 'error');
+                        showToast(result.message || '{{ __('Failed to delete') }}', 'error');
                     }
                 } catch (error) {
-                    showToast('حدث خطأ غير متوقع.', 'error');
+                    showToast('{{ __('An unexpected error occurred.') }}', 'error');
                 }
             }
 
@@ -574,32 +571,32 @@
                     workTypes.forEach(workType => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                        <td>${counter++}</td>
-                        <td>
-                            ${'—'.repeat(level)}
-                            <i class="fas fa-${workType.children.length > 0 ? 'hard-hat' : 'tools'} me-1"></i>
-                            ${workType.name}
-                        </td>
-                        <td>
-                            <span class="badge bg-info">المستوى ${level + 1}</span>
-                        </td>
-                        <td class="text-center align-middle">
-                            <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                                <div class="form-check form-switch m-0">
-                                    <input class="form-check-input toggle-status" type="checkbox"
-                                        data-id="${workType.id}" ${workType.is_active ? 'checked' : ''}>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <button class="btn btn-success btn-sm me-1" onclick="editWorkType(${workType.id})" title="تعديل">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteWorkType(${workType.id})" title="حذف">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                <td>${counter++}</td>
+                <td>
+                    ${'—'.repeat(level)}
+                    <i class="fas fa-${workType.children.length > 0 ? 'hard-hat' : 'tools'} me-1"></i>
+                    ${workType.name}
+                </td>
+                <td>
+                    <span class="badge bg-info">{{ __('Level') }} ${level + 1}</span>
+                </td>
+                <td class="text-center align-middle">
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input toggle-status" type="checkbox"
+                                data-id="${workType.id}" ${workType.is_active ? 'checked' : ''}>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn btn-success btn-sm me-1" onclick="editWorkType(${workType.id})" title="{{ __('Edit') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteWorkType(${workType.id})" title="{{ __('Delete') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
                         tbody.appendChild(row);
 
                         if (workType.children.length > 0) {
@@ -617,8 +614,8 @@
                     `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
                 toast.style.cssText = 'top: 20px; left: 20px; z-index: 9999; min-width: 300px;';
                 toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-                ${message}
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+            ${message}
             `;
 
                 document.body.appendChild(toast);
@@ -647,14 +644,14 @@
 
                         const result = await response.json();
                         if (result.success) {
-                            showToast('تم تغيير الحالة بنجاح', 'success');
+                            showToast('{{ __('Status changed successfully') }}', 'success');
                             await fetchWorkTypes();
                             renderTree();
                         } else {
-                            showToast('فشل في تحديث الحالة', 'error');
+                            showToast('{{ __('Failed to update status') }}', 'error');
                         }
                     } catch (error) {
-                        showToast('حدث خطأ أثناء تحديث الحالة', 'error');
+                        showToast('{{ __('Error while updating status') }}', 'error');
                     }
                 }
             });

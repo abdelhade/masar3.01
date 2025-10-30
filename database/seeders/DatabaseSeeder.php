@@ -9,6 +9,7 @@ use Modules\Settings\Database\Seeders\SystemSettingsSeeder;
 use Modules\Inquiries\database\seeders\DiffcultyMatrixSeeder;
 use Modules\Invoices\database\seeders\InvoiceTemplatesSeeder;
 use Modules\Invoices\database\seeders\InvoiceDimensionsSeeder;
+use Modules\Inquiries\database\seeders\InquiriesPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionSeeder;
 use Modules\Branches\database\seeders\{AttachUserToDefaultBranchSeeder, BranchSeeder};
 
@@ -40,7 +41,7 @@ class DatabaseSeeder extends Seeder
             EmployeesJobSeeder::class,
             ShiftSeeder::class,
             SettingSeeder::class,
-            ItemSeeder::class,
+            // ItemSeeder::class,
             InvoiceTemplatesSeeder::class,
             SystemSettingsSeeder::class,
             InvoiceDimensionsSeeder::class,
@@ -54,6 +55,7 @@ class DatabaseSeeder extends Seeder
             AttachUserToDefaultBranchSeeder::class,
             DiffcultyMatrixSeeder::class,
             VaribalSeeder::class,
+            InquiriesPermissionsSeeder::class,
         ]);
     }
 }

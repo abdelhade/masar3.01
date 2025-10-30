@@ -4,27 +4,28 @@ namespace Modules\Inquiries\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use Modules\Inquiries\Models\{Inquiry, InquiryComment};
+use Modules\Inquiries\Models\InquiryComment;
 
 class InquiryComments extends Component
 {
     public $inquiryId;
     public $newComment = '';
     public $comments = [];
+    public $messages = [];
 
     protected $rules = [
         'newComment' => 'required|string|min:3|max:1000',
     ];
 
-    protected $messages = [
-        'newComment.required' => 'الرجاء إدخال التعليق',
-        'newComment.min' => 'التعليق يجب أن يكون 3 أحرف على الأقل',
-        'newComment.max' => 'التعليق لا يجب أن يتجاوز 1000 حرف',
-    ];
-
     public function mount($inquiryId)
     {
         $this->inquiryId = $inquiryId;
+        $this->messages = [
+            'newComment.required' => __('Comment Required'),
+            'newComment.min' => __('Comment Min Length 3 Characters'),
+            'newComment.max' => __('Comment Max Length'),
+        ];
+
         $this->loadComments();
     }
 
@@ -39,7 +40,7 @@ class InquiryComments extends Component
 
     public function addComment()
     {
-        $this->validate();
+        $this->validate($this->rules, $this->messages);
 
         InquiryComment::create([
             'inquiry_id' => $this->inquiryId,
@@ -50,7 +51,7 @@ class InquiryComments extends Component
         $this->newComment = '';
         $this->loadComments();
 
-        session()->flash('comment_success', 'تم إضافة التعليق بنجاح');
+        session()->flash('comment_success', __('Comment Added Success'));
     }
 
     public function deleteComment($commentId)
@@ -60,9 +61,10 @@ class InquiryComments extends Component
         if ($comment && ($comment->user_id === Auth::id())) {
             $comment->delete();
             $this->loadComments();
-            session()->flash('comment_success', 'تم حذف التعليق بنجاح');
+            session()->flash('comment_success', __('Comment Deleted Success'));
         }
     }
+
     public function render()
     {
         return view('inquiries::livewire.inquiry-comments');

@@ -14,4 +14,17 @@ enum KonTitle: string
             self::SUB_PILING_CONTRACTOR => 'مقاول فرعي للـ Piling',
         };
     }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::MAIN_PILING_CONTRACTOR => 'primary',
+            self::SUB_PILING_CONTRACTOR => 'secondary',
+        };
+    }
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 }

@@ -4,10 +4,9 @@
         <div class="card-header">
             <h6 class="card-title mb-0">
                 <i class="fas fa-check-square me-2"></i>
-                قائمة التقديمات المطلوبة
+                {{ __('Required Submittal Checklist') }}
             </h6>
-            <small class="d-block mt-1">اختر التقديمات المطلوبة (مع حساب
-                السكور)</small>
+            <small class="d-block mt-1">{{ __('Select the required submittals (with score calculation)') }}</small>
         </div>
         <div class="card-body">
             <div class="row">
@@ -35,9 +34,9 @@
         <div class="card-header">
             <h6 class="card-title mb-0">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                قائمة شروط العمل
+                {{ __('Working Conditions Checklist') }}
             </h6>
-            <small class="d-block mt-1">اختر الشروط (مع حساب السكور)</small>
+            <small class="d-block mt-1">{{ __('Select the conditions (with score calculation)') }}</small>
         </div>
         <div class="card-body">
             <div class="row">
@@ -53,7 +52,7 @@
                         @if (isset($condition['options']) && $workingConditions[$index]['checked'])
                             <select wire:model.live="workingConditions.{{ $index }}.selectedOption"
                                 class="form-select mt-2">
-                                <option value="">اختر...</option>
+                                <option value="">{{ __('Select...') }}</option>
                                 @foreach ($condition['options'] as $option => $score)
                                     <option value="{{ $score }}">
                                         {{ $option }} ({{ $score }})
@@ -77,7 +76,7 @@
                             <div class="col-md-3">
                                 <div class="text-center">
                                     <i class="fas fa-calculator fa-2x text-primary mb-2"></i>
-                                    <h5>السكور الإجمالي</h5>
+                                    <h5>{{ __('Total Score') }}</h5>
                                     <span class="badge bg-primary fs-4">{{ $totalScore }}</span>
                                 </div>
                             </div>
@@ -86,7 +85,7 @@
                             <div class="col-md-3">
                                 <div class="text-center">
                                     <i class="fas fa-percent fa-2x text-success mb-2"></i>
-                                    <h5>النسبة المئوية</h5>
+                                    <h5>{{ __('Percentage') }}</h5>
                                     <span class="badge bg-success fs-4">{{ $difficultyPercentage }}%</span>
                                 </div>
                             </div>
@@ -95,7 +94,7 @@
                             <div class="col-md-3">
                                 <div class="text-center">
                                     <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
-                                    <h5>درجة الصعوبة</h5>
+                                    <h5>{{ __('Difficulty Level') }}</h5>
                                     <span class="badge bg-warning fs-4">{{ $projectDifficulty }}</span>
                                 </div>
                             </div>
@@ -104,7 +103,7 @@
                             <div class="col-md-3">
                                 <div class="text-center">
                                     <i class="fas fa-info-circle fa-2x text-info mb-2"></i>
-                                    <h5>تصنيف الصعوبة</h5>
+                                    <h5>{{ __('Difficulty Classification') }}</h5>
                                     <span
                                         class="badge
                                             @if ($projectDifficulty == 1) bg-success
@@ -112,13 +111,13 @@
                                             @elseif ($projectDifficulty == 3) bg-orange
                                             @else bg-danger @endif fs-5">
                                         @if ($projectDifficulty == 1)
-                                            سهل (أقل من 25%)
+                                            {{ __('Easy') }} {{ __('(less than 25%)') }}
                                         @elseif ($projectDifficulty == 2)
-                                            متوسط (25% - 50%)
+                                            {{ __('Medium') }} {{ __('(25% - 50%)') }}
                                         @elseif ($projectDifficulty == 3)
-                                            صعب (50% - 75%)
+                                            {{ __('Hard') }} {{ __('(50% - 75%)') }}
                                         @elseif ($projectDifficulty == 4)
-                                            صعب جداً (أكثر من 75%)
+                                            {{ __('Very Hard') }} {{ __('(more than 75%)') }}
                                         @endif
                                     </span>
                                 </div>
@@ -147,3 +146,4 @@
             </div>
         </div>
     </div>
+</div>

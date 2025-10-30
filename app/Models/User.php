@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Support\Str;
 use Modules\Branches\Models\Branch;
-use Illuminate\Foundation\Auth\Access\Authorizable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasPermissions;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Modules\Inquiries\Models\UserInquiryPreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -74,12 +75,12 @@ class User extends Authenticatable
     {
         return $this->employee?->id;
     }
-    
+
     public function getFingerPrintIdAttribute()
     {
         return $this->employee?->finger_print_id ?: $this->id;
     }
-    
+
     public function getFingerPrintNameAttribute()
     {
         return $this->employee?->finger_print_name ?: $this->name;
@@ -90,4 +91,8 @@ class User extends Authenticatable
         return 'App.Models.User.' . $this->id;
     }
 
+    public function inquiryPreferences()
+    {
+        return $this->hasOne(UserInquiryPreference::class);
+    }
 }

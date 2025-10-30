@@ -418,8 +418,8 @@ class CreateInvoiceForm extends Component
     {
         $subtotal = 0;
         foreach ($this->invoiceItems as $item) {
-            $quantity = $item['quantity'] ?? 0;
-            $price = $item['price'] ?? 0;
+            $quantity = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['price'] ?? 0);
             $subtotal += $quantity * $price;
         }
 
@@ -699,7 +699,7 @@ class CreateInvoiceForm extends Component
         }
 
         // التحقق من منع السعر صفر
-        // if (($this->settings['allow_zero_price_in_invoice'] ?? '0') != '1' && $price == 0) {
+        // if ((!setting('allow_purchase_price_change')) && $price == 0) {
         //     $this->dispatch(
         //         'error',
         //         title: 'خطأ!',
@@ -845,7 +845,7 @@ class CreateInvoiceForm extends Component
         $item = $this->items->firstWhere('id', $itemId);
         if (!$item) return;
 
-        if ($this->type == 11 && ($this->settings['allow_purchase_price_change'] ?? '0') != '1') {
+        if ($this->type == 11 && (!setting('allow_purchase_price_change'))) {
             $this->dispatch(
                 'error',
                 title: 'خطأ!',
@@ -992,7 +992,7 @@ class CreateInvoiceForm extends Component
                 return;
             }
             $this->calculateQuantityFromSubValue($rowIndex);
-        } elseif ($field === 'price' && $this->type == 11 && ($this->settings['allow_purchase_price_change'] ?? '0') != '1') {
+        } elseif ($field === 'price' && $this->type == 11 && (!setting('allow_purchase_price_change'))) {
             $this->dispatch(
                 'error',
                 title: 'خطأ!',
@@ -1122,7 +1122,7 @@ class CreateInvoiceForm extends Component
 
         $this->checkCashAccount($this->acc1_id);
 
-        // if (($this->settings['allow_zero_invoice_total'] ?? '0') != '1' && $this->total_after_additional == 0) {
+        // if ((!setting('allow_purchase_price_change'))  && $this->total_after_additional == 0) {
         //     $this->dispatch(
         //         'error',
         //         title: 'خطأ!',
@@ -1160,17 +1160,19 @@ class CreateInvoiceForm extends Component
             return;
         }
 
-        if ($barcode) {
-            $existingBarcode = Barcode::where('barcode', $barcode)->exists();
-            if ($existingBarcode) {
-                $this->dispatch('alert', ['type' => 'error', 'message' => 'هذا الباركود مستخدم بالفعل لصنف آخر.']);
-                return;
-            }
+        $defaultBarcode = Item::max('code') + 1 ?? 1;
+        $finalBarcode = $barcode ?? $defaultBarcode;
+
+        $existingBarcode = Barcode::where('barcode', $finalBarcode)->exists();
+
+        if ($existingBarcode) {
+            $this->dispatch('alert', ['type' => 'error', 'message' => 'هذا الباركود (' . $finalBarcode . ') مستخدم بالفعل لصنف آخر.']);
+            return;
         }
-        $code = Item::max('code') + 1 ?? 1;
+
         $newItem = Item::create([
             'name' => $name,
-            'code' => $code,
+            'code' => $defaultBarcode,
         ]);
 
         $newItem->units()->attach([
@@ -1179,18 +1181,13 @@ class CreateInvoiceForm extends Component
                 'cost' => 0
             ]
         ]);
-        if ($barcode) {
-            $newItem->barcodes()->create([
-                'barcode' => $barcode,
-                'unit_id' => 1
-            ]);
-        } else {
-            $newItem->barcodes()->create([
-                'barcode' => $newItem->code,
-                'unit_id' => 1,
-            ]);
-        }
-        $this->updateSelectedItemData($newItem, 1, 0); // تحديث بيانات الصنف المختار
+
+        $newItem->barcodes()->create([
+            'barcode' => $finalBarcode,
+            'unit_id' => 1
+        ]);
+
+        $this->updateSelectedItemData($newItem, 1, 0);
         $this->addItemFromSearch($newItem->id);
 
         $this->searchTerm = '';

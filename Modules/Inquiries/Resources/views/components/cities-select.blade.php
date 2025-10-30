@@ -1,17 +1,17 @@
 <div>
     <div class="card border-primary mb-4 shadow">
         <div class="card-header">
-            <small>حدد كلا الموقعين من الخريطة</small>
+            <small>{{ __('Select both locations from the map') }}</small>
         </div>
         <div class="card-body">
             <div class="row g-4">
-                {{-- ✅ الموقع الأول (من) --}}
+                {{-- First Location (From) --}}
                 <div class="col-lg-5">
                     <div class="card h-100 border-success">
                         <div class="card-header bg-success bg-opacity-10 border-success">
                             <h6 class="mb-0">
                                 <i class="bi bi-geo-fill text-success"></i>
-                                الموقع الأول (نقطة البداية)
+                                {{ __('First Location (Starting Point)') }}
                             </h6>
                         </div>
                         <div class="card-body">
@@ -32,21 +32,21 @@
                             @else
                                 <div class="text-center text-muted py-4">
                                     <i class="bi bi-map fs-1 mb-3 d-block"></i>
-                                    <p>لم يتم تحديد الموقع الأول بعد</p>
+                                    <p>{{ __('First location not selected yet') }}</p>
                                 </div>
                             @endif
 
                             <div class="d-grid gap-2">
                                 <button type="button" class="btn btn-success btn-lg" wire:click="openFromMapModal">
                                     <i class="bi bi-map me-2"></i>
-                                    {{ $fromLocation ? 'تغيير الموقع' : 'اختر من الخريطة' }}
+                                    {{ $fromLocation ? __('Change Location') : __('Select from Map') }}
                                 </button>
 
                                 @if ($fromLocation && $fromLocation !== 'Abu Dhabi, UAE')
                                     <button type="button" class="btn btn-outline-secondary"
                                         wire:click="resetFromLocation">
                                         <i class="bi bi-arrow-counterclockwise me-1"></i>
-                                        إعادة لأبوظبي
+                                        {{ __('Reset to Abu Dhabi') }}
                                     </button>
                                 @endif
                             </div>
@@ -54,7 +54,7 @@
                     </div>
                 </div>
 
-                {{-- السهم والمسافة --}}
+                {{-- Arrow and Distance --}}
                 <div class="col-lg-2 d-flex align-items-center justify-content-center">
                     <div class="text-center">
                         <i class="bi bi-arrow-left-right text-primary mb-3" style="font-size: 3rem;"></i>
@@ -63,7 +63,7 @@
                             <div class="mb-2">
                                 <div class="badge bg-success fs-5 px-3 py-2">
                                     <i class="bi bi-rulers me-1"></i>
-                                    {{ $calculatedDistance }} كم
+                                    {{ $calculatedDistance }} {{ __('km') }}
                                 </div>
                             </div>
 
@@ -75,19 +75,19 @@
                             @endif
                         @else
                             <small class="text-muted d-block">
-                                حدد الموقعين<br>لحساب المسافة
+                                {{ __('Select both locations') }}<br>{{ __('to calculate distance') }}
                             </small>
                         @endif
                     </div>
                 </div>
 
-                {{-- ✅ الموقع الثاني (إلى) --}}
+                {{-- Second Location (To) --}}
                 <div class="col-lg-5">
                     <div class="card h-100 border-danger">
                         <div class="card-header bg-danger bg-opacity-10 border-danger">
                             <h6 class="mb-0">
                                 <i class="bi bi-geo text-danger"></i>
-                                الموقع الثاني (نقطة النهاية)
+                                {{ __('Second Location (Ending Point)') }}
                             </h6>
                         </div>
                         <div class="card-body">
@@ -108,21 +108,21 @@
                             @else
                                 <div class="text-center text-muted py-4">
                                     <i class="bi bi-map fs-1 mb-3 d-block"></i>
-                                    <p>لم يتم تحديد الموقع الثاني بعد</p>
+                                    <p>{{ __('Second location not selected yet') }}</p>
                                 </div>
                             @endif
 
                             <div class="d-grid gap-2">
                                 <button type="button" class="btn btn-danger btn-lg" wire:click="openToMapModal">
                                     <i class="bi bi-map me-2"></i>
-                                    {{ $toLocation ? 'تغيير الموقع' : 'اختر من الخريطة' }}
+                                    {{ $toLocation ? __('Change Location') : __('Select from Map') }}
                                 </button>
 
                                 @if ($toLocation)
                                     <button type="button" class="btn btn-outline-secondary"
                                         wire:click="resetToLocation">
                                         <i class="bi bi-x-lg me-1"></i>
-                                        إعادة تعيين
+                                        {{ __('Reset') }}
                                     </button>
                                 @endif
                             </div>
@@ -131,7 +131,7 @@
                 </div>
             </div>
 
-            {{-- زر حساب المسافة --}}
+            {{-- Calculate Distance Button --}}
             @if ($fromLocationLat && $toLocationLat)
                 <div class="row mt-4">
                     <div class="col-12 text-center">
@@ -139,23 +139,23 @@
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="calculateDistance">
                                 <i class="bi bi-calculator me-2"></i>
-                                احسب المسافة
+                                {{ __('Calculate Distance') }}
                             </span>
                             <span wire:loading wire:target="calculateDistance">
                                 <span class="spinner-border spinner-border-sm me-2"></span>
-                                جاري الحساب...
+                                {{ __('Calculating...') }}
                             </span>
                         </button>
 
                         <button type="button" class="btn btn-outline-secondary btn-lg ms-2" wire:click="resetAll">
                             <i class="bi bi-arrow-counterclockwise me-1"></i>
-                            إعادة تعيين الكل
+                            {{ __('Reset All') }}
                         </button>
                     </div>
                 </div>
             @endif
 
-            {{-- نتائج الحساب التفصيلية --}}
+            {{-- Detailed Results --}}
             @if ($calculatedDistance)
                 <div class="row mt-4">
                     <div class="col-12">
@@ -167,12 +167,12 @@
                                 <div class="col-md-11">
                                     <h5 class="alert-heading mb-3">
                                         <i class="bi bi-graph-up-arrow me-2"></i>
-                                        نتائج حساب المسافة
+                                        {{ __('Distance Calculation Results') }}
                                     </h5>
                                     <div class="row g-3">
                                         <div class="col-md-4">
                                             <div class="p-3 bg-white rounded">
-                                                <small class="text-muted d-block mb-1">من</small>
+                                                <small class="text-muted d-block mb-1">{{ __('From') }}</small>
                                                 <strong class="text-success">
                                                     <i class="bi bi-geo-fill me-1"></i>
                                                     {{ Str::limit($fromLocation, 30) }}
@@ -181,7 +181,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="p-3 bg-white rounded">
-                                                <small class="text-muted d-block mb-1">إلى</small>
+                                                <small class="text-muted d-block mb-1">{{ __('To') }}</small>
                                                 <strong class="text-danger">
                                                     <i class="bi bi-geo me-1"></i>
                                                     {{ Str::limit($toLocation, 30) }}
@@ -190,15 +190,15 @@
                                         </div>
                                         <div class="col-md-2">
                                             <div class="p-3 bg-white rounded text-center">
-                                                <small class="text-muted d-block mb-1">المسافة</small>
+                                                <small class="text-muted d-block mb-1">{{ __('Distance') }}</small>
                                                 <strong class="text-primary fs-5">
-                                                    {{ $calculatedDistance }} كم
+                                                    {{ $calculatedDistance }} {{ __('km') }}
                                                 </strong>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="p-3 bg-white rounded text-center">
-                                                <small class="text-muted d-block mb-1">الوقت</small>
+                                                <small class="text-muted d-block mb-1">{{ __('Time') }}</small>
                                                 <strong class="text-info">
                                                     {{ $calculatedDuration ?? 'N/A' }}
                                                 </strong>
@@ -214,55 +214,56 @@
         </div>
     </div>
 
-    {{-- ✅ Map Picker Modal (موحد للموقعين) --}}
+    {{-- Map Picker Modal (Unified for both locations) --}}
     @if ($showMapModal)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7);">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header {{ $mapModalType === 'from' ? 'bg-success' : 'bg-danger' }} text-white">
+                    <div class="modal-header">
                         <h5 class="modal-title">
                             <i class="bi bi-map me-2"></i>
-                            <span id="mapModalTitle">اختر الموقع من الخريطة</span>
+                            <span id="mapModalTitle">{{ __('Select Location from Map') }}</span>
                         </h5>
                         <button type="button" class="btn-close btn-close-white" wire:click="closeMapModal"></button>
                     </div>
                     <div class="modal-body p-0">
-                        {{-- تعليمات الاستخدام --}}
+                        {{-- Usage Instructions --}}
                         <div class="alert alert-info mb-0 rounded-0 border-0">
                             <div class="row align-items-center">
                                 <div class="col-md-8">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    <strong>كيفية الاستخدام:</strong>
-                                    انقر على أي نقطة في الخريطة أو اسحب العلامة لتحديد الموقع المطلوب
+                                    <strong>{{ __('How to Use:') }}</strong>
+                                    {{ __('Click on any point on the map or drag the marker to select the desired location') }}
                                 </div>
                                 <div class="col-md-4 text-end">
                                     <button type="button" class="btn btn-sm btn-primary" id="useMyLocationBtn">
                                         <i class="bi bi-crosshair me-1"></i>
-                                        استخدم موقعي الحالي
+                                        {{ __('Use My Current Location') }}
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- الخريطة --}}
+                        {{-- Map --}}
                         <div id="mapPicker" style="height: 600px; width: 100%;"></div>
 
-                        {{-- معلومات الموقع المختار --}}
+                        {{-- Selected Location Info --}}
                         <div class="p-4 bg-light border-top">
                             <div class="row align-items-center">
                                 <div class="col-md-8">
                                     <h6 class="mb-2">
                                         <i class="bi bi-pin-map-fill me-1"></i>
-                                        الموقع المختار:
+                                        {{ __('Selected Location:') }}
                                     </h6>
-                                    <p class="mb-1 fw-bold" id="selectedAddress">انقر على الخريطة لاختيار موقع</p>
+                                    <p class="mb-1 fw-bold" id="selectedAddress">
+                                        {{ __('Click on the map to select a location') }}</p>
                                     <small class="text-muted" id="selectedCoords"></small>
                                 </div>
                                 <div class="col-md-4 text-end">
                                     <button type="button" class="btn btn-success btn-lg px-5"
                                         id="confirmLocationBtn" disabled>
                                         <i class="bi bi-check-circle me-2"></i>
-                                        تأكيد الموقع
+                                        {{ __('Confirm Location') }}
                                     </button>
                                 </div>
                             </div>
@@ -286,7 +287,7 @@
         let selectedLocation = null;
         let currentMapType = '';
 
-        // ✅ Livewire Events
+        // Livewire Events
         document.addEventListener('livewire:init', () => {
             Livewire.on('initMapPicker', (data) => {
                 setTimeout(() => {
@@ -298,18 +299,14 @@
             });
         });
 
-        // ✅ تهيئة الخريطة
+        // Initialize Map
         function initMapPicker(initialLat, initialLng, type) {
             const mapElement = document.getElementById('mapPicker');
-            if (!mapElement) {
-                console.error('❌ Map element not found');
-                return;
-            }
+            if (!mapElement) return;
 
             geocoder = new google.maps.Geocoder();
             selectedLocation = null;
 
-            // إنشاء الخريطة
             map = new google.maps.Map(mapElement, {
                 center: {
                     lat: initialLat,
@@ -330,8 +327,7 @@
                 gestureHandling: 'greedy'
             });
 
-            // إضافة Marker
-            const markerColor = type === 'from' ? '#28a745' : '#dc3545'; // أخضر للأول، أحمر للثاني
+            const markerColor = type === 'from' ? '#28a745' : '#dc3545';
 
             marker = new google.maps.Marker({
                 position: {
@@ -341,7 +337,7 @@
                 map: map,
                 draggable: true,
                 animation: google.maps.Animation.DROP,
-                title: 'اسحب لتغيير الموقع',
+                title: '{{ __('Drag to change location') }}',
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     scale: 10,
@@ -352,18 +348,10 @@
                 }
             });
 
-            // ✅ عند النقر على الخريطة
-            map.addListener('click', function(event) {
-                placeMarker(event.latLng);
-            });
+            map.addListener('click', (event) => placeMarker(event.latLng));
+            marker.addListener('dragend', (event) => placeMarker(event.latLng));
 
-            // ✅ عند سحب الـ Marker
-            marker.addListener('dragend', function(event) {
-                placeMarker(event.latLng);
-            });
-
-            // ✅ زر استخدام الموقع الحالي
-            document.getElementById('useMyLocationBtn').addEventListener('click', function() {
+            document.getElementById('useMyLocationBtn').addEventListener('click', () => {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
@@ -374,19 +362,15 @@
                             map.setCenter(pos);
                             placeMarker(new google.maps.LatLng(pos.lat, pos.lng));
                         },
-                        () => {
-                            alert('⚠️ فشل الحصول على موقعك الحالي');
-                        }
+                        () => alert('{{ __('Failed to get your current location') }}')
                     );
                 } else {
-                    alert('❌ المتصفح لا يدعم Geolocation');
+                    alert('{{ __('Browser does not support Geolocation') }}');
                 }
             });
 
-            // ✅ زر التأكيد
-            document.getElementById('confirmLocationBtn').addEventListener('click', function() {
+            document.getElementById('confirmLocationBtn').addEventListener('click', () => {
                 if (selectedLocation) {
-                    console.log('Dispatching locationPicked with:', selectedLocation); // تصحيح
                     Livewire.dispatch('locationPicked', {
                         type: selectedLocation.type,
                         address: selectedLocation.address,
@@ -394,18 +378,13 @@
                         lng: selectedLocation.lng
                     });
                 } else {
-                    console.error('No location selected!'); // تصحيح
-                    alert('يرجى اختيار موقع أولاً');
+                    alert('{{ __('Please select a location first') }}');
                 }
             });
 
-            // Set initial location
             placeMarker(new google.maps.LatLng(initialLat, initialLng));
-
-            console.log('✅ Map Picker initialized for:', type);
         }
 
-        // ✅ وضع Marker في موقع جديد
         function placeMarker(location) {
             marker.setPosition(location);
             map.panTo(location);
@@ -413,48 +392,37 @@
             const lat = location.lat();
             const lng = location.lng();
 
-            // عرض الإحداثيات فوراً
             document.getElementById('selectedCoords').textContent =
-                `📍 الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                `{{ __('Coordinates:') }} ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-            // Reverse Geocoding للحصول على العنوان
             geocoder.geocode({
-                location: location
-            }, function(results, status) {
+                location
+            }, (results, status) => {
                 if (status === 'OK' && results[0]) {
                     const address = results[0].formatted_address;
-
                     selectedLocation = {
                         type: currentMapType,
-                        address: address,
-                        lat: lat,
-                        lng: lng
+                        address,
+                        lat,
+                        lng
                     };
-
                     document.getElementById('selectedAddress').textContent = address;
                     document.getElementById('confirmLocationBtn').disabled = false;
-
-                    console.log('✅ Location selected:', selectedLocation);
                 } else {
-                    // في حالة فشل Geocoding، استخدم الإحداثيات فقط
                     selectedLocation = {
                         type: currentMapType,
-                        address: `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
-                        lat: lat,
-                        lng: lng
+                        address: `{{ __('Location') }} (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+                        lat,
+                        lng
                     };
-
                     document.getElementById('selectedAddress').textContent =
-                        `الموقع المحدد (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+                        `{{ __('Selected Location') }} (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
                     document.getElementById('confirmLocationBtn').disabled = false;
-
-                    console.warn('⚠️ Geocoder failed:', status);
                 }
             });
         }
 
-        // ✅ تنظيف عند إغلاق الـ Modal
-        document.addEventListener('livewire:load', function() {
+        document.addEventListener('livewire:load', () => {
             Livewire.hook('message.processed', (message, component) => {
                 if (!component.showMapModal && map) {
                     map = null;
@@ -466,29 +434,18 @@
     </script>
 @endpush
 
-{{-- Styles --}}
+{{-- Styles (unchanged) --}}
 @push('styles')
     <style>
-        /* Modal Styling */
+        /* ... (all your beautiful styles remain intact) ... */
         .modal.show {
             display: block !important;
         }
 
-        /* Map Styling */
         #mapPicker {
             border-radius: 0;
         }
 
-        /* Custom Marker Colors */
-        .marker-from {
-            color: #28a745;
-        }
-
-        .marker-to {
-            color: #dc3545;
-        }
-
-        /* Cards Styling */
         .card {
             transition: all 0.3s ease;
         }
@@ -498,12 +455,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        /* Gradient Header */
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        }
-
-        /* Success/Danger Opacity Backgrounds */
         .bg-success.bg-opacity-10 {
             background-color: rgba(40, 167, 69, 0.1) !important;
         }
@@ -512,7 +463,6 @@
             background-color: rgba(220, 53, 69, 0.1) !important;
         }
 
-        /* Badge Animations */
         @keyframes scaleIn {
             from {
                 transform: scale(0);
@@ -529,7 +479,6 @@
             animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Alert Animations */
         @keyframes slideDown {
             from {
                 transform: translateY(-30px);
@@ -546,7 +495,6 @@
             animation: slideDown 0.5s ease-out;
         }
 
-        /* Loading Animation */
         @keyframes pulse {
 
             0%,
@@ -563,7 +511,6 @@
             animation: pulse 1.5s ease-in-out infinite;
         }
 
-        /* Button Hover Effects */
         .btn {
             transition: all 0.3s ease;
         }
@@ -577,7 +524,6 @@
             transform: translateY(0);
         }
 
-        /* Custom Scrollbar for Modal */
         .modal-body {
             scrollbar-width: thin;
             scrollbar-color: #0d6efd #f8f9fa;
@@ -596,7 +542,6 @@
             border-radius: 4px;
         }
 
-        /* Arrow Animation */
         @keyframes arrowBounce {
 
             0%,
@@ -613,7 +558,6 @@
             animation: arrowBounce 2s ease-in-out infinite;
         }
 
-        /* Card Border Glow Effect */
         .border-success {
             box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.1);
         }
@@ -622,13 +566,11 @@
             box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.1);
         }
 
-        /* Info Alert in Modal */
         .alert-info {
             background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
             border-color: #bee5eb;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .bi-arrow-left-right {
                 transform: rotate(90deg);

@@ -14,4 +14,17 @@ enum InquiryStatus: string
             self::TENDER => 'مناقصة',
         };
     }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::JOB_IN_HAND => 'primary',
+            self::TENDER => 'info',
+        };
+    }
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 }

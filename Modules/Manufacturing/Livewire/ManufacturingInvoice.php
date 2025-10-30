@@ -770,7 +770,7 @@ class ManufacturingInvoice extends Component
             $this->calculateTotals();
             $this->closeLoadTemplateModal();
 
-            $this->dispatch('success', title: 'تم !', text: 'تم تحميل النموذج بنجاح.', icon: 'success');
+            $this->dispatch('success-swal', title: 'تم !', text: 'تم تحميل النموذج بنجاح.', icon: 'success');
         } catch (\Exception $e) {
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',

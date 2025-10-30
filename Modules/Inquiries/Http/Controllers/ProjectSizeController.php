@@ -19,8 +19,13 @@ class ProjectSizeController extends Controller
 
     public function index()
     {
-        $projectSizes = ProjectSize::all();
-        return view('inquiries::project-size.index', compact('projectSizes'));
+        try {
+            $projectSizes = ProjectSize::all();
+            return view('inquiries::project-size.index', compact('projectSizes'));
+        } catch (\Exception $e) {
+            Alert::toast(__('Error loading project sizes'), 'error');
+            return redirect()->back();
+        }
     }
 
     public function create()
@@ -30,30 +35,50 @@ class ProjectSizeController extends Controller
 
     public function store(ProjectSizeRequest $request)
     {
-        ProjectSize::create($request->validated());
-        Alert::toast('تم الانشاء بنجاح', 'success');
-        return redirect()->route('project-size.index');
+        try {
+            ProjectSize::create($request->validated());
+            Alert::toast(__('Project size created successfully'), 'success');
+            return redirect()->route('project-size.index');
+        } catch (\Exception $e) {
+            Alert::toast(__('Error during project size creation'), 'error');
+            return redirect()->back()->withInput();
+        }
     }
 
     public function edit($id)
     {
-        $projectSize = ProjectSize::findOrFail($id);
-        return view('inquiries::project-size.edit', compact('projectSize'));
+        try {
+            $projectSize = ProjectSize::findOrFail($id);
+            return view('inquiries::project-size.edit', compact('projectSize'));
+        } catch (\Exception $e) {
+            Alert::toast(__('Project size not found'), 'error');
+            return redirect()->route('project-size.index');
+        }
     }
 
     public function update(ProjectSizeRequest $request, $id)
     {
-        $projectSize = ProjectSize::findOrFail($id);
-        $projectSize->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
-        return redirect()->route('project-size.index');
+        try {
+            $projectSize = ProjectSize::findOrFail($id);
+            $projectSize->update($request->validated());
+            Alert::toast(__('Project size updated successfully'), 'success');
+            return redirect()->route('project-size.index');
+        } catch (\Exception $e) {
+            Alert::toast(__('Error during project size update'), 'error');
+            return redirect()->back()->withInput();
+        }
     }
 
     public function destroy($id)
     {
-        $projectSize = ProjectSize::findOrFail($id);
-        $projectSize->delete();
-        Alert::toast('تم حذف العنصر بنجاح', 'success');
-        return redirect()->route('project-size.index');
+        try {
+            $projectSize = ProjectSize::findOrFail($id);
+            $projectSize->delete();
+            Alert::toast(__('Project size deleted successfully'), 'success');
+            return redirect()->route('project-size.index');
+        } catch (\Exception $e) {
+            Alert::toast(__('Error during project size deletion'), 'error');
+            return redirect()->back();
+        }
     }
 }

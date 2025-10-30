@@ -64,7 +64,7 @@ class QuotationInfo extends Component
         QuotationType::create(['name' => $this->type_name]);
         $this->loadData();
         $this->resetTypeForm();
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'تمت إضافة النوع بنجاح']);
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => __('Type Added Success')]);
     }
 
     public function editType($id)
@@ -86,7 +86,7 @@ class QuotationInfo extends Component
         $type->update(['name' => $this->type_name]);
         $this->loadData();
         $this->resetTypeForm();
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'تم تعديل النوع بنجاح']);
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => __('Type Updated Success')]);
     }
 
     public function destroyType($id)
@@ -95,7 +95,7 @@ class QuotationInfo extends Component
         $type->units()->delete(); // احذف الوحدات التابعة أولاً (cascade في migration)
         $type->delete();
         $this->loadData();
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'تم حذف النوع ووحداته بنجاح']);
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => __('Type And Units Deleted Success')]);
     }
 
     // CRUD for Quotation Unit
@@ -116,10 +116,13 @@ class QuotationInfo extends Component
             $this->resetUnitForm();
             $this->dispatch('swal:toast', [
                 'type' => 'success',
-                'message' => 'تمت إضافة الوحدة بنجاح',
+                'message' => __('Unit Added Success'),
             ]);
         } catch (\Exception) {
-            session()->flash('message', 'تم إنشاء أمر التصنيع بنجاح!');
+            $this->dispatch('swal:toast', [
+                'type' => 'error',
+                'message' => __('Error Occurred While Adding Unit'),
+            ]);
         }
     }
 
@@ -148,14 +151,14 @@ class QuotationInfo extends Component
         ]);
         $this->loadData();
         $this->resetUnitForm();
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'تم تعديل الوحدة بنجاح']);
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => __('Unit Updated Success')]);
     }
 
     public function destroyUnit($id)
     {
         QuotationUnit::findOrFail($id)->delete();
         $this->loadData();
-        $this->dispatch('swal:toast', ['type' => 'success', 'message' => 'تم حذف الوحدة بنجاح']);
+        $this->dispatch('swal:toast', ['type' => 'success', 'message' => __('Unit Deleted Success')]);
     }
 
     public function render()

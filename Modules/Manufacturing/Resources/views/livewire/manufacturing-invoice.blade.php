@@ -907,19 +907,19 @@
                 });
 
                 // حقل الكمية - الانتقال لحقل السعر
-                // document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
-                //     field.addEventListener('keydown', function(e) {
-                //         if (e.key === 'Enter') {
-                //             e.preventDefault();
-                //             const index = this.id.split('_')[2];
-                //             const nextField = document.getElementById('raw_unit_cost_' + index);
-                //             if (nextField) {
-                //                 nextField.focus();
-                //                 nextField.select();
-                //             }
-                //         }
-                //     });
-                // });
+                document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
+                    field.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const index = this.id.split('_')[2];
+                            const nextField = document.getElementById('raw_unit_cost_' + index);
+                            if (nextField) {
+                                nextField.focus();
+                                nextField.select();
+                            }
+                        }
+                    });
+                });
                 // حقل السعر - الانتقال لحقل البحث
                 document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
                     field.addEventListener('keydown', function(e) {
@@ -1000,49 +1000,34 @@
             };
 
             //alerts
-            document.addEventListener('livewire:init', () => {
-                Livewire.on('success-swal', (data) => {
-                    Swal.fire({
-                        title: data.title,
-                        text: data.text,
-                        icon: data.icon,
-                    }).then((result) => {
-                        location.reload();
-                    });
+            // Alert نجاح
+            Livewire.on('success-swal', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire({
+                    title: d.title || 'تم!',
+                    text: d.text || 'تمت العملية بنجاح',
+                    icon: d.icon || 'success',
+                    confirmButtonText: 'موافق'
+                }).then(() => {
+                    if (d.reload) location.reload();
                 });
-            })
+            });
 
-            document.addEventListener('livewire:init', () => {
-                Livewire.on('success', (data) => {
-                    Swal.fire({
-                        title: data.title,
-                        text: data.text,
-                        icon: data.icon,
-                    })
+            // Alert خطأ
+            Livewire.on('error-swal', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire({
+                    title: d.title || 'خطأ!',
+                    text: d.text || 'حدث خطأ غير متوقع',
+                    icon: d.icon || 'error',
+                    confirmButtonText: 'حسنًا'
                 });
-            })
+            });
 
-            document.addEventListener('livewire:init', () => {
-                console.log('Livewire initialized');
-                Livewire.on('error-swal', (data) => {
-                    console.log('Received error-swal event:', data);
-                    // استخراج الكائن الأول من المصفوفة
-                    const swalData = Array.isArray(data) ? data[0] : data;
-                    if (swalData && swalData.title && swalData.text) {
-                        Swal.fire({
-                            title: swalData.title,
-                            text: swalData.text,
-                            icon: swalData.icon || 'error',
-                        });
-                    } else {
-                        console.error('Invalid data received for error-swal:', data);
-                        Swal.fire({
-                            title: 'خطأ غير معروف',
-                            text: 'حدث خطأ أثناء معالجة البيانات',
-                            icon: 'error',
-                        });
-                    }
-                });
+            // Alert عام (اختياري)
+            Livewire.on('alert-swal', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire(d);
             });
 
             document.addEventListener('DOMContentLoaded', function() {

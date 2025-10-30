@@ -20,9 +20,9 @@ enum KonPriorityEnum: string
     public function color(): string
     {
         return match ($this) {
-            self::LOW => 'success',  // أخضر
-            self::MEDIUM => 'warning', // أصفر
-            self::HIGH => 'danger',   // أحمر
+            self::LOW => 'success',
+            self::MEDIUM => 'warning',
+            self::HIGH => 'danger',
         };
     }
 

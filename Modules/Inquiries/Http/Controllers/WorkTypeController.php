@@ -23,7 +23,7 @@ class WorkTypeController extends Controller
 
             return view('inquiries::work-types.index', compact('workTypes', 'workTypesTree'));
         } catch (Exception $e) {
-            Alert::toast('حدث خطأ في تحميل البيانات', 'error');
+            Alert::toast(__('Error loading data'), 'error');
             return redirect()->back();
         }
     }
@@ -39,22 +39,22 @@ class WorkTypeController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم إنشاء نوع العمل بنجاح',
+                    'message' => __('Work type created successfully'),
                     'workType' => $this->formatWorkTypeForResponse($workType)
                 ]);
             }
 
-            Alert::toast('تم إنشاء نوع العمل بنجاح', 'success');
+            Alert::toast(__('Work type created successfully'), 'success');
             return redirect()->route('work.types.index');
         } catch (Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'حدث خطأ أثناء حفظ نوع العمل'
+                    'message' => __('Error during work type save')
                 ], 500);
             }
 
-            Alert::toast('حدث خطأ أثناء حفظ نوع العمل', 'error');
+            Alert::toast(__('Error during work type save'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -71,11 +71,11 @@ class WorkTypeController extends Controller
                     if ($request->ajax()) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'لا يمكن جعل نوع العمل فرع من نفسه أو من أحد فروعه'
+                            'message' => __('Cannot make work type child of itself or its children')
                         ], 400);
                     }
 
-                    Alert::toast('لا يمكن جعل نوع العمل فرع من نفسه أو من أحد فروعه', 'error');
+                    Alert::toast(__('Cannot make work type child of itself or its children'), 'error');
                     return redirect()->back()->withInput();
                 }
             }
@@ -85,22 +85,22 @@ class WorkTypeController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم تعديل نوع العمل بنجاح',
+                    'message' => __('Work type updated successfully'),
                     'workType' => $this->formatWorkTypeForResponse($workType)
                 ]);
             }
 
-            Alert::toast('تم تعديل نوع العمل بنجاح', 'success');
+            Alert::toast(__('Work type updated successfully'), 'success');
             return redirect()->route('work.types.index');
         } catch (Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'حدث خطأ أثناء تعديل نوع العمل'
+                    'message' => __('Error during work type update')
                 ], 500);
             }
 
-            Alert::toast('حدث خطأ أثناء تعديل نوع العمل', 'error');
+            Alert::toast(__('Error during work type update'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -116,13 +116,13 @@ class WorkTypeController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $childrenCount > 0
-                    ? 'تم حذف نوع العمل و ' . $childrenCount . ' فرع تابع بنجاح'
-                    : 'تم حذف نوع العمل بنجاح'
+                    ? __('Work type and :count child(ren) deleted successfully', ['count' => $childrenCount])
+                    : __('Work type deleted successfully')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حذف نوع العمل'
+                'message' => __('Error during work type delete')
             ], 500);
         }
     }
@@ -138,13 +138,13 @@ class WorkTypeController extends Controller
                 'success' => true,
                 'is_active' => $workType->is_active,
                 'message' => $workType->is_active
-                    ? 'تم تفعيل نوع العمل بنجاح'
-                    : 'تم إلغاء تفعيل نوع العمل بنجاح'
+                    ? __('Work type activated successfully')
+                    : __('Work type deactivated successfully')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تغيير حالة نوع العمل'
+                'message' => __('Error during work type status change')
             ], 500);
         }
     }
@@ -164,7 +164,7 @@ class WorkTypeController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في تحميل بيانات أنواع العمل',
+                'message' => __('Error loading work types data'),
                 'data' => []
             ], 500);
         }
@@ -192,7 +192,7 @@ class WorkTypeController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ في تحميل أنواع العمل',
+                'message' => __('Error loading work types'),
                 'data' => []
             ], 500);
         }

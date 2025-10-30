@@ -5,21 +5,21 @@
             <div class="card-header">
                 <h2 class="card-title mb-0">
                     <i class="fas fa-project-diagram me-2"></i>
-                    بيانات المشروع
+                    {{ __('Project Data') }}
                 </h2>
-                <small class="d-block mt-1">المعلومات الأساسية للمشروع والتواريخ
-                    المهمة</small>
+                <small class="d-block mt-1">{{ __('Basic project information and important dates') }}</small>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 mb-3 d-flex flex-column">
-                        <label class="form-label fw-bold">المشروع</label>
+                        <label class="form-label fw-bold">{{ __('Project') }}</label>
                         <livewire:app::searchable-select :model="Modules\Progress\Models\ProjectProgress::class" label-field="name" wire-model="projectId"
-                            placeholder="ابحث عن المشروع أو أضف جديد..." :key="'project-select'" :selected-id="$projectId" />
+                            placeholder="{{ __('Search for project or add new...') }}" :key="'project-select'"
+                            :selected-id="$projectId" />
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">رقم المناقصة</label>
+                        <label class="form-label fw-bold">{{ __('Tender Number') }}</label>
                         <input type="text" wire:model="tenderNo" class="form-control">
                         @error('tenderNo')
                             <span class="text-danger">{{ $message }}</span>
@@ -27,7 +27,7 @@
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">معرف المناقصة</label>
+                        <label class="form-label fw-bold">{{ __('Tender ID') }}</label>
                         <input type="text" wire:model="tenderId" class="form-control">
                         @error('tenderId')
                             <span class="text-danger">{{ $message }}</span>
@@ -35,7 +35,7 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">ادراج ملف </label>
+                        <label class="form-label fw-bold">{{ __('Attach File') }}</label>
                         <input type="file" wire:model="projectImage" id="projectImage"
                             class="form-control @error('projectImage') is-invalid @enderror">
                         @error('projectImage')
@@ -44,9 +44,9 @@
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">حالة الاستفسار</label>
+                        <label class="form-label fw-bold">{{ __('Inquiry Status') }}</label>
                         <select wire:model="status" class="form-select">
-                            <option value="">اختر الحالة...</option>
+                            <option value="">{{ __('Select status...') }}</option>
                             @foreach ($statusOptions as $status)
                                 <option value="{{ $status->value }}">
                                     {{ $status->label() }}</option>
@@ -58,9 +58,9 @@
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">حالة KON</label>
+                        <label class="form-label fw-bold">{{ __('KON Status') }}</label>
                         <select wire:model="statusForKon" class="form-select">
-                            <option value="">اختر...</option>
+                            <option value="">{{ __('Select...') }}</option>
                             @foreach ($statusForKonOptions as $status)
                                 <option value="{{ $status->value }}">
                                     {{ $status->label() }}</option>
@@ -72,12 +72,11 @@
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">عنوان KON</label>
+                        <label class="form-label fw-bold">{{ __('KON Title') }}</label>
                         <select wire:model="konTitle" class="form-select">
-                            <option value="">اختر العنوان...</option>
+                            <option value="">{{ __('Select title...') }}</option>
                             @foreach ($konTitleOptions as $title)
-                                <option value="{{ $title->value }}">{{ $title->label() }}
-                                </option>
+                                <option value="{{ $title->value }}">{{ $title->label() }}</option>
                             @endforeach
                         </select>
                         @error('konTitle')
@@ -88,7 +87,7 @@
                     <div class="row">
 
                         <div class="col-md-2 mb-3">
-                            <label class="form-label fw-bold">تاريخ الاستفسار</label>
+                            <label class="form-label fw-bold">{{ __('Inquiry Date') }}</label>
                             <input type="date" wire:model="inquiryDate" class="form-control">
                             @error('inquiryDate')
                                 <span class="text-danger">{{ $message }}</span>
@@ -96,7 +95,7 @@
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label class="form-label fw-bold">تاريخ التسليم </label>
+                            <label class="form-label fw-bold">{{ __('Delivery Date') }}</label>
                             <input type="date" wire:model="reqSubmittalDate" class="form-control">
                             @error('reqSubmittalDate')
                                 <span class="text-danger">{{ $message }}</span>
@@ -104,7 +103,7 @@
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label class="form-label fw-bold">تاريخ بدء المشروع</label>
+                            <label class="form-label fw-bold">{{ __('Project Start Date') }}</label>
                             <input type="date" wire:model="projectStartDate" class="form-control">
                             @error('projectStartDate')
                                 <span class="text-danger">{{ $message }}</span>
