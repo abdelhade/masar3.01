@@ -2,38 +2,78 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="user-id" content="{{ auth()->id() }}">
 
-<!-- Favicon -->
-<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
-<!-- External Stylesheets -->
+<link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/dashboard-main.css') }}">
 
 <!-- Lucide Icons CDN -->
 <script src="{{ asset('assets/js/lucide.js') }}"></script>
+
+<style>
+    .header-section {
+        padding: 1.5rem 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .header-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .main-title {
+        margin: 0 !important;
+        font-size: 1.75rem !important;
+    }
+
+    .user-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .search-container {
+        margin: 0 auto;
+        max-width: 600px;
+    }
+
+    @media (max-width: 768px) {
+        .header-top-row {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .user-section {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
 <div class="dashboard-container">
     <div class="header-section">
-        <!-- User Info & Logout -->
-        <div class="user-section">
-            <div class="user-info">
-                <i data-lucide="user" class="user-icon"></i>
-                <span class="user-name">{{ auth()->user()->name ?? 'المستخدم' }}</span>
+        <!-- الصف الأول: العنوان ومعلومات المستخدم -->
+        <div class="header-top-row">
+            <h1 class="main-title">Massar ERP</h1>
+            <div class="user-section">
+                <div class="user-info">
+                    <i data-lucide="user" class="user-icon"></i>
+                    <span class="user-name">{{ auth()->user()->name ?? 'المستخدم' }}</span>
+                </div>
+                <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="logout-btn" title="تسجيل الخروج">
+                        <i data-lucide="log-out" class="logout-icon"></i>
+                        <span class="logout-text">تسجيل الخروج</span>
+                    </button>
+                </form>
             </div>
-            <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="display: inline;">
-                @csrf
-                <button type="submit" class="logout-btn" title="تسجيل الخروج">
-                    <i data-lucide="log-out" class="logout-icon"></i>
-                    <span class="logout-text">تسجيل الخروج</span>
-                </button>
-            </form>
+            
         </div>
 
-        <h1 class="main-title"> Massar ERP</h1>
-        <p class="subtitle">
-            إدارة شاملة وذكية لجميع عملياتك - <span class="highlight-text">سريع</span>،
-            <span class="highlight-text">مرن</span>، و <span class="highlight-text">سهل الاستخدام</span>
-        </p>
+        <!-- الصف الثاني: البحث -->
         <div class="search-container">
             <i data-lucide="search" class="search-icon"></i>
             <input type="text" id="searchInput" class="search-input frst" placeholder="🔍 ابحث عن القسم...">

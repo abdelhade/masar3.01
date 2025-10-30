@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.login')] class extends Component {
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -78,14 +78,199 @@ new #[Layout('components.layouts.auth')] class extends Component {
 <div>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-size: 200% 200%;
-            animation: gradient-shift 15s ease infinite;
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', Tahoma, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .login-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* العمود الأيسر - نموذج تسجيل الدخول */
+        .login-section {
+            flex: 1;
+            background: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Cairo', Tahoma, sans-serif;
+            padding: 3rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .login-content {
+            width: 100%;
+            max-width: 480px;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInRight {
+            0% {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-container {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1.25rem;
+            background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(114, 114, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(114, 114, 255, 0.4);
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .welcome-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.95rem 1.2rem;
+            color: #000;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            background: #f8f9fa;
+        }
+
+        .form-control:hover {
+            border-color: #7272ff;
+            background: #ffffff;
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border-color: #7272ff;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(114, 114, 255, 0.1);
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-check-input {
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+            accent-color: #7272ff;
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            user-select: none;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(114, 114, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(114, 114, 255, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            display: block;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border-right: 4px solid #dc3545;
+        }
+
+        /* العمود الأيمن - معلومات النظام */
+        .info-section {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 15s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: white;
             position: relative;
             overflow: hidden;
         }
@@ -102,10 +287,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
             }
         }
 
-        /* خلفية متحركة خفيفة */
-        body::before {
+        /* خلفية متحركة */
+        .info-section::before {
             content: '';
-            position: fixed;
+            position: absolute;
             top: -50%;
             left: -50%;
             width: 200%;
@@ -129,108 +314,132 @@ new #[Layout('components.layouts.auth')] class extends Component {
             }
         }
 
-        /* دوائر متحركة في الخلفية */
-        body::after {
-            content: '';
-            position: fixed;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            top: -100px;
-            right: -100px;
-            animation: float-circle 15s ease-in-out infinite;
-            z-index: 0;
+        .info-content {
+            position: relative;
+            z-index: 2;
+            max-width: 550px;
+            animation: slideInLeft 0.6s ease-out;
         }
 
-        @keyframes float-circle {
-            0%, 100% {
-                transform: translate(0, 0) scale(1);
-            }
-            50% {
-                transform: translate(-100px, 100px) scale(1.1);
-            }
-        }
-
-        /* Floating particles في الخلفية */
-        .particle {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particle-rise 1.5s ease-out forwards;
-            z-index: 1;
-        }
-
-        @keyframes particle-rise {
+        @keyframes slideInLeft {
             0% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
+                opacity: 0;
+                transform: translateX(30px);
             }
             100% {
-                transform: translateY(-100px) scale(0);
-                opacity: 0;
+                opacity: 1;
+                transform: translateX(0);
             }
         }
 
-        /* Floating shapes في الخلفية */
+        .info-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            line-height: 1.2;
+        }
+
+        .info-description {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .feature-item:nth-child(1) { animation-delay: 0.1s; }
+        .feature-item:nth-child(2) { animation-delay: 0.2s; }
+        .feature-item:nth-child(3) { animation-delay: 0.3s; }
+        .feature-item:nth-child(4) { animation-delay: 0.4s; }
+        .feature-item:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 2rem;
+            right: 3rem;
+            font-size: 0.95rem;
+            opacity: 0.8;
+            z-index: 2;
+        }
+
+        /* Floating shapes */
         .floating-shape {
-            position: fixed;
+            position: absolute;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
             pointer-events: none;
-            z-index: 0;
         }
 
         .floating-shape:nth-child(1) {
-            width: 80px;
-            height: 80px;
+            width: 150px;
+            height: 150px;
             top: 10%;
-            left: 10%;
+            right: 10%;
             animation: float-1 20s ease-in-out infinite;
         }
 
         .floating-shape:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            top: 70%;
-            left: 80%;
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            right: 15%;
             animation: float-2 18s ease-in-out infinite;
             animation-delay: -5s;
         }
 
         .floating-shape:nth-child(3) {
-            width: 100px;
-            height: 100px;
-            top: 40%;
-            left: 85%;
+            width: 80px;
+            height: 80px;
+            top: 60%;
+            right: 5%;
             animation: float-3 22s ease-in-out infinite;
             animation-delay: -10s;
         }
 
-        .floating-shape:nth-child(4) {
-            width: 50px;
-            height: 50px;
-            top: 80%;
-            left: 15%;
-            animation: float-1 16s ease-in-out infinite;
-            animation-delay: -8s;
-        }
-
         @keyframes float-1 {
             0%, 100% {
-                transform: translate(0, 0) rotate(0deg);
-            }
-            25% {
-                transform: translate(30px, -30px) rotate(90deg);
+                transform: translate(0, 0);
             }
             50% {
-                transform: translate(60px, 0) rotate(180deg);
-            }
-            75% {
-                transform: translate(30px, 30px) rotate(270deg);
+                transform: translate(-30px, 30px);
             }
         }
 
@@ -239,7 +448,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 transform: translate(0, 0) scale(1);
             }
             50% {
-                transform: translate(-50px, -50px) scale(1.2);
+                transform: translate(20px, -20px) scale(1.2);
             }
         }
 
@@ -247,420 +456,168 @@ new #[Layout('components.layouts.auth')] class extends Component {
             0%, 100% {
                 transform: translate(0, 0);
             }
-            33% {
-                transform: translate(-40px, 40px);
-            }
-            66% {
-                transform: translate(-80px, -40px);
+            50% {
+                transform: translate(-20px, -30px);
             }
         }
 
-        .login-container {
-            width: 100%;
-            max-width: 950px;
-            padding: 25px;
-            position: relative;
-            z-index: 10;
-            animation: card-entrance 0.6s ease-out;
-        }
-
-        @keyframes card-entrance {
-            0% {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .login-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .login-card:hover {
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
-        }
-
-        .card-header-custom {
-            background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%);
-            padding: 3rem 3rem;
-            text-align: center;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .logo-container {
-            width: 110px;
-            height: 110px;
-            margin: 0 auto 1.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+        .loading-text {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 12px;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 2;
-        }
-
-        .logo-container:hover {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .logo-container img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .app-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            position: relative;
-            z-index: 2;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .app-subtitle {
-            font-size: 1.15rem;
-            opacity: 0.95;
-            position: relative;
-            z-index: 2;
-        }
-
-        .card-body-custom {
-            padding: 3rem 4rem;
-        }
-
-        .form-group {
-            margin-bottom: 2rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.65rem;
-            color: #333;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: color 0.2s ease;
-        }
-
-        .form-label:hover {
-            color: #7272ff;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 1.1rem 1.35rem;
-            color: #000;
-            font-size: 1.05rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-
-        .form-control:hover {
-            border-color: #7272ff;
-        }
-
-        .form-control:focus {
-            background: #f0f9ff;
-            border-color: #7272ff;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(114, 114, 255, 0.1);
-        }
-
-        .form-check {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            margin-bottom: 2rem;
-            padding: 0.65rem 0;
-        }
-
-        .form-check-input {
-            width: 1.25rem;
-            height: 1.25rem;
-            cursor: pointer;
-            accent-color: #7272ff;
-        }
-
-        .form-check-label {
-            cursor: pointer;
-            user-select: none;
-            color: #666;
-            font-size: 1.05rem;
-        }
-
-        .form-check-label:hover {
-            color: #7272ff;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 1.2rem;
-            background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(114, 114, 255, 0.3);
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(114, 114, 255, 0.4);
-            background: linear-gradient(135deg, #8484ff 0%, #6060e8 100%);
-        }
-
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
-        .btn-login:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .invalid-feedback {
-            color: #dc3545;
-            font-size: 1rem;
-            margin-top: 0.65rem;
-            display: block;
-            background: rgba(220, 53, 69, 0.1);
-            padding: 0.65rem 1rem;
-            border-radius: 8px;
-            border-left: 4px solid #dc3545;
-        }
-
-        .card-footer-custom {
-            background: #f8f9fa;
-            padding: 1.25rem;
-            text-align: center;
-            color: #6c757d;
-            font-size: 1rem;
-            border-top: 1px solid #dee2e6;
+            gap: 0.5rem;
         }
 
         .spinner-border-sm {
             width: 1rem;
             height: 1rem;
-            border-width: 0.15em;
-            margin-right: 0.65rem;
-        }
-
-        /* Ripple Effect */
-        .ripple {
-            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            transform: scale(0);
-            animation: ripple-effect 0.6s ease-out;
-            pointer-events: none;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
         }
 
-        @keyframes ripple-effect {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        /* Responsive Design */
+        /* Responsive */
         @media (max-width: 1024px) {
-            .login-container {
-                max-width: 800px;
-                padding: 20px;
+            .login-wrapper {
+                flex-direction: column;
             }
-            
-            .card-body-custom {
-                padding: 2.5rem 3rem;
+
+            .info-section {
+                order: -1;
+                min-height: 40vh;
+            }
+
+            .login-section {
+                min-height: 60vh;
+            }
+
+            .info-title {
+                font-size: 2.5rem;
+            }
+
+            .info-description {
+                font-size: 1.1rem;
+            }
+
+            .feature-item {
+                font-size: 1rem;
             }
         }
 
         @media (max-width: 768px) {
-            .login-container {
-                max-width: 650px;
-                padding: 18px;
-            }
-            
-            .card-header-custom {
-                padding: 2.5rem 2rem;
-            }
-            
-            .card-body-custom {
-                padding: 2.25rem 2.5rem;
-            }
-            
-            .logo-container {
-                width: 95px;
-                height: 95px;
-            }
-            
-            .app-title {
-                font-size: 1.75rem;
-            }
-            
-            .app-subtitle {
-                font-size: 1.05rem;
+            .info-section {
+                min-height: 35vh;
+                padding: 2rem;
             }
 
-            .form-label {
-                font-size: 1.05rem;
+            .login-section {
+                padding: 2rem;
             }
 
-            .form-control {
-                padding: 1rem 1.2rem;
+            .info-title {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+
+            .info-description {
                 font-size: 1rem;
+                margin-bottom: 2rem;
             }
 
-            .btn-login {
-                padding: 1.1rem;
-                font-size: 1.1rem;
+            .features-list {
+                display: none;
+            }
+
+            .footer-text {
+                font-size: 0.85rem;
+                bottom: 1rem;
+                right: 2rem;
             }
         }
 
         @media (max-width: 576px) {
-            .login-container {
-                max-width: 100%;
-                padding: 12px;
-            }
-            
-            .card-header-custom {
-                padding: 2rem 1.5rem;
-            }
-            
-            .card-body-custom {
-                padding: 2rem 1.75rem;
-            }
-            
-            .logo-container {
-                width: 85px;
-                height: 85px;
-            }
-            
-            .app-title {
-                font-size: 1.5rem;
-            }
-            
-            .app-subtitle {
-                font-size: 0.95rem;
-            }
-            
-            .form-label {
-                font-size: 1rem;
+            .login-section {
+                padding: 1.5rem;
             }
 
-            .form-control {
-                padding: 0.95rem 1.1rem;
-                font-size: 0.98rem;
+            .info-section {
+                padding: 1.5rem;
             }
 
-            .form-check-input {
-                width: 1.15rem;
-                height: 1.15rem;
-            }
-
-            .form-check-label {
-                font-size: 1rem;
-            }
-            
-            .btn-login {
-                padding: 1rem;
-                font-size: 1.05rem;
-            }
-
-            .invalid-feedback {
-                font-size: 0.95rem;
-            }
-
-            .card-footer-custom {
-                padding: 1rem;
-                font-size: 0.95rem;
-            }
-        }
-
-        @media (max-width: 420px) {
-            .login-container {
-                padding: 10px;
-            }
-
-            .card-header-custom {
-                padding: 1.75rem 1.25rem;
-            }
-
-            .card-body-custom {
-                padding: 1.75rem 1.5rem;
+            .welcome-text {
+                font-size: 1.75rem;
             }
 
             .logo-container {
-                width: 75px;
-                height: 75px;
+                width: 70px;
+                height: 70px;
             }
 
-            .app-title {
-                font-size: 1.35rem;
-            }
-
-            .app-subtitle {
-                font-size: 0.9rem;
-            }
-
-            .form-group {
-                margin-bottom: 1.5rem;
-            }
-
-            .form-label {
-                font-size: 0.95rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .form-control {
-                padding: 0.85rem 1rem;
-                font-size: 0.95rem;
-            }
-
-            .btn-login {
-                padding: 0.95rem;
-                font-size: 1rem;
+            .info-title {
+                font-size: 1.75rem;
             }
         }
     </style>
 
-    <!-- Floating shapes في الخلفية -->
-    <div class="floating-shape"></div>
-    <div class="floating-shape"></div>
-    <div class="floating-shape"></div>
-    <div class="floating-shape"></div>
+    <div class="login-wrapper">
+        <!-- العمود الأيمن - المعلومات -->
+        <div class="info-section">
+            <div class="floating-shape"></div>
+            <div class="floating-shape"></div>
+            <div class="floating-shape"></div>
+            
+            <div class="info-content">
+                <h1 class="info-title">مرحباً بك في نظام مسار</h1>
+                <p class="info-description">
+                    نظام إدارة شامل ومتكامل لإدارة جميع عمليات مشروعك بكفاءة وسهولة
+                </p>
 
-    <div class="login-container">
-        <div class="login-card">
-            <!-- Header -->
-            <div class="card-header-custom">
-                <div class="logo-container">
-                    <img src="{{ asset('assets/images/masarlogo.jpg') }}" alt="Logo">
-                </div>
-                <h1 class="app-title">مسار لإدارة المشاريع</h1>
-                <p class="app-subtitle">سجل الدخول للمتابعة</p>
+                <ul class="features-list">
+                    <li class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div>إدارة متقدمة للحسابات والمالية</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">📦</div>
+                        <div>نظام مخزون ذكي ومتطور</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">👥</div>
+                        <div>إدارة الموارد البشرية والرواتب</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">🚀</div>
+                        <div>متابعة المشاريع والتقدم اليومي</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon">📈</div>
+                        <div>تقارير تفصيلية وتحليلات دقيقة</div>
+                    </li>
+                </ul>
             </div>
 
-            <!-- Body -->
-            <div class="card-body-custom">
+            <div class="footer-text">
+                نظام مسار © {{ date('Y') }}
+            </div>
+        </div>
+
+        <!-- العمود الأيسر - تسجيل الدخول -->
+        <div class="login-section">
+            <div class="login-content">
+                <div class="logo-section">
+                    <div class="logo-container">
+                        <img src="{{ asset('assets/images/masarlogo.jpg') }}" alt="Logo">
+                    </div>
+                    <h2 class="welcome-text">تسجيل الدخول</h2>
+                    <p class="welcome-subtitle">أدخل بياناتك للوصول إلى لوحة التحكم</p>
+                </div>
+
                 <form wire:submit.prevent="login" autocomplete="on">
                     <!-- Email -->
                     <div class="form-group">
@@ -711,76 +668,13 @@ new #[Layout('components.layouts.auth')] class extends Component {
                         <span wire:loading.remove wire:target="login">
                             تسجيل الدخول
                         </span>
-                        <span wire:loading wire:target="login" class="d-flex align-items-center justify-content-center">
-                            <span class="spinner-border spinner-border-sm"></span>
-                            جارِ تسجيل الدخول...
+                        <span wire:loading wire:target="login" class="loading-text">
+                            جارِ تسجيل الدخول
+                            <span class="spinner-border-sm"></span>
                         </span>
                     </button>
                 </form>
             </div>
-
-            <!-- Footer -->
-            <div class="card-footer-custom">
-                نظام مسار © {{ date('Y') }}
-            </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ripple effect على الزر فقط
-            const btnLogin = document.querySelector('.btn-login');
-            if (btnLogin) {
-                btnLogin.addEventListener('click', function(e) {
-                    createRipple(e, this);
-                    // إضافة بعض الـ particles عند الضغط
-                    createParticles(e.clientX, e.clientY, 8);
-                });
-            }
-
-            // دالة Ripple بسيطة
-            function createRipple(event, element) {
-                const ripple = document.createElement('span');
-                ripple.classList.add('ripple');
-                
-                const rect = element.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = event.clientX - rect.left - size / 2;
-                const y = event.clientY - rect.top - size / 2;
-                
-                ripple.style.width = ripple.style.height = size + 'px';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                
-                element.appendChild(ripple);
-                
-                setTimeout(() => ripple.remove(), 600);
-            }
-
-            // دالة Particles مبسطة
-            function createParticles(x, y, count) {
-                for (let i = 0; i < count; i++) {
-                    const particle = document.createElement('div');
-                    particle.classList.add('particle');
-                    
-                    const angle = (Math.PI * 2 * i) / count;
-                    const velocity = 40 + Math.random() * 30;
-                    const size = 4 + Math.random() * 3;
-                    
-                    particle.style.width = size + 'px';
-                    particle.style.height = size + 'px';
-                    particle.style.left = x + 'px';
-                    particle.style.top = y + 'px';
-                    
-                    const translateX = Math.cos(angle) * velocity;
-                    const translateY = Math.sin(angle) * velocity;
-                    particle.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                    
-                    document.body.appendChild(particle);
-                    
-                    setTimeout(() => particle.remove(), 1500);
-                }
-            }
-        });
-    </script>
 </div>

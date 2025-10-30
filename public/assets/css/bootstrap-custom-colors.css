@@ -3,42 +3,42 @@
    ======================================== */
 :root {
     /* Primary - بنفسجي */
-    --bs-primary: #6a39a1;
+    --bs-primary: #667eea;
     --bs-primary-rgb: 114, 114, 255;
-    --bs-primary-bg-subtle: #f8f8f8;
-    --bs-primary-border-subtle: #fec7fb;
-    --bs-primary-text-emphasis: #8838ca;
+    --bs-primary-bg-subtle: #ffeecc;
+    --bs-primary-border-subtle: #667eea;
+    --bs-primary-text-emphasis: #667eea;
 
     /* Danger - أحمر */
-    --bs-danger: #f84a05;
+    --bs-danger: #ff2600;
     --bs-danger-rgb: 239, 68, 68;
     --bs-danger-bg-subtle: #fee2e2;
-    --bs-danger-border-subtle: #fecaca;
-    --bs-danger-text-emphasis: #991b1b;
+    --bs-danger-border-subtle: #ff2600;
+    --bs-danger-text-emphasis: #ff2600;
 
     /* Warning - برتقالي/ذهبي */
     --bs-warning: #ff7300;
     --bs-warning-rgb: 245, 158, 11;
     --bs-warning-bg-subtle: #fef3c7;
-    --bs-warning-border-subtle: #fff5cf;
-    --bs-warning-text-emphasis: #773003;
+    --bs-warning-border-subtle: #ff7300;
+    --bs-warning-text-emphasis: #ff7300;
 
     /* Success - أخضر */
-    --bs-success: #b3ff00;
+    --bs-success: #00e632;
     --bs-success-rgb: 16, 185, 129;
     --bs-success-bg-subtle: #d1fae5;
-    --bs-success-border-subtle: #a7f3d0;
-    --bs-success-text-emphasis: #065f46;
+    --bs-success-border-subtle: #00e632;
+    --bs-success-text-emphasis: #00e632;
 
     /* Info - أزرق */
-    --bs-info: #3b82f6;
+    --bs-info: #01a085;
     --bs-info-rgb: 59, 130, 246;
     --bs-info-bg-subtle: #dbeafe;
-    --bs-info-border-subtle: #bfdbfe;
-    --bs-info-text-emphasis: #1e40af;
+    --bs-info-border-subtle: #01a085;
+    --bs-info-text-emphasis: #01a085;
 
     /* Secondary - رمادي */
-    --bs-secondary: #cacbce;
+    --bs-secondary: #9b9b9b;
     --bs-secondary-rgb: 107, 114, 128;
     --bs-secondary-bg-subtle: #f3f4f6;
     --bs-secondary-border-subtle: #181d27;
@@ -54,8 +54,8 @@
     border-color: var(--bs-primary) !important;
 }
 .btn-primary:hover { 
-    background-color: #5050d8 !important; 
-    border-color: #5050d8 !important;
+    background-color: #86004e !important; 
+    border-color: #86004e !important;
 }
 
 .text-danger { color: var(--bs-danger) !important; }
