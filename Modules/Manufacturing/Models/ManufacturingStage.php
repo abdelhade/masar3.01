@@ -3,8 +3,6 @@
 namespace Modules\Manufacturing\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Modules\Branches\Models\Branch;
 
 class ManufacturingStage extends Model
@@ -21,18 +19,12 @@ class ManufacturingStage extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * العلاقة مع الفرع
-     */
-    public function branch(): BelongsTo
+    public function branch()
     {
         return $this->belongsTo(Branch::class);
     }
 
-    /**
-     * العلاقة مع أوامر التصنيع
-     */
-    public function orders(): BelongsToMany
+    public function orders()
     {
         return $this->belongsToMany(
             ManufacturingOrder::class,
@@ -42,7 +34,7 @@ class ManufacturingStage extends Model
         )
             ->withPivot([
                 'order',
-                'cost',
+                'quantity',
                 'estimated_duration',
                 'actual_duration',
                 'status',
@@ -55,17 +47,11 @@ class ManufacturingStage extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Scope للمراحل النشطة
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Scope للترتيب
-     */
     public function scopeOrdered($query)
     {
         return $query->orderBy('order', 'asc');

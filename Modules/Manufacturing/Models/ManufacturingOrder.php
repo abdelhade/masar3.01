@@ -16,39 +16,31 @@ class ManufacturingOrder extends Model
         'status',
         'description',
         'item_id',
-        'total_cost',
         'estimated_duration',
         'is_template',
     ];
 
     protected $casts = [
         'is_template' => 'boolean',
-        'total_cost' => 'decimal:2',
         'estimated_duration' => 'decimal:2',
     ];
 
-    /**
-     * العلاقة مع الفرع
-     */
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
     }
 
-    /**
-     * العلاقة مع المراحل
-     */
     public function stages(): BelongsToMany
     {
         return $this->belongsToMany(
             ManufacturingStage::class,
-            'manufacturing_order_stage', // اسم الجدول الوسيط
+            'manufacturing_order_stage',
             'manufacturing_order_id',
             'manufacturing_stage_id'
         )
             ->withPivot([
                 'order',
-                'cost',
+                'quantity',
                 'estimated_duration',
                 'actual_duration',
                 'status',
@@ -59,22 +51,15 @@ class ManufacturingOrder extends Model
                 'assigned_to'
             ])
             ->withTimestamps()
-            ->orderBy('manufacturing_order_stage.order', 'asc'); // ⬅️ مهم جداً: اسم الجدول الصحيح
+            ->orderBy('manufacturing_order_stage.order', 'asc');
     }
 
-    /**
-     * حساب الإجماليات
-     */
     public function calculateTotals(): void
     {
-        $this->total_cost = $this->stages()->sum('manufacturing_order_stage.cost');
         $this->estimated_duration = $this->stages()->sum('manufacturing_order_stage.estimated_duration');
         $this->save();
     }
 
-    /**
-     * توليد رقم أمر تلقائي
-     */
     public static function generateOrderNumber(): string
     {
         $year = date('Y');
@@ -87,17 +72,11 @@ class ManufacturingOrder extends Model
         return 'MO-' . $year . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Scope للقوالب فقط
-     */
     public function scopeTemplates($query)
     {
         return $query->where('is_template', true);
     }
 
-    /**
-     * Scope للأوامر فقط (مش قوالب)
-     */
     public function scopeOrders($query)
     {
         return $query->where('is_template', false);

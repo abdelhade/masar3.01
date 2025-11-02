@@ -7,8 +7,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use Modules\Branches\Models\Branch;
-use Modules\Manufacturing\Models\ManufacturingOrder;
-use Modules\Manufacturing\Models\ManufacturingStage;
+use Modules\Manufacturing\Models\{ManufacturingOrder, ManufacturingStage};
 use Modules\Manufacturing\Enums\ManufacturingStageStatus;
 
 class ManufacturingOrderManager extends Component
@@ -41,13 +40,37 @@ class ManufacturingOrderManager extends Component
             'description' => 'nullable|string|max:1000',
             'status' => 'required|in:draft,in_progress,completed,cancelled',
             'template_name' => 'nullable|string|required_if:is_template,true|max:255',
-            'selected_stages' => 'array|min:1',
+            'selected_stages' => 'required|array|min:1',
             'selected_stages.*.id' => 'required|exists:manufacturing_stages,id',
-            'selected_stages.*.cost' => 'required|numeric|min:0',
+            'selected_stages.*.quantity' => 'required|integer|min:0',
             'selected_stages.*.estimated_duration' => 'required|numeric|min:0',
             'selected_stages.*.status' => 'required|in:' . implode(',', array_column(ManufacturingStageStatus::cases(), 'value')),
             'selected_stages.*.notes' => 'nullable|string|max:500',
         ];
+    }
+
+    public function messages()
+    {
+        return [
+            'order_number.required' => 'رقم الأمر مطلوب',
+            'branch_id.required' => 'يجب اختيار الفرع',
+            'branch_id.exists' => 'الفرع المختار غير موجود',
+            'item_id.required' => 'يجب اختيار الصنف/المنتج',
+            'item_id.exists' => 'الصنف المختار غير موجود',
+            'selected_stages.required' => 'يجب إضافة مرحلة واحدة على الأقل',
+            'selected_stages.min' => 'يجب إضافة مرحلة واحدة على الأقل',
+            'selected_stages.*.quantity.required' => 'الكمية مطلوبة',
+            'selected_stages.*.quantity.integer' => 'الكمية يجب أن تكون رقم صحيح',
+            'selected_stages.*.quantity.min' => 'الكمية يجب أن تكون صفر أو أكثر',
+            'selected_stages.*.estimated_duration.required' => 'المدة المقدرة مطلوبة',
+            'selected_stages.*.estimated_duration.numeric' => 'المدة المقدرة يجب أن تكون رقم',
+            'selected_stages.*.estimated_duration.min' => 'المدة المقدرة يجب أن تكون صفر أو أكثر',
+        ];
+    }
+
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName);
     }
 
     public function mount()
@@ -69,7 +92,11 @@ class ManufacturingOrderManager extends Component
     {
         $this->validate();
 
-        // dd($this->item_id);
+        if (empty($this->selected_stages)) {
+            session()->flash('error', 'يجب إضافة مرحلة واحدة على الأقل!');
+            return;
+        }
+
         DB::transaction(function () {
             $order = ManufacturingOrder::create([
                 'order_number' => $this->order_number,
@@ -79,14 +106,13 @@ class ManufacturingOrderManager extends Component
                 'status' => $this->status,
                 'is_template' => $this->is_template,
                 'template_name' => $this->is_template ? $this->template_name : null,
-                'total_cost' => 0,
                 'estimated_duration' => 0,
             ]);
 
             foreach ($this->selected_stages as $index => $stageData) {
                 $order->stages()->attach($stageData['id'], [
                     'order' => $index + 1,
-                    'cost' => $stageData['cost'],
+                    'quantity' => $stageData['quantity'],
                     'estimated_duration' => $stageData['estimated_duration'],
                     'is_active' => true,
                     'status' => $stageData['status'] ?? ManufacturingStageStatus::PENDING->value,
@@ -153,6 +179,7 @@ class ManufacturingOrderManager extends Component
         $this->order_id = null;
         $this->order_number = ManufacturingOrder::generateOrderNumber();
         $this->branch_id = $template->branch_id;
+        $this->item_id = $template->item_id;
         $this->description = $template->description;
         $this->status = 'draft';
 
@@ -160,7 +187,7 @@ class ManufacturingOrderManager extends Component
             return [
                 'id' => $stage->id,
                 'name' => $stage->name,
-                'cost' => $stage->pivot->cost ?? 0,
+                'quantity' => $stage->pivot->quantity ?? 0,
                 'estimated_duration' => $stage->pivot->estimated_duration ?? 0,
                 'status' => ManufacturingStageStatus::PENDING->value,
                 'notes' => $stage->pivot->notes ?? null,
@@ -177,6 +204,7 @@ class ManufacturingOrderManager extends Component
         $this->order_id = $order->id;
         $this->order_number = $order->order_number;
         $this->branch_id = $order->branch_id;
+        $this->item_id = $order->item_id;
         $this->description = $order->description;
         $this->status = $order->status;
         $this->is_template = $order->is_template;
@@ -186,7 +214,7 @@ class ManufacturingOrderManager extends Component
             return [
                 'id' => $stage->id,
                 'name' => $stage->name,
-                'cost' => $stage->pivot->cost ?? 0,
+                'quantity' => $stage->pivot->quantity ?? 0,
                 'estimated_duration' => $stage->pivot->estimated_duration ?? 0,
                 'status' => $stage->pivot->status ?? ManufacturingStageStatus::PENDING->value,
                 'notes' => $stage->pivot->notes ?? null,
@@ -205,6 +233,7 @@ class ManufacturingOrderManager extends Component
             $order->update([
                 'order_number' => $this->order_number,
                 'branch_id' => $this->branch_id,
+                'item_id' => $this->item_id,
                 'description' => $this->description,
                 'status' => $this->status,
                 'is_template' => $this->is_template,
@@ -216,7 +245,7 @@ class ManufacturingOrderManager extends Component
             foreach ($this->selected_stages as $index => $stageData) {
                 $order->stages()->attach($stageData['id'], [
                     'order' => $index + 1,
-                    'cost' => $stageData['cost'],
+                    'quantity' => $stageData['quantity'],
                     'estimated_duration' => $stageData['estimated_duration'],
                     'is_active' => true,
                     'status' => $stageData['status'] ?? ManufacturingStageStatus::PENDING->value,
@@ -265,7 +294,7 @@ class ManufacturingOrderManager extends Component
         $this->selected_stages[] = [
             'id' => $stage->id,
             'name' => $stage->name,
-            'cost' => 0,
+            'quantity' => 0,
             'estimated_duration' => 0,
             'status' => ManufacturingStageStatus::PENDING->value,
             'notes' => null,
@@ -292,7 +321,7 @@ class ManufacturingOrderManager extends Component
 
         if ($this->view_mode === 'stages' && $this->viewing_order_id) {
             $data['viewing_order'] = ManufacturingOrder::with(['stages' => function ($query) {
-                $query->orderBy('manufacturing_order_stage.order'); // ⬅️ صححنا الاسم هنا
+                $query->orderBy('manufacturing_order_stage.order');
             }])->findOrFail($this->viewing_order_id);
         }
 

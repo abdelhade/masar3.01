@@ -1,8 +1,36 @@
 <div>
     <div class="container-fluid">
         {{-- Alert Messages --}}
+        @if (session()->has('message'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="las la-check-circle me-2"></i>
+                {{ session('message') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session()->has('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="las la-exclamation-circle me-2"></i>
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="las la-exclamation-triangle me-2"></i>
+                <strong>يوجد أخطاء في النموذج:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        {{-- Stage Management View --}}
         @if ($view_mode === 'stages' && isset($viewing_order))
-            {{-- Stage Management View --}}
             <div class="row">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
@@ -12,7 +40,8 @@
                                     <i class="las la-tasks me-2"></i>
                                     مراحل أمر التصنيع: {{ $viewing_order->order_number }}
                                 </h4>
-                                <small class="opacity-75">الفرع: {{ $viewing_order->branch->name ?? '-' }}</small>
+                                <small class="opacity-75">الفرع:
+                                    {{ $viewing_order->branch->name ?? '-' }}</small>
                             </div>
                             <button wire:click="backToList" class="btn btn-light btn-sm">
                                 <i class="las la-arrow-right me-1"></i> رجوع
@@ -24,13 +53,14 @@
                             <div class="row g-0 border-bottom">
                                 <div class="col-md-3 border-end p-3 text-center">
                                     <div class="text-muted small mb-1">إجمالي المراحل</div>
-                                    <div class="fs-3 fw-bold text-primary">{{ $viewing_order->stages->count() }}</div>
+                                    <div class="fs-3 fw-bold text-primary">{{ $viewing_order->stages->count() }}
+                                    </div>
                                 </div>
                                 <div class="col-md-3 border-end p-3 text-center">
-                                    <div class="text-muted small mb-1">إجمالي التكلفة</div>
+                                    <div class="text-muted small mb-1">إجمالي الكمية</div>
                                     <div class="fs-3 fw-bold text-success">
-                                        {{ number_format($viewing_order->total_cost) }}</div>
-                                    <small class="text-muted">جنيه</small>
+                                        {{ number_format($viewing_order->stages->sum('pivot.quantity')) }}
+                                    </div>
                                 </div>
                                 <div class="col-md-3 border-end p-3 text-center">
                                     <div class="text-muted small mb-1">المدة المقدرة</div>
@@ -83,7 +113,8 @@
                                                     </div>
                                                     @if (!$loop->last)
                                                         <div class="timeline-line bg-{{ $isCompleted ? 'success' : 'secondary' }}"
-                                                            style="width: 3px; height: 80px; margin: 5px auto;"></div>
+                                                            style="width: 3px; height: 80px; margin: 5px auto;">
+                                                        </div>
                                                     @endif
                                                 </div>
 
@@ -107,10 +138,19 @@
                                                                     @endif
                                                                     <div class="d-flex gap-3 flex-wrap">
                                                                         <span class="badge bg-light text-dark">
-                                                                            <i class="las la-money-bill me-1"></i>
-                                                                            {{ number_format($stage->pivot->cost) }}
-                                                                            جنيه
+                                                                            <i class="las la-bullseye me-1"></i>
+                                                                            الكمية المستهدفة:
+                                                                            {{ number_format($stage->pivot->quantity) }}
                                                                         </span>
+
+                                                                        @if ($stage->pivot->final_quantity !== null)
+                                                                            <span
+                                                                                class="badge bg-{{ $stage->pivot->final_quantity >= $stage->pivot->quantity ? 'success' : 'danger' }} text-white">
+                                                                                <i class="las la-check-circle me-1"></i>
+                                                                                الكمية النهائية:
+                                                                                {{ number_format($stage->pivot->final_quantity) }}
+                                                                            </span>
+                                                                        @endif
                                                                         <span class="badge bg-light text-dark">
                                                                             <i class="las la-clock me-1"></i>
                                                                             {{ number_format($stage->pivot->estimated_duration, 1) }}
@@ -189,8 +229,11 @@
                                     <div class="col-md-3">
                                         <livewire:app::searchable-select :model="App\Models\Item::class" label-field="name"
                                             :selected-id="$item_id" wire-model="item_id" label="الصنف/المنتج"
-                                            placeholder="ابحث عن الصنف أو أضف جديد..." :key="'product-select-' . $order_id"
+                                            placeholder="ابحث عن الصنف أو أضف جديد..." :key="'product-select-' . ($order_id ?? 'new') . '-' . $item_id"
                                             :additional-data="['code' => $this->generateItemCode()]" />
+                                        @error('item_id')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
 
                                     <div class="col-md-3">
@@ -201,7 +244,8 @@
                                             class="form-select @error('branch_id') is-invalid @enderror">
                                             <option value="">اختر الفرع</option>
                                             @foreach ($branches as $branch)
-                                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                                <option value="{{ $branch->id }}">{{ $branch->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         @error('branch_id')
@@ -254,7 +298,8 @@
                                                             placeholder="اسم القالب"
                                                             class="form-control @error('template_name') is-invalid @enderror">
                                                         @error('template_name')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                            <div class="invalid-feedback">{{ $message }}
+                                                            </div>
                                                         @enderror
                                                     </div>
                                                 @endif
@@ -308,7 +353,8 @@
                                                         <i class="las la-plus-circle"></i> اختر مرحلة لإضافتها
                                                     </option>
                                                     @foreach ($available_stages as $stage)
-                                                        <option value="{{ $stage->id }}">{{ $stage->name }}
+                                                        <option value="{{ $stage->id }}">
+                                                            {{ $stage->name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -321,7 +367,8 @@
                                                 <i class="las la-info-circle fs-3 me-3"></i>
                                                 <div>
                                                     <strong>لم يتم إضافة مراحل بعد</strong>
-                                                    <p class="mb-0 small">يرجى اختيار مرحلة واحدة على الأقل من القائمة
+                                                    <p class="mb-0 small">يرجى اختيار مرحلة واحدة على الأقل من
+                                                        القائمة
                                                         أعلاه</p>
                                                 </div>
                                             </div>
@@ -332,7 +379,7 @@
                                                         <tr>
                                                             <th width="5%" class="text-center">#</th>
                                                             <th width="25%">المرحلة</th>
-                                                            <th width="15%">التكلفة (جنيه)</th>
+                                                            <th width="15%">الكمية المستهدفة</th>
                                                             <th width="15%">المدة (ساعات)</th>
                                                             <th width="20%">الحالة</th>
                                                             <th width="15%">ملاحظات</th>
@@ -352,11 +399,12 @@
                                                                 </td>
                                                                 <td>
                                                                     <input
-                                                                        wire:model="selected_stages.{{ $index }}.cost"
-                                                                        type="number" step="0.01" min="0"
-                                                                        class="form-control form-control-sm @error('selected_stages.' . $index . '.cost') is-invalid @enderror">
-                                                                    @error('selected_stages.' . $index . '.cost')
-                                                                        <div class="invalid-feedback">{{ $message }}
+                                                                        wire:model="selected_stages.{{ $index }}.quantity"
+                                                                        type="number" min="0"
+                                                                        class="form-control form-control-sm @error('selected_stages.' . $index . '.quantity') is-invalid @enderror">
+                                                                    @error('selected_stages.' . $index . '.quantity')
+                                                                        <div class="invalid-feedback">
+                                                                            {{ $message }}
                                                                         </div>
                                                                     @enderror
                                                                 </td>
@@ -367,7 +415,8 @@
                                                                         class="form-control form-control-sm @error('selected_stages.' . $index . '.estimated_duration') is-invalid @enderror">
                                                                     @error('selected_stages.' . $index .
                                                                         '.estimated_duration')
-                                                                        <div class="invalid-feedback">{{ $message }}
+                                                                        <div class="invalid-feedback">
+                                                                            {{ $message }}
                                                                         </div>
                                                                     @enderror
                                                                 </td>
@@ -381,7 +430,8 @@
                                                                         @endforeach
                                                                     </select>
                                                                     @error('selected_stages.' . $index . '.status')
-                                                                        <div class="invalid-feedback">{{ $message }}
+                                                                        <div class="invalid-feedback">
+                                                                            {{ $message }}
                                                                         </div>
                                                                     @enderror
                                                                 </td>
@@ -406,8 +456,7 @@
                                                         <tr class="fw-bold">
                                                             <td colspan="2" class="text-end">الإجمالي:</td>
                                                             <td class="text-primary">
-                                                                {{ number_format(collect($selected_stages)->sum('cost')) }}
-                                                                جنيه
+                                                                {{ number_format(collect($selected_stages)->sum('quantity')) }}
                                                             </td>
                                                             <td class="text-info">
                                                                 {{ number_format(collect($selected_stages)->sum('estimated_duration'), 2) }}
@@ -457,7 +506,7 @@
                                             <th>الفرع</th>
                                             <th class="text-center">الحالة</th>
                                             <th class="text-center">عدد المراحل</th>
-                                            <th class="text-end">إجمالي التكلفة</th>
+                                            <th class="text-end">الكميه</th>
                                             <th class="text-end">المدة المقدرة</th>
                                             <th class="text-center">الإجراءات</th>
                                         </tr>
@@ -502,8 +551,7 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <strong
-                                                        class="text-success">{{ number_format($order->total_cost) }}</strong>
-                                                    <small class="text-muted">جنيه</small>
+                                                        class="text-success">{{ number_format($order->stages->sum('pivot.quantity')) }}</strong>
                                                 </td>
                                                 <td class="text-end">
                                                     <strong
@@ -521,8 +569,7 @@
                                                             <i class="las la-edit"></i>
                                                         </button>
                                                         <button wire:click="deleteOrder({{ $order->id }})"
-                                                            class="btn btn-sm btn-danger" title="حذف"
-                                                            onclick="return confirm('هل أنت متأكد من حذف هذا الأمر؟')">
+                                                            class="btn btn-sm btn-danger">
                                                             <i class="las la-trash"></i>
                                                         </button>
                                                     </div>
@@ -617,72 +664,73 @@
             });
         </script>
     @endpush
-
-    <style>
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .bg-gradient-dark {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        }
-
-        .timeline-badge {
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9);
-            position: relative;
-            z-index: 2;
-        }
-
-        .timeline-line {
-            opacity: 0.3;
-            transition: all 0.3s ease;
-        }
-
-        .card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .table tbody tr {
-            transition: background-color 0.2s ease;
-        }
-
-        .table tbody tr:hover {
-            background-color: rgba(0, 123, 255, 0.05);
-        }
-
-        .btn-group .btn {
-            margin: 0 2px;
-        }
-
-        .timeline-item {
-            animation: fadeInUp 0.5s ease;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+    @push('styles')
+        <style>
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .bg-gradient-dark {
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             }
-        }
 
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
+            .timeline-badge {
+                box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9);
+                position: relative;
+                z-index: 2;
+            }
 
-        .badge {
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-    </style>
+            .timeline-line {
+                opacity: 0.3;
+                transition: all 0.3s ease;
+            }
+
+            .card {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-2px);
+            }
+
+            .table tbody tr {
+                transition: background-color 0.2s ease;
+            }
+
+            .table tbody tr:hover {
+                background-color: rgba(0, 123, 255, 0.05);
+            }
+
+            .btn-group .btn {
+                margin: 0 2px;
+            }
+
+            .timeline-item {
+                animation: fadeInUp 0.5s ease;
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+
+            .badge {
+                font-weight: 500;
+                letter-spacing: 0.3px;
+            }
+        </style>
+    @endpush
 </div>
