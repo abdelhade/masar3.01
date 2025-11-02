@@ -25,7 +25,7 @@
                             </div>
                         @endif
                     @endif
-                    <div class="col-lg-4 mb-3" style="position: relative;">
+                    <div class="col-lg-3 mb-3" style="position: relative;">
                         <label>ابحث عن صنف</label>
                         <input type="text" wire:model.live="searchTerm" class="form-control frst"
                             placeholder="ابدأ بكتابة اسم الصنف..." autocomplete="off"
@@ -71,7 +71,7 @@
                     @if (setting('invoice_select_price_type'))
                         {{-- اختيار نوع السعر العام للفاتورة --}}
                         @if (in_array($type, [10, 12, 14, 16, 22]))
-                            <div class="col-lg-1">
+                            <div class="col-lg-2">
                                 <label for="selectedPriceType">{{ __('اختر نوع السعر للفاتورة') }}</label>
                                 <select wire:model.live="selectedPriceType"
                                     class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">

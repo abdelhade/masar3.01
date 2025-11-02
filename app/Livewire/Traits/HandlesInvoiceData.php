@@ -115,15 +115,18 @@ trait HandlesInvoiceData
 
         $invoiceData = $convertData['invoice_data'];
 
-        // نقل البيانات الأساسية
-        $this->acc1_id = $invoiceData['client_id'] ?? $this->acc1_id;
+        // ✅ نقل جميع البيانات الأساسية
+        $this->acc1_id = $invoiceData['supplier_id'] ?? $invoiceData['client_id'] ?? $this->acc1_id;
         $this->acc2_id = $invoiceData['store_id'] ?? $this->acc2_id;
         $this->emp_id = $invoiceData['employee_id'] ?? $this->emp_id;
+        $this->delivery_id = $invoiceData['delivery_id'] ?? $this->delivery_id;
+        $this->cash_box_id = $invoiceData['cash_box_id'] ?? $this->cash_box_id;
+        $this->branch_id = $invoiceData['branch_id'] ?? $this->branch_id;
         $this->notes = $invoiceData['notes'] ?? '';
         $this->pro_date = $invoiceData['invoice_date'] ?? $this->pro_date;
         $this->accural_date = $invoiceData['accural_date'] ?? $this->accural_date;
 
-        // نقل الإجماليات
+        // ✅ نقل الإجماليات والخصومات
         $this->discount_percentage = $convertData['discount_percentage'] ?? 0;
         $this->additional_percentage = $convertData['additional_percentage'] ?? 0;
         $this->discount_value = $convertData['discount_value'] ?? 0;
@@ -131,29 +134,60 @@ trait HandlesInvoiceData
         $this->total_after_additional = $convertData['total_after_additional'] ?? 0;
         $this->subtotal = $convertData['subtotal'] ?? 0;
 
-        // نقل الأصناف
+        // ✅ نقل الضرائب (إذا كانت موجودة)
+        if (isset($convertData['tax_percentage'])) {
+            $this->tax_percentage = $convertData['tax_percentage'];
+        }
+        if (isset($convertData['tax_value'])) {
+            $this->tax_value = $convertData['tax_value'];
+        }
+
+        // ✅ نقل الأصناف مع كل التفاصيل
         if (isset($convertData['items_data']) && !empty($convertData['items_data'])) {
             $this->invoiceItems = collect($convertData['items_data'])
                 ->filter(function ($item) {
                     // تصفية الأصناف حسب النوع إذا كانت فاتورة مشتريات
-                    if ($this->type == 11) {
+                    if (in_array($this->type, [11, 13, 15, 17])) {
                         $itemModel = Item::find($item['item_id']);
                         return $itemModel && $itemModel->type != ItemType::Service->value;
                     }
                     return true;
                 })
+                ->map(function ($item) {
+                    // ✅ التأكد من نقل جميع البيانات
+                    return [
+                        'item_id' => $item['item_id'],
+                        'unit_id' => $item['unit_id'],
+                        'name' => $item['name'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'discount' => $item['discount'] ?? 0,
+                        'sub_value' => $item['sub_value'],
+                        'available_units' => $item['available_units'],
+                        'notes' => $item['notes'] ?? '',
+                        'batch_number' => $item['batch_number'] ?? '',
+                        'expiry_date' => $item['expiry_date'] ?? '',
+                        'serial_numbers' => $item['serial_numbers'] ?? '',
+                    ];
+                })
                 ->values()
                 ->toArray();
         }
 
-        // حذف البيانات من الجلسة
+        // ✅ حساب الرصيد إذا كان مطلوب
+        if (in_array($this->type, [10, 11, 12, 13]) && $this->acc1_id) {
+            $this->currentBalance = $this->getAccountBalance($this->acc1_id);
+            $this->calculateBalanceAfterInvoice();
+        }
+
+        // حذف البيانات من الجلسة بعد النقل
         session()->forget('convert_invoice_data');
 
-        // إرسال رسالة نجاح
+        // ✅ إرسال رسالة نجاح
         $this->dispatch(
             'success',
-            title: 'تم الحفظ!',
-            text: 'تم تحميل بيانات الفاتورة الأصلية بنجاح. يمكنك التعديل عليها الآن.',
+            title: 'تم التحميل بنجاح!',
+            text: 'تم نقل جميع بيانات عرض السعر. يمكنك التعديل عليها الآن وحفظها كفاتورة مشتريات.',
             icon: 'success'
         );
     }
@@ -294,8 +328,8 @@ trait HandlesInvoiceData
             $this->acc1_id = 61;
             $this->acc2_id = 62;
         } elseif (in_array($this->type, [11, 13, 15, 17])) {
-            $this->acc1_id = 64;
-            $this->acc2_id = 62;
+            $this->acc1_id = $this->acc1List->first()->id ?? null; // ⬅️ هنا التعديل
+            $this->acc2_id = $this->acc2List->first()->id ?? null;
         } elseif (in_array($this->type, [18, 19, 20])) {
             $this->acc1_id = null;
             $this->acc2_id = 62;
@@ -318,27 +352,34 @@ trait HandlesInvoiceData
     {
         $this->initializeInvoiceData($type, $hash);
 
-        // 1. التحقق من وجود بيانات من المرحلة السابقة
+        // ✅ 1. التحقق من وجود بيانات تحويل من عرض سعر أو فاتورة أخرى
+        $convertData = session()->get('convert_invoice_data');
+        if ($convertData) {
+            $this->handleConvertData($convertData);
+            return;
+        }
+
+        // 2. التحقق من وجود بيانات من المرحلة السابقة
         $sourceProid = request()->get('source_pro_id');
         if ($sourceProid) {
             $this->handlePreviousStageData($sourceProid);
             return;
         }
 
-        // 2. تهيئة بيانات الفاتورة
+        // 3. تهيئة بيانات الفاتورة الافتراضية
         $this->setDefaultValues();
 
-        // 3. تحميل البيانات الضرورية
+        // 4. تحميل البيانات الضرورية
         $this->loadInvoiceData();
 
-        // 4. تحديد حالة عرض الرصيد
+        // 5. تحديد حالة عرض الرصيد
         $this->showBalance = in_array($this->type, [10, 11, 12, 13]);
         if ($this->showBalance && $this->acc1_id) {
             $this->currentBalance = $this->getAccountBalance($this->acc1_id);
             $this->calculateBalanceAfterInvoice();
         }
 
-        // 5. تحميل توصيات الأصناف للعميل (فقط لفواتير المبيعات)
+        // 6. تحميل توصيات الأصناف للعميل (فقط لفواتير المبيعات)
         if ($this->type == 10 && $this->acc1_id) {
             $this->recommendedItems = $this->getRecommendedItems($this->acc1_id);
         }

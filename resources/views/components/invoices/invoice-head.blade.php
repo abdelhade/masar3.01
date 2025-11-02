@@ -75,24 +75,20 @@
     <div class="card-body">
         <div class="row">
             <input type="hidden" wire:model="type">
-            {{-- اختيار الفرع --}}
 
             {{-- الحساب المتغير acc1 --}}
-            <div class="col-lg-2">
+            <div class="col-lg-2" wire:key="acc1-{{ $branch_id }}">
                 <label class="form-label" style="font-size: 1em;">{{ $acc1Role }}</label>
                 <div class="input-group">
                     <div class="flex-grow-1">
-                        <x-tom-select :options="collect($acc1List)
-                            ->map(fn($item) => ['value' => $item->id, 'text' => $item->aname])
-                            ->toArray()" wire:model.live="acc1_id" :value="$acc1_id" :search="true"
-                            :tomOptions="[
-                                'plugins' => [
-                                    'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
-                                    'remove_button' => ['title' => 'إزالة المحدد'],
-                                ],
-                                'placeholder' => 'اختر',
-                            ]" class="form-control form-control-sm scnd" id="acc1-select"
-                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;" placeholder="اختر" />
+                        <select wire:model.live="acc1_id"
+                            class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('acc1_id') is-invalid @enderror"
+                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
+                            <option value="">اختر {{ $acc1Role }}</option>
+                            @foreach ($acc1List as $acc)
+                                <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     @if ($type != 21)
                         @php
@@ -102,7 +98,8 @@
                             }
                         @endphp
                         @if (setting('invoice_show_add_clients_suppliers'))
-                            <livewire:accounts::account-creator :type="$accountType" :button-class="'btn btn-sm btn-success'" :button-text="$accountType === 'client' ? 'إضافة عميل' : 'إضافة مورد'" />
+                            <livewire:accounts::account-creator :type="$accountType" :button-class="'btn btn-sm btn-success'" :button-text="$accountType === 'client' ? 'إضافة عميل' : 'إضافة مورد'"
+                                :key="'account-creator-' . $type . '-' . $branch_id" />
                         @endif
                     @endif
                 </div>
@@ -117,7 +114,7 @@
                 <select wire:model.live="acc2_id"
                     class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('acc2_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                    <option value="">اختر</option>
+                    <option value="">اختر {{ $acc2Role }}</option>
                     @foreach ($acc2List as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
                     @endforeach
@@ -133,13 +130,13 @@
                 <select wire:model="emp_id"
                     class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('emp_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                    <option value="">اختر</option>
+                    <option value="">اختر الموظف</option>
                     @foreach ($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->aname }}</option>
                     @endforeach
                 </select>
                 @error('emp_id')
-                    <span class="emp_id-feedback"><strong>{{ $message }}</strong></span>
+                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                 @enderror
             </div>
 
@@ -149,16 +146,17 @@
                     <select wire:model="delivery_id"
                         class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('delivery_id') is-invalid @enderror"
                         style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                        <option value="">اختر</option>
+                        <option value="">اختر المندوب</option>
                         @foreach ($deliverys as $delivery)
                             <option value="{{ $delivery->id }}">{{ $delivery->aname }}</option>
                         @endforeach
                     </select>
                     @error('delivery_id')
-                        <span class="emp_id-feedback"><strong>{{ $message }}</strong></span>
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
             @endif {{-- إضافة المندوب لا ينطبق على التحويلات --}}
+
             {{-- التاريخ --}}
             <div class="col-lg-1">
                 <label for="pro_date" class="form-label" style="font-size: 1em;">{{ __('التاريخ') }}</label>
@@ -171,14 +169,13 @@
                 @enderror
             </div>
 
-
             @if (setting('invoice_use_due_date'))
                 {{-- تاريخ الاستحقاق --}}
                 @if ($type != 21)
                     {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
                     <div class="col-lg-1">
                         <label for="accural_date" class="form-label"
-                            style="font-size: 1em;"">{{ __('تاريخ الاستحقاق') }}</label>
+                            style="font-size: 1em;">{{ __('تاريخ الاستحقاق') }}</label>
                         <input type="date" wire:model="accural_date"
                             class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('accural_date') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -188,8 +185,9 @@
                     </div>
                 @endif {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
             @endif
+
             {{-- رقم الفاتورة (pro_id) ثابت --}}
-            <div class="col-lg-1 ">
+            <div class="col-lg-1">
                 <label for="pro_id" class="form-label" style="font-size: 1em;">{{ __('رقم الفاتورة') }}</label>
                 <input type="number" wire:model="pro_id"
                     class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('pro_id') is-invalid @enderror"
@@ -203,7 +201,8 @@
             @if ($type != 21)
                 {{-- S.N لا ينطبق على التحويلات --}}
                 <div class="col-lg-1">
-                    <label for="serial_number" class="form-label" style="font-size: 1em;">{{ __('S.N') }}</label>
+                    <label for="serial_number" class="form-label"
+                        style="font-size: 1em;">{{ __('S.N') }}</label>
                     <input type="text" wire:model="serial_number"
                         class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('serial_number') is-invalid @enderror"
                         style="font-size: 0.85em; height: 2em; padding: 2px 6px;">

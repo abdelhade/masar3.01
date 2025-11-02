@@ -33,3 +33,6 @@ Route::get('/reports/items-max-min-quantity', [ReportController::class, 'getItem
 Route::get('/reports/check-all-items-quantity', [ReportController::class, 'checkAllItemsQuantityLimits'])->name('reports.items.check-all-quantity');
 Route::get('/reports/items-with-quantity-issues', [ReportController::class, 'getItemsWithQuantityIssues'])->name('reports.items.quantity-issues');
 Route::get('/reports/check-item-quantity/{itemId}', [ReportController::class, 'checkItemQuantityAfterOperation'])->name('reports.items.check-item-quantity');
+
+Route::get('/admin/reports/supplier-rfqs/{id}/details', [InvoiceReportController::class, 'getSupplierRfqDetails'])
+    ->name('reports.supplier-rfqs.details');
