@@ -7,6 +7,7 @@ use Modules\CRM\Database\Seeders\LeadStatusSeeder;
 use Modules\Settings\Database\Seeders\SettingSeeder;
 use Modules\Settings\Database\Seeders\InvoiceOptionsSeeder;
 use Modules\Settings\Database\Seeders\SystemSettingsSeeder;
+use Modules\Inquiries\database\seeders\InquiriesRolesSeeder;
 use Modules\Inquiries\database\seeders\DiffcultyMatrixSeeder;
 use Modules\Invoices\database\seeders\InvoiceTemplatesSeeder;
 use Modules\Invoices\database\seeders\InvoiceDimensionsSeeder;
@@ -58,6 +59,7 @@ class DatabaseSeeder extends Seeder
             DiffcultyMatrixSeeder::class,
             VaribalSeeder::class,
             InquiriesPermissionsSeeder::class,
+            InquiriesRolesSeeder::class
         ]);
     }
 }

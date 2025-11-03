@@ -2,8 +2,7 @@
 
 namespace Modules\Inquiries\Models;
 
-use App\Models\{City, Town, Client, Project};
-use App\Enums\ClientType;
+use App\Models\{City, Town, Project};
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -19,7 +18,7 @@ class Inquiry extends Model implements HasMedia
         'status' => InquiryStatus::class,
         'status_for_kon' => StatusForKon::class,
         'kon_title' => KonTitle::class,
-        'quotation_state' => QuotationStateEnum::class, // أضف هذا السطر
+        'quotation_state' => QuotationStateEnum::class,
         'inquiry_date' => 'date',
         'req_submittal_date' => 'date',
         'project_start_date' => 'date',
@@ -31,29 +30,57 @@ class Inquiry extends Model implements HasMedia
         'working_conditions' => 'array',
     ];
 
-    public function client()
+    // علاقات Contacts بناءً على الأدوار
+    public function contacts()
     {
-        return $this->belongsTo(Client::class, 'client_id');
+        return $this->belongsToMany(Contact::class, 'inquiry_contact')
+            ->withPivot('role_id')
+            ->withTimestamps();
     }
 
-    public function mainContractor()
+    public function getContactsByRole($roleName)
     {
-        return $this->belongsTo(Client::class, 'main_contractor_id');
+        return $this->contacts()
+            ->whereHas('roles', function ($query) use ($roleName) {
+                $query->where('name', $roleName);
+            })
+            ->get();
     }
 
-    public function consultant()
+    // Helper methods للوصول السريع
+    public function clients()
     {
-        return $this->belongsTo(Client::class, 'consultant_id');
+        return $this->contacts()->whereHas('roles', function ($query) {
+            $query->where('name', 'Client');
+        });
     }
 
-    public function owner()
+    public function mainContractors()
     {
-        return $this->belongsTo(Client::class, 'owner_id');
+        return $this->contacts()->whereHas('roles', function ($query) {
+            $query->where('name', 'Main Contractor');
+        });
     }
 
-    public function assignedEngineer()
+    public function consultants()
     {
-        return $this->belongsTo(Client::class, 'assigned_engineer_id');
+        return $this->contacts()->whereHas('roles', function ($query) {
+            $query->where('name', 'Consultant');
+        });
+    }
+
+    public function owners()
+    {
+        return $this->contacts()->whereHas('roles', function ($query) {
+            $query->where('name', 'Owner');
+        });
+    }
+
+    public function assignedEngineers()
+    {
+        return $this->contacts()->whereHas('roles', function ($query) {
+            $query->where('name', 'Engineer');
+        });
     }
 
     public function city()
@@ -108,7 +135,6 @@ class Inquiry extends Model implements HasMedia
     {
         return $this->belongsTo(ProjectSize::class, 'project_size_id');
     }
-
 
     public function comments()
     {
@@ -185,10 +211,5 @@ class Inquiry extends Model implements HasMedia
         if ($score <= 10) return 2;
         if ($score <= 15) return 3;
         return 4;
-    }
-
-    public static function safeFrom(string $value): ?self
-    {
-        return self::tryFrom(strtolower($value));
     }
 }

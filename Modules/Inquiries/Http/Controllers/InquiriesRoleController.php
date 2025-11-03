@@ -48,7 +48,6 @@ class InquiriesRoleController extends Controller
     {
         $inquiries_role->delete();
         Alert::toast('تم حذف العنصر بنجاح', 'success');
-
         return redirect()->route('inquiries-roles.index');
     }
 }
