@@ -131,7 +131,6 @@ class CreateInquiry extends Component
         'getWorkTypeChildren' => 'emitWorkTypeChildren',
         'getInquirySourceChildren' => 'emitInquirySourceChildren',
         'itemSelected' => 'handleItemSelected',
-        'contactSelected' => 'handleContactSelected',
         'openContactModal' => 'openContactModal',
         'locationSelected' => 'handleLocationSelected',
     ];
@@ -337,7 +336,47 @@ class CreateInquiry extends Component
 
     private function refreshContactsList()
     {
-        $this->contacts = Contact::with(['roles', 'parent'])->get()->toArray();
+        $this->contacts = Contact::with(['roles', 'parent'])->get()->map(function ($contact) {
+            $contactArray = $contact->toArray();
+            // التأكد إن الـ roles و parent محملين صح
+            $contactArray['roles'] = $contact->roles->toArray();
+            if ($contact->parent) {
+                $contactArray['parent'] = $contact->parent->toArray();
+            }
+            return $contactArray;
+        })->toArray();
+    }
+
+    private function assignRoleToContact($contactId, $roleKey)
+    {
+        $contact = Contact::find($contactId);
+        if (!$contact) {
+            return;
+        }
+
+        $roleMap = [
+            'client' => 'Client',
+            'main_contractor' => 'Main Contractor',
+            'consultant' => 'Consultant',
+            'owner' => 'Owner',
+            'engineer' => 'Engineer',
+        ];
+
+        $roleName = $roleMap[$roleKey] ?? null;
+        if (!$roleName) {
+            return;
+        }
+
+        $role = InquirieRole::where('name', $roleName)->first();
+        if (!$role) {
+            return;
+        }
+
+        // التحقق إذا كان الـ Contact لديه هذا الدور بالفعل
+        if (!$contact->roles()->where('role_id', $role->id)->exists()) {
+            // إضافة الدور للـ Contact
+            $contact->roles()->attach($role->id);
+        }
     }
 
     private function resetContactForm()
@@ -776,7 +815,7 @@ class CreateInquiry extends Component
         $stepNum = (int) str_replace('inquiry_source_step_', '', $key);
         $this->inquirySourceSteps = array_slice($this->inquirySourceSteps, 0, $stepNum + 1, true);
         if ($value) {
-            $selectedInquirySource = InquirySource::where('is_active', true)->find($value);
+            $$selectedInquirySource = InquirySource::where('is_active', true)->find($value);
             if ($selectedInquirySource) {
                 $this->selectedInquiryPath = array_slice($this->selectedInquiryPath, 0, $stepNum, true);
                 $this->selectedInquiryPath[$stepNum] = $selectedInquirySource->name;
@@ -823,58 +862,22 @@ class CreateInquiry extends Component
     {
         $wireModel = $data['wireModel'];
         $value = $data['value'];
-        $this->{$wireModel} = $value;
-    }
 
-    public function handleContactSelected($data)
-    {
-        $wireModel = $data['wireModel'];
-        $contactId = $data['value'];
-
-        // تحديد أي خانة من selectedContacts نحدث
+        // التحقق إذا كان اختيار contact
         if (strpos($wireModel, 'selectedContacts.') === 0) {
             $key = str_replace('selectedContacts.', '', $wireModel);
-            $this->selectedContacts[$key] = $contactId;
+            $this->selectedContacts[$key] = $value;
+
+            // تحديث قائمة الـ contacts عشان التفاصيل تظهر
+            $this->refreshContactsList();
 
             // إضافة الدور للـ Contact
-            if ($contactId) {
-                $this->assignRoleToContact($contactId, $key);
+            if ($value) {
+                $this->assignRoleToContact($value, $key);
             }
-        }
-
-        // تحديث قائمة الـ contacts
-        $this->refreshContactsList();
-    }
-
-    private function assignRoleToContact($contactId, $roleKey)
-    {
-        $contact = Contact::find($contactId);
-        if (!$contact) {
-            return;
-        }
-
-        $roleMap = [
-            'client' => 'Client',
-            'main_contractor' => 'Main Contractor',
-            'consultant' => 'Consultant',
-            'owner' => 'Owner',
-            'engineer' => 'Engineer',
-        ];
-
-        $roleName = $roleMap[$roleKey] ?? null;
-        if (!$roleName) {
-            return;
-        }
-
-        $role = InquirieRole::where('name', $roleName)->first();
-        if (!$role) {
-            return;
-        }
-
-        // التحقق إذا كان الـ Contact لديه هذا الدور بالفعل
-        if (!$contact->roles()->where('role_id', $role->id)->exists()) {
-            // إضافة الدور للـ Contact
-            $contact->roles()->attach($role->id);
+        } else {
+            // باقي الحقول العادية
+            $this->{$wireModel} = $value;
         }
     }
 
