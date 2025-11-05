@@ -216,6 +216,7 @@ class InquiriesController extends Controller
         return view('inquiries::drafts.index', compact('drafts'));
     }
 
+
     public function show($id)
     {
         $inquiry = Inquiry::with([
@@ -223,20 +224,22 @@ class InquiriesController extends Controller
             'workType',
             'workTypes',
             'inquirySource',
-            // 'client',
-            'mainContractor',
-            'consultant',
-            'owner',
-            'assignedEngineer',
+            'contacts.roles',
             'city',
             'town',
             'projectDocuments',
             'submittalChecklists',
             'workConditions',
             'comments.user',
-            'media'
-        ])->findOrFail($id);
+            'media',
+            'projectSize',
+            'quotationUnits.type',
+            'creator' // ✅ إضافة علاقة المستخدم المنشئ
+        ])
+            ->withCount('comments')
+            ->findOrFail($id);
 
+        // Build work type hierarchy path
         $workTypePath = [];
         $currentWorkType = $inquiry->workType;
         while ($currentWorkType) {
@@ -245,6 +248,7 @@ class InquiriesController extends Controller
         }
         $workTypePath = array_reverse($workTypePath);
 
+        // Build all selected work types with their hierarchy
         $allWorkTypes = [];
         if ($inquiry->workTypes->isNotEmpty()) {
             foreach ($inquiry->workTypes as $workType) {
@@ -269,6 +273,7 @@ class InquiriesController extends Controller
             }
         }
 
+        // Build inquiry source hierarchy path
         $inquirySourcePath = [];
         $currentInquirySource = $inquiry->inquirySource;
         while ($currentInquirySource) {
@@ -277,11 +282,56 @@ class InquiriesController extends Controller
         }
         $inquirySourcePath = array_reverse($inquirySourcePath);
 
+        // ✅ تنظيم Contacts حسب الأدوار
+        $contactsByRole = [
+            'client' => null,
+            'main_contractor' => null,
+            'consultant' => null,
+            'owner' => null,
+            'engineer' => null,
+        ];
+
+        $roleMap = [
+            'Client' => 'client',
+            'Main Contractor' => 'main_contractor',
+            'Consultant' => 'consultant',
+            'Owner' => 'owner',
+            'Engineer' => 'engineer',
+        ];
+
+        foreach ($inquiry->contacts as $contact) {
+            $roleId = $contact->pivot->role_id;
+            $role = \Modules\Inquiries\Models\InquirieRole::find($roleId);
+
+            if ($role && isset($roleMap[$role->name])) {
+                $contactsByRole[$roleMap[$role->name]] = $contact;
+            }
+        }
+
+        // ✅ تنظيم Quotation Types & Units
+        $quotationData = [];
+        foreach ($inquiry->quotationUnits as $unit) {
+            $typeId = $unit->pivot->quotation_type_id;
+            $type = \Modules\Inquiries\Models\QuotationType::find($typeId);
+
+            if ($type) {
+                if (!isset($quotationData[$type->id])) {
+                    $quotationData[$type->id] = [
+                        'type' => $type,
+                        'units' => []
+                    ];
+                }
+                $quotationData[$type->id]['units'][] = $unit;
+            }
+        }
+
         return view('inquiries::inquiries.show', compact(
             'inquiry',
             'workTypePath',
             'allWorkTypes',
-            'inquirySourcePath'
+            'inquirySourcePath',
+            'contactsByRole',
+            'quotationData'
         ));
     }
 

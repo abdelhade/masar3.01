@@ -6,7 +6,6 @@ use Livewire\Component;
 use Livewire\Attributes\On;
 use App\Models\{City, Town};
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Modules\Inquiries\Models\ProjectSize;
 use Modules\Progress\Models\ProjectProgress;

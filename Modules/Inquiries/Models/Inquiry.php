@@ -58,6 +58,53 @@ class Inquiry extends Model implements HasMedia
             ->get();
     }
 
+
+    // إضافة هذه العلاقة في نموذج Inquiry إذا لم تكن موجودة
+
+    /**
+     * Get the user who created this inquiry
+     */
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    /**
+     * Scope to get inquiries created by specific user
+     */
+    public function scopeCreatedBy($query, $userId)
+    {
+        return $query->where('created_by', $userId);
+    }
+
+    /**
+     * Get formatted creation date
+     */
+    public function getFormattedCreatedAtAttribute()
+    {
+        return $this->created_at->format('d M Y, h:i A');
+    }
+
+    /**
+     * Get formatted update date
+     */
+    public function getFormattedUpdatedAtAttribute()
+    {
+        return $this->updated_at->format('d M Y, h:i A');
+    }
+
+    /**
+     * Get days until submission
+     */
+    public function getDaysUntilSubmissionAttribute()
+    {
+        if (!$this->req_submittal_date) {
+            return null;
+        }
+
+        return now()->diffInDays($this->req_submittal_date, false);
+    }
+
     // Helper methods للوصول السريع
     public function clients()
     {

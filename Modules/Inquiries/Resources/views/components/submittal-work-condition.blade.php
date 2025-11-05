@@ -11,17 +11,31 @@
         <div class="card-body">
             <div class="row">
                 @foreach ($submittalChecklist as $index => $item)
-                    @if (isset($item['checked']))
-                        <div class="col-md-3 mb-3">
-                            <div class="form-check">
-                                <input type="checkbox" wire:model.live="submittalChecklist.{{ $index }}.checked"
-                                    id="submittal_{{ $index }}" class="form-check-input">
-                                <label for="submittal_{{ $index }}" class="form-check-label">
-                                    {{ $item['name'] }} ({{ $item['value'] }})
-                                </label>
-                            </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" wire:model.live="submittalChecklist.{{ $index }}.checked"
+                                id="submittal_{{ $index }}" class="form-check-input">
+                            <label for="submittal_{{ $index }}" class="form-check-label">
+                                {{ $item['name'] }} ({{ $item['value'] }})
+                            </label>
                         </div>
-                    @endif
+
+                        <!-- أضف الـ select لو فيه options -->
+                        @if (isset($item['options']) && $item['checked'])
+                            <select wire:model.live="submittalChecklist.{{ $index }}.selectedOption"
+                                class="form-select mt-2">
+                                <option value="">{{ __('Select...') }}</option>
+                                @foreach ($item['options'] as $option => $score)
+                                    <option value="{{ $score }}">
+                                        {{ $option }} ({{ $score }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('submittalChecklist.' . $index . '.selectedOption')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        @endif
+                    </div>
                 @endforeach
             </div>
         </div>

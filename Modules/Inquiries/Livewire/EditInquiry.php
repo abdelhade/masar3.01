@@ -226,10 +226,12 @@ class EditInquiry extends Component
         $submittalsFromDB = SubmittalChecklist::all();
         $this->submittalChecklist = $submittalsFromDB->map(function ($item) {
             return [
-                'id' => $item->id,
-                'name' => $item->name,
-                'checked' => false,
-                'value' => $item->score
+                'id'             => $item->id,
+                'name'           => $item->name,
+                'checked'        => false,
+                'value'          => $item->score,
+                'options' => is_string($item->options) ? json_decode($item->options, true) : ($item->options ?? null),
+                'selectedOption' => null,
             ];
         })->toArray();
 
@@ -246,13 +248,13 @@ class EditInquiry extends Component
         $conditionsFromDB = WorkCondition::all();
         $this->workingConditions = $conditionsFromDB->map(function ($item) {
             return [
-                'id' => $item->id,
-                'name' => $item->name,
-                'checked' => false,
-                'options' => $item->options,
+                'id'             => $item->id,
+                'name'           => $item->name,
+                'checked'        => false,
+                'options' => is_string($item->options) ? json_decode($item->options, true) : ($item->options ?? null),
                 'selectedOption' => null,
-                'value' => $item->options ? 0 : $item->score,
-                'default_score' => $item->score
+                'value'          => $item->options ? 0 : $item->score,
+                'default_score'  => $item->score,
             ];
         })->toArray();
 
@@ -290,6 +292,23 @@ class EditInquiry extends Component
         $this->type_note = $inquiry->type_note;
         $this->assignEngineerDate = $inquiry->assigned_engineer_date;
 
+        foreach ($inquiry->submittalChecklists as $pivot) {
+            $index = collect($this->submittalChecklist)->search(fn($i) => $i['id'] == $pivot->id);
+            if ($index !== false) {
+                $this->submittalChecklist[$index]['checked'] = true;
+                $this->submittalChecklist[$index]['selectedOption'] = $pivot->pivot->selected_option;
+                $this->submittalChecklist[$index]['value'] = $pivot->pivot->selected_option ?? $pivot->score;
+            }
+        }
+
+        foreach ($inquiry->workConditions as $pivot) {
+            $index = collect($this->workingConditions)->search(fn($i) => $i['id'] == $pivot->id);
+            if ($index !== false) {
+                $this->workingConditions[$index]['checked'] = true;
+                $this->workingConditions[$index]['selectedOption'] = $pivot->pivot->selected_option;
+                $this->workingConditions[$index]['value'] = $pivot->pivot->selected_option ?? $pivot->score;
+            }
+        }
         // Load work type hierarchy
         if ($inquiry->work_type_id) {
             $this->buildWorkTypeHierarchy($inquiry->work_type_id);
@@ -301,8 +320,8 @@ class EditInquiry extends Component
         }
 
         // Load checklists
-        $this->checkItems($this->submittalChecklist, $inquiry->submittalChecklists->pluck('id'));
-        $this->checkItems($this->workingConditions, $inquiry->workConditions->pluck('id'));
+        // $this->checkItems($this->submittalChecklist, $inquiry->submittalChecklists->pluck('id'));
+        // $this->checkItems($this->workingConditions, $inquiry->workConditions->pluck('id'));
         $this->checkItems($this->projectDocuments, $inquiry->projectDocuments->pluck('id'));
 
         // Load quotation units
@@ -1066,7 +1085,7 @@ class EditInquiry extends Component
         $this->calculateScores();
     }
 
-    public function updated($propertyName)
+    public function updated($propertyName, $property)
     {
         if ($propertyName === 'townId' && $this->townId) {
             $town = Town::find($this->townId);
@@ -1075,6 +1094,13 @@ class EditInquiry extends Component
         if (
             strpos($propertyName, 'submittalChecklist') !== false ||
             strpos($propertyName, 'workingConditions') !== false
+        ) {
+            $this->calculateScores();
+        }
+
+        if (
+            str_contains($property, 'submittalChecklist') ||
+            str_contains($property, 'workingConditions')
         ) {
             $this->calculateScores();
         }
@@ -1135,8 +1161,8 @@ class EditInquiry extends Component
             'totalProjectValue' => 'nullable|numeric|min:0',
         ]);
 
-        try {
-            DB::beginTransaction();
+        // try {
+        //     DB::beginTransaction();
 
             // ✅ إصلاح: تخزين الموقع فقط إذا كانت البيانات موجودة
             $cityId = $this->cityId;
@@ -1245,23 +1271,29 @@ class EditInquiry extends Component
             }
 
             // ✅ Sync submittal checklists
-            $submittalIds = [];
+            // $submittalIds = [];
+            $this->inquiry->submittalChecklists()->detach();
             foreach ($this->submittalChecklist as $item) {
-                if (!empty($item['checked']) && isset($item['id']) && is_numeric($item['id'])) {
-                    $submittalIds[] = (int) $item['id'];
+                if (!empty($item['checked']) && isset($item['id'])) {
+                    $data = [];
+                    if (isset($item['selectedOption'])) {
+                        $data['selected_option'] = $item['selectedOption'];
+                    }
+                    $this->inquiry->submittalChecklists()->attach($item['id'], $data);
                 }
             }
-            $this->inquiry->submittalChecklists()->sync($submittalIds);
 
-            // ✅ Sync working conditions
-            $conditionIds = [];
-            foreach ($this->workingConditions as $condition) {
-                if (!empty($condition['checked']) && isset($condition['id']) && is_numeric($condition['id'])) {
-                    $conditionIds[] = (int) $condition['id'];
+            // حفظ Working Conditions مع selectedOption
+            $this->inquiry->workConditions()->detach();
+            foreach ($this->workingConditions as $item) {
+                if (!empty($item['checked']) && isset($item['id'])) {
+                    $data = [];
+                    if (isset($item['selectedOption'])) {
+                        $data['selected_option'] = $item['selectedOption'];
+                    }
+                    $this->inquiry->workConditions()->attach($item['id'], $data);
                 }
             }
-            $this->inquiry->workConditions()->sync($conditionIds);
-
             // ✅ Sync project documents
             $this->inquiry->projectDocuments()->detach();
             foreach ($this->projectDocuments as $document) {
@@ -1326,13 +1358,13 @@ class EditInquiry extends Component
             // إعادة حساب النتائج
             $this->calculateScores();
 
-            DB::commit();
+            // DB::commit();
             return redirect()->route('inquiries.index')->with('message', __('Inquiry Updated Success'));
-        } catch (\Exception) {
-            DB::rollBack();
-            session()->flash('error', __('Error During Update: '));
-            return back()->withInput();
-        }
+        // } catch (\Exception) {
+        //     DB::rollBack();
+        //     session()->flash('error', __('Error During Update: '));
+        //     return back()->withInput();
+        // }
     }
 
     private function getMainWorkTypeId()
