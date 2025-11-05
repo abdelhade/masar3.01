@@ -25,9 +25,6 @@ class InvoiceTemplate extends Model
         'column_order' => 'array',
     ];
 
-    /**
-     * الأعمدة المتاحة للفواتير
-     */
     public static function availableColumns(): array
     {
         return [
@@ -44,17 +41,37 @@ class InvoiceTemplate extends Model
         ];
     }
 
-    /**
-     * علاقة أنواع الفواتير
-     */
+    public static function invoiceTypeNames(): array
+    {
+        return [
+            10 => 'فاتورة مبيعات',
+            11 => 'فاتورة مشتريات',
+            12 => 'مردود مبيعات',
+            13 => 'مردود مشتريات',
+            14 => 'أمر بيع',
+            15 => 'أمر شراء',
+            16 => 'عرض سعر لعميل',
+            17 => 'عرض سعر من مورد',
+            18 => 'فاتورة توالف',
+            19 => 'أمر صرف',
+            20 => 'أمر إضافة',
+            21 => 'تحويل من مخزن لمخزن',
+            22 => 'أمر حجز',
+            24 => 'فاتورة خدمة',
+            25 => 'طلب احتياج',
+        ];
+    }
+
+    public static function getInvoiceTypeName(int $typeId): string
+    {
+        return self::invoiceTypeNames()[$typeId] ?? "نوع غير معروف";
+    }
+
     public function invoiceTypes(): HasMany
     {
         return $this->hasMany(InvoiceTypeTemplate::class, 'template_id');
     }
 
-    /**
-     * الحصول على النموذج الافتراضي لنوع فاتورة معين
-     */
     public static function getDefaultForType(int $invoiceType): ?self
     {
         return self::whereHas('invoiceTypes', function ($query) use ($invoiceType) {
@@ -65,9 +82,6 @@ class InvoiceTemplate extends Model
             ->first();
     }
 
-    /**
-     * الحصول على جميع النماذج المتاحة لنوع فاتورة معين
-     */
     public static function getForType(int $invoiceType)
     {
         return self::whereHas('invoiceTypes', function ($query) use ($invoiceType) {
@@ -78,9 +92,6 @@ class InvoiceTemplate extends Model
             ->get();
     }
 
-    /**
-     * التحقق من ظهور عمود معين
-     */
     public function hasColumn(string $columnKey): bool
     {
         return in_array($columnKey, $this->visible_columns ?? []);
@@ -88,10 +99,9 @@ class InvoiceTemplate extends Model
 
     public function getColumnWidth(string $columnKey): int
     {
-        return $this->column_widths[$columnKey] ?? 10; // القيمة الافتراضية 10%
+        return $this->column_widths[$columnKey] ?? 10;
     }
 
-    // أضف دالة للحصول على الأعمدة مرتبة
     public function getOrderedColumns(): array
     {
         if (empty($this->column_order)) {

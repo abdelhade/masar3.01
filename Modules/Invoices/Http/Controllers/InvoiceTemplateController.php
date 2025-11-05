@@ -2,7 +2,6 @@
 
 namespace Modules\Invoices\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Modules\Invoices\Models\InvoiceTemplate;
 use Modules\Invoices\Http\Requests\InvoiceTemplateRequest;
@@ -99,7 +98,6 @@ class InvoiceTemplateController extends Controller
 
     public function update(InvoiceTemplateRequest $request, InvoiceTemplate $template)
     {
-        // dd($request->all());
         $validated = $request->validated();
 
         $template->update([
@@ -138,9 +136,6 @@ class InvoiceTemplateController extends Controller
             ->with('success', 'تم حذف النموذج بنجاح');
     }
 
-    /**
-     * تبديل حالة النموذج (نشط/غير نشط)
-     */
     public function toggleActive(InvoiceTemplate $template)
     {
         $template->update([

@@ -5,7 +5,7 @@ use Modules\Invoices\Http\Controllers\InvoiceTemplateController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('invoice-templates', InvoiceTemplateController::class)->parameters([
-        'invoice-templates' => 'template' // غيّر {invoice_template} إلى {template}
+        'invoice-templates' => 'template'
     ]);
     Route::post(
         'invoice-templates/{template}/toggle-active',

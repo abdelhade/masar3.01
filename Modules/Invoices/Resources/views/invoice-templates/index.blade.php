@@ -60,7 +60,7 @@
                                         <td>
                                             @foreach ($template->invoiceTypes as $type)
                                                 <span class="badge bg-info text-white">
-                                                    {{ $type->invoice_type }}
+                                                    {{ Modules\Invoices\Models\InvoiceTemplate::getInvoiceTypeName($type->invoice_type) }}
                                                     @if ($type->is_default)
                                                         <i class="fas fa-star text-warning ms-1"></i>
                                                     @endif

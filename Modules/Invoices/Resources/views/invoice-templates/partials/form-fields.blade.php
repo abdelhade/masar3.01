@@ -1,4 +1,4 @@
-{{-- المعلومات الأساسية (نفس الكود السابق) --}}
+
 <div class="row">
     <div class="col-md-6">
         <div class="form-group">
@@ -50,7 +50,6 @@
 
 <hr>
 
-{{-- اختيار أنواع الفواتير --}}
 <div class="form-group">
     <label>أنواع الفواتير <span class="text-danger">*</span></label>
     <div class="row">
@@ -82,7 +81,6 @@
 
 <hr>
 
-{{-- قسم الأعمدة مع الترتيب والعرض --}}
 <div class="form-group">
     <label>الأعمدة المرئية وترتيبها <span class="text-danger">*</span></label>
     <p class="text-muted">اسحب الأعمدة لترتيبها، وحدد عرض كل عمود</p>
@@ -140,7 +138,6 @@
                 @endif
             @endforeach
 
-            {{-- إضافة الأعمدة غير الموجودة في الترتيب --}}
             @foreach ($availableColumns as $columnKey => $columnName)
                 @if (!in_array($columnKey, $orderedColumns))
                     <div class="list-group-item column-item" data-column="{{ $columnKey }}">
