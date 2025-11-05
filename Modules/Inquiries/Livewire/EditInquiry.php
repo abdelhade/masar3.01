@@ -3,13 +3,17 @@
 namespace Modules\Inquiries\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\{City, Town, Client};
 use Illuminate\Support\Facades\Auth;
+use Modules\Inquiries\Models\Contact;
 use Modules\CRM\Models\ClientCategory;
+use Modules\Inquiries\Models\InquirieRole;
 use Modules\Progress\Models\ProjectProgress;
+use Modules\Inquiries\Services\DistanceCalculatorService;
 use Modules\Inquiries\Enums\{KonPriorityEnum, ClientPriorityEnum};
 use Modules\Inquiries\Models\{WorkType, Inquiry, InquirySource, SubmittalChecklist, InquiryComment, QuotationType, ProjectSize, WorkCondition, InquiryDocument};
 
@@ -18,6 +22,10 @@ class EditInquiry extends Component
     use WithFileUploads;
 
     public $inquiryId;
+
+    public $isDraft = false;
+    public $autoSaveEnabled = true;
+    public $lastAutoSaveTime = null;
     public $inquiry;
 
     // Multi-worktype selection (match CreateInquiry)
@@ -45,11 +53,6 @@ class EditInquiry extends Component
     public $status;
     public $statusForKon;
     public $konTitle;
-    public $clientId;
-    public $assignedEngineer;
-    public $mainContractorId;
-    public $consultantId;
-    public $ownerId;
     public $isPriority = false;
     public $projectSize;
     public $tenderNo;
@@ -78,10 +81,6 @@ class EditInquiry extends Component
     public $projects = [];
     public $cities = [];
     public $towns = [];
-    public $clients = [];
-    public $mainContractors = [];
-    public $consultants = [];
-    public $owners = [];
     public $statusOptions = [];
     public $statusForKonOptions = [];
     public $konTitleOptions = [];
@@ -97,31 +96,55 @@ class EditInquiry extends Component
     public $konPriorityOptions = [];
 
     public $clientCategories = [];
-    public $engineers = [];
     public $quotationStateOptions = [];
 
     public $projectDocuments = [];
 
-    public $newClient = [
-        'cname' => '',
-        'email' => '',
-        'phone' => '',
-        'phone2' => '',
-        'company' => '',
-        'address' => '',
-        'address2' => '',
-        'date_of_birth' => '',
-        'national_id' => '',
-        'contact_person' => '',
-        'contact_phone' => '',
-        'contact_relation' => '',
-        'info' => '',
-        'job' => '',
-        'gender' => '',
-        'is_active' => true,
-        'type' => null,
+    public $selectedContacts = [
+        'client' => null,
+        'main_contractor' => null,
+        'consultant' => null,
+        'owner' => null,
+        'engineer' => null,
     ];
 
+    public $modalContactType = null;
+    public $modalContactTypeLabel = '';
+    public $newContact = [
+        'name' => '',
+        'email' => '',
+        'phone_1' => '',
+        'phone_2' => '',
+        'type' => 'person',
+        'address_1' => '',
+        'address_2' => '',
+        'tax_number' => '',
+        'parent_id' => null,
+        'notes' => '',
+    ];
+
+    public $contacts = [];
+    public $inquirieRoles = [];
+    public $selectedRoles = [];
+
+
+    public $fromLocation = 'Abu Dhabi, UAE';
+    public $fromLocationLat = 24.45388;
+    public $fromLocationLng = 54.37734;
+    public $toLocation = '';
+    public $toLocationLat = null;
+    public $toLocationLng = null;
+    public $calculatedDistance = null;
+    public $calculatedDuration = null;
+    public $showMapModal = false;
+    public $mapModalType = '';
+
+    protected $distanceCalculator;
+
+    public function boot(DistanceCalculatorService $distanceCalculator)
+    {
+        $this->distanceCalculator = $distanceCalculator;
+    }
     public $type_note = null;
 
     public $submittalChecklist = [];
@@ -134,7 +157,9 @@ class EditInquiry extends Component
         'getWorkTypeChildren' => 'emitWorkTypeChildren',
         'getInquirySourceChildren' => 'emitInquirySourceChildren',
         'itemSelected' => 'handleItemSelected',
-        'openClientModal' => 'openClientModal',
+        'openContactModal' => 'openContactModal',
+        'locationSelected' => 'handleLocationSelected',
+        'locationPicked' => 'handleLocationPickedEvent', // تأكد من وجودها
     ];
 
     public function mount($id)
@@ -148,17 +173,40 @@ class EditInquiry extends Component
             'inquirySource',
             'comments.user',
             'quotationUnits',
-            'media'
+            'media',
+            'contacts' // إضافة
         ])->findOrFail($id);
+
+        $this->initializeRoles();
 
         $this->loadInitialData();
         $this->populateFormData();
         $this->calculateScores();
     }
 
+    private function initializeRoles()
+    {
+        $roles = [
+            ['name' => 'Client', 'description' => 'Project Client'],
+            ['name' => 'Main Contractor', 'description' => 'Main Contractor'],
+            ['name' => 'Consultant', 'description' => 'Project Consultant'],
+            ['name' => 'Owner', 'description' => 'Project Owner'],
+            ['name' => 'Engineer', 'description' => 'Assigned Engineer'],
+        ];
+
+        foreach ($roles as $role) {
+            InquirieRole::firstOrCreate(
+                ['name' => $role['name']],
+                ['description' => $role['description']]
+            );
+        }
+
+        $this->inquirieRoles = InquirieRole::all()->toArray();
+    }
+
     private function loadInitialData()
     {
-        $this->engineers = Client::with('clientType')->get()->toArray();
+        $this->contacts = Contact::with(['roles', 'parent'])->get()->toArray();
         $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
         $this->projectSizeOptions = ProjectSize::all();
         $this->inquiryDate = now()->format('Y-m-d');
@@ -228,11 +276,6 @@ class EditInquiry extends Component
         $this->status = $inquiry->status?->value;
         $this->statusForKon = $inquiry->status_for_kon?->value;
         $this->konTitle = $inquiry->kon_title?->value;
-        $this->clientId = $inquiry->client_id;
-        $this->mainContractorId = $inquiry->main_contractor_id;
-        $this->consultantId = $inquiry->consultant_id;
-        $this->ownerId = $inquiry->owner_id;
-        $this->assignedEngineer = $inquiry->assigned_engineer_id;
         $this->clientPriority = $inquiry->client_priority;
         $this->konPriority = $inquiry->kon_priority;
         $this->projectSize = $inquiry->project_size_id;
@@ -279,7 +322,7 @@ class EditInquiry extends Component
             ];
         })->toArray();
 
-
+        $this->selectedWorkTypes = [];
         if ($inquiry->workTypes->isNotEmpty()) {
             foreach ($inquiry->workTypes as $workType) {
                 $hierarchyPath = json_decode($workType->pivot->hierarchy_path, true);
@@ -318,6 +361,392 @@ class EditInquiry extends Component
                 'url' => $media->getUrl()
             ];
         })->toArray();
+
+        $this->loadContactsFromInquiry($inquiry);
+
+        if ($inquiry->town_distance) {
+            $this->calculatedDistance = $inquiry->town_distance;
+
+            // استرجاع المواقع من Town
+            if ($inquiry->town) {
+                $this->toLocation = $inquiry->town->title;
+                $this->toLocationLat = $inquiry->town->latitude;
+                $this->toLocationLng = $inquiry->town->longitude;
+            }
+        }
+    }
+
+    public function openContactModal($roleType = null)
+    {
+        if (!$roleType) {
+            return;
+        }
+
+        $roleMap = [
+            1 => 'Client',
+            2 => 'Main Contractor',
+            3 => 'Consultant',
+            4 => 'Owner',
+            5 => 'Engineer',
+        ];
+
+        if (!isset($roleMap[$roleType])) {
+            return;
+        }
+
+        $role = InquirieRole::where('name', $roleMap[$roleType])->first();
+
+        if (!$role) {
+            return;
+        }
+
+        $this->modalContactType = $role->id;
+        $this->modalContactTypeLabel = $role->name;
+
+        $this->newContact = [
+            'name' => '',
+            'email' => '',
+            'phone_1' => '',
+            'phone_2' => '',
+            'type' => 'person',
+            'address_1' => '',
+            'address_2' => '',
+            'tax_number' => '',
+            'parent_id' => null,
+            'notes' => '',
+        ];
+
+        $this->resetValidation();
+        $this->dispatch('openContactModal');
+    }
+
+    public function saveNewContact()
+    {
+        $this->validate([
+            'newContact.name' => 'required|string|max:255',
+            'newContact.phone_1' => 'required|string|max:20',
+            'newContact.email' => 'nullable|email|unique:contacts,email',
+            'newContact.type' => 'required|in:person,company',
+            'selectedRoles' => 'required|array|min:1',
+            'selectedRoles.*' => 'exists:inquiries_roles,id',
+        ]);
+
+        $contact = Contact::create([
+            'name' => $this->newContact['name'],
+            'email' => $this->newContact['email'],
+            'phone_1' => $this->newContact['phone_1'],
+            'phone_2' => $this->newContact['phone_2'],
+            'type' => $this->newContact['type'],
+            'address_1' => $this->newContact['address_1'],
+            'address_2' => $this->newContact['address_2'],
+            'tax_number' => $this->newContact['tax_number'],
+            'parent_id' => $this->newContact['parent_id'],
+            'notes' => $this->newContact['notes'],
+        ]);
+
+        $contact->roles()->attach($this->selectedRoles);
+
+        $mainRole = InquirieRole::find($this->modalContactType);
+        if ($mainRole) {
+            $roleKey = match ($mainRole->name) {
+                'Client' => 'client',
+                'Main Contractor' => 'main_contractor',
+                'Consultant' => 'consultant',
+                'Owner' => 'owner',
+                'Engineer' => 'engineer',
+                default => 'client'
+            };
+
+            $this->selectedContacts[$roleKey] = $contact->id;
+        }
+
+        $this->dispatch('closeContactModal');
+        $this->refreshContactsList();
+        $this->dispatch('contactAdded');
+
+        session()->flash('message', __('Added Successfully'));
+        $this->resetContactForm();
+    }
+
+    private function refreshContactsList()
+    {
+        $this->contacts = Contact::with(['roles', 'parent'])->get()->map(function ($contact) {
+            $contactArray = $contact->toArray();
+            $contactArray['roles'] = $contact->roles->toArray();
+            if ($contact->parent) {
+                $contactArray['parent'] = $contact->parent->toArray();
+            }
+            return $contactArray;
+        })->toArray();
+    }
+
+    private function resetContactForm()
+    {
+        $this->newContact = [
+            'name' => '',
+            'email' => '',
+            'phone_1' => '',
+            'phone_2' => '',
+            'type' => 'person',
+            'address_1' => '',
+            'address_2' => '',
+            'tax_number' => '',
+            'parent_id' => null,
+            'notes' => '',
+        ];
+        $this->modalContactType = null;
+        $this->modalContactTypeLabel = '';
+        $this->selectedRoles = [];
+    }
+
+    public function updatedSelectedContacts($value, $key)
+    {
+        if (!$value) {
+            return;
+        }
+
+        $contact = Contact::find($value);
+        if (!$contact) {
+            return;
+        }
+
+        $roleMap = [
+            'client' => 'Client',
+            'main_contractor' => 'Main Contractor',
+            'consultant' => 'Consultant',
+            'owner' => 'Owner',
+            'engineer' => 'Engineer',
+        ];
+
+        $roleName = $roleMap[$key] ?? null;
+        if (!$roleName) {
+            return;
+        }
+
+        $role = InquirieRole::where('name', $roleName)->first();
+        if (!$role) {
+            return;
+        }
+
+        if (!$contact->roles()->where('role_id', $role->id)->exists()) {
+            $contact->roles()->attach($role->id);
+        }
+    }
+
+
+    public function openFromMapModal()
+    {
+        $this->mapModalType = 'from';
+        $this->showMapModal = true;
+
+        $this->dispatch('initMapPicker', [
+            'type' => 'from',
+            'lat' => $this->fromLocationLat,
+            'lng' => $this->fromLocationLng,
+            'title' => __('Select First Location (From)'),
+        ]);
+    }
+
+    public function openToMapModal()
+    {
+        $this->mapModalType = 'to';
+        $this->showMapModal = true;
+
+        $defaultLat = $this->toLocationLat ?? 25.20485;
+        $defaultLng = $this->toLocationLng ?? 55.27078;
+
+        $this->dispatch('initMapPicker', [
+            'type' => 'to',
+            'lat' => $defaultLat,
+            'lng' => $defaultLng,
+            'title' => __('Select Second Location (To)'),
+        ]);
+    }
+
+    public function closeMapModal()
+    {
+        $this->showMapModal = false;
+        $this->mapModalType = '';
+    }
+
+    #[On('locationPicked')]
+    public function handleLocationPickedEvent(...$args)
+    {
+        $data = [
+            'type' => $args[0] ?? null,
+            'address' => $args[1] ?? null,
+            'lat' => $args[2] ?? null,
+            'lng' => $args[3] ?? null,
+        ];
+
+        $this->handleLocationPicked($data['type'], $data['address'], $data['lat'], $data['lng']);
+    }
+
+    public function handleLocationPicked($type, $address, $lat, $lng)
+    {
+        if (!$type || !$address || !$lat || !$lng) {
+            return;
+        }
+
+        if ($type === 'from') {
+            $this->fromLocation = $address;
+            $this->fromLocationLat = $lat;
+            $this->fromLocationLng = $lng;
+        } else {
+            $this->toLocation = $address;
+            $this->toLocationLat = $lat;
+            $this->toLocationLng = $lng;
+        }
+
+        if ($type === 'to') {
+            $this->generateTenderId();
+        }
+
+        $this->closeMapModal();
+
+        if ($this->fromLocationLat && $this->fromLocationLng && $this->toLocationLat && $this->toLocationLng) {
+            $this->calculateDistance();
+        }
+    }
+
+    public function calculateDistance()
+    {
+        if (!$this->fromLocationLat || !$this->fromLocationLng) {
+            session()->flash('warning', __('Please Select First Location'));
+            return;
+        }
+
+        if (!$this->toLocationLat || !$this->toLocationLng) {
+            session()->flash('warning', __('Please Select Second Location'));
+            return;
+        }
+
+        try {
+            $distanceCalculator = app(DistanceCalculatorService::class);
+
+            $result = $distanceCalculator->calculateDrivingDistanceWithDetails(
+                $this->fromLocationLat,
+                $this->fromLocationLng,
+                $this->toLocationLat,
+                $this->toLocationLng
+            );
+
+            if ($result) {
+                $this->calculatedDistance = $result['distance'];
+                $this->calculatedDuration = $result['duration'] ?? null;
+                $this->storeLocationInDatabase();
+            } else {
+                session()->flash('error', __('Failed To Calculate Distance. Please Try Again.'));
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', __('Error Calculating Distance: '));
+        }
+    }
+
+    public function resetAll()
+    {
+        $this->fromLocation = 'Abu Dhabi, UAE';
+        $this->fromLocationLat = 24.45388;
+        $this->fromLocationLng = 54.37734;
+
+        $this->toLocation = '';
+        $this->toLocationLat = null;
+        $this->toLocationLng = null;
+
+        $this->calculatedDistance = null;
+        $this->calculatedDuration = null;
+    }
+
+    public function resetFromLocation()
+    {
+        $this->fromLocation = 'Abu Dhabi, UAE';
+        $this->fromLocationLat = 24.45388;
+        $this->fromLocationLng = 54.37734;
+
+        $this->calculatedDistance = null;
+        $this->calculatedDuration = null;
+    }
+
+    public function resetToLocation()
+    {
+        $this->toLocation = '';
+        $this->toLocationLat = null;
+        $this->toLocationLng = null;
+
+        $this->calculatedDistance = null;
+        $this->calculatedDuration = null;
+    }
+
+    private function storeLocationInDatabase()
+    {
+        if (!$this->calculatedDistance) {
+            return [null, null];
+        }
+
+        try {
+            $emirate = $this->extractEmirateFromAddress($this->toLocation) ?: 'Abu Dhabi';
+            $country = \App\Models\Country::firstOrCreate(
+                ['title' => 'United Arab Emirates'],
+                ['title' => 'United Arab Emirates']
+            );
+            $state = \App\Models\State::firstOrCreate(
+                ['title' => 'United Arab Emirates', 'country_id' => $country->id],
+                ['title' => 'United Arab Emirates', 'country_id' => $country->id]
+            );
+            $city = City::firstOrCreate(
+                ['title' => $emirate, 'state_id' => $state->id],
+                [
+                    'latitude' => $this->toLocationLat,
+                    'longitude' => $this->toLocationLng,
+                    'state_id' => $state->id
+                ]
+            );
+            $town = Town::updateOrCreate(
+                ['title' => $this->toLocation],
+                [
+                    'latitude' => $this->toLocationLat,
+                    'longitude' => $this->toLocationLng,
+                    'city_id' => $city->id,
+                    'distance_from_headquarters' => $this->calculatedDistance
+                ]
+            );
+            $this->cityId = $city->id;
+            $this->townId = $town->id;
+            return [$city, $town];
+        } catch (\Exception $e) {
+            return [null, null];
+        }
+    }
+
+    private function extractEmirateFromAddress($address)
+    {
+        $emirates = ['Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Ras Al Khaimah', 'Fujairah'];
+        foreach ($emirates as $emirate) {
+            if (stripos($address, $emirate) !== false) {
+                return $emirate;
+            }
+        }
+        return null;
+    }
+
+    private function loadContactsFromInquiry($inquiry)
+    {
+        $roleMap = [
+            'Client' => 'client',
+            'Main Contractor' => 'main_contractor',
+            'Consultant' => 'consultant',
+            'Owner' => 'owner',
+            'Engineer' => 'engineer',
+        ];
+
+        foreach ($inquiry->contacts as $contact) {
+            $role = $contact->pivot->role_id;
+            $roleName = InquirieRole::find($role)?->name;
+
+            if ($roleName && isset($roleMap[$roleName])) {
+                $this->selectedContacts[$roleMap[$roleName]] = $contact->id;
+            }
+        }
     }
 
     private function buildWorkTypeHierarchy($workTypeId)
@@ -328,6 +757,7 @@ class EditInquiry extends Component
         $hierarchy = collect();
         $current = $workType;
 
+        // بناء الهيكل من الأسفل للأعلى
         while ($current) {
             $hierarchy->prepend($current);
             $current = $current->parent;
@@ -336,12 +766,14 @@ class EditInquiry extends Component
         $this->currentWorkTypeSteps = [];
         $this->currentWorkPath = [];
 
+        // تعبئة الخطوات بشكل صحيح
         foreach ($hierarchy as $index => $type) {
             $stepNumber = $index + 1;
             $this->currentWorkTypeSteps[$stepNumber] = $type->id;
             $this->currentWorkPath[$index] = $type->name;
         }
 
+        // ✅ إرسال البيانات للـ JavaScript
         $this->dispatch('prepopulateWorkTypes', [
             'steps' => $this->currentWorkTypeSteps,
             'path' => $this->currentWorkPath
@@ -407,7 +839,53 @@ class EditInquiry extends Component
     {
         $wireModel = $data['wireModel'];
         $value = $data['value'];
-        $this->{$wireModel} = $value;
+
+        // التحقق إذا كان اختيار contact
+        if (strpos($wireModel, 'selectedContacts.') === 0) {
+            $key = str_replace('selectedContacts.', '', $wireModel);
+            $this->selectedContacts[$key] = $value;
+
+            // تحديث قائمة الـ contacts
+            $this->refreshContactsList();
+
+            // إضافة الدور للـ Contact
+            if ($value) {
+                $this->assignRoleToContact($value, $key);
+            }
+        } else {
+            // باقي الحقول العادية
+            $this->{$wireModel} = $value;
+        }
+    }
+
+    private function assignRoleToContact($contactId, $roleKey)
+    {
+        $contact = Contact::find($contactId);
+        if (!$contact) {
+            return;
+        }
+
+        $roleMap = [
+            'client' => 'Client',
+            'main_contractor' => 'Main Contractor',
+            'consultant' => 'Consultant',
+            'owner' => 'Owner',
+            'engineer' => 'Engineer',
+        ];
+
+        $roleName = $roleMap[$roleKey] ?? null;
+        if (!$roleName) {
+            return;
+        }
+
+        $role = InquirieRole::where('name', $roleName)->first();
+        if (!$role) {
+            return;
+        }
+
+        if (!$contact->roles()->where('role_id', $role->id)->exists()) {
+            $contact->roles()->attach($role->id);
+        }
     }
 
     public function removeDocumentFile($index)
@@ -643,245 +1121,108 @@ class EditInquiry extends Component
         });
     }
 
-    public function openClientModal($type = null)
+    public function save()
     {
-        if (!$type) {
-            // session()->flash('error', 'يرجى تحديد نوع العميل');
-            return;
-        }
-
-        $clientTypes = [
-            1 => 'Person',
-            2 => 'Main Contractor',
-            3 => 'Consultant',
-            4 => 'Owner',
-            5 => 'Engineer',
-        ];
-
-        if (!isset($clientTypes[$type])) {
-            // session()->flash('error', 'نوع العميل غير صالح');
-            return;
-        }
-
-        // تحقق إذا كان النوع موجود بناءً على العنوان
-        $clientType = \Modules\CRM\Models\ClientType::firstOrCreate(
-            ['title' => $clientTypes[$type]],
-            [
-                'id' => $type,
-                'title' => $clientTypes[$type],
-                'created_at' => now(),
-                'updated_at' => now(),
-                'branch_id' => Auth::user()->branch_id ?? 1,
-            ]
-        );
-
-        $this->modalClientType = $clientType->id;
-        $this->modalClientTypeLabel = $clientType->title;
-
-        $this->newClient = [
-            'cname' => '',
-            'email' => '',
-            'phone' => '',
-            'phone2' => '',
-            'company' => '',
-            'address' => '',
-            'address2' => '',
-            'date_of_birth' => '',
-            'national_id' => '',
-            'contact_person' => '',
-            'contact_phone' => '',
-            'contact_relation' => '',
-            'info' => '',
-            'job' => '',
-            'gender' => '',
-            'client_category_id' => null,
-            'is_active' => true,
-            'client_type_id' => $clientType->id,
-        ];
-
-        $this->resetValidation();
-        $this->dispatch('openClientModal');
-    }
-
-    public function saveNewClient()
-    {
+        // dd($this->all());
+        // إضافة Validation
         $this->validate([
-            'newClient.cname' => 'required|string|max:255',
-            'newClient.phone' => 'required|string|max:20',
-            'newClient.email' => 'nullable|email|unique:clients,email',
-            'newClient.gender' => 'required|in:male,female',
-            'modalClientType' => 'required|integer|min:1',
-        ], [
-            'newClient.cname.required' => __('Client Name Required'),
-            'newClient.phone.required' => __('Phone Number Required'),
-            'newClient.email.email' => __('Invalid Email Format'),
-            'newClient.email.unique' => __('Email Already In Use'),
-            'modalClientType.required' => __('Client Type Required'),
-            'modalClientType.integer' => __('Client Type Must Be Integer'),
+            'projectId' => 'nullable|exists:projects,id',
+            'inquiryDate' => 'required|date',
+            'cityId' => 'nullable|exists:cities,id',
+            'townId' => 'nullable|exists:towns,id',
+            'status' => 'nullable|string',
+            'tenderNo' => 'nullable|string|max:255',
+            'totalProjectValue' => 'nullable|numeric|min:0',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $clientType = \Modules\CRM\Models\ClientType::findOrFail($this->modalClientType);
+            // ✅ إصلاح: تخزين الموقع فقط إذا كانت البيانات موجودة
+            $cityId = $this->cityId;
+            $townId = $this->townId;
+            $townDistance = $this->calculatedDistance;
 
-            $client = Client::create([
-                'cname' => $this->newClient['cname'],
-                'email' => $this->newClient['email'],
-                'phone' => $this->newClient['phone'],
-                'phone2' => $this->newClient['phone2'],
-                'company' => $this->newClient['company'],
-                'address' => $this->newClient['address'],
-                'address2' => $this->newClient['address2'],
-                'date_of_birth' => $this->newClient['date_of_birth'],
-                'national_id' => $this->newClient['national_id'],
-                'contact_person' => $this->newClient['contact_person'],
-                'contact_phone' => $this->newClient['contact_phone'],
-                'contact_relation' => $this->newClient['contact_relation'],
-                'info' => $this->newClient['info'],
-                'job' => $this->newClient['job'],
-                'gender' => $this->newClient['gender'],
-                'client_category_id' => $this->newClient['client_category_id'] ?? null,
-                'is_active' => $this->newClient['is_active'] ?? true,
-                'client_type_id' => $this->modalClientType,
-                'created_by' => Auth::id(),
-                'tenant' => Auth::user()->tenant ?? 0,
-                'branch' => Auth::user()->branch ?? 0,
-                'branch_id' => Auth::user()->branch_id ?? 1,
-            ]);
-
-            switch ($clientType->title) {
-                case 'Person':
-                case 'Company':
-                    $this->clientId = $client->id;
-                    break;
-                case 'Main Contractor':
-                    $this->mainContractorId = $client->id;
-                    break;
-                case 'Consultant':
-                    $this->consultantId = $client->id;
-                    break;
-                case 'Owner':
-                    $this->ownerId = $client->id;
-                    break;
-                case 'Engineer':
-                    $this->assignedEngineer = $client->id;
-                    break;
-                default:
-                    $this->clientId = $client->id;
+            // إذا كانت المواقع والمسافة محسوبة، احفظها
+            if ($this->toLocationLat && $this->toLocationLng && $this->calculatedDistance) {
+                list($city, $town) = $this->storeLocationInDatabase();
+                $cityId = $city->id ?? $this->cityId;
+                $townId = $town->id ?? $this->townId;
+                $townDistance = $this->calculatedDistance;
             }
 
-            DB::commit();
+            // ✅ إصلاح: التأكد من الـ work_type_id
+            $workTypeId = $this->getMainWorkTypeId();
 
-            $this->dispatch('closeClientModal');
-            $this->refreshClientLists();
+            // ✅ إصلاح: التأكد من inquiry_source_id
+            $inquirySourceId = null;
+            if (!empty($this->inquirySourceSteps)) {
+                $inquirySourceId = end($this->inquirySourceSteps);
+                // تنظيف القيم الفارغة
+                if ($inquirySourceId === '' || $inquirySourceId === null) {
+                    $inquirySourceId = null;
+                }
+            }
 
-            session()->flash('message', __('Added Successfully', ['type' => $clientType->title]));
-
-            $this->resetClientForm();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', __('Error Adding '));
-        }
-    }
-
-    private function refreshClientLists()
-    {
-        $allClients = Client::with('clientType')->get()->toArray();
-
-        $this->clients = $allClients;
-        $this->mainContractors = $allClients;
-        $this->consultants = $allClients;
-        $this->owners = $allClients;
-        $this->engineers = $allClients;
-        $this->clientCategories = ClientCategory::all()->toArray();
-    }
-
-    private function resetClientForm()
-    {
-        $this->newClient = [
-            'cname' => '',
-            'email' => '',
-            'phone' => '',
-            'phone2' => '',
-            'company' => '',
-            'address' => '',
-            'address2' => '',
-            'date_of_birth' => '',
-            'national_id' => '',
-            'contact_person' => '',
-            'contact_phone' => '',
-            'contact_relation' => '',
-            'info' => '',
-            'job' => '',
-            'gender' => '',
-            'is_active' => true,
-            'type' => null,
-        ];
-    }
-
-    public function save()
-    {
-        try {
-            DB::beginTransaction();
-
+            // تحديث الـ Inquiry
             $this->inquiry->update([
                 'project_id' => $this->projectId,
-
                 'inquiry_date' => $this->inquiryDate,
                 'req_submittal_date' => $this->reqSubmittalDate,
                 'project_start_date' => $this->projectStartDate,
-
-                'city_id' => $this->cityId,
-                'town_id' => $this->townId,
-                'town_distance' => $this->townDistance,
-
+                'city_id' => $cityId,
+                'town_id' => $townId,
+                'town_distance' => $townDistance,
                 'status' => $this->status,
                 'status_for_kon' => $this->statusForKon,
                 'kon_title' => $this->konTitle,
-
-                'work_type_id' => $this->getMainWorkTypeId(),
+                'work_type_id' => $workTypeId,
                 'final_work_type' => $this->finalWorkType,
-
-                'inquiry_source_id' => !empty($this->inquirySourceSteps)
-                    ? end($this->inquirySourceSteps)
-                    : null,
-                'final_inquiry_source' =>  $this->finalInquirySource,
-
-                'client_id' => $this->clientId,
-                'main_contractor_id' => $this->mainContractorId,
-                'consultant_id' => $this->consultantId,
-                'owner_id' => $this->ownerId,
-                'assigned_engineer_id' => $this->assignedEngineer,
-
+                'inquiry_source_id' => $inquirySourceId,
+                'final_inquiry_source' => $this->finalInquirySource,
                 'total_check_list_score' => $this->totalScore,
                 'project_difficulty' => $this->projectDifficulty,
-
                 'tender_number' => $this->tenderNo,
                 'tender_id' => $this->tenderId,
-                // 'difficulty_percentage' => $this->difficultyPercentage, // إضافة النسبة المئوية
                 'estimation_start_date' => $this->estimationStartDate,
                 'estimation_finished_date' => $this->estimationFinishedDate,
                 'submitting_date' => $this->submittingDate,
                 'total_project_value' => $this->totalProjectValue,
-
                 'quotation_state' => $this->quotationState,
                 'rejection_reason' => $this->quotationStateReason,
-
+                'assigned_engineer_date' => $this->assignEngineerDate,
                 'project_size_id' => $this->projectSize,
-
                 'client_priority' => $this->clientPriority,
                 'kon_priority' => $this->konPriority,
-
                 'type_note' => $this->type_note,
             ]);
 
+            // ✅ حفظ Contacts (حذف التكرار)
+            $this->inquiry->contacts()->detach();
+
+            $roleMap = [
+                'client' => 'Client',
+                'main_contractor' => 'Main Contractor',
+                'consultant' => 'Consultant',
+                'owner' => 'Owner',
+                'engineer' => 'Engineer',
+            ];
+
+            foreach ($this->selectedContacts as $roleKey => $contactId) {
+                if ($contactId && isset($roleMap[$roleKey])) {
+                    $role = InquirieRole::where('name', $roleMap[$roleKey])->first();
+                    if ($role) {
+                        $this->inquiry->contacts()->attach($contactId, ['role_id' => $role->id]);
+                    }
+                }
+            }
+
+            // ✅ حفظ Work Types
             $this->inquiry->workTypes()->detach();
             $this->saveAllWorkTypes($this->inquiry);
 
-            // Handle project image
+            // ✅ Handle project image
             if ($this->projectImage) {
-                // Remove existing project image
                 if ($this->existingProjectImage) {
                     $this->existingProjectImage->delete();
                 }
@@ -891,38 +1232,40 @@ class EditInquiry extends Component
                     ->toMediaCollection('project-image');
             }
 
-            // Handle document files
-            if (!empty($this->documentFiles)) {
+            // ✅ Handle document files
+            if (!empty($this->documentFiles) && is_array($this->documentFiles)) {
                 foreach ($this->documentFiles as $file) {
-                    $this->inquiry
-                        ->addMedia($file->getRealPath())
-                        ->usingFileName($file->getClientOriginalName())
-                        ->toMediaCollection('inquiry-documents');
+                    if ($file && method_exists($file, 'getRealPath')) {
+                        $this->inquiry
+                            ->addMedia($file->getRealPath())
+                            ->usingFileName($file->getClientOriginalName())
+                            ->toMediaCollection('inquiry-documents');
+                    }
                 }
             }
 
-            // Sync submittal checklists
+            // ✅ Sync submittal checklists
             $submittalIds = [];
             foreach ($this->submittalChecklist as $item) {
-                if (!empty($item['checked']) && isset($item['id'])) {
-                    $submittalIds[] = $item['id'];
+                if (!empty($item['checked']) && isset($item['id']) && is_numeric($item['id'])) {
+                    $submittalIds[] = (int) $item['id'];
                 }
             }
             $this->inquiry->submittalChecklists()->sync($submittalIds);
 
-            // Sync working conditions
+            // ✅ Sync working conditions
             $conditionIds = [];
             foreach ($this->workingConditions as $condition) {
-                if (!empty($condition['checked']) && isset($condition['id'])) {
-                    $conditionIds[] = $condition['id'];
+                if (!empty($condition['checked']) && isset($condition['id']) && is_numeric($condition['id'])) {
+                    $conditionIds[] = (int) $condition['id'];
                 }
             }
             $this->inquiry->workConditions()->sync($conditionIds);
 
-            // Sync project documents
+            // ✅ Sync project documents
             $this->inquiry->projectDocuments()->detach();
             foreach ($this->projectDocuments as $document) {
-                if (!empty($document['checked'])) {
+                if (!empty($document['checked']) && isset($document['name'])) {
                     $projectDocument = InquiryDocument::firstOrCreate(
                         ['name' => $document['name']]
                     );
@@ -933,10 +1276,12 @@ class EditInquiry extends Component
                 }
             }
 
-            // Sync quotation units
+            // ✅ إصلاح: Sync quotation units
             $attachments = [];
+
             if (!empty($this->selectedQuotationUnits) && is_array($this->selectedQuotationUnits)) {
                 foreach ($this->selectedQuotationUnits as $typeId => $unitIds) {
+                    // تنظيف typeId
                     if (!is_numeric($typeId) || (int)$typeId <= 0) {
                         continue;
                     }
@@ -944,7 +1289,9 @@ class EditInquiry extends Component
 
                     if (!empty($unitIds) && is_array($unitIds)) {
                         foreach ($unitIds as $unitId => $isSelected) {
-                            if ($isSelected === true || $isSelected === 1) {
+                            // تحقق من أن القيمة true
+                            if (($isSelected === true || $isSelected === 1 || $isSelected === '1')) {
+                                // تنظيف unitId
                                 if (is_numeric($unitId) && (int)$unitId > 0) {
                                     $unitId = (int) $unitId;
                                     $attachments[$unitId] = ['quotation_type_id' => $typeId];
@@ -953,77 +1300,116 @@ class EditInquiry extends Component
                         }
                     }
                 }
-                if (!empty($attachments)) {
-                    $this->inquiry->quotationUnits()->sync($attachments);
+            }
+
+            // حفظ الـ units
+            if (!empty($attachments)) {
+                $this->inquiry->quotationUnits()->sync($attachments);
+            } else {
+                // إذا لم يكن هناك units، احذف القديمة
+                $this->inquiry->quotationUnits()->detach();
+            }
+
+            // ✅ Save new temporary comments
+            if (!empty($this->tempComments) && is_array($this->tempComments)) {
+                foreach ($this->tempComments as $tempComment) {
+                    if (isset($tempComment['comment']) && !empty($tempComment['comment'])) {
+                        InquiryComment::create([
+                            'inquiry_id' => $this->inquiry->id,
+                            'user_id' => Auth::id(),
+                            'comment' => $tempComment['comment'],
+                        ]);
+                    }
                 }
             }
 
-            // Save new temporary comments
-            foreach ($this->tempComments as $tempComment) {
-                InquiryComment::create([
-                    'inquiry_id' => $this->inquiry->id,
-                    'user_id' => Auth::id(),
-                    'comment' => $tempComment['comment'],
-                ]);
-            }
+            // إعادة حساب النتائج
             $this->calculateScores();
+
             DB::commit();
             return redirect()->route('inquiries.index')->with('message', __('Inquiry Updated Success'));
         } catch (\Exception) {
             DB::rollBack();
-            Log::error(__('Error Updating Inquiry: '));
-            return back()->with('error', __('Error During Update: '));
-        }
-    }
-
-    private function saveAllWorkTypes($inquiry)
-    {
-        $order = 0;
-
-        // حفظ الـ Work Types المختارة والمضافة
-        foreach ($this->selectedWorkTypes as $workType) {
-            $lastStepId = end($workType['steps']);
-            if ($lastStepId) {
-                $inquiry->workTypes()->attach($lastStepId, [
-                    'hierarchy_path' => json_encode($workType['steps']),
-                    'description' => $workType['final_description'] ?? '',
-                    'order' => $order++
-                ]);
-            }
-        }
-
-        // حفظ الـ Work Type الحالي (لو موجود ومختلف)
-        if (!empty($this->currentWorkTypeSteps) && end($this->currentWorkTypeSteps)) {
-            $currentLastId = end($this->currentWorkTypeSteps);
-
-            // تحقق إنه مش موجود في المختارين
-            $alreadyExists = collect($this->selectedWorkTypes)->contains(function ($wt) use ($currentLastId) {
-                return end($wt['steps']) == $currentLastId;
-            });
-
-            if (!$alreadyExists) {
-                $inquiry->workTypes()->attach($currentLastId, [
-                    'hierarchy_path' => json_encode($this->currentWorkTypeSteps),
-                    'description' => $this->finalWorkType ?? '',
-                    'order' => $order
-                ]);
-            }
+            session()->flash('error', __('Error During Update: '));
+            return back()->withInput();
         }
     }
 
     private function getMainWorkTypeId()
     {
-        // لو في work types مختارة، خد آخر واحد
-        if (!empty($this->selectedWorkTypes)) {
-            return end($this->selectedWorkTypes)['steps'][array_key_last(end($this->selectedWorkTypes)['steps'])];
+        // أولاً: تحقق من الـ work types المختارة
+        if (!empty($this->selectedWorkTypes) && is_array($this->selectedWorkTypes)) {
+            $lastWorkType = end($this->selectedWorkTypes);
+            if (isset($lastWorkType['steps']) && is_array($lastWorkType['steps'])) {
+                $lastStep = end($lastWorkType['steps']);
+                if ($lastStep && is_numeric($lastStep)) {
+                    return (int) $lastStep;
+                }
+            }
         }
 
-        // لو في current work type
-        if (!empty($this->currentWorkTypeSteps)) {
-            return end($this->currentWorkTypeSteps);
+        // ثانياً: تحقق من current work type
+        if (!empty($this->currentWorkTypeSteps) && is_array($this->currentWorkTypeSteps)) {
+            $lastStep = end($this->currentWorkTypeSteps);
+            if ($lastStep && is_numeric($lastStep)) {
+                return (int) $lastStep;
+            }
         }
 
-        return null;
+        // إذا لم يوجد، ارجع القيمة القديمة من الـ inquiry
+        return $this->inquiry->work_type_id;
+    }
+
+    // ✅ إصلاح: saveAllWorkTypes
+    private function saveAllWorkTypes($inquiry)
+    {
+        $order = 0;
+
+        // حفظ الـ Work Types المختارة
+        if (!empty($this->selectedWorkTypes) && is_array($this->selectedWorkTypes)) {
+            foreach ($this->selectedWorkTypes as $workType) {
+                if (!isset($workType['steps']) || !is_array($workType['steps'])) {
+                    continue;
+                }
+
+                $lastStepId = end($workType['steps']);
+
+                if ($lastStepId && is_numeric($lastStepId)) {
+                    $inquiry->workTypes()->attach((int) $lastStepId, [
+                        'hierarchy_path' => json_encode(array_map('intval', $workType['steps'])),
+                        'description' => $workType['final_description'] ?? '',
+                        'order' => $order++
+                    ]);
+                }
+            }
+        }
+
+        // حفظ الـ Work Type الحالي (إذا كان موجوداً ومختلفاً)
+        if (!empty($this->currentWorkTypeSteps) && is_array($this->currentWorkTypeSteps)) {
+            $currentLastId = end($this->currentWorkTypeSteps);
+
+            if ($currentLastId && is_numeric($currentLastId)) {
+                // تحقق أنه غير موجود في المختارين
+                $alreadyExists = false;
+
+                if (!empty($this->selectedWorkTypes)) {
+                    foreach ($this->selectedWorkTypes as $wt) {
+                        if (isset($wt['steps']) && end($wt['steps']) == $currentLastId) {
+                            $alreadyExists = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!$alreadyExists) {
+                    $inquiry->workTypes()->attach((int) $currentLastId, [
+                        'hierarchy_path' => json_encode(array_map('intval', $this->currentWorkTypeSteps)),
+                        'description' => $this->finalWorkType ?? '',
+                        'order' => $order
+                    ]);
+                }
+            }
+        }
     }
 
     public function render()
