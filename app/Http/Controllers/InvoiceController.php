@@ -30,6 +30,7 @@ class InvoiceController extends Controller
         22 => 'امر حجز',
         24 => 'فاتورة خدمه',
         25 => 'طلب احتياج',
+        26 => 'اتفاقية تسعير',
     ];
 
     // public function index(Request $request)
@@ -93,7 +94,7 @@ class InvoiceController extends Controller
 
         // Define sections for breadcrumb and navigation
         $sections = [
-            'ادارة المبيعات' => [10, 12, 14, 16, 22],
+            'ادارة المبيعات' => [10, 12, 14, 16, 22, 26],
             'ادارة المشتريات' => [11, 13, 15, 17, 24, 25],
             'ادارة المخزون' => [18, 19, 20, 21],
         ];
@@ -196,6 +197,7 @@ class InvoiceController extends Controller
             20 => 'تعديل أمر إضافة',
             21 => 'تعديل تحويل من مخزن لمخزن',
             22 => 'تعديل أمر حجز',
+            26 => 'تعديل اتفاقية تسعير',
         ];
 
         if (!isset($permissions[$type])) {
@@ -261,6 +263,7 @@ class InvoiceController extends Controller
             22 => 'حذف أمر حجز',
             24 => 'حذف أمر حجز',
             25 => 'حذف أمر حجز',
+            26 => 'حذف اتفاقية تسعير',
         ];
 
         if (!isset($permissions[$type])) {
@@ -349,9 +352,10 @@ class InvoiceController extends Controller
             20 => 'أمر إضافة',
             21 => 'تحويل من مخزن لمخزن',
             22 => 'أمر حجز',
+            26 => 'اتفاقية تسعير',
         ];
 
-        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22]) ? 'مدين' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'دائن' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'مدين' : 'غير محدد'));
+        $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22, 26]) ? 'مدين' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'دائن' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'مدين' : 'غير محدد'));
 
         return view('invoices.print-invoice-2', [
             'pro_id' => $operation->pro_id,

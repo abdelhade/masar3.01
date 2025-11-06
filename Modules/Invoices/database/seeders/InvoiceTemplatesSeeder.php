@@ -160,7 +160,23 @@ class InvoiceTemplatesSeeder extends Seeder
                 'invoice_types' => [24], // فاتورة خدمة
                 'is_default' => true,
             ],
-            // 11. نموذج الخشب والمواد (اختياري للمبيعات والمشتريات)
+            // 11. نموذج اتفاقية التسعير (جديد)
+            [
+                'name' => 'نموذج اتفاقية التسعير',
+                'code' => 'pricing_agreement',
+                'description' => 'نموذج لاتفاقيات التسعير مع العملاء',
+                'visible_columns' => [
+                    'item_name',
+                    'unit',
+                    'quantity',
+                    'price',
+                    'discount',
+                    'sub_value'
+                ],
+                'invoice_types' => [26], // اتفاقية تسعير
+                'is_default' => true,
+            ],
+            // 12. نموذج الخشب والمواد (اختياري للمبيعات والمشتريات)
             [
                 'name' => 'نموذج الخشب والمواد (بالأبعاد)',
                 'code' => 'wood_materials',

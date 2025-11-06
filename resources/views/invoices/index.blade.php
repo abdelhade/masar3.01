@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @if (in_array($invoiceType, [10, 12, 14, 16, 22]))
+    @if (in_array($invoiceType, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')
     @elseif (in_array($invoiceType, [11, 13, 15, 17, 24, 25]))
         @include('components.sidebar.purchases-invoices')

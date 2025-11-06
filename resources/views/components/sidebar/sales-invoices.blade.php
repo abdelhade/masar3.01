@@ -5,6 +5,7 @@
         14 => 'أمر بيع',
         16 => 'عرض سعر لعميل',
         22 => 'أمر حجز',
+        26 => 'اتفاقية تسعير',
     ];
     $viewPermissions = collect($sales)->map(fn($label) => 'عرض ' . $label)->toArray();
 @endphp

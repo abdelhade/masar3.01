@@ -36,6 +36,7 @@ class ProTypesSeeder extends Seeder
 
             ['id' => 24, 'pname' => 'service_invoice', 'ptext' => 'فاتورة خدمه', 'ptype' => 'فاتورة'],
             ['id' => 25, 'pname' => 'request_order', 'ptext' => 'طلب احياج', 'ptype' => 'فاتورة'],
+            ['id' => 26, 'pname' => 'pricing_agreement', 'ptext' => 'اتفاقية تسعير', 'ptype' => 'فاتورة'],
 
             ['id' => 30, 'pname' => 'allowed_discount', 'ptext' => 'خصم مسموح به', 'ptype' => 'سند'],
             ['id' => 31, 'pname' => 'earned_discount', 'ptext' => 'خصم مكتسب', 'ptype' => 'سند'],
