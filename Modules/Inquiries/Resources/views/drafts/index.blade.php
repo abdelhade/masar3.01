@@ -9,6 +9,7 @@
         'title' => __('Drafts'),
         'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Drafts')]],
     ])
+
     <div class="container-fluid">
         <div class="row mb-4">
             <div class="col-12">
@@ -20,14 +21,19 @@
                         </h2>
                     </div>
                     <div>
-                        <a href="{{ route('inquiries.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>
-                            {{ __('New Inquiry') }}
-                        </a>
-                        <a href="{{ route('inquiries.index') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-list me-2"></i>
-                            {{ __('View All Inquiries') }}
-                        </a>
+                        @can('Create Inquiries')
+                            <a href="{{ route('inquiries.create') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>
+                                {{ __('New Inquiry') }}
+                            </a>
+                        @endcan
+
+                        @can('View Inquiries')
+                            <a href="{{ route('inquiries.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i>
+                                {{ __('View All Inquiries') }}
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -97,24 +103,31 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="btn-group" role="group">
-                                                        <a href="{{ route('inquiries.edit', $draft->id) }}"
-                                                            class="btn btn-sm btn-primary"
-                                                            title="{{ __('Continue Editing') }}">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                        <button type="button" class="btn btn-sm btn-danger"
-                                                            onclick="confirmDelete({{ $draft->id }})"
-                                                            title="{{ __('Delete Draft') }}">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
+                                                        @can('Edit Inquiries')
+                                                            <a href="{{ route('inquiries.edit', $draft->id) }}"
+                                                                class="btn btn-sm btn-primary"
+                                                                title="{{ __('Continue Editing') }}">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                        @endcan
+
+                                                        @can('Delete Inquiries')
+                                                            <button type="button" class="btn btn-sm btn-danger"
+                                                                onclick="confirmDelete({{ $draft->id }})"
+                                                                title="{{ __('Delete Draft') }}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        @endcan
                                                     </div>
 
-                                                    <form id="delete-form-{{ $draft->id }}"
-                                                        action="{{ route('inquiries.destroy', $draft->id) }}"
-                                                        method="POST" class="d-none">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                    </form>
+                                                    @can('Delete Inquiries')
+                                                        <form id="delete-form-{{ $draft->id }}"
+                                                            action="{{ route('inquiries.destroy', $draft->id) }}"
+                                                            method="POST" class="d-none">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                        </form>
+                                                    @endcan
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -130,10 +143,13 @@
                                 <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
                                 <h4 class="text-muted">{{ __('No drafts found') }}</h4>
                                 <p class="text-muted">{{ __('Start creating a new inquiry to save drafts') }}</p>
-                                <a href="{{ route('inquiries.create') }}" class="btn btn-primary mt-3">
-                                    <i class="fas fa-plus me-2"></i>
-                                    {{ __('Create New Inquiry') }}
-                                </a>
+
+                                @can('Create Inquiries')
+                                    <a href="{{ route('inquiries.create') }}" class="btn btn-primary mt-3">
+                                        <i class="fas fa-plus me-2"></i>
+                                        {{ __('Create New Inquiry') }}
+                                    </a>
+                                @endcan
                             </div>
                         @endif
                     </div>

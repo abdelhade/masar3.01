@@ -9,13 +9,13 @@ use Modules\Inquiries\Http\Requests\InquiryDocumentRequest;
 
 class InquiryDocumentController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض المستندات')->only(['index']);
-    //     $this->middleware('can:إضافة المستندات')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل المستندات')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف المستندات')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:View Documents')->only('index');
+        $this->middleware('can:Create Documents')->only(['create', 'store']);
+        $this->middleware('can:Edit Documents')->only(['edit', 'update']);
+        $this->middleware('can:Delete Documents')->only('destroy');
+    }
 
     public function index()
     {
@@ -35,7 +35,7 @@ class InquiryDocumentController extends Controller
             Alert::toast(__('Document created successfully'), 'success');
             return redirect()->route('inquiry.documents.index');
         } catch (\Exception $e) {
-            Alert::toast(__('An error occurred while creating the document: '), 'error');
+            Alert::toast(__('An error occurred while creating the document'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -53,8 +53,8 @@ class InquiryDocumentController extends Controller
             $document->update($request->validated());
             Alert::toast(__('Document updated successfully'), 'success');
             return redirect()->route('inquiry.documents.index');
-        } catch (\Exception $e) {
-            Alert::toast(__('An error occurred while updating the document: '), 'error');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while updating the document'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -67,7 +67,7 @@ class InquiryDocumentController extends Controller
             Alert::toast(__('Document deleted successfully'), 'success');
             return redirect()->route('inquiry.documents.index');
         } catch (\Exception) {
-            Alert::toast(__('An error occurred while deleting the document: '), 'error');
+            Alert::toast(__('An error occurred while deleting the document'), 'error');
             return redirect()->back();
         }
     }

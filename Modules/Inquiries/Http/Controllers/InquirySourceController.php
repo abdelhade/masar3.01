@@ -2,13 +2,21 @@
 
 namespace Modules\Inquiries\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Inquiries\Models\InquirySource;
 use Modules\Inquiries\Http\Requests\InquirySourceRequest;
 
 class InquirySourceController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:View Inquiries Source')->only(['index', 'getTreeData']);
+        $this->middleware('can:Create Inquiries Source')->only('store');
+        $this->middleware('can:Edit Inquiries Source')->only('update');
+        $this->middleware('can:Delete Inquiries Source')->only('destroy');
+    }
     public function index()
     {
         $sources = InquirySource::whereNull('parent_id')

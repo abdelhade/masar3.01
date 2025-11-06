@@ -13,12 +13,15 @@
     <div class="row">
         <div class="col-lg-12">
             <!-- أزرار التحكم -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="{{ route('inquiries.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>
-                    {{ __('Add New Inquiry') }}
-                </a>
 
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                @can('Create Inquiries')
+                    <a href="{{ route('inquiries.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        {{ __('Add New Inquiry') }}
+                    </a>
+                @endcan
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#columnsModal">
                         <i class="fas fa-columns me-2"></i>
@@ -427,27 +430,39 @@
                                         @endforeach
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a class="btn btn-primary btn-sm"
-                                                    href="{{ route('inquiries.show', $inquiry->id) }}">
-                                                    <i class="las la-eye"></i>
-                                                </a>
-                                                <a class="btn btn-success btn-sm"
-                                                    href="{{ route('inquiries.edit', $inquiry->id) }}">
-                                                    <i class="las la-edit"></i>
-                                                </a>
-                                                <form action="{{ route('inquiries.destroy', $inquiry->id) }}"
-                                                    method="POST" style="display:inline-block;"
-                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this item?') }}');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm">
-                                                        <i class="las la-trash"></i>
+
+                                                @can('View Inquiries')
+                                                    <a class="btn btn-primary btn-sm"
+                                                        href="{{ route('inquiries.show', $inquiry->id) }}">
+                                                        <i class="las la-eye"></i>
+                                                    </a>
+                                                @endcan
+
+                                                @can('Edit Inquiries')
+                                                    <a class="btn btn-success btn-sm"
+                                                        href="{{ route('inquiries.edit', $inquiry->id) }}">
+                                                        <i class="las la-edit"></i>
+                                                    </a>
+                                                @endcan
+
+                                                @can('Delete Inquiries')
+                                                    <form action="{{ route('inquiries.destroy', $inquiry->id) }}"
+                                                        method="POST" style="display:inline-block;"
+                                                        onsubmit="return confirm('{{ __('Are you sure you want to delete this item?') }}');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-sm">
+                                                            <i class="las la-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+
+                                                @can('Edit Inquiries')
+                                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#commentModal-{{ $inquiry->id }}">
+                                                        <i class="las la-comment"></i>
                                                     </button>
-                                                </form>
-                                                <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#commentModal-{{ $inquiry->id }}">
-                                                    <i class="las la-comment"></i>
-                                                </button>
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>

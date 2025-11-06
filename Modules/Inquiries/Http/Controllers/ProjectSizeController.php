@@ -2,27 +2,27 @@
 
 namespace Modules\Inquiries\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Inquiries\Models\ProjectSize;
 use Modules\Inquiries\Http\Requests\ProjectSizeRequest;
 
 class ProjectSizeController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض حجم المشروع')->only(['index']);
-    //     $this->middleware('can:إضافة حجم المشروع')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل حجم المشروع')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف حجم المشروع')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:View Project Size')->only('index');
+        $this->middleware('can:Create Project Size')->only(['create', 'store']);
+        $this->middleware('can:Edit Project Size')->only(['edit', 'update']);
+        $this->middleware('can:Delete Project Size')->only('destroy');
+    }
 
     public function index()
     {
         try {
             $projectSizes = ProjectSize::all();
             return view('inquiries::project-size.index', compact('projectSizes'));
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             Alert::toast(__('Error loading project sizes'), 'error');
             return redirect()->back();
         }

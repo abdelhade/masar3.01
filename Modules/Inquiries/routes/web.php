@@ -16,6 +16,7 @@ use Modules\Inquiries\Http\Controllers\{
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('inquiries', InquiriesController::class)->names('inquiries');
+
     Route::resource('inquiry-documents', InquiryDocumentController::class)->names([
         'index'   => 'inquiry.documents.index',
         'create'  => 'inquiry.documents.create',
@@ -34,10 +35,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('work-types', WorkTypeController::class)->names('work.types')->except(['show']);
+
     Route::resource('project-size', ProjectSizeController::class)->names('project-size');
+
     Route::resource('inquiries-roles', InquiriesRoleController::class)->names('inquiries-roles');
 
-    Route::get('quotation-info/create', [QuotationInfoController::class, 'create'])->name('quotation-info.create');
+    Route::get('quotation-info/create', [QuotationInfoController::class, 'create'])->name('quotation-info.create')
+        ->middleware('permission:Create Quotation Info');
 
     Route::prefix('work-types')->name('work.types.')->group(function () {
         Route::post('/{id}/toggle-status', [WorkTypeController::class, 'toggleStatus'])->name('toggleStatus');
@@ -45,11 +49,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/active', [WorkTypeController::class, 'getActiveWorkTypes'])->name('active');
     });
 
-    Route::get('/difficulty-matrix/create', [DifficultyMatrixController::class, 'create'])->name('difficulty-matrix.create');
+    Route::get('/difficulty-matrix/create', [DifficultyMatrixController::class, 'create'])->name('difficulty-matrix.create')
+        ->middleware('permission:Create Difficulty Matrix');
+
     Route::get('dashboard/statistics/workout', [InquiryStatisticsController::class, 'index'])
-        ->name('inquiries.dashboard.statistics');
+        ->name('inquiries.dashboard.statistics')->middleware('permission:View Inquiries Statistics');
 
     Route::post('preferences/save', [InquiriesController::class, 'savePreferences'])->name('inquiries.preferences.save');
+
     Route::post('preferences/reset', [InquiriesController::class, 'resetPreferences'])->name('inquiries.preferences.reset');
 
     Route::get('/drafts/list', [InquiriesController::class, 'drafts'])->name('inquiries.drafts');

@@ -2,15 +2,23 @@
 
 namespace Modules\Inquiries\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Inquiries\Models\WorkType;
-use Modules\Inquiries\Http\Requests\WorkTypeRequest;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Modules\Inquiries\Models\WorkType;
+use RealRashid\SweetAlert\Facades\Alert;
+use Modules\Inquiries\Http\Requests\WorkTypeRequest;
 
 class WorkTypeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:View Work Types')->only(['index', 'getTreeData', 'getActiveWorkTypes']);
+        $this->middleware('can:Create Work Types')->only(['store']);
+        $this->middleware('can:Edit Work Types')->only(['update']);
+        $this->middleware('can:Delete Work Types')->only(['destroy']);
+    }
+
     public function index()
     {
         try {

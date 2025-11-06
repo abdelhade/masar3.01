@@ -2,13 +2,20 @@
 
 namespace Modules\Inquiries\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Modules\Inquiries\Models\{Inquiry, WorkType, InquirySource, ProjectSize, InquiryComment};
 use Modules\Inquiries\Enums\{InquiryStatus, QuotationStateEnum};
+use Modules\Inquiries\Models\{Inquiry, WorkType, InquirySource, ProjectSize, InquiryComment};
 
 class InquiryStatisticsController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:View Inquiries')->only(['index']);
+        $this->middleware('can:View Inquiries Statistics')->only(['index']);
+    }
+
     public function index()
     {
         $stats = $this->getDashboardStatistics();

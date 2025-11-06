@@ -234,9 +234,11 @@
                         }
                     </div>
                     <div class="action-buttons">
-                        <button class="add-child-btn" onclick="addChild(${workType.id})" title="{{ __('Add Branch') }}">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                        @can('Create Work Types')
+                            <button class="add-child-btn" onclick="addChild(${workType.id})" title="{{ __('Add Branch') }}">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        @endcan
                     </div>
                 </div>
             `;
@@ -343,6 +345,7 @@
                     </div>
                     <div class="col-md-3 d-flex justify-content-center align-items-center">
                         <div class="form-check form-switch">
+
                             <input class="form-check-input" type="checkbox" id="newWorkTypeStatus" checked>
                             <label class="form-check-label ms-2" for="newWorkTypeStatus">{{ __('Status') }}</label>
                         </div>
@@ -583,18 +586,29 @@
                 <td class="text-center align-middle">
                     <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                         <div class="form-check form-switch m-0">
-                            <input class="form-check-input toggle-status" type="checkbox"
-                                data-id="${workType.id}" ${workType.is_active ? 'checked' : ''}>
+                            @can('Edit Work Types')
+                                <input class="form-check-input toggle-status" type="checkbox"
+                                    data-id="${workType.id}" ${workType.is_active ? 'checked' : ''}>
+                            @else
+                                <span class="status-badge ${workType.is_active ? 'status-active' : 'status-inactive'}">
+                                    ${workType.is_active ? '{{ __('Active') }}' : '{{ __('Inactive') }}'}
+                                </span>
+                            @endcan
                         </div>
                     </div>
                 </td>
                 <td>
-                    <button class="btn btn-success btn-sm me-1" onclick="editWorkType(${workType.id})" title="{{ __('Edit') }}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteWorkType(${workType.id})" title="{{ __('Delete') }}">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    @can('Edit Work Types')
+                        <button class="btn btn-success btn-sm me-1" onclick="editWorkType(${workType.id})" title="{{ __('Edit') }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    @endcan
+
+                    @can('Delete Work Types')
+                        <button class="btn btn-danger btn-sm" onclick="deleteWorkType(${workType.id})" title="{{ __('Delete') }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    @endcan
                 </td>
             `;
                         tbody.appendChild(row);

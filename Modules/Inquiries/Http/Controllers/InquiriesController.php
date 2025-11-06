@@ -4,16 +4,22 @@ namespace Modules\Inquiries\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Modules\Inquiries\Models\Contact;
-use Modules\Inquiries\Models\Inquiry;
+use Modules\Inquiries\Models\{Contact, Inquiry};
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Inquiries\Models\InquirieRole;
 use Modules\Inquiries\Models\UserInquiryPreference;
 
 class InquiriesController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:View Inquiries')->only(['index', 'show', 'drafts']);
+        $this->middleware('can:Create Inquiries')->only(['create', 'store']);
+        $this->middleware('can:Edit Inquiries')->only(['edit', 'update']);
+        $this->middleware('can:Delete Inquiries')->only('destroy');
+    }
     public function index(Request $request)
     {
         $user = Auth::user();
