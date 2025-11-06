@@ -51,11 +51,150 @@
                                     value="{{ $filters['project'] ?? '' }}" placeholder="{{ __('Search project...') }}">
                             </div>
 
-                            <!-- Client Filter -->
+                            <!-- Client Filter (Dropdown) -->
                             <div class="col-md-3">
                                 <label>{{ __('Client') }}</label>
-                                <input type="text" name="filters[client]" class="form-control"
-                                    value="{{ $filters['client'] ?? '' }}" placeholder="{{ __('Search client...') }}">
+                                <select name="filters[client]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['clients'] as $client)
+                                        <option value="{{ $client->id }}"
+                                            {{ ($filters['client'] ?? '') == $client->id ? 'selected' : '' }}>
+                                            {{ $client->name }}
+                                            @if ($client->type == 'company')
+                                                <small class="text-muted">({{ __('Company') }})</small>
+                                            @else
+                                                <small class="text-muted">({{ __('Person') }})</small>
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Main Contractor Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Main Contractor') }}</label>
+                                <select name="filters[main_contractor]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['main_contractors'] as $contractor)
+                                        <option value="{{ $contractor->id }}"
+                                            {{ ($filters['main_contractor'] ?? '') == $contractor->id ? 'selected' : '' }}>
+                                            {{ $contractor->name }}
+                                            @if ($contractor->type == 'company')
+                                                <small class="text-muted">({{ __('Company') }})</small>
+                                            @else
+                                                <small class="text-muted">({{ __('Person') }})</small>
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Consultant Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Consultant') }}</label>
+                                <select name="filters[consultant]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['consultants'] as $consultant)
+                                        <option value="{{ $consultant->id }}"
+                                            {{ ($filters['consultant'] ?? '') == $consultant->id ? 'selected' : '' }}>
+                                            {{ $consultant->name }}
+                                            @if ($consultant->type == 'company')
+                                                <small class="text-muted">({{ __('Company') }})</small>
+                                            @else
+                                                <small class="text-muted">({{ __('Person') }})</small>
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Owner Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Owner') }}</label>
+                                <select name="filters[owner]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['owners'] as $owner)
+                                        <option value="{{ $owner->id }}"
+                                            {{ ($filters['owner'] ?? '') == $owner->id ? 'selected' : '' }}>
+                                            {{ $owner->name }}
+                                            @if ($owner->type == 'company')
+                                                <small class="text-muted">({{ __('Company') }})</small>
+                                            @else
+                                                <small class="text-muted">({{ __('Person') }})</small>
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Assigned Engineer Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Assigned Engineer') }}</label>
+                                <select name="filters[assigned_engineer]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['engineers'] as $engineer)
+                                        <option value="{{ $engineer->id }}"
+                                            {{ ($filters['assigned_engineer'] ?? '') == $engineer->id ? 'selected' : '' }}>
+                                            {{ $engineer->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Status For KON Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Status For KON') }}</label>
+                                <select name="filters[status_for_kon]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['status_for_kon'] as $status)
+                                        <option value="{{ $status->value }}"
+                                            {{ ($filters['status_for_kon'] ?? '') == $status->value ? 'selected' : '' }}>
+                                            {{ $status->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- KON Title Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('KON Title') }}</label>
+                                <select name="filters[kon_title]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['kon_titles'] as $title)
+                                        <option value="{{ $title->value }}"
+                                            {{ ($filters['kon_title'] ?? '') == $title->value ? 'selected' : '' }}>
+                                            {{ $title->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Client Priority Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Client Priority') }}</label>
+                                <select name="filters[client_priority]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['client_priorities'] as $priority)
+                                        <option value="{{ $priority->value }}"
+                                            {{ ($filters['client_priority'] ?? '') == $priority->value ? 'selected' : '' }}>
+                                            {{ $priority->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- KON Priority Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('KON Priority') }}</label>
+                                <select name="filters[kon_priority]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['kon_priorities'] as $priority)
+                                        <option value="{{ $priority->value }}"
+                                            {{ ($filters['kon_priority'] ?? '') == $priority->value ? 'selected' : '' }}>
+                                            {{ $priority->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <!-- Status Filter -->
@@ -99,18 +238,40 @@
                                     value="{{ $filters['inquiry_date']['to'] ?? '' }}">
                             </div>
 
-                            <!-- City Filter -->
+                            <!-- Work Type Filter -->
                             <div class="col-md-3">
-                                <label>{{ __('City') }}</label>
-                                <select name="filters[city]" class="form-select">
+                                <label>{{ __('Work Type') }}</label>
+                                <select name="filters[work_type]" class="form-select">
                                     <option value="">{{ __('All') }}</option>
-                                    @foreach ($filterData['cities'] as $city)
-                                        <option value="{{ $city->id }}"
-                                            {{ ($filters['city'] ?? '') == $city->id ? 'selected' : '' }}>
-                                            {{ $city->name }}
+                                    @foreach ($filterData['work_types'] as $workType)
+                                        <option value="{{ $workType->id }}"
+                                            {{ ($filters['work_type'] ?? '') == $workType->id ? 'selected' : '' }}>
+                                            {{ $workType->name }}
                                         </option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <!-- Inquiry Source Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Inquiry Source') }}</label>
+                                <select name="filters[inquiry_source]" class="form-select">
+                                    <option value="">{{ __('All') }}</option>
+                                    @foreach ($filterData['inquiry_sources'] as $source)
+                                        <option value="{{ $source->id }}"
+                                            {{ ($filters['inquiry_source'] ?? '') == $source->id ? 'selected' : '' }}>
+                                            {{ $source->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Tender Number Filter -->
+                            <div class="col-md-3">
+                                <label>{{ __('Tender Number') }}</label>
+                                <input type="text" name="filters[tender_number]" class="form-control"
+                                    value="{{ $filters['tender_number'] ?? '' }}"
+                                    placeholder="{{ __('Search tender number...') }}">
                             </div>
 
                             <!-- Project Difficulty Filter -->

@@ -37,6 +37,63 @@ class Inquiry extends Model implements HasMedia
         return $query->where('is_draft', true)->where('created_by', $userId);
     }
 
+    public function getClientAttribute()
+    {
+        return $this->contacts()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Client');
+            })
+            ->first();
+    }
+
+    /**
+     * Get the first main contractor contact
+     */
+    public function getMainContractorAttribute()
+    {
+        return $this->contacts()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Main Contractor');
+            })
+            ->first();
+    }
+
+    /**
+     * Get the first consultant contact
+     */
+    public function getConsultantAttribute()
+    {
+        return $this->contacts()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Consultant');
+            })
+            ->first();
+    }
+
+    /**
+     * Get the first owner contact
+     */
+    public function getOwnerAttribute()
+    {
+        return $this->contacts()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Owner');
+            })
+            ->first();
+    }
+
+    /**
+     * Get the first assigned engineer contact
+     */
+    public function getAssignedEngineerAttribute()
+    {
+        return $this->contacts()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Engineer');
+            })
+            ->first();
+    }
+
     public function scopeDrafts($query)
     {
         return $query->where('is_draft', true);
