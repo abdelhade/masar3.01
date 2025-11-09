@@ -2,7 +2,6 @@
 
 use Livewire\Volt\Component;
 use App\Models\{OperHead, OperationItems, AccHead, Item, Barcode, Price, ProType};
-use Illuminate\Support\Collection;
 
 new class extends Component {
     public $operationId;
@@ -10,21 +9,6 @@ new class extends Component {
     public $invoiceItems = [];
     public $acc1Role;
     public $acc2Role;
-    public $titles = [
-        10 => 'فاتوره مبيعات',
-        11 => 'فاتورة مشتريات',
-        12 => 'مردود مبيعات',
-        13 => 'مردود مشتريات',
-        14 => 'امر بيع',
-        15 => 'امر شراء',
-        16 => 'عرض سعر لعميل',
-        17 => 'عرض سعر من مورد',
-        18 => 'فاتورة توالف',
-        19 => 'امر صرف',
-        20 => 'امر اضافة',
-        21 => 'تحويل من مخزن لمخزن',
-        22 => 'امر حجز',
-    ];
 
     public function mount($operationId)
     {
@@ -34,9 +18,7 @@ new class extends Component {
 
     public function loadInvoice()
     {
-        $this->invoice = OperHead::with(['operationItems.item.units', 'operationItems.unit', 'acc1Head', 'acc2Head', 'employee'])
-            ->where('id', $this->operationId)
-            ->firstOrFail();
+        $this->invoice = OperHead::with(['operationItems.item.units', 'operationItems.unit', 'acc1Head', 'acc2Head', 'employee'])->findOrFail($this->operationId);
 
         // تحميل تفاصيل الفاتورة
         $this->invoiceItems = $this->invoice->operationItems
@@ -51,10 +33,9 @@ new class extends Component {
                     'code' => $item->code,
                     'quantity' => $detail->qty_in > 0 ? $detail->qty_in : $detail->qty_out,
                     'price' => $detail->item_price,
-                    'sub_value' => $detail->qty_in > 0 ? $detail->qty_in * $detail->item_price : $detail->qty_out * $detail->item_price,
-                    'discount' => $detail->discount ?? 0,
+                    'sub_value' => $detail->detail_value ?? ($detail->qty_in > 0 ? $detail->qty_in * $detail->item_price : $detail->qty_out * $detail->item_price),
+                    'discount' => $detail->item_discount ?? 0,
                     'unit_name' => $unit->name,
-                    'available_quantity' => $this->getItemAvailableQuantity($item->id, $this->invoice->acc2),
                 ];
             })
             ->toArray();
@@ -65,7 +46,7 @@ new class extends Component {
 
     public function setAccountRoles()
     {
-        $type = $this->invoice->pro_tybe;
+        $type = $this->invoice->pro_type;
 
         $map = [
             10 => ['acc1_role' => 'مدين', 'acc2_role' => 'دائن'], // فاتورة مبيعات
@@ -87,54 +68,24 @@ new class extends Component {
         $this->acc2Role = $map[$type]['acc2_role'] ?? 'دائن';
     }
 
-    public function getItemAvailableQuantity($itemId, $storeId)
-    {
-        return OperationItems::where('item_id', $itemId)->where('detail_store', $storeId)->selectRaw('SUM(qty_in - qty_out) as total')->value('total') ?? 0;
-    }
-
     public function getSubtotal()
     {
-        return collect($this->invoiceItems)->sum('sub_value');
+        return $this->invoice->fat_total ?? 0;
     }
 
     public function getDiscountValue()
     {
-        return $this->invoice->discount_value ?? 0;
+        return $this->invoice->fat_disc ?? 0;
     }
 
     public function getAdditionalValue()
     {
-        return $this->invoice->additional_value ?? 0;
+        return $this->invoice->fat_plus ?? 0;
     }
 
     public function getTotalAfterAdditional()
     {
-        $subtotal = $this->getSubtotal();
-        $discount = $this->getDiscountValue();
-        $additional = $this->getAdditionalValue();
-
-        return round($subtotal - $discount + $additional, 2);
-    }
-
-    public function getDiscountPercentage()
-    {
-        $subtotal = $this->getSubtotal();
-        if ($subtotal > 0) {
-            return round(($this->getDiscountValue() * 100) / $subtotal, 2);
-        }
-        return 0;
-    }
-
-    public function getAdditionalPercentage()
-    {
-        $subtotal = $this->getSubtotal();
-        $discount = $this->getDiscountValue();
-        $afterDiscount = $subtotal - $discount;
-
-        if ($afterDiscount > 0) {
-            return round(($this->getAdditionalValue() * 100) / $afterDiscount, 2);
-        }
-        return 0;
+        return $this->invoice->fat_net ?? 0;
     }
 
     public function printInvoice()
@@ -162,7 +113,7 @@ new class extends Component {
                     <div class="col-sm-6">
                         <h1 class="m-0">
                             <i class="fas fa-file-invoice me-2"></i>
-                            {{ ProType::find($invoice->pro_type)->ptext ?? 'فاتورة' }}
+                            {{ $this->invoice->pro_type ? ProType::find($this->invoice->pro_type)->ptext ?? 'فاتورة' : 'فاتورة' }}
                         </h1>
                     </div>
                     <div class="col-sm-6">
@@ -196,20 +147,27 @@ new class extends Component {
                                 <dl class="row mb-0">
                                     <dt class="col-sm-5">رقم الفاتورة:</dt>
                                     <dd class="col-sm-7">
-                                        <span class="badge badge-primary">{{ $invoice->pro_id }}</span>
+                                        <span
+                                            class="badge badge-primary">{{ $this->invoice->pro_id ?? 'غير محدد' }}</span>
                                     </dd>
 
                                     <dt class="col-sm-5">تاريخ الفاتورة:</dt>
-                                    <dd class="col-sm-7">{{ \Carbon\Carbon::parse($invoice->pro_date)->format('Y-m-d') }}</dd>
+                                    <dd class="col-sm-7">
+                                        {{ $this->invoice->pro_date ? \Carbon\Carbon::parse($this->invoice->pro_date)->format('Y-m-d') : 'غير محدد' }}
+                                    </dd>
 
                                     <dt class="col-sm-5">تاريخ الاستحقاق:</dt>
-                                    <dd class="col-sm-7">{{ $invoice->accural_date ? \Carbon\Carbon::parse($invoice->accural_date)->format('Y-m-d') : 'غير محدد' }}</dd>
+                                    <dd class="col-sm-7">
+                                        {{ $this->invoice->accural_date ? \Carbon\Carbon::parse($this->invoice->accural_date)->format('Y-m-d') : 'غير محدد' }}
+                                    </dd>
 
                                     <dt class="col-sm-5">الموظف:</dt>
-                                    <dd class="col-sm-7">{{ $invoice->employee->aname ?? 'غير محدد' }}</dd>
+                                    <dd class="col-sm-7">{{ $this->invoice->employee->aname ?? 'غير محدد' }}</dd>
 
                                     <dt class="col-sm-5">فئة السعر:</dt>
-                                    <dd class="col-sm-7">{{ Price::find($invoice->price_list)->name ?? 'غير محدد' }}</dd>
+                                    <dd class="col-sm-7">
+                                        {{ $this->invoice->price_list ? Price::find($this->invoice->price_list)->name ?? 'غير محدد' : 'غير محدد' }}
+                                    </dd>
                                 </dl>
                             </div>
                         </div>
@@ -224,22 +182,33 @@ new class extends Component {
                             </div>
                             <div class="card-body">
                                 <dl class="row mb-0">
-                                    <dt class="col-sm-5">{{ $acc1Role }}:</dt>
+                                    <dt class="col-sm-5">{{ $this->acc1Role ?? 'الحساب الأول' }}:</dt>
                                     <dd class="col-sm-7">
-                                        <span class="badge badge-info">{{ $invoice->acc1Head->aname ?? 'غير محدد' }}</span>
+                                        <span>{{ $this->invoice->acc1Head->aname ?? 'غير محدد' }}</span>
                                     </dd>
 
-                                    <dt class="col-sm-5">{{ $acc2Role }}:</dt>
+                                    <dt class="col-sm-5">{{ $this->acc2Role ?? 'الحساب الثاني' }}:</dt>
                                     <dd class="col-sm-7">
-                                        <span class="badge badge-info">{{ $invoice->acc2Head->aname ?? 'غير محدد' }}</span>
+                                        <span>{{ $this->invoice->acc2Head->aname ?? 'غير محدد' }}</span>
                                     </dd>
 
                                     <dt class="col-sm-5">الصندوق:</dt>
-                                    <dd class="col-sm-7">{{ $invoice->cash_box_id ? AccHead::find($invoice->cash_box_id)->aname ?? 'غير محدد' : 'غير محدد' }}</dd>
-
-                                    <dt class="col-sm-5">المدفوع من العميل:</dt>
                                     <dd class="col-sm-7">
-                                        <span class="badge badge-success">{{ number_format($invoice->received_from_client ?? 0, 2) }} ريال</span>
+                                        {{ $this->invoice->acc_fund ? AccHead::find($this->invoice->acc_fund)->aname ?? 'غير محدد' : 'غير محدد' }}
+                                    </dd>
+
+                                    <dt class="col-sm-5">
+                                        @if (in_array($this->invoice->pro_type, [10, 12, 14, 16, 18, 21, 22]))
+                                            المدفوع من العميل:
+                                        @elseif(in_array($this->invoice->pro_type, [11, 13, 15, 17, 20]))
+                                            المدفوع للمورد:
+                                        @else
+                                            المدفوع:
+                                        @endif
+                                    </dt>
+                                    <dd class="col-sm-7">
+                                        <span>{{ number_format($this->invoice->pro_value ?? 0, 2) }}
+                                            جنيه</span>
                                     </dd>
                                 </dl>
                             </div>
@@ -254,7 +223,7 @@ new class extends Component {
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <i class="fas fa-list"></i> تفاصيل الفاتورة
-                                    <span class="badge badge-primary">{{ count($invoiceItems) }} صنف</span>
+                                    <span class="badge badge-primary">{{ count($this->invoiceItems) }} صنف</span>
                                 </h3>
                             </div>
                             <div class="card-body p-0">
@@ -273,13 +242,14 @@ new class extends Component {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($invoiceItems as $index => $item)
+                                            @forelse($this->invoiceItems as $index => $item)
                                                 <tr>
                                                     <td class="text-center"><strong>{{ $index + 1 }}</strong></td>
                                                     <td>
                                                         <strong>{{ $item['name'] }}</strong>
                                                         @if ($item['code'])
-                                                            <br><small class="text-muted">كود: {{ $item['code'] }}</small>
+                                                            <br><small class="text-muted">كود:
+                                                                {{ $item['code'] }}</small>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -288,22 +258,29 @@ new class extends Component {
                                                                 ->where('unit_id', $item['unit_id'])
                                                                 ->first();
                                                         @endphp
-                                                        <code class="text-dark">{{ $barcode->barcode ?? 'غير محدد' }}</code>
+                                                        <code
+                                                            class="text-dark">{{ $barcode->barcode ?? 'غير محدد' }}</code>
                                                     </td>
                                                     <td>
-                                                        <span class="badge badge-light">{{ $item['unit_name'] }}</span>
+                                                        <span>{{ $item['unit_name'] }}</span>
                                                     </td>
                                                     <td class="text-center">
-                                                        <span class="badge badge-secondary">{{ number_format($item['quantity'], 3) }}</span>
+                                                        <span>{{ number_format($item['quantity']) }}</span>
                                                     </td>
                                                     <td class="text-left">
-                                                        <span class="text-success"><strong>{{ number_format($item['price'], 2) }}</strong> ريال</span>
+                                                        <span
+                                                            class="text-success"><strong>{{ number_format($item['price'], 2) }}</strong>
+                                                            جنيه</span>
                                                     </td>
                                                     <td class="text-left">
-                                                        <span class="text-danger">{{ number_format($item['discount'], 2) }} ريال</span>
+                                                        <span
+                                                            class="text-danger">{{ number_format($item['discount'], 2) }}
+                                                            جنيه</span>
                                                     </td>
                                                     <td class="text-left">
-                                                        <strong class="text-primary">{{ number_format($item['sub_value'], 2) }} ريال</strong>
+                                                        <strong
+                                                            class="text-primary">{{ number_format($item['sub_value'], 2) }}
+                                                            جنيه</strong>
                                                     </td>
                                                 </tr>
                                             @empty
@@ -335,24 +312,26 @@ new class extends Component {
                                 <dl class="row mb-0">
                                     <dt class="col-sm-7">المجموع الفرعي:</dt>
                                     <dd class="col-sm-5 text-left">
-                                        <strong>{{ number_format($this->getSubtotal(), 2) }} ريال</strong>
+                                        <strong>{{ number_format($this->getSubtotal(), 2) }} جنيه</strong>
                                     </dd>
 
-                                    <dt class="col-sm-7">الخصم ({{ $this->getDiscountPercentage() }}%):</dt>
+                                    <dt class="col-sm-7">الخصم:</dt>
                                     <dd class="col-sm-5 text-left text-danger">
-                                        <strong>- {{ number_format($this->getDiscountValue(), 2) }} ريال</strong>
+                                        <strong>- {{ number_format($this->getDiscountValue(), 2) }} جنيه</strong>
                                     </dd>
 
-                                    <dt class="col-sm-7">الإضافي ({{ $this->getAdditionalPercentage() }}%):</dt>
+                                    <dt class="col-sm-7">الإضافي:</dt>
                                     <dd class="col-sm-5 text-left text-success">
-                                        <strong>+ {{ number_format($this->getAdditionalValue(), 2) }} ريال</strong>
+                                        <strong>+ {{ number_format($this->getAdditionalValue(), 2) }} جنيه</strong>
                                     </dd>
 
-                                    <dt class="col-sm-12"><hr class="my-2"></dt>
+                                    <dt class="col-sm-12">
+                                        <hr class="my-2">
+                                    </dt>
 
                                     <dt class="col-sm-7 h5">الإجمالي النهائي:</dt>
                                     <dd class="col-sm-5 text-left h4 text-primary">
-                                        <strong>{{ number_format($this->getTotalAfterAdditional(), 2) }} ريال</strong>
+                                        <strong>{{ number_format($this->getTotalAfterAdditional(), 2) }} جنيه</strong>
                                     </dd>
                                 </dl>
                             </div>
@@ -361,7 +340,7 @@ new class extends Component {
                 </div>
 
                 <!-- الملاحظات -->
-                @if ($invoice->notes)
+                @if ($this->invoice->info)
                     <div class="row">
                         <div class="col-12">
                             <div class="card card-info">
@@ -371,7 +350,7 @@ new class extends Component {
                                     </h3>
                                 </div>
                                 <div class="card-body">
-                                    <p class="mb-0">{{ $invoice->notes }}</p>
+                                    <p class="mb-0">{{ $this->invoice->info }}</p>
                                 </div>
                             </div>
                         </div>
