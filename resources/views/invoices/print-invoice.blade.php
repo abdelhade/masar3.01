@@ -237,7 +237,7 @@
         .detail-label {
             font-weight: 600;
             color: #6c757d;
-            min-width: 80px;
+            min-width: 120px;
             margin-left: 10px;
         }
 
@@ -565,6 +565,45 @@
         .invoice-body>* {
             animation: fadeInUp 0.8s ease forwards;
         }
+
+        .text-success {
+            color: #28a745;
+        }
+
+        .text-danger {
+            color: #dc3545;
+        }
+
+        .text-primary {
+            color: #007bff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.4em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        .badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+
+        .badge-info {
+            color: #fff;
+            background-color: #17a2b8;
+        }
+
+        .badge-primary {
+            color: #fff;
+            background-color: #007bff;
+        }
     </style>
 </head>
 
@@ -574,29 +613,35 @@
         <div class="invoice-header">
             <div class="header-content">
                 <div class="company-info">
-                    <h1>شركة التقنية المتقدمة</h1>
-                    <p>للحلول التقنية والبرمجية</p>
-                    <p>📧 info@company.com | 📱 +966 12 345 6789</p>
+                    <h1>Massar</h1>
+                    <p>نظام إدارة المبيعات والمشتريات</p>
+                    <p>📧 info@massar.com | 📱 +966 12 345 6789</p>
                 </div>
 
                 <div class="invoice-title">
-                    <h2> {{ $titles[$type] }}</h2>
+                    <h2>{{ $titles[$type] ?? 'فاتورة' }}</h2>
                     <div class="invoice-details-header">
                         <div class="detail-item">
                             <span>رقم الفاتورة:</span>
-                            <strong>{{ $pro_id }}</strong>
+                            <strong>
+                                <span class="badge badge-primary">{{ $pro_id ?? 'غير محدد' }}</span>
+                            </strong>
                         </div>
                         <div class="detail-item">
                             <span>التاريخ:</span>
-                            <strong>{{ $pro_date }}</strong>
+                            <strong>
+                                {{ $pro_date ? \Carbon\Carbon::parse($pro_date)->format('Y-m-d') : 'غير محدد' }}
+                            </strong>
                         </div>
                         <div class="detail-item">
                             <span>تاريخ الاستحقاق:</span>
-                            <strong>{{ $accural_date }}</strong>
+                            <strong>
+                                {{ $accural_date ? \Carbon\Carbon::parse($accural_date)->format('Y-m-d') : 'غير محدد' }}
+                            </strong>
                         </div>
                         <div class="detail-item">
                             <span>رقم السيريال:</span>
-                            <strong>{{ $serial_number }}</strong>
+                            <strong>{{ $serial_number ?? 'غير محدد' }}</strong>
                         </div>
                     </div>
                 </div>
@@ -607,25 +652,57 @@
         <div class="invoice-body">
             <!-- Client Details Section -->
             <div class="client-section">
-                <div class="section-title">تفاصيل الفاتورة</div>
+                <div class="section-title">معلومات الفاتورة</div>
                 <div class="client-details">
-
-                    <div class="detail-row">
-                        <span class="detail-label">العميل:</span>
-                        <span
-                            class="detail-value">{{ $acc1List->firstWhere('id', $acc1_id)->aname ?? 'غير محدد' }}</span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="detail-label">المخزن:</span>
-                        <span
-                            class="detail-value">{{ $acc2List->firstWhere('id', $acc2_id)->aname ?? 'غير محدد' }}</span>
-                    </div>
-
                     <div class="detail-row">
                         <span class="detail-label">الموظف:</span>
-                        <span
-                            class="detail-value">{{ $employees->firstWhere('id', $emp_id)->aname ?? 'غير محدد' }}</span>
+                        <span class="detail-value">{{ $employees->first()->aname ?? 'غير محدد' }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            @if (in_array($type, [10, 12, 14, 16, 18, 21, 22, 26]))
+                                {{ 'مدين' }}:
+                            @elseif(in_array($type, [11, 13, 15, 17, 20]))
+                                {{ 'دائن' }}:
+                            @else
+                                الحساب الأول:
+                            @endif
+                        </span>
+                        <span class="detail-value">
+                            <span class="badge badge-info">{{ $acc1List->first()->aname ?? 'غير محدد' }}</span>
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            @if (in_array($type, [10, 12, 14, 16, 18, 21, 22, 26]))
+                                {{ 'دائن' }}:
+                            @elseif(in_array($type, [11, 13, 15, 17, 20]))
+                                {{ 'مدين' }}:
+                            @else
+                                الحساب الثاني:
+                            @endif
+                        </span>
+                        <span class="detail-value">
+                            <span class="badge badge-info">{{ $acc2List->first()->aname ?? 'غير محدد' }}</span>
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            @if (in_array($type, [10, 12, 14, 16, 18, 21, 22, 26]))
+                                المدفوع من العميل:
+                            @elseif(in_array($type, [11, 13, 15, 17, 20]))
+                                المدفوع للمورد:
+                            @else
+                                المدفوع:
+                            @endif
+                        </span>
+                        <span class="detail-value">
+                            <span class="badge badge-success">{{ number_format($received_from_client ?? 0, 2) }}
+                                جنيه</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -636,7 +713,9 @@
                 <table class="items-table">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>الصنف</th>
+                            <th>الباركود</th>
                             <th>الوحدة</th>
                             <th>الكمية</th>
                             <th>السعر</th>
@@ -645,79 +724,112 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($invoiceItems as $row)
-                            <tr>
-                                <td>{{ $items->firstWhere('id', $row['item_id'])->name ?? 'غير محدد' }}</td>
-                                <td>{{ $row['available_units']->firstWhere('id', $row['unit_id'])->name ?? 'غير محدد' }}
-                                </td>
-                                <td>{{ number_format($row['quantity']) }}</td>
-                                <td>{{ number_format($row['price'], 2) }} ج.م</td>
-                                <td>{{ number_format($row['discount'], 2) }} ج.م</td>
-                                <td>{{ number_format($row['sub_value'], 2) }} ج.م</td>
-                            </tr>
+                        @forelse ($invoiceItems as $index => $row)
+                        @php
+                        $itemData = $items->firstWhere('id', $row['item_id']);
+                        $unitData = $row['available_units']->first();
+                        // Get barcode for this item and unit
+                        $barcode = null;
+                        if ($itemData) {
+                        $barcode = \App\Models\Barcode::where('item_id', $row['item_id'])
+                        ->where('unit_id', $row['unit_id'])
+                        ->first();
+                        }
+                        @endphp
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td style="text-align: right;">
+                                <strong>{{ $itemData->name ?? 'غير محدد' }}</strong>
+                                @if ($itemData && $itemData->code)
+                                <br><small>كود: {{ $itemData->code }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                <code>{{ $barcode->barcode ?? 'غير محدد' }}</code>
+                            </td>
+                            <td>
+                                <span>{{ $unitData->name ?? 'غير محدد' }}</span>
+                            </td>
+                            <td>
+                                <span>{{ number_format($row['quantity']) }}</span>
+                            </td>
+                            <td>
+                                <span class="text-success">
+                                    <strong>{{ number_format($row['price'], 2) }}</strong> جنيه
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-danger">
+                                    {{ number_format($row['discount'], 2) }} جنيه
+                                </span>
+                            </td>
+                            <td>
+                                <strong class="text-primary">
+                                    {{ number_format($row['sub_value'], 2) }} جنيه
+                                </strong>
+                            </td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" style="text-align: center;">لا توجد أصناف مضافة</td>
-                            </tr>
+                        <tr>
+                            <td colspan="8" style="text-align: center;">لا توجد أصناف مضافة</td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="client-section">
-                <div class="section-title">ملخص الفاتورة</div>
-                <div class="client-details">
-
-                    <div class="detail-row">
-                        <span class="total-label">الإجمالي الفرعي:</span>
-                        <span class="total-value">{{ number_format($subtotal) }}ج.م</span>
+            <!-- Totals Section -->
+            <div class="totals-section">
+                <div class="section-title">الإجماليات</div>
+                <div class="totals-grid">
+                    <div class="total-row">
+                        <span class="total-label">المجموع الفرعي:</span>
+                        <span class="total-value">{{ number_format($subtotal ?? 0, 2) }} جنيه</span>
                     </div>
 
-                    <div class="detail-row">
+                    <div class="total-row">
                         <span class="total-label">الخصم:</span>
-                        <span class="total-value">{{ number_format($discount_percentage) }}ج.م</span>
+                        <span class="total-value text-danger">
+                            - {{ number_format($discount_value ?? 0, 2) }} جنيه
+                        </span>
                     </div>
 
-                    <div class="detail-row">
-                        <span class="total-label">قيمة الخصم: </span>
-                        <span class="total-value">{{ number_format($discount_value) }}ج.م</span>
-                    </div>
-
-                    <div class="detail-row">
+                    <div class="total-row">
                         <span class="total-label">الإضافي:</span>
-                        <span class="total-value">{{ number_format($additional_value) }}ج.م</span>
+                        <span class="total-value text-success">
+                            + {{ number_format($additional_value ?? 0, 2) }} جنيه
+                        </span>
                     </div>
 
-                    <div class="detail-row">
-                        <span class="total-label">قيمة الإضافي:</span>
-                        <span class="total-value">{{ number_format($additional_value) }}%</span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span class="total-label">المدفوع:</span>
-                        <span class="total-value">{{ number_format($received_from_client) }}ج.م</span>
-                    </div>
-
-                    <div class="detail-row total-row final-total">
+                    <div class="total-row final-total">
                         <span class="total-label">الإجمالي النهائي:</span>
-                        <span class="total-value">{{ number_format($total_after_additional) }}ج.م</span>
+                        <span class="total-value">{{ number_format($total_after_additional ?? 0, 2) }} جنيه</span>
                     </div>
 
-                    <div class="detail-row total-row remaining">
-                        <span class="total-value">الباقي:</span>
-                        <span
-                            class="total-value">{{ number_format(max($total_after_additional - $received_from_client, 0)) }}ج.م</span>
+                    <div class="total-row">
+                        <span class="total-label">المدفوع:</span>
+                        <span class="total-value">{{ number_format($received_from_client ?? 0, 2) }} جنيه</span>
+                    </div>
+
+                    <div class="total-row remaining">
+                        <span class="total-label">الباقي:</span>
+                        <span class="total-value">
+                            {{ number_format(max(($total_after_additional ?? 0) - ($received_from_client ?? 0), 0), 2) }}
+                            جنيه
+                        </span>
                     </div>
                 </div>
             </div>
+
             <!-- Notes Section -->
+            @if($notes)
             <div class="notes-section">
-                <div class="section-title">ملاحظات</div>
+                <div class="section-title">الملاحظات</div>
                 <div class="notes-content">
-                    يرجى سداد المبلغ المتبقي خلال 30 يوماً من تاريخ الفاتورة. جميع الأجهزة تشمل ضمان لمدة سنة واحدة. في
-                    حالة وجود أي استفسارات، يرجى التواصل معنا على الرقم المذكور أعلاه.
+                    {{ $notes }}
                 </div>
             </div>
+            @endif
         </div>
 
         <!-- Footer -->
@@ -734,7 +846,6 @@
             <i class="fas fa-print"></i>
             طباعة الفاتورة
         </button>
-
     </div>
 </body>
 
