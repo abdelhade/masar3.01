@@ -1,6 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')
@@ -408,6 +409,18 @@
                             <i class="fas fa-balance-scale-right"></i>
                             <span>ميزان المصروفات</span>
                         </a>
+                        <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>تقرير المصروفات العام</span>
+                        </a>
+                        <a href="{{ route('reports.general-expenses-daily-report') }}" class="report-link">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>كشف حساب مصروف</span>
+                        </a>
+                        <a href="{{ route('reports.general-cost-centers-report') }}" class="report-link">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>تقرير مراكز التكلفة</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -456,6 +469,50 @@
                         <a href="{{ route('manufacturing.invoice.report') }}" class="report-link">
                             <i class="fas fa-clipboard-list"></i>
                             <span>تقارير فواتير التصنيع</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نظام إدارة الجودة -->
+            <div class="col-lg-4 col-md-6">
+                <div class="report-card">
+                    <div class="card-header">
+                        <i class="fas fa-award"></i>
+                        <span class="card-title">إدارة الجودة (QMS)</span>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ route('quality.dashboard') }}" class="report-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>لوحة تحكم الجودة</span>
+                        </a>
+                        <a href="{{ route('quality.inspections.index') }}" class="report-link">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>فحوصات الجودة</span>
+                        </a>
+                        <a href="{{ url('/quality/ncr') }}" class="report-link">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>تقارير عدم المطابقة (NCR)</span>
+                        </a>
+                        <a href="{{ url('/quality/capa') }}" class="report-link">
+                            <i class="fas fa-tools"></i>
+                            <span>إجراءات تصحيحية (CAPA)</span>
+                        </a>
+                        <a href="{{ url('/quality/batches') }}" class="report-link">
+                            <i class="fas fa-barcode"></i>
+                            <span>تتبع الدفعات</span>
+                        </a>
+                        <a href="{{ url('/quality/supplier-ratings') }}" class="report-link">
+                            <i class="fas fa-star"></i>
+                            <span>تقييم الموردين</span>
+                        </a>
+                        <a href="{{ url('/quality/certificates') }}" class="report-link">
+                            <i class="fas fa-certificate"></i>
+                            <span>الشهادات والامتثال</span>
+                        </a>
+                        <a href="{{ url('/quality/audits') }}" class="report-link">
+                            <i class="fas fa-search"></i>
+                            <span>التدقيق الداخلي</span>
                         </a>
                     </div>
                 </div>

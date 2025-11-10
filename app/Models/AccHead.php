@@ -63,6 +63,11 @@ class AccHead extends Model
     {
         return $this->hasMany(AccHead::class, 'parent_id');
     }
+
+    public function children()
+    {
+        return $this->hasMany(AccHead::class, 'parent_id');
+    }
     // add the country and city and state and town
     public function country()
     {

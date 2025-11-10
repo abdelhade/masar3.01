@@ -60,6 +60,11 @@ class Item extends Model
         return $query->where('is_active', 0);
     }
 
+    public function scopeNotDeleted($query)
+    {
+        return $query->where('isdeleted', 0);
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);

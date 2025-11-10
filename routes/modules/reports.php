@@ -78,9 +78,9 @@ Route::get('/reports/general-suppliers-report', [ReportController::class, 'gener
 // Route::get('/reports/general-suppliers-items-report', [ReportController::class, 'generalSuppliersItemsReport'])->name('reports.general-suppliers-items-report');
 
 // تقارير المصروفات
-// Route::get('/reports/general-expenses-report', [ReportController::class, 'generalExpensesReport'])->name('reports.general-expenses-report');
+Route::get('/reports/general-expenses-report', [ReportController::class, 'generalExpensesReport'])->name('reports.general-expenses-report');
 
-// Route::get('/reports/general-expenses-daily-report', [ReportController::class, 'generalExpensesDailyReport'])->name('reports.general-expenses-daily-report');
+Route::get('/reports/general-expenses-daily-report', [ReportController::class, 'generalExpensesDailyReport'])->name('reports.general-expenses-daily-report');
 
 // تقرير ميزان المصروفات
 Route::get('/reports/expenses-balance-report', [ReportController::class, 'expensesBalanceReport'])->name('reports.expenses-balance-report');

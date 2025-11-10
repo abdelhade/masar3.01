@@ -1,0 +1,20 @@
+{
+    "name": "Quality",
+    "alias": "quality",
+    "description": "Quality Management System (QMS) - نظام إدارة الجودة المتكامل",
+    "keywords": [
+        "quality",
+        "inspection",
+        "ncr",
+        "capa",
+        "batch tracking",
+        "supplier rating",
+        "certificates",
+        "audit"
+    ],
+    "priority": 10,
+    "providers": [
+        "Modules\\Quality\\Providers\\QualityServiceProvider"
+    ],
+    "files": []
+}

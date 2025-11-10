@@ -1,10 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @include('components.sidebar.accounts')
-    @include('components.sidebar.sales-invoices')
-    @include('components.sidebar.purchases-invoices')
-    @include('components.sidebar.items')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')
@@ -273,7 +270,7 @@
                                                     echo '</td>';
                                                     echo '</tr>';
 
-                                                    if ($account->children->count() > 0) {
+                                                    if ($account->children?->count() ?? 0) {
                                                         displayAccounts($account->children, $level + 1);
                                                     }
                                                 }

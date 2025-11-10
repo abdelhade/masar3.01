@@ -64,7 +64,10 @@ class ReportController extends Controller
     // accounts tree
     public function accountsTree()
     {
-        $accounts = AccHead::where('parent_id', null)->get();
+        // Load all accounts with recursive children relationships
+        $accounts = AccHead::where('parent_id', null)
+            ->with('children.children.children.children.children')
+            ->get();
         return view('reports.accounts-tree', compact('accounts'));
     }
 
@@ -804,44 +807,46 @@ class ReportController extends Controller
     }
 
     // كشف حساب مصروف
-    // public function generalExpensesDailyReport()
-    // {
-    //     $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->where('is_basic', 0)->get();
-    //     $selectedAccount = null;
-    //     $expenseTransactions = collect();
-    //     $openingBalance = 0;
-    //     $closingBalance = 0;
+    public function generalExpensesDailyReport()
+    {
+        $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->where('is_basic', 0)->get();
+        $selectedAccount = null;
+        $openingBalance = 0;
+        $closingBalance = 0;
 
-    //     if (request('expense_account')) {
-    //         $selectedAccount = AccHead::find(request('expense_account'));
-    //         if ($selectedAccount) {
-    //             $fromDate = request('from_date');
-    //             $toDate = request('to_date');
+        // Initialize with empty paginator
+        $expenseTransactions = JournalDetail::whereNull('id')->paginate(50);
 
-    //             $expenseTransactions = JournalDetail::where('account_id', $selectedAccount->id)
-    //                 ->with(['head', 'costCenter'])
-    //                 ->when($fromDate, function ($q) use ($fromDate) {
-    //                     $q->whereDate('crtime', '>=', $fromDate);
-    //                 })
-    //                 ->when($toDate, function ($q) use ($toDate) {
-    //                     $q->whereDate('crtime', '<=', $toDate);
-    //                 })
-    //                 ->orderBy('crtime', 'asc')
-    //                 ->paginate(50);
+        if (request('expense_account')) {
+            $selectedAccount = AccHead::find(request('expense_account'));
+            if ($selectedAccount) {
+                $fromDate = request('from_date');
+                $toDate = request('to_date');
 
-    //             $openingBalance = $this->calculateAccountBalance($selectedAccount->id, $fromDate);
-    //             $closingBalance = $this->calculateAccountBalance($selectedAccount->id, $toDate);
-    //         }
-    //     }
+                $expenseTransactions = JournalDetail::where('account_id', $selectedAccount->id)
+                    ->with(['head', 'costCenter'])
+                    ->when($fromDate, function ($q) use ($fromDate) {
+                        $q->whereDate('crtime', '>=', $fromDate);
+                    })
+                    ->when($toDate, function ($q) use ($toDate) {
+                        $q->whereDate('crtime', '<=', $toDate);
+                    })
+                    ->orderBy('crtime', 'asc')
+                    ->paginate(50);
 
-    //     return view('reports.general-expenses-daily-report', compact(
-    //         'expenseAccounts',
-    //         'selectedAccount',
-    //         'expenseTransactions',
-    //         'openingBalance',
-    //         'closingBalance'
-    //     ));
-    // }
+                $openingBalance = $this->calculateAccountBalance($selectedAccount->id, $fromDate);
+                $closingBalance = $this->calculateAccountBalance($selectedAccount->id, $toDate);
+            }
+        }
+
+        return view('reports.general-expenses-daily-report', compact(
+            'expenseAccounts',
+            'selectedAccount',
+            'expenseTransactions',
+            'openingBalance',
+            'closingBalance'
+        ));
+    }
 
     // قائمة مراكز التكلفة
     // public function generalCostCentersList()
@@ -1268,39 +1273,39 @@ class ReportController extends Controller
     }
 
     // تقارير المصروفات
-    // public function generalExpensesReport()
-    // {
-    //     $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->get();
+    public function generalExpensesReport()
+    {
+        $expenseAccounts = AccHead::where('code', 'like', '57%')->where('isdeleted', 0)->get();
 
-    //     $expenseTransactions = JournalDetail::whereHas('account', function ($q) {
-    //         $q->where('code', 'like', '57%'); // Expense accounts
-    //     })->with(['account', 'journalHead', 'costCenter'])
-    //         ->when(request('from_date'), function ($q) {
-    //             $q->whereDate('crtime', '>=', request('from_date'));
-    //         })
-    //         ->when(request('to_date'), function ($q) {
-    //             $q->whereDate('crtime', '<=', request('to_date'));
-    //         })
-    //         ->when(request('expense_account'), function ($q) {
-    //             $q->where('account_id', request('expense_account'));
-    //         })
-    //         ->orderBy('crtime', 'desc')
-    //         ->paginate(50);
+        $expenseTransactions = JournalDetail::whereHas('accHead', function ($q) {
+            $q->where('code', 'like', '57%'); // Expense accounts
+        })->with(['accHead', 'head', 'costCenter'])
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('crtime', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('crtime', '<=', request('to_date'));
+            })
+            ->when(request('expense_account'), function ($q) {
+                $q->where('account_id', request('expense_account'));
+            })
+            ->orderBy('crtime', 'desc')
+            ->paginate(50);
 
-    //     $totalExpenses = $expenseTransactions->sum('debit');
-    //     $totalPayments = $expenseTransactions->sum('credit');
-    //     $netExpenses = $totalExpenses - $totalPayments;
-    //     $totalTransactions = $expenseTransactions->count();
+        $totalExpenses = $expenseTransactions->sum('debit');
+        $totalPayments = $expenseTransactions->sum('credit');
+        $netExpenses = $totalExpenses - $totalPayments;
+        $totalTransactions = $expenseTransactions->count();
 
-    //     return view('reports.general-expenses-report', compact(
-    //         'expenseAccounts',
-    //         'expenseTransactions',
-    //         'totalExpenses',
-    //         'totalPayments',
-    //         'netExpenses',
-    //         'totalTransactions'
-    //     ));
-    // }
+        return view('reports.general-expenses-report', compact(
+            'expenseAccounts',
+            'expenseTransactions',
+            'totalExpenses',
+            'totalPayments',
+            'netExpenses',
+            'totalTransactions'
+        ));
+    }
 
     // تقارير مراكز التكلفة
     public function generalCostCentersReport()

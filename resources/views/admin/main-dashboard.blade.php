@@ -318,6 +318,147 @@
                     route: "{{ route('inquiries.index') }}"
                 }
             ]
+        },
+        {
+            groupName: "إدارة الجودة",
+            groupIcon: "award",
+            groupColor: "#C62828",
+            apps: [
+                {
+                    name: "لوحة تحكم الجودة",
+                    icon: "chart-line",
+                    iconBg: "#FFEBEE",
+                    iconColor: "#C62828",
+                    route: "{{ route('quality.dashboard') }}",
+                    isNew: true
+                },
+                {
+                    name: "فحوصات الجودة",
+                    icon: "clipboard-check",
+                    iconBg: "#E8F5E9",
+                    iconColor: "#2E7D32",
+                    route: "{{ route('quality.inspections.index') }}"
+                },
+                {
+                    name: "معايير الجودة",
+                    icon: "ruler",
+                    iconBg: "#E3F2FD",
+                    iconColor: "#1565C0",
+                    route: "{{ route('quality.standards.index') }}"
+                },
+                {
+                    name: "عدم المطابقة (NCR)",
+                    icon: "alert-triangle",
+                    iconBg: "#FFF3E0",
+                    iconColor: "#E65100",
+                    route: "{{ route('quality.ncr.index') }}"
+                },
+                {
+                    name: "الإجراءات التصحيحية",
+                    icon: "wrench",
+                    iconBg: "#F3E5F5",
+                    iconColor: "#7B1FA2",
+                    route: "{{ route('quality.capa.index') }}"
+                },
+                {
+                    name: "تتبع الدفعات",
+                    icon: "barcode",
+                    iconBg: "#FFF8E1",
+                    iconColor: "#F57F17",
+                    route: "{{ route('quality.batches.index') }}"
+                },
+                {
+                    name: "تقييم الموردين",
+                    icon: "star",
+                    iconBg: "#FFF8E1",
+                    iconColor: "#F57F17",
+                    route: "{{ route('quality.suppliers.index') }}"
+                },
+                {
+                    name: "الشهادات والامتثال",
+                    icon: "award",
+                    iconBg: "#E0F2F1",
+                    iconColor: "#00695C",
+                    route: "{{ route('quality.certificates.index') }}"
+                },
+                {
+                    name: "التدقيق الداخلي",
+                    icon: "search",
+                    iconBg: "#E3F2FD",
+                    iconColor: "#1565C0",
+                    route: "{{ route('quality.audits.index') }}"
+                },
+                {
+                    name: "تقارير الجودة",
+                    icon: "chart-pie",
+                    iconBg: "#FFEBEE",
+                    iconColor: "#C62828",
+                    route: "{{ route('quality.reports') }}"
+                }
+            ]
+        },
+        {
+            groupName: "التقارير",
+            groupIcon: "file-bar-chart",
+            groupColor: "#6A1B9A",
+            apps: [
+                {
+                    name: "محلل العمل اليومي",
+                    icon: "bar-chart-3",
+                    iconBg: "#F3E5F5",
+                    iconColor: "#6A1B9A",
+                    route: "{{ route('reports.overall') }}"
+                },
+                {
+                    name: "شجرة الحسابات",
+                    icon: "git-branch",
+                    iconBg: "#E8F5E9",
+                    iconColor: "#2E7D32",
+                    route: "{{ route('accounts.tree') }}"
+                },
+                {
+                    name: "الميزانية العمومية",
+                    icon: "scale",
+                    iconBg: "#E3F2FD",
+                    iconColor: "#1565C0",
+                    route: "{{ route('reports.general-balance-sheet') }}"
+                },
+                {
+                    name: "أرباح وخسائر",
+                    icon: "trending-up",
+                    iconBg: "#E8F5E9",
+                    iconColor: "#2E7D32",
+                    route: "{{ route('reports.general-profit-loss-report') }}"
+                },
+                {
+                    name: "تقارير المبيعات",
+                    icon: "shopping-cart",
+                    iconBg: "#FFF3E0",
+                    iconColor: "#E65100",
+                    route: "{{ route('reports.sales.total') }}"
+                },
+                {
+                    name: "تقارير المشتريات",
+                    icon: "shopping-bag",
+                    iconBg: "#FFF8E1",
+                    iconColor: "#F57F17",
+                    route: "{{ route('reports.purchases.total') }}"
+                },
+                {
+                    name: "تقارير المخزون",
+                    icon: "package",
+                    iconBg: "#E0F2F1",
+                    iconColor: "#00695C",
+                    route: "{{ route('items.index') }}"
+                },
+                {
+                    name: "تقارير المصروفات",
+                    icon: "file-text",
+                    iconBg: "#FFEBEE",
+                    iconColor: "#C62828",
+                    route: "{{ route('reports.expenses-balance-report') }}"
+                }
+            ]
         }
     ];
 

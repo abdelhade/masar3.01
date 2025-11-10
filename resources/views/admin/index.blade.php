@@ -27,6 +27,8 @@
     @include('components.sidebar.daily_progress')
     @include('components.sidebar.inquiries')
     @include('components.sidebar.checks')
+    @include('components.sidebar.quality')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')

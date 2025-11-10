@@ -1,10 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @include('components.sidebar.accounts')
-    @include('components.sidebar.sales-invoices')
-    @include('components.sidebar.purchases-invoices')
-    @include('components.sidebar.items')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')
@@ -17,29 +14,35 @@
                 </div>
                 <div class="card-body">
                     <!-- Filters -->
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <label for="from_date" class="form-label">من تاريخ</label>
-                            <input type="date" wire:model="from_date" class="form-control" id="from_date">
+                    <form method="GET" action="{{ route('reports.general-expenses-report') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="from_date" class="form-label">من تاريخ</label>
+                                <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control" id="from_date">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="to_date" class="form-label">إلى تاريخ</label>
+                                <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control" id="to_date">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="expense_account" class="form-label">حساب المصروف</label>
+                                <select name="expense_account" class="form-select" id="expense_account">
+                                    <option value="">جميع المصروفات</option>
+                                    @foreach($expenseAccounts as $account)
+                                        <option value="{{ $account->id }}" {{ request('expense_account') == $account->id ? 'selected' : '' }}>
+                                            {{ $account->aname }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary d-block w-100">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="to_date" class="form-label">إلى تاريخ</label>
-                            <input type="date" wire:model="to_date" class="form-control" id="to_date">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="expense_account" class="form-label">حساب المصروف</label>
-                            <select wire:model="expense_account" class="form-select" id="expense_account">
-                                <option value="">جميع المصروفات</option>
-                                @foreach($expenseAccounts as $account)
-                                    <option value="{{ $account->id }}">{{ $account->aname }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">&nbsp;</label>
-                            <button wire:click="generateReport" class="btn btn-primary d-block">توليد التقرير</button>
-                        </div>
-                    </div>
+                    </form>
 
                     <!-- Summary Cards -->
                     <div class="row mb-4">
@@ -96,10 +99,10 @@
                                 @forelse($expenseTransactions as $transaction)
                                 <tr>
                                     <td>{{ $transaction->crtime ? \Carbon\Carbon::parse($transaction->crtime)->format('Y-m-d') : '---' }}</td>
-                                    <td>{{ $transaction->journalHead->journal_num ?? '---' }}</td>
-                                    <td>{{ $transaction->accountHead->aname ?? '---' }}</td>
+                                    <td>{{ $transaction->head->journal_id ?? '---' }}</td>
+                                    <td>{{ $transaction->accHead->aname ?? '---' }}</td>
                                     <td>{{ $transaction->costCenter->name ?? '---' }}</td>
-                                    <td>{{ $transaction->description ?? '---' }}</td>
+                                    <td>{{ $transaction->info ?? '---' }}</td>
                                     <td class="text-end">{{ number_format($transaction->debit, 2) }}</td>
                                     <td class="text-end">{{ number_format($transaction->credit, 2) }}</td>
                                     <td class="text-end">
