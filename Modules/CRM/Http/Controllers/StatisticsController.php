@@ -83,10 +83,20 @@ class StatisticsController extends Controller
 
         // Get leads by status in single query with left join
         $leadsByStatus = LeadStatus::leftJoin('leads', 'lead_statuses.id', '=', 'leads.status_id')
-            ->selectRaw('lead_statuses.*, COUNT(leads.id) as leads_count')
-            ->groupBy('lead_statuses.id')
+            ->select(
+                'lead_statuses.id',
+                'lead_statuses.name',
+                'lead_statuses.color',
+                'lead_statuses.branch_id',
+                DB::raw('COUNT(leads.id) as leads_count')
+            )
+            ->groupBy(
+                'lead_statuses.id',
+                'lead_statuses.name',
+                'lead_statuses.color',
+                'lead_statuses.branch_id'
+            )
             ->get();
-
         // Get won leads count with single query
         $wonLeads = Lead::join('lead_statuses', 'leads.status_id', '=', 'lead_statuses.id')
             ->where('lead_statuses.name', 'مغلق - فوز')

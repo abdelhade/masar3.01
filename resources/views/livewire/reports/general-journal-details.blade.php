@@ -261,9 +261,9 @@ new class extends Component {
                                                 {{ $detail->journal_id ?? '---' }}
                                             </td>
                                             <td class="font-family-cairo">
-                                                <strong>{{ $detail->accountHead->code ?? '---' }}</strong>
+                                                <strong>{{ $detail->accHead->code ?? '---' }}</strong>
                                                 <br>
-                                                <small>{{ $detail->accountHead->aname ?? '---' }}</small>
+                                                <small>{{ $detail->accHead->aname ?? '---' }}</small>
                                             </td>
                                             <td class="font-family-cairo">
                                                 {{ $detail->info ?? '---' }}

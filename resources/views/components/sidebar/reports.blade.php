@@ -247,11 +247,11 @@
     </a>
     <div class="collapse" id="reports-cash">
         <ul class="nav flex-column sub-menu">
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-cash-bank-report') }}">
                     <i class="ti-control-record"></i>تقرير النقدية والبنوك
                 </a>
-            </li>
+            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-cashbox-movement-report') }}">
                     <i class="ti-control-record"></i>حركة الصندوق

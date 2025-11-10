@@ -54,6 +54,7 @@ class AccHead extends Model
     {
         return $this->hasMany(OperHead::class, 'user');
     }
+
     public function haveParent()
     {
         return $this->belongsTo(AccHead::class, 'parent_id');
@@ -68,7 +69,13 @@ class AccHead extends Model
     {
         return $this->hasMany(AccHead::class, 'parent_id');
     }
-    // add the country and city and state and town
+
+    // إضافة علاقة متداخلة للأبناء
+    public function allChildren()
+    {
+        return $this->children()->with('allChildren');
+    }
+
     public function country()
     {
         return $this->belongsTo(Country::class, 'country_id');
@@ -99,34 +106,66 @@ class AccHead extends Model
         return $this->belongsTo(AccountsType::class, 'acc_type');
     }
 
-    // polymorphic relationship with Employee and anyother model
     public function accountable()
     {
         return $this->morphTo();
     }
 
-    /**
-     * One-to-one relationship with AccountAsset.
-     */
     public function accountAsset(): HasOne
     {
         return $this->hasOne(AccountAsset::class, 'acc_head_id');
     }
 
-    /**
-     * Check if this account is an asset account.
-     */
     public function isAssetAccount(): bool
     {
         return $this->acc_type == 11 && $this->is_basic == 0;
     }
 
-    /**
-     * Check if this account has depreciation settings.
-     */
     public function hasDepreciationSettings(): bool
     {
         return $this->accountAsset()->exists();
     }
 
+    // علاقة مع JournalDetails
+    public function journalDetails()
+    {
+        return $this->hasMany(JournalDetail::class, 'account_id', 'id');
+    }
+
+    /**
+     * حساب الرصيد للفترة المحددة
+     */
+    public function calculateBalance($fromDate, $toDate, $type = 'revenue')
+    {
+        $query = $this->journalDetails()
+            ->whereHas('journalHead.operHead', function ($q) use ($fromDate, $toDate) {
+                $q->whereBetween('pro_date', [$fromDate, $toDate]);
+            });
+
+        return $type === 'revenue' ? $query->sum('credit') : $query->sum('debit');
+    }
+
+    /**
+     * التحقق من وجود حسابات فرعية نشطة
+     */
+    public function hasActiveChildren()
+    {
+        return $this->children()->exists();
+    }
+
+    /**
+     * الحصول على مستوى الحساب في الشجرة
+     */
+    public function getLevel()
+    {
+        $level = 0;
+        $parent = $this->haveParent;
+
+        while ($parent) {
+            $level++;
+            $parent = $parent->haveParent;
+        }
+
+        return $level;
+    }
 }

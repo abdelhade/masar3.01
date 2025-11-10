@@ -10,6 +10,28 @@
 @endphp
 
 <li class="nav-item">
+    <a class="nav-link" href="{{ route('discounts.general-statistics') }}">
+        <i class="ti-control-record"></i>{{ __('Discounts.Statistics') }}
+    </a>
+</li>
+
+@can('عرض قائمة الخصومات المكتسبة')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('discounts.index', ['type' => 31]) }}">
+            <i class="ti-control-record"></i>{{ __('navigation.earned_discounts') }}
+        </a>
+    </li>
+@endcan
+
+@can('عرض خصم مكتسب')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('discounts.create', ['type' => 31, 'q' => md5(31)]) }}">
+            <i class="ti-control-record"></i>{{ __('navigation.earned_discount') }}
+        </a>
+    </li>
+@endcan
+
+<li class="nav-item">
     <a class="nav-link" href="{{ route('purchases.statistics') }}">
         <i class="ti-control-record"></i>Purchases Statistics
     </a>

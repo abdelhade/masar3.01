@@ -105,57 +105,46 @@ class ReportController extends Controller
     {
         $asOfDate = request('as_of_date', now()->format('Y-m-d'));
 
-        // Get assets (accounts starting with 1)
+        // جميع الأصول الرئيسية (الحسابات التي ليس لديها parent)
         $assets = AccHead::where('code', 'like', '1%')
             ->where('isdeleted', 0)
-            ->paginate(50);
+            ->whereNull('parent_id')
+            ->with(['children' => function ($q) {
+                $q->where('isdeleted', 0)->orderBy('code');
+            }, 'children.children' => function ($q) {
+                $q->where('isdeleted', 0)->orderBy('code');
+            }])
+            ->orderBy('code')
+            ->get();
 
-        // Get liabilities (accounts starting with 2)
+        // نفس الشيء للخصوم وحقوق الملكية
         $liabilities = AccHead::where('code', 'like', '2%')
             ->where('isdeleted', 0)
-            ->paginate(50);
+            ->whereNull('parent_id')
+            ->with(['children' => function ($q) {
+                $q->where('isdeleted', 0)->orderBy('code');
+            }, 'children.children' => function ($q) {
+                $q->where('isdeleted', 0)->orderBy('code');
+            }])
+            ->orderBy('code')
+            ->get();
 
-        // Get equity (accounts starting with 3)
         $equity = AccHead::where('code', 'like', '3%')
             ->where('isdeleted', 0)
-            ->paginate(50);
+            ->whereNull('parent_id')
+            ->with(['children' => function ($q) {
+                $q->where('isdeleted', 0)->orderBy('code');
+            }, 'children.children' => function ($q) {
+                $q->where('isdeleted', 0)->orderBy('code');
+            }])
+            ->orderBy('code')
+            ->get();
 
-        $totalAssets = AccHead::where('code', '1')->first()?->balance ?? 0;
-        $totalLiabilities = AccHead::where('code', '2')->first()?->balance ?? 0;
-        $totalEquities = AccHead::where('code', '3')->first()?->balance ?? 0;
-
-        // لحساب صافي الربح (netProfit) من دالة generalProfitLossReport
-        // سنعيد استخدام نفس المنطق هنا بناءً على تاريخ الميزانية
-
-        // جلب الحسابات الخاصة بالإيرادات والمصروفات
-        $revenueAccountsForProfit = \App\Models\AccHead::where('code', 'like', '4%')->get();
-        $expenseAccountsForProfit = \App\Models\AccHead::where('code', 'like', '5%')->get();
-
-        $totalRevenueForProfit = 0;
-        $totalExpensesForProfit = 0;
-
-        // حساب الإيرادات
-        foreach ($revenueAccountsForProfit as $account) {
-            $revenue = $this->calculateAccountBalance($account->id, $asOfDate);
-            $totalRevenueForProfit -= $revenue;
-        }
-
-        // حساب المصروفات
-        foreach ($expenseAccountsForProfit as $account) {
-            $expense = $this->calculateAccountBalance($account->id, $asOfDate);
-            $totalExpensesForProfit += $expense;
-        }
-
-        $netProfit = - ($totalRevenueForProfit - $totalExpensesForProfit);
-        $totalLiabilitiesEquity = $totalLiabilities + $totalEquities + $netProfit;
         return view('reports.general-balance-sheet', compact(
             'assets',
             'liabilities',
             'equity',
-            'totalAssets',
-            'totalLiabilitiesEquity',
-            'asOfDate',
-            'netProfit'
+            'asOfDate'
         ));
     }
 
@@ -1376,10 +1365,10 @@ class ReportController extends Controller
     }
 
     // تقرير النقدية والبنوك
-    public function generalCashBankReport()
-    {
-        return view('reports.general-cash-bank-report');
-    }
+    // public function generalCashBankReport()
+    // {
+    //     return view('reports.general-cash-bank-report');
+    // }
 
     // تقرير حركة الصندوق
     public function generalCashboxMovementReport()
@@ -1726,37 +1715,30 @@ class ReportController extends Controller
         $fromDate = request('from_date', now()->startOfMonth()->format('Y-m-d'));
         $toDate = request('to_date', now()->format('Y-m-d'));
 
-        // Get revenue accounts (accounts starting with 4 - revenue)
+        // جلب الحسابات الرئيسية للإيرادات
         $revenueAccounts = AccHead::where('code', 'like', '4%')
             ->where('isdeleted', 0)
+            ->whereNull('parent_id')
+            ->with('allChildren')
+            ->orderBy('code')
             ->get();
-        // Get expense accounts (accounts starting with 5 - expenses)
+
+        // جلب الحسابات الرئيسية للمصروفات
         $expenseAccounts = AccHead::where('code', 'like', '5%')
             ->where('isdeleted', 0)
+            ->whereNull('parent_id')
+            ->with('allChildren')
+            ->orderBy('code')
             ->get();
 
         $totalRevenue = 0;
         $totalExpenses = 0;
 
-        // Calculate revenue for the period
-        foreach ($revenueAccounts as $account) {
-            $revenue = JournalDetail::where('account_id', $account->id)
-                ->whereHas('operHead', function ($q) use ($fromDate, $toDate) {
-                    $q->whereBetween('pro_date', [$fromDate, $toDate]);
-                })
-                ->sum('credit');
-            $totalRevenue += $revenue;
-        }
+        // حساب الإيرادات
+        $this->calculateAccountBalances($revenueAccounts, $fromDate, $toDate, 'revenue', $totalRevenue);
 
-        // Calculate expenses for the period
-        foreach ($expenseAccounts as $account) {
-            $expense = JournalDetail::where('account_id', $account->id)
-                ->whereHas('operHead', function ($q) use ($fromDate, $toDate) {
-                    $q->whereBetween('pro_date', [$fromDate, $toDate]);
-                })
-                ->sum('debit');
-            $totalExpenses += $expense;
-        }
+        // حساب المصروفات
+        $this->calculateAccountBalances($expenseAccounts, $fromDate, $toDate, 'expense', $totalExpenses);
 
         $netProfit = $totalRevenue - $totalExpenses;
 
@@ -1769,6 +1751,35 @@ class ReportController extends Controller
             'fromDate',
             'toDate'
         ));
+    }
+
+    /**
+     * حساب أرصدة الحسابات بشكل متداخل
+     */
+    private function calculateAccountBalances($accounts, $fromDate, $toDate, $type, &$total)
+    {
+        foreach ($accounts as $account) {
+            // حساب رصيد الحساب الحالي
+            $balance = JournalDetail::where('account_id', $account->id)
+                ->whereHas('head.oper', function ($q) use ($fromDate, $toDate) {
+                    $q->whereBetween('pro_date', [$fromDate, $toDate]);
+                })
+                ->sum($type === 'revenue' ? 'credit' : 'debit');
+
+            $account->balance = $balance;
+            $account->childrenTotal = 0;
+
+            // حساب أرصدة الحسابات الفرعية
+            if ($account->children && $account->children->count() > 0) {
+                $childrenTotal = 0;
+                $this->calculateAccountBalances($account->children, $fromDate, $toDate, $type, $childrenTotal);
+                $account->childrenTotal = $childrenTotal;
+            }
+
+            // الإجمالي الكلي للحساب وأبنائه
+            $account->totalWithChildren = $balance + $account->childrenTotal;
+            $total += $account->totalWithChildren;
+        }
     }
 
     /**

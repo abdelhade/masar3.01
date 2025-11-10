@@ -126,7 +126,7 @@ Route::get('/reports/general-sales-report', [ReportController::class, 'generalSa
 // Route::get('/reports/general-sales-daily-report', [ReportController::class, 'generalSalesDailyReport'])->name('reports.general-sales-daily-report');
 
 // تقارير النقدية والبنوك
-Route::get('/reports/general-cash-bank-report', [ReportController::class, 'generalCashBankReport'])->name('reports.general-cash-bank-report');
+// Route::get('/reports/general-cash-bank-report', [ReportController::class, 'generalCashBankReport'])->name('reports.general-cash-bank-report');
 
 // تقرير حركة الصندوق
 Route::get('/reports/general-cashbox-movement-report', [ReportController::class, 'generalCashboxMovementReport'])->name('reports.general-cashbox-movement-report');

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\AccHead;
 use App\Models\OperHead;
 use App\Models\JournalDetail;
- 
+
 new class extends Component {
     use WithPagination;
 
@@ -28,7 +28,6 @@ new class extends Component {
         $this->warehouses = AccHead::where('is_stock', 1)->orderBy('id')->pluck('aname', 'id');
         $this->fromDate = now()->startOfMonth()->toDateString();
         $this->toDate = now()->endOfMonth()->toDateString();
-        // Set from route if present
         if ($accountId) {
             $this->accountId = $accountId;
             $account = AccHead::find($accountId);
@@ -134,35 +133,6 @@ new class extends Component {
 
         return $translations[$baseId] ?? 'N/A';
     }
-    // public function getArabicReferenceTypeName(int $referenceId): string
-    // {
-    //     $baseId = $referenceId;
-    //     $translations = [
-    //         '10' => 'مدين', //'فاتورة مبيعات',
-    //         '11' => 'دائن', //'فاتورة مشتريات',
-    //         '12' => 'دائن', //'مردود مبيعات',
-    //         '13' => 'مدين', //'مردود مشتريات',
-    //         '14' => 'مدين', //'امر بيع',
-    //         '15' => 'دائن', //'امر شراء',
-    //         '16' => 'مدين', //'عرض سعر لعميل',
-    //         '17' => 'دائن', //'عرض سعر من مورد',
-    //         '18' => 'مدين', //'فاتورة توالف',
-    //         '19' => 'مدين', //'امر صرف',
-    //         '20' => 'دائن', //'امر اضافة',
-    //         // '21' => 'مدين', //'تحويل من مخزن لمخزن',
-    //         '22' => 'مدين', //'امر حجز',
-    //         // '23' => 'مدين', //'تحويل بين فروع',
-    //         '35' => 'مدين', //'سند إتلاف مخزون',
-    //         // '56' => 'مدين', //'نموذج تصنيع',
-    //         // '57' => 'دائن', //'امر تشغيل',
-    //         // '58' => 'مدين', //'تصنيع معياري',
-    //         // '59' => 'دائن', //'تصنيع حر',
-    //         '61' => 'مدين', //'تسجيل الارصده الافتتاحيه للحسابات',
-    //     ];
-
-    //     return $translations[$baseId] ?? 'N/A';
-    // }
-    
 
     public function with(): array
     {
@@ -195,18 +165,6 @@ new class extends Component {
         }
     }
 
-    // public function viewReference(int $movementId): void
-    // {
-    //     $this->selectedMovement = InventoryMovement::with('reference')->find($movementId);
-    //     dd($this->selectedMovement);
-    //     $this->dispatch('show-reference-modal');
-    // }
-
-    // public function closeModal(): void
-    // {
-    //     $this->selectedMovement = null;
-    // }
-
     public function getRunningBalanceProperty()
     {
         if (!$this->accountId) {
@@ -217,7 +175,8 @@ new class extends Component {
 
         return $query->balance;
     }
-}; ?>
+};
+?>
 
 <div>
     <div class="row">
@@ -235,7 +194,7 @@ new class extends Component {
                 <div class="d-flex align-items-center">
                     <span class="font-family-cairo fw-bold me-2">الرصيد الحالي للحساب {{ $accountName }}:</span>
                     <span
-                        class="font-family-cairo fw-bold font-16 @if($this->runningBalance < 0) bg-soft-danger @else bg-soft-primary @endif">{{ number_format($this->runningBalance , 2) }}</span>
+                        class="font-family-cairo fw-bold font-16 @if ($this->runningBalance < 0) bg-soft-danger @else bg-soft-primary @endif">{{ number_format($this->runningBalance, 2) }}</span>
                 </div>
             @endif
         </div>
@@ -289,8 +248,7 @@ new class extends Component {
         </div>
     </div>
 
-        @if ($accountId)
-
+    @if ($accountId)
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -301,47 +259,60 @@ new class extends Component {
                                 <th class="font-family-cairo fw-bold">مصدر العملية</th>
                                 <th class="font-family-cairo fw-bold">نوع الحركة</th>
                                 <th class="font-family-cairo fw-bold">الرصيد قبل الحركة</th>
-                                <th class="font-family-cairo fw-bold">المبلغ</th>
+                                <th class="font-family-cairo fw-bold">مدين</th>
+                                <th class="font-family-cairo fw-bold">دائن</th>
                                 <th class="font-family-cairo fw-bold">الرصيد بعد الحركة</th>
                                 <th class="font-family-cairo fw-bold">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
-                                $balanceBefore = JournalDetail::where('account_id', $this->accountId)->where('crtime', '<', $this->fromDate)->sum('debit') - JournalDetail::where('account_id', $this->accountId)->where('crtime', '<', $this->fromDate)->sum('credit');
-
+                                $balanceBefore =
+                                    JournalDetail::where('account_id', $this->accountId)
+                                        ->where('crtime', '<', $this->fromDate)
+                                        ->sum('debit') -
+                                    JournalDetail::where('account_id', $this->accountId)
+                                        ->where('crtime', '<', $this->fromDate)
+                                        ->sum('credit');
                                 $balanceAfter = 0;
                             @endphp
                             @forelse($movements as $movement)
                                 <tr>
-                                    <td class="font-family-cairo fw-bold">{{ $movement->crtime }}
+                                    <td class="font-family-cairo fw-bold">{{ $movement->crtime }}</td>
+                                    <td class="font-family-cairo fw-bold">
+                                        {{ $movement->op_id }}#_{{ $this->getArabicReferenceName(OperHead::find($movement->op_id)->pro_type) }}
                                     </td>
                                     <td class="font-family-cairo fw-bold">
-                                        {{ $movement->op_id }}#_{{ $this->getArabicReferenceName(OperHead::find($movement->op_id)->pro_type ) }}
+                                        @if ($movement->debit > 0)
+                                            <span class="badge bg-primary">مدين</span>
+                                        @else
+                                            <span class="badge bg-danger">دائن</span>
+                                        @endif
+                                    </td>
+                                    <td class="font-family-cairo fw-bold">{{ number_format($balanceBefore, 2) }}</td>
+                                    <td class="font-family-cairo fw-bold">
+                                        @if ($movement->debit > 0)
+                                            <span
+                                                class="badge bg-primary">{{ number_format($movement->debit, 2) }}</span>
+                                        @endif
                                     </td>
                                     <td class="font-family-cairo fw-bold">
-                                        {{ $movement->debit > 0 ? 'مدين' : 'دائن' }}
-                                    </td>
-                                    <td class="font-family-cairo fw-bold">
-                                        {{ number_format($balanceBefore, 2) }}
-                                    </td>
-                                    <td class="font-family-cairo fw-bold">
-                                        {{ $movement->debit > 0 ? number_format($movement->debit, 2) : number_format($movement->credit, 2) }}
+                                        @if ($movement->credit > 0)
+                                            <span
+                                                class="badge bg-danger">{{ number_format($movement->credit, 2) }}</span>
+                                        @endif
                                     </td>
                                     @php
-                                        $balanceAfter = $balanceBefore + ($movement->debit > 0 ? $movement->debit : $movement->credit);
+                                        $balanceAfter = $balanceBefore + $movement->debit - $movement->credit;
                                     @endphp
-                                    <td class="font-family-cairo fw-bold">
-                                        {{ number_format($balanceAfter, 2) }}
-                                        
-                                    </td>
+                                    <td class="font-family-cairo fw-bold">{{ number_format($balanceAfter, 2) }}</td>
                                     <td class="font-family-cairo fw-bold">
                                         @php
                                             $operation = OperHead::find($movement->op_id);
                                         @endphp
-                                        <!-- sales and purchase and return sales and return purchase -->
-                                        @if($operation && ($operation->pro_type == 10 || $operation->pro_type == 11 || $operation->pro_type == 12 || $operation->pro_type == 13))
-                                            <a href="{{ route('invoice.view', $movement->op_id) }}" class="btn btn-xs btn-info" target="_blank">
+                                        @if ($operation && in_array($operation->pro_type, [10, 11, 12, 13]))
+                                            <a href="{{ route('invoice.view', $movement->op_id) }}"
+                                                class="btn btn-xs btn-info" target="_blank">
                                                 <i class="fas fa-eye"></i> عرض
                                             </a>
                                         @endif

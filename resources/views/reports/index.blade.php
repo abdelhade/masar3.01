@@ -210,17 +210,17 @@
     <div class="reports-container">
         <div class="reports-header">
             <p class="display-4 fw-bold mb-0">
-                <i class="fas fa-chart-bar me-2"></i> 
+                <i class="fas fa-chart-bar me-2"></i>
                 نظام التقارير المتكامل
             </p>
         </div>
 
         <div class="search-box">
             <div class="input-group mb-3">
-                <input type="text" class="form-control frst form-control-lg" 
+                <input type="text" class="form-control frst form-control-lg"
                     placeholder="{{ __('ابحث عن تقرير...') }}"
-                    aria-label="{{ __('بحث التقارير') }}" 
-                    id="report-filter" 
+                    aria-label="{{ __('بحث التقارير') }}"
+                    id="report-filter"
                     onkeyup="filterReports()">
                 <button class="btn btn-primary" type="button">
                     <i class="fas fa-search"></i>
@@ -433,10 +433,10 @@
                         <span class="card-title">تقارير النقدية والبنوك</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('reports.general-cash-bank-report') }}" class="report-link">
+                        {{-- <a href="{{ route('reports.general-cash-bank-report') }}" class="report-link">
                             <i class="fas fa-landmark"></i>
                             <span>تقرير النقدية والبنوك</span>
-                        </a>
+                        </a> --}}
                         <a href="{{ route('reports.general-cashbox-movement-report') }}" class="report-link">
                             <i class="fas fa-cash-register"></i>
                             <span>تقرير حركة الصندوق</span>
@@ -587,7 +587,7 @@
             var input = document.getElementById('report-filter');
             var filter = input.value.toLowerCase();
             var rows = document.querySelectorAll('.reports-row .col-lg-4, .reports-row .col-md-6');
-            
+
             rows.forEach(function(row) {
                 var text = row.textContent || row.innerText;
                 if (text.toLowerCase().indexOf(filter) > -1) {

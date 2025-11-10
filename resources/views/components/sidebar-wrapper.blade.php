@@ -28,7 +28,7 @@
                 {{-- عرض كل شيء (للصفحة الرئيسية مثلاً) --}}
                 @include('components.sidebar.accounts')
                 @include('components.sidebar.items')
-                @include('components.sidebar.discounts')
+                {{-- @include('components.sidebar.discounts') --}}
                 @include('components.sidebar.manufacturing')
                 @include('components.sidebar.permissions')
                 @include('components.sidebar.crm')

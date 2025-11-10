@@ -44,7 +44,7 @@
             gap: 1rem;
             text-align: center;
         }
-        
+
         .user-section {
             width: 100%;
             justify-content: center;
@@ -70,7 +70,7 @@
                     </button>
                 </form>
             </div>
-            
+
         </div>
 
         <!-- الصف الثاني: البحث -->
@@ -113,13 +113,13 @@
                     iconColor: "#2E7D32",
                     route: "{{ route('items.index') }}"
                 },
-                {
-                    name: "الخصومات",
-                    icon: "tag",
-                    iconBg: "#E3F2FD",
-                    iconColor: "#1565C0",
-                    route: "{{ route('discounts.index') }}"
-                },
+                // {
+                //     name: "الخصومات",
+                //     icon: "tag",
+                //     iconBg: "#E3F2FD",
+                //     iconColor: "#1565C0",
+                //     route: "{{ route('discounts.index') }}"
+                // },
                 {
                     name: "الصلاحيات",
                     icon: "key",
@@ -518,12 +518,12 @@
     // Add interactive effects to groups
     function addGroupInteractivity() {
         const groups = document.querySelectorAll('.app-group');
-        
+
         groups.forEach(group => {
             const toggleBtn = group.querySelector('.group-toggle');
             const toggleIcon = group.querySelector('.toggle-icon');
             const appsGrid = group.querySelector('.group-apps-grid');
-            
+
             if (toggleBtn && appsGrid) {
                 // Toggle functionality
                 toggleBtn.addEventListener('click', function(e) {
@@ -534,10 +534,10 @@
                 // Make the whole header clickable for better UX
                 const header = group.querySelector('.group-header');
                 header.style.cursor = 'pointer';
-                
+
                 header.addEventListener('click', function(e) {
                     // Only toggle if not clicking on an interactive element
-                    if (!e.target.closest('.group-toggle') && 
+                    if (!e.target.closest('.group-toggle') &&
                         !e.target.closest('.app-card')) {
                         toggleGroup(group, appsGrid, toggleIcon);
                     }
@@ -549,19 +549,19 @@
     // Toggle group visibility
     function toggleGroup(group, appsGrid, toggleIcon) {
         const isCollapsed = group.classList.contains('collapsed');
-        
+
         if (isCollapsed) {
             // Expand
             group.classList.remove('collapsed');
             appsGrid.style.maxHeight = appsGrid.scrollHeight + 'px';
             appsGrid.style.opacity = '1';
             appsGrid.style.marginTop = '0';
-            
+
             // Rotate icon
             if (toggleIcon) {
                 toggleIcon.style.transform = 'rotate(0deg)';
             }
-            
+
             setTimeout(() => {
                 appsGrid.style.maxHeight = 'none';
                 appsGrid.style.overflow = 'visible';
@@ -571,14 +571,14 @@
             group.classList.add('collapsed');
             appsGrid.style.maxHeight = appsGrid.scrollHeight + 'px';
             appsGrid.style.overflow = 'hidden';
-            
+
             // Force reflow
             appsGrid.offsetHeight;
-            
+
             appsGrid.style.maxHeight = '0px';
             appsGrid.style.opacity = '0';
             appsGrid.style.marginTop = '-1rem';
-            
+
             // Rotate icon
             if (toggleIcon) {
                 toggleIcon.style.transform = 'rotate(180deg)';
@@ -614,7 +614,7 @@
 
             // Get all groups
             const groups = document.querySelectorAll('.app-group');
-            
+
             groups.forEach(group => {
                 const appCards = group.querySelectorAll('.app-card');
                 let groupHasVisibleCards = false;
@@ -622,7 +622,7 @@
                 appCards.forEach(card => {
                     const appName = card.querySelector('.app-name').textContent.toLowerCase();
                     const groupTitle = group.querySelector('.group-title').textContent.toLowerCase();
-                    
+
                     if (appName.includes(searchTerm) || groupTitle.includes(searchTerm)) {
                         card.style.display = '';
                         card.style.animation = 'fadeIn 0.3s ease';
@@ -681,19 +681,19 @@
     if (logoutForm) {
         logoutForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Create particles effect
             const btn = this.querySelector('.logout-btn');
             const rect = btn.getBoundingClientRect();
             createLogoutParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            
+
             // Show loading state
             btn.innerHTML = `
                 <i data-lucide="loader-2" class="logout-icon" style="animation: spin 1s linear infinite;"></i>
                 <span class="logout-text">جارِ تسجيل الخروج...</span>
             `;
             lucide.createIcons();
-            
+
             // Submit after animation
             setTimeout(() => {
                 this.submit();
@@ -714,12 +714,12 @@
             particle.style.zIndex = '9999';
             particle.style.left = x + 'px';
             particle.style.top = y + 'px';
-            
+
             const angle = (Math.PI * 2 * i) / 15;
             const velocity = 50 + Math.random() * 50;
             const tx = Math.cos(angle) * velocity;
             const ty = Math.sin(angle) * velocity;
-            
+
             particle.animate([
                 { transform: 'translate(0, 0) scale(1)', opacity: 1 },
                 { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
@@ -727,7 +727,7 @@
                 duration: 800,
                 easing: 'cubic-bezier(0, .9, .57, 1)'
             });
-            
+
             document.body.appendChild(particle);
             setTimeout(() => particle.remove(), 800);
         }

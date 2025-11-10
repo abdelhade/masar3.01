@@ -65,22 +65,31 @@
                     <tbody>
                         @forelse ($journalHeads as $i => $head)
                             @foreach ($head->dets as $j => $detail)
-                                <tr class="journal-row" data-journal-id="{{ $head->journal_id }}" data-type="{{ $head->oper->type->ptext }}" data-date="{{ $head->date }}" data-accname="{{ $detail->accHead->aname ?? '' }}" data-debit="{{ (float) $detail->debit }}" data-credit="{{ (float) $detail->credit }}">
+                                <tr class="journal-row" data-journal-id="{{ $head->journal_id }}"
+                                    data-type="{{ $head->oper?->type?->ptext ?? '' }}" data-date="{{ $head->date }}"
+                                    data-accname="{{ $detail->accHead->aname ?? '' }}"
+                                    data-debit="{{ (float) $detail->debit }}" data-credit="{{ (float) $detail->credit }}">
                                     @if ($j == 0)
-                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $i + 1 }}</td>
-                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->journal_id }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                            rowspan="{{ $head->dets->count() }}">{{ $i + 1 }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                            rowspan="{{ $head->dets->count() }}">{{ $head->journal_id }}</td>
                                     @endif
 
-                                    <td  class="font-family-cairo fw-bold font-14 text-center">{{ $detail->debit }}</td>
-                                    <td  class="font-family-cairo fw-bold font-14 text-center">{{ $detail->credit }}</td>
-                                    <td  class="font-family-cairo fw-bold font-14 text-center">{{ $detail->accHead->aname ?? '-' }}</td>
+                                    <td class="font-family-cairo fw-bold font-14 text-center">{{ $detail->debit }}</td>
+                                    <td class="font-family-cairo fw-bold font-14 text-center">{{ $detail->credit }}</td>
+                                    <td class="font-family-cairo fw-bold font-14 text-center">
+                                        {{ $detail->accHead->aname ?? '-' }}</td>
                                     @if ($j == 0)
-                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->details }}</td>
-                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->oper->type->ptext }}</td>
-                                        <td  class="font-family-cairo fw-bold font-14 text-center" rowspan="{{ $head->dets->count() }}">{{ $head->date }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                            rowspan="{{ $head->dets->count() }}">{{ $head->details }}</td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                            rowspan="{{ $head->dets->count() }}">{{ $head->oper?->type?->ptext ?? '-' }}
+                                        </td>
+                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                            rowspan="{{ $head->dets->count() }}">{{ $head->date }}</td>
                                     @endif
                                 </tr>
-
                             @endforeach
 
                         @empty
@@ -102,7 +111,7 @@
         </div>
     </div>
     <script>
-        (function(){
+        (function() {
             const rows = () => Array.from(document.querySelectorAll('.journal-row'));
             const els = {
                 from: document.getElementById('filterDateFrom'),
@@ -113,20 +122,22 @@
                 dc: document.getElementById('filterDC'),
                 cnt: document.getElementById('rowsCount')
             };
-            function inRange(dateStr, fromStr, toStr){
+
+            function inRange(dateStr, fromStr, toStr) {
                 if (!dateStr) return false;
                 const d = new Date(dateStr);
-                if (fromStr){
+                if (fromStr) {
                     const f = new Date(fromStr);
                     if (d < f) return false;
                 }
-                if (toStr){
+                if (toStr) {
                     const t = new Date(toStr);
                     if (d > t) return false;
                 }
                 return true;
             }
-            function applyFilters(){
+
+            function applyFilters() {
                 const fFrom = els.from.value;
                 const fTo = els.to.value;
                 const fJid = els.jid.value.trim().toLowerCase();
@@ -153,10 +164,12 @@
                     tr.style.display = ok ? '' : 'none';
                     if (ok) visible++;
                 });
-                if (els.cnt){ els.cnt.textContent = `عدد الأسطر الظاهرة: ${visible}`; }
+                if (els.cnt) {
+                    els.cnt.textContent = `عدد الأسطر الظاهرة: ${visible}`;
+                }
             }
-            ['change','keyup'].forEach(ev => {
-                ['from','to','jid','acc','type','dc'].forEach(k => {
+            ['change', 'keyup'].forEach(ev => {
+                ['from', 'to', 'jid', 'acc', 'type', 'dc'].forEach(k => {
                     els[k].addEventListener(ev, applyFilters);
                 });
             });
