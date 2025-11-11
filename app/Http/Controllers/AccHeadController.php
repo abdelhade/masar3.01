@@ -1,9 +1,13 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\{AccHead, AccountsType, Country, City, State, Town};
+use App\Models\AccHead;
+use App\Models\AccountsType;
+use App\Models\City;
+use App\Models\Country;
 use Illuminate\Http\Request;
+use App\Models\State;
+use App\Models\Town;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -15,13 +19,13 @@ class AccHeadController extends Controller
         '2101' => 'suppliers',
         '1101' => 'funds',
         '1102' => 'banks',
-        '57' => 'expenses',
-        '42' => 'revenues',
+        '5'   => 'expenses',
+        '42'   => 'revenues',
         '2104' => 'creditors',
         '1106' => 'debtors',
-        '31' => 'partners',
-        '32' => 'current-partners',
-        '12' => 'assets',
+        '31'   => 'partners',
+        '32'   => 'current-partners',
+        '12'   => 'assets',
         '2102' => 'employees',
         '1104' => 'warhouses',
         '1202' => 'rentables',
@@ -29,33 +33,105 @@ class AccHeadController extends Controller
         '2103' => 'check-portfolios-outgoing', // حافظات أوراق الدفع
     ];
 
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            $type = $request->query('type');
+public function __construct()
+{
+    $this->middleware(function ($request, $next) {
+        $type = $request->query('type');
 
-            if (!$type) {
-                $id = $request->route('account') ?? $request->route('id');
+        // لو في type في الـ query, ده معناه إننا في الـ index
+        if ($type) {
+            $this->checkIndexPermission($type);
+        } else {
+            // لو مفيش type, يبقي نحاول نحدده من الـ ID
+            $id = $request->route('account') ?? $request->route('id');
 
-                if ($id) {
-                    $account = AccHead::find($id);
-
-                    if ($account) {
-                        $type = $this->determineAccountType($account->code);
+            if ($id) {
+                $account = AccHead::find($id);
+                if ($account) {
+                    $type = $this->determineAccountType($account->code);
+                    if ($type) {
+                        $action = $this->getActionName($request);
+                        $this->checkPermissionByType($type, $action);
                     }
                 }
             }
+        }
 
-            return $next($request);
-        });
+        return $next($request);
+    });
+}
+    private function checkIndexPermission($type)
+    {
+        $permissionName = $this->getPermissionNameByType($type);
+        $permission     = "view $permissionName";
+
+        if (! auth()->user()->can($permission)) {
+            abort(403, 'غير مصرح لك بعرض هذه الصفحة');
+        }
+    }
+
+    private function checkPermissionByType($type, $action)
+    {
+        $permissionName = $this->getPermissionNameByType($type);
+        $permission     = "$action $permissionName";
+
+        if (! auth()->user()->can($permission)) {
+            abort(403, 'غير مصرح لك بهذا الإجراء');
+        }
+    }
+
+ private function getActionName($request)
+{
+    $route = $request->route();
+    if ($route) {
+        $action = $request->route()->getActionMethod();
+
+        if (in_array($action, ['edit', 'update'])) {
+            return 'edit';
+        } elseif (in_array($action, ['create', 'store'])) {
+            return 'create';
+        } elseif ($action === 'destroy') {
+            return 'delete';
+        } elseif ($action === 'show') {
+            return 'view';
+        }
+    }
+    return 'view';
+}
+
+    private function getPermissionNameByType($type): string
+    {
+        $permissionMap = [
+            'clients'                   => 'Clients',
+            'suppliers'                 => 'Suppliers',
+            'funds'                     => 'Funds',
+            'banks'                     => 'Banks',
+            'employees'                 => 'Employees',
+            'warhouses'                 => 'warhouses',
+            'expenses'                  => 'Expenses',
+            'revenues'                  => 'Revenues',
+            'creditors'                 => 'various_creditors',
+            'debtors'                   => 'various_debtors',
+            'partners'                  => 'partners',
+            'current-partners'          => 'current_partners',
+            'assets'                    => 'assets',
+            'rentables'                 => 'rentables',
+            'check-portfolios-incoming' => 'check-portfolios-incoming',
+            'check-portfolios-outgoing' => 'check-portfolios-outgoing',
+        ];
+
+        return $permissionMap[$type] ?? 'accounts';
     }
 
     public function index(Request $request)
     {
+
         $type = $request->query('type');
+        if ($type && ! auth()->user()->can("view " . $this->getPermissionNameByType($type))) {
+            abort(403, 'غير مصرح لك بعرض هذه الصفحة');
+        }
         $accountsQuery = AccHead::query()
             ->where('is_basic', 0);
-
 
         if ($type) {
             // Get account type ID from accounts_types table
@@ -82,7 +158,7 @@ class AccHeadController extends Controller
                 'deletable',
                 'editable',
                 'rentable',
-                'acc_type'
+                'acc_type',
             ]);
 
         return view('accounts.index', compact('accounts'));
@@ -97,9 +173,17 @@ class AccHeadController extends Controller
     public function create(Request $request)
     {
         $branches = userBranches();
-        $parent = $request->query('parent', 0);
-        $last_id = '';
-        $resacs = [];
+        $parent   = $request->query('parent', 0);
+
+        // تحقق من صلاحية الإضافة
+        if ($parent) {
+            $type = $this->determineAccountType($parent);
+            if ($type && ! auth()->user()->can("create " . $this->getPermissionNameByType($type))) {
+                abort(403, 'غير مصرح لك بإضافة حساب جديد');
+            }
+        }
+        $last_id      = '';
+        $resacs       = [];
         $accountTypes = AccountsType::all();
 
         if ($parent) {
@@ -109,8 +193,8 @@ class AccHeadController extends Controller
                 ->first();
 
             if ($lastAccount) {
-                $suffix = str_replace($parent, '', $lastAccount->code);
-                $next = str_pad((int) $suffix + 1, 3, '0', STR_PAD_LEFT);
+                $suffix  = str_replace($parent, '', $lastAccount->code);
+                $next    = str_pad((int) $suffix + 1, 3, '0', STR_PAD_LEFT);
                 $last_id = $parent . $next;
             } else {
                 $last_id = $parent . '001';
@@ -131,98 +215,103 @@ class AccHeadController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:9|unique:acc_head,code',
-            'aname' => 'required|string|max:100|unique:acc_head,aname',
-            'phone' => 'nullable|string|max:15',
-            'address' => 'nullable|string|max:250',
-            'e_mail' => 'nullable|email|max:100',
-            'constant' => 'nullable|string|max:50',
-            'is_stock' => 'nullable|boolean',
-            'is_fund' => 'nullable|boolean',
-            'rentable' => 'nullable|boolean',
+            'code'                => 'required|string|max:9|unique:acc_head,code',
+            'aname'               => 'required|string|max:100|unique:acc_head,aname',
+            'phone'               => 'nullable|string|max:15',
+            'address'             => 'nullable|string|max:250',
+            'e_mail'              => 'nullable|email|max:100',
+            'constant'            => 'nullable|string|max:50',
+            'is_stock'            => 'nullable|boolean',
+            'is_fund'             => 'nullable|boolean',
+            'rentable'            => 'nullable|boolean',
             'employees_expensses' => 'nullable|boolean',
-            'parent_id' => 'required|integer|exists:acc_head,id',
-            'nature' => 'nullable|string|max:50',
-            'kind' => 'nullable|string|max:50',
-            'acc_type' => 'nullable|integer|exists:accounts_types,id',
-            'is_basic' => 'nullable|boolean',
-            'start_balance' => 'nullable|numeric',
-            'credit' => 'nullable|numeric',
-            'debit' => 'nullable|numeric',
-            'balance' => 'nullable|numeric',
-            'secret' => 'nullable|boolean',
-            'info' => 'nullable|string|max:500',
-            'tenant' => 'nullable|integer',
-            'branch' => 'nullable|integer',
-            'deletable' => 'nullable|boolean',
-            'editable' => 'nullable|boolean',
-            'isdeleted' => 'nullable|boolean',
-            'reserve' => 'nullable|boolean',
-            'zatca_name' => 'nullable|string|max:100',
-            'vat_number' => 'nullable|string|max:50',
-            'national_id' => 'nullable|string|max:50',
-            'zatca_address' => 'nullable|string|max:250',
-            'company_type' => 'nullable|string|max:50',
-            'nationality' => 'nullable|string|max:50',
-            'country_id' => 'nullable|integer|exists:countries,id',
-            'city_id' => 'nullable|integer|exists:cities,id',
-            'state_id' => 'nullable|integer|exists:states,id',
-            'town_id' => 'nullable|integer|exists:towns,id',
-            'branch_id' => 'required|exists:branches,id',
+            'parent_id'           => 'required|integer|exists:acc_head,id',
+            'nature'              => 'nullable|string|max:50',
+            'kind'                => 'nullable|string|max:50',
+            'acc_type'            => 'nullable|integer|exists:accounts_types,id',
+            'is_basic'            => 'nullable|boolean',
+            'start_balance'       => 'nullable|numeric',
+            'credit'              => 'nullable|numeric',
+            'debit'               => 'nullable|numeric',
+            'balance'             => 'nullable|numeric',
+            'secret'              => 'nullable|boolean',
+            'info'                => 'nullable|string|max:500',
+            'tenant'              => 'nullable|integer',
+            'branch'              => 'nullable|integer',
+            'deletable'           => 'nullable|boolean',
+            'editable'            => 'nullable|boolean',
+            'isdeleted'           => 'nullable|boolean',
+            'reserve'             => 'nullable|boolean',
+            'zatca_name'          => 'nullable|string|max:100',
+            'vat_number'          => 'nullable|string|max:50',
+            'national_id'         => 'nullable|string|max:50',
+            'zatca_address'       => 'nullable|string|max:250',
+            'company_type'        => 'nullable|string|max:50',
+            'nationality'         => 'nullable|string|max:50',
+            'country_id'          => 'nullable|integer|exists:countries,id',
+            'city_id'             => 'nullable|integer|exists:cities,id',
+            'state_id'            => 'nullable|integer|exists:states,id',
+            'town_id'             => 'nullable|integer|exists:towns,id',
+            'branch_id'           => 'required|exists:branches,id',
         ]);
 
-        if (isset($validated['acc_type']) && !empty($validated['acc_type'])) {
+        $parentType = $this->determineParentType($validated['parent_id']);
+        if ($parentType && ! auth()->user()->can("create " . $this->getPermissionNameByType($parentType))) {
+            abort(403, 'غير مصرح لك بإضافة حساب جديد');
+        }
+
+        if (isset($validated['acc_type']) && ! empty($validated['acc_type'])) {
             $account_type = $validated['acc_type'];
         } else {
             // جلب parent account
-            $parentAccount = AccHead::find($validated['parent_id']);
-            $account_type = $parentAccount ? $parentAccount->acc_type : null;
+            $parentAccount = AccHead::find(id: $validated['parent_id']);
+            $account_type  = $parentAccount ? $parentAccount->acc_type : null;
         }
 
         try {
             DB::beginTransaction();
 
             $asset = AccHead::create([
-                'code' => $validated['code'],
-                'deletable' => $validated['deletable'] ?? 1,
-                'editable' => $validated['editable'] ?? 1,
-                'aname' => $validated['aname'],
-                'phone' => $validated['phone'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'e_mail' => $validated['e_mail'] ?? null,
-                'constant' => $validated['constant'] ?? null,
-                'is_stock' => $validated['is_stock'] ?? 0,
-                'is_fund' => $validated['is_fund'] ?? 0,
-                'rentable' => $validated['rentable'] ?? 0,
+                'code'                => $validated['code'],
+                'deletable'           => $validated['deletable'] ?? 1,
+                'editable'            => $validated['editable'] ?? 1,
+                'aname'               => $validated['aname'],
+                'phone'               => $validated['phone'] ?? null,
+                'address'             => $validated['address'] ?? null,
+                'e_mail'              => $validated['e_mail'] ?? null,
+                'constant'            => $validated['constant'] ?? null,
+                'is_stock'            => $validated['is_stock'] ?? 0,
+                'is_fund'             => $validated['is_fund'] ?? 0,
+                'rentable'            => $validated['rentable'] ?? 0,
                 'employees_expensses' => $validated['employees_expensses'] ?? 0,
-                'parent_id' => $validated['parent_id'],
-                'nature' => $validated['nature'] ?? null,
-                'kind' => $validated['kind'] ?? null,
-                'acc_type' => $validated['acc_type'] ?? null,
-                'is_basic' => $validated['is_basic'] ?? 0,
-                'start_balance' => $validated['start_balance'] ?? 0,
-                'credit' => $validated['credit'] ?? 0,
-                'debit' => $validated['debit'] ?? 0,
-                'balance' => $validated['balance'] ?? 0,
-                'secret' => $validated['secret'] ?? 0,
-                'crtime' => now(),
-                'mdtime' => now(),
-                'info' => $validated['info'] ?? null,
-                'isdeleted' => $validated['isdeleted'] ?? 0,
-                'tenant' => $validated['tenant'] ?? 0,
-                'branch' => $validated['branch'] ?? 0,
-                'zatca_name' => $validated['zatca_name'] ?? null,
-                'vat_number' => $validated['vat_number'] ?? null,
-                'national_id' => $validated['national_id'] ?? null,
-                'zatca_address' => $validated['zatca_address'] ?? null,
-                'company_type' => $validated['company_type'] ?? null,
-                'nationality' => $validated['nationality'] ?? null,
-                'country_id' => $validated['country_id'] ?? null,
-                'city_id' => $validated['city_id'] ?? null,
-                'state_id' => $validated['state_id'] ?? null,
-                'town_id' => $validated['town_id'] ?? null,
-                'branch_id' => $validated['branch_id'],
-                'acc_type' => $validated['acc_type'],
+                'parent_id'           => $validated['parent_id'],
+                'nature'              => $validated['nature'] ?? null,
+                'kind'                => $validated['kind'] ?? null,
+                'acc_type'            => $validated['acc_type'] ?? null,
+                'is_basic'            => $validated['is_basic'] ?? 0,
+                'start_balance'       => $validated['start_balance'] ?? 0,
+                'credit'              => $validated['credit'] ?? 0,
+                'debit'               => $validated['debit'] ?? 0,
+                'balance'             => $validated['balance'] ?? 0,
+                'secret'              => $validated['secret'] ?? 0,
+                'crtime'              => now(),
+                'mdtime'              => now(),
+                'info'                => $validated['info'] ?? null,
+                'isdeleted'           => $validated['isdeleted'] ?? 0,
+                'tenant'              => $validated['tenant'] ?? 0,
+                'branch'              => $validated['branch'] ?? 0,
+                'zatca_name'          => $validated['zatca_name'] ?? null,
+                'vat_number'          => $validated['vat_number'] ?? null,
+                'national_id'         => $validated['national_id'] ?? null,
+                'zatca_address'       => $validated['zatca_address'] ?? null,
+                'company_type'        => $validated['company_type'] ?? null,
+                'nationality'         => $validated['nationality'] ?? null,
+                'country_id'          => $validated['country_id'] ?? null,
+                'city_id'             => $validated['city_id'] ?? null,
+                'state_id'            => $validated['state_id'] ?? null,
+                'town_id'             => $validated['town_id'] ?? null,
+                'branch_id'           => $validated['branch_id'],
+                'acc_type'            => $validated['acc_type'],
             ]);
 
             if (($validated['reserve'] ?? 0) == 1) {
@@ -254,17 +343,17 @@ class AccHeadController extends Controller
         $depCode = $lastDep ? (int) $lastDep->code + 1 : 12401;
 
         AccHead::create([
-            'code' => (string) $depCode,
-            'aname' => 'مجمع إهلاك ' . $asset->aname,
-            'parent_id' => 40,
-            'is_basic' => 0,
-            'deletable' => 0,
-            'editable' => 1,
-            'crtime' => now(),
-            'mdtime' => now(),
-            'branch_id' => $branchId,
+            'code'       => (string) $depCode,
+            'aname'      => 'مجمع إهلاك ' . $asset->aname,
+            'parent_id'  => 40,
+            'is_basic'   => 0,
+            'deletable'  => 0,
+            'editable'   => 1,
+            'crtime'     => now(),
+            'mdtime'     => now(),
+            'branch_id'  => $branchId,
             'account_id' => $asset->id,
-            'acc_type' => 15,
+            'acc_type'   => 15,
         ]);
 
         $lastExp = AccHead::where('parent_id', 77)
@@ -273,17 +362,17 @@ class AccHeadController extends Controller
         $expCode = $lastExp ? (int) $lastExp->code + 1 : 530201;
 
         AccHead::create([
-            'code' => (string) $expCode,
-            'aname' => 'مصروف إهلاك ' . $asset->aname,
-            'parent_id' => 77,
-            'is_basic' => 0,
-            'deletable' => 0,
-            'editable' => 1,
-            'crtime' => now(),
-            'mdtime' => now(),
-            'branch_id' => $branchId,
+            'code'       => (string) $expCode,
+            'aname'      => 'مصروف إهلاك ' . $asset->aname,
+            'parent_id'  => 77,
+            'is_basic'   => 0,
+            'deletable'  => 0,
+            'editable'   => 1,
+            'crtime'     => now(),
+            'mdtime'     => now(),
+            'branch_id'  => $branchId,
             'account_id' => $asset->id,
-            'acc_type' => 16,
+            'acc_type'   => 16,
         ]);
     }
 
@@ -297,18 +386,18 @@ class AccHeadController extends Controller
         AccHead::where('account_id', $asset->id)
             ->where('acc_type', 15)
             ->update([
-                'aname' => 'مجمع إهلاك ' . $asset->aname,
+                'aname'     => 'مجمع إهلاك ' . $asset->aname,
                 'branch_id' => $branchId,
-                'mdtime' => now(),
+                'mdtime'    => now(),
             ]);
 
         // Update all expense accounts (type 16) linked to this asset
         AccHead::where('account_id', $asset->id)
             ->where('acc_type', 16)
             ->update([
-                'aname' => 'مصروف إهلاك ' . $asset->aname,
+                'aname'     => 'مصروف إهلاك ' . $asset->aname,
                 'branch_id' => $branchId,
-                'mdtime' => now(),
+                'mdtime'    => now(),
             ]);
     }
 
@@ -322,10 +411,10 @@ class AccHeadController extends Controller
             $asset = AccHead::findOrFail($assetId);
 
             // Validate that this is actually an asset account
-            if (!str_starts_with($asset->code, '12')) {
+            if (! str_starts_with($asset->code, '12')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'هذا ليس حساب أصل صحيح'
+                    'message' => 'هذا ليس حساب أصل صحيح',
                 ], 400);
             }
 
@@ -337,26 +426,26 @@ class AccHeadController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم تحديث حسابات الإهلاك بنجاح'
+                'message' => 'تم تحديث حسابات الإهلاك بنجاح',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث حسابات الإهلاك: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء تحديث حسابات الإهلاك: ' . $e->getMessage(),
             ], 500);
         }
     }
 
     private function determineParentType(?int $parentId): ?string
     {
-        if (!$parentId) {
+        if (! $parentId) {
             return null;
         }
 
         $parentAcc = AccHead::find($parentId);
-        if (!$parentAcc) {
+        if (! $parentAcc) {
             return null;
         }
 
@@ -380,17 +469,17 @@ class AccHeadController extends Controller
     public function show($id)
     {
         $account = AccHead::findOrFail($id);
-        $parent = substr($account->code, 0, -3);
+        $parent  = substr($account->code, 0, -3);
 
         $resacs = DB::table('acc_head')
             ->where('is_basic', 1)
             ->where('code', 'like', $parent . '%')
             ->orderBy('code')
             ->get();
-        $countries = Country::all()->pluck('title', 'id');
-        $cities = City::all()->pluck('title', 'id');
-        $states = State::all()->pluck('title', 'id');
-        $towns = Town::all()->pluck('title', 'id');
+        $countries    = Country::all()->pluck('title', 'id');
+        $cities       = City::all()->pluck('title', 'id');
+        $states       = State::all()->pluck('title', 'id');
+        $towns        = Town::all()->pluck('title', 'id');
         $accountTypes = AccountsType::all();
 
         return view('accounts.edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes'));
@@ -399,18 +488,24 @@ class AccHeadController extends Controller
     public function edit($id)
     {
         $account = AccHead::findOrFail($id);
+
+        // تحقق من صلاحية التعديل
+        $type = $this->determineAccountType($account->code);
+        if ($type && ! auth()->user()->can("edit " . $this->getPermissionNameByType($type))) {
+            abort(403, 'غير مصرح لك بتعديل هذا الحساب');
+        }
         $parent = substr($account->code, 0, -3);
         $resacs = DB::table('acc_head')
             ->where('is_basic', 1)
             ->where('code', 'like', $parent . '%')
             ->orderBy('code')
             ->get();
-        $countries = Country::all()->pluck('title', 'id');
-        $cities = City::all()->pluck('title', 'id');
-        $states = State::all()->pluck('title', 'id');
-        $towns = Town::all()->pluck('title', 'id');
+        $countries    = Country::all()->pluck('title', 'id');
+        $cities       = City::all()->pluck('title', 'id');
+        $states       = State::all()->pluck('title', 'id');
+        $towns        = Town::all()->pluck('title', 'id');
         $accountTypes = AccountsType::all();
-        $branches = userBranches();
+        $branches     = userBranches();
         return view('accounts.edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes', 'branches'));
     }
 
@@ -418,35 +513,41 @@ class AccHeadController extends Controller
     {
         $account = AccHead::findOrFail($id);
 
+        // تحقق من صلاحية التعديل
+        $type = $this->determineAccountType($account->code);
+        if ($type && ! auth()->user()->can("edit " . $this->getPermissionNameByType($type))) {
+            abort(403, 'غير مصرح لك بتعديل هذا الحساب');
+        }
+
         $validated = $request->validate([
-            'aname' => 'required|string|max:100|unique:acc_head,aname,' . $id,
-            'phone' => 'nullable|string|max:15',
-            'address' => 'nullable|string|max:250',
-            'e_mail' => 'nullable|email|max:100',
-            'constant' => 'nullable|string|max:50',
-            'is_stock' => 'nullable|boolean',
-            'is_fund' => 'nullable|boolean',
-            'rentable' => 'nullable|boolean',
+            'aname'               => 'required|string|max:100|unique:acc_head,aname,' . $id,
+            'phone'               => 'nullable|string|max:15',
+            'address'             => 'nullable|string|max:250',
+            'e_mail'              => 'nullable|email|max:100',
+            'constant'            => 'nullable|string|max:50',
+            'is_stock'            => 'nullable|boolean',
+            'is_fund'             => 'nullable|boolean',
+            'rentable'            => 'nullable|boolean',
             'employees_expensses' => 'nullable|boolean',
-            'parent_id' => 'required|integer|exists:acc_head,id',
-            'nature' => 'nullable|string|max:50',
-            'kind' => 'nullable|string|max:50',
-            'acc_type' => 'nullable|integer',
-            'is_basic' => 'nullable|boolean',
-            'secret' => 'nullable|boolean',
-            'info' => 'nullable|string|max:500',
-            'zatca_name' => 'nullable|string|max:100',
-            'vat_number' => 'nullable|string|max:50',
-            'national_id' => 'nullable|string|max:50',
-            'zatca_address' => 'nullable|string|max:250',
-            'company_type' => 'nullable|string|max:50',
-            'nationality' => 'nullable|string|max:50',
-            'country_id' => 'nullable|integer|exists:countries,id',
-            'city_id' => 'nullable|integer|exists:cities,id',
-            'state_id' => 'nullable|integer|exists:states,id',
-            'town_id' => 'nullable|integer|exists:towns,id',
-            'branch_id' => 'required|exists:branches,id',
-            'reserve' => 'nullable|boolean', // Added for depreciation accounts handling
+            'parent_id'           => 'required|integer|exists:acc_head,id',
+            'nature'              => 'nullable|string|max:50',
+            'kind'                => 'nullable|string|max:50',
+            'acc_type'            => 'nullable|integer',
+            'is_basic'            => 'nullable|boolean',
+            'secret'              => 'nullable|boolean',
+            'info'                => 'nullable|string|max:500',
+            'zatca_name'          => 'nullable|string|max:100',
+            'vat_number'          => 'nullable|string|max:50',
+            'national_id'         => 'nullable|string|max:50',
+            'zatca_address'       => 'nullable|string|max:250',
+            'company_type'        => 'nullable|string|max:50',
+            'nationality'         => 'nullable|string|max:50',
+            'country_id'          => 'nullable|integer|exists:countries,id',
+            'city_id'             => 'nullable|integer|exists:cities,id',
+            'state_id'            => 'nullable|integer|exists:states,id',
+            'town_id'             => 'nullable|integer|exists:towns,id',
+            'branch_id'           => 'required|exists:branches,id',
+            'reserve'             => 'nullable|boolean', // Added for depreciation accounts handling
         ]);
 
         try {
@@ -454,34 +555,34 @@ class AccHeadController extends Controller
 
             // تحديث البيانات الأساسية
             $account->update([
-                'aname' => $validated['aname'],
-                'phone' => $validated['phone'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'e_mail' => $validated['e_mail'] ?? null,
-                'constant' => $validated['constant'] ?? null,
-                'is_stock' => $validated['is_stock'] ?? 0,
-                'is_fund' => $validated['is_fund'] ?? 0,
-                'rentable' => $validated['rentable'] ?? 0,
+                'aname'               => $validated['aname'],
+                'phone'               => $validated['phone'] ?? null,
+                'address'             => $validated['address'] ?? null,
+                'e_mail'              => $validated['e_mail'] ?? null,
+                'constant'            => $validated['constant'] ?? null,
+                'is_stock'            => $validated['is_stock'] ?? 0,
+                'is_fund'             => $validated['is_fund'] ?? 0,
+                'rentable'            => $validated['rentable'] ?? 0,
                 'employees_expensses' => $validated['employees_expensses'] ?? 0,
-                'parent_id' => $validated['parent_id'],
-                'nature' => $validated['nature'] ?? null,
-                'kind' => $validated['kind'] ?? null,
-                'acc_type' => $validated['acc_type'] ?? null,
-                'is_basic' => $validated['is_basic'] ?? 0,
-                'secret' => $validated['secret'] ?? 0,
-                'mdtime' => now(),
-                'info' => $validated['info'] ?? null,
-                'zatca_name' => $validated['zatca_name'] ?? null,
-                'vat_number' => $validated['vat_number'] ?? null,
-                'national_id' => $validated['national_id'] ?? null,
-                'zatca_address' => $validated['zatca_address'] ?? null,
-                'company_type' => $validated['company_type'] ?? null,
-                'nationality' => $validated['nationality'] ?? null,
-                'country_id' => $validated['country_id'] ?? null,
-                'city_id' => $validated['city_id'] ?? null,
-                'state_id' => $validated['state_id'] ?? null,
-                'town_id' => $validated['town_id'] ?? null,
-                'branch_id' => $validated['branch_id'],
+                'parent_id'           => $validated['parent_id'],
+                'nature'              => $validated['nature'] ?? null,
+                'kind'                => $validated['kind'] ?? null,
+                'acc_type'            => $validated['acc_type'] ?? null,
+                'is_basic'            => $validated['is_basic'] ?? 0,
+                'secret'              => $validated['secret'] ?? 0,
+                'mdtime'              => now(),
+                'info'                => $validated['info'] ?? null,
+                'zatca_name'          => $validated['zatca_name'] ?? null,
+                'vat_number'          => $validated['vat_number'] ?? null,
+                'national_id'         => $validated['national_id'] ?? null,
+                'zatca_address'       => $validated['zatca_address'] ?? null,
+                'company_type'        => $validated['company_type'] ?? null,
+                'nationality'         => $validated['nationality'] ?? null,
+                'country_id'          => $validated['country_id'] ?? null,
+                'city_id'             => $validated['city_id'] ?? null,
+                'state_id'            => $validated['state_id'] ?? null,
+                'town_id'             => $validated['town_id'] ?? null,
+                'branch_id'           => $validated['branch_id'],
             ]);
 
             // Check if this is an asset account (starts with '12') and update related depreciation accounts
@@ -502,7 +603,7 @@ class AccHeadController extends Controller
                     ->first();
 
                 // Only create new depreciation accounts if they don't exist
-                if (!$existingDepreciationAccount || !$existingExpenseAccount) {
+                if (! $existingDepreciationAccount || ! $existingExpenseAccount) {
                     $this->createDepreciationAccounts($account, $validated['branch_id']);
                 }
             }
@@ -528,7 +629,13 @@ class AccHeadController extends Controller
     public function destroy($id)
     {
         $acc = AccHead::findOrFail($id);
-        if (!$acc->deletable) {
+
+        // تحقق من صلاحية الحذف
+        $type = $this->determineAccountType($acc->code);
+        if ($type && ! auth()->user()->can("delete " . $this->getPermissionNameByType($type))) {
+            abort(403, 'غير مصرح لك بحذف هذا الحساب');
+        }
+        if (! $acc->deletable) {
             return redirect()->back()->with('error', 'هذا الحساب غير قابل للحذف.');
         }
         $hasTransactions = DB::table('journal_details')->where('account_id', $id)->exists();
@@ -567,18 +674,18 @@ class AccHeadController extends Controller
 
     public function basicDataStatistics()
     {
-        $stats = [];
+        $stats         = [];
         $account_types = AccountsType::all()->pluck('id', 'name')->toArray();
 
         foreach (self::ACCOUNT_TYPE_MAP as $prefix => $type) {
             $account_type_id = $account_types[$type] ?? null;
             if ($account_type_id) {
                 $stats[$type] = [
-                    'count' => AccHead::where('acc_type', $account_type_id)
+                    'count'           => AccHead::where('acc_type', $account_type_id)
                         ->where('is_basic', 0)
                         ->where('isdeleted', 0)
                         ->count(),
-                    'total_balance' => AccHead::where('acc_type', $account_type_id)
+                    'total_balance'   => AccHead::where('acc_type', $account_type_id)
                         ->where('is_basic', 0)
                         ->where('isdeleted', 0)
                         ->sum('balance'),
@@ -598,29 +705,29 @@ class AccHeadController extends Controller
                         })
                         ->count(),
                 ];
-                $stats[$type]['highest_balance_name'] = $stats[$type]['highest_balance'] ? $stats[$type]['highest_balance']->aname : 'لا يوجد';
+                $stats[$type]['highest_balance_name']   = $stats[$type]['highest_balance'] ? $stats[$type]['highest_balance']->aname : 'لا يوجد';
                 $stats[$type]['highest_balance_amount'] = $stats[$type]['highest_balance'] ? $stats[$type]['highest_balance']->balance : 0;
             } else {
                 // Initialize missing types with default values
                 $stats[$type] = [
-                    'count' => 0,
-                    'total_balance' => 0,
-                    'highest_balance_name' => 'لا يوجد',
+                    'count'                  => 0,
+                    'total_balance'          => 0,
+                    'highest_balance_name'   => 'لا يوجد',
                     'highest_balance_amount' => 0,
-                    'active_accounts' => 0,
+                    'active_accounts'        => 0,
                 ];
             }
         }
 
         // بيانات للشارتس
         $stats['chart_data'] = [
-            'counts' => array_map(function ($type) use ($stats) {
+            'counts'   => array_map(function ($type) use ($stats) {
                 return $stats[$type]['count'] ?? 0;
             }, array_values(self::ACCOUNT_TYPE_MAP)),
             'balances' => array_map(function ($type) use ($stats) {
                 return $stats[$type]['total_balance'] ?? 0;
             }, array_values(self::ACCOUNT_TYPE_MAP)),
-            'labels' => array_map(function ($type) {
+            'labels'   => array_map(function ($type) {
                 return __("accounts.types.$type");
             }, array_values(self::ACCOUNT_TYPE_MAP)),
         ];

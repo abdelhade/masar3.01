@@ -12,7 +12,8 @@ class RoleAndPermissionSeeder extends Seeder
     {
         $permissionCategories = [
             'Dashboard' => ['Dashboard'],
-            'Home' => ['basicData-statistics','item-statistics','statistics','Clients', 'Suppliers', 'Funds', 'Banks', 'Employees', 'Stores', 'Expenses', 'Revenues'],
+            'Accounts'=>['Clients','Suppliers' , 'Funds', 'Banks', 'Employees', 'warhouses', 'Expenses', 'Revenues','various_creditors', 'various_debtors', 'partners', 'current_partners', 'assets', 'rentables', 'check-portfolios-incoming', 'check-portfolios-outgoing', 'account-movement-report', 'balance-sheet','start-balance-management'],
+            'Home' => ['basicData-statistics','item-statistics','statistics'],
             'Products' => ['Units', 'Categories', 'Products', 'Product Movements'],
             'Users' => ['Users'],
             'Sales' => ['Sales Invoice', 'Sales Return', 'Sales Order'],

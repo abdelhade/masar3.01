@@ -40,7 +40,7 @@
                     <i class="fas fa-book fa-2x text-primary"></i>
                 </a>
             </li>
-            @can('عرض المدراء')
+            @can('view Users')
                 <li>
                     <a title="{{ __('navigation.users') }}" href="{{ route('users.index') }}" class="nav-link">
                         <i class="fas fa-user fa-2x text-primary"></i>

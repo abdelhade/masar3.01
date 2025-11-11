@@ -3,15 +3,15 @@
         <i class="ti-list"></i>{{ __('إحصائيات البيانات الأساسية') }}
     </a>
 </li>
-@can('عرض جميع الحسابات')
-    <li class="nav-item">
+
+    {{-- <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index') }}">
             <i class="ti-list"></i>{{ __('navigation.all_accounts') }}
         </a>
-    </li>
-@endcan
+    </li> --}}
 
-@can('عرض العملاء')
+
+@can('view Clients')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'clients']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.clients') }}
@@ -19,7 +19,7 @@
     </li>
 @endcan
 
-@can('عرض الموردين')
+@can('view Suppliers')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'suppliers']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.suppliers') }}
@@ -27,7 +27,7 @@
     </li>
 @endcan
 
-@can('عرض الصناديق')
+@can('view Funds')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'funds']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.funds') }}
@@ -35,7 +35,7 @@
     </li>
 @endcan
 
-@can('عرض البنوك')
+@can('view Banks')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'banks']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.banks') }}
@@ -43,7 +43,7 @@
     </li>
 @endcan
 
-@can('عرض الموظفين')
+@can('view Employees')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'employees']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.employees') }}
@@ -51,7 +51,7 @@
     </li>
 @endcan
 
-@can('عرض المخازن')
+@can('view warhouses')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'warhouses']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.warehouses') }}
@@ -59,7 +59,7 @@
     </li>
 @endcan
 
-@can('عرض المصروفات')
+@can('view Expenses')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'expenses']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.expenses') }}
@@ -67,7 +67,7 @@
     </li>
 @endcan
 
-@can('عرض الايرادات')
+@can('view Revenues')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'revenues']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.revenues') }}
@@ -75,7 +75,7 @@
     </li>
 @endcan
 
-@can('عرض دائنين متنوعين')
+@can('view various_creditors')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'creditors']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.various_creditors') }}
@@ -83,7 +83,7 @@
     </li>
 @endcan
 
-@can('عرض مدينين متنوعين')
+@can('view various_debtors')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'debtors']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.various_debtors') }}
@@ -91,7 +91,7 @@
     </li>
 @endcan
 
-@can('عرض الشركاء')
+@can('view partners')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'partners']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.partners') }}
@@ -99,7 +99,7 @@
     </li>
 @endcan
 
-@can('عرض جارى الشركاء')
+@can('view current_partners')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'current-partners']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.current_partners') }}
@@ -107,7 +107,7 @@
     </li>
 @endcan
 
-@can('عرض الأصول الثابتة')
+@can('view assets')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'assets']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.fixed_assets') }}
@@ -115,7 +115,7 @@
     </li>
 @endcan
 
-@can('عرض الأصول القابلة للتأجير')
+@can('view rentables')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'rentables']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.rentable_assets') }}
@@ -124,7 +124,7 @@
 @endcan
 
 {{-- حافظات الأوراق المالية --}}
-@can('عرض حافظات أوراق القبض')
+@can('view check-portfolios-incoming')
     <li class="nav-item">
         <a class="nav-link font-family-cairo fw-bold"
             href="{{ route('accounts.index', ['type' => 'check-portfolios-incoming']) }}">
@@ -133,7 +133,7 @@
     </li>
 @endcan
 
-@can('إضافة حافظات أوراق القبض')
+@can('create check-portfolios-incoming')
     <li class="nav-item">
         <a class="nav-link font-family-cairo" href="{{ route('accounts.create', ['parent' => '1105']) }}">
             <i class="fas fa-plus-circle" style="color:#28a745"></i> إضافة حافظة قبض
@@ -141,7 +141,7 @@
     </li>
 @endcan
 
-@can('عرض حافظات أوراق الدفع')
+@can('view check-portfolios-outgoing')
     <li class="nav-item">
         <a class="nav-link font-family-cairo fw-bold"
             href="{{ route('accounts.index', ['type' => 'check-portfolios-outgoing']) }}">
@@ -150,7 +150,7 @@
     </li>
 @endcan
 
-@can('إضافة حافظات أوراق الدفع')
+@can('create check-portfolios-outgoing')
     <li class="nav-item">
         <a class="nav-link font-family-cairo" href="{{ route('accounts.create', ['parent' => '2103']) }}">
             <i class="fas fa-plus-circle" style="color:#dc3545"></i> إضافة حافظة دفع
@@ -158,26 +158,26 @@
     </li>
 @endcan
 
-@can('عرض تقرير حركة الحساب')
-    <li class="nav-item">
+{{-- @can('view account-movement-report') --}}
+    {{-- <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.account-movement-report') }}">
             <i class="ti-bar-chart"></i>{{ __('navigation.account_movement_report') }}
-        </a>
+        </a> --}}
     </li>
-@endcan
+{{-- @endcan --}}
 
-@can('عرض الميزانية العمومية')
-    <li class="nav-item">
+{{-- @can('view balance-sheet') --}}
+    {{-- <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.balance-sheet') }}">
             <i class="ti-pie-chart"></i>{{ __('navigation.balance_sheet') }}
         </a>
-    </li>
-@endcan
+    </li> --}}
+{{-- @endcan --}}
 
-@can('إدارة الرصيد الافتتاحي')
-    <li class="nav-item">
+{{-- @can('view start-balance-management') --}}
+    {{-- <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.start-balance') }}">
             <i class="ti-settings"></i>{{ __('navigation.start_balance_management') }}
         </a>
-    </li>
-@endcan
+    </li> --}}
+{{-- @endcan --}}

@@ -9,22 +9,22 @@
 
     @php
         $permissionTypes = [
-            'clients' => 'العملاء',
-            'suppliers' => 'الموردين',
-            'funds' => 'الصناديق',
-            'banks' => 'البنوك',
-            'employees' => 'الموظفين',
-            'warhouses' => 'المخازن',
-            'expenses' => 'المصروفات',
-            'revenues' => 'الايرادات',
-            'creditors' => 'دائنين متنوعين',
-            'debtors' => 'مدينين متنوعين',
-            'partners' => 'الشركاء',
-            'current-partners' => 'جارى الشركاء',
-            'assets' => 'الأصول الثابتة',
-            'rentables' => 'الأصول القابلة للتأجير',
-            'check-portfolios-incoming' => 'حافظات أوراق القبض',
-            'check-portfolios-outgoing' => 'حافظات أوراق الدفع',
+            'clients' => 'Clients',
+            'suppliers' => 'Suppliers',
+            'funds' => 'Funds',
+            'banks' => 'Banks',
+            'employees' => 'Employees',
+            'warhouses' => 'warhouses',
+            'expenses' => 'Expenses',
+            'revenues' => 'Revenues',
+            'creditors' => 'various_creditors',
+            'debtors' => 'various_debtors',
+            'partners' => 'partners',
+            'current-partners' => 'current_partners',
+            'assets' => 'assets',
+            'rentables' => 'rentables',
+            'check-portfolios-incoming' => 'check-portfolios-incoming',
+            'check-portfolios-outgoing' => 'check-portfolios-outgoing',
         ];
 
         $parentCodes = [
@@ -76,7 +76,7 @@
         {{-- الأكشنات (إضافة + بحث) --}}
         <div class="row mt-3 justify-content-between align-items-center">
             <div class="col-md-3">
-                    @can("إضافة $permName")
+                    @can("create $permName")
                         <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
                             <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
                         </a>
@@ -108,7 +108,7 @@
                                 <th>العنوان</th>
                                 <th>التليفون</th>
                                 <th>ID</th>
-                                @canany(["تعديل $permName", "حذف $permName"])
+                                @canany(["edit $permName", "delete $permName"])
                                     <th>عمليات</th>
                                 @endcanany
                             </tr>
@@ -128,15 +128,15 @@
                                     <td>{{ $acc->phone ?? '__' }}</td>
                                     <td>{{ $acc->id }}</td>
 
-                                    @canany(["تعديل $permName", "حذف $permName"])
+                                    @canany(["edit $permName", "delete $permName"])
                                         <td>
-                                            @can("تعديل $permName")
+                                            @can("edit $permName")
                                                 <a href="{{ route('accounts.edit', $acc->id) }}" class="btn btn-success btn-sm">
                                                     <i class="las la-pen"></i>
                                                 </a>
                                             @endcan
 
-                                            @can("حذف $permName")
+                                            @can("delete $permName")
                                                 <form action="{{ route('accounts.destroy', $acc->id) }}" method="POST"
                                                     style="display:inline;">
                                                     @csrf
