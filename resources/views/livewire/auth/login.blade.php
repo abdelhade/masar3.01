@@ -482,19 +482,41 @@ new #[Layout('components.layouts.login')] class extends Component {
             to { transform: rotate(360deg); }
         }
 
-        /* Responsive */
+        /* Responsive Design */
+        
+        /* Large Tablets and Small Laptops (1200px and below) */
+        @media (max-width: 1200px) {
+            .info-section, .login-section {
+                padding: 2.5rem;
+            }
+
+            .info-title {
+                font-size: 2.75rem;
+            }
+
+            .info-description {
+                font-size: 1.2rem;
+            }
+
+            .feature-item {
+                font-size: 1.05rem;
+            }
+        }
+
+        /* Tablets (1024px and below) */
         @media (max-width: 1024px) {
             .login-wrapper {
-                flex-direction: column;
+                flex-direction: column-reverse;
             }
 
             .info-section {
-                order: -1;
-                min-height: 40vh;
+                min-height: 45vh;
+                padding: 2.5rem 2rem;
             }
 
             .login-section {
-                min-height: 60vh;
+                min-height: 55vh;
+                padding: 2.5rem 2rem;
             }
 
             .info-title {
@@ -502,22 +524,49 @@ new #[Layout('components.layouts.login')] class extends Component {
             }
 
             .info-description {
-                font-size: 1.1rem;
+                font-size: 1.15rem;
+                margin-bottom: 2rem;
             }
 
             .feature-item {
                 font-size: 1rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .feature-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+
+            .welcome-text {
+                font-size: 1.85rem;
+            }
+
+            .login-content {
+                max-width: 500px;
             }
         }
 
+        /* Small Tablets (768px and below) */
         @media (max-width: 768px) {
+            body {
+                overflow: auto;
+            }
+
+            .login-wrapper {
+                height: auto;
+                min-height: 100vh;
+            }
+
             .info-section {
-                min-height: 35vh;
-                padding: 2rem;
+                min-height: auto;
+                padding: 2rem 1.5rem;
             }
 
             .login-section {
-                padding: 2rem;
+                min-height: auto;
+                padding: 2rem 1.5rem;
             }
 
             .info-title {
@@ -527,40 +576,271 @@ new #[Layout('components.layouts.login')] class extends Component {
 
             .info-description {
                 font-size: 1rem;
-                margin-bottom: 2rem;
+                margin-bottom: 1.5rem;
+                line-height: 1.6;
             }
 
             .features-list {
-                display: none;
+                margin-bottom: 1rem;
+            }
+
+            .feature-item {
+                font-size: 0.95rem;
+                margin-bottom: 1rem;
+                gap: 0.75rem;
+            }
+
+            .feature-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
             }
 
             .footer-text {
                 font-size: 0.85rem;
                 bottom: 1rem;
-                right: 2rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .login-section {
-                padding: 1.5rem;
+                right: 1.5rem;
+                left: 1.5rem;
+                text-align: center;
             }
 
-            .info-section {
-                padding: 1.5rem;
+            .logo-container {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 1rem;
             }
 
             .welcome-text {
-                font-size: 1.75rem;
+                font-size: 1.65rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 1rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+
+            .form-control {
+                padding: 0.85rem 1rem;
+                font-size: 1rem;
+            }
+
+            .btn-login {
+                padding: 0.95rem;
+                font-size: 1.05rem;
+            }
+
+            .floating-shape {
+                display: none;
+            }
+        }
+
+        /* Mobile Devices (576px and below) */
+        @media (max-width: 576px) {
+            .login-section {
+                padding: 1.5rem 1.25rem;
+            }
+
+            .info-section {
+                padding: 1.75rem 1.25rem;
+            }
+
+            .logo-section {
+                margin-bottom: 2rem;
             }
 
             .logo-container {
                 width: 70px;
                 height: 70px;
+                padding: 12px;
+                border-radius: 16px;
+            }
+
+            .welcome-text {
+                font-size: 1.5rem;
+                margin-bottom: 0.4rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 0.95rem;
             }
 
             .info-title {
                 font-size: 1.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .info-description {
+                font-size: 0.95rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .features-list {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0.85rem;
+            }
+
+            .feature-item {
+                font-size: 0.9rem;
+                margin-bottom: 0;
+                gap: 0.65rem;
+            }
+
+            .feature-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+                border-radius: 10px;
+            }
+
+            .form-label {
+                font-size: 0.95rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .form-control {
+                padding: 0.8rem 1rem;
+                font-size: 0.95rem;
+                border-radius: 8px;
+            }
+
+            .form-check {
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-check-input {
+                width: 1.1rem;
+                height: 1.1rem;
+            }
+
+            .form-check-label {
+                font-size: 0.95rem;
+            }
+
+            .btn-login {
+                padding: 0.9rem;
+                font-size: 1rem;
+                border-radius: 8px;
+            }
+
+            .invalid-feedback {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.85rem;
+                border-radius: 6px;
+            }
+
+            .footer-text {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                left: auto;
+                margin-top: 1.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Extra Small Mobile (400px and below) */
+        @media (max-width: 400px) {
+            .login-section, .info-section {
+                padding: 1.25rem 1rem;
+            }
+
+            .logo-container {
+                width: 60px;
+                height: 60px;
+                padding: 10px;
+            }
+
+            .welcome-text {
+                font-size: 1.35rem;
+            }
+
+            .info-title {
+                font-size: 1.5rem;
+            }
+
+            .info-description {
+                font-size: 0.9rem;
+            }
+
+            .form-control {
+                padding: 0.75rem 0.9rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-login {
+                padding: 0.85rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Landscape Mode for Mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .login-wrapper {
+                flex-direction: row;
+            }
+
+            .info-section {
+                flex: 0.6;
+                min-height: 100vh;
+                padding: 2rem 1.5rem;
+            }
+
+            .login-section {
+                flex: 1;
+                min-height: 100vh;
+            }
+
+            .features-list {
+                display: block;
+            }
+
+            .info-title {
+                font-size: 1.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .info-description {
+                font-size: 0.9rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .feature-item {
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .feature-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .footer-text {
+                font-size: 0.75rem;
+                bottom: 0.75rem;
+            }
+
+            .logo-section {
+                margin-bottom: 1.5rem;
+            }
+
+            .logo-container {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 0.75rem;
+            }
+
+            .welcome-text {
+                font-size: 1.35rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.25rem;
             }
         }
     </style>
