@@ -25,6 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'last_login_at',
+        'last_login_ip',
     ];
 
     /**
@@ -47,6 +49,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -94,5 +97,15 @@ class User extends Authenticatable
     public function inquiryPreferences()
     {
         return $this->hasOne(UserInquiryPreference::class);
+    }
+
+    public function loginSessions()
+    {
+        return $this->hasMany(LoginSession::class);
+    }
+
+    public function activeSessions()
+    {
+        return $this->hasMany(LoginSession::class)->whereNull('logout_at');
     }
 }

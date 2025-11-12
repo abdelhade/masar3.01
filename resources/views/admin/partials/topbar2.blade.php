@@ -5,7 +5,7 @@
 
             @can('عرض الاعدادات')
                 <li>
-                    <a title="المستخدمين" href="{{ route('settings.index') }}" class="nav-link">
+                    <a title="الإعدادات" href="{{ route('mysettings.index') }}" class="nav-link">
                         <i data-feather="settings"></i>
                     </a>
                 </li>
@@ -30,12 +30,12 @@
                 <div class="dropdown-menu dropdown-menu-end">
                     <a class="dropdown-item" href="#"><i data-feather="user"
                             class="align-self-center icon-xs icon-dual me-1"></i> Profile</a>
-                    <a class="dropdown-item" href="{{ route('settings.profile') }}"><i data-feather="settings"
+                    <a class="dropdown-item" href="{{ route('my-settings.profile') }}"><i data-feather="settings"
                             class="align-self-center icon-xs icon-dual me-1"></i> Settings</a>
 
                     <a class="dropdown-item" href="#"><i data-feather="user"
                             class="align-self-center icon-xs icon-dual me-1"></i> Profile</a>
-                    <a class="dropdown-item" href="{{ route('settings.profile') }}"><i data-feather="settings"
+                    <a class="dropdown-item" href="{{ route('my-settings.profile') }}"><i data-feather="settings"
                             class="align-self-center icon-xs icon-dual me-1"></i> Settings</a>
 
                     <div class="dropdown-divider mb-0"></div>
