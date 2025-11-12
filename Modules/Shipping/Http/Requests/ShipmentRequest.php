@@ -14,6 +14,7 @@ class ShipmentRequest extends FormRequest
     public function rules(): array
     {
         $shipmentId = $this->route('shipment')?->id;
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
 
         return [
             'tracking_number'     => 'required|string|unique:shipments,tracking_number,' . $shipmentId,
@@ -22,7 +23,7 @@ class ShipmentRequest extends FormRequest
             'customer_address'    => 'required|string',
             'weight'              => 'required|numeric|min:0',
             'status'              => 'required|in:pending,in_transit,delivered',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
         ];
     }
 

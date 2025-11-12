@@ -13,6 +13,7 @@ class MaintenanceRequest extends FormRequest
 
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
         return [
             'client_name' => 'nullable|string|max:255',
             'client_phone' => 'nullable|string|max:20',
@@ -22,7 +23,7 @@ class MaintenanceRequest extends FormRequest
             'status' => 'required|integer',
             'date' => 'nullable|date',
             'accural_date' => 'nullable|date',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
         ];
     }
 

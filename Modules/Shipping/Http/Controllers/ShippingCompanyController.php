@@ -35,6 +35,7 @@ class ShippingCompanyController extends Controller
 
     public function update(ShippingCompanyRequest $request, ShippingCompany $company)
     {
+        // dd($request->all());
         $company->update($request->validated());
         Alert::toast('تم تحديث الشركة بنجاح.', 'success');
         return redirect()->route('companies.index');

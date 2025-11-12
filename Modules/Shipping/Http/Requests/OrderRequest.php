@@ -14,6 +14,7 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         $orderId = $this->route('order')?->id;
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
 
         return [
             'order_number'   => 'required|string|unique:orders,order_number,' . $orderId,
@@ -22,7 +23,7 @@ class OrderRequest extends FormRequest
             'customer_name'  => 'required|string|max:255',
             'customer_address' => 'required|string',
             'delivery_status'  => 'required|in:pending,assigned,in_transit,delivered',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
         ];
     }
 

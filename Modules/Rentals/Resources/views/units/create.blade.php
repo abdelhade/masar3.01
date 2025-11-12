@@ -2,7 +2,6 @@
 
 @section('sidebar')
     @include('components.sidebar.rentals')
-    @include('components.sidebar.accounts')
 @endsection
 
 @section('content')

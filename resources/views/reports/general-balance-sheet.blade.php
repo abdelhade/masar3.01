@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.accounts')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')
@@ -101,7 +101,7 @@
             <div class="row mt-3">
                 <div class="col-12">
                     <div class="alert {{ $totalAssets == $totalLiabilitiesEquity ? 'alert-success' : 'alert-warning' }}">
-                        <strong>{{ __('النتيجة:') }}</strong> 
+                        <strong>{{ __('النتيجة:') }}</strong>
                         @if($totalAssets == $totalLiabilitiesEquity)
                             {{ __('الميزانية متوازنة ✓') }}
                         @else
@@ -113,4 +113,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
