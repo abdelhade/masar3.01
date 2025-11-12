@@ -7,12 +7,14 @@ use Livewire\Component;
 use App\Helpers\ItemViewModel;
 use Illuminate\Support\Collection;
 use App\Services\SaveInvoiceService;
+use App\Livewire\Traits\HandlesInvoiceData;
 use Modules\Invoices\Models\InvoiceTemplate;
+use App\Livewire\Traits\HandlesExpiryDates;
 use App\Models\{OperationItems, AccHead, Item, Barcode};
 
 class CreateInvoiceForm extends Component
 {
-    use Traits\HandlesInvoiceData;
+    use HandlesInvoiceData, HandlesExpiryDates;
     public $type;
     public $acc1_id;
     public $acc2_id;
@@ -127,19 +129,21 @@ class CreateInvoiceForm extends Component
         'account-created' => 'handleAccountCreated',
         'branch-changed' => 'handleBranchChange',
         'itemSelected' => 'handleItemSelected',
-
+        'batch-selected' => 'selectBatch',
     ];
 
     public function mount($type, $hash)
     {
         $this->op2 = request()->get('op2');
-
         $this->enableDimensionsCalculation = (setting('enable_dimensions_calculation') ?? '0') == '1';
         $this->dimensionsUnit = setting('dimensions_unit', 'cm');
+
+        $this->loadExpirySettings();
 
         $this->initializeInvoice($type, $hash);
         $this->loadTemplatesForType();
     }
+
 
     public function handleItemSelected($data)
     {
@@ -902,7 +906,7 @@ class CreateInvoiceForm extends Component
         $this->invoiceItems[] = [
             'item_id' => $item->id,
             'unit_id' => $unitId,
-            'name' => $item->name, // 💡 أضف هذا السطر
+            'name' => $item->name,
             'quantity' => $quantity,
             'price' => $price,
             'sub_value' => $price * $quantity, // quantity * price
@@ -914,9 +918,14 @@ class CreateInvoiceForm extends Component
             'height' => null,
             'density' => 1,
         ];
-
         $this->updateSelectedItemData($item, $unitId, $price);
 
+        $newIndex = count($this->invoiceItems) - 1;
+
+        if (in_array($this->type, [10, 12, 14, 16, 22])) { // فواتير صادرة (بيع من المخزن)
+            $storeId = $this->acc2_id;
+            $this->autoAssignExpiryData($itemId, $storeId, $newIndex);
+        }
         $this->barcodeTerm = '';
         $this->barcodeSearchResults = collect();
         $this->selectedBarcodeResultIndex = -1;
@@ -937,11 +946,10 @@ class CreateInvoiceForm extends Component
 
     public function updatedAcc2Id()
     {
-        // إذا كان هناك صنف مختار، قم بتحديث بياناته
         if ($this->currentSelectedItem) {
-            $item = Item::with(['units', 'prices'])->find($this->currentSelectedItem);
+            $item = Item::with('units', 'prices')->find($this->currentSelectedItem);
+
             if ($item) {
-                // البحث عن الصنف المختار في قائمة الفاتورة للحصول على الوحدة والسعر الحاليين
                 $currentInvoiceItem = collect($this->invoiceItems)->first(function ($invoiceItem) {
                     return $invoiceItem['item_id'] == $this->currentSelectedItem;
                 });
@@ -953,7 +961,17 @@ class CreateInvoiceForm extends Component
                 }
             }
         }
+
+        // ✅ إضافة جديدة: تحديث بيانات الدفعات عند تغيير المخزن
+        if ($this->expiryDateMode !== 'disabled' && in_array($this->type, [10, 12, 14, 16, 22])) {
+            foreach ($this->invoiceItems as $index => $item) {
+                if (isset($item['item_id'])) {
+                    $this->refreshBatchesForStore($index);
+                }
+            }
+        }
     }
+
 
     public function selectItemFromTable($itemId, $unitId, $price)
     {
@@ -1134,6 +1152,21 @@ class CreateInvoiceForm extends Component
 
         if ($field === 'quantity') {
             $this->quantityClickCount = 0; // إعادة تعيين عداد الضغطات
+            if ($this->expiryDateMode !== 'disabled' && in_array($this->type, [10, 12, 14, 16, 22])) {
+                $isValid = $this->validateBatchQuantity($rowIndex);
+
+                // إذا كان في وضع FIFO وتم تجاوز الكمية، حاول التقسيم التلقائي
+                if (!$isValid && $this->expiryDateMode === 'nearest_first') {
+                    $itemId = $this->invoiceItems[$rowIndex]['item_id'] ?? null;
+                    $storeId = $this->acc2_id;
+                    $requestedQuantity = (float) $value;
+
+                    if ($itemId && $storeId) {
+                        $this->autoSplitQuantityAcrossBatches($itemId, $storeId, $requestedQuantity, $rowIndex);
+                    }
+                }
+            }
+
             if (($this->settings['prevent_negative_invoice'] ?? '0') == '1' && $value < 0) {
                 $this->invoiceItems[$rowIndex]['quantity'] = 0;
                 $this->dispatch(

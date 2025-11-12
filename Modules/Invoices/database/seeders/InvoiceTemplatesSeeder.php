@@ -194,6 +194,24 @@ class InvoiceTemplatesSeeder extends Seeder
                 'invoice_types' => [10, 11], // مبيعات ومشتريات
                 'is_default' => false,
             ],
+            [
+                'name' => 'نموذج فواتير مع الصلاحية',
+                'code' => 'invoice_with_expiry',
+                'description' => 'نموذج يعرض تواريخ الصلاحية ورقم الدفعات للأصناف',
+                'visible_columns' => [
+                    'item_name',
+                    'unit',
+                    'quantity',
+                    'batch_number',    // ✅
+                    'expiry_date',     // ✅
+                    'price',
+                    'discount',
+                    'sub_value'
+                ],
+                'invoice_types' => [10, 11, 12, 13], // مبيعات، مشتريات، مردودات
+                'is_default' => false,
+            ],
+
         ];
 
         // حذف البيانات القديمة لضمان عدم التكرار

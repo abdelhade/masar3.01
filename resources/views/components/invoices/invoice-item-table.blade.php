@@ -1,5 +1,4 @@
 <table class="table table-striped mb-0" style="min-width: 1200px;">
-
     <thead class="table-light text-center align-middle">
         <tr>
             @foreach ($this->currentTemplate->getOrderedColumns() as $columnKey)
@@ -10,6 +9,8 @@
                             'item_name' => 'الصنف',
                             'unit' => 'الوحدة',
                             'quantity' => 'الكمية',
+                            'batch_number' => 'رقم الدفعة', // ✅ جديد
+                            'expiry_date' => 'تاريخ الصلاحية', // ✅ جديد
                             'length' => 'الطول',
                             'width' => 'العرض',
                             'height' => 'الارتفاع',
@@ -82,6 +83,64 @@
                                                 id="quantity_{{ $index }}" placeholder="{{ __('الكمية') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control">
+                                        </td>
+                                    @endif
+
+                                    {{-- ✅ رقم الدفعة (جديد) --}}
+                                    @if ($this->shouldShowColumn('batch_number'))
+                                        <td style="width: 12%; font-size: 1.2em;">
+                                            @if ($this->expiryDateMode === 'show_all' && isset($row['show_batch_selector']) && $row['show_batch_selector'])
+                                                {{-- عرض قائمة منسدلة لاختيار الدفعة --}}
+                                                <select
+                                                    wire:change="selectBatch({{ $index }}, $event.target.value)"
+                                                    class="form-control"
+                                                    style="font-size: 0.85em; height: 2em; padding: 1px 4px;">
+                                                    <option value="">اختر دفعة...</option>
+                                                    @foreach ($this->availableBatches[$row['item_id']] ?? [] as $batch)
+                                                        <option value="{{ $batch['batch_number'] }}"
+                                                            @if (($row['batch_number'] ?? '') == $batch['batch_number']) selected @endif>
+                                                            {{ $batch['display_text'] }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            @else
+                                                {{-- عرض رقم الدفعة المحدد (للقراءة فقط) --}}
+                                                <input type="text" value="{{ $row['batch_number'] ?? '' }}"
+                                                    class="form-control text-center" readonly
+                                                    style="font-size: 0.85em; height: 2em; padding: 1px 4px; background-color: #f8f9fa; cursor: not-allowed;"
+                                                    placeholder="لا يوجد" />
+                                            @endif
+                                        </td>
+                                    @endif
+
+                                    {{-- ✅ تاريخ الصلاحية (جديد) --}}
+                                    @if ($this->shouldShowColumn('expiry_date'))
+                                        <td style="width: 12%; font-size: 1.2em;">
+                                            <input type="text"
+                                                value="{{ isset($row['expiry_date']) ? \Carbon\Carbon::parse($row['expiry_date'])->format('Y-m-d') : '' }}"
+                                                class="form-control text-center" readonly
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px; background-color: #f8f9fa; cursor: not-allowed;"
+                                                placeholder="لا يوجد" />
+
+                                            {{-- تنبيه إذا كانت الصلاحية قريبة (أقل من 30 يوم) --}}
+                                            @if (isset($row['expiry_date']))
+                                                @php
+                                                    $expiryDate = \Carbon\Carbon::parse($row['expiry_date']);
+                                                    $daysUntilExpiry = now()->diffInDays($expiryDate, false);
+                                                @endphp
+
+                                                @if ($daysUntilExpiry >= 0 && $daysUntilExpiry <= 30)
+                                                    <small class="text-warning d-block" style="font-size: 0.75em;">
+                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                        باقي {{ $daysUntilExpiry }} يوم
+                                                    </small>
+                                                @elseif($daysUntilExpiry < 0)
+                                                    <small class="text-danger d-block" style="font-size: 0.75em;">
+                                                        <i class="fas fa-times-circle"></i>
+                                                        منتهية الصلاحية
+                                                    </small>
+                                                @endif
+                                            @endif
                                         </td>
                                     @endif
 

@@ -17,9 +17,7 @@ class SettingSeeder extends Seeder
         $invoices = Category::create(['name' => ' الفواتير']);
         $accounts = Category::create(['name' => 'حساب الخصم المكتسب ']);
         $disc = Category::create(['name' => 'حساب فرق الجرد ']);
-
-        // ثوابت عامه
-
+        $expiry = Category::create(['name' => 'إعدادات تواريخ الصلاحية']);
 
         PublicSetting::create([
             'category_id' => $general->id,
@@ -318,6 +316,46 @@ class SettingSeeder extends Seeder
             'key' => 'show_inventory_difference_account',
             'input_type' => 'text',
             'value' => '',
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $expiry->id,
+            'label' => 'التحذير قبل انتهاء صلاحية المنتج (بالأيام)',
+            'key' => 'expiry_warning_days',
+            'input_type' => 'number',
+            'value' => '30',
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $expiry->id,
+            'label' => 'منع بيع المنتجات منتهية الصلاحية',
+            'key' => 'prevent_selling_expired_items',
+            'input_type' => 'boolean',
+            'value' => '1',
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $expiry->id,
+            'label' => 'إظهار تنبيه عند بيع منتج قريب من انتهاء الصلاحية',
+            'key' => 'show_near_expiry_warning',
+            'input_type' => 'boolean',
+            'value' => '1',
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $expiry->id,
+            'label' => 'إلزام إدخال تاريخ الصلاحية عند الشراء',
+            'key' => 'require_expiry_date_on_purchase',
+            'input_type' => 'boolean',
+            'value' => '0',
+        ]);
+
+        PublicSetting::create([
+            'category_id' => $expiry->id,
+            'label' => 'إلزام إدخال رقم الدفعة عند الشراء',
+            'key' => 'require_batch_number_on_purchase',
+            'input_type' => 'boolean',
+            'value' => '0',
         ]);
     }
 }

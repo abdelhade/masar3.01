@@ -31,6 +31,8 @@ class InvoiceTemplate extends Model
             'item_name' => 'اسم الصنف',
             'unit' => 'الوحدة',
             'quantity' => 'الكمية',
+            'batch_number' => 'رقم الدفعة',      // ✅ جديد
+            'expiry_date' => 'تاريخ الصلاحية',   // ✅ جديد
             'length' => 'الطول',
             'width' => 'العرض',
             'height' => 'الارتفاع',
@@ -40,6 +42,7 @@ class InvoiceTemplate extends Model
             'sub_value' => 'القيمة',
         ];
     }
+
 
     public static function invoiceTypeNames(): array
     {
