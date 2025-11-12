@@ -2,7 +2,6 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-
 use Modules\CRM\Models\ChanceSource;
 use Modules\CRM\Http\Requests\ChanceSourceRequest;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -10,13 +9,12 @@ use Illuminate\Routing\Controller;
 
 class ChanceSourceController extends Controller
 {
-
     public function __construct()
     {
-        $this->middleware('can:عرض مصدر الفرص')->only(['index']);
-        $this->middleware('can:إضافة مصدر الفرص')->only(['create', 'store']);
-        $this->middleware('can:تعديل مصدر الفرص')->only(['edit', 'update']);
-        $this->middleware('can:حذف مصدر الفرص')->only(['destroy']);
+        $this->middleware('permission:view Chance Sources')->only(['index']);
+        $this->middleware('permission:create Chance Sources')->only(['create', 'store']);
+        $this->middleware('permission:edit Chance Sources')->only(['edit', 'update']);
+        $this->middleware('permission:delete Chance Sources')->only(['destroy']);
     }
 
     public function index()
@@ -34,7 +32,7 @@ class ChanceSourceController extends Controller
     public function store(ChanceSourceRequest $request)
     {
         ChanceSource::create($request->validated());
-        Alert::toast('تم الانشاء بنجاح', 'success');
+        Alert::toast('تم الإنشاء بنجاح', 'success');
         return redirect()->route('chance-sources.index');
     }
 
@@ -42,11 +40,9 @@ class ChanceSourceController extends Controller
     {
         // return view('crm::show');
     }
-
     public function edit($id)
     {
         $chanceSource = ChanceSource::findOrFail($id);
-
         return view('crm::chance-source.edit', compact('chanceSource'));
     }
 

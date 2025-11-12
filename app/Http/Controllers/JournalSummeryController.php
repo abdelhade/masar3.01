@@ -9,17 +9,15 @@ use Illuminate\Routing\Controller;
 
 
 class JournalSummeryController extends Controller
-
 {
-   public function __construct()
-{
-    $this->middleware('can:عرض قيود يومية عمليات')->only(['index']);
- 
-}
+    // public function __construct()
+    // {
+    //     $this->middleware('can:عرض قيود يومية عمليات')->only(['index']);
+    // }
 
     public function index()
     {
-        $journalHeads = JournalHead::with(['dets' => function($query) {
+        $journalHeads = JournalHead::with(['dets' => function ($query) {
             $query->orderBy('debit', 'desc');
         }])->get();
 

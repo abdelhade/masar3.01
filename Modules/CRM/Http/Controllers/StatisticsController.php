@@ -4,13 +4,18 @@ namespace Modules\CRM\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Client;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
 use Modules\CRM\Models\{Lead, Task, ChanceSource, LeadStatus, ClientContact};
 
 class StatisticsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view CRM Statistics')->only(['index']);
+    }
+
     public function index()
     {
         $statistics = $this->getStatistics();

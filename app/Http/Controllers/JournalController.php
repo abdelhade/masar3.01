@@ -14,11 +14,11 @@ use Illuminate\Routing\Controller;
 class JournalController extends Controller
 
 {
-    public function __construct()
-    {
-        $this->middleware('can:عرض قيد يومية')->only(['index', 'show']);
-        $this->middleware('can:إضافة قيد يومية')->only(['create', 'store']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('can:عرض قيد يومية')->only(['index', 'show']);
+    //     $this->middleware('can:إضافة قيد يومية')->only(['create', 'store']);
+    // }
     // __________________________________________________________________________________________index
     public function index()
     {

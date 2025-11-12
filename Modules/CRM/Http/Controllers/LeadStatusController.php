@@ -2,7 +2,6 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Modules\CRM\Models\LeadStatus;
 use Illuminate\Routing\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -12,32 +11,24 @@ class LeadStatusController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:عرض حالات الفرص')->only(['index']);
-        $this->middleware('can:إضافة حالات الفرص')->only(['create', 'store']);
-        $this->middleware('can:تعديل حالات الفرص')->only(['edit', 'update']);
-        $this->middleware('can:حذف حالات الفرص')->only(['destroy']);
+        $this->middleware('can:view Lead Statuses')->only(['index']);
+        $this->middleware('can:create Lead Statuses')->only(['create', 'store']);
+        $this->middleware('can:edit Lead Statuses')->only(['edit', 'update']);
+        $this->middleware('can:delete Lead Statuses')->only(['destroy']);
     }
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         $leadStatus = LeadStatus::all();
         return view('crm::lead-status.index', compact('leadStatus'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $branches = userBranches();
         return view('crm::lead-status.create', compact('branches'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(LeadStatusRequest $request)
     {
         LeadStatus::create($request->validated());
@@ -45,26 +36,17 @@ class LeadStatusController extends Controller
         return redirect()->route('lead-status.index');
     }
 
-    /**
-     * Show the specified resource.
-     */
     public function show($id)
     {
         // return view('crm::show');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         $leadStatus = LeadStatus::findOrFail($id);
         return view('crm::lead-status.edit', compact('leadStatus'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(LeadStatusRequest $request, $id)
     {
         $leadStatus = LeadStatus::findOrFail($id);
@@ -73,9 +55,6 @@ class LeadStatusController extends Controller
         return redirect()->route('lead-status.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         $leadStatus = LeadStatus::findOrFail($id);

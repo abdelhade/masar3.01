@@ -9,13 +9,14 @@ use Modules\CRM\Http\Requests\TaskTypeRequest;
 
 class TaskTypeController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض انواع المهمات')->only(['index']);
-    //     $this->middleware('can:إضافة انواع المهمات')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل انواع المهمات')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف انواع المهمات')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:view Task Types')->only(['index']);
+        $this->middleware('can:create Task Types')->only(['create', 'store']);
+        $this->middleware('can:edit Task Types')->only(['edit', 'update']);
+        $this->middleware('can:delete Task Types')->only(['destroy']);
+    }
+
 
     public function index()
     {

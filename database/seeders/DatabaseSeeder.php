@@ -4,11 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\CRM\Database\Seeders\LeadStatusSeeder;
-use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
-use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
-use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensionsSeeder};
+use Modules\CRM\Database\Seeders\CRMPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionSeeder;
 use Modules\Branches\database\seeders\{AttachUserToDefaultBranchSeeder, BranchSeeder};
+use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensionsSeeder};
+use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
+use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
 
 class DatabaseSeeder extends Seeder
 {
@@ -54,7 +55,8 @@ class DatabaseSeeder extends Seeder
             DiffcultyMatrixSeeder::class,
             VaribalSeeder::class,
             InquiriesPermissionsSeeder::class,
-            InquiriesRolesSeeder::class
+            InquiriesRolesSeeder::class,
+            CRMPermissionsSeeder::class
         ]);
     }
 }

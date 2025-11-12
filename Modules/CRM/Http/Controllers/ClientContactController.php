@@ -9,13 +9,12 @@ use Illuminate\Routing\Controller;
 
 class ClientContactController extends Controller
 {
-
     public function __construct()
     {
-        $this->middleware('can:عرض جهات اتصال الشركات')->only(['index']);
-        $this->middleware('can:إضافة جهات اتصال الشركات')->only(['store', 'create']);
-        $this->middleware('can:تعديل جهات اتصال الشركات')->only(['edit', 'update']);
-        $this->middleware('can:حذف جهات اتصال الشركات')->only(['destory']);
+        $this->middleware('can:view Client Contacts')->only(['index']);
+        $this->middleware('can:create Client Contacts')->only(['create', 'store']);
+        $this->middleware('can:edit Client Contacts')->only(['edit', 'update']);
+        $this->middleware('can:delete Client Contacts')->only(['destroy']);
     }
 
     public function index()

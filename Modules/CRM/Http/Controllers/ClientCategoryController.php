@@ -2,21 +2,20 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Modules\CRM\Models\ClientCategory;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\ClientCategoryRequest;
 
 class ClientCategoryController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض تصنيفات العملاء')->only(['index']);
-    //     $this->middleware('can:إضافة تصنيف عميل')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل تصنيف عميل')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف تصنيف عميل')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:view Client Categories')->only(['index']);
+        $this->middleware('can:create Client Categories')->only(['create', 'store']);
+        $this->middleware('can:edit Client Categories')->only(['edit', 'update']);
+        $this->middleware('can:delete Client Categories')->only(['destroy']);
+    }
 
     public function index()
     {

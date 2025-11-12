@@ -2,19 +2,24 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use App\Models\{User, Client};
+use Exception;
+use App\Models\User;
+use Illuminate\Routing\Controller;
 use Modules\CRM\Models\{Task, TaskType};
-use App\Http\Controllers\Controller;
-use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\TaskRequest;
-use Exception;
+use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('can:view Tasks')->only(['index']);
+        $this->middleware('can:create Tasks')->only(['create', 'store']);
+        $this->middleware('can:edit Tasks')->only(['edit', 'update']);
+        $this->middleware('can:delete Tasks')->only(['destroy']);
+    }
+
     public function index()
     {
         $tasks = Task::with(['client', 'user', 'media'])
@@ -23,9 +28,6 @@ class TaskController extends Controller
         return view('crm::tasks.index', compact('tasks'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $branches = userBranches();
@@ -38,9 +40,6 @@ class TaskController extends Controller
         return view('crm::tasks.create',  get_defined_vars());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(TaskRequest $request)
     {
         try {
@@ -61,17 +60,11 @@ class TaskController extends Controller
         }
     }
 
-    /**
-     * Show the specified resource.
-     */
     public function show($id)
     {
         // return view('crm::show');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Task $task)
     {
         $taskTypes = TaskType::pluck('title', 'id');
@@ -79,9 +72,6 @@ class TaskController extends Controller
         return view('crm::tasks.edit', get_defined_vars());
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(TaskRequest $request, Task $task)
     {
         try {
@@ -109,9 +99,6 @@ class TaskController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         $task = Task::findOrFail($id);

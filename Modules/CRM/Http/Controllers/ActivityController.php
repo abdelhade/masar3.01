@@ -4,25 +4,26 @@ namespace Modules\CRM\Http\Controllers;
 
 use Exception;
 use App\Models\User;
-use App\Http\Controllers\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Models\Activity;
+use Illuminate\Routing\Controller;
+use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\ActivityRequest;
 
 class ActivityController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('permission:view Activities')->only(['index', 'show']);
+        $this->middleware('permission:create Activities')->only(['create', 'store']);
+        $this->middleware('permission:edit Activities')->only(['edit', 'update']);
+        $this->middleware('permission:delete Activities')->only(['destroy']);
+    }
     public function index()
     {
         $activities = Activity::with(['client', 'assignedUser'])->latest()->paginate(20);
         return view('crm::activities.index', compact('activities'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $branches = userBranches();
@@ -30,9 +31,6 @@ class ActivityController extends Controller
         return view('crm::activities.create', compact('users', 'branches'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(ActivityRequest $request)
     {
         try {
@@ -45,27 +43,19 @@ class ActivityController extends Controller
         }
     }
 
-    /**
-     * Show the specified resource.
-     */
     public function show($id)
     {
         // $activity = Activity::findOrFail($id);
         // return view('crm::activities.show', compact('activity'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Activity $activity)
     {
         $users = User::pluck('name', 'id');
         return view('crm::activities.edit', compact('activity', 'users'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(ActivityRequest $request, $id)
     {
         try {
@@ -79,9 +69,6 @@ class ActivityController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         try {

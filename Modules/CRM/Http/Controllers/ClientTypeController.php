@@ -9,13 +9,13 @@ use Modules\CRM\Http\Requests\ClientTypeRequest;
 
 class ClientTypeController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض انواع العملاء')->only(['index']);
-    //     $this->middleware('can:إضافة انواع العملاء')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل انواع العملاء')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف انواع العملاء')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:view Client Types')->only(['index']);
+        $this->middleware('can:create Client Types')->only(['create', 'store']);
+        $this->middleware('can:edit Client Types')->only(['edit', 'update']);
+        $this->middleware('can:delete Client Types')->only(['destroy']);
+    }
 
     public function index()
     {

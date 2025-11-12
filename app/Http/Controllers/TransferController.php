@@ -13,11 +13,11 @@ use Illuminate\Routing\Controller;
 class TransferController extends Controller
 {
 
-    public function __construct()
-    {
-        $this->middleware('can:عرض التحويلات النقدية')->only(['index']);
-        $this->middleware('can:إضافة التحويلات النقدية')->only(['create', 'store']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('can:عرض التحويلات النقدية')->only(['index']);
+    //     $this->middleware('can:إضافة التحويلات النقدية')->only(['create', 'store']);
+    // }
 
     public function index()
     {

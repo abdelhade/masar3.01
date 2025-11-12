@@ -12,13 +12,12 @@ use Modules\CRM\Models\LeadStatus;
 
 class LeadController extends Controller
 {
-
     public function __construct()
     {
-        $this->middleware('can:عرض الفرص')->only(['board']);
-        $this->middleware('can:إضافة الفرص')->only(['store']);
-        $this->middleware('can:تعديل الفرص')->only(['updateStatus']);
-        $this->middleware('can:حذف الفرص')->only(['destroy']);
+        $this->middleware('can:view Leads')->only(['board']);
+        $this->middleware('can:create Leads')->only(['store']);
+        $this->middleware('can:edit Leads')->only(['updateStatus']);
+        $this->middleware('can:delete Leads')->only(['destroy']);
     }
 
     public function board()

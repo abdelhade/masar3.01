@@ -25,7 +25,7 @@ class InquiriesPermissionsSeeder extends Seeder
             ],
         ];
 
-        $actions = ['View', 'Create', 'Edit', 'Delete', 'Print'];
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
 
         foreach ($groupedPermissions as $category => $permissions) {
             foreach ($permissions as $basePermission) {
