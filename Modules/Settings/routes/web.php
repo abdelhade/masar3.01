@@ -11,6 +11,7 @@ use Modules\Settings\Http\Controllers\{
 Route::get('mysettings', [SettingsController::class, 'index'])->name('mysettings.index');
 Route::post('/mysettings/update', [SettingsController::class, 'update'])->name('mysettings.update');
 
+
 Route::get('/test-setting', function () {
     return config('public_settings.campany_name');
 });

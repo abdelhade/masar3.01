@@ -28,8 +28,8 @@ class AccountsTypesSeeder extends Seeder
         DB::table('accounts_types')->updateOrInsert(['id' => 14], ['name' => 'rentables']);
         DB::table('accounts_types')->updateOrInsert(['id' => 15], ['name' => 'accumulated-depreciations']);
         DB::table('accounts_types')->updateOrInsert(['id' => 16], ['name' => 'depreciation-expenses']);
-        DB::table('accounts_types')->updateOrInsert(['id' => 17], ['name' => 'Receipt-portfolios']); // حافظات حافظة اوراق قبض
-        DB::table('accounts_types')->updateOrInsert(['id' => 18], ['name' => 'Payment-portfolios']); // حافظات حافظة اوراق دفع
+        DB::table('accounts_types')->updateOrInsert(['id' => 17], ['name' => 'check-portfolios-incoming']); // حافظات حافظة اوراق قبض
+        DB::table('accounts_types')->updateOrInsert(['id' => 18], ['name' => 'check-portfolios-outgoing']); // حافظات حافظة اوراق دفع
         
     }
 }

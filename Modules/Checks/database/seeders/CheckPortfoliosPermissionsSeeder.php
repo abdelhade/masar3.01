@@ -3,14 +3,14 @@
 namespace Modules\Checks\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Modules\Authorization\Models\Permission;
+use Modules\Authorization\Models\Role;
 
 class CheckPortfoliosPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        $permissions = [
+        $localizedPermissions = [
             'عرض حافظات أوراق القبض',
             'إضافة حافظات أوراق القبض',
             'تعديل حافظات أوراق القبض',
@@ -21,16 +21,36 @@ class CheckPortfoliosPermissionsSeeder extends Seeder
             'حذف حافظات أوراق الدفع',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        foreach ($localizedPermissions as $permission) {
+            Permission::firstOrCreate(
+                ['name' => $permission, 'guard_name' => 'web'],
+                ['category' => 'Checks']
+            );
         }
 
-        // Assign to admin role
+        $sidebarPermissions = [
+            'view check-portfolios-incoming',
+            'create check-portfolios-incoming',
+            'view check-portfolios-outgoing',
+            'create check-portfolios-outgoing',
+        ];
+
+        foreach ($sidebarPermissions as $permission) {
+            Permission::firstOrCreate(
+                ['name' => $permission, 'guard_name' => 'web'],
+                ['category' => 'Accounts']
+            );
+        }
+
         $adminRole = Role::where('name', 'admin')->first();
+
         if ($adminRole) {
-            $adminRole->givePermissionTo($permissions);
+            $adminRole->givePermissionTo([
+                ...$localizedPermissions,
+                ...$sidebarPermissions,
+            ]);
         }
 
-        $this->command->info('Check portfolios permissions created successfully!');
+        $this->command?->info('Check portfolios permissions created successfully!');
     }
 }

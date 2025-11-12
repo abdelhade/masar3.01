@@ -128,58 +128,33 @@
 {{-- حافظات الأوراق المالية --}}
 @can('view check-portfolios-incoming')
     <li class="nav-item">
-        <a class="nav-link font-family-cairo fw-bold"
-            href="{{ route('accounts.index', ['type' => 'check-portfolios-incoming']) }}">
-            <i class="fas fa-folder-open" style="color:#28a745"></i> حافظات أوراق القبض
+        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'check-portfolios-incoming']) }}">
+            <i class="ti-control-record"></i>{{ __('حافظات أوراق القبض') }}
         </a>
     </li>
 @endcan
 
 @can('create check-portfolios-incoming')
     <li class="nav-item">
-        <a class="nav-link font-family-cairo" href="{{ route('accounts.create', ['parent' => '1105']) }}">
-            <i class="fas fa-plus-circle" style="color:#28a745"></i> إضافة حافظة قبض
+        <a class="nav-link" href="{{ route('accounts.create', ['parent' => '1105']) }}">
+            <i class="ti-control-record"></i>{{ __('إضافة حافظة قبض') }}
         </a>
     </li>
 @endcan
 
 @can('view check-portfolios-outgoing')
     <li class="nav-item">
-        <a class="nav-link font-family-cairo fw-bold"
-            href="{{ route('accounts.index', ['type' => 'check-portfolios-outgoing']) }}">
-            <i class="fas fa-folder-open" style="color:#dc3545"></i> حافظات أوراق الدفع
+        <a class="nav-link" href="{{ route('accounts.index', ['type' => 'check-portfolios-outgoing']) }}">
+            <i class="ti-control-record"></i>{{ __('حافظات أوراق الدفع') }}
         </a>
     </li>
 @endcan
 
 @can('create check-portfolios-outgoing')
     <li class="nav-item">
-        <a class="nav-link font-family-cairo" href="{{ route('accounts.create', ['parent' => '2103']) }}">
-            <i class="fas fa-plus-circle" style="color:#dc3545"></i> إضافة حافظة دفع
+        <a class="nav-link" href="{{ route('accounts.create', ['parent' => '2103']) }}">
+            <i class="ti-control-record"></i>{{ __('إضافة حافظة دفع') }}
         </a>
     </li>
 @endcan
 
-{{-- @can('view account-movement-report') --}}
-    {{-- <li class="nav-item">
-        <a class="nav-link" href="{{ route('accounts.account-movement-report') }}">
-            <i class="ti-bar-chart"></i>{{ __('navigation.account_movement_report') }}
-        </a> --}}
-    </li>
-{{-- @endcan --}}
-
-{{-- @can('view balance-sheet') --}}
-    {{-- <li class="nav-item">
-        <a class="nav-link" href="{{ route('accounts.balance-sheet') }}">
-            <i class="ti-pie-chart"></i>{{ __('navigation.balance_sheet') }}
-        </a>
-    </li> --}}
-{{-- @endcan --}}
-
-{{-- @can('view start-balance-management') --}}
-    {{-- <li class="nav-item">
-        <a class="nav-link" href="{{ route('accounts.start-balance') }}">
-            <i class="ti-settings"></i>{{ __('navigation.start_balance_management') }}
-        </a>
-    </li> --}}
-{{-- @endcan --}}
