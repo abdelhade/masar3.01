@@ -42,4 +42,4 @@ class GeneralBalanceSheet extends Component
     {
         return view('livewire.reports.general-balance-sheet');
     }
-} 
+}

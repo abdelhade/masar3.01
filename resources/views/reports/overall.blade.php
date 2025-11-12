@@ -1,10 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @include('components.sidebar.accounts')
-    @include('components.sidebar.sales-invoices')
-    @include('components.sidebar.purchases-invoices')
-    @include('components.sidebar.items')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')
@@ -77,7 +74,7 @@
                                         $operationType = $log->type->ptext ?? __('عملية غير محددة');
                                         $editRoute = $log->getEditRoute();
                                     @endphp
-                                    
+
                                     @if(\Illuminate\Support\Facades\Route::has($editRoute))
                                         <a href="{{ route($editRoute, $log->id) }}"
                                            class="text-decoration-underline text-primary"
@@ -86,7 +83,7 @@
                                            {{ $operationType }}
                                         </a>
                                     @else
-                                        <span class="text-muted" 
+                                        <span class="text-muted"
                                               title="{{ __('لا يمكن تعديل هذا النوع من العمليات') }}"
                                               style="font-family: 'Cairo', sans-serif; direction: rtl;">
                                             {{ $operationType }}

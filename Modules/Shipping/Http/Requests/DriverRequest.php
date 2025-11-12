@@ -13,12 +13,14 @@ class DriverRequest extends FormRequest
 
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+
         return [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'vehicle_type' => 'required|string|max:100',
             'is_available' => 'boolean',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
         ];
     }
 

@@ -21,11 +21,11 @@
 </li>
 
 @foreach ($inventory as $type => $label)
-    @can('عرض ' . $label)
+    {{-- @can('عرض ' . $label) --}}
         <li class="nav-item">
             <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
                 <i class="ti-control-record"></i> {{ __($label) }}
             </a>
         </li>
-    @endcan
+    {{-- @endcan --}}
 @endforeach

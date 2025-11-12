@@ -1,10 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @include('components.sidebar.accounts')
-    @include('components.sidebar.sales-invoices')
-    @include('components.sidebar.purchases-invoices')
-    @include('components.sidebar.items')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')
@@ -87,4 +84,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

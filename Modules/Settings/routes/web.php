@@ -8,24 +8,32 @@ use Modules\Settings\Http\Controllers\{
 };
 
 // Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
-    Route::get('mysettings', [SettingsController::class, 'index'])->name('mysettings.index');
-    Route::post('/mysettings/update', [SettingsController::class, 'update'])->name('mysettings.update');
+Route::get('mysettings', [SettingsController::class, 'index'])->name('mysettings.index');
+Route::post('/mysettings/update', [SettingsController::class, 'update'])->name('mysettings.update');
 
-    Route::get('/test-setting', function () {
-        return config('public_settings.campany_name');
-    });
+Route::get('/test-setting', function () {
+    return config('public_settings.campany_name');
+});
 
-    Route::get('/barcode-print-settings/edit', [BarcodePrintSettingController::class, 'edit'])->name('barcode.print.settings.edit');
-    Route::put('/barcode-print-settings', [BarcodePrintSettingController::class, 'update'])->name('barcode.print.settings.update');
+Route::get('/barcode-print-settings/edit', [BarcodePrintSettingController::class, 'edit'])->name('barcode.print.settings.edit');
+Route::put('/barcode-print-settings', [BarcodePrintSettingController::class, 'update'])->name('barcode.print.settings.update');
 
 
-    // في routes/web.php
-    Route::get('/export-settings', function () {
-        return view('settings::export-settings.index');
-    })->middleware('auth')->name('export-settings');
+// في routes/web.php
+Route::get('/export-settings', function () {
+    return view('settings::export-settings.index');
+})->middleware('auth')->name('export-settings');
 
-    Route::get('/settings/export-data', [DataExportController::class, 'exportAllData'])
-        ->name('export.data');
-    Route::get('/settings/export-sql', [DataExportController::class, 'exportSqlDump'])
-        ->name('export.sql');
+// Route::get('/settings/export-data', [DataExportController::class, 'exportAllData'])
+//     ->name('export.data');
+// Route::get('/settings/export-sql', [DataExportController::class, 'exportSqlDump'])
+//     ->name('export.sql');
+
+// routes/web.php أو في module routes
+Route::middleware(['auth'])->prefix('settings')->name('settings.')->group(function () {
+    Route::get('/export-data', [DataExportController::class, 'exportAllData']);
+    Route::get('/export-sql', [DataExportController::class, 'exportSqlDump']);
+    Route::get('/export-stats', [DataExportController::class, 'getExportStats']);
+});
+
 // });
