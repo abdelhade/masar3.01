@@ -10,12 +10,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('إضافة فرع') --}}
+            @can('create branches')
             <a href="{{ route('branches.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                 اضافه جديده
                 <i class="fas fa-plus me-2"></i>
             </a>
-            {{-- @endcan --}}
+            @endcan
             <br>
             <br>
             <div class="card">
@@ -33,9 +33,9 @@
                                     <th>{{ __('كود الفرع') }}</th>
                                     <th>{{ __('العنوان') }}</th>
                                     <th>{{ __('الحالة') }}</th>
-                                    {{-- @canany(['تعديل فرع', 'حذف فرع']) --}}
+                                    @canany(['edit branches', 'delete branches'])
                                     <th>{{ __('العمليات') }}</th>
-                                    {{-- @endcanany --}}
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
@@ -55,17 +55,17 @@
                                         </td>
 
 
+                                    @canany(['edit branches', 'delete branches'])
 
-                                        {{-- @canany(['تعديل فرع', 'حذف فرع']) --}}
                                         <td>
-                                            {{-- @can('تعديل فرع') --}}
+                                            @can('edit branches')
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('branches.edit', $branch->id) }}">
                                                 <i class="las la-edit"></i>
                                             </a>
-                                            {{-- @endcan
+                                            @endcan
 
-                                                @can('حذف فرع') --}}
+                                                @can('delete branches')
                                             <form action="{{ route('branches.destroy', $branch->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('هل أنت متأكد من حذف هذا الفرع؟');">
@@ -75,9 +75,9 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
-                                            {{-- @endcan --}}
+                                            @endcan
                                         </td>
-                                        {{-- @endcanany --}}
+                                        @endcanany
                                     </tr>
                                 @empty
                                     <tr>

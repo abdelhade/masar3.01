@@ -1,16 +1,18 @@
+@canany([ 'view Users' , 'view roles' , 'create Users'])
 <div class="sidebar-header mb-3">
     <h6 class="text-muted fw-bold px-3 mb-2">
         <i class="fas fa-users-cog me-2"></i>
         إدارة المستخدمين والصلاحيات
     </h6>
 </div>
+@endcanany
 
 {{-- إدارة المستخدمين --}}
-@can('view Users')
+@can(abilities: 'view Users')
     <li class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('users.index') }}">
+        <a class="nav-link text-light" href="{{ route('users.index') }}">
             <i class="fas fa-users"></i>
-            <span>المستخدمين</span>
+            <span class="text-white">المستخدمين</span>
             @can('create Users')
                 <span class="badge bg-primary ms-auto">إدارة</span>
             @endcan
@@ -28,7 +30,7 @@
     </li>
 @endcan
 
-@can('view Roles')
+@can('view roles')
     <li class="nav-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('roles.index') }}">
             <i class="fas fa-user-shield"></i>
@@ -40,17 +42,18 @@
     </li>
 @endcan
 
+@canany(['view branches', 'view settings'])
 <hr class="my-3 border-secondary">
-
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
         <i class="fas fa-code-branch me-2"></i>
         إدارة الفروع
     </h6>
 </div>
+@endcanany
 
 {{-- الفروع --}}
-@can('view Branches')
+@can('view branches')
     <li class="nav-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('branches.index') }}">
             <i class="fas fa-building"></i>
@@ -60,7 +63,7 @@
 @endcan
 
 {{-- إعدادات النظام --}}
-@can('عرض التحكم في الاعدادات')
+@can('view settings')
     <li class="nav-item {{ request()->routeIs('mysettings.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('mysettings.index') }}">
             <i class="fas fa-cogs"></i>
@@ -70,6 +73,7 @@
     </li>
 @endcan
 
+@canany(['view login-history', 'view active-sessions', 'view activity-logs'])
 <hr class="my-3 border-secondary">
 
 <div class="sidebar-header mb-2">
@@ -78,9 +82,9 @@
         السجلات والمراقبة
     </h6>
 </div>
-
+@endcanany
 {{-- سجل تسجيل الدخول --}}
-@can('view Users')
+@can('view login-history')
     <li class="nav-item {{ request()->routeIs('users.login-history*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.login-history') }}">
             <i class="fas fa-sign-in-alt"></i>
@@ -90,7 +94,7 @@
 @endcan
 
 {{-- إدارة الجلسات النشطة --}}
-@can('view Users')
+@can('view active-sessions')
     <li class="nav-item {{ request()->routeIs('users.active-sessions*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.active-sessions') }}">
             <i class="fas fa-desktop"></i>
@@ -101,7 +105,7 @@
 @endcan
 
 {{-- سجل النشاطات --}}
-@can('view Users')
+@can('view activity-logs')
     <li class="nav-item {{ request()->routeIs('users.activity-log*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.activity-log') }}">
             <i class="fas fa-list-alt"></i>
@@ -109,7 +113,7 @@
         </a>
     </li>
 @endcan
-
+@can('view system-statistics')
 <hr class="my-3 border-secondary">
 
 <div class="sidebar-header mb-2">
@@ -120,7 +124,7 @@
 </div>
 
 {{-- إحصائيات النظام --}}
-@can('view Users')
+
     <li class="nav-item">
         <a class="nav-link" href="javascript:void(0);" onclick="showUserStats()">
             <i class="fas fa-chart-pie"></i>
@@ -136,14 +140,14 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .nav-item.active .nav-link {
         background-color: rgba(13, 110, 253, 0.1);
         border-right: 3px solid #0d6efd;
         color: #0d6efd !important;
         font-weight: 600;
     }
-    
+
     .nav-link {
         display: flex;
         align-items: center;
@@ -153,20 +157,20 @@
         border-radius: 0.5rem;
         margin: 0.25rem 0.5rem;
     }
-    
+
     .nav-link:hover {
         background-color: rgba(13, 110, 253, 0.05);
         color: #0d6efd;
         transform: translateX(-5px);
     }
-    
+
     .nav-link i {
         width: 25px;
         margin-left: 10px;
         text-align: center;
         font-size: 1.1rem;
     }
-    
+
     .nav-link .badge {
         font-size: 0.7rem;
         padding: 0.25rem 0.5rem;
@@ -191,7 +195,7 @@ function showUserStats() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-6">
                         <div class="card border-0 shadow-sm bg-success bg-gradient text-white">
                             <div class="card-body text-center">
@@ -201,7 +205,7 @@ function showUserStats() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-6">
                         <div class="card border-0 shadow-sm bg-info bg-gradient text-white">
                             <div class="card-body text-center">
@@ -211,7 +215,7 @@ function showUserStats() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-6">
                         <div class="card border-0 shadow-sm bg-warning bg-gradient text-white">
                             <div class="card-body text-center">
@@ -221,7 +225,7 @@ function showUserStats() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-6">
                         <div class="card border-0 shadow-sm bg-secondary bg-gradient text-white">
                             <div class="card-body text-center">
@@ -231,7 +235,7 @@ function showUserStats() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-6">
                         <div class="card border-0 shadow-sm bg-dark bg-gradient text-white">
                             <div class="card-body text-center">
@@ -266,7 +270,7 @@ function showActiveSessions() {
     .then(data => {
         const sessions = data.sessions || [];
         let html = '<div class="text-start">';
-        
+
         if (sessions.length === 0) {
             html += `
                 <div class="alert alert-info">
@@ -286,7 +290,7 @@ function showActiveSessions() {
                 </thead>
                 <tbody>
             `;
-            
+
             sessions.forEach(session => {
                 html += `
                     <tr>
@@ -296,12 +300,12 @@ function showActiveSessions() {
                     </tr>
                 `;
             });
-            
+
             html += '</tbody></table></div>';
         }
-        
+
         html += '</div>';
-        
+
         Swal.fire({
             title: '<i class="fas fa-desktop text-success"></i> الجلسات النشطة',
             html: html,

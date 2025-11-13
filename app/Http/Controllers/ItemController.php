@@ -20,6 +20,7 @@ class ItemController extends Controller
         $this->middleware('can:edit items')->only(['edit', 'update']);
         $this->middleware('can:delete items')->only(['destroy']);
         $this->middleware('can:print items')->only(['printItems', 'printItemMovement']);
+        $this->middleware('can:view item-statistics')->only(['getStatistics', 'refresh']);
 
     }
     public function index()

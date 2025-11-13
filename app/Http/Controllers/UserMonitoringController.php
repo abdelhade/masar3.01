@@ -14,9 +14,12 @@ class UserMonitoringController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
+       public function __construct()
     {
-        $this->middleware('can:view Users');
+        $this->middleware('can:view login-history')->only(['loginHistory']);
+        $this->middleware('can:view activity-logs')->only(['activityLog']);
+        $this->middleware('can:view active-sessions')->only(['activeSessions' , 'terminateSession']);
+        $this->middleware('can:delete Users')->only(['destroy']);
     }
 
     /**
@@ -53,7 +56,7 @@ class UserMonitoringController extends Controller
 
         try {
             $session = LoginSession::findOrFail($sessionId);
-            
+
             $session->update([
                 'logout_at' => now(),
                 'session_duration' => now()->diffInMinutes($session->login_at),

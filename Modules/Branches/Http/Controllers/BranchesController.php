@@ -10,13 +10,13 @@ use Modules\Branches\Http\Requests\BranchesRequest;
 
 class BranchesController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض الفروع')->only(['index']);
-    //     $this->middleware('can:إضافة فرع')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل فرع')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف فرع')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:view branches')->only(['index']);
+        $this->middleware('can:create branches')->only(['create', 'store']);
+        $this->middleware('can:edit branches')->only(['edit', 'update']);
+        $this->middleware('can:delete branches')->only(['destroy']);
+    }
 
     public function index()
     {

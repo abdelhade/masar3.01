@@ -57,7 +57,7 @@
                     <i data-feather="menu" class="align-self-center topbar-icon fa-2x text-primary"></i>
                 </button>
             </li>
-            @can('عرض - الأدوار')
+            @can('view Users')
                 <li>
                     <a title="المستخدمين" href="{{ route('users.index') }}" class="nav-link">
                         <i data-feather="user"></i>.
