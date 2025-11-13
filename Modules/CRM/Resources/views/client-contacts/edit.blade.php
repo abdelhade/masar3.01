@@ -1,17 +1,16 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('جهات اتصال الشركات'),
+        'title' => __('Client Contacts'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('جهات اتصال الشركات'), 'url' => route('client-contacts.index')],
-            ['label' => __('تعديل')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Client Contacts'), 'url' => route('client-contacts.index')],
+            ['label' => __('Edit')],
         ],
     ])
 
@@ -19,7 +18,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>تعديل جهة اتصال</h2>
+                    <h2>{{ __('Edit Contact') }}</h2>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('client-contacts.update', $contact->id) }}" method="POST">
@@ -28,12 +27,12 @@
 
                         <div class="row">
                             <div class="mb-3 col-lg-4">
-                                <x-dynamic-search name="client_id" label="الشركة" column="cname" model="App\Models\Client"
-                                    placeholder="ابحث عن شركة..." :required="true" :selected="$contact->client_id" />
+                                <x-dynamic-search name="client_id" :label="__('Company')" column="cname" model="App\Models\Client"
+                                    :placeholder="__('Search for a company...')" :required="true" :selected="$contact->client_id" />
                             </div>
 
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="name">الاسم</label>
+                                <label class="form-label" for="name">{{ __('Name') }}</label>
                                 <input type="text" class="form-control" id="name" name="name"
                                     value="{{ old('name', $contact->name) }}" required>
                                 @error('name')
@@ -42,7 +41,7 @@
                             </div>
 
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="email">البريد الإلكتروني</label>
+                                <label class="form-label" for="email">{{ __('Email') }}</label>
                                 <input type="email" class="form-control" id="email" name="email"
                                     value="{{ old('email', $contact->email) }}" required>
                                 @error('email')
@@ -51,7 +50,7 @@
                             </div>
 
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="phone">الهاتف</label>
+                                <label class="form-label" for="phone">{{ __('Phone') }}</label>
                                 <input type="text" class="form-control" id="phone" name="phone"
                                     value="{{ old('phone', $contact->phone) }}" required>
                                 @error('phone')
@@ -60,7 +59,7 @@
                             </div>
 
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="position">المنصب</label>
+                                <label class="form-label" for="position">{{ __('Position') }}</label>
                                 <input type="text" class="form-control" id="position" name="position"
                                     value="{{ old('position', $contact->position) }}">
                                 @error('position')
@@ -71,11 +70,11 @@
 
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-primary me-2">
-                                <i class="las la-save"></i> حفظ التعديل
+                                <i class="las la-save"></i> {{ __('Save Changes') }}
                             </button>
 
                             <a href="{{ route('client-contacts.index') }}" class="btn btn-danger">
-                                <i class="las la-times"></i> إلغاء
+                                <i class="las la-times"></i> {{ __('Cancel') }}
                             </a>
                         </div>
                     </form>

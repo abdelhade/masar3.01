@@ -1,17 +1,16 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تعديل المهمة'),
+        'title' => __('Edit Task'),
         'items' => [
-            ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
-            ['label' => __('المهام'), 'url' => route('tasks.index')],
-            ['label' => __('تعديل')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Tasks'), 'url' => route('tasks.index')],
+            ['label' => __('Edit')],
         ],
     ])
 
@@ -19,7 +18,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>تعديل المهمة</h2>
+                    <h2>{{ __('Edit Task') }}</h2>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('tasks.update', $task->id) }}" method="POST" enctype="multipart/form-data">
@@ -27,15 +26,16 @@
                         @method('PUT')
 
                         <div class="row">
-                            {{-- اسم العميل --}}
+                            {{-- Client Name --}}
                             <div class="col-md-4 mb-3">
-                                <x-dynamic-search name="client_id" label="العميل" column="cname" model="App\Models\Client"
-                                    placeholder="ابحث عن العميل..." :required="false" :class="'form-select'" :selected="$task->client_id" />
+                                <x-dynamic-search name="client_id" :label="__('Client')" column="cname"
+                                    model="App\Models\Client" :placeholder="__('Search for client...')" :required="false" :class="'form-select'"
+                                    :selected="$task->client_id" />
                             </div>
 
-                            {{-- اسم المستخدم --}}
+                            {{-- User Name --}}
                             <div class="mb-3 col-lg-4">
-                                <label for="user_id" class="form-label">المستخدم</label>
+                                <label for="user_id" class="form-label">{{ __('User') }}</label>
                                 <select name="user_id" id="user_id" class="form-control">
                                     @foreach ($users as $id => $name)
                                         <option value="{{ $id }}"
@@ -49,11 +49,11 @@
                                 @enderror
                             </div>
 
-                            {{-- نوع المهمة --}}
+                            {{-- Task Type --}}
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="task_type_id">نوع المهمة</label>
+                                <label class="form-label" for="task_type_id">{{ __('Task Type') }}</label>
                                 <select name="task_type_id" id="task_type_id" class="form-control">
-                                    <option value="">-- اختر نوع المهمة --</option>
+                                    <option value="">{{ __('-- Select Task Type --') }}</option>
                                     @foreach ($taskTypes as $id => $title)
                                         <option value="{{ $id }}"
                                             {{ old('task_type_id', $task->task_type_id ?? '') == $id ? 'selected' : '' }}>
@@ -66,10 +66,9 @@
                                 @enderror
                             </div>
 
-
-                            {{-- العنوان --}}
+                            {{-- Title --}}
                             <div class="mb-3 col-lg-4">
-                                <label for="title" class="form-label">عنوان المهمة</label>
+                                <label for="title" class="form-label">{{ __('Task Title') }}</label>
                                 <input type="text" name="title" id="title" class="form-control"
                                     value="{{ old('title', $task->title) }}">
                                 @error('title')
@@ -77,9 +76,9 @@
                                 @enderror
                             </div>
 
-                            {{-- الأولوية --}}
+                            {{-- Priority --}}
                             <div class="mb-3 col-lg-2">
-                                <label for="priority" class="form-label">الأولوية</label>
+                                <label for="priority" class="form-label">{{ __('Priority') }}</label>
                                 <select name="priority" id="priority" class="form-control">
                                     @foreach (\Modules\CRM\Enums\TaskPriorityEnum::cases() as $priority)
                                         <option value="{{ $priority->value }}"
@@ -93,9 +92,9 @@
                                 @enderror
                             </div>
 
-                            {{-- الحالة --}}
+                            {{-- Status --}}
                             <div class="mb-3 col-lg-2">
-                                <label for="status" class="form-label">حالة المهمة</label>
+                                <label for="status" class="form-label">{{ __('Task Status') }}</label>
                                 <select name="status" id="status" class="form-control">
                                     @foreach (\Modules\CRM\Enums\TaskStatusEnum::cases() as $status)
                                         <option value="{{ $status->value }}"
@@ -109,9 +108,9 @@
                                 @enderror
                             </div>
 
-                            {{-- تاريخ البداية --}}
+                            {{-- Start Date --}}
                             <div class="mb-3 col-lg-2">
-                                <label for="start_date" class="form-label">تاريخ البداية</label>
+                                <label for="start_date" class="form-label">{{ __('Start Date') }}</label>
                                 <input type="date" name="start_date" id="start_date" class="form-control"
                                     value="{{ old('start_date', \Carbon\Carbon::parse($task->start_date)->format('Y-m-d')) }}">
                                 @error('start_date')
@@ -119,42 +118,42 @@
                                 @enderror
                             </div>
 
-                            {{-- تاريخ التسليم --}}
+                            {{-- Due Date --}}
                             <div class="mb-3 col-lg-2">
-                                <label for="delivery_date" class="form-label">تاريخ التسليم</label>
-                                <input type="date" name="delivery_date" id="delivery_date" class="form-control"
-                                    value="{{ old('delivery_date', \Carbon\Carbon::parse($task->delivery_date)->format('Y-m-d')) }}">
-                                @error('delivery_date')
+                                <label for="due_date" class="form-label">{{ __('Due Date') }}</label>
+                                <input type="date" name="due_date" id="due_date" class="form-control"
+                                    value="{{ old('due_date', \Carbon\Carbon::parse($task->due_date)->format('Y-m-d')) }}">
+                                @error('due_date')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            {{-- تعليق العميل --}}
+                            {{-- Client Comment --}}
                             <div class="mb-3 col-lg-6">
-                                <label for="client_comment" class="form-label">تعليق العميل</label>
+                                <label for="client_comment" class="form-label">{{ __('Client Comment') }}</label>
                                 <textarea name="client_comment" id="client_comment" class="form-control">{{ old('client_comment', $task->client_comment) }}</textarea>
                                 @error('client_comment')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            {{-- تعليق المندوب --}}
+                            {{-- User Comment --}}
                             <div class="mb-3 col-lg-6">
-                                <label for="user_comment" class="form-label">تعليق المندوب</label>
+                                <label for="user_comment" class="form-label">{{ __('User Comment') }}</label>
                                 <textarea name="user_comment" id="user_comment" class="form-control">{{ old('user_comment', $task->user_comment) }}</textarea>
                                 @error('user_comment')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            {{-- المرفقات --}}
+                            {{-- Attachment --}}
                             <div class="mb-3 col-lg-12">
-                                <label for="attachment" class="form-label">مرفق (صورة أو ملف)</label>
+                                <label for="attachment" class="form-label">{{ __('Attachment (Image or File)') }}</label>
                                 <input type="file" name="attachment" id="attachment" class="form-control">
                                 @if ($task->getFirstMediaUrl('attachments'))
                                     <p class="mt-2">
-                                        <a href="{{ $task->getFirstMediaUrl('attachments') }}" target="_blank">عرض المرفق
-                                            الحالي</a>
+                                        <a href="{{ $task->getFirstMediaUrl('attachments') }}"
+                                            target="_blank">{{ __('View Current Attachment') }}</a>
                                     </p>
                                 @endif
                                 @error('attachment')
@@ -163,13 +162,13 @@
                             </div>
                         </div>
 
-                        {{-- زر الحفظ --}}
+                        {{-- Save Button --}}
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-success me-2">
-                                <i class="las la-save"></i> تحديث
+                                <i class="las la-save"></i> {{ __('Update') }}
                             </button>
                             <a href="{{ route('tasks.index') }}" class="btn btn-danger">
-                                <i class="las la-times"></i> إلغاء
+                                <i class="las la-times"></i> {{ __('Cancel') }}
                             </a>
                         </div>
                     </form>

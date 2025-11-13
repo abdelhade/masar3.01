@@ -1,17 +1,16 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('انواع المهمات'),
+        'title' => __('Task Types'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('انواع المهمات'), 'url' => route('tasks.types.index')],
-            ['label' => __('انشاء')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Task Types'), 'url' => route('tasks.types.index')],
+            ['label' => __('Create')],
         ],
     ])
 
@@ -19,15 +18,15 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>اضافة جديده</h2>
+                    <h2>{{ __('Add New') }}</h2>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('tasks.types.store') }}" method="POST" onsubmit="disableButton()">
                         @csrf
                         <div class="mb-3 col-lg-4">
-                            <label class="form-label" for="title">العنوان</label>
+                            <label class="form-label" for="title">{{ __('Title') }}</label>
                             <input type="text" class="form-control" id="title" name="title"
-                                placeholder="ادخل الاسم">
+                                placeholder="{{ __('Enter the name') }}">
                             @error('title')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
@@ -35,9 +34,9 @@
 
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary me-2" id="submitBtn"><i class="las la-save"></i>
-                                حفظ</button>
+                                {{ __('Save') }}</button>
                             <a href="{{ route('tasks.types.index') }}" class="btn btn-danger"><i class="las la-times"></i>
-                                إلغاء</a>
+                                {{ __('Cancel') }}</a>
                         </div>
                     </form>
                 </div>

@@ -1,6 +1,5 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
@@ -12,12 +11,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('إضافة الأنشطة') --}}
-            <a href="{{ route('activities.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                اضافه نشاط جديد
-                <i class="fas fa-plus me-2"></i>
-            </a>
-            {{-- @endcan --}}
+            @can('create Activities')
+                <a href="{{ route('activities.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                    اضافه نشاط جديد
+                    <i class="fas fa-plus me-2"></i>
+                </a>
+            @endcan
             <br>
             <br>
             <div class="card">
@@ -38,9 +37,9 @@
                                     <th>{{ __('العميل') }}</th>
                                     <th>{{ __('المسؤول') }}</th>
                                     <th>{{ __('الوصف') }}</th>
-                                    {{-- @canany(['تعديل الأنشطة', 'حذف الأنشطة']) --}}
-                                    <th>{{ __('العمليات') }}</th>
-                                    {{-- @endcanany --}}
+                                    @canany(['edit Activities', 'delete Activities'])
+                                        <th>{{ __('العمليات') }}</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,27 +62,27 @@
                                         <td>{{ optional($activity->assignedUser)->name }}</td>
                                         <td>{{ Str::limit($activity->description, 30) }}</td>
 
-                                        {{-- @canany(['تعديل الأنشطة', 'حذف الأنشطة']) --}}
-                                        <td>
-                                            {{-- @can('تعديل الأنشطة') --}}
-                                            <a class="btn btn-success btn-icon-square-sm"
-                                                href="{{ route('activities.edit', $activity->id) }}">
-                                                <i class="las la-edit"></i>
-                                            </a>
-                                            {{-- @endcan
-                                                @can('حذف الأنشطة') --}}
-                                            <form action="{{ route('activities.destroy', $activity->id) }}" method="POST"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا النشاط؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                    <i class="las la-trash"></i>
-                                                </button>
-                                            </form>
-                                            {{-- @endcan --}}
-                                        </td>
-                                        {{-- @endcanany --}}
+                                        @canany(['edit Activities', 'delete Activities'])
+                                            <td>
+                                                @can('edit Activities')
+                                                    <a class="btn btn-success btn-icon-square-sm"
+                                                        href="{{ route('activities.edit', $activity->id) }}">
+                                                        <i class="las la-edit"></i>
+                                                    </a>
+                                                @endcan
+                                                @can('delete Activities')
+                                                    <form action="{{ route('activities.destroy', $activity->id) }}" method="POST"
+                                                        style="display:inline-block;"
+                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا النشاط؟');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                            <i class="las la-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </td>
+                                        @endcanany
                                     </tr>
                                 @empty
                                     <tr>
@@ -91,7 +90,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد أنشطة مضافة حتى الآن
+                                                {{ __('No data available') }}
                                             </div>
                                         </td>
                                     </tr>

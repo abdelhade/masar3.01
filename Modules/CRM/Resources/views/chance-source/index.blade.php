@@ -1,20 +1,22 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('مصدر الفرص'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('مصدر الفرص')]],
+        'title' => __('Chance Sources'),
+        'items' => [
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Chance Sources')],
+        ],
     ])
     <div class="row">
         <div class="col-lg-12">
-            @can('إضافة مصدر الفرص')
+            @can('create Chance Sources')
                 <a href="{{ route('chance-sources.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    اضافه جديده
+                    Add New
                     <i class="fas fa-plus me-2"></i>
                 </a>
             @endcan
@@ -25,15 +27,15 @@
                     <div class="table-responsive" style="overflow-x: auto;">
 
                         <x-table-export-actions table-id="chance-source-table" filename="chance-source-table"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                            excel-label="Export Excel" pdf-label="Export PDF" print-label="Print" />
 
                         <table id="chance-source-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('العنوان') }}</th>
-                                    @canany(['تعديل مصدر الفرص', 'حذف مصدر الفرص'])
-                                        <th>{{ __('العمليات') }}</th>
+                                    <th>{{ __('Title') }}</th>
+                                    @canany(['edit Chance Sources', 'delete Chance Sources'])
+                                        <th>{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
@@ -42,19 +44,19 @@
                                     <tr class="text-center">
                                         <td> {{ $loop->iteration }} </td>
                                         <td>{{ $chance->title }}</td>
-                                        @canany(['تعديل مصدر الفرص', 'حذف مصدر الفرص'])
+                                        @canany(['edit Chance Sources', 'delete Chance Sources'])
                                             <td>
-                                                @can('تعديل مصدر الفرص')
+                                                @can('edit Chance Sources')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('chance-sources.edit', $chance->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('حذف مصدر الفرص')
+                                                @can('delete Chance Sources')
                                                     <form action="{{ route('chance-sources.destroy', $chance->id) }}" method="POST"
                                                         style="display:inline-block;"
-                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                        onsubmit="return confirm('Are you sure you want to delete this major?');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-icon-square-sm">
@@ -62,7 +64,6 @@
                                                         </button>
                                                     </form>
                                                 @endcan
-
                                             </td>
                                         @endcanany
                                     </tr>
@@ -72,13 +73,12 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات
+                                                {{ __('No data available') }}
                                             </div>
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
-
                         </table>
                     </div>
                 </div>

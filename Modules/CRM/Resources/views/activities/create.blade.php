@@ -1,17 +1,16 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('الأنشطة'),
+        'title' => __('Activities'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('الأنشطة'), 'url' => route('activities.index')],
-            ['label' => __('إنشاء')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Activities'), 'url' => route('activities.index')],
+            ['label' => __('Create')],
         ],
     ])
 
@@ -19,39 +18,42 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>إضافة نشاط جديد</h2>
+                    <h2>{{ __('Add New Activity') }}</h2>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('activities.store') }}" method="POST" onsubmit="disableButton()">
                         @csrf
                         <div class="row">
 
-                            {{-- عنوان النشاط --}}
+                            {{-- Activity Title --}}
                             <div class="mb-3 col-lg-3">
-                                <label class="form-label" for="title">عنوان النشاط</label>
+                                <label class="form-label" for="title">{{ __('Activity Title') }}</label>
                                 <input type="text" class="form-control" id="title" name="title"
-                                    placeholder="ادخل عنوان النشاط" value="{{ old('title') }}">
+                                    placeholder="{{ __('Enter activity title') }}" value="{{ old('title') }}">
                                 @error('title')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            {{-- نوع النشاط --}}
+                            {{-- Activity Type --}}
                             <div class="mb-3 col-lg-3">
-                                <label class="form-label" for="type">النوع</label>
+                                <label class="form-label" for="type">{{ __('Type') }}</label>
                                 <select class="form-control" id="type" name="type">
-                                    <option value="0" {{ old('type') == 0 ? 'selected' : '' }}>مكالمة</option>
-                                    <option value="1" {{ old('type') == 1 ? 'selected' : '' }}>رسالة</option>
-                                    <option value="2" {{ old('type') == 2 ? 'selected' : '' }}>اجتماع</option>
+                                    <option value="0" {{ old('type') == 0 ? 'selected' : '' }}>{{ __('Call') }}
+                                    </option>
+                                    <option value="1" {{ old('type') == 1 ? 'selected' : '' }}>{{ __('Message') }}
+                                    </option>
+                                    <option value="2" {{ old('type') == 2 ? 'selected' : '' }}>{{ __('Meeting') }}
+                                    </option>
                                 </select>
                                 @error('type')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            {{-- تاريخ النشاط --}}
+                            {{-- Activity Date --}}
                             <div class="mb-3 col-lg-3">
-                                <label class="form-label" for="activity_date">تاريخ النشاط</label>
+                                <label class="form-label" for="activity_date">{{ __('Activity Date') }}</label>
                                 <input type="date" class="form-control" id="activity_date" name="activity_date"
                                     value="{{ old('activity_date') }}">
                                 @error('activity_date')
@@ -59,9 +61,9 @@
                                 @enderror
                             </div>
 
-                            {{-- وقت النشاط --}}
+                            {{-- Scheduled Time --}}
                             <div class="mb-3 col-lg-3">
-                                <label class="form-label" for="scheduled_at">الوقت</label>
+                                <label class="form-label" for="scheduled_at">{{ __('Time') }}</label>
                                 <input type="time" class="form-control" id="scheduled_at" name="scheduled_at"
                                     value="{{ old('scheduled_at') }}">
                                 @error('scheduled_at')
@@ -69,17 +71,22 @@
                                 @enderror
                             </div>
 
-                            {{-- العميل --}}
+                            {{-- Client --}}
                             <div class="col-md-3 mb-3">
-                                <x-dynamic-search name="client_id" label="العميل" column="cname" model="App\Models\Client"
-                                    placeholder="ابحث عن العميل..." :required="false" :class="'form-select'" />
+                                <x-dynamic-search name="client_id" :label="__('Client')" column="cname"
+                                    model="App\Models\Client" :placeholder="__('Search for client...')" :required="false" :class="'form-select'" />
                             </div>
-                            {{-- الموظف المكلف --}}
+
+                            {{-- Assigned To --}}
                             <div class="mb-3 col-lg-3">
-                                <label class="form-label" for="assigned_to">المكلف</label>
+                                <label class="form-label" for="assigned_to">{{ __('Assigned To') }}</label>
                                 <select name="assigned_to" class="form-control">
+                                    <option value="">{{ __('Select employee') }}</option>
                                     @foreach ($users as $id => $name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
+                                        <option value="{{ $id }}"
+                                            {{ old('assigned_to') == $id ? 'selected' : '' }}>
+                                            {{ $name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('assigned_to')
@@ -87,10 +94,11 @@
                                 @enderror
                             </div>
 
-                            {{-- الوصف --}}
+                            {{-- Description --}}
                             <div class="mb-3 col-lg-6">
-                                <label class="form-label" for="description">الوصف</label>
-                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="اكتب تفاصيل النشاط">{{ old('description') }}</textarea>
+                                <label class="form-label" for="description">{{ __('Description') }}</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                    placeholder="{{ __('Enter activity details') }}">{{ old('description') }}</textarea>
                                 @error('description')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -102,11 +110,11 @@
 
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-primary me-2" id="submitBtn">
-                                <i class="las la-save"></i> حفظ
+                                <i class="las la-save"></i> {{ __('Save') }}
                             </button>
 
                             <a href="{{ route('activities.index') }}" class="btn btn-danger">
-                                <i class="las la-times"></i> إلغاء
+                                <i class="las la-times"></i> {{ __('Cancel') }}
                             </a>
                         </div>
 

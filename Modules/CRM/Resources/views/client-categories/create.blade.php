@@ -1,17 +1,16 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تصنيفات العملاء'),
+        'title' => __('Client Categories'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('تصنيفات العملاء'), 'url' => route('client.categories.index')],
-            ['label' => __('إنشاء')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Client Categories'), 'url' => route('client.categories.index')],
+            ['label' => __('Create')],
         ],
     ])
 
@@ -19,26 +18,27 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h2>إضافة تصنيف جديد</h2>
+                    <h2>{{ __('Add New Category') }}</h2>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('client.categories.store') }}" method="POST" onsubmit="disableButton()">
                         @csrf
                         <div class="row">
-                            <!-- الاسم -->
+                            <!-- Name -->
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="name">الاسم</label>
+                                <label class="form-label" for="name">{{ __('Name') }}</label>
                                 <input type="text" class="form-control" id="name" name="name"
-                                    placeholder="ادخل الاسم" value="{{ old('name') }}">
+                                    placeholder="{{ __('Enter the name') }}" value="{{ old('name') }}">
                                 @error('name')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            <!-- الوصف -->
+                            <!-- Description -->
                             <div class="mb-3 col-lg-8">
-                                <label class="form-label" for="description">الوصف</label>
-                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="اكتب وصف للتصنيف">{{ old('description') }}</textarea>
+                                <label class="form-label" for="description">{{ __('Description') }}</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                    placeholder="{{ __('Enter a description for the category') }}">{{ old('description') }}</textarea>
                                 @error('description')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -47,11 +47,11 @@
 
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-primary me-2" id="submitBtn">
-                                <i class="las la-save"></i> حفظ
+                                <i class="las la-save"></i> {{ __('Save') }}
                             </button>
 
                             <a href="{{ route('client.categories.index') }}" class="btn btn-danger">
-                                <i class="las la-times"></i> إلغاء
+                                <i class="las la-times"></i> {{ __('Cancel') }}
                             </a>
                         </div>
                     </form>

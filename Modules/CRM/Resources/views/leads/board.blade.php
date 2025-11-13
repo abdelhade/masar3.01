@@ -1,27 +1,31 @@
-<div>
-    @extends('admin.dashboard')
+@extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
 
-    @section('content')
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>إدارة الفرص</h2>
-                {{-- <a href="{{ route('leads.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> إضافة فرصة جديدة
-            </a> --}}
-            </div>
+@section('content')
+    @include('components.breadcrumb', [
+        'title' => __('Leads'),
+        'items' => [['label' => __('Dashboard'), 'url' => route('admin.dashboard')], ['label' => __('Leads')]],
+    ])
 
-            @if (session('message'))
-                <div class="alert alert-success alert-dismissible fade show">
-                    {{ session('message') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            @livewire('leads-board')
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            {{-- @can('create Leads')
+                <a href="{{ route('leads.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+                    <i class="fas fa-plus me-2"></i> {{ __('Add New Lead') }}
+                </a>
+            @endcan --}}
         </div>
-    @endsection
-</div>
+
+        @if (session('message'))
+            <div class="alert alert-success alert-dismissible fade show">
+                {{ session('message') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @livewire('leads-board')
+    </div>
+@endsection

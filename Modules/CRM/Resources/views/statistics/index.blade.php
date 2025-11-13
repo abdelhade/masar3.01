@@ -1,9 +1,9 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
+
 @section('content')
     @push('styles')
         <style>
@@ -90,13 +90,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h1 class="h2 mb-0">
                         <i class="fas fa-chart-bar me-2"></i>
-                        إحصائيات نظام إدارة العلاقات
+                        {{ __('CRM Statistics') }}
                     </h1>
                     <div class="d-flex gap-2">
                         <button class="btn btn-outline-primary" onclick="refreshData()">
-                            <i class="fas fa-sync-alt"></i> تحديث
+                            <i class="fas fa-sync-alt"></i> {{ __('Refresh') }}
                         </button>
-
                     </div>
                 </div>
             </div>
@@ -108,15 +107,12 @@
                 <div class="card stats-card h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-gradient-primary">
-                                <i class="fas fa-users"></i>
-                            </div>
+                            <div class="stats-icon bg-gradient-primary"><i class="fas fa-users"></i></div>
                             <div class="ms-3 flex-grow-1">
-                                <h6 class="text-muted mb-1">إجمالي العملاء</h6>
+                                <h6 class="text-muted mb-1">{{ __('Total Clients') }}</h6>
                                 <h3 class="mb-0">{{ $statistics['clients']['total'] }}</h3>
-                                <small class="text-success">
-                                    +{{ $statistics['clients']['new_this_month'] }} هذا الشهر
-                                </small>
+                                <small class="text-success">+{{ $statistics['clients']['new_this_month'] }}
+                                    {{ __('this month') }}</small>
                             </div>
                         </div>
                     </div>
@@ -127,15 +123,12 @@
                 <div class="card stats-card h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-gradient-success">
-                                <i class="fas fa-handshake"></i>
-                            </div>
+                            <div class="stats-icon bg-gradient-success"><i class="fas fa-handshake"></i></div>
                             <div class="ms-3 flex-grow-1">
-                                <h6 class="text-muted mb-1">الفرص التجارية</h6>
+                                <h6 class="text-muted mb-1">{{ __('Leads') }}</h6>
                                 <h3 class="mb-0">{{ $statistics['leads']['total'] }}</h3>
-                                <small class="text-info">
-                                    معدل النجاح: {{ $statistics['leads']['success_rate'] }}%
-                                </small>
+                                <small class="text-info">{{ __('Success Rate') }}:
+                                    {{ $statistics['leads']['success_rate'] }}%</small>
                             </div>
                         </div>
                     </div>
@@ -146,15 +139,12 @@
                 <div class="card stats-card h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-gradient-info">
-                                <i class="fas fa-tasks"></i>
-                            </div>
+                            <div class="stats-icon bg-gradient-info"><i class="fas fa-tasks"></i></div>
                             <div class="ms-3 flex-grow-1">
-                                <h6 class="text-muted mb-1">المهام</h6>
+                                <h6 class="text-muted mb-1">{{ __('Tasks') }}</h6>
                                 <h3 class="mb-0">{{ $statistics['tasks']['total'] }}</h3>
-                                <small class="text-danger">
-                                    {{ $statistics['tasks']['overdue'] }} متأخرة
-                                </small>
+                                <small class="text-danger">{{ $statistics['tasks']['overdue'] }}
+                                    {{ __('overdue') }}</small>
                             </div>
                         </div>
                     </div>
@@ -165,15 +155,12 @@
                 <div class="card stats-card h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="stats-icon bg-gradient-warning">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
+                            <div class="stats-icon bg-gradient-warning"><i class="fas fa-dollar-sign"></i></div>
                             <div class="ms-3 flex-grow-1">
-                                <h6 class="text-muted mb-1">قيمة الفرص</h6>
+                                <h6 class="text-muted mb-1">{{ __('Leads Value') }}</h6>
                                 <h3 class="mb-0">{{ number_format($statistics['leads']['total_value']) }}</h3>
-                                <small class="text-muted">
-                                    متوسط: {{ number_format($statistics['leads']['average_value']) }}
-                                </small>
+                                <small class="text-muted">{{ __('Average') }}:
+                                    {{ number_format($statistics['leads']['average_value']) }}</small>
                             </div>
                         </div>
                     </div>
@@ -186,12 +173,8 @@
             <div class="col-lg-4 mb-4">
                 <div class="card">
                     <div class="card-header bg-info text-dark">
-                        <h6 class="mb-0">
-                            <i class="fas fa-chart-pie me-2"></i>
-                            الفرص حسب الحالة
-                        </h6>
+                        <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>{{ __('Leads by Status') }}</h6>
                     </div>
-
                     <div class="card-body">
                         @foreach ($statistics['leads']['by_status'] as $status)
                             <div class="mb-3">
@@ -214,9 +197,7 @@
             <div class="col-lg-4 mb-4">
                 <div class="card">
                     <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            المهام حسب الأولوية
+                        <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>{{ __('Tasks by Priority') }}
                         </h6>
                     </div>
                     <div class="card-body">
@@ -224,14 +205,12 @@
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span>{{ $priority['label'] }}</span>
-                                    <span class="status-badge bg-{{ $priority['color'] }} text-white">
-                                        {{ $priority['count'] }}
-                                    </span>
+                                    <span
+                                        class="status-badge bg-{{ $priority['color'] }} text-white">{{ $priority['count'] }}</span>
                                 </div>
                                 <div class="progress progress-custom">
                                     <div class="progress-bar bg-{{ $priority['color'] }}"
-                                        style="width: {{ $priority['percentage'] }}%">
-                                    </div>
+                                        style="width: {{ $priority['percentage'] }}%"></div>
                                 </div>
                                 <small class="text-muted">{{ $priority['percentage'] }}%</small>
                             </div>
@@ -244,10 +223,7 @@
             <div class="col-lg-4 mb-4">
                 <div class="card">
                     <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-seedling me-2"></i>
-                            مصادر الفرص
-                        </h6>
+                        <h6 class="mb-0"><i class="fas fa-seedling me-2"></i>{{ __('Lead Sources') }}</h6>
                     </div>
                     <div class="card-body">
                         @foreach ($statistics['sources']['sources'] as $source)
@@ -257,8 +233,7 @@
                                     <span class="badge bg-success">{{ $source['count'] }}</span>
                                 </div>
                                 <div class="progress progress-custom">
-                                    <div class="progress-bar bg-success" style="width: {{ $source['percentage'] }}%">
-                                    </div>
+                                    <div class="progress-bar bg-success" style="width: {{ $source['percentage'] }}%"></div>
                                 </div>
                                 <small class="text-muted">{{ $source['percentage'] }}%</small>
                             </div>
@@ -273,40 +248,29 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="fas fa-bolt me-2"></i>
-                            إجراءات سريعة
-                        </h6>
+                        <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>{{ __('Quick Actions') }}</h6>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3 mb-2">
-                                <div class="alert alert-warning mb-0">
-                                    <i class="fas fa-clock me-2"></i>
-                                    <strong>{{ $statistics['tasks']['due_today'] }}</strong>
-                                    مهام مستحقة اليوم
-                                </div>
+                                <div class="alert alert-warning mb-0"><i
+                                        class="fas fa-clock me-2"></i><strong>{{ $statistics['tasks']['due_today'] }}</strong>
+                                    {{ __('tasks due today') }}</div>
                             </div>
                             <div class="col-md-3 mb-2">
-                                <div class="alert alert-danger mb-0">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>{{ $statistics['tasks']['overdue'] }}</strong>
-                                    مهام متأخرة
-                                </div>
+                                <div class="alert alert-danger mb-0"><i
+                                        class="fas fa-exclamation-triangle me-2"></i><strong>{{ $statistics['tasks']['overdue'] }}</strong>
+                                    {{ __('overdue tasks') }}</div>
                             </div>
                             <div class="col-md-3 mb-2">
-                                <div class="alert alert-success mb-0">
-                                    <i class="fas fa-user-check me-2"></i>
-                                    <strong>{{ $statistics['clients']['active'] }}</strong>
-                                    عملاء نشطون
-                                </div>
+                                <div class="alert alert-success mb-0"><i
+                                        class="fas fa-user-check me-2"></i><strong>{{ $statistics['clients']['active'] }}</strong>
+                                    {{ __('active clients') }}</div>
                             </div>
                             <div class="col-md-3 mb-2">
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-address-book me-2"></i>
-                                    <strong>{{ $statistics['contacts']['total'] }}</strong>
-                                    جهات اتصال
-                                </div>
+                                <div class="alert alert-info mb-0"><i
+                                        class="fas fa-address-book me-2"></i><strong>{{ $statistics['contacts']['total'] }}</strong>
+                                    {{ __('contacts') }}</div>
                             </div>
                         </div>
                     </div>
@@ -347,8 +311,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error refreshing data:', error);
-                    alert('حدث خطأ أثناء تحديث البيانات');
+                    alert("{{ __('An error occurred while refreshing the data') }}");
                 })
                 .finally(() => {
                     btn.disabled = false;
@@ -375,7 +338,7 @@
             bar.setAttribute('data-bs-toggle', 'tooltip');
             bar.setAttribute('data-bs-placement', 'top');
             const percentage = bar.style.width;
-            bar.setAttribute('title', `النسبة: ${percentage}`);
+            bar.setAttribute('title', `{{ __('Percentage') }}: ${percentage}`);
         });
 
         // Initialize tooltips

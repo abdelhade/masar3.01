@@ -1,19 +1,22 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
 @endsection
+
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('حالات الفرص'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('مصدر الفرص')]],
+        'title' => __('Lead Statuses'),
+        'items' => [
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Lead Statuses')],
+        ],
     ])
     <div class="row">
         <div class="col-lg-12">
-            @can('إضافة حالات الفرص')
+            @can('create Lead Statuses')
                 <a href="{{ route('lead-status.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    اضافه جديده
+                    {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>
             @endcan
@@ -23,18 +26,18 @@
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
-                        <x-table-export-actions table-id="lead-status-table" filename="lead-status-table"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                        <x-table-export-actions table-id="lead-status-table" filename="lead-status-table" :excel-label="__('Export Excel')"
+                            :pdf-label="__('Export PDF')" :print-label="__('Print')" />
 
                         <table id="lead-status-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('الاسم') }}</th>
-                                    <th>{{ __('اللون') }}</th>
-                                    <th>{{ __('الترتيب') }}</th>
-                                    @canany(['حذف حالات الفرص', 'تعديل حالات الفرص'])
-                                        <th>{{ __('العمليات') }}</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Color') }}</th>
+                                    <th>{{ __('Order') }}</th>
+                                    @canany(['delete Lead Statuses', 'edit Lead Statuses'])
+                                        <th>{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
@@ -52,18 +55,18 @@
                                             <span>{{ $chance->color }}</span>
                                         </td>
                                         <td>{{ $chance->order_column }}</td>
-                                        @canany(['تعديل حالات الفرص', 'حذف حالات الفرص'])
+                                        @canany(['edit Lead Statuses', 'delete Lead Statuses'])
                                             <td>
-                                                @can(abilities: 'تعديل حالات الفرص')
+                                                @can('edit Lead Statuses')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('lead-status.edit', $chance->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
-                                                @can('حذف حالات الفرص')
+                                                @can('delete Lead Statuses')
                                                     <form action="{{ route('lead-status.destroy', $chance->id) }}" method="POST"
                                                         style="display:inline-block;"
-                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                        onsubmit="return confirm('{{ __('Are you sure you want to delete this status?') }}');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-icon-square-sm">
@@ -80,7 +83,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات مضافة حتى الآن
+                                                {{ __('No data added yet') }}
                                             </div>
                                         </td>
                                     </tr>
