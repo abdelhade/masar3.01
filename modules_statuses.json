@@ -19,5 +19,6 @@
     "App": true,
     "Manufacturing": true,
     "Invoices": true,
-    "Quality": true
+    "Quality": true,
+    "Installments": true
 }
