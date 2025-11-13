@@ -1,0 +1,294 @@
+body {
+    font-family: "Cairo", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+/* Stats Cards */
+.stats-card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #f6c23e !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #36b9cc !important;
+}
+
+/* Section Headers */
+.section-header {
+    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.section-title {
+    color: white;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Building Cards */
+.building-card {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border: none;
+}
+
+.building-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+}
+
+.info-box {
+    background: #f8f9fc;
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.info-box:hover {
+    background: #e3e6f0;
+    transform: scale(1.05);
+}
+
+.info-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #5a5c69;
+    margin: 5px 0;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.status-item {
+    padding: 10px;
+    border-radius: 10px;
+    margin: 2px;
+}
+
+.status-item.available {
+    background: rgba(28, 200, 138, 0.1);
+    border: 1px solid rgba(28, 200, 138, 0.3);
+}
+
+.status-item.rented {
+    background: rgba(246, 194, 62, 0.1);
+    border: 1px solid rgba(246, 194, 62, 0.3);
+}
+
+.status-item.maintenance {
+    background: rgba(231, 74, 59, 0.1);
+    border: 1px solid rgba(231, 74, 59, 0.3);
+}
+
+.status-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #5a5c69;
+}
+
+.status-label {
+    font-size: 0.7rem;
+    color: #6c757d;
+}
+
+/* Unit Cards */
+.unit-card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.unit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.unit-header {
+    border: none;
+    padding: 15px;
+}
+
+.unit-header.status-available {
+    background: linear-gradient(45deg, #1cc88a, #17a2b8);
+}
+
+.unit-header.status-rented {
+    background: linear-gradient(45deg, #f6c23e, #fd7e14);
+}
+
+.unit-header.status-maintenance {
+    background: linear-gradient(45deg, #e74a3b, #c0392b);
+}
+
+.badge-status {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 20px;
+}
+
+.unit-body {
+    padding: 20px;
+}
+
+.building-ref {
+    padding: 8px 12px;
+    background: #f8f9fc;
+    border-radius: 8px;
+    border-left: 3px solid #4e73df;
+}
+
+.detail-item {
+    margin-bottom: 8px;
+    color: #5a5c69;
+    font-size: 0.9rem;
+}
+
+.lease-info {
+    border-left: 3px solid #1cc88a;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #224abe, #1e3a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 115, 223, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #1cc88a, #17a2b8);
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(45deg, #17a2b8, #138496);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(28, 200, 138, 0.4);
+}
+
+.btn-info {
+    background: linear-gradient(45deg, #36b9cc, #17a2b8);
+    border: none;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover {
+    transform: translateY(-2px);
+}
+
+/* Filter Buttons */
+.btn-group .btn {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.btn-group .btn:last-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .building-card,
+    .unit-card {
+        margin-bottom: 20px;
+    }
+
+    .section-header {
+        padding: 15px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    .info-box {
+        margin-bottom: 10px;
+    }
+}
+
+/* Loading Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.building-card,
+.unit-card {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #224abe, #1e3a8a);
+}

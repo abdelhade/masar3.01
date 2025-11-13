@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\CRM\Database\Seeders\LeadStatusSeeder;
 use Modules\CRM\Database\Seeders\CRMPermissionsSeeder;
+use Modules\Rentals\database\seeders\RentalsPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionSeeder;
 use Modules\Branches\database\seeders\{AttachUserToDefaultBranchSeeder, BranchSeeder};
 use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensionsSeeder};
@@ -56,7 +57,8 @@ class DatabaseSeeder extends Seeder
             VaribalSeeder::class,
             InquiriesPermissionsSeeder::class,
             InquiriesRolesSeeder::class,
-            CRMPermissionsSeeder::class
+            CRMPermissionsSeeder::class,
+            RentalsPermissionsSeeder::class
         ]);
     }
 }
