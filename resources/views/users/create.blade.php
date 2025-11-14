@@ -30,6 +30,11 @@
                                 <i class="fas fa-shield-alt me-2"></i>
                                 الصلاحيات
                             </button>
+                            <button class="nav-link text-end" id="v-pills-selective-permissions-tab" data-bs-toggle="pill"
+                                data-bs-target="#v-pills-selective-permissions" type="button" role="tab">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                الخيارات
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -56,7 +61,7 @@
                                             <div class="row">
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-semibold">الاسم</label>
-                                                    <input type="text" name="name" class="form-control"
+                                                    <input type="text" name="name" class="form-control frst"
                                                         value="{{ old('name') }}" required>
                                                 </div>
 
@@ -80,7 +85,7 @@
 
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-semibold">تأكيد كلمة المرور</label>
-                                                    <div class="input-group mt-4">
+                                                    <div class="input-group">
                                                         <input type="password" name="password_confirmation"
                                                             class="form-control" id="password_confirmation" required>
                                                         <button type="button" class="btn btn-outline-secondary"
@@ -231,8 +236,51 @@
                                                     </div>
                                                 @endforeach
                                             </div>
+
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الخيارات -->
+                        <div class="tab-pane fade" id="v-pills-selective-permissions" role="tabpanel">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-white border-bottom py-3">
+                                    <h6 class="m-0 fw-bold text-primary">
+                                        <i class="fas fa-shield-alt me-2"></i>
+                                        الخيارات
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if ($selectivePermissions->isNotEmpty())
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-bordered align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="text-start">الوصف</th>
+                                                        <th class="text-center">تحديد</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($selectivePermissions as $category => $perms)
+                                                        @foreach ($perms as $permission)
+                                                            <tr>
+                                                                <td class="text-start">{{ $permission->description }}</td>
+                                                                <td class="text-center">
+                                                                    <input type="checkbox" name="permissions[]" class="form-check-input"
+                                                                        value="{{ $permission->id }}"
+                                                                        {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <p class="text-muted mb-0">لا توجد خيارات إضافية متاحة حالياً.</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -257,65 +305,7 @@
     </div>
 @endsection
 
-@push('styles')
-    <style>
-        .permission-category {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-right: 3px solid transparent;
-        }
 
-        .permission-category:hover {
-            background-color: #f8f9fa;
-            border-right-color: #0d6efd;
-        }
-
-        .permission-category.active {
-            background-color: #0d6efd;
-            color: white;
-            border-right-color: #0d6efd;
-        }
-
-        .permission-category.active .badge {
-            background-color: white !important;
-            color: #0d6efd !important;
-        }
-
-        .permissions-container {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .table th {
-            white-space: nowrap;
-            font-weight: 600;
-        }
-
-        .form-check-input:checked {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-
-        .sticky-top {
-            position: sticky;
-            z-index: 1020;
-        }
-
-        .nav-pills .nav-link {
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-pills .nav-link:hover {
-            background-color: #f8f9fa;
-        }
-
-        .nav-pills .nav-link.active {
-            background-color: #0d6efd;
-        }
-    </style>
-@endpush
 
 @push('scripts')
     <script>

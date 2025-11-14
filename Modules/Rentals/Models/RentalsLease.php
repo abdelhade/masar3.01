@@ -3,7 +3,7 @@
 namespace Modules\Rentals\Models;
 
 use App\Models\Client;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 

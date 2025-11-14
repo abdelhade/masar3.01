@@ -4,7 +4,7 @@ namespace Modules\Depreciation\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Modules\Depreciation\Models\DepreciationItem;
 use Illuminate\Support\Facades\DB;

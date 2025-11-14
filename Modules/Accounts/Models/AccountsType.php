@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Modules\Accounts\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,3 +17,4 @@ class AccountsType extends Model
         return $this->hasMany(AccHead::class, 'acc_type');
     }
 }
+

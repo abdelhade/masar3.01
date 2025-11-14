@@ -3,7 +3,7 @@
 namespace Modules\POS\app\Livewire;
 
 use App\Helpers\ItemViewModel;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\Item;
 use App\Models\JournalDetail;
 use App\Models\OperationItems;

@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use Illuminate\Support\Facades\Log;
 

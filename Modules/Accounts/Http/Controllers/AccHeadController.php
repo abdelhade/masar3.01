@@ -1,8 +1,9 @@
 <?php
-namespace App\Http\Controllers;
 
-use App\Models\AccHead;
-use App\Models\AccountsType;
+namespace Modules\Accounts\Http\Controllers;
+
+use Modules\Accounts\Models\AccHead;
+use Modules\Accounts\Models\AccountsType;
 use App\Models\City;
 use App\Models\Country;
 use Illuminate\Http\Request;
@@ -162,7 +163,7 @@ public function __construct()
                 'acc_type',
             ]);
 
-        return view('accounts.index', compact('accounts'));
+        return view('accounts::index', compact('accounts'));
     }
 
     public function summary(Request $request)
@@ -210,7 +211,7 @@ public function __construct()
             $resacs = DB::table('acc_head')->where('is_basic', '1')->orderBy('code')->get();
         }
 
-        return view('accounts.create', compact('parent', 'last_id', 'resacs', 'branches', 'accountTypes'));
+        return view('accounts::create', compact('parent', 'last_id', 'resacs', 'branches', 'accountTypes'));
     }
 
     public function store(Request $request)
@@ -483,7 +484,7 @@ public function __construct()
         $towns        = Town::all()->pluck('title', 'id');
         $accountTypes = AccountsType::all();
 
-        return view('accounts.edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes'));
+        return view('accounts::edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes'));
     }
 
     public function edit($id)
@@ -507,7 +508,7 @@ public function __construct()
         $towns        = Town::all()->pluck('title', 'id');
         $accountTypes = AccountsType::all();
         $branches     = userBranches();
-        return view('accounts.edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes', 'branches'));
+        return view('accounts::edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes', 'branches'));
     }
 
     public function update(Request $request, $id)
@@ -660,17 +661,17 @@ public function __construct()
 
     public function startBalance()
     {
-        return view('accounts.startBalance.manage-start-balance');
+        return view('accounts::startBalance.manage-start-balance');
     }
 
     public function accountMovementReport($accountId = null)
     {
-        return view('accounts.reports.account-movement', compact('accountId'));
+        return view('accounts::reports.account-movement', compact('accountId'));
     }
 
     public function balanceSheet()
     {
-        return view('accounts.reports.manage-balance-sheet');
+        return view('accounts::reports.manage-balance-sheet');
     }
 
     public function basicDataStatistics()
@@ -733,6 +734,7 @@ public function __construct()
             }, array_values(self::ACCOUNT_TYPE_MAP)),
         ];
 
-        return view('accounts.statistics.basic-data-statistics', compact('stats'));
+        return view('accounts::statistics.basic-data-statistics', compact('stats'));
     }
 }
+

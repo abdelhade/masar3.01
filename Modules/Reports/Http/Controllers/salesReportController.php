@@ -2,7 +2,7 @@
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperHead;
 use Illuminate\Http\Request;
 use App\Models\OperationItems;

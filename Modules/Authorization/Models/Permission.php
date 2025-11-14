@@ -6,5 +6,5 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
 
 class Permission extends SpatiePermission
 {
-    protected $fillable = ['name', 'guard_name', 'category'];
+    protected $fillable = ['name', 'guard_name', 'category', 'option_type', 'description'];
 }

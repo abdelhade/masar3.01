@@ -7,7 +7,7 @@ use Modules\Services\Models\ServiceInvoice as ServiceInvoiceModel;
 use Modules\Services\Models\ServiceInvoiceItem;
 use Modules\Services\Models\Service;
 use Modules\Services\Models\ServiceUnit;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Illuminate\Support\Facades\Auth;
 

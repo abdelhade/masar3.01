@@ -2,7 +2,7 @@
 
 namespace Modules\Services\Models;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;

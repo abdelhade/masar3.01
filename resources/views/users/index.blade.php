@@ -13,7 +13,7 @@
         <div class="col-lg-12">
             @can('create Users')
                 <a href="{{ route('users.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    اضافه جديده
+             اضافه جديد
                     <i class="fas fa-plus me-2"></i>
                 </a>
             @endcan

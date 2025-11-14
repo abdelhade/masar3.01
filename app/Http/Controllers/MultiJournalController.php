@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\DB;
 use App\Models\MultiJournal;
 use App\Models\JournalHead;

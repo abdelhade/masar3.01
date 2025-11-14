@@ -10,9 +10,9 @@
 {{-- إدارة المستخدمين --}}
 @can(abilities: 'view Users')
     <li class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-        <a class="nav-link text-light" href="{{ route('users.index') }}">
+        <a class="nav-link " href="{{ route('users.index') }}">
             <i class="fas fa-users"></i>
-            <span class="text-white">المستخدمين</span>
+            <span class="">المستخدمين</span>
             @can('create Users')
                 <span class="badge bg-primary ms-auto">إدارة</span>
             @endcan
@@ -30,7 +30,7 @@
     </li>
 @endcan
 
-@can('view roles')
+
     <li class="nav-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('roles.index') }}">
             <i class="fas fa-user-shield"></i>
@@ -40,9 +40,9 @@
             @endcan
         </a>
     </li>
-@endcan
 
-@canany(['view branches', 'view settings'])
+
+
 <hr class="my-3 border-secondary">
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
@@ -50,20 +50,19 @@
         إدارة الفروع
     </h6>
 </div>
-@endcanany
 
-{{-- الفروع --}}
-@can('view branches')
+
+
     <li class="nav-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('branches.index') }}">
             <i class="fas fa-building"></i>
             <span>الفروع</span>
         </a>
     </li>
-@endcan
+
 
 {{-- إعدادات النظام --}}
-@can('view settings')
+
     <li class="nav-item {{ request()->routeIs('mysettings.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('mysettings.index') }}">
             <i class="fas fa-cogs"></i>
@@ -71,9 +70,9 @@
             <span class="badge bg-warning ms-auto">متقدم</span>
         </a>
     </li>
-@endcan
 
-@canany(['view login-history', 'view active-sessions', 'view activity-logs'])
+
+
 <hr class="my-3 border-secondary">
 
 <div class="sidebar-header mb-2">
@@ -82,19 +81,19 @@
         السجلات والمراقبة
     </h6>
 </div>
-@endcanany
+
 {{-- سجل تسجيل الدخول --}}
-@can('view login-history')
+
     <li class="nav-item {{ request()->routeIs('users.login-history*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.login-history') }}">
             <i class="fas fa-sign-in-alt"></i>
             <span>سجل تسجيل الدخول</span>
         </a>
     </li>
-@endcan
+
 
 {{-- إدارة الجلسات النشطة --}}
-@can('view active-sessions')
+
     <li class="nav-item {{ request()->routeIs('users.active-sessions*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.active-sessions') }}">
             <i class="fas fa-desktop"></i>
@@ -102,19 +101,17 @@
             <span class="badge bg-success ms-auto" id="active-sessions-count">{{ \App\Models\LoginSession::whereNull('logout_at')->count() }}</span>
         </a>
     </li>
-@endcan
 
-{{-- سجل النشاطات --}}
-@can('view activity-logs')
+
+
     <li class="nav-item {{ request()->routeIs('users.activity-log*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.activity-log') }}">
             <i class="fas fa-list-alt"></i>
             <span>سجل النشاطات</span>
         </a>
     </li>
-@endcan
-@can('view system-statistics')
-<hr class="my-3 border-secondary">
+
+    <hr class="my-3 border-secondary">
 
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
@@ -131,52 +128,9 @@
             <span>إحصائيات النظام</span>
         </a>
     </li>
-@endcan
 
-@push('styles')
-<style>
-    .sidebar-header h6 {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
 
-    .nav-item.active .nav-link {
-        background-color: rgba(13, 110, 253, 0.1);
-        border-right: 3px solid #0d6efd;
-        color: #0d6efd !important;
-        font-weight: 600;
-    }
 
-    .nav-link {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        color: #6c757d;
-        transition: all 0.3s ease;
-        border-radius: 0.5rem;
-        margin: 0.25rem 0.5rem;
-    }
-
-    .nav-link:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-        color: #0d6efd;
-        transform: translateX(-5px);
-    }
-
-    .nav-link i {
-        width: 25px;
-        margin-left: 10px;
-        text-align: center;
-        font-size: 1.1rem;
-    }
-
-    .nav-link .badge {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-    }
-</style>
-@endpush
 
 @push('scripts')
 <script>

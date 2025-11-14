@@ -4,7 +4,7 @@ namespace Modules\Depreciation\Console\Commands;
 
 use Illuminate\Console\Command;
 use Modules\Depreciation\Models\AccountAsset;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;

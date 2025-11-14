@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\CostCenter;
 use App\Models\Project;
 use App\Models\Rental;

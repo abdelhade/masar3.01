@@ -6,9 +6,8 @@
     <title>{{ $title ?? __('Settings') }}</title>
     <link href="https://fonts.googleapis.com/css?family=Cairo&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            direction: {{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}; 
+        body {
+            font-family: 'Cairo', sans-serif;
         }
         
         /* RTL Support */
