@@ -48,7 +48,7 @@ class LeadController extends Controller
 
         Lead::create($validated);
 
-        return redirect()->route('leads.board')->with('message', 'تم إضافة الفرصة بنجاح!');
+        return redirect()->route('leads.board')->with('message', __('lead_added_successfully'));
     }
 
     public function updateStatus(Request $request)
@@ -63,7 +63,7 @@ class LeadController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'تم تحديث حالة الفرصة',
+            'message' => __('lead_status_updated'),
             'new_status' => $lead->status->name
         ]);
     }
@@ -71,6 +71,6 @@ class LeadController extends Controller
     public function destroy(Lead $lead)
     {
         $lead->delete();
-        return redirect()->route('leads.board')->with('message', 'تم حذف الفرصة بنجاح!');
+        return redirect()->route('leads.board')->with('message', __('lead_deleted_successfully'));
     }
 }

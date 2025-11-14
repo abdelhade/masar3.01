@@ -2,10 +2,9 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Exception;
 use App\Models\User;
-use Modules\CRM\Models\Activity;
 use Illuminate\Routing\Controller;
+use Modules\CRM\Models\Activity;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\ActivityRequest;
 
@@ -18,6 +17,7 @@ class ActivityController extends Controller
         $this->middleware('permission:edit Activities')->only(['edit', 'update']);
         $this->middleware('permission:delete Activities')->only(['destroy']);
     }
+
     public function index()
     {
         $activities = Activity::with(['client', 'assignedUser'])->latest()->paginate(20);
@@ -35,10 +35,11 @@ class ActivityController extends Controller
     {
         try {
             Activity::create($request->validated());
-            Alert::toast('تم إضافة النشاط بنجاح ✅', 'success');
+            Alert::toast(__('Activity added successfully'), 'success');
             return redirect()->route('activities.index');
-        } catch (Exception) {
-            Alert::toast('حدث خطأ أثناء التحقق من البيانات', 'error');
+        } catch (\Exception) {
+
+            Alert::toast(__('An error occurred while processing the data'), 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -55,30 +56,26 @@ class ActivityController extends Controller
         return view('crm::activities.edit', compact('activity', 'users'));
     }
 
-
-    public function update(ActivityRequest $request, $id)
+    public function update(ActivityRequest $request, Activity $activity)
     {
         try {
-            $activity = Activity::findOrFail($id);
             $activity->update($request->validated());
-            Alert::toast('تم تحديث النشاط بنجاح ✏️', 'success');
+            Alert::toast(__('Activity updated successfully'), 'success');
             return redirect()->route('activities.index');
-        } catch (\Exception $e) {
-            Alert::toast('حدث خطأ أثناء التحقق من البيانات', 'error');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while processing the data'), 'error');
             return redirect()->back()->withInput();
         }
     }
 
-    public function destroy($id)
+    public function destroy(Activity $activity)
     {
         try {
-            $activity = Activity::findOrFail($id);
             $activity->delete();
-            Alert::toast('تم حذف النشاط 🗑️', 'success');
-            return redirect()->route('activities.index');
-        } catch (\Exception $e) {
-            Alert::toast('النشاط غير موجود', 'error');
-            return redirect()->route('activities.index');
+            Alert::toast(__('Activity deleted successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the activity'), 'error');
         }
+        return redirect()->route('activities.index');
     }
 }

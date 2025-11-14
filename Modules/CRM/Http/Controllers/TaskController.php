@@ -2,13 +2,12 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Exception;
 use App\Models\User;
 use Illuminate\Routing\Controller;
+use Modules\CRM\Enums\{TaskPriorityEnum, TaskStatusEnum};
+use Modules\CRM\Http\Requests\TaskRequest;
 use Modules\CRM\Models\{Task, TaskType};
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\CRM\Http\Requests\TaskRequest;
-use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
 
 class TaskController extends Controller
 {
@@ -22,9 +21,7 @@ class TaskController extends Controller
 
     public function index()
     {
-        $tasks = Task::with(['client', 'user', 'media'])
-            ->latest()
-            ->paginate(10);
+        $tasks = Task::with(['client', 'user', 'media'])->latest()->paginate(10);
         return view('crm::tasks.index', compact('tasks'));
     }
 
@@ -33,7 +30,6 @@ class TaskController extends Controller
         $branches = userBranches();
         $taskTypes = TaskType::pluck('title', 'id');
         $users = User::pluck('name', 'id');
-
         $priorities = TaskPriorityEnum::cases();
         $statuses = TaskStatusEnum::cases();
 
@@ -52,61 +48,56 @@ class TaskController extends Controller
                     ->addMedia($request->file('attachment'))
                     ->toMediaCollection('tasks');
             }
-            Alert::toast('تم الانشاء بنجاح', 'success');
-            return redirect()->route('tasks.index');
-        } catch (Exception) {
-            Alert::toast('حدث خطأ', 'error');
-            return redirect()->route('tasks.index');
-        }
-    }
 
+            Alert::toast(__('Task created successfully'), 'success');
+            return redirect()->route('tasks.index');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while creating the task'), 'error');
+        }
+
+        return redirect()->route('tasks.index');
+    }
     public function show($id)
     {
         // return view('crm::show');
     }
-
     public function edit(Task $task)
     {
         $taskTypes = TaskType::pluck('title', 'id');
         $users = User::pluck('name', 'id');
-        return view('crm::tasks.edit', get_defined_vars());
+        $priorities = TaskPriorityEnum::cases();
+        $statuses = TaskStatusEnum::cases();
+
+        return view('crm::tasks.edit', compact('task', 'taskTypes', 'users', 'priorities', 'statuses'));
     }
 
     public function update(TaskRequest $request, Task $task)
     {
         try {
-            $task->update([
-                'client_id' => $request->client_id,
-                'user_id' => $request->user_id,
-                'type' => $request->type,
-                'title' => $request->title,
-                'status' => $request->status,
-                'priority' => $request->priority,
-                'delivery_date' => $request->delivery_date,
-                'client_comment' => $request->client_comment,
-                'user_comment' => $request->user_comment,
-            ]);
+            $task->update($request->validated());
 
             if ($request->hasFile('attachment')) {
                 $task->clearMediaCollection('attachments');
                 $task->addMediaFromRequest('attachment')->toMediaCollection('attachments');
             }
-            Alert::toast('تم تحديث المهمة بنجاح', 'success');
-            return redirect()->route('tasks.index');
-        } catch (Exception) {
-            Alert::toast('حدث خطأ', 'error');
-            return redirect()->route('tasks.index');
+
+            Alert::toast(__('Task updated successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while updating the task'), 'error');
         }
+
+        return redirect()->route('tasks.index');
     }
 
-    public function destroy($id)
+    public function destroy(Task $task)
     {
-        $task = Task::findOrFail($id);
-        if ($task->media->count() > 0) {
-            $task->media()->delete();
+        try {
+            $task->delete();
+            Alert::toast(__('Task deleted successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the task'), 'error');
         }
-        $task->delete();
-        Alert::toast('تم الحذف بنجاح', 'success');
+
         return redirect()->route('tasks.index');
     }
 }

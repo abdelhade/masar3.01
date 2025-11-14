@@ -12,7 +12,6 @@ class ActivityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // لو عايز تحدد صلاحيات ممكن تضيف هنا check للمستخدم
         return true;
     }
 
@@ -25,33 +24,43 @@ class ActivityRequest extends FormRequest
             'title'         => 'required|string|max:255',
             'description'   => 'nullable|string',
             'type'          => 'required|in:' . implode(',', ActivityTypeEnum::values()),
-            'activity_date' => 'required|date',         // اليوم
-            'scheduled_at' => 'nullable|date_format:H:i',
+            'activity_date' => 'required|date',
+            'scheduled_at'  => 'nullable|date_format:H:i',
             'client_id'     => 'nullable|exists:clients,id',
             'assigned_to'   => 'nullable|exists:users,id',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id'     => 'nullable|exists:branches,id',
         ];
     }
 
     /**
-     * رسائل التحقق
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'title'         => __('Activity Title'),
+            'description'   => __('Description'),
+            'type'          => __('Type'),
+            'activity_date' => __('Activity Date'),
+            'scheduled_at'  => __('Time'),
+            'client_id'     => __('Client'),
+            'assigned_to'   => __('Assigned To'),
+            'branch_id'     => __('Branch'),
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'title.required' => 'عنوان النشاط مطلوب.',
-            'title.string'   => 'العنوان يجب أن يكون نص.',
-            'type.required'  => 'نوع النشاط مطلوب.',
-            'type.in'        => 'النوع يجب أن يكون مكالمة أو رسالة أو اجتماع.',
-            'activity_date.required' => 'تاريخ النشاط مطلوب.',
-            'activity_date.date'     => 'تاريخ النشاط غير صالح.',
-            'scheduled_at.date_format' => 'الوقت يجب أن يكون بالصيغة الصحيحة (Y-m-d H:i:s).',
-            'client_id.required' => 'العميل مطلوب.',
-            'client_id.exists'   => 'العميل غير موجود.',
-            'assigned_to.required' => 'الموظف المسؤول مطلوب.',
-            'assigned_to.exists'   => 'الموظف غير موجود.',
-            'branch_id.required' => 'الفرع مطلوب.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
+            'type.in' => __('The selected type is invalid. It must be a call, message, or meeting.'),
+            'scheduled_at.date_format' => __('The time does not match the correct format (HH:MM).'),
         ];
     }
 }

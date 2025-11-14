@@ -19,9 +19,11 @@
             </p>
         </div>
 
-        <a href="{{ route('rentals-units.create', $building->id) }}" class="btn btn-info " type="button">
-            <i class="fas fa-plus"></i> أضافة وحدات
-        </a>
+        @can('create Unit')
+            <a href="{{ route('rentals-units.create', $building->id) }}" class="btn btn-info " type="button">
+                <i class="fas fa-plus"></i> {{ __('Add Units') }}
+            </a>
+        @endcan
         <br>
         <br>
         <div class="row">
@@ -32,31 +34,39 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">
                                     <i class="fas fa-home me-2"></i>
-                                    وحدة {{ $unit->name }}
+                                    {{ __('Unit') }} {{ $unit->name }}
                                 </h6>
 
-                                <a href="{{ route('rentals.units.edit', $unit->id) }}" class="btn btn-sm btn-success me-2">
-                                    <i class="fas fa-edit"></i> تعديل
-                                </a>
+                                <div>
+                                    @can('edit Unit')
+                                        <a href="{{ route('rentals.units.edit', $unit->id) }}"
+                                            class="btn btn-sm btn-success me-2">
+                                            <i class="fas fa-edit"></i> {{ __('Edit') }}
+                                        </a>
+                                    @endcan
 
-                                {{-- Delete form --}}
-                                <form action="{{ route('rentals.units.destroy', $unit->id) }}" method="POST"
-                                    onsubmit="return confirm('هل أنت متأكد من حذف الوحدة؟');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger me-2">
-                                        <i class="fas fa-trash"></i> حذف
-                                    </button>
-                                </form>
+                                    @can('delete Unit')
+                                        <form action="{{ route('rentals.units.destroy', $unit->id) }}" method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('{{ __('Are you sure you want to delete this unit?') }}');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> {{ __('Delete') }}
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </div>
                                 <span class="badge badge-status">
-                                    {{ $unit->status->label ?? 'متاحة' }}
+                                    {{ $unit->status->label ?? __('Available') }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="card-body">
                             @if ($unit->floor)
-                                <p><i class="fas fa-layer-group me-2 text-info"></i> الطابق {{ $unit->floor }}</p>
+                                <p><i class="fas fa-layer-group me-2 text-info"></i> {{ __('Floor') }}
+                                    {{ $unit->floor }}</p>
                             @endif
                             @if ($unit->area)
                                 <p><i class="fas fa-ruler-combined me-2 text-warning"></i> {{ $unit->area }} م²</p>
@@ -71,11 +81,11 @@
                                 <div class="alert alert-light p-2">
                                     <small class="text-success">
                                         <i class="fas fa-user me-1"></i>
-                                        مؤجرة للسيد/ة {{ $activeLease->client->name }}
+                                        {{ __('Rented to Mr./Ms.') }} {{ $activeLease->client->name }}
                                     </small><br>
                                     <small class="text-muted">
                                         <i class="fas fa-calendar me-1"></i>
-                                        حتى {{ $activeLease->end_date->format('Y/m/d') }}
+                                        {{ __('Until') }} {{ $activeLease->end_date->format('Y/m/d') }}
                                     </small>
                                 </div>
                             @endif
@@ -84,15 +94,19 @@
                         <div class="card-footer bg-light">
                             <div class="btn-group w-100">
                                 @if ($unit->status === \Modules\Rentals\Enums\UnitStatus::AVAILABLE)
-                                    <a href="{{ route('rentals.leases.create', $unit->id) }}"
-                                        class="btn btn-success btn-sm">
-                                        <i class="fas fa-file-contract me-1"></i> عقد جديد
-                                    </a>
+                                    @can('create Leases')
+                                        <a href="{{ route('rentals.leases.create', $unit->id) }}"
+                                            class="btn btn-success btn-sm">
+                                            <i class="fas fa-file-contract me-1"></i> {{ __('New Lease') }}
+                                        </a>
+                                    @endcan
                                 @elseif($activeLease)
-                                    <a href="{{ route('rentals.leases.show', $activeLease->id) }}"
-                                        class="btn btn-info btn-sm">
-                                        <i class="fas fa-file-alt me-1"></i> العقد الحالي
-                                    </a>
+                                    @can('view Leases')
+                                        <a href="{{ route('rentals.leases.show', $activeLease->id) }}"
+                                            class="btn btn-info btn-sm">
+                                            <i class="fas fa-file-alt me-1"></i> {{ __('Current Lease') }}
+                                        </a>
+                                    @endcan
                                 @endif
                             </div>
                         </div>

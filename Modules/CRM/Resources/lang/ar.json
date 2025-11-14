@@ -159,5 +159,56 @@
     "Attachment (Image or File)": "مرفق (صورة أو ملف)",
     "View Current Attachment": "عرض المرفق الحالي",
     "Update": "تحديث",
-    "-- Select Task Type --": "-- اختر نوع المهمة --"
+    "Category Name": "اسم التصنيف",
+    "-- Select Task Type --": "-- اختر نوع المهمة --",
+    "The selected type is invalid. It must be a call, message, or meeting.": "النوع المختار غير صالح. يجب أن يكون مكالمة، رسالة، أو اجتماع.",
+    "The time does not match the correct format (HH:MM).": "صيغة الوقت غير صحيحة (يجب أن تكون HH:MM).",
+
+    "The color must be a valid hex code (e.g., #FFFFFF).": "صيغة اللون يجب أن تكون كود ست عشري صالح (مثال: #FFFFFF).",
+    "This order is already taken. Please choose a different one.": "هذا الترتيب مستخدم بالفعل. الرجاء اختيار ترتيب مختلف.",
+
+    "The due date must be a date after or equal to the start date.": "تاريخ التسليم يجب أن يكون تاريخًا بعد أو يساوي تاريخ البدء.",
+    "Unsupported file format. Allowed formats: jpg, jpeg, png, pdf, doc, docx.": "صيغة الملف غير مدعومة. الصيغ المسموحة: jpg, jpeg, png, pdf, doc, docx.",
+
+    "Activity added successfully": "تم إضافة النشاط بنجاح ✅",
+    "An error occurred while processing the data": "حدث خطأ أثناء معالجة البيانات",
+    "Activity updated successfully": "تم تحديث النشاط بنجاح ✏️",
+    "Activity deleted successfully": "تم حذف النشاط بنجاح 🗑️",
+    "An error occurred while deleting the activity": "حدث خطأ أثناء حذف النشاط",
+
+    "Item created successfully": "تم إنشاء العنصر بنجاح",
+    "Item updated successfully": "تم تعديل العنصر بنجاح",
+    "Item deleted successfully": "تم حذف العنصر بنجاح",
+    "An error occurred while deleting the item": "حدث خطأ أثناء حذف العنصر",
+
+    "Category created successfully": "تم إنشاء التصنيف بنجاح",
+    "Category updated successfully": "تم تعديل التصنيف بنجاح",
+    "Category deleted successfully": "تم حذف التصنيف بنجاح",
+    "An error occurred while deleting the category": "حدث خطأ أثناء حذف التصنيف",
+
+    "Contact created successfully": "تم إنشاء جهة الاتصال بنجاح",
+    "Contact updated successfully": "تم تعديل جهة الاتصال بنجاح",
+    "Contact deleted successfully": "تم حذف جهة الاتصال بنجاح",
+    "An error occurred while deleting the contact": "حدث خطأ أثناء حذف جهة الاتصال",
+
+    "Client type created successfully": "تم إنشاء نوع العميل بنجاح",
+    "Client type updated successfully": "تم تعديل نوع العميل بنجاح",
+    "Client type deleted successfully": "تم حذف نوع العميل بنجاح",
+    "An error occurred while deleting the client type": "حدث خطأ أثناء حذف نوع العميل",
+
+    "Lead status created successfully": "تم إنشاء حالة الفرصة بنجاح",
+    "Lead status updated successfully": "تم تعديل حالة الفرصة بنجاح",
+    "Lead status deleted successfully": "تم حذف حالة الفرصة بنجاح",
+    "An error occurred while deleting the lead status": "حدث خطأ أثناء حذف حالة الفرصة",
+
+    "Task created successfully": "تم إنشاء المهمة بنجاح",
+    "An error occurred while creating the task": "حدث خطأ أثناء إنشاء المهمة",
+    "Task updated successfully": "تم تحديث المهمة بنجاح",
+    "An error occurred while updating the task": "حدث خطأ أثناء تحديث المهمة",
+    "Task deleted successfully": "تم حذف المهمة بنجاح",
+    "An error occurred while deleting the task": "حدث خطأ أثناء حذف المهمة",
+
+    "lead_added_successfully": "تمت إضافة الفرصة بنجاح!",
+    "lead_status_updated": "تم تحديث حالة الفرصة بنجاح!",
+    "lead_deleted_successfully": "تم حذف الفرصة بنجاح!"
 }

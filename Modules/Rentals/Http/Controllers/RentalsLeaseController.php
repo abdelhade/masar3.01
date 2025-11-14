@@ -13,18 +13,12 @@ use Modules\Rentals\Models\{RentalsUnit, RentalsLease};
 
 class RentalsLeaseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $leases = RentalsLease::with('unit', 'client')->paginate(20);
         return view('rentals::leases.index', compact('leases'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $paymantAccount = AccHead::where('code', 'like', '42%')->where('is_basic', 0)->get();
@@ -32,9 +26,6 @@ class RentalsLeaseController extends Controller
         return view('rentals::leases.create', compact('units', 'paymantAccount'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(RentalsLeaseRequest $request)
     {
         DB::beginTransaction();
@@ -92,27 +83,20 @@ class RentalsLeaseController extends Controller
             ]);
 
             DB::commit();
-            Alert::toast('تم حفظ عقد الإيجار بنجاح', 'success');
+            Alert::toast(__('Lease contract saved successfully'), 'success');
             return redirect()->route('rentals.leases.index');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             DB::rollBack();
-            logger()->error('خطأ أثناء حفظ عقد الإيجار: ' . $e->getMessage());
-            Alert::toast('حدث خطأ أثناء حفظ العقد', 'error');
+            Alert::toast(__('An error occurred while saving the contract'), 'error');
             return back()->withInput();
         }
     }
 
-    /**
-     * Show the specified resource.
-     */
     public function show($id)
     {
         return view('rentals::show');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         $lease = RentalsLease::findOrFail($id);
@@ -121,9 +105,6 @@ class RentalsLeaseController extends Controller
         return view('rentals::leases.edit', compact('lease', 'units', 'paymantAccount'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(RentalsLeaseRequest $request, $id)
     {
         DB::beginTransaction();
@@ -181,28 +162,24 @@ class RentalsLeaseController extends Controller
             }
 
             DB::commit();
-            Alert::toast('تم تعديل عقد الإيجار بنجاح', 'success');
+            Alert::toast(__('Lease contract updated successfully'), 'success');
             return redirect()->route('rentals.leases.index');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             DB::rollBack();
-            logger()->error('خطأ أثناء تعديل عقد الإيجار: ' . $e->getMessage());
-            Alert::toast('حدث خطأ أثناء تعديل العقد', 'error');
+            Alert::toast(__('An error occurred while updating the contract'), 'error');
             return back()->withInput();
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         try {
             $lease = RentalsLease::findOrFail($id);
             $lease->delete();
-            Alert::toast('تم حذف العقد بنجاح.', 'success');
+            Alert::toast(__('Lease deleted successfully'), 'success');
             return redirect()->route('rentals.leases.index');
         } catch (Exception) {
-            Alert::toast('حدث خطأ أثناء حذف العقد: ', 'error');
+            Alert::toast(__('An error occurred while deleting the contract'), 'error');
             return redirect()->back();
         }
     }

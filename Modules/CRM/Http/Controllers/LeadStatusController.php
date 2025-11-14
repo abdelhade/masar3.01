@@ -2,10 +2,10 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Modules\CRM\Models\LeadStatus;
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\LeadStatusRequest;
+use Modules\CRM\Models\LeadStatus;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class LeadStatusController extends Controller
 {
@@ -19,7 +19,7 @@ class LeadStatusController extends Controller
 
     public function index()
     {
-        $leadStatus = LeadStatus::all();
+        $leadStatus = LeadStatus::orderBy('order_column')->paginate(20);
         return view('crm::lead-status.index', compact('leadStatus'));
     }
 
@@ -32,7 +32,7 @@ class LeadStatusController extends Controller
     public function store(LeadStatusRequest $request)
     {
         LeadStatus::create($request->validated());
-        Alert::toast('تم الانشاء بنجاح', 'success');
+        Alert::toast(__('Lead status created successfully'), 'success');
         return redirect()->route('lead-status.index');
     }
 
@@ -47,19 +47,22 @@ class LeadStatusController extends Controller
         return view('crm::lead-status.edit', compact('leadStatus'));
     }
 
-    public function update(LeadStatusRequest $request, $id)
+    public function update(LeadStatusRequest $request, LeadStatus $leadStatus)
     {
-        $leadStatus = LeadStatus::findOrFail($id);
         $leadStatus->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
+        Alert::toast(__('Lead status updated successfully'), 'success');
         return redirect()->route('lead-status.index');
     }
 
-    public function destroy($id)
+    public function destroy(LeadStatus $leadStatus)
     {
-        $leadStatus = LeadStatus::findOrFail($id);
-        $leadStatus->delete();
-        Alert::toast('تم حذف العنصر بنجاح', 'success');
+        try {
+            $leadStatus->delete();
+            Alert::toast(__('Lead status deleted successfully'), 'success');
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            Alert::toast(__('An error occurred while deleting the lead status'), 'error');
+        }
         return redirect()->route('lead-status.index');
     }
 }

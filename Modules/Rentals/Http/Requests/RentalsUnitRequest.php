@@ -19,7 +19,6 @@ class RentalsUnitRequest extends FormRequest
             'building_id' => $this->isMethod('post')
                 ? 'required|exists:rentals_buildings,id'
                 : 'sometimes|exists:rentals_buildings,id',
-
             'name'        => 'required|string|max:255',
             'floor'       => 'nullable|integer',
             'area'        => 'nullable|numeric|min:0',
@@ -31,17 +30,23 @@ class RentalsUnitRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'building_id.required' => 'يجب اختيار المبنى المرتبط بالوحدة.',
-            'building_id.exists'   => 'المبنى المحدد غير موجود.',
+            'building_id.required' => __('The building field is required.'),
+            'building_id.exists'   => __('The selected building is invalid.'),
 
-            'name.required'        => 'اسم الوحدة مطلوب.',
-            'name.string'          => 'اسم الوحدة يجب أن يكون نص.',
-            'name.max'             => 'اسم الوحدة يجب ألا يتجاوز 255 حرف.',
+            'name.required'        => __('The unit name field is required.'),
+            'name.string'          => __('The unit name must be a string.'),
+            'name.max'             => __('The unit name may not be greater than 255 characters.'),
 
-            'floor.integer'        => 'رقم الطابق يجب أن يكون عدد صحيح.',
+            'floor.required'       => __('The floor field is required.'),
+            'floor.integer'        => __('The floor must be an integer.'),
 
-            'area.numeric'         => 'المساحة يجب أن تكون رقم.',
-            'area.min'             => 'المساحة يجب ألا تقل عن 0.',
+            'area.numeric'         => __('The area must be a number.'),
+            'area.min'             => __('The area must be at least 0.'),
+
+            'status.required'      => __('The status field is required.'),
+            'status.enum'          => __('The selected status is invalid.'),
+
+            'details.string'       => __('The details must be a string.'),
         ];
     }
 }

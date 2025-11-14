@@ -2,10 +2,10 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Modules\CRM\Models\ChanceSource;
-use Modules\CRM\Http\Requests\ChanceSourceRequest;
-use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Routing\Controller;
+use Modules\CRM\Http\Requests\ChanceSourceRequest;
+use Modules\CRM\Models\ChanceSource;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class ChanceSourceController extends Controller
 {
@@ -32,7 +32,7 @@ class ChanceSourceController extends Controller
     public function store(ChanceSourceRequest $request)
     {
         ChanceSource::create($request->validated());
-        Alert::toast('تم الإنشاء بنجاح', 'success');
+        Alert::toast(__('Item created successfully'), 'success');
         return redirect()->route('chance-sources.index');
     }
 
@@ -46,19 +46,21 @@ class ChanceSourceController extends Controller
         return view('crm::chance-source.edit', compact('chanceSource'));
     }
 
-    public function update(ChanceSourceRequest $request, $id)
+    public function update(ChanceSourceRequest $request, ChanceSource $chanceSource)
     {
-        $chanceSource = ChanceSource::findOrFail($id);
         $chanceSource->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
+        Alert::toast(__('Item updated successfully'), 'success');
         return redirect()->route('chance-sources.index');
     }
 
-    public function destroy($id)
+    public function destroy(ChanceSource $chanceSource)
     {
-        $chanceSource = ChanceSource::findOrFail($id);
-        $chanceSource->delete();
-        Alert::toast('تم حذف العنصر بنجاح', 'success');
+        try {
+            $chanceSource->delete();
+            Alert::toast(__('Item deleted successfully'), 'success');
+        } catch (\Exception ) {
+            Alert::toast(__('An error occurred while deleting the item'), 'error');
+        }
         return redirect()->route('chance-sources.index');
     }
 }

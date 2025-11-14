@@ -46,7 +46,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($ClientContacts as $contact)
+                                @forelse ($clientContacts as $contact)
                                     <tr class="text-center">
                                         <td> {{ $loop->iteration }} </td>
                                         <td>{{ $contact->client->cname }}</td>

@@ -13,21 +13,20 @@ class ChanceSourceRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'nullable|exists:branches,id',
         ];
     }
 
     /**
-     * Custom validation messages.
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
      */
-    public function messages(): array
+    public function attributes(): array
     {
         return [
-            'title.required' => 'حقل العنوان مطلوب.',
-            'title.string'   => 'يجب أن يكون العنوان نصاً.',
-            'title.max'      => 'لا يمكن أن يزيد العنوان عن 255 حرفاً.',
-            'branch_id.required' => 'الفرع مطلوب.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
+            'title' => __('Title'),
+            'branch_id' => __('Branch'),
         ];
     }
 

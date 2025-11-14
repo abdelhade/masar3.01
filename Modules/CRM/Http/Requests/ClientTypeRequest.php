@@ -6,6 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ClientTypeRequest extends FormRequest
 {
+    /**
+     * Get the validation rules that apply to the request.
+     */
     public function rules(): array
     {
         return [
@@ -14,16 +17,22 @@ class ClientTypeRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
     {
         return [
-            'title.required' => 'حقل العنوان مطلوب.',
-            'title.string'   => 'يجب أن يكون العنوان نصاً.',
-            'title.max'      => 'لا يمكن أن يزيد العنوان عن 255 حرفاً.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
+            'title' => __('Title'),
+            'branch_id' => __('Branch'),
         ];
     }
 
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;

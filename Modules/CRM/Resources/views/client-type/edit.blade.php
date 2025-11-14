@@ -21,7 +21,7 @@
                     <h2>{{ __('Edit Client Type') }}</h2>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('client-types.update', $customerType->id) }}" method="POST">
+                    <form action="{{ route('client-types.update', $client_type->id) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="row">
@@ -29,13 +29,13 @@
                                 <label class="form-label" for="title">{{ __('Name') }}</label>
                                 <input type="text" class="form-control" id="title" name="title"
                                     placeholder="{{ __('Enter the name') }}"
-                                    value="{{ old('title', $customerType->title) }}">
+                                    value="{{ old('title', $client_type->title) }}">
                                 @error('title')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
-                            <x-branches::branch-select :branches="userBranches()" :selected="$customerType->branch_id" />
+                            <x-branches::branch-select :branches="userBranches()" :selected="$client_type->branch_id" />
                         </div>
 
                         <div class="d-flex justify-content-start mt-4">

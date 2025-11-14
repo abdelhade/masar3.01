@@ -3,9 +3,9 @@
 namespace Modules\CRM\Http\Controllers;
 
 use Illuminate\Routing\Controller;
+use Modules\CRM\Http\Requests\ClientCategoryRequest;
 use Modules\CRM\Models\ClientCategory;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\CRM\Http\Requests\ClientCategoryRequest;
 
 class ClientCategoryController extends Controller
 {
@@ -19,7 +19,7 @@ class ClientCategoryController extends Controller
 
     public function index()
     {
-        $categories = ClientCategory::all();
+        $categories = ClientCategory::paginate(20);
         return view('crm::client-categories.index', compact('categories'));
     }
 
@@ -31,29 +31,30 @@ class ClientCategoryController extends Controller
     public function store(ClientCategoryRequest $request)
     {
         ClientCategory::create($request->validated());
-        Alert::toast('تم الإنشاء بنجاح', 'success');
+        Alert::toast(__('Category created successfully'), 'success');
         return redirect()->route('client.categories.index');
     }
 
-    public function edit($id)
+    public function edit(ClientCategory $category)
     {
-        $category = ClientCategory::findOrFail($id);
         return view('crm::client-categories.edit', compact('category'));
     }
 
-    public function update(ClientCategoryRequest $request, $id)
+    public function update(ClientCategoryRequest $request, ClientCategory $category)
     {
-        $category = ClientCategory::findOrFail($id);
         $category->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
+        Alert::toast(__('Category updated successfully'), 'success');
         return redirect()->route('client.categories.index');
     }
 
-    public function destroy($id)
+    public function destroy(ClientCategory $category)
     {
-        $category = ClientCategory::findOrFail($id);
-        $category->delete();
-        Alert::toast('تم الحذف بنجاح', 'success');
+        try {
+            $category->delete();
+            Alert::toast(__('Category deleted successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the category'), 'error');
+        }
         return redirect()->route('client.categories.index');
     }
 }
