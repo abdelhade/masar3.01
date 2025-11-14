@@ -36,6 +36,12 @@ class AccountsServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+        
+        // Register class aliases for backward compatibility
+        $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+        $loader->alias('App\Models\AccHead', 'Modules\Accounts\Models\AccHead');
+        $loader->alias('App\Models\AccountsType', 'Modules\Accounts\Models\AccountsType');
+        $loader->alias('App\Services\AccountService', 'Modules\Accounts\Services\AccountService');
     }
 
     /**

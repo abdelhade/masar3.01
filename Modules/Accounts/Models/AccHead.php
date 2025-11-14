@@ -1,7 +1,14 @@
 <?php
 
-namespace App\Models;
+namespace Modules\Accounts\Models;
 
+use App\Models\City;
+use App\Models\Country;
+use App\Models\JournalDetail;
+use App\Models\OperHead;
+use App\Models\State;
+use App\Models\Town;
+use App\Models\Transfer;
 use Modules\Branches\Models\Branch;
 use Modules\Depreciation\Models\AccountAsset;
 use Illuminate\Database\Eloquent\Model;
@@ -169,3 +176,4 @@ class AccHead extends Model
         return $level;
     }
 }
+

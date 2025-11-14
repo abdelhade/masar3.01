@@ -9,14 +9,10 @@
         <div class="left-sidenav">
             <div class="menu-content h-100" data-simplebar>
                 <ul class="metismenu left-sidenav-menu">
-                    {{-- Header ثابت --}}
-                    <li class="menu-label my-2">
-                        <a href="{{ route('home') }}">{{ config('public_settings.campany_name') }}</a>
-                    </li>
-
+         
                     <li class="nav-item border-bottom pb-1 mb-2">
                         <a href="{{ route('admin.dashboard') }}"
-                            class="nav-link d-flex align-items-center gap-2 font-family-cairo fw-bold">
+                            class="nav-link d-flex align-items-center gap-2">
                             <i data-feather="home" style="color:#4e73df" class="menu-icon"></i>
                             {{ __('navigation.home') }}
                         </a>
@@ -27,10 +23,10 @@
                 </ul>
             </div>
         </div>
-    @else
+    <!-- @else
         {{-- Default Sidebar: للصفحات القديمة اللي ما عندهاش dynamic sidebar --}}
         @include('admin.partials.sidebar-default')
-    @endif
+    @endif -->
 
     <div class="page-wrapper">
         @include('admin.partials.topbar')

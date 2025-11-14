@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Quality\Models\QualityInspection;
 use App\Models\Item;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 
 class QualityInspectionController extends Controller
 {

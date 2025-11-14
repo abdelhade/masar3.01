@@ -4,7 +4,7 @@ namespace Modules\Reports\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Item;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperationItems;
 
 class ItemReportController extends Controller

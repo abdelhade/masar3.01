@@ -4,7 +4,7 @@ namespace Modules\Depreciation\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Depreciation\Models\DepreciationItem;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 
 class DepreciationItemsSeeder extends Seeder

@@ -3,7 +3,7 @@
 namespace Modules\POS\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\Employee;
 use App\Models\Item;
 use App\Models\JournalDetail;

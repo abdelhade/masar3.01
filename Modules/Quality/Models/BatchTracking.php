@@ -4,7 +4,7 @@ namespace Modules\Quality\Models;
 
 use App\Models\Item;
 use App\Models\User;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperHead;
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;

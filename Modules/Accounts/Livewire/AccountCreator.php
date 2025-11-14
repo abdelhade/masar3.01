@@ -3,7 +3,7 @@
 namespace Modules\Accounts\Livewire;
 
 use Livewire\Component;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\DB;
 
 class AccountCreator extends Component

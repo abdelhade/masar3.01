@@ -7,7 +7,7 @@ use Illuminate\Routing\Controller;
 use Modules\Quality\Models\SupplierRating;
 use Modules\Quality\Models\QualityInspection;
 use Modules\Quality\Models\NonConformanceReport;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Carbon\Carbon;
 
 class SupplierRatingController extends Controller

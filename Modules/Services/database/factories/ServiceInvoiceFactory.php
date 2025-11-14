@@ -3,7 +3,7 @@
 namespace Modules\Services\Database\Factories;
 
 use Modules\Services\Models\ServiceInvoice;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

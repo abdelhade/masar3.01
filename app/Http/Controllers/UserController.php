@@ -30,9 +30,14 @@ class UserController extends Controller
     public function create()
     {
         try {
-            $permissions = Permission::all()->groupBy('category');
+            $permissions = Permission::where('option_type', '1')
+                ->get()
+                ->groupBy('category');
+            $selectivePermissions = Permission::where('option_type', '2')
+                ->get()
+                ->groupBy('category');
             $branches = Branch::where('is_active', 1)->get();
-            return view('users.create', compact('permissions', 'branches'));
+            return view('users.create', compact('permissions', 'selectivePermissions', 'branches'));
         } catch (\Exception) {
             Alert::toast('حدث خطأ أثناء تحميل صفحة إنشاء المستخدم', 'error');
             return redirect()->route('users.index');
@@ -62,10 +67,13 @@ class UserController extends Controller
     {
         $permissions = Permission::all()->groupBy('category');
         $userPermissions = $user->permissions->pluck('id')->toArray();
+        $selectivePermissions = Permission::where('option_type', '2')
+            ->get()
+            ->groupBy('category');
         $branches = Branch::where('is_active', 1)->get();
         $userBranches = $user->branches->pluck('id')->toArray();
 
-        return view('users.edit', compact('user', 'permissions', 'userPermissions', 'branches', 'userBranches'));
+        return view('users.edit', compact('user', 'permissions', 'userPermissions', 'selectivePermissions', 'branches', 'userBranches'));
     }
 
     public function update(Request $request, User $user)
