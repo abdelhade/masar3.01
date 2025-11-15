@@ -3,6 +3,7 @@
 namespace Modules\CRM\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class TaskTypeRequest extends FormRequest
 {
@@ -11,9 +12,27 @@ class TaskTypeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'title' => 'required|string|max:255' . $this->id,
+        // Get the ID from the route, if it exists (for update operations)
+        $id = $this->route('type') ? $this->route('type')->id : null;
 
+        return [
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'title' => __('Title'),
         ];
     }
 
@@ -23,13 +42,5 @@ class TaskTypeRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
-    }
-
-    public function messages(): array
-    {
-        return [
-            'title.required' => 'العنوان مطلوب',
-            'title.max'      => 'العنوان يجب ألا يزيد عن 255 حرف',
-        ];
     }
 }

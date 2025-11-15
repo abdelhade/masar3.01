@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\ProType;
 use App\Models\OperationItems;
 use App\Enums\OperationTypeEnum;

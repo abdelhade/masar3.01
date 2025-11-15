@@ -24,7 +24,7 @@ class ChecksController extends Controller
     }
 
     /**
-     * Display incoming checks (أوراق القبض)
+     * Display incoming checks (Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶)
      */
     public function incoming(Request $request)
     {
@@ -52,7 +52,7 @@ class ChecksController extends Controller
 
         $checks = $query->orderBy('created_at', 'desc')->paginate(15);
         $pageType = 'incoming';
-        $pageTitle = 'أوراق القبض';
+        $pageTitle = 'Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶';
 
         return view('checks::index', compact('checks', 'pageType', 'pageTitle'));
     }
@@ -63,10 +63,10 @@ class ChecksController extends Controller
     public function createIncoming()
     {
         $pageType = 'incoming';
-        $pageTitle = 'إضافة ورقة قبض';
+        $pageTitle = 'Ø¥Ø¶Ø§ÙØ© ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶';
         
         // Get clients accounts
-        $accounts = \App\Models\AccHead::where('isdeleted', 0)
+        $accounts = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '1103%')
             ->select('id', 'aname', 'code')
@@ -76,7 +76,7 @@ class ChecksController extends Controller
     }
 
     /**
-     * Display outgoing checks (أوراق الدفع)
+     * Display outgoing checks (Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹)
      */
     public function outgoing(Request $request)
     {
@@ -104,7 +104,7 @@ class ChecksController extends Controller
 
         $checks = $query->orderBy('created_at', 'desc')->paginate(15);
         $pageType = 'outgoing';
-        $pageTitle = 'أوراق الدفع';
+        $pageTitle = 'Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹';
 
         return view('checks::index', compact('checks', 'pageType', 'pageTitle'));
     }
@@ -115,10 +115,10 @@ class ChecksController extends Controller
     public function createOutgoing()
     {
         $pageType = 'outgoing';
-        $pageTitle = 'إضافة ورقة دفع';
+        $pageTitle = 'Ø¥Ø¶Ø§ÙØ© ÙˆØ±Ù‚Ø© Ø¯ÙØ¹';
         
         // Get suppliers accounts
-        $accounts = \App\Models\AccHead::where('isdeleted', 0)
+        $accounts = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2101%')
             ->select('id', 'aname', 'code')
@@ -204,22 +204,22 @@ class ChecksController extends Controller
 
             // CSV headers
             fputcsv($file, [
-                'رقم الشيك',
-                'البنك',
-                'رقم الحساب',
-                'صاحب الحساب',
-                'المبلغ',
-                'تاريخ الإصدار',
-                'تاريخ الاستحقاق',
-                'تاريخ الدفع',
-                'الحالة',
-                'النوع',
-                'المستفيد',
-                'الدافع',
-                'رقم المرجع',
-                'ملاحظات',
-                'أنشئ بواسطة',
-                'تاريخ الإنشاء'
+                'Ø±Ù‚Ù… Ø§Ù„Ø´ÙŠÙƒ',
+                'Ø§Ù„Ø¨Ù†Ùƒ',
+                'Ø±Ù‚Ù… Ø§Ù„Ø­Ø³Ø§Ø¨',
+                'ØµØ§Ø­Ø¨ Ø§Ù„Ø­Ø³Ø§Ø¨',
+                'Ø§Ù„Ù…Ø¨Ù„Øº',
+                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥ØµØ¯Ø§Ø±',
+                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚',
+                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¯ÙØ¹',
+                'Ø§Ù„Ø­Ø§Ù„Ø©',
+                'Ø§Ù„Ù†ÙˆØ¹',
+                'Ø§Ù„Ù…Ø³ØªÙÙŠØ¯',
+                'Ø§Ù„Ø¯Ø§ÙØ¹',
+                'Ø±Ù‚Ù… Ø§Ù„Ù…Ø±Ø¬Ø¹',
+                'Ù…Ù„Ø§Ø­Ø¸Ø§Øª',
+                'Ø£Ù†Ø´Ø¦ Ø¨ÙˆØ§Ø³Ø·Ø©',
+                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡'
             ]);
 
             // Data rows
@@ -273,7 +273,7 @@ class ChecksController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'pro_date' => 'required|date', // التاريخ
+            'pro_date' => 'required|date', // Ø§Ù„ØªØ§Ø±ÙŠØ®
             'check_number' => 'required|string|max:50|unique:checks',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
@@ -287,37 +287,37 @@ class ChecksController extends Controller
             'payer_name' => 'nullable|string|max:100',
             'notes' => 'nullable|string',
             'reference_number' => 'nullable|string|max:50',
-            'acc1_id' => 'required|integer|exists:acc_head,id', // الحساب المستلم منه
-            'portfolio_id' => 'required|integer|exists:acc_head,id', // الحافظة (required now)
+            'acc1_id' => 'required|integer|exists:acc_head,id', // Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³ØªÙ„Ù… Ù…Ù†Ù‡
+            'portfolio_id' => 'required|integer|exists:acc_head,id', // Ø§Ù„Ø­Ø§ÙØ¸Ø© (required now)
             'branch_id' => 'required|exists:branches,id',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // تحديد نوع العملية
-            $proType = $validated['type'] === 'incoming' ? 65 : 66; // 65: ورقة قبض، 66: ورقة دفع
-            $portfolioAccount = $validated['portfolio_id']; // الحافظة المختارة من المستخدم
+            // ØªØ­Ø¯ÙŠØ¯ Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©
+            $proType = $validated['type'] === 'incoming' ? 65 : 66; // 65: ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶ØŒ 66: ÙˆØ±Ù‚Ø© Ø¯ÙØ¹
+            $portfolioAccount = $validated['portfolio_id']; // Ø§Ù„Ø­Ø§ÙØ¸Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø© Ù…Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
             
-            // إنشاء السجل في operhead
+            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø³Ø¬Ù„ ÙÙŠ operhead
             $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
             $newProId = $lastProId + 1;
 
             $oper = OperHead::create([
                 'pro_id' => $newProId,
                 'pro_type' => $proType,
-                'pro_date' => $validated['pro_date'], // التاريخ الرئيسي
+                'pro_date' => $validated['pro_date'], // Ø§Ù„ØªØ§Ø±ÙŠØ® Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ
                 'pro_num' => $validated['check_number'],
                 'pro_serial' => $validated['reference_number'] ?? null,
-                'acc1' => $portfolioAccount, // الحافظة المختارة
-                'acc2' => $validated['acc1_id'], // الحساب المستلم منه/المدفوع له
+                'acc1' => $portfolioAccount, // Ø§Ù„Ø­Ø§ÙØ¸Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø©
+                'acc2' => $validated['acc1_id'], // Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³ØªÙ„Ù… Ù…Ù†Ù‡/Ø§Ù„Ù…Ø¯ÙÙˆØ¹ Ù„Ù‡
                 'acc1_before' => 0,
                 'acc1_after' => 0,
                 'acc2_before' => 0,
                 'acc2_after' => 0,
                 'pro_value' => $validated['amount'],
                 'fat_net' => $validated['amount'],
-                'details' => "شيك رقم {$validated['check_number']} - {$validated['bank_name']} - استحقاق: {$validated['due_date']}",
+                'details' => "Ø´ÙŠÙƒ Ø±Ù‚Ù… {$validated['check_number']} - {$validated['bank_name']} - Ø§Ø³ØªØ­Ù‚Ø§Ù‚: {$validated['due_date']}",
                 'info' => $validated['payee_name'] ?? $validated['payer_name'] ?? $validated['account_holder_name'],
                 'info2' => $validated['notes'],
                 'info3' => json_encode([
@@ -336,20 +336,20 @@ class ChecksController extends Controller
                 'branch_id' => $validated['branch_id'],
             ]);
 
-            // إنشاء القيد المحاسبي
+            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ
             $this->createJournalEntry($oper, $validated, $portfolioAccount, $proType);
 
-            // إنشاء الشيك
+            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø´ÙŠÙƒ
             $validated['created_by'] = Auth::id();
-            $validated['oper_id'] = $oper->id; // ربط الشيك بالعملية
+            $validated['oper_id'] = $oper->id; // Ø±Ø¨Ø· Ø§Ù„Ø´ÙŠÙƒ Ø¨Ø§Ù„Ø¹Ù…Ù„ÙŠØ©
             $check = Check::create($validated);
 
             DB::commit();
 
-            return redirect()->route('checks.index')->with('success', 'تم إضافة الشيك وإنشاء القيد المحاسبي بنجاح');
+            return redirect()->route('checks.index')->with('success', 'ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ø´ÙŠÙƒ ÙˆØ¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ Ø¨Ù†Ø¬Ø§Ø­');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Ø­Ø¯Ø« Ø®Ø·Ø£: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -358,33 +358,33 @@ class ChecksController extends Controller
      */
     private function createJournalEntry($oper, $data, $portfolioAccount, $proType)
     {
-        // إنشاء journal_head
+        // Ø¥Ù†Ø´Ø§Ø¡ journal_head
         $lastJournalId = JournalHead::max('journal_id') ?? 0;
         $newJournalId = $lastJournalId + 1;
 
         $journalHead = JournalHead::create([
             'journal_id' => $newJournalId,
             'total' => $data['amount'],
-            'date' => $data['pro_date'], // التاريخ الرئيسي للعملية
+            'date' => $data['pro_date'], // Ø§Ù„ØªØ§Ø±ÙŠØ® Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ Ù„Ù„Ø¹Ù…Ù„ÙŠØ©
             'op_id' => $oper->id,
             'pro_type' => $proType,
-            'details' => "شيك رقم {$data['check_number']} - {$data['bank_name']} - استحقاق: {$data['due_date']}",
+            'details' => "Ø´ÙŠÙƒ Ø±Ù‚Ù… {$data['check_number']} - {$data['bank_name']} - Ø§Ø³ØªØ­Ù‚Ø§Ù‚: {$data['due_date']}",
             'user' => Auth::id(),
             'branch_id' => $data['branch_id'],
         ]);
 
-        $checkInfo = "شيك {$data['check_number']} - {$data['bank_name']} - استحقاق {$data['due_date']}";
+        $checkInfo = "Ø´ÙŠÙƒ {$data['check_number']} - {$data['bank_name']} - Ø§Ø³ØªØ­Ù‚Ø§Ù‚ {$data['due_date']}";
 
-        // القيد المحاسبي
+        // Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ
         if ($data['type'] === 'incoming') {
-            // ورقة قبض: من ح/ حافظة أوراق القبض (مدين)
-            //              إلى ح/ العميل (دائن)
+            // ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶: Ù…Ù† Ø­/ Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶ (Ù…Ø¯ÙŠÙ†)
+            //              Ø¥Ù„Ù‰ Ø­/ Ø§Ù„Ø¹Ù…ÙŠÙ„ (Ø¯Ø§Ø¦Ù†)
             JournalDetail::create([
                 'journal_id' => $newJournalId,
-                'account_id' => $portfolioAccount, // حافظة أوراق القبض
+                'account_id' => $portfolioAccount, // Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶
                 'debit' => $data['amount'],
                 'credit' => 0,
-                'type' => 0, // مدين
+                'type' => 0, // Ù…Ø¯ÙŠÙ†
                 'info' => $checkInfo,
                 'op_id' => $oper->id,
                 'isdeleted' => 0,
@@ -396,10 +396,10 @@ class ChecksController extends Controller
             if (isset($data['acc1_id']) && $data['acc1_id']) {
                 JournalDetail::create([
                     'journal_id' => $newJournalId,
-                    'account_id' => $data['acc1_id'], // العميل
+                    'account_id' => $data['acc1_id'], // Ø§Ù„Ø¹Ù…ÙŠÙ„
                     'debit' => 0,
                     'credit' => $data['amount'],
-                    'type' => 1, // دائن
+                    'type' => 1, // Ø¯Ø§Ø¦Ù†
                     'info' => $checkInfo,
                     'op_id' => $oper->id,
                     'isdeleted' => 0,
@@ -409,15 +409,15 @@ class ChecksController extends Controller
                 ]);
             }
         } else {
-            // ورقة دفع: من ح/ المورد (مدين)
-            //            إلى ح/ حافظة أوراق الدفع (دائن)
+            // ÙˆØ±Ù‚Ø© Ø¯ÙØ¹: Ù…Ù† Ø­/ Ø§Ù„Ù…ÙˆØ±Ø¯ (Ù…Ø¯ÙŠÙ†)
+            //            Ø¥Ù„Ù‰ Ø­/ Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹ (Ø¯Ø§Ø¦Ù†)
             if (isset($data['acc1_id']) && $data['acc1_id']) {
                 JournalDetail::create([
                     'journal_id' => $newJournalId,
-                    'account_id' => $data['acc1_id'], // المورد
+                    'account_id' => $data['acc1_id'], // Ø§Ù„Ù…ÙˆØ±Ø¯
                     'debit' => $data['amount'],
                     'credit' => 0,
-                    'type' => 0, // مدين
+                    'type' => 0, // Ù…Ø¯ÙŠÙ†
                     'info' => $checkInfo,
                     'op_id' => $oper->id,
                     'isdeleted' => 0,
@@ -429,10 +429,10 @@ class ChecksController extends Controller
 
             JournalDetail::create([
                 'journal_id' => $newJournalId,
-                'account_id' => $portfolioAccount, // حافظة أوراق الدفع
+                'account_id' => $portfolioAccount, // Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹
                 'debit' => 0,
                 'credit' => $data['amount'],
-                'type' => 1, // دائن
+                'type' => 1, // Ø¯Ø§Ø¦Ù†
                 'info' => $checkInfo,
                 'op_id' => $oper->id,
                 'isdeleted' => 0,
@@ -466,7 +466,7 @@ class ChecksController extends Controller
 
         $check->update($validated);
 
-        return redirect()->route('checks.index')->with('success', 'تم تحديث الشيك بنجاح');
+        return redirect()->route('checks.index')->with('success', 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­');
     }
 
     /**
@@ -485,16 +485,16 @@ class ChecksController extends Controller
 
         $check->delete();
 
-        return response()->json(['success' => true, 'message' => 'تم حذف الشيك بنجاح']);
+        return response()->json(['success' => true, 'message' => 'ØªÙ… Ø­Ø°Ù Ø§Ù„Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­']);
     }
 
     /**
-     * Clear a check (تحصيل الشيك - تحويل للبنك)
+     * Clear a check (ØªØ­ØµÙŠÙ„ Ø§Ù„Ø´ÙŠÙƒ - ØªØ­ÙˆÙŠÙ„ Ù„Ù„Ø¨Ù†Ùƒ)
      */
     public function clear(Request $request, Check $check)
     {
         $validated = $request->validate([
-            'bank_account_id' => 'required|integer|exists:acc_head,id', // حساب البنك
+            'bank_account_id' => 'required|integer|exists:acc_head,id', // Ø­Ø³Ø§Ø¨ Ø§Ù„Ø¨Ù†Ùƒ
             'collection_date' => 'required|date',
             'branch_id' => 'required|exists:branches,id',
         ]);
@@ -502,31 +502,31 @@ class ChecksController extends Controller
         try {
             DB::beginTransaction();
 
-            // نوع العملية: تحصيل شيك (67)
+            // Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©: ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ (67)
             $proType = 67;
             $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
             $newProId = $lastProId + 1;
 
-            // حافظة أوراق القبض أو الدفع
+            // Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶ Ø£Ùˆ Ø§Ù„Ø¯ÙØ¹
             $portfolioAccount = $check->type === 'incoming' ? 63 : 66;
 
-            // إنشاء عملية التحصيل في operhead
+            // Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØªØ­ØµÙŠÙ„ ÙÙŠ operhead
             $oper = OperHead::create([
                 'pro_id' => $newProId,
                 'pro_type' => $proType,
                 'pro_date' => $validated['collection_date'],
                 'pro_num' => $check->check_number,
-                'acc1' => $validated['bank_account_id'], // البنك (مدين)
-                'acc2' => $portfolioAccount, // حافظة الأوراق (دائن)
+                'acc1' => $validated['bank_account_id'], // Ø§Ù„Ø¨Ù†Ùƒ (Ù…Ø¯ÙŠÙ†)
+                'acc2' => $portfolioAccount, // Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚ (Ø¯Ø§Ø¦Ù†)
                 'acc1_before' => 0,
                 'acc1_after' => 0,
                 'acc2_before' => 0,
                 'acc2_after' => 0,
                 'pro_value' => $check->amount,
                 'fat_net' => $check->amount,
-                'details' => "تحصيل شيك رقم {$check->check_number} من {$check->bank_name}",
+                'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number} Ù…Ù† {$check->bank_name}",
                 'info' => $check->account_holder_name,
-                'info2' => "تحويل للبنك بتاريخ {$validated['collection_date']}",
+                'info2' => "ØªØ­ÙˆÙŠÙ„ Ù„Ù„Ø¨Ù†Ùƒ Ø¨ØªØ§Ø±ÙŠØ® {$validated['collection_date']}",
                 'is_finance' => 1,
                 'is_journal' => 1,
                 'journal_type' => 2,
@@ -537,7 +537,7 @@ class ChecksController extends Controller
                 'branch_id' => $validated['branch_id'],
             ]);
 
-            // إنشاء القيد المحاسبي للتحصيل
+            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ Ù„Ù„ØªØ­ØµÙŠÙ„
             $lastJournalId = JournalHead::max('journal_id') ?? 0;
             $newJournalId = $lastJournalId + 1;
 
@@ -547,14 +547,14 @@ class ChecksController extends Controller
                 'date' => $validated['collection_date'],
                 'op_id' => $oper->id,
                 'pro_type' => $proType,
-                'details' => "تحصيل شيك رقم {$check->check_number}",
+                'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number}",
                 'user' => Auth::id(),
                 'branch_id' => $validated['branch_id'],
             ]);
 
-            $checkInfo = "تحصيل شيك {$check->check_number} - {$check->bank_name}";
+            $checkInfo = "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ {$check->check_number} - {$check->bank_name}";
 
-            // من ح/ البنك (مدين)
+            // Ù…Ù† Ø­/ Ø§Ù„Ø¨Ù†Ùƒ (Ù…Ø¯ÙŠÙ†)
             JournalDetail::create([
                 'journal_id' => $newJournalId,
                 'account_id' => $validated['bank_account_id'],
@@ -569,7 +569,7 @@ class ChecksController extends Controller
                 'branch_id' => $validated['branch_id'],
             ]);
 
-            // إلى ح/ حافظة الأوراق المالية (دائن)
+            // Ø¥Ù„Ù‰ Ø­/ Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù…Ø§Ù„ÙŠØ© (Ø¯Ø§Ø¦Ù†)
             JournalDetail::create([
                 'journal_id' => $newJournalId,
                 'account_id' => $portfolioAccount,
@@ -584,15 +584,15 @@ class ChecksController extends Controller
                 'branch_id' => $validated['branch_id'],
             ]);
 
-            // تحديث حالة الشيك
+            // ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ø´ÙŠÙƒ
             $check->markAsCleared($validated['collection_date']);
 
             DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'تم تصفية الشيك بنجاح']);
+            return response()->json(['success' => true, 'message' => 'ØªÙ… ØªØµÙÙŠØ© Ø§Ù„Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­']);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Ø­Ø¯Ø« Ø®Ø·Ø£: ' . $e->getMessage()], 500);
         }
     }
 
@@ -616,16 +616,16 @@ class ChecksController extends Controller
                 ->get();
 
             foreach ($checks as $check) {
-                // تحصيل كل شيك على حدة
+                // ØªØ­ØµÙŠÙ„ ÙƒÙ„ Ø´ÙŠÙƒ Ø¹Ù„Ù‰ Ø­Ø¯Ø©
                 $this->collectSingleCheck($check, $validated['bank_account_id'], $validated['collection_date'], $validated['branch_id']);
             }
 
             DB::commit();
 
-            return response()->json(['success' => true, 'message' => "تم تحصيل {$checks->count()} شيك بنجاح"]);
+            return response()->json(['success' => true, 'message' => "ØªÙ… ØªØ­ØµÙŠÙ„ {$checks->count()} Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­"]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Ø­Ø¯Ø« Ø®Ø·Ø£: ' . $e->getMessage()], 500);
         }
     }
 
@@ -634,14 +634,14 @@ class ChecksController extends Controller
      */
     private function collectSingleCheck($check, $bankAccountId, $collectionDate, $branchId)
     {
-        // نوع العملية: تحصيل شيك (67)
+        // Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©: ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ (67)
         $proType = 67;
         $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
         $newProId = $lastProId + 1;
 
         $portfolioAccount = $check->type === 'incoming' ? 63 : 66;
 
-        // إنشاء عملية التحصيل
+        // Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØªØ­ØµÙŠÙ„
         $oper = OperHead::create([
             'pro_id' => $newProId,
             'pro_type' => $proType,
@@ -655,7 +655,7 @@ class ChecksController extends Controller
             'acc2_after' => 0,
             'pro_value' => $check->amount,
             'fat_net' => $check->amount,
-            'details' => "تحصيل شيك رقم {$check->check_number} من {$check->bank_name}",
+            'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number} Ù…Ù† {$check->bank_name}",
             'info' => $check->account_holder_name,
             'is_finance' => 1,
             'is_journal' => 1,
@@ -667,7 +667,7 @@ class ChecksController extends Controller
             'branch_id' => $branchId,
         ]);
 
-        // إنشاء القيد
+        // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯
         $lastJournalId = JournalHead::max('journal_id') ?? 0;
         $newJournalId = $lastJournalId + 1;
 
@@ -677,14 +677,14 @@ class ChecksController extends Controller
             'date' => $collectionDate,
             'op_id' => $oper->id,
             'pro_type' => $proType,
-            'details' => "تحصيل شيك رقم {$check->check_number}",
+            'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number}",
             'user' => Auth::id(),
             'branch_id' => $branchId,
         ]);
 
-        $checkInfo = "تحصيل شيك {$check->check_number}";
+        $checkInfo = "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ {$check->check_number}";
 
-        // من ح/ البنك
+        // Ù…Ù† Ø­/ Ø§Ù„Ø¨Ù†Ùƒ
         JournalDetail::create([
             'journal_id' => $newJournalId,
             'account_id' => $bankAccountId,
@@ -699,7 +699,7 @@ class ChecksController extends Controller
             'branch_id' => $branchId,
         ]);
 
-        // إلى ح/ حافظة الأوراق
+        // Ø¥Ù„Ù‰ Ø­/ Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚
         JournalDetail::create([
             'journal_id' => $newJournalId,
             'account_id' => $portfolioAccount,
@@ -714,7 +714,7 @@ class ChecksController extends Controller
             'branch_id' => $branchId,
         ]);
 
-        // تحديث حالة الشيك
+        // ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ø´ÙŠÙƒ
         $check->markAsCleared($collectionDate);
     }
 
@@ -728,7 +728,7 @@ class ChecksController extends Controller
         
         // TODO: Add reversal journal entry logic here
 
-        return response()->json(['success' => true, 'message' => 'تم إلغاء الشيكات بقيد عكسي']);
+        return response()->json(['success' => true, 'message' => 'ØªÙ… Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ø´ÙŠÙƒØ§Øª Ø¨Ù‚ÙŠØ¯ Ø¹ÙƒØ³ÙŠ']);
     }
 
     /**

@@ -6,7 +6,7 @@ use App\Models\Price;
 use App\Models\Note;
 use App\Models\NoteDetails;
 use App\Support\ItemDataTransformer;
-use App\Models\AccHead;
+use Modules\\Accounts\\Models\\AccHead;
 use App\Models\OperationItems;
 use Livewire\WithPagination;
 use Livewire\Attributes\Locked;
@@ -341,7 +341,7 @@ new class extends Component {
         // check if the item is used in any operation
         $operationItems = OperationItems::where('item_id', $itemId)->get();
         if ($operationItems->count() > 0) {
-            session()->flash('error', 'لا يمكن حذف الصنف لأنه مستخدم في عمليات أخرى');
+            session()->flash('error', 'Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù Ø§Ù„ØµÙ†Ù Ù„Ø£Ù†Ù‡ Ù…Ø³ØªØ®Ø¯Ù… ÙÙŠ Ø¹Ù…Ù„ÙŠØ§Øª Ø£Ø®Ø±Ù‰');
             return;
         }
         $item = Item::with('units', 'prices', 'notes', 'barcodes')->find($itemId);
@@ -350,7 +350,7 @@ new class extends Component {
         $item->notes()->detach();
         $item->barcodes()->delete();
         $item->delete();
-        session()->flash('success', 'تم حذف الصنف بنجاح');
+        session()->flash('success', 'ØªÙ… Ø­Ø°Ù Ø§Ù„ØµÙ†Ù Ø¨Ù†Ø¬Ø§Ø­');
     }
 
     public function viewItemMovement($itemId, $warehouseId = 'all')
@@ -401,7 +401,7 @@ new class extends Component {
         $this->dispatch('$refresh');
 
         // Show success message
-        session()->flash('success', 'تم تطبيق التغييرات بنجاح');
+        session()->flash('success', 'ØªÙ… ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ØªØºÙŠÙŠØ±Ø§Øª Ø¨Ù†Ø¬Ø§Ø­');
 
         // Close modal after applying changes
         $this->dispatch('close-modal');
@@ -452,7 +452,7 @@ new class extends Component {
                 {{-- card title --}}
                 <div class="text-center bg-dark text-white py-3">
                     <h5 class="card-title font-family-cairo fw-bold font-20 text-white">
-                        {{ __('قائمه الأصناف مع الأرصده') }}
+                        {{ __('Ù‚Ø§Ø¦Ù…Ù‡ Ø§Ù„Ø£ØµÙ†Ø§Ù Ù…Ø¹ Ø§Ù„Ø£Ø±ØµØ¯Ù‡') }}
                     </h5>
                 </div>
 
@@ -466,7 +466,7 @@ new class extends Component {
                                 class="btn btn-outline-primary btn-lg font-family-cairo fw-bold mt-4 d-flex justify-content-center align-items-center text-center"
                                 style="min-height: 50px;">
                                 <i class="fas fa-plus me-2"></i>
-                                <span class="w-100 text-center">{{ __('إضافه صنف') }}</span>
+                                <span class="w-100 text-center">{{ __('Ø¥Ø¶Ø§ÙÙ‡ ØµÙ†Ù') }}</span>
                             </a>
                         @endcan
 
@@ -481,7 +481,7 @@ new class extends Component {
                             'priceType' => $selectedPriceType
                         ]) }}" target="_blank" class="print-btn font-family-cairo fw-bold" style="text-decoration: none;">
                                 <i class="fas fa-print"></i>
-                                طباعة القائمة
+                                Ø·Ø¨Ø§Ø¹Ø© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©
                             </a>
                         </div>
                         @endcan
@@ -492,7 +492,7 @@ new class extends Component {
                                     data-bs-toggle="modal" data-bs-target="#columnVisibilityModal"
                                     style="min-height: 50px;">
                                 <i class="fas fa-columns me-2"></i>
-                                خيارات العرض
+                                Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ø¹Ø±Ø¶
                             </button>
                         </div>
 
@@ -513,41 +513,41 @@ new class extends Component {
                                     wire:loading.attr="disabled" wire:target="clearFilters">
                                     <span wire:loading.remove wire:target="clearFilters">
                                     <i class="fas fa-times me-1"></i>
-                                    مسح الفلاتر
+                                    Ù…Ø³Ø­ Ø§Ù„ÙÙ„Ø§ØªØ±
                                     </span>
                                     <span wire:loading wire:target="clearFilters">
                                         <div class="spinner-border spinner-border-sm me-1" role="status">
-                                            <span class="visually-hidden">جاري التحميل...</span>
+                                            <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</span>
                                         </div>
-                                        جاري التحميل...
+                                        Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...
                                     </span>
                                 </button>
                             </div>
                             {{-- Search Input --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">البحث:</label>
+                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">Ø§Ù„Ø¨Ø­Ø«:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-search" wire:loading.remove wire:target="search"></i>
                                         <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="search">
-                                            <span class="visually-hidden">جاري التحميل...</span>
+                                            <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</span>
                                         </div>
                                     </span>
                                     <input type="text" x-model="searchValue" @input="updateSearch()"
                                         class="form-control font-family-cairo"
-                                        placeholder="بحث بالاسم, الكود, الباركود..."
+                                        placeholder="Ø¨Ø­Ø« Ø¨Ø§Ù„Ø§Ø³Ù…, Ø§Ù„ÙƒÙˆØ¯, Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯..."
                                         wire:loading.attr="disabled" wire:target="search">
                                 </div>
                             </div>
 
                             {{-- Warehouse Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">المخزن:</label>
+                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">Ø§Ù„Ù…Ø®Ø²Ù†:</label>
                                 <div class="input-group">
                                     <select x-model="warehouseValue" @change="updateWarehouse()"
                                         class="form-select font-family-cairo fw-bold font-14"
                                         wire:loading.attr="disabled" wire:target="selectedWarehouse">
-                                    <option value="">كل المخازن</option>
+                                    <option value="">ÙƒÙ„ Ø§Ù„Ù…Ø®Ø§Ø²Ù†</option>
                                     @foreach ($warehouses as $warehouse)
                                         <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
                                     @endforeach
@@ -555,7 +555,7 @@ new class extends Component {
                                     <span class="input-group-text">
                                         <i class="fas fa-warehouse" wire:loading.remove wire:target="selectedWarehouse"></i>
                                         <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedWarehouse">
-                                            <span class="visually-hidden">جاري التحميل...</span>
+                                            <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</span>
                                         </div>
                                     </span>
                                 </div>
@@ -563,12 +563,12 @@ new class extends Component {
 
                             {{-- Group Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">المجموعة:</label>
+                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø©:</label>
                                 <div class="input-group">
                                     <select x-model="groupValue" @change="updateGroup()"
                                         class="form-select font-family-cairo fw-bold font-14"
                                         wire:loading.attr="disabled" wire:target="selectedGroup">
-                                    <option value="">كل المجموعات</option>
+                                    <option value="">ÙƒÙ„ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø§Øª</option>
                                     @foreach ($groups as $id => $name)
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
@@ -576,7 +576,7 @@ new class extends Component {
                                     <span class="input-group-text">
                                         <i class="fas fa-layer-group" wire:loading.remove wire:target="selectedGroup"></i>
                                         <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedGroup">
-                                            <span class="visually-hidden">جاري التحميل...</span>
+                                            <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</span>
                                         </div>
                                     </span>
                                 </div>
@@ -584,12 +584,12 @@ new class extends Component {
 
                             {{-- Category Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">التصنيف:</label>
+                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">Ø§Ù„ØªØµÙ†ÙŠÙ:</label>
                                 <div class="input-group">
                                     <select x-model="categoryValue" @change="updateCategory()"
                                         class="form-select font-family-cairo fw-bold font-14"
                                         wire:loading.attr="disabled" wire:target="selectedCategory">
-                                    <option value="">كل التصنيفات</option>
+                                    <option value="">ÙƒÙ„ Ø§Ù„ØªØµÙ†ÙŠÙØ§Øª</option>
                                     @foreach ($categories as $id => $name)
                                         <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
@@ -597,7 +597,7 @@ new class extends Component {
                                     <span class="input-group-text">
                                         <i class="fas fa-tags" wire:loading.remove wire:target="selectedCategory"></i>
                                         <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedCategory">
-                                            <span class="visually-hidden">جاري التحميل...</span>
+                                            <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</span>
                                         </div>
                                     </span>
                                 </div>
@@ -613,7 +613,7 @@ new class extends Component {
                     {{-- Pagination Control --}}
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center gap-2">
-                            <label class="form-label font-family-cairo fw-bold mb-0">عرض:</label>
+                            <label class="form-label font-family-cairo fw-bold mb-0">Ø¹Ø±Ø¶:</label>
                             <div class="input-group" style="width: auto;">
                                 <select wire:model.live="perPage" class="form-select form-select-sm font-family-cairo fw-bold"
                                     wire:loading.attr="disabled" wire:target="perPage">
@@ -625,15 +625,15 @@ new class extends Component {
                                 <span class="input-group-text">
                                     <i class="fas fa-list" wire:loading.remove wire:target="perPage"></i>
                                     <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="perPage">
-                                        <span class="visually-hidden">جاري التحميل...</span>
+                                        <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...</span>
                                     </div>
                                 </span>
                             </div>
-                            <span class="font-family-cairo fw-bold">سجل</span>
+                            <span class="font-family-cairo fw-bold">Ø³Ø¬Ù„</span>
                         </div>
                         <div class="font-family-cairo fw-bold text-muted">
                             <i class="fas fa-list me-1"></i>
-                            إجمالي النتائج: <span class="text-primary">{{ $this->items->total() }}</span>
+                            Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù†ØªØ§Ø¦Ø¬: <span class="text-primary">{{ $this->items->total() }}</span>
                         </div>
                     </div>
 
@@ -651,22 +651,22 @@ new class extends Component {
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="font-family-cairo fw-bold">
                                     <i class="fas fa-filter me-2"></i>
-                                    الفلاتر النشطة:
+                                    Ø§Ù„ÙÙ„Ø§ØªØ± Ø§Ù„Ù†Ø´Ø·Ø©:
                                     @if ($search)
-                                        <span class="badge bg-primary me-1">البحث: {{ $search }}</span>
+                                        <span class="badge bg-primary me-1">Ø§Ù„Ø¨Ø­Ø«: {{ $search }}</span>
                                     @endif
                                     @if ($selectedWarehouse)
                                         @php $warehouse = $warehouses->firstWhere('id', $selectedWarehouse); @endphp
-                                        <span class="badge bg-success me-1">المخزن:
-                                            {{ $warehouse ? $warehouse->aname : 'غير محدد' }}</span>
+                                        <span class="badge bg-success me-1">Ø§Ù„Ù…Ø®Ø²Ù†:
+                                            {{ $warehouse ? $warehouse->aname : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                                     @endif
                                     @if ($selectedGroup)
-                                        <span class="badge bg-warning me-1">المجموعة:
-                                            {{ $groups[$selectedGroup] ?? 'غير محدد' }}</span>
+                                        <span class="badge bg-warning me-1">Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø©:
+                                            {{ $groups[$selectedGroup] ?? 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                                     @endif
                                     @if ($selectedCategory)
-                                        <span class="badge bg-info me-1">التصنيف:
-                                            {{ $categories[$selectedCategory] ?? 'غير محدد' }}</span>
+                                        <span class="badge bg-info me-1">Ø§Ù„ØªØµÙ†ÙŠÙ:
+                                            {{ $categories[$selectedCategory] ?? 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                                     @endif
                                 </div>
                                 <button type="button" class="btn-close" @click="show = false"></button>
@@ -679,10 +679,10 @@ new class extends Component {
                         <table class="table table-striped mb-0 table-hover"
                             style="direction: rtl; font-family: 'Cairo', sans-serif;">
                             <style>
-                                /* تخصيص لون الهوفر للصفوف */
+                                /* ØªØ®ØµÙŠØµ Ù„ÙˆÙ† Ø§Ù„Ù‡ÙˆÙØ± Ù„Ù„ØµÙÙˆÙ */
                                 .table-hover tbody tr:hover {
                                     background-color: #ffc107 !important;
-                                    /* لون warning */
+                                    /* Ù„ÙˆÙ† warning */
                                 }
 
                                 /* Fixed header styles */
@@ -708,28 +708,28 @@ new class extends Component {
                                 <tr>
                                     <th class="font-family-cairo text-center fw-bold">#</th>
                                     @if($visibleColumns['code'])
-                                        <th class="font-family-cairo text-center fw-bold">الكود</th>
+                                        <th class="font-family-cairo text-center fw-bold">Ø§Ù„ÙƒÙˆØ¯</th>
                                     @endif
                                     @if($visibleColumns['name'])
-                                        <th class="font-family-cairo text-center fw-bold">الاسم</th>
+                                        <th class="font-family-cairo text-center fw-bold">Ø§Ù„Ø§Ø³Ù…</th>
                                     @endif
                                     @if($visibleColumns['units'])
-                                        <th class="font-family-cairo text-center fw-bold" style="min-width: 130px;">الوحدات</th>
+                                        <th class="font-family-cairo text-center fw-bold" style="min-width: 130px;">Ø§Ù„ÙˆØ­Ø¯Ø§Øª</th>
                                     @endif
                                     @if($visibleColumns['quantity'])
-                                        <th class="font-family-cairo text-center fw-bold" style="min-width: 100px;">الكميه</th>
+                                        <th class="font-family-cairo text-center fw-bold" style="min-width: 100px;">Ø§Ù„ÙƒÙ…ÙŠÙ‡</th>
                                     @endif
                                     @if($visibleColumns['average_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">متوسط التكلفه</th>
+                                        <th class="font-family-cairo text-center fw-bold">Ù…ØªÙˆØ³Ø· Ø§Ù„ØªÙƒÙ„ÙÙ‡</th>
                                     @endif
                                     @if($visibleColumns['quantity_average_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">تكلفه المتوسطه للكميه</th>
+                                        <th class="font-family-cairo text-center fw-bold">ØªÙƒÙ„ÙÙ‡ Ø§Ù„Ù…ØªÙˆØ³Ø·Ù‡ Ù„Ù„ÙƒÙ…ÙŠÙ‡</th>
                                     @endif
                                     @if($visibleColumns['last_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">التكلفه الاخيره</th>
+                                        <th class="font-family-cairo text-center fw-bold">Ø§Ù„ØªÙƒÙ„ÙÙ‡ Ø§Ù„Ø§Ø®ÙŠØ±Ù‡</th>
                                     @endif
                                     @if($visibleColumns['quantity_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">تكلفه الكميه</th>
+                                        <th class="font-family-cairo text-center fw-bold">ØªÙƒÙ„ÙÙ‡ Ø§Ù„ÙƒÙ…ÙŠÙ‡</th>
                                     @endif
                                     @foreach ($this->priceTypes as $priceId => $priceName)
                                         @if(isset($visiblePrices[$priceId]) && $visiblePrices[$priceId])
@@ -737,7 +737,7 @@ new class extends Component {
                                         @endif
                                     @endforeach
                                     @if($visibleColumns['barcode'])
-                                        <th class="font-family-cairo text-center fw-bold">الباركود</th>
+                                        <th class="font-family-cairo text-center fw-bold">Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯</th>
                                     @endif
                                     @foreach ($this->noteTypes as $noteId => $noteName)
                                         @if(isset($visibleNotes[$noteId]) && $visibleNotes[$noteId])
@@ -746,7 +746,7 @@ new class extends Component {
                                     @endforeach
                                     @canany(['edit items', 'delete items'])
                                         @if($visibleColumns['actions'])
-                                            <th class="font-family-cairo fw-bold">العمليات</th>
+                                            <th class="font-family-cairo fw-bold">Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª</th>
                                         @endif
                                     @endcanany
                                 </tr>
@@ -777,7 +777,7 @@ new class extends Component {
                                                 <td class="font-family-cairo text-center fw-bold">
                                                     <span x-text="itemData.name"></span>
                                                     <a href="{{ route('item-movement', ['itemId' => $item->id]) }}">
-                                                        <i class="las la-eye fa-lg text-primary" title="عرض حركات الصنف"></i>
+                                                        <i class="las la-eye fa-lg text-primary" title="Ø¹Ø±Ø¶ Ø­Ø±ÙƒØ§Øª Ø§Ù„ØµÙ†Ù"></i>
                                                     </a>
                                                 </td>
                                             @endif
@@ -796,7 +796,7 @@ new class extends Component {
                                                         </div>
                                                      </template>
                                                     <template x-if="Object.keys(itemData.units).length === 0">
-                                                        <span class="font-family-cairo fw-bold font-14">لا يوجد وحدات</span>
+                                                        <span class="font-family-cairo fw-bold font-14">Ù„Ø§ ÙŠÙˆØ¬Ø¯ ÙˆØ­Ø¯Ø§Øª</span>
                                                     </template>
                                                 </td>
                                             @endif
@@ -854,7 +854,7 @@ new class extends Component {
                                                         </select>
                                                     </template>
                                                     <template x-if="currentBarcodes.length === 0">
-                                                        <span class="font-family-cairo fw-bold font-14">لا يوجد</span>
+                                                        <span class="font-family-cairo fw-bold font-14">Ù„Ø§ ÙŠÙˆØ¬Ø¯</span>
                                                     </template>
                                                 </td>
                                             @endif
@@ -872,15 +872,15 @@ new class extends Component {
                                                 @if($visibleColumns['actions'])
                                                     <td class="d-flex justify-content-center align-items-center gap-2 mt-2">
                                                         @can('edit items')
-                                                            <button type="button" title="تعديل الصنف" class="btn btn-success btn-sm"
+                                                            <button type="button" title="ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØµÙ†Ù" class="btn btn-success btn-sm"
                                                                 wire:click="edit({{ $item->id }})">
                                                                 <i class="las la-edit fa-lg"></i>
                                                             </button>
                                                         @endcan
                                                         @can('delete items')
-                                                            <button type="button" title="حذف الصنف" class="btn btn-danger btn-sm"
+                                                            <button type="button" title="Ø­Ø°Ù Ø§Ù„ØµÙ†Ù" class="btn btn-danger btn-sm"
                                                                 wire:click="delete({{ $item->id }})"
-                                                                onclick="confirm('هل أنت متأكد من حذف هذا الصنف؟') || event.stopImmediatePropagation()">
+                                                                onclick="confirm('Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„ØµÙ†ÙØŸ') || event.stopImmediatePropagation()">
                                                                 <i class="las la-trash fa-lg"></i>
                                                             </button>
                                                         @endcan
@@ -895,7 +895,7 @@ new class extends Component {
                                     @endphp
                                     <tr>
                                         <td colspan="{{ $colspan }}"
-                                            class="text-center font-family-cairo fw-bold">لا يوجد سجلات
+                                            class="text-center font-family-cairo fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø³Ø¬Ù„Ø§Øª
                                         </td>
                                     </tr>
                                 @endforelse
@@ -911,50 +911,50 @@ new class extends Component {
                                 <div class="card-header bg-primary text-white">
                                     <h6 class="font-family-cairo fw-bold mb-0 text-white">
                                         <i class="fas fa-calculator me-2"></i>
-                                        تقيم المخزون
+                                        ØªÙ‚ÙŠÙ… Ø§Ù„Ù…Ø®Ø²ÙˆÙ†
                                     </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-2">
-                                            <label class="form-label font-family-cairo fw-bold">اختر نوع السعر:</label>
+                                            <label class="form-label font-family-cairo fw-bold">Ø§Ø®ØªØ± Ù†ÙˆØ¹ Ø§Ù„Ø³Ø¹Ø±:</label>
                                             <select wire:model.live="selectedPriceType"
                                                 class="form-select font-family-cairo fw-bold font-14">
-                                                <option value="">اختر نوع السعر</option>
-                                                <option value="cost">التكلفة</option>
-                                                <option value="average_cost">متوسط التكلفة</option>
+                                                <option value="">Ø§Ø®ØªØ± Ù†ÙˆØ¹ Ø§Ù„Ø³Ø¹Ø±</option>
+                                                <option value="cost">Ø§Ù„ØªÙƒÙ„ÙØ©</option>
+                                                <option value="average_cost">Ù…ØªÙˆØ³Ø· Ø§Ù„ØªÙƒÙ„ÙØ©</option>
                                                 @foreach ($this->priceTypes as $priceId => $priceName)
                                                     <option value="{{ $priceId }}">{{ $priceName }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label font-family-cairo fw-bold">المخزن المحدد:</label>
+                                            <label class="form-label font-family-cairo fw-bold">Ø§Ù„Ù…Ø®Ø²Ù† Ø§Ù„Ù…Ø­Ø¯Ø¯:</label>
                                             <div class="form-control-plaintext font-family-cairo fw-bold">
                                                 @if ($selectedWarehouse)
                                                     @php
                                                         $warehouse = $warehouses->firstWhere('id', $selectedWarehouse);
                                                     @endphp
-                                                    {{ $warehouse ? $warehouse->aname : 'غير محدد' }}
+                                                    {{ $warehouse ? $warehouse->aname : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}
                                                 @else
-                                                    جميع المخازن
+                                                    Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø®Ø§Ø²Ù†
                                                 @endif
                                             </div>
                                         </div>
                                         @if ($selectedPriceType)
                                             <div class="col-md-3">
                                                 <h6 class="font-family-cairo fw-bold text-primary mb-1"
-                                                    style="font-size: 0.95rem;">إجمالي الكمية</h6>
+                                                    style="font-size: 0.95rem;">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙƒÙ…ÙŠØ©</h6>
                                                 <h4 class="font-family-cairo fw-bold text-success mb-0"
                                                     style="font-size: 1.2rem;">{{ $this->totalQuantity }}</h4>
                                             </div>
                                             <div class="col-md-3">
-                                                <h6 class="font-family-cairo fw-bold text-primary">إجمالي القيمة</h6>
+                                                <h6 class="font-family-cairo fw-bold text-primary">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù‚ÙŠÙ…Ø©</h6>
                                                 <h4 class="font-family-cairo fw-bold text-success">
                                                     {{ formatCurrency($this->totalAmount) }}</h4>
                                             </div>
                                             <div class="col-md-2">
-                                                <h6 class="font-family-cairo fw-bold text-primary">عدد الأصناف</h6>
+                                                <h6 class="font-family-cairo fw-bold text-primary">Ø¹Ø¯Ø¯ Ø§Ù„Ø£ØµÙ†Ø§Ù</h6>
                                                 <h4 class="font-family-cairo fw-bold text-success">
                                                     {{ $this->totalItems }}</h4>
                                             </div>
@@ -994,7 +994,7 @@ new class extends Component {
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title font-family-cairo fw-bold" id="columnVisibilityModalLabel">
                         <i class="fas fa-columns me-2"></i>
-                        خيارات عرض الأعمدة
+                        Ø®ÙŠØ§Ø±Ø§Øª Ø¹Ø±Ø¶ Ø§Ù„Ø£Ø¹Ù…Ø¯Ø©
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -1005,11 +1005,11 @@ new class extends Component {
                             <div class="d-flex gap-2 justify-content-center">
                                 <button type="button" @click="showAllColumns()" class="btn btn-success btn-sm font-family-cairo fw-bold">
                                     <i class="fas fa-eye me-1"></i>
-                                    إظهار الكل
+                                    Ø¥Ø¸Ù‡Ø§Ø± Ø§Ù„ÙƒÙ„
                                 </button>
                                 <button type="button" @click="hideAllColumns()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
                                     <i class="fas fa-eye-slash me-1"></i>
-                                    إخفاء الكل
+                                    Ø¥Ø®ÙØ§Ø¡ Ø§Ù„ÙƒÙ„
                                 </button>
                             </div>
                         </div>
@@ -1020,36 +1020,36 @@ new class extends Component {
                         <div class="col-md-6">
                             <h6 class="font-family-cairo fw-bold text-primary mb-3">
                                 <i class="fas fa-list me-2"></i>
-                                الأعمدة الأساسية:
+                                Ø§Ù„Ø£Ø¹Ù…Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©:
                             </h6>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.code">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    الكود
+                                    Ø§Ù„ÙƒÙˆØ¯
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.name">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    الاسم
+                                    Ø§Ù„Ø§Ø³Ù…
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.units">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    الوحدات
+                                    Ø§Ù„ÙˆØ­Ø¯Ø§Øª
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.quantity">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    الكمية
+                                    Ø§Ù„ÙƒÙ…ÙŠØ©
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.barcode">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    الباركود
+                                    Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯
                                 </label>
                             </div>
                         </div>
@@ -1057,30 +1057,30 @@ new class extends Component {
                         <div class="col-md-6">
                             <h6 class="font-family-cairo fw-bold text-primary mb-3">
                                 <i class="fas fa-dollar-sign me-2"></i>
-                                أعمدة التكلفة والأسعار:
+                                Ø£Ø¹Ù…Ø¯Ø© Ø§Ù„ØªÙƒÙ„ÙØ© ÙˆØ§Ù„Ø£Ø³Ø¹Ø§Ø±:
                             </h6>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.average_cost">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    متوسط التكلفة
+                                    Ù…ØªÙˆØ³Ø· Ø§Ù„ØªÙƒÙ„ÙØ©
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.quantity_average_cost">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    تكلفة المتوسطة للكمية
+                                    ØªÙƒÙ„ÙØ© Ø§Ù„Ù…ØªÙˆØ³Ø·Ø© Ù„Ù„ÙƒÙ…ÙŠØ©
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.last_cost">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    التكلفة الأخيرة
+                                    Ø§Ù„ØªÙƒÙ„ÙØ© Ø§Ù„Ø£Ø®ÙŠØ±Ø©
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.quantity_cost">
                                 <label class="form-check-label font-family-cairo fw-bold">
-                                    تكلفة الكمية
+                                    ØªÙƒÙ„ÙØ© Ø§Ù„ÙƒÙ…ÙŠØ©
                                 </label>
                             </div>
                         </div>
@@ -1093,16 +1093,16 @@ new class extends Component {
                             <div class="col-12 mb-3">
                                 <h6 class="font-family-cairo fw-bold text-info mb-3">
                                     <i class="fas fa-tags me-2"></i>
-                                    أسعار البيع:
+                                    Ø£Ø³Ø¹Ø§Ø± Ø§Ù„Ø¨ÙŠØ¹:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
                                     <button type="button" @click="showAllPrices()" class="btn btn-info btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye me-1"></i>
-                                        إظهار جميع الأسعار
+                                        Ø¥Ø¸Ù‡Ø§Ø± Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø³Ø¹Ø§Ø±
                                     </button>
                                     <button type="button" @click="hideAllPrices()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
-                                        إخفاء جميع الأسعار
+                                        Ø¥Ø®ÙØ§Ø¡ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø³Ø¹Ø§Ø±
                                     </button>
                                 </div>
                             </div>
@@ -1121,18 +1121,18 @@ new class extends Component {
                     @endif
 
                     {{-- Actions Section --}}
-                    @canany(['تعديل الأصناف', 'حذف الأصناف'])
+                    @canany(['ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£ØµÙ†Ø§Ù', 'Ø­Ø°Ù Ø§Ù„Ø£ØµÙ†Ø§Ù'])
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12">
                                 <h6 class="font-family-cairo fw-bold text-warning mb-3">
                                     <i class="fas fa-cogs me-2"></i>
-                                    العمليات:
+                                    Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª:
                                 </h6>
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" x-model="columns.actions">
                                     <label class="form-check-label font-family-cairo fw-bold">
-                                        العمليات (تعديل/حذف)
+                                        Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª (ØªØ¹Ø¯ÙŠÙ„/Ø­Ø°Ù)
                                     </label>
                                 </div>
                             </div>
@@ -1146,16 +1146,16 @@ new class extends Component {
                             <div class="col-12 mb-3">
                                 <h6 class="font-family-cairo fw-bold text-success mb-3">
                                     <i class="fas fa-sticky-note me-2"></i>
-                                    الملاحظات:
+                                    Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
                                     <button type="button" @click="showAllNotes()" class="btn btn-success btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye me-1"></i>
-                                        إظهار جميع الملاحظات
+                                        Ø¥Ø¸Ù‡Ø§Ø± Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª
                                     </button>
                                     <button type="button" @click="hideAllNotes()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
-                                        إخفاء جميع الملاحظات
+                                        Ø¥Ø®ÙØ§Ø¡ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª
                                     </button>
                                 </div>
                             </div>
@@ -1178,17 +1178,17 @@ new class extends Component {
                             wire:loading.attr="disabled" wire:target="updateVisibility">
                         <span wire:loading.remove wire:target="updateVisibility">
                             <i class="fas fa-check me-2"></i>
-                            تطبيق التغييرات
+                            ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ØªØºÙŠÙŠØ±Ø§Øª
                         </span>
                         <span wire:loading wire:target="updateVisibility">
                             <div class="spinner-border spinner-border-sm me-2" role="status">
-                                <span class="visually-hidden">جاري التطبيق...</span>
+                                <span class="visually-hidden">Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚...</span>
                             </div>
-                            جاري التطبيق...
+                            Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚...
                         </span>
                     </button>
                     <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal">
-                        إغلاق
+                        Ø¥ØºÙ„Ø§Ù‚
                     </button>
                 </div>
             </div>
@@ -1363,3 +1363,4 @@ function columnVisibilityModal() {
 }
 
 </script>
+

@@ -61,8 +61,8 @@ class ServiceBookingController extends Controller
             ->paginate(15);
 
         $services = Service::where('is_active', true)->orderBy('name')->get();
-        $customers = \App\Models\AccHead::where('isdeleted', 0)
-            ->where('aname', 'like', '%عميل%')
+        $customers = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+            ->where('aname', 'like', '%Ø¹Ù…ÙŠÙ„%')
             ->orderBy('aname')
             ->get();
 
@@ -70,7 +70,7 @@ class ServiceBookingController extends Controller
         } catch (\Exception $e) {
             Log::error('Error in ServiceBookingController@index: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'حدث خطأ في تحميل الصفحة: ' . $e->getMessage());
+                ->with('error', 'Ø­Ø¯Ø« Ø®Ø·Ø£ ÙÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙØ­Ø©: ' . $e->getMessage());
         }
     }
 
@@ -81,12 +81,12 @@ class ServiceBookingController extends Controller
     {
         $booking = new ServiceBooking();
         $services = Service::where('is_active', true)->orderBy('name')->get();
-        $customers = \App\Models\AccHead::where('isdeleted', 0)
-            ->where('aname', 'like', '%عميل%')
+        $customers = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+            ->where('aname', 'like', '%Ø¹Ù…ÙŠÙ„%')
             ->orderBy('aname')
             ->get();
-        $employees = \App\Models\AccHead::where('isdeleted', 0)
-            ->where('aname', 'like', '%موظف%')
+        $employees = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+            ->where('aname', 'like', '%Ù…ÙˆØ¸Ù%')
             ->orderBy('aname')
             ->get();
 
@@ -114,7 +114,7 @@ class ServiceBookingController extends Controller
         ServiceBooking::create($data);
 
         return redirect()->route('services.bookings.index')
-            ->with('success', 'تم إنشاء الحجز بنجاح');
+            ->with('success', 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø­Ø¬Ø² Ø¨Ù†Ø¬Ø§Ø­');
     }
 
     /**
@@ -133,12 +133,12 @@ class ServiceBookingController extends Controller
     public function edit(ServiceBooking $booking)
     {
         $services = Service::where('is_active', true)->orderBy('name')->get();
-        $customers = \App\Models\AccHead::where('isdeleted', 0)
-            ->where('aname', 'like', '%عميل%')
+        $customers = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+            ->where('aname', 'like', '%Ø¹Ù…ÙŠÙ„%')
             ->orderBy('aname')
             ->get();
-        $employees = \App\Models\AccHead::where('isdeleted', 0)
-            ->where('aname', 'like', '%موظف%')
+        $employees = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+            ->where('aname', 'like', '%Ù…ÙˆØ¸Ù%')
             ->orderBy('aname')
             ->get();
 
@@ -166,7 +166,7 @@ class ServiceBookingController extends Controller
         $booking->update($data);
 
         return redirect()->route('services.bookings.index')
-            ->with('success', 'تم تحديث الحجز بنجاح');
+            ->with('success', 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø­Ø¬Ø² Ø¨Ù†Ø¬Ø§Ø­');
     }
 
     /**
@@ -176,13 +176,13 @@ class ServiceBookingController extends Controller
     {
         if ($booking->is_completed) {
             return redirect()->route('services.bookings.index')
-                ->with('error', 'لا يمكن حذف حجز مكتمل');
+                ->with('error', 'Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù Ø­Ø¬Ø² Ù…ÙƒØªÙ…Ù„');
         }
 
         $booking->delete();
 
         return redirect()->route('services.bookings.index')
-            ->with('success', 'تم حذف الحجز بنجاح');
+            ->with('success', 'ØªÙ… Ø­Ø°Ù Ø§Ù„Ø­Ø¬Ø² Ø¨Ù†Ø¬Ø§Ø­');
     }
 
     /**
@@ -193,7 +193,7 @@ class ServiceBookingController extends Controller
         $booking->update(['is_completed' => true]);
 
         return redirect()->route('services.bookings.index')
-            ->with('success', 'تم تأكيد إكمال الحجز');
+            ->with('success', 'ØªÙ… ØªØ£ÙƒÙŠØ¯ Ø¥ÙƒÙ…Ø§Ù„ Ø§Ù„Ø­Ø¬Ø²');
     }
 
     /**
@@ -212,7 +212,7 @@ class ServiceBookingController extends Controller
         ]);
 
         return redirect()->route('services.bookings.index')
-            ->with('success', 'تم إلغاء الحجز');
+            ->with('success', 'ØªÙ… Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ø­Ø¬Ø²');
     }
 
     /**
@@ -263,3 +263,4 @@ class ServiceBookingController extends Controller
         return response()->json($slots);
     }
 }
+

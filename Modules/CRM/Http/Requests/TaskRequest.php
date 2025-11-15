@@ -17,56 +17,54 @@ class TaskRequest extends FormRequest
         return [
             'client_id'      => ['required', 'exists:clients,id'],
             'user_id'        => ['required', 'exists:users,id'],
-            'task_type_id' => ['required', 'exists:task_types,id'],
+            'task_type_id'   => ['required', 'exists:task_types,id'],
             'title'          => ['required', 'string', 'max:255'],
-            'status' => ['required', new Enum(TaskStatusEnum::class)],
-            'priority' => ['required', new Enum(TaskPriorityEnum::class)],
-            'start_date'  => ['required', 'date'],
-            'delivery_date'  => ['required', 'date'],
+            'status'         => ['required', new Enum(TaskStatusEnum::class)],
+            'priority'       => ['required', new Enum(TaskPriorityEnum::class)],
+            'start_date'     => ['required', 'date'],
+            'delivery_date'  => ['required', 'date', 'after_or_equal:start_date'],
             'client_comment' => ['nullable', 'string'],
             'user_comment'   => ['nullable', 'string'],
             'attachment'     => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf,doc,docx'],
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id'      => 'required|exists:branches,id',
         ];
     }
 
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'client_id'      => __('Client'),
+            'user_id'        => __('User'),
+            'task_type_id'   => __('Task Type'),
+            'title'          => __('Task Title'),
+            'status'         => __('Status'),
+            'priority'       => __('Priority'),
+            'start_date'     => __('Start Date'),
+            'delivery_date'  => __('Due Date'),
+            'client_comment' => __('Client Comment'),
+            'user_comment'   => __('User Comment'),
+            'attachment'     => __('Attachment'),
+            'branch_id'      => __('Branch'),
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
-            'client_id.required' => 'العميل مطلوب.',
-            'client_id.exists'   => 'العميل غير موجود.',
-
-            'user_id.required' => 'المستخدم مطلوب.',
-            'user_id.exists'   => 'المستخدم غير موجود.',
-
-            'task_type.required' => 'نوع المهمة مطلوب.',
-            'task_type.string'   => 'نوع المهمة يجب أن يكون نصاً.',
-
-            'title.required' => 'عنوان المهمة مطلوب.',
-            'title.string'   => 'عنوان المهمة يجب أن يكون نصاً.',
-            'title.max'      => 'عنوان المهمة يجب ألا يتجاوز 255 حرفاً.',
-
-            'status.required' => 'حالة المهمة مطلوبة.',
-            'status.in'       => 'حالة المهمة غير صحيحة.',
-
-            'delivery_date.required' => 'تاريخ التسليم مطلوب.',
-            'delivery_date.date'     => 'تاريخ التسليم يجب أن يكون تاريخاً صالحاً.',
-
-            'start_date.required' => 'تاريخ البدايه مطلوب.',
-            'start_date.date'     => 'تاريخ البدايه يجب أن يكون تاريخاً صالحاً.',
-
-            'client_comment.string' => 'تعليق العميل يجب أن يكون نصاً.',
-            'user_comment.string'   => 'تعليق المستخدم يجب أن يكون نصاً.',
-
-            'attachment.file'  => 'الملف المرفق يجب أن يكون ملفاً.',
-            'attachment.max'   => 'الملف لا يجب أن يتجاوز 5 ميجابايت.',
-            'attachment.mimes' => 'صيغة الملف غير مدعومة. الصيغ المسموحة: jpg, jpeg, png, pdf, doc, docx.',
-
-            'branch_id.required' => 'الفرع مطلوب.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
+            'delivery_date.after_or_equal' => __('The due date must be a date after or equal to the start date.'),
+            'attachment.mimes' => __('Unsupported file format. Allowed formats: jpg, jpeg, png, pdf, doc, docx.'),
         ];
     }
-
 
     /**
      * Determine if the user is authorized to make this request.

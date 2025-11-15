@@ -18,7 +18,7 @@
                         <div>
                             <h2 class="mb-1 fw-bold header-title">{{ $pageTitle }}</h2>
                             <p class="mb-0 text-white-75 header-subtitle">
-                                {{ $pageType === 'incoming' ? 'استلام شيك من عميل' : 'إصدار شيك لمورد' }}
+                                {{ $pageType === 'incoming' ? 'Ø§Ø³ØªÙ„Ø§Ù… Ø´ÙŠÙƒ Ù…Ù† Ø¹Ù…ÙŠÙ„' : 'Ø¥ØµØ¯Ø§Ø± Ø´ÙŠÙƒ Ù„Ù…ÙˆØ±Ø¯' }}
                             </p>
                         </div>
                     </div>
@@ -43,17 +43,17 @@
 
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">التاريخ <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø§Ù„ØªØ§Ø±ÙŠØ® <span class="text-danger">*</span></label>
                                 <input type="date" name="pro_date" id="pro_date" class="form-control"
                                        value="{{ old('pro_date', date('Y-m-d')) }}" required autofocus>
                             </div>
 
                             <div class="col-md-8">
-                                <label class="form-label fw-bold">اسم الحساب <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø§Ø³Ù… Ø§Ù„Ø­Ø³Ø§Ø¨ <span class="text-danger">*</span></label>
                                 <select name="acc1_id" id="acc_id" class="form-control select2" required>
-                                    <option value="">ابحث عن الحساب...</option>
+                                    <option value="">Ø§Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„Ø­Ø³Ø§Ø¨...</option>
                                     @php
-                                        $allAccounts = \App\Models\AccHead::where('isdeleted', 0)
+                                        $allAccounts = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
                                             ->where('is_basic', 0)
                                             ->select('id', 'aname', 'code', 'balance')
                                             ->orderBy('code')
@@ -68,48 +68,48 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">المبلغ <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø§Ù„Ù…Ø¨Ù„Øº <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" name="amount" id="amount" class="form-control"
                                        value="{{ old('amount') }}" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ تحرير الشيك <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">ØªØ§Ø±ÙŠØ® ØªØ­Ø±ÙŠØ± Ø§Ù„Ø´ÙŠÙƒ <span class="text-danger">*</span></label>
                                 <input type="date" name="issue_date" id="issue_date" class="form-control"
                                        value="{{ old('issue_date', date('Y-m-d')) }}" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">تاريخ الاستحقاق <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚ <span class="text-danger">*</span></label>
                                 <input type="date" name="due_date" id="due_date" class="form-control"
                                        value="{{ old('due_date') }}" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">اسم المستفيد</label>
+                                <label class="form-label fw-bold">Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªÙÙŠØ¯</label>
                                 <input type="text" name="{{ $pageType === 'incoming' ? 'payee_name' : 'payer_name' }}"
                                        id="beneficiary_name" class="form-control"
                                        value="{{ old($pageType === 'incoming' ? 'payee_name' : 'payer_name') }}">
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">اسم البنك <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø§Ø³Ù… Ø§Ù„Ø¨Ù†Ùƒ <span class="text-danger">*</span></label>
                                 <input type="text" name="bank_name" id="bank_name" class="form-control"
                                        value="{{ old('bank_name') }}" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">اسم صاحب الورقة الأصلي <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø§Ø³Ù… ØµØ§Ø­Ø¨ Ø§Ù„ÙˆØ±Ù‚Ø© Ø§Ù„Ø£ØµÙ„ÙŠ <span class="text-danger">*</span></label>
                                 <input type="text" name="account_holder_name" id="account_holder_name" class="form-control"
                                        value="{{ old('account_holder_name') }}" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">حافظة الأوراق المالية <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù…Ø§Ù„ÙŠØ© <span class="text-danger">*</span></label>
                                 <select name="portfolio_id" id="portfolio_id" class="form-select" required>
                                     @php
                                         $portfolioCode = $pageType === 'incoming' ? '1105' : '2103';
-                                        $portfolios = \App\Models\AccHead::where('isdeleted', 0)
+                                        $portfolios = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
                                             ->where('code', 'like', $portfolioCode . '%')
                                             ->select('id', 'aname', 'code', 'balance')
                                             ->get();
@@ -123,35 +123,35 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">رقم الشيك <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Ø±Ù‚Ù… Ø§Ù„Ø´ÙŠÙƒ <span class="text-danger">*</span></label>
                                 <input type="text" name="check_number" id="check_number" class="form-control"
                                        value="{{ old('check_number') }}" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">رقم الحساب البنكي</label>
+                                <label class="form-label fw-bold">Ø±Ù‚Ù… Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ø¨Ù†ÙƒÙŠ</label>
                                 <input type="text" name="account_number" id="account_number" class="form-control"
                                        value="{{ old('account_number') }}">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">رقم المرجع</label>
+                                <label class="form-label fw-bold">Ø±Ù‚Ù… Ø§Ù„Ù…Ø±Ø¬Ø¹</label>
                                 <input type="text" name="reference_number" class="form-control"
                                        value="{{ old('reference_number') }}">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">الحالة</label>
+                                <label class="form-label fw-bold">Ø§Ù„Ø­Ø§Ù„Ø©</label>
                                 <select name="status" class="form-select">
-                                    <option value="pending" selected>معلق</option>
-                                    <option value="cleared">مصفى</option>
-                                    <option value="bounced">مرتد</option>
-                                    <option value="cancelled">ملغى</option>
+                                    <option value="pending" selected>Ù…Ø¹Ù„Ù‚</option>
+                                    <option value="cleared">Ù…ØµÙÙ‰</option>
+                                    <option value="bounced">Ù…Ø±ØªØ¯</option>
+                                    <option value="cancelled">Ù…Ù„ØºÙ‰</option>
                                 </select>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-bold">ملاحظات</label>
+                                <label class="form-label fw-bold">Ù…Ù„Ø§Ø­Ø¸Ø§Øª</label>
                                 <textarea name="notes" class="form-control" rows="2">{{ old('notes') }}</textarea>
                             </div>
                         </div>
@@ -161,10 +161,10 @@
                     <div class="card-footer bg-light">
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('checks.' . $pageType) }}" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-arrow-right"></i> رجوع
+                                <i class="fas fa-arrow-right"></i> Ø±Ø¬ÙˆØ¹
                             </a>
                             <button type="submit" class="btn btn-{{ $pageType === 'incoming' ? 'success' : 'danger' }} btn-lg px-5">
-                                <i class="fas fa-save"></i> حفظ الورقة
+                                <i class="fas fa-save"></i> Ø­ÙØ¸ Ø§Ù„ÙˆØ±Ù‚Ø©
                             </button>
                         </div>
                     </div>
@@ -245,14 +245,14 @@ $(document).ready(function() {
     // Initialize Select2 for searchable account selection
     $('#acc_id').select2({
         theme: 'bootstrap-5',
-        placeholder: 'ابحث عن الحساب...',
+        placeholder: 'Ø§Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„Ø­Ø³Ø§Ø¨...',
         allowClear: true,
         language: {
             noResults: function() {
-                return "لا توجد نتائج";
+                return "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù†ØªØ§Ø¦Ø¬";
             },
             searching: function() {
-                return "جاري البحث...";
+                return "Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø¨Ø­Ø«...";
             }
         }
     });
@@ -270,10 +270,11 @@ $(document).ready(function() {
         const dueDate = new Date($(this).val());
 
         if (dueDate < issueDate) {
-            alert('تاريخ الاستحقاق يجب أن يكون بعد تاريخ تحرير الشيك');
+            alert('ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø¨Ø¹Ø¯ ØªØ§Ø±ÙŠØ® ØªØ­Ø±ÙŠØ± Ø§Ù„Ø´ÙŠÙƒ');
             $(this).val('');
         }
     });
 });
 </script>
 @endpush
+

@@ -1,3 +1,448 @@
+@php
+    use Illuminate\Support\Facades\Auth;
+
+    $user = Auth::user();
+
+    // Define all app groups with permissions
+    $appsGroupsData = [
+        [
+            'groupName' => 'الإعدادات الأساسية',
+            'groupIcon' => 'settings',
+            'groupColor' => '#7B1FA2',
+            'apps' => [
+                [
+                    'name' => 'الرئيسيه',
+                    'icon' => 'home',
+                    'iconBg' => '#FFF3E0',
+                    'iconColor' => '#E65100',
+                    'route' => route('home'),
+                    'permission' => null, // Always visible
+                ],
+                [
+                    'name' => 'البيانات الاساسيه',
+                    'icon' => 'chart-bar-increasing',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#7B1FA2',
+                    'route' => route('accounts.index'),
+                    'permission' => 'view basicData-statistics',
+                ],
+                [
+                    'name' => 'الاصناف',
+                    'icon' => 'boxes',
+                    'iconBg' => '#E8F5E8',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('items.index'),
+                    'permission' => 'view items',
+                ],
+                [
+                    'name' => 'الصلاحيات',
+                    'icon' => 'key',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('users.index'),
+                    'permission' => 'view Users',
+                ],
+                [
+                    'name' => 'الاعدادات',
+                    'icon' => 'settings',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#7B1FA2',
+                    'route' => route('export-settings'),
+                    'permission' => 'view Settings',
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'المبيعات والمشتريات',
+            'groupIcon' => 'shopping-bag',
+            'groupColor' => '#E65100',
+            'apps' => [
+                [
+                    'name' => 'CRM',
+                    'icon' => 'user-cog',
+                    'iconBg' => '#E8F5E8',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('statistics.index'),
+                    'permission' => 'view CRM Statistics',
+                ],
+                [
+                    'name' => 'المبيعات',
+                    'icon' => 'trending-up',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#7B1FA2',
+                    'route' => route('invoices.index', ['type' => 10]),
+                    'permission' => 'view Sales',
+                ],
+                [
+                    'name' => 'المشتريات',
+                    'icon' => 'shopping-bag',
+                    'iconBg' => '#FFF3E0',
+                    'iconColor' => '#E65100',
+                    'route' => route('invoices.index', ['type' => 11]),
+                    'permission' => 'view Purchases',
+                ],
+                [
+                    'name' => 'ادارة المخزون',
+                    'icon' => 'package',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('invoices.index', ['type' => 18]),
+                    'permission' => 'view Inventory',
+                ],
+                [
+                    'name' => 'نقطة البيع',
+                    'icon' => 'shopping-cart',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#7B1FA2',
+                    'route' => route('pos.index'),
+                    'permission' => 'view POS',
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'المحاسبة والمالية',
+            'groupIcon' => 'wallet',
+            'groupColor' => '#00695C',
+            'apps' => [
+                [
+                    'name' => 'السندات الماليه',
+                    'icon' => 'receipt',
+                    'iconBg' => '#E0F2F1',
+                    'iconColor' => '#00695C',
+                    'route' => route('vouchers.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'التحويلات النقديه',
+                    'icon' => 'arrow-left-right',
+                    'iconBg' => '#E3F2FD',
+                    'iconColor' => '#1565C0',
+                    'route' => route('transfers.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'رواتب الموظفين',
+                    'icon' => 'id-card',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('multi-vouchers.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'الاستحقاقات',
+                    'icon' => 'wallet',
+                    'iconBg' => '#E0F2F1',
+                    'iconColor' => '#00695C',
+                    'route' => route('journals.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'أدارة الحسابات',
+                    'icon' => 'file-text',
+                    'iconBg' => '#FFF3E0',
+                    'iconColor' => '#E65100',
+                    'route' => route('journals.index', ['type' => 'basic_journal']),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'إدارة الشيكات',
+                    'icon' => 'file-check-2',
+                    'iconBg' => '#E8F5E9',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('checks.incoming'),
+                    'permission' => 'view check-portfolios-incoming',
+                    'isNew' => true,
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'المشاريع والإنتاج',
+            'groupIcon' => 'kanban',
+            'groupColor' => '#2E7D32',
+            'apps' => [
+                [
+                    'name' => 'المشاريع',
+                    'icon' => 'kanban',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#7B1FA2',
+                    'route' => route('projects.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'التصنيع',
+                    'icon' => 'factory',
+                    'iconBg' => '#E0F2F1',
+                    'iconColor' => '#00695C',
+                    'route' => route('manufacturing.create'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'التقدم اليومي',
+                    'icon' => 'bar-chart-3',
+                    'iconBg' => '#E8F5E8',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('progress.projcet.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'عمليات الاصول',
+                    'icon' => 'building',
+                    'iconBg' => '#E8F5E8',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('depreciation.index'),
+                    'permission' => 'view assets',
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'الموارد البشرية',
+            'groupIcon' => 'users',
+            'groupColor' => '#1565C0',
+            'apps' => [
+                [
+                    'name' => 'الموارد البشريه',
+                    'icon' => 'users',
+                    'iconBg' => '#E3F2FD',
+                    'iconColor' => '#1565C0',
+                    'route' => route('employees.index'),
+                    'permission' => 'view Employees',
+                ],
+                [
+                    'name' => 'بصمه الموبايل',
+                    'icon' => 'fingerprint',
+                    'iconBg' => '#E8F5E8',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('mobile.employee-login'),
+                    'permission' => null,
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'الخدمات والعمليات',
+            'groupIcon' => 'truck',
+            'groupColor' => '#F57F17',
+            'apps' => [
+                [
+                    'name' => 'ادارة المستأجرات',
+                    'icon' => 'building',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('rentals.buildings.index'),
+                    'permission' => 'view rentables',
+                ],
+                [
+                    'name' => 'الصيانه',
+                    'icon' => 'package',
+                    'iconBg' => '#E0F2F1',
+                    'iconColor' => '#00695C',
+                    'route' => route('service.types.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'أدارة الشحن',
+                    'icon' => 'truck',
+                    'iconBg' => '#FFF3E0',
+                    'iconColor' => '#E65100',
+                    'route' => route('orders.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'Inquiries',
+                    'icon' => 'layers',
+                    'iconBg' => '#E8F5E8',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('inquiries.index'),
+                    'permission' => 'view Inquiries',
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'إدارة الجودة',
+            'groupIcon' => 'award',
+            'groupColor' => '#C62828',
+            'apps' => [
+                [
+                    'name' => 'لوحة تحكم الجودة',
+                    'icon' => 'chart-line',
+                    'iconBg' => '#FFEBEE',
+                    'iconColor' => '#C62828',
+                    'route' => route('quality.dashboard'),
+                    'permission' => 'view Dashboard',
+                    'isNew' => true,
+                ],
+                [
+                    'name' => 'فحوصات الجودة',
+                    'icon' => 'clipboard-check',
+                    'iconBg' => '#E8F5E9',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('quality.inspections.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'معايير الجودة',
+                    'icon' => 'ruler',
+                    'iconBg' => '#E3F2FD',
+                    'iconColor' => '#1565C0',
+                    'route' => route('quality.standards.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'عدم المطابقة (NCR)',
+                    'icon' => 'alert-triangle',
+                    'iconBg' => '#FFF3E0',
+                    'iconColor' => '#E65100',
+                    'route' => route('quality.ncr.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'الإجراءات التصحيحية',
+                    'icon' => 'wrench',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#7B1FA2',
+                    'route' => route('quality.capa.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'تتبع الدفعات',
+                    'icon' => 'barcode',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('quality.batches.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'تقييم الموردين',
+                    'icon' => 'star',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('quality.suppliers.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'الشهادات والامتثال',
+                    'icon' => 'award',
+                    'iconBg' => '#E0F2F1',
+                    'iconColor' => '#00695C',
+                    'route' => route('quality.certificates.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'التدقيق الداخلي',
+                    'icon' => 'search',
+                    'iconBg' => '#E3F2FD',
+                    'iconColor' => '#1565C0',
+                    'route' => route('quality.audits.index'),
+                    'permission' => 'view Dashboard',
+                ],
+                [
+                    'name' => 'تقارير الجودة',
+                    'icon' => 'chart-pie',
+                    'iconBg' => '#FFEBEE',
+                    'iconColor' => '#C62828',
+                    'route' => route('quality.reports'),
+                    'permission' => 'view Dashboard',
+                ],
+            ],
+        ],
+        [
+            'groupName' => 'التقارير',
+            'groupIcon' => 'file-bar-chart',
+            'groupColor' => '#6A1B9A',
+            'apps' => [
+                [
+                    'name' => 'محلل العمل اليومي',
+                    'icon' => 'bar-chart-3',
+                    'iconBg' => '#F3E5F5',
+                    'iconColor' => '#6A1B9A',
+                    'route' => route('reports.overall'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'شجرة الحسابات',
+                    'icon' => 'git-branch',
+                    'iconBg' => '#E8F5E9',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('accounts.tree'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'الميزانية العمومية',
+                    'icon' => 'scale',
+                    'iconBg' => '#E3F2FD',
+                    'iconColor' => '#1565C0',
+                    'route' => route('reports.general-balance-sheet'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'أرباح وخسائر',
+                    'icon' => 'trending-up',
+                    'iconBg' => '#E8F5E9',
+                    'iconColor' => '#2E7D32',
+                    'route' => route('reports.general-profit-loss-report'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'تقارير المبيعات',
+                    'icon' => 'shopping-cart',
+                    'iconBg' => '#FFF3E0',
+                    'iconColor' => '#E65100',
+                    'route' => route('reports.sales.total'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'تقارير المشتريات',
+                    'icon' => 'shopping-bag',
+                    'iconBg' => '#FFF8E1',
+                    'iconColor' => '#F57F17',
+                    'route' => route('reports.purchases.total'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'تقارير المخزون',
+                    'icon' => 'package',
+                    'iconBg' => '#E0F2F1',
+                    'iconColor' => '#00695C',
+                    'route' => route('reports.general-inventory-report'),
+                    'permission' => 'view Reports',
+                ],
+                [
+                    'name' => 'تقارير المصروفات',
+                    'icon' => 'file-text',
+                    'iconBg' => '#FFEBEE',
+                    'iconColor' => '#C62828',
+                    'route' => route('reports.expenses-balance-report'),
+                    'permission' => 'view Reports',
+                ],
+            ],
+        ],
+    ];
+
+    // Filter apps based on permissions
+    $filteredGroups = collect($appsGroupsData)
+        ->map(function ($group) use ($user) {
+            $filteredApps = collect($group['apps'])
+                ->filter(function ($app) use ($user) {
+                    // If no permission required, show it
+                    if (!isset($app['permission']) || $app['permission'] === null) {
+                        return true;
+                    }
+                    // Check if user has the permission
+                    return $user->can($app['permission']);
+                })
+                ->values()
+                ->toArray();
+
+            $group['apps'] = $filteredApps;
+            return $group;
+        })
+        ->filter(function ($group) {
+            // Remove groups with no visible apps
+            return count($group['apps']) > 0;
+        })
+        ->values()
+        ->toArray();
+@endphp
+
 <title>Massar | Dashboard</title>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="user-id" content="{{ auth()->id() }}">
@@ -460,6 +905,7 @@
             ]
         }
     ];
+    const appsGroups = @json($filteredGroups);
 
     // Function to create app card HTML
     function createAppCard(app) {

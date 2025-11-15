@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>طباعة تقرير حركة صنف - MASAR</title>
+    <title>Ø·Ø¨Ø§Ø¹Ø© ØªÙ‚Ø±ÙŠØ± Ø­Ø±ÙƒØ© ØµÙ†Ù - MASAR</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -660,7 +660,7 @@
         <div class="controls-header" onclick="toggleControls()">
             <h3>
                 <i class="fas fa-cog"></i>
-                <span>إعدادات الطباعة</span>
+                <span>Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ø·Ø¨Ø§Ø¹Ø©</span>
             </h3>
             <button class="toggle-btn" id="toggleBtn">
                 <i class="fas fa-chevron-left" id="toggleIcon"></i>
@@ -669,39 +669,39 @@
         
         <div class="controls-content">
             <div class="column-filters">
-                <h4><i class="fas fa-columns"></i> اختر الأعمدة المراد طباعتها:</h4>
+                <h4><i class="fas fa-columns"></i> Ø§Ø®ØªØ± Ø§Ù„Ø£Ø¹Ù…Ø¯Ø© Ø§Ù„Ù…Ø±Ø§Ø¯ Ø·Ø¨Ø§Ø¹ØªÙ‡Ø§:</h4>
                 <div class="column-grid">
                     <div class="column-item">
                         <input type="checkbox" id="col-date" checked>
-                        <label for="col-date">التاريخ</label>
+                        <label for="col-date">Ø§Ù„ØªØ§Ø±ÙŠØ®</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-reference" checked>
-                        <label for="col-reference">مصدر العملية</label>
+                        <label for="col-reference">Ù…ØµØ¯Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-movement-type" checked>
-                        <label for="col-movement-type">نوع الحركة</label>
+                        <label for="col-movement-type">Ù†ÙˆØ¹ Ø§Ù„Ø­Ø±ÙƒØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-warehouse" checked>
-                        <label for="col-warehouse">المخزن</label>
+                        <label for="col-warehouse">Ø§Ù„Ù…Ø®Ø²Ù†</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-unit" checked>
-                        <label for="col-unit">الوحدة</label>
+                        <label for="col-unit">Ø§Ù„ÙˆØ­Ø¯Ø©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-balance-before" checked>
-                        <label for="col-balance-before">الرصيد قبل الحركة</label>
+                        <label for="col-balance-before">Ø§Ù„Ø±ØµÙŠØ¯ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø±ÙƒØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-quantity" checked>
-                        <label for="col-quantity">الكمية</label>
+                        <label for="col-quantity">Ø§Ù„ÙƒÙ…ÙŠØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-balance-after" checked>
-                        <label for="col-balance-after">الرصيد بعد الحركة</label>
+                        <label for="col-balance-after">Ø§Ù„Ø±ØµÙŠØ¯ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø±ÙƒØ©</label>
                     </div>
                 </div>
             </div>
@@ -709,11 +709,11 @@
             <div class="print-actions">
                 <button type="button" class="select-all-btn" onclick="toggleAllColumns()">
                     <i class="fas fa-check-double"></i>
-                    تحديد الكل
+                    ØªØ­Ø¯ÙŠØ¯ Ø§Ù„ÙƒÙ„
                 </button>
                 <button type="button" class="print-btn" onclick="printReport()">
                     <i class="fas fa-print"></i>
-                    طباعة التقرير
+                    Ø·Ø¨Ø§Ø¹Ø© Ø§Ù„ØªÙ‚Ø±ÙŠØ±
                 </button>
             </div>
         </div>
@@ -722,7 +722,7 @@
     <!-- Orientation Indicator -->
     <div class="orientation-indicator" id="orientationIndicator">
         <i class="fas fa-info-circle"></i>
-        <span id="orientationText">سيتم الطباعة بالعرض</span>
+        <span id="orientationText">Ø³ÙŠØªÙ… Ø§Ù„Ø·Ø¨Ø§Ø¹Ø© Ø¨Ø§Ù„Ø¹Ø±Ø¶</span>
     </div>
 
     <div class="print-container" id="printContainer">
@@ -733,15 +733,15 @@
                     <div class="company-logo">M</div>
                     <div class="company-details">
                         <h1>MASAR</h1>
-                        <p>نظام إدارة المخزون والمبيعات</p>
+                        <p>Ù†Ø¸Ø§Ù… Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ† ÙˆØ§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</p>
                     </div>
                 </div>
                 <div class="report-info">
-                    <div class="report-title">تقرير حركة صنف</div>
+                    <div class="report-title">ØªÙ‚Ø±ÙŠØ± Ø­Ø±ÙƒØ© ØµÙ†Ù</div>
                     <div class="report-date">{{ now()->format('Y-m-d H:i:s') }}</div>
                 </div>
                 <div class="page-info">
-                    صفحة <span class="page-number">1</span>
+                    ØµÙØ­Ø© <span class="page-number">1</span>
                 </div>
             </div>
         </div>
@@ -752,38 +752,38 @@
             <div class="filters-section">
                 <div class="filters-title">
                     <i class="fas fa-filter"></i>
-                    الفلاتر المطبقة:
+                    Ø§Ù„ÙÙ„Ø§ØªØ± Ø§Ù„Ù…Ø·Ø¨Ù‚Ø©:
                 </div>
                 @if ($itemId)
                     @php
                         $item = \App\Models\Item::find($itemId);
                     @endphp
-                    <span class="filter-item">الصنف: {{ $item ? $item->name : 'غير محدد' }}</span>
+                    <span class="filter-item">Ø§Ù„ØµÙ†Ù: {{ $item ? $item->name : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                 @endif
                 @if ($warehouseId !== 'all')
                     @php
-                        $warehouse = \App\Models\AccHead::find($warehouseId);
+                        $warehouse = \Modules\\Accounts\\Models\\AccHead::find($warehouseId);
                     @endphp
-                    <span class="filter-item">المخزن: {{ $warehouse ? $warehouse->aname : 'غير محدد' }}</span>
+                    <span class="filter-item">Ø§Ù„Ù…Ø®Ø²Ù†: {{ $warehouse ? $warehouse->aname : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                 @else
-                    <span class="filter-item">المخزن: جميع المخازن</span>
+                    <span class="filter-item">Ø§Ù„Ù…Ø®Ø²Ù†: Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø®Ø§Ø²Ù†</span>
                 @endif
-                <span class="filter-item">من تاريخ: {{ $fromDate }}</span>
-                <span class="filter-item">إلى تاريخ: {{ $toDate }}</span>
+                <span class="filter-item">Ù…Ù† ØªØ§Ø±ÙŠØ®: {{ $fromDate }}</span>
+                <span class="filter-item">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®: {{ $toDate }}</span>
             </div>
 
             <!-- Movements Table -->
             <table class="movements-table" id="movementsTable">
                 <thead>
                     <tr>
-                        <th class="col-date">التاريخ</th>
-                        <th class="col-reference">مصدر العملية</th>
-                        <th class="col-movement-type">نوع الحركة</th>
-                        <th class="col-warehouse">المخزن</th>
-                        <th class="col-unit">الوحدة</th>
-                        <th class="col-balance-before">الرصيد قبل الحركة</th>
-                        <th class="col-quantity">الكمية</th>
-                        <th class="col-balance-after">الرصيد بعد الحركة</th>
+                        <th class="col-date">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
+                        <th class="col-reference">Ù…ØµØ¯Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
+                        <th class="col-movement-type">Ù†ÙˆØ¹ Ø§Ù„Ø­Ø±ÙƒØ©</th>
+                        <th class="col-warehouse">Ø§Ù„Ù…Ø®Ø²Ù†</th>
+                        <th class="col-unit">Ø§Ù„ÙˆØ­Ø¯Ø©</th>
+                        <th class="col-balance-before">Ø§Ù„Ø±ØµÙŠØ¯ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø±ÙƒØ©</th>
+                        <th class="col-quantity">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
+                        <th class="col-balance-after">Ø§Ù„Ø±ØµÙŠØ¯ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø±ÙƒØ©</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -833,26 +833,26 @@
                             $referenceName = '';
                             $baseId = $movement->pro_tybe;
                             $translations = [
-                                '10' => 'فاتورة مبيعات',
-                                '11' => 'فاتورة مشتريات',
-                                '12' => 'مردود مبيعات',
-                                '13' => 'مردود مشتريات',
-                                '14' => 'امر بيع',
-                                '15' => 'امر شراء',
-                                '16' => 'عرض سعر لعميل',
-                                '17' => 'عرض سعر من مورد',
-                                '18' => 'فاتورة توالف',
-                                '19' => 'امر صرف',
-                                '20' => 'امر اضافة',
-                                '21' => 'تحويل من مخزن لمخزن',
-                                '22' => 'امر حجز',
-                                '23' => 'تحويل بين فروع',
-                                '35' => 'سند إتلاف مخزون',
-                                '56' => 'نموذج تصنيع',
-                                '57' => 'امر تشغيل',
-                                '58' => 'تصنيع معياري',
-                                '59' => 'تصنيع حر',
-                                '60' => 'تسجيل الارصده الافتتاحيه للمخازن',
+                                '10' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø¨ÙŠØ¹Ø§Øª',
+                                '11' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø´ØªØ±ÙŠØ§Øª',
+                                '12' => 'Ù…Ø±Ø¯ÙˆØ¯ Ù…Ø¨ÙŠØ¹Ø§Øª',
+                                '13' => 'Ù…Ø±Ø¯ÙˆØ¯ Ù…Ø´ØªØ±ÙŠØ§Øª',
+                                '14' => 'Ø§Ù…Ø± Ø¨ÙŠØ¹',
+                                '15' => 'Ø§Ù…Ø± Ø´Ø±Ø§Ø¡',
+                                '16' => 'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù„Ø¹Ù…ÙŠÙ„',
+                                '17' => 'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù…Ù† Ù…ÙˆØ±Ø¯',
+                                '18' => 'ÙØ§ØªÙˆØ±Ø© ØªÙˆØ§Ù„Ù',
+                                '19' => 'Ø§Ù…Ø± ØµØ±Ù',
+                                '20' => 'Ø§Ù…Ø± Ø§Ø¶Ø§ÙØ©',
+                                '21' => 'ØªØ­ÙˆÙŠÙ„ Ù…Ù† Ù…Ø®Ø²Ù† Ù„Ù…Ø®Ø²Ù†',
+                                '22' => 'Ø§Ù…Ø± Ø­Ø¬Ø²',
+                                '23' => 'ØªØ­ÙˆÙŠÙ„ Ø¨ÙŠÙ† ÙØ±ÙˆØ¹',
+                                '35' => 'Ø³Ù†Ø¯ Ø¥ØªÙ„Ø§Ù Ù…Ø®Ø²ÙˆÙ†',
+                                '56' => 'Ù†Ù…ÙˆØ°Ø¬ ØªØµÙ†ÙŠØ¹',
+                                '57' => 'Ø§Ù…Ø± ØªØ´ØºÙŠÙ„',
+                                '58' => 'ØªØµÙ†ÙŠØ¹ Ù…Ø¹ÙŠØ§Ø±ÙŠ',
+                                '59' => 'ØªØµÙ†ÙŠØ¹ Ø­Ø±',
+                                '60' => 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø§Ø±ØµØ¯Ù‡ Ø§Ù„Ø§ÙØªØªØ§Ø­ÙŠÙ‡ Ù„Ù„Ù…Ø®Ø§Ø²Ù†',
                             ];
                             $referenceName = $translations[$baseId] ?? 'N/A';
 
@@ -866,7 +866,7 @@
                             }
 
                             // Get warehouse name
-                            $warehouse = \App\Models\AccHead::find($movement->detail_store);
+                            $warehouse = \Modules\\Accounts\\Models\\AccHead::find($movement->detail_store);
                             $warehouseName = $warehouse ? $warehouse->aname : 'N/A';
 
                             // Get unit name
@@ -899,19 +899,19 @@
             <div class="totals-section">
                 <div class="totals-grid">
                     <div class="total-item">
-                        <div class="total-label">إجمالي الكميات الواردة</div>
+                        <div class="total-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙƒÙ…ÙŠØ§Øª Ø§Ù„ÙˆØ§Ø±Ø¯Ø©</div>
                         <div class="total-value">{{ $totalIn }}</div>
                     </div>
                     <div class="total-item">
-                        <div class="total-label">إجمالي الكميات الصادرة</div>
+                        <div class="total-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙƒÙ…ÙŠØ§Øª Ø§Ù„ØµØ§Ø¯Ø±Ø©</div>
                         <div class="total-value">{{ $totalOut }}</div>
                     </div>
                     <div class="total-item">
-                        <div class="total-label">الرصيد النهائي</div>
+                        <div class="total-label">Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ</div>
                         <div class="total-value">{{ $balanceAfter }}</div>
                     </div>
                     <div class="total-item">
-                        <div class="total-label">عدد الحركات</div>
+                        <div class="total-label">Ø¹Ø¯Ø¯ Ø§Ù„Ø­Ø±ÙƒØ§Øª</div>
                         <div class="total-value">{{ $allMovements->count() }}</div>
                     </div>
                 </div>
@@ -922,12 +922,12 @@
         <div class="print-footer">
             <div class="footer-content">
                 <div class="footer-left">
-                    <div>تم إنشاء هذا التقرير بواسطة نظام MASAR</div>
-                    <div>تاريخ الطباعة: {{ now()->format('Y-m-d H:i:s') }}</div>
+                    <div>ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ù‡Ø°Ø§ Ø§Ù„ØªÙ‚Ø±ÙŠØ± Ø¨ÙˆØ§Ø³Ø·Ø© Ù†Ø¸Ø§Ù… MASAR</div>
+                    <div>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø·Ø¨Ø§Ø¹Ø©: {{ now()->format('Y-m-d H:i:s') }}</div>
                 </div>
                 <div class="footer-right">
-                    <div>إجمالي السجلات: {{ $allMovements->count() }}</div>
-                    <div>صفحة 1 من 1</div>
+                    <div>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø³Ø¬Ù„Ø§Øª: {{ $allMovements->count() }}</div>
+                    <div>ØµÙØ­Ø© 1 Ù…Ù† 1</div>
                 </div>
             </div>
         </div>
@@ -970,7 +970,7 @@
                 container.classList.remove('portrait');
                 container.classList.add('landscape');
                 indicator.classList.add('show');
-                orientationText.textContent = 'سيتم الطباعة بالعرض (Landscape)';
+                orientationText.textContent = 'Ø³ÙŠØªÙ… Ø§Ù„Ø·Ø¨Ø§Ø¹Ø© Ø¨Ø§Ù„Ø¹Ø±Ø¶ (Landscape)';
                 
                 // Adjust indicator position based on controls state
                 if (controls.classList.contains('collapsed')) {
@@ -1036,3 +1036,4 @@
     </script>
 </body>
 </html>
+

@@ -2,18 +2,13 @@
 
 namespace Modules\Rentals\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\{DB, Cache};
 use App\Http\Controllers\Controller;
-use Modules\Rentals\Models\RentalsBuilding;
-use Modules\Rentals\Models\RentalsUnit;
-use Modules\Rentals\Models\RentalsLease;
+use Modules\Rentals\Models\{RentalsUnit, RentalsLease, RentalsBuilding};
 
 class RentalsStatisticsController extends Controller
 {
-    /**
-     * عرض شاشة الإحصائيات الرئيسية
-     */
+
     public function index()
     {
         $stats = $this->getDashboardStatistics();
@@ -21,9 +16,6 @@ class RentalsStatisticsController extends Controller
         return view('rentals::dashboard.index', compact('stats'));
     }
 
-    /**
-     * جلب جميع الإحصائيات بشكل محسّن
-     */
     private function getDashboardStatistics()
     {
         // استخدام Cache لمدة 5 دقائق لتحسين الأداء
@@ -38,9 +30,6 @@ class RentalsStatisticsController extends Controller
         });
     }
 
-    /**
-     * إحصائيات عامة سريعة
-     */
     private function getOverviewStats()
     {
         return [
@@ -51,9 +40,6 @@ class RentalsStatisticsController extends Controller
         ];
     }
 
-    /**
-     * إحصائيات المباني
-     */
     private function getBuildingsStats()
     {
         return RentalsBuilding::select(
@@ -73,14 +59,6 @@ class RentalsStatisticsController extends Controller
             });
     }
 
-    /**
-     * إحصائيات الوحدات حسب الحالة
-     */
-
-
-    /**
-     * إحصائيات العقود
-     */
     private function getLeasesStats()
     {
         $now = now();
@@ -99,9 +77,6 @@ class RentalsStatisticsController extends Controller
         ];
     }
 
-    /**
-     * أحدث العقود
-     */
     private function getRecentLeases()
     {
         return RentalsLease::with(['unit.building', 'client'])
@@ -122,9 +97,6 @@ class RentalsStatisticsController extends Controller
             });
     }
 
-    /**
-     * الإحصائيات المالية
-     */
     private function getFinancialStats()
     {
         $activeLeases = RentalsLease::where('status', 'active')->get();
@@ -139,9 +111,6 @@ class RentalsStatisticsController extends Controller
         ];
     }
 
-    /**
-     * الإيرادات حسب المبنى
-     */
     private function getRevenueByBuilding()
     {
         return RentalsBuilding::select(
@@ -159,9 +128,6 @@ class RentalsStatisticsController extends Controller
             ->get();
     }
 
-    /**
-     * بيانات الرسوم البيانية
-     */
     private function getChartsData()
     {
         return [
@@ -171,9 +137,6 @@ class RentalsStatisticsController extends Controller
         ];
     }
 
-    /**
-     * بيانات رسم العقود الشهرية
-     */
     private function getMonthlyLeasesChart()
     {
         return RentalsLease::select(
@@ -186,9 +149,6 @@ class RentalsStatisticsController extends Controller
             ->get();
     }
 
-    /**
-     * بيانات اتجاه الإيرادات
-     */
     private function getRevenueTrendChart()
     {
         return RentalsLease::select(
@@ -202,15 +162,11 @@ class RentalsStatisticsController extends Controller
             ->get();
     }
 
-    /**
-     * بيانات معدل الإشغال
-     */
     private function getOccupancyRateChart()
     {
         $buildings = RentalsBuilding::withCount([
             'units',
-            'units as rented_units_count' => function ($query) {
-            }
+            'units as rented_units_count' => function ($query) {}
         ])->get();
 
         return $buildings->map(function ($building) {
@@ -223,9 +179,6 @@ class RentalsStatisticsController extends Controller
         });
     }
 
-    /**
-     * تحديث Cache بشكل يدوي
-     */
     public function refreshCache()
     {
         Cache::forget('rentals_dashboard_stats');
@@ -233,9 +186,6 @@ class RentalsStatisticsController extends Controller
             ->with('success', 'تم تحديث الإحصائيات بنجاح');
     }
 
-    /**
-     * API endpoint للحصول على الإحصائيات بصيغة JSON
-     */
     public function apiStats()
     {
         $stats = $this->getDashboardStatistics();

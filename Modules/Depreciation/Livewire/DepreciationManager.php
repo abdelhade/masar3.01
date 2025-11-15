@@ -4,7 +4,7 @@ namespace Modules\Depreciation\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;

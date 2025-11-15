@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Note;
 use App\Models\User;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperHead;
 use App\Models\CostCenter;
 use App\Models\JournalDetail;
@@ -1682,7 +1682,7 @@ class ReportController extends Controller
 
         $suppliers = [];
         if ($allSupplierIds->isNotEmpty()) {
-            $suppliersData = \App\Models\AccHead::whereIn('id', $allSupplierIds)->get();
+            $suppliersData = AccHead::whereIn('id', $allSupplierIds)->get();
             foreach ($suppliersData as $supplier) {
                 $suppliers[$supplier->id] = $supplier->aname;
             }

@@ -5,8 +5,6 @@ namespace Modules\CRM\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-
-
 class LeadStatusRequest extends FormRequest
 {
     /**
@@ -22,39 +20,47 @@ class LeadStatusRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Assuming the route parameter is 'lead_status' which could be an ID or a model instance
         $id = $this->route('lead_status');
 
         return [
-            'name'  => ['required', 'string', 'max:255'],
+            'name'         => ['required', 'string', 'max:255'],
             'order_column' => [
                 'required',
                 'integer',
                 'min:1',
                 Rule::unique('lead_statuses', 'order_column')->ignore($id),
             ],
-            'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'branch_id' => 'required|exists:branches,id',
+            'color'        => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'branch_id'    => 'nullable|exists:branches,id',
         ];
     }
 
     /**
-     * Custom messages for validation errors.
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'name'         => __('Name'),
+            'order_column' => __('Order'),
+            'color'        => __('Color'),
+            'branch_id'    => __('Branch'),
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'name.required'  => 'حقل العنوان مطلوب',
-            'name.string'    => 'العنوان يجب أن يكون نصًا',
-            'name.max'       => 'العنوان يجب ألا يزيد عن 255 حرفًا',
-            'color.required' => 'حقل اللون مطلوب',
-            'color.regex'    => 'اللون يجب أن يكون كود لوني صالح مثل #FFFFFF',
-            'order_column.required' => 'حقل الترتيب مطلوب',
-            'order_column.integer' => 'يجب أن يكون الترتيب رقماً صحيحاً',
-            'order_column.min' => 'يجب أن يكون الترتيب أكبر من الصفر',
-            'order_column.unique' => 'هذا الترتيب موجود بالفعل، برجاء اختيار ترتيب مختلف',
-            'branch_id.required' => 'الفرع مطلوب.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
-
+            'color.regex' => __('The color must be a valid hex code (e.g., #FFFFFF).'),
+            'order_column.unique' => __('This order is already taken. Please choose a different one.'),
         ];
     }
 }

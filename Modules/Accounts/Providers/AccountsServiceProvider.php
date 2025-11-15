@@ -152,3 +152,4 @@ class AccountsServiceProvider extends ServiceProvider
         return $paths;
     }
 }
+

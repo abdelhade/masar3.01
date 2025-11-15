@@ -2,7 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\ProductionOrder;
-use App\Models\AccHead;
+use Modules\\Accounts\\Models\\AccHead;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
 use Livewire\Attributes\Url;
@@ -73,7 +73,7 @@ new class extends Component {
         
         // Check if order can be deleted (not completed)
         if ($order->status === 'completed') {
-            session()->flash('error', 'لا يمكن حذف أمر إنتاج مكتمل');
+            session()->flash('error', 'Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù Ø£Ù…Ø± Ø¥Ù†ØªØ§Ø¬ Ù…ÙƒØªÙ…Ù„');
             return;
         }
         
@@ -84,9 +84,9 @@ new class extends Component {
             // Then delete the production order
             $order->delete();
             
-            session()->flash('success', 'تم حذف أمر الإنتاج بنجاح');
+            session()->flash('success', 'ØªÙ… Ø­Ø°Ù Ø£Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬ Ø¨Ù†Ø¬Ø§Ø­');
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء حذف أمر الإنتاج: ' . $e->getMessage());
+            session()->flash('error', 'Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­Ø°Ù Ø£Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬: ' . $e->getMessage());
         }
     }
     
@@ -122,13 +122,13 @@ new class extends Component {
     <!-- Header -->
     <div class="row mb-4 d-flex justify-content-between ">
         <div class="col-md-6">
-            <h2 class="mb-1">أوامر الإنتاج</h2>
-            <p class="text-muted">إدارة أوامر الإنتاج والتصنيع</p>
+            <h2 class="mb-1">Ø£ÙˆØ§Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬</h2>
+            <p class="text-muted">Ø¥Ø¯Ø§Ø±Ø© Ø£ÙˆØ§Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬ ÙˆØ§Ù„ØªØµÙ†ÙŠØ¹</p>
         </div>
         <div class="col-md-6 text-end mt-4">
             <a href="{{ route('production-orders.create') }}" class="btn btn-primary font-family-cairo fw-bold">
                 <i class="fas fa-plus"></i>
-                أمر إنتاج جديد
+                Ø£Ù…Ø± Ø¥Ù†ØªØ§Ø¬ Ø¬Ø¯ÙŠØ¯
             </a>
         </div>
     </div>
@@ -137,28 +137,28 @@ new class extends Component {
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="form-group">
-                <label for="search">البحث</label>
-                <input type="text" id="search" class="form-control" wire:model.live.debounce.300ms="search" placeholder="البحث برقم الأمر...">
+                <label for="search">Ø§Ù„Ø¨Ø­Ø«</label>
+                <input type="text" id="search" class="form-control" wire:model.live.debounce.300ms="search" placeholder="Ø§Ù„Ø¨Ø­Ø« Ø¨Ø±Ù‚Ù… Ø§Ù„Ø£Ù…Ø±...">
             </div>
         </div>
         
         <div class="col-md-2">
             <div class="form-group">
-                <label for="status">الحالة</label>
+                <label for="status">Ø§Ù„Ø­Ø§Ù„Ø©</label>
                 <select id="status" class="form-control" wire:model.live="status">
-                    <option value="">جميع الحالات</option>
-                    <option value="pending">قيد الانتظار</option>
-                    <option value="completed">مكتمل</option>
-                    <option value="cancelled">ملغي</option>
+                    <option value="">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ø§Ù„Ø§Øª</option>
+                    <option value="pending">Ù‚ÙŠØ¯ Ø§Ù„Ø§Ù†ØªØ¸Ø§Ø±</option>
+                    <option value="completed">Ù…ÙƒØªÙ…Ù„</option>
+                    <option value="cancelled">Ù…Ù„ØºÙŠ</option>
                 </select>
             </div>
         </div>
         
         <div class="col-md-2">
             <div class="form-group">
-                <label for="customer">العميل</label>
+                <label for="customer">Ø§Ù„Ø¹Ù…ÙŠÙ„</label>
                 <select id="customer" class="form-control" wire:model.live="customer">
-                    <option value="">جميع العملاء</option>
+                    <option value="">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</option>
                     @foreach($this->customers as $customer)
                         <option value="{{ $customer->id }}">{{ $customer->aname }}</option>
                     @endforeach
@@ -168,21 +168,21 @@ new class extends Component {
         
         <div class="col-md-2">
             <div class="form-group">
-                <label for="start_date">من تاريخ</label>
+                <label for="start_date">Ù…Ù† ØªØ§Ø±ÙŠØ®</label>
                 <input type="date" id="start_date" class="form-control" wire:model.live="start_date">
             </div>
         </div>
         
         <div class="col-md-2">
             <div class="form-group">
-                <label for="end_date">إلى تاريخ</label>
+                <label for="end_date">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®</label>
                 <input type="date" id="end_date" class="form-control" wire:model.live="end_date">
             </div>
         </div>
         
         <div class="col-md-1 d-flex align-items-end mb-4">
-            <button wire:click="clearFilters" class="btn btn-outline-secondary font-family-cairo fw-bold" title="مسح الفلاتر">
-                مسح الفلاتر
+            <button wire:click="clearFilters" class="btn btn-outline-secondary font-family-cairo fw-bold" title="Ù…Ø³Ø­ Ø§Ù„ÙÙ„Ø§ØªØ±">
+                Ù…Ø³Ø­ Ø§Ù„ÙÙ„Ø§ØªØ±
             </button>
         </div>
     </div>
@@ -195,13 +195,13 @@ new class extends Component {
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th class= "text-white">رقم الأمر</th>
-                                <th class= "text-white">التاريخ</th>
-                                <th class= "text-white">العميل</th>
-                                <th class= "text-white">المبلغ الإجمالي</th>
-                                <th class= "text-white">الحالة</th>
-                                <th class= "text-white">أنشئ بواسطة</th>
-                                <th class= "text-white">الإجراءات</th>
+                                <th class= "text-white">Ø±Ù‚Ù… Ø§Ù„Ø£Ù…Ø±</th>
+                                <th class= "text-white">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
+                                <th class= "text-white">Ø§Ù„Ø¹Ù…ÙŠÙ„</th>
+                                <th class= "text-white">Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ</th>
+                                <th class= "text-white">Ø§Ù„Ø­Ø§Ù„Ø©</th>
+                                <th class= "text-white">Ø£Ù†Ø´Ø¦ Ø¨ÙˆØ§Ø³Ø·Ø©</th>
+                                <th class= "text-white">Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -210,7 +210,7 @@ new class extends Component {
                                     <td class="font-family-cairo fw-bold">{{ $order->order_number }}</td>
                                     <td class="font-family-cairo fw-bold">{{ $order->order_date->format('Y-m-d') }}</td>
                                     <td class="font-family-cairo fw-bold">{{ $order->customer->aname ?? '-' }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ number_format($order->total_amount, 2) }} ريال</td>
+                                    <td class="font-family-cairo fw-bold">{{ number_format($order->total_amount, 2) }} Ø±ÙŠØ§Ù„</td>
                                     <td class="font-family-cairo fw-bold">
                                         @php
                                             $statusColors = [
@@ -219,9 +219,9 @@ new class extends Component {
                                                 'cancelled' => 'badge bg-danger',
                                             ];
                                             $statusLabels = [
-                                                'pending' => 'قيد الانتظار',
-                                                'completed' => 'مكتمل',
-                                                'cancelled' => 'ملغي',
+                                                'pending' => 'Ù‚ÙŠØ¯ Ø§Ù„Ø§Ù†ØªØ¸Ø§Ø±',
+                                                'completed' => 'Ù…ÙƒØªÙ…Ù„',
+                                                'cancelled' => 'Ù…Ù„ØºÙŠ',
                                             ];
                                         @endphp
                                         <span class="{{ $statusColors[$order->status] }}">
@@ -257,8 +257,8 @@ new class extends Component {
             @else
                 <div class="text-center py-5">
                     <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <h5>لا توجد أوامر إنتاج</h5>
-                    <p class="text-muted">ابدأ بإنشاء أمر إنتاج جديد</p>
+                    <h5>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£ÙˆØ§Ù…Ø± Ø¥Ù†ØªØ§Ø¬</h5>
+                    <p class="text-muted">Ø§Ø¨Ø¯Ø£ Ø¨Ø¥Ù†Ø´Ø§Ø¡ Ø£Ù…Ø± Ø¥Ù†ØªØ§Ø¬ Ø¬Ø¯ÙŠØ¯</p>
                 </div>
             @endif
         </div>
@@ -268,7 +268,7 @@ new class extends Component {
 <script>
 document.addEventListener('livewire:init', () => {
     Livewire.on('confirm-delete', (event) => {
-        if (confirm('هل أنت متأكد من حذف هذا الأمر؟')) {
+        if (confirm('Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ø£Ù…Ø±ØŸ')) {
             @this.delete(event.id);
         }
     });

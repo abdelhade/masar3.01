@@ -4,7 +4,7 @@ use Livewire\Volt\Component;
 use App\Models\Unit;
 use App\Models\Price;
 use App\Models\Item;
-use App\Models\AccHead;
+use Modules\\Accounts\\Models\\AccHead;
 use App\Models\Note;
 use App\Models\NoteDetails;
 use App\Models\Varibal;
@@ -83,7 +83,7 @@ new class extends Component {
                 'distinct',
                 function ($attribute, $value, $fail) {
                     if ($value != 1) {
-                        $fail('معامل التحويل للوحدة الأساسية يجب أن يكون 1.');
+                        $fail('Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù„Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 1.');
                     }
                 },
             ],
@@ -95,31 +95,31 @@ new class extends Component {
     }
 
     protected $messages = [
-        'item.name.required' => 'اسم الصنف مطلوب.',
-        'item.name.min' => 'اسم الصنف يجب أن يكون أطول من 3 أحرف.',
-        'item.name.unique' => 'اسم الصنف مستخدم بالفعل.',
-        'item.type.required' => 'نوع الصنف مطلوب.',
-        'item.type.in' => 'نوع الصنف غير موجود.',
-        'item.*.notes.*.exists' => 'الملاحظة غير موجودة.',
-        'unitRows.*.unit_id.exists' => 'الوحدة غير موجودة.',
-        'unitRows.*.unit_id.required' => 'الوحدة مطلوبة.',
-        'unitRows.*.unit_id.distinct' => 'الوحدة مستخدمة بالفعل.',
-        'unitRows.*.barcodes.*.string' => 'الباركود يجب أن يكون نصاً.',
-        'unitRows.*.barcodes.*.distinct' => 'باركود إضافى مكرر راجع قائمة الباركود الإضافى',
-        'unitRows.*.barcodes.*.unique' => 'الباركود مستخدم بالفعل.',
-        'unitRows.*.barcodes.*.max' => 'الباركود يجب أن يكون أقصر من 25 حرف.',
-        'unitRows.*.barcodes.*.required' => 'الباركود مطلوب.',
-        'unitRows.*.cost.required' => 'التكلفة مطلوبة.',
-        'unitRows.*.cost.numeric' => 'التكلفة يجب أن تكون رقماً.',
-        'unitRows.*.cost.min' => 'التكلفة يجب أن تكون 0 على الأقل.',
-        'unitRows.*.cost.distinct' => 'التكلفة مستخدمة بالفعل.',
-        'unitRows.*.u_val.required' => 'معامل التحويل مطلوب.',
-        'unitRows.*.u_val.numeric' => 'معامل التحويل يجب أن يكون رقماً.',
-        'unitRows.*.u_val.min' => 'معامل التحويل يجب أن يكون 0.0001 على الأقل.',
-        'unitRows.*.u_val.distinct' => 'معامل التحويل مستخدم بالفعل.',
-        'unitRows.*.prices.*.required' => 'السعر مطلوب.',
-        'unitRows.*.prices.*.numeric' => 'السعر يجب أن يكون رقماً.',
-        'unitRows.*.prices.*.min' => 'السعر يجب أن يكون 0 على الأقل.',
+        'item.name.required' => 'Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù Ù…Ø·Ù„ÙˆØ¨.',
+        'item.name.min' => 'Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ø·ÙˆÙ„ Ù…Ù† 3 Ø£Ø­Ø±Ù.',
+        'item.name.unique' => 'Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
+        'item.type.required' => 'Ù†ÙˆØ¹ Ø§Ù„ØµÙ†Ù Ù…Ø·Ù„ÙˆØ¨.',
+        'item.type.in' => 'Ù†ÙˆØ¹ Ø§Ù„ØµÙ†Ù ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯.',
+        'item.*.notes.*.exists' => 'Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©.',
+        'unitRows.*.unit_id.exists' => 'Ø§Ù„ÙˆØ­Ø¯Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©.',
+        'unitRows.*.unit_id.required' => 'Ø§Ù„ÙˆØ­Ø¯Ø© Ù…Ø·Ù„ÙˆØ¨Ø©.',
+        'unitRows.*.unit_id.distinct' => 'Ø§Ù„ÙˆØ­Ø¯Ø© Ù…Ø³ØªØ®Ø¯Ù…Ø© Ø¨Ø§Ù„ÙØ¹Ù„.',
+        'unitRows.*.barcodes.*.string' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ù†ØµØ§Ù‹.',
+        'unitRows.*.barcodes.*.distinct' => 'Ø¨Ø§Ø±ÙƒÙˆØ¯ Ø¥Ø¶Ø§ÙÙ‰ Ù…ÙƒØ±Ø± Ø±Ø§Ø¬Ø¹ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ Ø§Ù„Ø¥Ø¶Ø§ÙÙ‰',
+        'unitRows.*.barcodes.*.unique' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
+        'unitRows.*.barcodes.*.max' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ù‚ØµØ± Ù…Ù† 25 Ø­Ø±Ù.',
+        'unitRows.*.barcodes.*.required' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ Ù…Ø·Ù„ÙˆØ¨.',
+        'unitRows.*.cost.required' => 'Ø§Ù„ØªÙƒÙ„ÙØ© Ù…Ø·Ù„ÙˆØ¨Ø©.',
+        'unitRows.*.cost.numeric' => 'Ø§Ù„ØªÙƒÙ„ÙØ© ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹.',
+        'unitRows.*.cost.min' => 'Ø§Ù„ØªÙƒÙ„ÙØ© ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† 0 Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.',
+        'unitRows.*.cost.distinct' => 'Ø§Ù„ØªÙƒÙ„ÙØ© Ù…Ø³ØªØ®Ø¯Ù…Ø© Ø¨Ø§Ù„ÙØ¹Ù„.',
+        'unitRows.*.u_val.required' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù…Ø·Ù„ÙˆØ¨.',
+        'unitRows.*.u_val.numeric' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹.',
+        'unitRows.*.u_val.min' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 0.0001 Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.',
+        'unitRows.*.u_val.distinct' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
+        'unitRows.*.prices.*.required' => 'Ø§Ù„Ø³Ø¹Ø± Ù…Ø·Ù„ÙˆØ¨.',
+        'unitRows.*.prices.*.numeric' => 'Ø§Ù„Ø³Ø¹Ø± ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹.',
+        'unitRows.*.prices.*.min' => 'Ø§Ù„Ø³Ø¹Ø± ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 0 Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.',
     ];
 
     public function addUnitRow()
@@ -346,7 +346,7 @@ new class extends Component {
     {
         // Transaction committed successfully
         $this->creating = false;
-        session()->flash('success', 'تم إنشاء الصنف بنجاح!');
+        session()->flash('success', 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„ØµÙ†Ù Ø¨Ù†Ø¬Ø§Ø­!');
     }
 
     private function handleError(\Exception $e)
@@ -358,7 +358,7 @@ new class extends Component {
             'item' => $this->item,
             'unit_rows' => $this->unitRows,
         ]);
-        session()->flash('error', 'حدث خطأ أثناء حفظ الصنف. يرجى المحاولة مرة أخرى.');
+        session()->flash('error', 'Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­ÙØ¸ Ø§Ù„ØµÙ†Ù. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.');
     }
 
     public function edit($itemId)
@@ -418,7 +418,7 @@ new class extends Component {
                     'distinct',
                     function ($attribute, $value, $fail) {
                         if ($value != 1) {
-                            $fail('معامل التحويل للوحدة الأساسية يجب أن يكون 1.');
+                            $fail('Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù„Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 1.');
                         }
                     },
                 ],
@@ -471,10 +471,10 @@ new class extends Component {
         $this->resetModalData();
         
         if ($type === 'unit') {
-            $this->modalTitle = 'إنشاء وحدة جديدة';
+            $this->modalTitle = 'Ø¥Ù†Ø´Ø§Ø¡ ÙˆØ­Ø¯Ø© Ø¬Ø¯ÙŠØ¯Ø©';
         } elseif ($type === 'note_detail' && $noteId) {
             $note = Note::find($noteId);
-            $this->modalTitle = 'إضافة جديد' . ' ' . '[ ' . $note->name . ' ]';
+            $this->modalTitle = 'Ø¥Ø¶Ø§ÙØ© Ø¬Ø¯ÙŠØ¯' . ' ' . '[ ' . $note->name . ' ]';
             $this->modalData['note_id'] = $noteId;
         }
         
@@ -511,10 +511,10 @@ new class extends Component {
         }
 
         $this->validate($rules, [
-            'modalData.name.required' => 'الاسم مطلوب.',
-            'modalData.name.min' => 'الاسم يجب أن يكون أطول من حرف واحد.',
-            'modalData.name.max' => 'الاسم يجب أن يكون أقصر من 255 حرف.',
-            'modalData.name.unique' => 'الاسم مستخدم بالفعل.',
+            'modalData.name.required' => 'Ø§Ù„Ø§Ø³Ù… Ù…Ø·Ù„ÙˆØ¨.',
+            'modalData.name.min' => 'Ø§Ù„Ø§Ø³Ù… ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ø·ÙˆÙ„ Ù…Ù† Ø­Ø±Ù ÙˆØ§Ø­Ø¯.',
+            'modalData.name.max' => 'Ø§Ù„Ø§Ø³Ù… ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ù‚ØµØ± Ù…Ù† 255 Ø­Ø±Ù.',
+            'modalData.name.unique' => 'Ø§Ù„Ø§Ø³Ù… Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
         ]);
 
         try {
@@ -530,7 +530,7 @@ new class extends Component {
                 // Refresh units list
                 $this->units = Unit::all();
                 
-                session()->flash('success', 'تم إنشاء الوحدة بنجاح!');
+                session()->flash('success', 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„ÙˆØ­Ø¯Ø© Ø¨Ù†Ø¬Ø§Ø­!');
             } elseif ($this->modalType === 'note_detail' && $this->modalData['note_id']) {
                 // Create new note detail
                 $noteDetail = NoteDetails::create([
@@ -541,7 +541,7 @@ new class extends Component {
                 // Refresh notes list
                 $this->notes = Note::with('noteDetails')->get();
                 
-                session()->flash('success', 'تم إضافة ' . $this->modalData['name'] . ' بنجاح!');
+                session()->flash('success', 'ØªÙ… Ø¥Ø¶Ø§ÙØ© ' . $this->modalData['name'] . ' Ø¨Ù†Ø¬Ø§Ø­!');
             }
 
             DB::commit();
@@ -553,7 +553,7 @@ new class extends Component {
                 'modal_type' => $this->modalType,
                 'modal_data' => $this->modalData,
             ]);
-            session()->flash('error', 'حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.');
+            session()->flash('error', 'Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø­ÙØ¸. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.');
         }
     }
 
@@ -623,7 +623,7 @@ new class extends Component {
             $key = 'text_' . time() . '_' . rand(1000, 9999);
             $this->selectedVaribalCombinations[$key] = trim($this->newCombinationText);
             $this->newCombinationText = '';
-            session()->flash('success', 'تم إضافة التوليفة بنجاح!');
+            session()->flash('success', 'ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø§Ù„ØªÙˆÙ„ÙŠÙØ© Ø¨Ù†Ø¬Ø§Ø­!');
         }
     }
 
@@ -631,7 +631,7 @@ new class extends Component {
     {
         if (isset($this->selectedVaribalCombinations[$key])) {
             unset($this->selectedVaribalCombinations[$key]);
-            session()->flash('success', 'تم حذف التوليفة بنجاح!');
+            session()->flash('success', 'ØªÙ… Ø­Ø°Ù Ø§Ù„ØªÙˆÙ„ÙŠÙØ© Ø¨Ù†Ø¬Ø§Ø­!');
         }
     }
 
@@ -648,7 +648,7 @@ new class extends Component {
         if ($this->editingCombinationKey && !empty(trim($this->editingCombinationText))) {
             $this->selectedVaribalCombinations[$this->editingCombinationKey] = trim($this->editingCombinationText);
             $this->cancelEditingCombination();
-            session()->flash('success', 'تم تحديث التوليفة بنجاح!');
+            session()->flash('success', 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„ØªÙˆÙ„ÙŠÙØ© Ø¨Ù†Ø¬Ø§Ø­!');
         }
     }
 
@@ -804,7 +804,7 @@ new class extends Component {
                     'distinct',
                     function ($attribute, $value, $fail) {
                         if ($value != 1) {
-                            $fail('معامل التحويل للوحدة الأساسية يجب أن يكون 1.');
+                            $fail('Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù„Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 1.');
                         }
                     },
                 ],
@@ -980,7 +980,7 @@ new class extends Component {
     <div class="">
         <div class="">
             <h5 class="">
-                {{ 'إضافة صنف جديد' }}</h5>
+                {{ 'Ø¥Ø¶Ø§ÙØ© ØµÙ†Ù Ø¬Ø¯ÙŠØ¯' }}</h5>
         </div>
         @include('livewire.item-management.items.partials.alerts')
         <div class="">
@@ -991,8 +991,8 @@ new class extends Component {
                     <div class="col-md-12 p-3">
                         <div class="row">
                             <div class="col-md-1 mb-3">
-                                <label for="code" class="form-label font-family-cairo fw-bold">رقم
-                                    الصنف</label>
+                                <label for="code" class="form-label font-family-cairo fw-bold">Ø±Ù‚Ù…
+                                    Ø§Ù„ØµÙ†Ù</label>
                                 <input type="text" wire:model.live="item.code"
                                     class="form-control font-family-cairo fw-bold" id="code"
                                     value="{{ $item['code'] }}" readonly disabled>
@@ -1001,10 +1001,10 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="col-md-1 mb-3">
-                                <label for="type" class="form-label font-family-cairo fw-bold">نوع الصنف</label>
+                                <label for="type" class="form-label font-family-cairo fw-bold">Ù†ÙˆØ¹ Ø§Ù„ØµÙ†Ù</label>
                                 <select wire:model="item.type" class="form-select font-family-cairo fw-bold"
                                     id="type">
-                                    <option class="font-family-cairo fw-bold" value="">إختر</option>
+                                    <option class="font-family-cairo fw-bold" value="">Ø¥Ø®ØªØ±</option>
                                     @foreach (ItemType::cases() as $type)
                                         <option class="font-family-cairo fw-bold" value="{{ $type->value }}">
                                             {{ $type->label() }}</option>
@@ -1015,8 +1015,8 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="name" class="form-label font-family-cairo fw-bold">اسم
-                                    الصنف</label>
+                                <label for="name" class="form-label font-family-cairo fw-bold">Ø§Ø³Ù…
+                                    Ø§Ù„ØµÙ†Ù</label>
                                 <input type="text" wire:model="item.name"
                                     class="form-control font-family-cairo fw-bold frst" id="item-name" x-ref="nameInput"
                                     @if (!$creating) disabled readonly @endif>
@@ -1031,14 +1031,14 @@ new class extends Component {
                                     <div class="input-group">
                                         <button type="button" class="btn btn-outline-success font-family-cairo fw-bold"
                                             wire:click="openModal('note_detail', {{ $note->id }})"
-                                            @if (!$creating) disabled @endif title="إضافة جديد">
+                                            @if (!$creating) disabled @endif title="Ø¥Ø¶Ø§ÙØ© Ø¬Ø¯ÙŠØ¯">
                                             <i class="las la-plus"></i>
                                         </button>
                                         <select wire:model="item.notes.{{ $note->id }}"
                                             @if (!$creating) disabled readonly @endif
                                             class="form-select font-family-cairo fw-bold"
                                             id="note-{{ $note->id }}">
-                                            <option class="font-family-cairo fw-bold" value="">إختر</option>
+                                            <option class="font-family-cairo fw-bold" value="">Ø¥Ø®ØªØ±</option>
                                             @foreach ($note->noteDetails as $noteDetail)
                                                 <option class="font-family-cairo fw-bold"
                                                     value="{{ $noteDetail->name }}">
@@ -1053,7 +1053,7 @@ new class extends Component {
                                 </div>
                             @endforeach
                             <div class="col-md-12 mb-3">
-                                <label for="Details" class="form-label font-family-cairo fw-bold">التفاصيل</label>
+                                <label for="Details" class="form-label font-family-cairo fw-bold">Ø§Ù„ØªÙØ§ØµÙŠÙ„</label>
                                 <textarea wire:model="item.info" class="form-control font-family-cairo fw-bold" id="description" rows="2"
                                     @if (!$creating) disabled readonly @endif></textarea>
                                 @error('item.details')
@@ -1064,7 +1064,7 @@ new class extends Component {
                             <div class="col-md-1 mb-3">
                                 <input type="checkbox" wire:model.live="hasVaribals" class="form-check-input"
                                     id="hasVaribals">
-                                <label for="hasVaribals" class="form-label font-family-cairo fw-bold">له متغيرات</label>
+                                <label for="hasVaribals" class="form-label font-family-cairo fw-bold">Ù„Ù‡ Ù…ØªØºÙŠØ±Ø§Øª</label>
                             </div>
                         </div>
                         @include('livewire.item-management.items.partials.varibals-grid')
@@ -1082,19 +1082,19 @@ new class extends Component {
                         @if ($creating)
                             <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
-                                عوده ( إلغاء )
+                                Ø¹ÙˆØ¯Ù‡ ( Ø¥Ù„ØºØ§Ø¡ )
                             </button>
                             <button type="submit" class="btn btn-lg btn-primary font-family-cairo fw-bold"
-                                wire:loading.attr="disabled" wire:target="save">{{ 'حفظ' }}</button>
+                                wire:loading.attr="disabled" wire:target="save">{{ 'Ø­ÙØ¸' }}</button>
                         @else
                             <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
-                                عوده
+                                Ø¹ÙˆØ¯Ù‡
                             </button>
                             <button type="button" class="btn btn-lg btn-info font-family-cairo fw-bold"
-                                wire:click="createNew">{{ 'جديد' }}</button>
+                                wire:click="createNew">{{ 'Ø¬Ø¯ÙŠØ¯' }}</button>
                             <button type="button" class="btn btn-lg btn-warning font-family-cairo fw-bold"
-                                wire:click="createNewFromCurrent">{{ 'جديد من الصنف الحالى' }}</button>
+                                wire:click="createNewFromCurrent">{{ 'Ø¬Ø¯ÙŠØ¯ Ù…Ù† Ø§Ù„ØµÙ†Ù Ø§Ù„Ø­Ø§Ù„Ù‰' }}</button>
                         @endif
                     </div>
                 </div>
@@ -1113,3 +1113,4 @@ new class extends Component {
     @include('livewire.item-management.items.partials.styles')
 
                         </div>
+

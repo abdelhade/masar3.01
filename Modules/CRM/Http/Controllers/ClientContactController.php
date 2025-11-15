@@ -2,10 +2,10 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Modules\CRM\Http\Requests\ClientContactRequest;
-use RealRashid\SweetAlert\Facades\Alert;
-use Modules\CRM\Models\ClientContact;
 use Illuminate\Routing\Controller;
+use Modules\CRM\Http\Requests\ClientContactRequest;
+use Modules\CRM\Models\ClientContact;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class ClientContactController extends Controller
 {
@@ -19,8 +19,8 @@ class ClientContactController extends Controller
 
     public function index()
     {
-        $ClientContacts = ClientContact::with('client')->paginate(20);
-        return view('crm::client-contacts.index', compact('ClientContacts'));
+        $clientContacts = ClientContact::with('client')->paginate(20);
+        return view('crm::client-contacts.index', compact('clientContacts'));
     }
 
     public function create()
@@ -31,34 +31,33 @@ class ClientContactController extends Controller
     public function store(ClientContactRequest $request)
     {
         ClientContact::create($request->validated());
-        Alert::toast('تم الانشاء بنجاح', 'success');
+        Alert::toast(__('Contact created successfully'), 'success');
         return redirect()->route('client-contacts.index');
     }
-
     public function show($id)
     {
         return view('crm::show');
     }
-
-    public function edit($id)
+    public function edit(ClientContact $contact)
     {
-        $contact = ClientContact::findOrFail($id);
         return view('crm::client-contacts.edit', compact('contact'));
     }
 
-    public function update(ClientContactRequest $request, $id)
+    public function update(ClientContactRequest $request, ClientContact $contact)
     {
-        $contact = ClientContact::findOrFail($id);
         $contact->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
+        Alert::toast(__('Contact updated successfully'), 'success');
         return redirect()->route('client-contacts.index');
     }
 
-    public function destroy($id)
+    public function destroy(ClientContact $contact)
     {
-        $ClientContacts = ClientContact::findOrFail($id);
-        $ClientContacts->delete();
-        Alert::toast('تم حذف العنصر بنجاح', 'success');
+        try {
+            $contact->delete();
+            Alert::toast(__('Contact deleted successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the contact'), 'error');
+        }
         return redirect()->route('client-contacts.index');
     }
 }

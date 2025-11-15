@@ -4,7 +4,7 @@ namespace Modules\Checks\Models;
 
 use App\Models\User;
 use App\Models\OperHead;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -121,7 +121,7 @@ class Check extends Model
      */
     public function supplier(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\AccHead::class, 'supplier_id');
+        return $this->belongsTo(AccHead::class, 'supplier_id');
     }
 
     /**
@@ -129,7 +129,7 @@ class Check extends Model
      */
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\AccHead::class, 'customer_id');
+        return $this->belongsTo(AccHead::class, 'customer_id');
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Models\OperHead;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Accounts\Models\AccHead;
 
 class JournalController extends Controller
 
@@ -31,11 +32,11 @@ class JournalController extends Controller
 
     public function create()
     {
-        $accounts = \App\Models\AccHead::where('isdeleted', 0)
+        $accounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->get(); // أو أي جدول الحسابات عندك
 
-        $employees = \App\Models\AccHead::where('isdeleted', 0)
+        $employees = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
             ->get();
@@ -155,11 +156,11 @@ class JournalController extends Controller
     {
         $journal = \App\Models\Journal::findOrFail($id);
 
-        $accounts = \App\Models\AccHead::where('isdeleted', 0)
+        $accounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->get();
 
-        $employees = \App\Models\AccHead::where('isdeleted', 0)
+        $employees = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
             ->get();

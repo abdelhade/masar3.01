@@ -6,14 +6,21 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ClientCategoryRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     */
     public function rules(): array
     {
-        $id = $this->route('client_category');
+        // Assuming the route parameter is 'category' based on typical resource controllers
+        $id = $this->route('category') ? $this->route('category')->id : null;
 
         return [
             'name' => 'required|string|max:255|unique:client_categories,name,' . $id,
@@ -21,11 +28,16 @@ class ClientCategoryRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
     {
         return [
-            'name.required' => 'اسم التصنيف مطلوب',
-            'name.unique'   => 'اسم التصنيف موجود بالفعل',
+            'name' => __('Category Name'),
+            'description' => __('Description'),
         ];
     }
 }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace Modules\Accounts\Services;
 
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;
@@ -262,5 +262,6 @@ class AccountService
         }
     }
 }
+
 
 

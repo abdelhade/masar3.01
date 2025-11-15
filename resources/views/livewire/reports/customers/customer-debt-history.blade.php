@@ -3,7 +3,7 @@
 use Livewire\Volt\Component;
 
 use Livewire\WithPagination;
-use App\Models\AccHead;
+use Modules\\Accounts\\Models\\AccHead;
 use App\Models\OperHead;
 use Carbon\Carbon;
 
@@ -25,7 +25,7 @@ new class extends Component {
         $startDate = $today->copy()->subDays($toDays ?? $fromDays);
         $endDate = $fromDays > 0 ? $today->copy()->subDays($fromDays - 1) : $today;
         
-        // جلب الديون للفترة العمرية المحددة
+        // Ø¬Ù„Ø¨ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù„Ù„ÙØªØ±Ø© Ø§Ù„Ø¹Ù…Ø±ÙŠØ© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©
         $debtSum = OperHead::where('acc1', $customerId)
             ->whereBetween('accural_date', [$startDate, $endDate])
             ->selectRaw('SUM(fat_net - paid_from_client) as debt_sum')
@@ -34,41 +34,41 @@ new class extends Component {
         return $debtSum ?? 0;
     }
 
-    // دالة للحصول على الديون من 1 إلى 15 يوم
+    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 1 Ø¥Ù„Ù‰ 15 ÙŠÙˆÙ…
     public function getDebt1to15($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 1, 15);
     }
 
-    // دالة للحصول على الديون من 16 إلى 30 يوم
+    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 16 Ø¥Ù„Ù‰ 30 ÙŠÙˆÙ…
     public function getDebt16to30($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 16, 30);
     }
 
-    // دالة للحصول على الديون من 31 إلى 60 يوم
+    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 31 Ø¥Ù„Ù‰ 60 ÙŠÙˆÙ…
     public function getDebt31to60($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 31, 60);
     }
 
-    // دالة للحصول على الديون من 61 إلى 90 يوم
+    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 61 Ø¥Ù„Ù‰ 90 ÙŠÙˆÙ…
     public function getDebt61to90($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 61, 90);
     }
 
-    // دالة للحصول على الديون من 91 إلى 120 يوم
+    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 91 Ø¥Ù„Ù‰ 120 ÙŠÙˆÙ…
     public function getDebt91to120($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 91, 120);
     }
 
-    // دالة للحصول على الديون أكثر من 120 يوم
+    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ø£ÙƒØ«Ø± Ù…Ù† 120 ÙŠÙˆÙ…
     public function getDebtOver120($customerId)
     {
         $today = Carbon::now()->startOfDay();
-        $startDate = $today->copy()->subDays(9999); // تاريخ قديم جداً
+        $startDate = $today->copy()->subDays(9999); // ØªØ§Ø±ÙŠØ® Ù‚Ø¯ÙŠÙ… Ø¬Ø¯Ø§Ù‹
         $endDate = $today->copy()->subDays(121);
         
         $debtSum = OperHead::where('acc1', $customerId)
@@ -85,7 +85,7 @@ new class extends Component {
 <div>
     <div class="card">
         <div class="card-header">
-            <h4 class="card-title">تقرير اعمار ديون العملاء</h4>
+            <h4 class="card-title">ØªÙ‚Ø±ÙŠØ± Ø§Ø¹Ù…Ø§Ø± Ø¯ÙŠÙˆÙ† Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</h4>
         </div>
         
         <div class="card-body">           
@@ -95,21 +95,21 @@ new class extends Component {
                     <thead class="table-dark">
                         <tr>
                             <th class="text-white">#</th>
-                            <th class="text-white">اسم العميل</th>
-                            <th class="text-white">من يوم الى 15 يوم متاح للتحصيل</th>
-                            <th class="text-white">من 16 يوم الى 30 يوم متاح للتحصيل</th>
-                            <th class="text-white">من 31 يوم الى 60 يوم متاح للتحصيل</th>
-                            <th class="text-white">من 61 يوم الى 90 يوم متاح للتحصيل</th>
-                            <th class="text-white">من 91 يوم الى 120 يوم متاح للتحصيل</th>
-                            <th class="text-white">أكثر من 120 يوم متاح للتحصيل</th>
-                            <th class="text-white">العمليات</th>
+                            <th class="text-white">Ø§Ø³Ù… Ø§Ù„Ø¹Ù…ÙŠÙ„</th>
+                            <th class="text-white">Ù…Ù† ÙŠÙˆÙ… Ø§Ù„Ù‰ 15 ÙŠÙˆÙ… Ù…ØªØ§Ø­ Ù„Ù„ØªØ­ØµÙŠÙ„</th>
+                            <th class="text-white">Ù…Ù† 16 ÙŠÙˆÙ… Ø§Ù„Ù‰ 30 ÙŠÙˆÙ… Ù…ØªØ§Ø­ Ù„Ù„ØªØ­ØµÙŠÙ„</th>
+                            <th class="text-white">Ù…Ù† 31 ÙŠÙˆÙ… Ø§Ù„Ù‰ 60 ÙŠÙˆÙ… Ù…ØªØ§Ø­ Ù„Ù„ØªØ­ØµÙŠÙ„</th>
+                            <th class="text-white">Ù…Ù† 61 ÙŠÙˆÙ… Ø§Ù„Ù‰ 90 ÙŠÙˆÙ… Ù…ØªØ§Ø­ Ù„Ù„ØªØ­ØµÙŠÙ„</th>
+                            <th class="text-white">Ù…Ù† 91 ÙŠÙˆÙ… Ø§Ù„Ù‰ 120 ÙŠÙˆÙ… Ù…ØªØ§Ø­ Ù„Ù„ØªØ­ØµÙŠÙ„</th>
+                            <th class="text-white">Ø£ÙƒØ«Ø± Ù…Ù† 120 ÙŠÙˆÙ… Ù…ØªØ§Ø­ Ù„Ù„ØªØ­ØµÙŠÙ„</th>
+                            <th class="text-white">Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($this->customers ?? collect() as $index => $customer)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $customer->aname ?? 'غير محدد' }}</td>
+                                <td>{{ $customer->aname ?? 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</td>
                                 <td>{{ number_format($this->getDebt1to15($customer->id), 2) }}</td>
                                 <td>{{ number_format($this->getDebt16to30($customer->id), 2) }}</td>
                                 <td>{{ number_format($this->getDebt31to60($customer->id), 2) }}</td>
@@ -126,7 +126,7 @@ new class extends Component {
                             <tr>
                                 <td colspan="9" class="text-center">
                                     <div class="alert alert-info mb-0">
-                                        <i class="fas fa-info-circle"></i> لا توجد بيانات عملاء للفترة المحددة
+                                        <i class="fas fa-info-circle"></i> Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª Ø¹Ù…Ù„Ø§Ø¡ Ù„Ù„ÙØªØ±Ø© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©
                                     </div>
                                 </td>
                             </tr>

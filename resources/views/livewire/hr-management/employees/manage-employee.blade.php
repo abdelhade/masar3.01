@@ -17,8 +17,8 @@ use App\Models\EmployeeLeaveBalance;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use App\Models\AccHead;
-use App\Services\AccountService;
+use Modules\\Accounts\\Models\\AccHead;
+use Modules\\Accounts\\Services\\AccountService;
 
 
 new class extends Component {
@@ -55,7 +55,7 @@ new class extends Component {
         $marital_status,
         $education,
         $information,
-        $status = 'مفعل';
+        $status = 'Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€ž';
     public $country_id, $city_id, $state_id, $town_id;
     public $job_id, $department_id, $date_of_hire, $date_of_fire, $job_level, $salary, $finger_print_id, $finger_print_name, $salary_type, $shift_id, $password, $additional_hour_calculation, $additional_day_calculation, $late_hour_calculation, $late_day_calculation;
 
@@ -81,10 +81,10 @@ new class extends Component {
             'gender' => 'nullable|in:male,female',
             'date_of_birth' => 'nullable|date',
             'nationalId' => 'nullable|string|unique:employees,nationalId,' . $this->employeeId,
-            'marital_status' => 'nullable|in:غير متزوج,متزوج,مطلق,أرمل',
-            'education' => 'nullable|in:دبلوم,بكالوريوس,ماجستير,دكتوراه',
+            'marital_status' => 'nullable|in:Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜Â²Ã™Ë†Ã˜Â¬,Ã™â€¦Ã˜ÂªÃ˜Â²Ã™Ë†Ã˜Â¬,Ã™â€¦Ã˜Â·Ã™â€žÃ™â€š,Ã˜Â£Ã˜Â±Ã™â€¦Ã™â€ž',
+            'education' => 'nullable|in:Ã˜Â¯Ã˜Â¨Ã™â€žÃ™Ë†Ã™â€¦,Ã˜Â¨Ã™Æ’Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â±Ã™Å Ã™Ë†Ã˜Â³,Ã™â€¦Ã˜Â§Ã˜Â¬Ã˜Â³Ã˜ÂªÃ™Å Ã˜Â±,Ã˜Â¯Ã™Æ’Ã˜ÂªÃ™Ë†Ã˜Â±Ã˜Â§Ã™â€¡',
             'information' => 'nullable|string',
-            'status' => 'required|in:مفعل,معطل',
+            'status' => 'required|in:Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€ž,Ã™â€¦Ã˜Â¹Ã˜Â·Ã™â€ž',
             'country_id' => 'nullable|exists:countries,id',
             'city_id' => 'nullable|exists:cities,id',
             'state_id' => 'nullable|exists:states,id',
@@ -127,38 +127,38 @@ new class extends Component {
     protected function messages()
     {
         return [
-            'name.required' => 'الاسم مطلوب.',
-            'email.required' => 'البريد الإلكتروني مطلوب.',
-            'phone.required' => 'رقم الهاتف مطلوب.',
-            'marital_status.in' => 'الحالة الاجتماعية غير موجودة.',
-            'education.in' => 'مستوى التعليم غير موجود',
-            'status.required' => 'الحالة مطلوبة.',
-            'status.in' => 'الحالة غير موجودة.',
-            'name.unique' => 'الاسم مستخدم من قبل بواسطة موظف آخر بالفعل اكتب اسم آخر.',
-            'email.unique' => 'البريد الإلكتروني مستخدم من قبل بواسطة موظف آخر بالفعل اكتب بريد آخر.',
-            'phone.unique' => 'رقم الهاتف مستخدم من قبل بواسطة موظف آخر بالفعل اكتب رقم هاتف آخر.',
-            'nationalId.unique' => 'رقم الهوية مستخدم من قبل بواسطة موظف آخر بالفعل اكتب رقم هوية آخر.',
-            'finger_print_id.integer' => 'رقم البصمة يجب أن يكون رقماً صحيحاً.',
-            'finger_print_id.unique' => 'رقم البصمة مستخدم من قبل بواسطة موظف آخر بالفعل اكتب رقم بصمة آخر.',
-            'finger_print_name.unique' => 'اسم البصمة مستخدم من قبل بواسطة موظف آخر بالفعل اكتب اسم بصمة آخر.',
-            'finger_print_name.string' => 'اسم البصمة يجب أن يكون نصاً.',
-            'finger_print_name.max' => 'اسم البصمة يجب أن يكون أقل من 255 حرفاً.',
-            'finger_print_name.min' => 'اسم البصمة يجب أن يكون أكثر من 3 حرفاً.',
-            'kpi_ids.array' => 'معدلات الأداء يجب أن تكون قائمة.',
-            'kpi_ids.*.exists' => 'معدل الأداء المحدد غير موجود.',
-            'kpi_weights.array' => 'أوزان معدلات الأداء يجب أن تكون قائمة.',
-            'kpi_weights.*.integer' => 'الوزن النسبي يجب أن يكون رقماً صحيحاً.',
-            'kpi_weights.*.min' => 'الوزن النسبي يجب أن يكون 0 أو أكثر.',
-            'kpi_weights.*.max' => 'الوزن النسبي يجب أن يكون 100 أو أقل.',
-            'selected_kpi_id.exists' => 'معدل الأداء المحدد غير موجود.',
-            'image.image' => 'الملف المرفق يجب أن يكون صورة.',
-            'image.mimes' => 'نوع الصورة يجب أن يكون: jpeg, png, jpg, gif.',
-            'image.max' => 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت.',
-            'password.required' => 'كلمة المرور مطلوبة.',
-            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
-            'salary_basic_account_id.required' => 'الحساب الرئيسي للمرتب مطلوب.',
-            'salary_basic_account_id.exists' => 'الحساب الرئيسي للمرتب غير موجود.',
-            'opening_balance.numeric' => 'الرصيد الأفتتاحي يجب أن يكون رقماً.',
+            'name.required' => 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
+            'email.required' => 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
+            'phone.required' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
+            'marital_status.in' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â¬Ã˜ÂªÃ™â€¦Ã˜Â§Ã˜Â¹Ã™Å Ã˜Â© Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯Ã˜Â©.',
+            'education.in' => 'Ã™â€¦Ã˜Â³Ã˜ÂªÃ™Ë†Ã™â€° Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¹Ã™â€žÃ™Å Ã™â€¦ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯',
+            'status.required' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨Ã˜Â©.',
+            'status.in' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯Ã˜Â©.',
+            'name.unique' => 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â¢Ã˜Â®Ã˜Â±.',
+            'email.unique' => 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â¢Ã˜Â®Ã˜Â±.',
+            'phone.unique' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â±Ã™â€šÃ™â€¦ Ã™â€¡Ã˜Â§Ã˜ÂªÃ™Â Ã˜Â¢Ã˜Â®Ã˜Â±.',
+            'nationalId.unique' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã™Ë†Ã™Å Ã˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â±Ã™â€šÃ™â€¦ Ã™â€¡Ã™Ë†Ã™Å Ã˜Â© Ã˜Â¢Ã˜Â®Ã˜Â±.',
+            'finger_print_id.integer' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã™â€šÃ™â€¦Ã˜Â§Ã™â€¹ Ã˜ÂµÃ˜Â­Ã™Å Ã˜Â­Ã˜Â§Ã™â€¹.',
+            'finger_print_id.unique' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã˜Â¢Ã˜Â®Ã˜Â±.',
+            'finger_print_name.unique' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã˜Â¢Ã˜Â®Ã˜Â±.',
+            'finger_print_name.string' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã™â€ Ã˜ÂµÃ˜Â§Ã™â€¹.',
+            'finger_print_name.max' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â£Ã™â€šÃ™â€ž Ã™â€¦Ã™â€  255 Ã˜Â­Ã˜Â±Ã™ÂÃ˜Â§Ã™â€¹.',
+            'finger_print_name.min' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â£Ã™Æ’Ã˜Â«Ã˜Â± Ã™â€¦Ã™â€  3 Ã˜Â­Ã˜Â±Ã™ÂÃ˜Â§Ã™â€¹.',
+            'kpi_ids.array' => 'Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ã˜Â©.',
+            'kpi_ids.*.exists' => 'Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯.',
+            'kpi_weights.array' => 'Ã˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€  Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ã˜Â©.',
+            'kpi_weights.*.integer' => 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã™â€šÃ™â€¦Ã˜Â§Ã™â€¹ Ã˜ÂµÃ˜Â­Ã™Å Ã˜Â­Ã˜Â§Ã™â€¹.',
+            'kpi_weights.*.min' => 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  0 Ã˜Â£Ã™Ë† Ã˜Â£Ã™Æ’Ã˜Â«Ã˜Â±.',
+            'kpi_weights.*.max' => 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  100 Ã˜Â£Ã™Ë† Ã˜Â£Ã™â€šÃ™â€ž.',
+            'selected_kpi_id.exists' => 'Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯.',
+            'image.image' => 'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™ÂÃ™â€š Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜ÂµÃ™Ë†Ã˜Â±Ã˜Â©.',
+            'image.mimes' => 'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€ : jpeg, png, jpg, gif.',
+            'image.max' => 'Ã˜Â­Ã˜Â¬Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â£Ã™â€šÃ™â€ž Ã™â€¦Ã™â€  2 Ã™â€¦Ã™Å Ã˜Â¬Ã˜Â§Ã˜Â¨Ã˜Â§Ã™Å Ã˜Âª.',
+            'password.required' => 'Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â± Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨Ã˜Â©.',
+            'password.min' => 'Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â± Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  6 Ã˜Â£Ã˜Â­Ã˜Â±Ã™Â Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ™â€ž.',
+            'salary_basic_account_id.required' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¦Ã™Å Ã˜Â³Ã™Å  Ã™â€žÃ™â€žÃ™â€¦Ã˜Â±Ã˜ÂªÃ˜Â¨ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
+            'salary_basic_account_id.exists' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¦Ã™Å Ã˜Â³Ã™Å  Ã™â€žÃ™â€žÃ™â€¦Ã˜Â±Ã˜ÂªÃ˜Â¨ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯.',
+            'opening_balance.numeric' => 'Ã˜Â§Ã™â€žÃ˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™ÂÃ˜ÂªÃ˜ÂªÃ˜Â§Ã˜Â­Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã™â€šÃ™â€¦Ã˜Â§Ã™â€¹.',
         ];
     }
 
@@ -288,7 +288,7 @@ new class extends Component {
             }
 
             if ($selectedKpis > 0 && $totalWeight != 100) {
-                $this->addError('kpi_weights', 'مجموع الأوزان النسبية لمعدلات الأداء يجب أن يكون 100% بالضبط. المجموع الحالي: ' . $totalWeight . '%');
+                $this->addError('kpi_weights', 'Ã™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å Ã˜Â© Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â¯Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  100% Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¶Ã˜Â¨Ã˜Â·. Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å : ' . $totalWeight . '%');
                 return;
             }
         }
@@ -338,7 +338,7 @@ new class extends Component {
 
                     // sync the employee Account 
                     $this->syncEmployeeAccount($employee);
-                    session()->flash('success', __('تم تحديث الموظف بنجاح.'));
+                    session()->flash('success', __('Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'));
                 } else {
                     $employee = Employee::create($validated);
 
@@ -357,7 +357,7 @@ new class extends Component {
                     // Create employee account for new employee
                     $this->syncEmployeeAccount($employee);
 
-                    session()->flash('success', __('تم إنشاء الموظف بنجاح.'));
+                    session()->flash('success', __('Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'));
                 }
             });
 
@@ -379,7 +379,7 @@ new class extends Component {
 
             $this->showModal = false;
         } catch (\Throwable $th) {
-            session()->flash('error', __('حدث خطأ ما.'));
+            session()->flash('error', __('Ã˜Â­Ã˜Â¯Ã˜Â« Ã˜Â®Ã˜Â·Ã˜Â£ Ã™â€¦Ã˜Â§.'));
             Log::error($th);
         }
     }
@@ -388,7 +388,7 @@ new class extends Component {
     {
         $employee = Employee::findOrFail($id);
         $employee->delete();
-        session()->flash('success', __('تم حذف الموظف بنجاح.'));
+        session()->flash('success', __('Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'));
     }
 
     public function resetEmployeeFields()
@@ -401,7 +401,7 @@ new class extends Component {
         $this->kpi_weights = [];
         $this->leave_balances = [];
         $this->selected_leave_type_id = '';
-        $this->status = 'مفعل';
+        $this->status = 'Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€ž';
         $this->image = null;
     }
 
@@ -452,18 +452,18 @@ new class extends Component {
 
                 $this->dispatch('notify', [
                     'type' => 'success',
-                    'message' => __('تم إضافة معدل الأداء بنجاح.'),
+                    'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
                 ]);
             } else {
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => __('هذا معدل الأداء مضاف بالفعل.'),
+                    'message' => __('Ã™â€¡Ã˜Â°Ã˜Â§ Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™â€¦Ã˜Â¶Ã˜Â§Ã™Â Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž.'),
                 ]);
             }
         } else {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => __('يرجى اختيار معدل الأداء.'),
+                'message' => __('Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡.'),
             ]);
         }
     }
@@ -484,7 +484,7 @@ new class extends Component {
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => __('تم حذف معدل الأداء بنجاح.'),
+            'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
         ]);
     }
 
@@ -502,7 +502,7 @@ new class extends Component {
             if (isset($this->leave_balances[$key])) {
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => __('هذا النوع من الإجازة مسجل بالفعل لهذا الموظف للسنة المحددة.'),
+                    'message' => __('Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â¹ Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã™â€žÃ™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã™â€žÃ™â€žÃ˜Â³Ã™â€ Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯Ã˜Â©.'),
                 ]);
                 return;
             }
@@ -518,7 +518,7 @@ new class extends Component {
                 if ($existingBalances) {
                     $this->dispatch('notify', [
                         'type' => 'error',
-                        'message' => __('هذا النوع من الإجازة مسجل بالفعل لهذا الموظف للسنة المحددة.'),
+                        'message' => __('Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â¹ Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã™â€žÃ™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã™â€žÃ™â€žÃ˜Â³Ã™â€ Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯Ã˜Â©.'),
                     ]);
                     return;
                 }
@@ -543,12 +543,12 @@ new class extends Component {
 
             $this->dispatch('notify', [
                 'type' => 'success',
-                'message' => __('تم إضافة رصيد الإجازة بنجاح.'),
+                'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
             ]);
         } else {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => __('يرجى اختيار نوع الإجازة.'),
+                'message' => __('Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â©.'),
             ]);
         }
     }
@@ -565,7 +565,7 @@ new class extends Component {
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => __('تم حذف رصيد الإجازة بنجاح.'),
+            'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
         ]);
     }
 
@@ -692,7 +692,7 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('إضافة الموظفيين')
+                    @can('Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ')
                         <button wire:click="create" 
                             type="button"
                             wire:loading.attr="disabled"
@@ -700,34 +700,34 @@ new class extends Component {
                             class="btn btn-primary font-family-cairo fw-bold">
                             <span wire:loading wire:target="create" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                             <span wire:loading.remove wire:target="create">
-                                {{ __('إضافة موظف') }}
+                                {{ __('Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}
                                 <i class="fas fa-plus me-2"></i>
                             </span>
                         </button>
                     @endcan
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
-                        style="min-width:200px" placeholder="{{ __('بحث بالاسم...') }}">
+                        style="min-width:200px" placeholder="{{ __('Ã˜Â¨Ã˜Â­Ã˜Â« Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦...') }}">
                 </div>
 
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive" style="overflow-x: auto;">
                             <x-table-export-actions table-id="employee-table" filename="employee-table"
-                                excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                                excel-label="Ã˜ÂªÃ˜ÂµÃ˜Â¯Ã™Å Ã˜Â± Excel" pdf-label="Ã˜ÂªÃ˜ÂµÃ˜Â¯Ã™Å Ã˜Â± PDF" print-label="Ã˜Â·Ã˜Â¨Ã˜Â§Ã˜Â¹Ã˜Â©" />
 
                             <table id="employee-table" class="table table-striped text-center mb-0"
                                 style="min-width: 1200px;">
                                 <thead class="table-light align-middle">
                                     <tr>
                                         <th class="font-family-cairo fw-bold">#</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('الاسم') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('البريد الإلكتروني') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('رقم الهاتف') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('القسم') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('الوظيفة') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('الحالة') }}</th>
-                                        @canany(['تعديل الموظفيين', 'حذف الموظفيين'])
-                                            <th class="font-family-cairo fw-bold">{{ __('إجراءات') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å ') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ™â€šÃ˜Â³Ã™â€¦') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â¸Ã™Å Ã™ÂÃ˜Â©') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â©') }}</th>
+                                        @canany(['Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ', 'Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ '])
+                                            <th class="font-family-cairo fw-bold">{{ __('Ã˜Â¥Ã˜Â¬Ã˜Â±Ã˜Â§Ã˜Â¡Ã˜Â§Ã˜Âª') }}</th>
                                         @endcanany
                                     </tr>
                                 </thead>
@@ -744,37 +744,37 @@ new class extends Component {
                                             </td>
                                             <td class="font-family-cairo fw-bold">{{ $employee->status }}</td>
 
-                                            @canany(['تعديل الموظفيين', 'حذف الموظفيين'])
+                                            @canany(['Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ', 'Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ '])
                                                 <td>
                                                     <button 
                                                         wire:click="view({{ $employee->id }})"
                                                         wire:loading.attr="disabled"
                                                         wire:target="view"
                                                         class="btn btn-info btn-sm me-1"
-                                                        title="{{ __('عرض') }}">
+                                                        title="{{ __('Ã˜Â¹Ã˜Â±Ã˜Â¶') }}">
                                                         <span wire:loading wire:target="view({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                         <i class="las la-eye fa-lg" wire:loading.remove wire:target="view({{ $employee->id }})"></i>
                                                     </button>
-                                                    @can('تعديل الموظفيين')
+                                                    @can('Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ')
                                                         <a 
                                                             wire:click="edit({{ $employee->id }})"
                                                             wire:loading.attr="disabled"
                                                             wire:target="edit"
                                                             class="btn btn-success btn-sm me-1"
-                                                            title="{{ __('تعديل') }}">
+                                                            title="{{ __('Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž') }}">
                                                             <span wire:loading wire:target="edit({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                             <i class="las la-edit fa-lg" wire:loading.remove wire:target="edit({{ $employee->id }})"></i>
                                                         </a>
                                                     @endcan
-                                                    @can('حذف الموظفيين')
+                                                    @can('Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ')
                                                         <button 
                                                             type="button"
                                                             class="btn btn-danger btn-sm"
                                                             wire:click="delete({{ $employee->id }})"
                                                             wire:loading.attr="disabled"
                                                             wire:target="delete"
-                                                            onclick="confirm('هل أنت متأكد من حذف هذا الموظف؟') || event.stopImmediatePropagation()"
-                                                            title="{{ __('حذف') }}">
+                                                            onclick="confirm('Ã™â€¡Ã™â€ž Ã˜Â£Ã™â€ Ã˜Âª Ã™â€¦Ã˜ÂªÃ˜Â£Ã™Æ’Ã˜Â¯ Ã™â€¦Ã™â€  Ã˜Â­Ã˜Â°Ã™Â Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ˜Å¸') || event.stopImmediatePropagation()"
+                                                            title="{{ __('Ã˜Â­Ã˜Â°Ã™Â') }}">
                                                             <span wire:loading wire:target="delete({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                             <i class="las la-trash fa-lg" wire:loading.remove wire:target="delete({{ $employee->id }})"></i>
                                                         </button>
@@ -788,7 +788,7 @@ new class extends Component {
                                                 <div class="alert alert-info py-3 mb-0"
                                                     style="font-size: 1.2rem; font-weight: 500;">
                                                     <i class="las la-info-circle me-2"></i>
-                                                    لا توجد بيانات
+                                                    Ã™â€žÃ˜Â§ Ã˜ÂªÃ™Ë†Ã˜Â¬Ã˜Â¯ Ã˜Â¨Ã™Å Ã˜Â§Ã™â€ Ã˜Â§Ã˜Âª
                                                 </div>
                                             </td>
                                         </tr>
@@ -819,10 +819,10 @@ new class extends Component {
                             <div class="modal-header">
                                 <h5 class="modal-title font-family-cairo fw-bold">
                                     <span
-                                        x-text="isEdit ? '{{ __('تعديل موظف') }}' : '{{ __('إضافة موظف') }}'"></span>
+                                        x-text="isEdit ? '{{ __('Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}' : '{{ __('Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}'"></span>
                                 </h5>
                                 <button type="button" class="btn-close m-3" @click="closeEmployeeModal()"
-                                    aria-label="إغلاق"></button>
+                                    aria-label="Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š"></button>
                             </div>
 
                             <div class="modal-body">
@@ -845,10 +845,10 @@ new class extends Component {
                             <div class="modal-footer justify-content-center">
                                 <button type="button" class="btn btn-secondary btn-md"
                                     @click="closeEmployeeModal()">
-                                    {{ __('إلغاء') }}
+                                    {{ __('Ã˜Â¥Ã™â€žÃ˜ÂºÃ˜Â§Ã˜Â¡') }}
                                 </button>
                                 <button type="button" class="btn btn-primary btn-md" @click="$wire.save()" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed">
-                                    <span x-text="isEdit ? '{{ __('تحديث') }}' : '{{ __('حفظ') }}'"></span>
+                                    <span x-text="isEdit ? '{{ __('Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«') }}' : '{{ __('Ã˜Â­Ã™ÂÃ˜Â¸') }}'"></span>
                                 </button>
                             </div>
                         </div>
@@ -871,10 +871,10 @@ new class extends Component {
                             <!-- Modal Header -->
                             <div class="modal-header">
                                 <h5 class="modal-title font-family-cairo fw-bold">
-                                    {{ __('عرض تفاصيل الموظف') }}
+                                    {{ __('Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}
                                 </h5>
                                 <button type="button" class="btn-close m-3" @click="closeViewEmployeeModal()"
-                                    aria-label="إغلاق"></button>
+                                    aria-label="Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š"></button>
                             </div>
 
                             <div class="modal-body">
@@ -891,7 +891,7 @@ new class extends Component {
                             <div class="modal-footer justify-content-center">
                                 <button type="button" class="btn btn-secondary btn-md"
                                     @click="closeViewEmployeeModal()">
-                                    {{ __('إغلاق') }}
+                                    {{ __('Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š') }}
                                 </button>
                             </div>
                         </div>
@@ -960,11 +960,11 @@ new class extends Component {
 
                 get weightMessage() {
                     if (this.totalKpiWeight === 100) {
-                        return 'ممتاز! تم اكتمال النسبة بنجاح. يمكنك الآن حفظ البيانات.';
+                        return 'Ã™â€¦Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â²! Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™Æ’Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­. Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€  Ã˜Â­Ã™ÂÃ˜Â¸ Ã˜Â§Ã™â€žÃ˜Â¨Ã™Å Ã˜Â§Ã™â€ Ã˜Â§Ã˜Âª.';
                     } else if (this.totalKpiWeight > 100) {
-                        return `المجموع الحالي ${this.totalKpiWeight}% أكبر من 100%. يرجى تقليل الأوزان.`;
+                        return `Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å  ${this.totalKpiWeight}% Ã˜Â£Ã™Æ’Ã˜Â¨Ã˜Â± Ã™â€¦Ã™â€  100%. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜ÂªÃ™â€šÃ™â€žÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€ .`;
                     } else {
-                        return `المجموع الحالي ${this.totalKpiWeight}% أقل من 100%. يرجى إكمال الأوزان.`;
+                        return `Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å  ${this.totalKpiWeight}% Ã˜Â£Ã™â€šÃ™â€ž Ã™â€¦Ã™â€  100%. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â¥Ã™Æ’Ã™â€¦Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€ .`;
                     }
                 },
 
@@ -1012,13 +1012,13 @@ new class extends Component {
                     // Listen for KPI added event to clear selection
                     this.$wire.on('kpiAdded', () => {
                         this.clearKpiSelection();
-                        console.log('✅ KPI added, selection cleared');
+                        console.log('Ã¢Å“â€¦ KPI added, selection cleared');
                     });
 
                     // Listen for leave balance added event to clear selection
                     this.$wire.on('leaveBalanceAdded', () => {
                         this.clearLeaveTypeSelection();
-                        console.log('✅ Leave balance added, selection cleared');
+                        console.log('Ã¢Å“â€¦ Leave balance added, selection cleared');
                     });
 
                     // Watch for modal body overflow
@@ -1070,7 +1070,7 @@ new class extends Component {
                         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                         if (!validTypes.includes(file.type)) {
                             this.addNotification('error',
-                                'نوع الملف غير مدعوم. يرجى اختيار صورة (JPG, PNG, GIF)');
+                                'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜Â¯Ã˜Â¹Ã™Ë†Ã™â€¦. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© (JPG, PNG, GIF)');
                             event.target.value = '';
                             return;
                         }
@@ -1079,7 +1079,7 @@ new class extends Component {
                         const maxSize = 2 * 1024 * 1024;
                         if (file.size > maxSize) {
                             this.addNotification('error',
-                                'حجم الصورة كبير جداً. الحد الأقصى 2 ميجابايت');
+                                'Ã˜Â­Ã˜Â¬Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Æ’Ã˜Â¨Ã™Å Ã˜Â± Ã˜Â¬Ã˜Â¯Ã˜Â§Ã™â€¹. Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ˜ÂµÃ™â€° 2 Ã™â€¦Ã™Å Ã˜Â¬Ã˜Â§Ã˜Â¨Ã˜Â§Ã™Å Ã˜Âª');
                             event.target.value = '';
                             return;
                         }
@@ -1104,7 +1104,7 @@ new class extends Component {
                         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                         if (!validTypes.includes(file.type)) {
                             this.addNotification('error',
-                                'نوع الملف غير مدعوم. يرجى اختيار صورة (JPG, PNG, GIF)');
+                                'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜Â¯Ã˜Â¹Ã™Ë†Ã™â€¦. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© (JPG, PNG, GIF)');
                             return;
                         }
 
@@ -1112,7 +1112,7 @@ new class extends Component {
                         const maxSize = 2 * 1024 * 1024;
                         if (file.size > maxSize) {
                             this.addNotification('error',
-                                'حجم الصورة كبير جداً. الحد الأقصى 2 ميجابايت');
+                                'Ã˜Â­Ã˜Â¬Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Æ’Ã˜Â¨Ã™Å Ã˜Â± Ã˜Â¬Ã˜Â¯Ã˜Â§Ã™â€¹. Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ˜ÂµÃ™â€° 2 Ã™â€¦Ã™Å Ã˜Â¬Ã˜Â§Ã˜Â¨Ã˜Â§Ã™Å Ã˜Âª');
                             return;
                         }
 
@@ -1138,7 +1138,7 @@ new class extends Component {
                         };
                         reader.readAsDataURL(file);
 
-                        this.addNotification('success', 'تم اختيار الصورة بنجاح');
+                        this.addNotification('success', 'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­');
                     }
                 },
 
@@ -1158,7 +1158,7 @@ new class extends Component {
                     // Clear Livewire model
                     this.$wire.set('image', null);
 
-                    this.addNotification('info', 'تم حذف الصورة');
+                    this.addNotification('info', 'Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â©');
                 },
 
                 formatFileSize(bytes) {
@@ -1271,3 +1271,4 @@ new class extends Component {
         });
     </script>
 @endpush
+

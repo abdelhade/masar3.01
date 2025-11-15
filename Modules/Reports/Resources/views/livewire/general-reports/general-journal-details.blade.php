@@ -1,7 +1,7 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Models\AccHead;
+use Modules\\Accounts\\Models\\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;
@@ -125,32 +125,32 @@ new class extends Component {
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title font-family-cairo fw-bold">كشف حساب عام - تفاصيل اليومية</h3>
+                        <h3 class="card-title font-family-cairo fw-bold">ÙƒØ´Ù Ø­Ø³Ø§Ø¨ Ø¹Ø§Ù… - ØªÙØ§ØµÙŠÙ„ Ø§Ù„ÙŠÙˆÙ…ÙŠØ©</h3>
                     </div>
                     <div class="card-body">
                         <!-- Filters -->
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label for="from_date" class="form-label font-family-cairo fw-bold">من تاريخ:</label>
+                                <label for="from_date" class="form-label font-family-cairo fw-bold">Ù…Ù† ØªØ§Ø±ÙŠØ®:</label>
                                 <input type="date" id="from_date" class="form-control" wire:model.live="fromDate">
                             </div>
                             <div class="col-md-2">
-                                <label for="to_date" class="form-label font-family-cairo fw-bold">إلى تاريخ:</label>
+                                <label for="to_date" class="form-label font-family-cairo fw-bold">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®:</label>
                                 <input type="date" id="to_date" class="form-control" wire:model.live="toDate">
                             </div>
                             <div class="col-md-2">
-                                <label for="account_id" class="form-label font-family-cairo fw-bold">الحساب:</label>
+                                <label for="account_id" class="form-label font-family-cairo fw-bold">Ø§Ù„Ø­Ø³Ø§Ø¨:</label>
                                 <select id="account_id" class="form-control" wire:model.live="accountId">
-                                    <option value="">جميع الحسابات</option>
+                                    <option value="">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ø³Ø§Ø¨Ø§Øª</option>
                                     @foreach($accounts as $account)
                                         <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->aname }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label for="operation_type" class="form-label font-family-cairo fw-bold">نوع العملية:</label>
+                                <label for="operation_type" class="form-label font-family-cairo fw-bold">Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©:</label>
                                 <select id="operation_type" class="form-control" wire:model.live="operationType">
-                                    <option value="">جميع العمليات</option>
+                                    <option value="">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª</option>
                                     @foreach($operationTypes as $type)
                                         <option value="{{ $type }}">{{ $type}}</option>
                                     @endforeach
@@ -158,14 +158,14 @@ new class extends Component {
                             </div>
 
                             <div class="col-md-2">
-                                <label for="search" class="form-label font-family-cairo fw-bold">بحث:</label>
-                                <input type="text" id="search" class="form-control" wire:model.live.debounce.300ms="search" placeholder="بحث في الحساب أو البيان">
+                                <label for="search" class="form-label font-family-cairo fw-bold">Ø¨Ø­Ø«:</label>
+                                <input type="text" id="search" class="form-control" wire:model.live.debounce.300ms="search" placeholder="Ø¨Ø­Ø« ÙÙŠ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø£Ùˆ Ø§Ù„Ø¨ÙŠØ§Ù†">
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label for="per_page" class="form-label font-family-cairo fw-bold">عدد النتائج:</label>
+                                <label for="per_page" class="form-label font-family-cairo fw-bold">Ø¹Ø¯Ø¯ Ø§Ù„Ù†ØªØ§Ø¦Ø¬:</label>
                                 <select id="per_page" class="form-control" wire:model.live="perPage">
                                     <option value="25">25</option>
                                     <option value="50">50</option>
@@ -175,7 +175,7 @@ new class extends Component {
                             </div>
                             <div class="col-md-10 d-flex align-items-end">
                                 <button class="btn btn-secondary me-2" wire:click="resetFilters">
-                                    <i class="fas fa-refresh"></i> إعادة تعيين
+                                    <i class="fas fa-refresh"></i> Ø¥Ø¹Ø§Ø¯Ø© ØªØ¹ÙŠÙŠÙ†
                                 </button>
                             </div>
                         </div>
@@ -185,7 +185,7 @@ new class extends Component {
                             <div class="col-md-4">
                                 <div class="card bg-primary text-white">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title font-family-cairo fw-bold">إجمالي المدين</h5>
+                                        <h5 class="card-title font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¯ÙŠÙ†</h5>
                                         <h4 class="font-family-cairo fw-bold">{{ number_format($totalDebit, 2) }}</h4>
                                     </div>
                                 </div>
@@ -193,7 +193,7 @@ new class extends Component {
                             <div class="col-md-4">
                                 <div class="card bg-success text-white">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title font-family-cairo fw-bold">إجمالي الدائن</h5>
+                                        <h5 class="card-title font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¯Ø§Ø¦Ù†</h5>
                                         <h4 class="font-family-cairo fw-bold">{{ number_format($totalCredit, 2) }}</h4>
                                     </div>
                                 </div>
@@ -201,7 +201,7 @@ new class extends Component {
                             <div class="col-md-4">
                                 <div class="card bg-info text-white">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title font-family-cairo fw-bold">الفرق</h5>
+                                        <h5 class="card-title font-family-cairo fw-bold">Ø§Ù„ÙØ±Ù‚</h5>
                                         <h4 class="font-family-cairo fw-bold">{{ number_format($totalBalance, 2) }}</h4>
                                     </div>
                                 </div>
@@ -213,16 +213,16 @@ new class extends Component {
                             <table class="table table-bordered table-striped table-hover">
                                 <thead class="">
                                     <tr class="text-center">
-                                        <th class="font-family-cairo fw-bold">التاريخ</th>
-                                        <th class="font-family-cairo fw-bold">رقم العملية</th>
-                                        <th class="font-family-cairo fw-bold">اسم العملية</th>
-                                        <th class="font-family-cairo fw-bold">رقم اليومية</th>
-                                        <th class="font-family-cairo fw-bold">الحساب</th>
-                                        <th class="font-family-cairo fw-bold">البيان</th>
+                                        <th class="font-family-cairo fw-bold">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
+                                        <th class="font-family-cairo fw-bold">Ø±Ù‚Ù… Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
+                                        <th class="font-family-cairo fw-bold">Ø§Ø³Ù… Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
+                                        <th class="font-family-cairo fw-bold">Ø±Ù‚Ù… Ø§Ù„ÙŠÙˆÙ…ÙŠØ©</th>
+                                        <th class="font-family-cairo fw-bold">Ø§Ù„Ø­Ø³Ø§Ø¨</th>
+                                        <th class="font-family-cairo fw-bold">Ø§Ù„Ø¨ÙŠØ§Ù†</th>
 
-                                        <th class="font-family-cairo fw-bold">مدين</th>
-                                        <th class="font-family-cairo fw-bold">دائن</th>
-                                        <th class="font-family-cairo fw-bold">الرصيد</th>
+                                        <th class="font-family-cairo fw-bold">Ù…Ø¯ÙŠÙ†</th>
+                                        <th class="font-family-cairo fw-bold">Ø¯Ø§Ø¦Ù†</th>
+                                        <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -244,11 +244,11 @@ new class extends Component {
                                                     @if(\Illuminate\Support\Facades\Route::has($editRoute))
                                                         <a href="{{ route($editRoute, $detail->op_id) }}"
                                                            class="text-decoration-underline text-primary"
-                                                           title="{{ __('تعديل العملية') }}">
+                                                           title="{{ __('ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©') }}">
                                                            {{ $operationType }}
                                                         </a>
                                                     @else
-                                                        <span class="text-muted" title="{{ __('لا يمكن تعديل هذا النوع من العمليات') }}">
+                                                        <span class="text-muted" title="{{ __('Ù„Ø§ ÙŠÙ…ÙƒÙ† ØªØ¹Ø¯ÙŠÙ„ Ù‡Ø°Ø§ Ø§Ù„Ù†ÙˆØ¹ Ù…Ù† Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª') }}">
                                                             {{ $operationType }}
                                                         </span>
                                                     @endif
@@ -282,7 +282,7 @@ new class extends Component {
                                     @empty
                                         <tr>
                                             <td colspan="9" class="text-center font-family-cairo fw-bold">
-                                                لا توجد بيانات متاحة للعرض
+                                                Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª Ù…ØªØ§Ø­Ø© Ù„Ù„Ø¹Ø±Ø¶
                                             </td>
                                         </tr>
                                     @endforelse
@@ -302,15 +302,15 @@ new class extends Component {
                             <div class="row mt-3">
                                 <div class="col-12">
                                     <div class="alert alert-info">
-                                        <strong class="font-family-cairo fw-bold">ملخص التقرير:</strong>
+                                        <strong class="font-family-cairo fw-bold">Ù…Ù„Ø®Øµ Ø§Ù„ØªÙ‚Ø±ÙŠØ±:</strong>
                                         <br>
-                                        <span class="font-family-cairo">عدد العمليات: {{ $journalDetails->total() }}</span>
+                                        <span class="font-family-cairo">Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª: {{ $journalDetails->total() }}</span>
                                         <br>
-                                        <span class="font-family-cairo">إجمالي المدين: {{ number_format($totalDebit, 2) }}</span>
+                                        <span class="font-family-cairo">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¯ÙŠÙ†: {{ number_format($totalDebit, 2) }}</span>
                                         <br>
-                                        <span class="font-family-cairo">إجمالي الدائن: {{ number_format($totalCredit, 2) }}</span>
+                                        <span class="font-family-cairo">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¯Ø§Ø¦Ù†: {{ number_format($totalCredit, 2) }}</span>
                                         <br>
-                                        <span class="font-family-cairo">الفرق: {{ number_format($totalBalance, 2) }}</span>
+                                        <span class="font-family-cairo">Ø§Ù„ÙØ±Ù‚: {{ number_format($totalBalance, 2) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -321,3 +321,4 @@ new class extends Component {
         </div>
     </div>
 </div>
+

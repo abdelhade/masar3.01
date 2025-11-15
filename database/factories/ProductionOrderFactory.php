@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\ProductionOrder;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

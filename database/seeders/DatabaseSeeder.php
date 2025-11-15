@@ -5,16 +5,20 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\CRM\Database\Seeders\LeadStatusSeeder;
 use Modules\CRM\Database\Seeders\CRMPermissionsSeeder;
+use Modules\Rentals\database\seeders\RentalsPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionSeeder;
 use Modules\Branches\database\seeders\{AttachUserToDefaultBranchSeeder, BranchSeeder};
 use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensionsSeeder};
 use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
 use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
+use Modules\Accounts\Database\Seeders\{AccHeadSeeder, AccountsTypesSeeder};
+use Database\Seeders\PermissionSelectiveOptionsSeeder;
+
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeds. 
      */
     public function run(): void
     {
@@ -56,7 +60,9 @@ class DatabaseSeeder extends Seeder
             VaribalSeeder::class,
             InquiriesPermissionsSeeder::class,
             InquiriesRolesSeeder::class,
-            CRMPermissionsSeeder::class
+            CRMPermissionsSeeder::class,
+            PermissionSelectiveOptionsSeeder::class,
+            RentalsPermissionsSeeder::class
         ]);
     }
 }

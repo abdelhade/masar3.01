@@ -1,10 +1,10 @@
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">أحدث الحسابات</div>
+            <div class="card-header">Ø£Ø­Ø¯Ø« Ø§Ù„Ø­Ø³Ø§Ø¨Ø§Øª</div>
             <div class="card-body p-0">
                 @php
-                use App\Models\AccHead;
+                use Modules\\Accounts\\Models\\AccHead;
 
                 $lastAccounts = AccHead::with('haveParent')
                 ->orderBy('id', 'desc')
@@ -17,8 +17,8 @@
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>الاسم</th>
-                            <th>التليفون</th>
+                            <th>Ø§Ù„Ø§Ø³Ù…</th>
+                            <th>Ø§Ù„ØªÙ„ÙŠÙÙˆÙ†</th>
                             <th>code</th>
                         </tr>
                     </thead>
@@ -50,15 +50,15 @@
                 <table class="table table-responsive table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>المستخدم</th>
+                            <th>Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…</th>
                             <th>IP</th>
-                            <th>وقت الدخول</th>
+                            <th>ÙˆÙ‚Øª Ø§Ù„Ø¯Ø®ÙˆÙ„</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($lastLogins as $login)
                         <tr>
-                            <td>{{ $login->user->name ?? '—' }}</td>
+                            <td>{{ $login->user->name ?? 'â€”' }}</td>
                             <td>{{ $login->ip_address }}</td>
                             <td>{{ $login->login_at }}</td>
                         </tr>

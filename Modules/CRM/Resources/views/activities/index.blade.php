@@ -6,45 +6,50 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('الأنشطة'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('الأنشطة')]],
+        'title' => __('Activities'),
+        'items' => [
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Activities')],
+        ],
     ])
+
     <div class="row">
         <div class="col-lg-12">
             @can('create Activities')
-                <a href="{{ route('activities.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    اضافه نشاط جديد
-                    <i class="fas fa-plus me-2"></i>
-                </a>
+                <div class="mb-4">
+                    <a href="{{ route('activities.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        {{ __('Add New Activity') }}
+                    </a>
+                </div>
             @endcan
-            <br>
-            <br>
+
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
-                        <x-table-export-actions table-id="activites-table" filename="activites-table"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                        <x-table-export-actions table-id="activities-table" filename="activities-report" :excel-label="__('Export Excel')"
+                            :pdf-label="__('Export PDF')" :print-label="__('Print')" />
 
-                        <table id="activites-table" class="table table-striped mb-0" style="min-width: 1200px;">
+                        <table id="activities-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('العنوان') }}</th>
-                                    <th>{{ __('النوع') }}</th>
-                                    <th>{{ __('التاريخ') }}</th>
-                                    <th>{{ __('الوقت') }}</th>
-                                    <th>{{ __('العميل') }}</th>
-                                    <th>{{ __('المسؤول') }}</th>
-                                    <th>{{ __('الوصف') }}</th>
+                                    <th>{{ __('Title') }}</th>
+                                    <th>{{ __('Type') }}</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Time') }}</th>
+                                    <th>{{ __('Client') }}</th>
+                                    <th>{{ __('Assigned To') }}</th>
+                                    <th>{{ __('Description') }}</th>
                                     @canany(['edit Activities', 'delete Activities'])
-                                        <th>{{ __('العمليات') }}</th>
+                                        <th>{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($activities as $activity)
-                                    <tr class="text-center">
+                                    <tr class="text-center align-middle">
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $activity->title }}</td>
                                         <td>
@@ -56,39 +61,42 @@
                                                 <span class="badge bg-warning">{{ $activity->type->label() }}</span>
                                             @endif
                                         </td>
-                                        <td>{{ $activity->activity_date?->format('Y-m-d') }}</td>
-                                        <td>{{ $activity->scheduled_at?->format('H:i') }}</td>
-                                        <td>{{ optional($activity->client)->cname }}</td>
-                                        <td>{{ optional($activity->assignedUser)->name }}</td>
+                                        <td>{{ optional($activity->activity_date)->format('Y-m-d') }}</td>
+                                        <td>{{ optional($activity->scheduled_at)->format('H:i A') }}</td>
+                                        <td>{{ optional($activity->client)->cname ?? __('N/A') }}</td>
+                                        <td>{{ optional($activity->assignedUser)->name ?? __('Unassigned') }}</td>
                                         <td>{{ Str::limit($activity->description, 30) }}</td>
 
                                         @canany(['edit Activities', 'delete Activities'])
                                             <td>
-                                                @can('edit Activities')
-                                                    <a class="btn btn-success btn-icon-square-sm"
-                                                        href="{{ route('activities.edit', $activity->id) }}">
-                                                        <i class="las la-edit"></i>
-                                                    </a>
-                                                @endcan
-                                                @can('delete Activities')
-                                                    <form action="{{ route('activities.destroy', $activity->id) }}" method="POST"
-                                                        style="display:inline-block;"
-                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا النشاط؟');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                            <i class="las la-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endcan
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    @can('edit Activities')
+                                                        <a class="btn btn-success btn-sm"
+                                                            href="{{ route('activities.edit', $activity->id) }}"
+                                                            title="{{ __('Edit') }}">
+                                                            <i class="las la-edit"></i>
+                                                        </a>
+                                                    @endcan
+                                                    @can('delete Activities')
+                                                        <form action="{{ route('activities.destroy', $activity->id) }}"
+                                                            method="POST"
+                                                            onsubmit="return confirm('{{ __('Are you sure you want to delete this activity?') }}');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                title="{{ __('Delete') }}">
+                                                                <i class="las la-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endcan
+                                                </div>
                                             </td>
                                         @endcanany
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center">
-                                            <div class="alert alert-info py-3 mb-0"
-                                                style="font-size: 1.2rem; font-weight: 500;">
+                                        <td colspan="9" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('No data available') }}
                                             </div>

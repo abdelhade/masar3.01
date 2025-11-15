@@ -3,9 +3,9 @@
 namespace Modules\CRM\Http\Controllers;
 
 use Illuminate\Routing\Controller;
+use Modules\CRM\Http\Requests\ClientTypeRequest;
 use Modules\CRM\Models\ClientType;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\CRM\Http\Requests\ClientTypeRequest;
 
 class ClientTypeController extends Controller
 {
@@ -19,7 +19,7 @@ class ClientTypeController extends Controller
 
     public function index()
     {
-        $customerTypes = ClientType::all();
+        $customerTypes = ClientType::paginate(20);
         return view('crm::client-type.index', compact('customerTypes'));
     }
 
@@ -32,29 +32,30 @@ class ClientTypeController extends Controller
     public function store(ClientTypeRequest $request)
     {
         ClientType::create($request->validated());
-        Alert::toast('تم الانشاء بنجاح', 'success');
+        Alert::toast(__('Client type created successfully'), 'success');
         return redirect()->route('client-types.index');
     }
 
-    public function edit($id)
+    public function edit(ClientType $client_type)
     {
-        $customerType = ClientType::findOrFail($id);
-        return view('crm::client-type.edit', compact('customerType'));
+        return view('crm::client-type.edit', compact('client_type'));
     }
 
-    public function update(ClientTypeRequest $request, $id)
+    public function update(ClientTypeRequest $request, ClientType $client_type)
     {
-        $customerType = ClientType::findOrFail($id);
-        $customerType->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
+        $client_type->update($request->validated());
+        Alert::toast(__('Client type updated successfully'), 'success');
         return redirect()->route('client-types.index');
     }
 
-    public function destroy($id)
+    public function destroy(ClientType $client_type)
     {
-        $customerType = ClientType::findOrFail($id);
-        $customerType->delete();
-        Alert::toast('تم حذف العنصر بنجاح', 'success');
+        try {
+            $client_type->delete();
+            Alert::toast(__('Client type deleted successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the client type'), 'error');
+        }
         return redirect()->route('client-types.index');
     }
 }

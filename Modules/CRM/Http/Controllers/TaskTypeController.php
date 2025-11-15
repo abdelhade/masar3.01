@@ -2,10 +2,10 @@
 
 namespace Modules\CRM\Http\Controllers;
 
-use Modules\CRM\Models\TaskType;
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
 use Modules\CRM\Http\Requests\TaskTypeRequest;
+use Modules\CRM\Models\TaskType;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class TaskTypeController extends Controller
 {
@@ -16,7 +16,6 @@ class TaskTypeController extends Controller
         $this->middleware('can:edit Task Types')->only(['edit', 'update']);
         $this->middleware('can:delete Task Types')->only(['destroy']);
     }
-
 
     public function index()
     {
@@ -32,7 +31,7 @@ class TaskTypeController extends Controller
     public function store(TaskTypeRequest $request)
     {
         TaskType::create($request->validated());
-        Alert::toast('تم الانشاء بنجاح', 'success');
+        Alert::toast(__('Task type created successfully'), 'success');
         return redirect()->route('tasks.types.index');
     }
 
@@ -46,15 +45,19 @@ class TaskTypeController extends Controller
     {
         $taskType = TaskType::findOrFail($id);
         $taskType->update($request->validated());
-        Alert::toast('تم التعديل بنجاح', 'success');
+        Alert::toast(__('Task type updated successfully'), 'success');
         return redirect()->route('tasks.types.index');
     }
 
     public function destroy($id)
     {
-        $taskType = TaskType::findOrFail($id);
-        $taskType->delete();
-        Alert::toast('تم حذف العنصر بنجاح', 'success');
+        try {
+            $taskType = TaskType::findOrFail($id);
+            $taskType->delete();
+            Alert::toast(__('Task type deleted successfully'), 'success');
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the task type'), 'error');
+        }
         return redirect()->route('tasks.types.index');
     }
 }

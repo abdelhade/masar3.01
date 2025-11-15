@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>طباعة قائمة الأصناف - MASAR</title>
+    <title>Ø·Ø¨Ø§Ø¹Ø© Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø£ØµÙ†Ø§Ù - MASAR</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -641,7 +641,7 @@
         <div class="controls-header" onclick="toggleControls()">
             <h3>
                 <i class="fas fa-cog"></i>
-                <span>إعدادات الطباعة</span>
+                <span>Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ø·Ø¨Ø§Ø¹Ø©</span>
             </h3>
             <button class="toggle-btn" id="toggleBtn">
                 <i class="fas fa-chevron-left" id="toggleIcon"></i>
@@ -650,7 +650,7 @@
         
         <div class="controls-content">
             <div class="column-filters">
-                <h4><i class="fas fa-columns"></i> اختر الأعمدة المراد طباعتها:</h4>
+                <h4><i class="fas fa-columns"></i> Ø§Ø®ØªØ± Ø§Ù„Ø£Ø¹Ù…Ø¯Ø© Ø§Ù„Ù…Ø±Ø§Ø¯ Ø·Ø¨Ø§Ø¹ØªÙ‡Ø§:</h4>
                 <div class="column-grid">
                     <div class="column-item">
                         <input type="checkbox" id="col-index" checked>
@@ -658,35 +658,35 @@
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-code" checked>
-                        <label for="col-code">الكود</label>
+                        <label for="col-code">Ø§Ù„ÙƒÙˆØ¯</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-name" checked>
-                        <label for="col-name">الاسم</label>
+                        <label for="col-name">Ø§Ù„Ø§Ø³Ù…</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-units" checked>
-                        <label for="col-units">الوحدات</label>
+                        <label for="col-units">Ø§Ù„ÙˆØ­Ø¯Ø§Øª</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-quantity" checked>
-                        <label for="col-quantity">الكمية</label>
+                        <label for="col-quantity">Ø§Ù„ÙƒÙ…ÙŠØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-avg-cost" checked>
-                        <label for="col-avg-cost">متوسط التكلفة</label>
+                        <label for="col-avg-cost">Ù…ØªÙˆØ³Ø· Ø§Ù„ØªÙƒÙ„ÙØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-avg-cost-qty" checked>
-                        <label for="col-avg-cost-qty">تكلفة المتوسطة للكمية</label>
+                        <label for="col-avg-cost-qty">ØªÙƒÙ„ÙØ© Ø§Ù„Ù…ØªÙˆØ³Ø·Ø© Ù„Ù„ÙƒÙ…ÙŠØ©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-last-cost" checked>
-                        <label for="col-last-cost">التكلفة الأخيرة</label>
+                        <label for="col-last-cost">Ø§Ù„ØªÙƒÙ„ÙØ© Ø§Ù„Ø£Ø®ÙŠØ±Ø©</label>
                     </div>
                     <div class="column-item">
                         <input type="checkbox" id="col-cost-qty" checked>
-                        <label for="col-cost-qty">تكلفة الكمية</label>
+                        <label for="col-cost-qty">ØªÙƒÙ„ÙØ© Ø§Ù„ÙƒÙ…ÙŠØ©</label>
                     </div>
                     @php
                         $priceTypes = \App\Models\Price::all();
@@ -699,7 +699,7 @@
                     @endforeach
                     <div class="column-item">
                         <input type="checkbox" id="col-barcode" checked>
-                        <label for="col-barcode">الباركود</label>
+                        <label for="col-barcode">Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯</label>
                     </div>
                     @php
                         $noteTypes = \App\Models\Note::all();
@@ -716,11 +716,11 @@
             <div class="print-actions">
                 <button type="button" class="select-all-btn" onclick="toggleAllColumns()">
                     <i class="fas fa-check-double"></i>
-                    تحديد الكل
+                    ØªØ­Ø¯ÙŠØ¯ Ø§Ù„ÙƒÙ„
                 </button>
                 <button type="button" class="print-btn" onclick="printReport()">
                     <i class="fas fa-print"></i>
-                    طباعة التقرير
+                    Ø·Ø¨Ø§Ø¹Ø© Ø§Ù„ØªÙ‚Ø±ÙŠØ±
                 </button>
             </div>
         </div>
@@ -729,7 +729,7 @@
     <!-- Orientation Indicator -->
     <div class="orientation-indicator" id="orientationIndicator">
         <i class="fas fa-info-circle"></i>
-        <span id="orientationText">سيتم الطباعة بالعرض</span>
+        <span id="orientationText">Ø³ÙŠØªÙ… Ø§Ù„Ø·Ø¨Ø§Ø¹Ø© Ø¨Ø§Ù„Ø¹Ø±Ø¶</span>
     </div>
 
     <div class="print-container" id="printContainer">
@@ -740,15 +740,15 @@
                     <div class="company-logo">M</div>
                     <div class="company-details">
                         <h1>MASAR</h1>
-                        <p>نظام إدارة المخزون والمبيعات</p>
+                        <p>Ù†Ø¸Ø§Ù… Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ† ÙˆØ§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</p>
                     </div>
                 </div>
                 <div class="report-info">
-                    <div class="report-title">قائمة الأصناف مع الأرصدة</div>
+                    <div class="report-title">Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø£ØµÙ†Ø§Ù Ù…Ø¹ Ø§Ù„Ø£Ø±ØµØ¯Ø©</div>
                     <div class="report-date">{{ now()->format('Y-m-d H:i:s') }}</div>
                 </div>
                 <div class="page-info">
-                    صفحة <span class="page-number">1</span>
+                    ØµÙØ­Ø© <span class="page-number">1</span>
                 </div>
             </div>
         </div>
@@ -760,28 +760,28 @@
                 <div class="filters-section">
                     <div class="filters-title">
                         <i class="fas fa-filter"></i>
-                        الفلاتر المطبقة:
+                        Ø§Ù„ÙÙ„Ø§ØªØ± Ø§Ù„Ù…Ø·Ø¨Ù‚Ø©:
                     </div>
                     @if ($search)
-                        <span class="filter-item">البحث: {{ $search }}</span>
+                        <span class="filter-item">Ø§Ù„Ø¨Ø­Ø«: {{ $search }}</span>
                     @endif
                     @if ($selectedWarehouse)
                         @php
-                            $warehouse = \App\Models\AccHead::find($selectedWarehouse);
+                            $warehouse = \Modules\\Accounts\\Models\\AccHead::find($selectedWarehouse);
                         @endphp
-                        <span class="filter-item">المخزن: {{ $warehouse ? $warehouse->aname : 'غير محدد' }}</span>
+                        <span class="filter-item">Ø§Ù„Ù…Ø®Ø²Ù†: {{ $warehouse ? $warehouse->aname : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                     @endif
                     @if ($selectedGroup)
                         @php
                             $group = \App\Models\NoteDetails::find($selectedGroup);
                         @endphp
-                        <span class="filter-item">المجموعة: {{ $group ? $group->name : 'غير محدد' }}</span>
+                        <span class="filter-item">Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø©: {{ $group ? $group->name : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                     @endif
                     @if ($selectedCategory)
                         @php
                             $category = \App\Models\NoteDetails::find($selectedCategory);
                         @endphp
-                        <span class="filter-item">الفئة: {{ $category ? $category->name : 'غير محدد' }}</span>
+                        <span class="filter-item">Ø§Ù„ÙØ¦Ø©: {{ $category ? $category->name : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                     @endif
                 </div>
             @endif
@@ -791,18 +791,18 @@
                 <thead>
                     <tr>
                         <th class="col-index">#</th>
-                        <th class="col-code">الكود</th>
-                        <th class="col-name">الاسم</th>
-                        <th class="col-units">الوحدات</th>
-                        <th class="col-quantity">الكمية</th>
-                        <th class="col-avg-cost">متوسط التكلفة</th>
-                        <th class="col-avg-cost-qty">تكلفة المتوسطة للكمية</th>
-                        <th class="col-last-cost">التكلفة الأخيرة</th>
-                        <th class="col-cost-qty">تكلفة الكمية</th>
+                        <th class="col-code">Ø§Ù„ÙƒÙˆØ¯</th>
+                        <th class="col-name">Ø§Ù„Ø§Ø³Ù…</th>
+                        <th class="col-units">Ø§Ù„ÙˆØ­Ø¯Ø§Øª</th>
+                        <th class="col-quantity">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
+                        <th class="col-avg-cost">Ù…ØªÙˆØ³Ø· Ø§Ù„ØªÙƒÙ„ÙØ©</th>
+                        <th class="col-avg-cost-qty">ØªÙƒÙ„ÙØ© Ø§Ù„Ù…ØªÙˆØ³Ø·Ø© Ù„Ù„ÙƒÙ…ÙŠØ©</th>
+                        <th class="col-last-cost">Ø§Ù„ØªÙƒÙ„ÙØ© Ø§Ù„Ø£Ø®ÙŠØ±Ø©</th>
+                        <th class="col-cost-qty">ØªÙƒÙ„ÙØ© Ø§Ù„ÙƒÙ…ÙŠØ©</th>
                         @foreach ($priceTypes as $priceType)
                             <th class="col-price-{{ $priceType->id }}">{{ $priceType->name }}</th>
                         @endforeach
-                        <th class="col-barcode">الباركود</th>
+                        <th class="col-barcode">Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯</th>
                         @foreach ($noteTypes as $noteType)
                             <th class="col-note-{{ $noteType->id }}">{{ $noteType->name }}</th>
                         @endforeach
@@ -892,7 +892,7 @@
 
                             // Get first barcode
                             $firstBarcode = $item->barcodes->first();
-                            $barcodeText = $firstBarcode ? formatBarcode($firstBarcode->barcode) : 'لا يوجد';
+                            $barcodeText = $firstBarcode ? formatBarcode($firstBarcode->barcode) : 'Ù„Ø§ ÙŠÙˆØ¬Ø¯';
 
                             // Get notes
                             $itemNotes = $item->notes->mapWithKeys(function ($note) {
@@ -904,7 +904,7 @@
                             <td class="col-index">{{ $index + 1 }}</td>
                             <td class="col-code">{{ $item->code }}</td>
                             <td class="col-name">{{ $item->name }}</td>
-                            <td class="col-units">{{ $selectedUnitName ?: 'لا يوجد وحدات' }}</td>
+                            <td class="col-units">{{ $selectedUnitName ?: 'Ù„Ø§ ÙŠÙˆØ¬Ø¯ ÙˆØ­Ø¯Ø§Øª' }}</td>
                             <td class="col-quantity">
                                 {{ $quantity }}
                                 @if (isset($formattedQuantity['quantity']['remainder']) && 
@@ -941,15 +941,15 @@
                 <div class="totals-section">
                     <div class="totals-grid">
                         <div class="total-item">
-                            <div class="total-label">إجمالي الكمية</div>
+                            <div class="total-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙƒÙ…ÙŠØ©</div>
                             <div class="total-value">{{ $totalQuantity }}</div>
                         </div>
                         <div class="total-item">
-                            <div class="total-label">إجمالي القيمة</div>
+                            <div class="total-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù‚ÙŠÙ…Ø©</div>
                             <div class="total-value">{{ formatCurrency($totalAmount) }}</div>
                         </div>
                         <div class="total-item">
-                            <div class="total-label">عدد الأصناف</div>
+                            <div class="total-label">Ø¹Ø¯Ø¯ Ø§Ù„Ø£ØµÙ†Ø§Ù</div>
                             <div class="total-value">{{ $totalItems }}</div>
                         </div>
                     </div>
@@ -961,12 +961,12 @@
         <div class="print-footer">
             <div class="footer-content">
                 <div class="footer-left">
-                    <div>تم إنشاء هذا التقرير بواسطة نظام MASAR</div>
-                    <div>تاريخ الطباعة: {{ now()->format('Y-m-d H:i:s') }}</div>
+                    <div>ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ù‡Ø°Ø§ Ø§Ù„ØªÙ‚Ø±ÙŠØ± Ø¨ÙˆØ§Ø³Ø·Ø© Ù†Ø¸Ø§Ù… MASAR</div>
+                    <div>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø·Ø¨Ø§Ø¹Ø©: {{ now()->format('Y-m-d H:i:s') }}</div>
                 </div>
                 <div class="footer-right">
-                    <div>إجمالي السجلات: {{ $allItems->count() }}</div>
-                    <div>صفحة 1 من 1</div>
+                    <div>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø³Ø¬Ù„Ø§Øª: {{ $allItems->count() }}</div>
+                    <div>ØµÙØ­Ø© 1 Ù…Ù† 1</div>
                 </div>
             </div>
         </div>
@@ -1009,7 +1009,7 @@
                 container.classList.remove('portrait');
                 container.classList.add('landscape');
                 indicator.classList.add('show');
-                orientationText.textContent = 'سيتم الطباعة بالعرض (Landscape)';
+                orientationText.textContent = 'Ø³ÙŠØªÙ… Ø§Ù„Ø·Ø¨Ø§Ø¹Ø© Ø¨Ø§Ù„Ø¹Ø±Ø¶ (Landscape)';
                 
                 // Adjust indicator position based on controls state
                 if (controls.classList.contains('collapsed')) {
@@ -1075,3 +1075,4 @@
     </script>
 </body>
 </html>
+

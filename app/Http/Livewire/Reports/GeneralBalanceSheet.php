@@ -3,7 +3,7 @@
 namespace App\Http\Livewire\Reports;
 
 use Livewire\Component;
-use App\Models\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Carbon\Carbon;
 
 class GeneralBalanceSheet extends Component
