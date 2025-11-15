@@ -2,17 +2,11 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.journals')
+    @include('components.sidebar.reports')
 @endsection
+
 @section('content')
-    @include('components.breadcrumb', [
-        'title' => __('Journals'),
-        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Journals')]],
-    ])
-
-
     <div class="card">
-
         <div class="card-body">
             <div class="mb-3">
                 <div class="row g-2 align-items-end">
@@ -110,6 +104,7 @@
             <div class="mt-2 small text-muted" id="rowsCount"></div>
         </div>
     </div>
+@endsection
     <script>
         (function() {
             const rows = () => Array.from(document.querySelectorAll('.journal-row'));
@@ -176,4 +171,3 @@
             applyFilters();
         })();
     </script>
-@endsection

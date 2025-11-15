@@ -41,7 +41,7 @@
 
 @if($hasChildren)
     @foreach($account->children as $child)
-        @include('reports.partials.account-row-recursive', [
+        @include('reports::accounts-reports.partials.account-row-recursive', [
             'account' => $child,
             'level' => $level + 1,
             'parentId' => $account->id,

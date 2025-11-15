@@ -241,7 +241,7 @@
                             <i class="fas fa-file-alt"></i>
                             <span>محلل العمل اليومي</span>
                         </a>
-                        <a href="{{ route('journal-summery') }}" class="report-link">
+                        <a href="{{ route('reports.journal-summery') }}" class="report-link">
                             <i class="fas fa-book"></i>
                             <span>اليومية العامة</span>
                         </a>
@@ -261,7 +261,7 @@
                         <span class="card-title">تقارير الحسابات</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('accounts.tree') }}" class="report-link">
+                        <a href="{{ route('reports.accounts-tree') }}" class="report-link">
                             <i class="fas fa-tree"></i>
                             <span>شجرة الحسابات</span>
                         </a>

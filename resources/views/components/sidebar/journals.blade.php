@@ -35,7 +35,7 @@
 @endcan
 @can('عرض قيود يوميه حسابات')
     <li class="nav-item">
-        <a class="nav-link" href="{{ route('journal-summery') }}">
+        <a class="nav-link" href="{{ route('reports.journal-summery') }}">
             <i class="ti-control-record"></i>{{ __('navigation.daily_ledgers_accounts') }}
         </a>
     </li>

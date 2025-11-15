@@ -5,19 +5,17 @@ use App\Http\Controllers\ReportController;
 use Modules\Reports\Http\Controllers\salesReportController;
 use Modules\Reports\Http\Controllers\purchaseReportController;
 
-Route::get('/reports/accounts-tree', [ReportController::class, 'accountsTree'])->name('accounts.tree');
-
+/**
+ * التقارير العامة
+ */
 // محلل العمل اليومي
 Route::get('/reports/daily-activity-analyzer', [ReportController::class, 'dailyActivityAnalyzer'])->name('reports.daily-activity-analyzer');
-
-// اليومية العامة
-Route::get('/reports/general-journal', [ReportController::class, 'generalJournal'])->name('reports.general-journal');
+/**
+ * التقارير العامة
+ */
 
 // الميزانية العمومية
 Route::get('/reports/general-balance-sheet', [ReportController::class, 'generalBalanceSheet'])->name('reports.general-balance-sheet');
-
-// كشف حساب حساب
-Route::get('/reports/general-account-statement', [ReportController::class, 'generalAccountStatement'])->name('reports.general-account-statement');
 
 // ميزان الحسابات
 Route::get('/reports/general-account-balances', [ReportController::class, 'generalAccountBalances'])->name('reports.general-account-balances');
@@ -111,10 +109,6 @@ Route::get('/reports/general-accounts-report', [ReportController::class, 'genera
 // تقرير كشف حساب عام
 Route::get('/reports/general-account-statement-report', [ReportController::class, 'generalAccountStatementReport'])->name('reports.general-account-statement-report');
 
-// كشف حساب عام - تفاصيل اليومية
-Route::get('/reports/general-journal-details', function () {
-    return view('reports.general-journal-details');
-})->name('reports.general-journal-details');
 
 // تقرير الأرباح والخسائر
 Route::get('/reports/general-profit-loss-report', [ReportController::class, 'generalProfitLossReport'])->name('reports.general-profit-loss-report');

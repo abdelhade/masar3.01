@@ -51,7 +51,6 @@
         }
     }
 </style>
-
 <div class="dashboard-container">
     <div class="header-section">
         <!-- الصف الأول: العنوان ومعلومات المستخدم -->
@@ -414,7 +413,7 @@
                     icon: "git-branch",
                     iconBg: "#E8F5E9",
                     iconColor: "#2E7D32",
-                    route: "{{ route('accounts.tree') }}"
+                    route: "{{ route('reports.accounts-tree') }}"
                 },
                 {
                     name: "الميزانية العمومية",

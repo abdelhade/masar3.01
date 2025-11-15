@@ -219,7 +219,7 @@
                             <h5 class="mb-3"><i class="fas fa-sitemap me-2"></i>شجرة الحسابات</h5>
                             <ul>
                                 @foreach ($accounts as $account)
-                                    @include('reports.partials.account-node', ['account' => $account])
+                                    @include('reports::accounts-reports.partials.account-node', ['account' => $account])
                                 @endforeach
                             </ul>
                         </div>

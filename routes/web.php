@@ -197,7 +197,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('discounts', DiscountController::class)->names('discounts');
 
     // abdelhade
-    Route::get('journal-summery', [JournalSummeryController::class, 'index'])->name('journal-summery');
     Route::resource('cost_centers', CostCenterController::class);
 
     Route::get('/vouchers/statistics', [VoucherController::class, 'statistics'])->name('vouchers.statistics');
@@ -229,7 +228,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/update-opening-balance', [InventoryStartBalanceController::class, 'updateOpeningBalance'])->name('inventory-start-balance.update-opening-balance');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/overall', [ReportController::class, 'overall'])->name('reports.overall');
     Route::get('home', [HomeController::class, 'index'])->name('home.index');
 
 

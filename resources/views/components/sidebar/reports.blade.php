@@ -14,7 +14,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('journal-summery') }}">
+                <a class="nav-link" href="{{ route('reports.journal-summery') }}">
                     <i class="ti-control-record"></i>اليومية العامة
                 </a>
             </li>
@@ -38,7 +38,7 @@
     <div class="collapse" id="reports-accounts">
         <ul class="nav flex-column sub-menu">
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('accounts.tree') }}">
+                <a class="nav-link" href="{{ route('reports.accounts-tree') }}">
                     <i class="ti-control-record"></i>شجرة الحسابات
                 </a>
             </li>

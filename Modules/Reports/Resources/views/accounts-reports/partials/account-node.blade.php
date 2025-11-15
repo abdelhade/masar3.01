@@ -33,7 +33,7 @@
     @if ($account->children?->count() ?? 0)
         <ul class="nested">
             @foreach ($account->children as $child)
-                @include('reports.partials.account-node', ['account' => $child])
+                @include('reports::accounts-reports.partials.account-node', ['account' => $child])
             @endforeach
         </ul>
     @endif
