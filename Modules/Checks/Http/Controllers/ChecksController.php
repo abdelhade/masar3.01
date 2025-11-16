@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use Modules\Checks\Models\Check;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -66,7 +67,7 @@ class ChecksController extends Controller
         $pageTitle = 'Ø¥Ø¶Ø§ÙØ© ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶';
         
         // Get clients accounts
-        $accounts = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $accounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '1103%')
             ->select('id', 'aname', 'code')
@@ -118,7 +119,7 @@ class ChecksController extends Controller
         $pageTitle = 'Ø¥Ø¶Ø§ÙØ© ÙˆØ±Ù‚Ø© Ø¯ÙØ¹';
         
         // Get suppliers accounts
-        $accounts = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $accounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2101%')
             ->select('id', 'aname', 'code')

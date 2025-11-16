@@ -38,13 +38,14 @@
         </div>
 
 
-        {{-- ØªØ­Ø¯ÙŠØ« Ø¹Ø±Ø¶ Ø§Ù„Ø±ØµÙŠØ¯ Ù…Ø¹ Ø¥Ø¶Ø§ÙØ© Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø¯ÙÙˆØ¹ --}}
-        @if ($type != 21) {{-- Ø§Ù„Ø±ØµÙŠØ¯ Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+        {{-- تحديث عرض الرصيد مع إضافة معلومات المبلغ المدفوع --}}
+        @if ($type != 21)
+         {{-- الرصيد لا ينطبق على التحويلات --}}
             @if ($showBalance)
                 <div class="mt-2 text-end">
                     <div class="row">
                         <div class="col-6">
-                            <label>Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ: </label>
+                            <label>الرصيد الحالي: </label>
                             <span class="fw-bold text-primary">{{ number_format($currentBalance) }}</span>
                         </div>
                         <div class="col-6">
@@ -58,7 +59,7 @@
                     @if ($received_from_client > 0 && $received_from_client != $total_after_additional)
                         <div class="row mt-1">
                             <div class="col-12">
-                                <label>Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø³ØªØ­Ù‚: </label>
+                                <label>المبلغ المستحق: </label>
                                 <span
                                     class="fw-bold {{ $total_after_additional - $received_from_client < 0 ? 'text-success' : 'text-danger' }}">
                                     {{ number_format($total_after_additional - $received_from_client) }}
@@ -68,7 +69,7 @@
                     @endif
                 </div>
             @endif
-        @endif {{-- Ø§Ù„Ø±ØµÙŠØ¯ Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+        @endif {{-- الرصيد لا ينطبق على التحويلات --}}
     </div>
 
     {{-- Ø¨ÙŠØ§Ù†Ø§Øª Ø±Ø£Ø³ Ø§Ù„ÙØ§ØªÙˆØ±Ø© --}}
@@ -76,12 +77,12 @@
         <div class="row">
             <input type="hidden" wire:model="type">
 
-            {{-- Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…ØªØºÙŠØ± acc1 --}}
+            {{-- الحساب المتغير acc1 --}}
             <div class="col-lg-2" wire:key="acc1-{{ $branch_id }}">
                 <div class="d-flex align-items-end gap-2">
                     <div class="flex-grow-1">
                         <livewire:app::searchable-select :model="'Modules\\Accounts\\Models\\AccHead'" :label="$acc1Role" :labelField="'aname'"
-                            :placeholder="'Ø§Ø¨Ø­Ø« Ø¹Ù† ' . $acc1Role . '...'" :wireModel="'acc1_id'" :selectedId="$acc1_id" :where="$this->getAcc1WhereConditions()" :searchFields="['code', 'aname']"
+                            :placeholder="'ابحث عن ' . $acc1Role . '...'" :wireModel="'acc1_id'" :selectedId="$acc1_id" :where="$this->getAcc1WhereConditions()" :searchFields="['code', 'aname']"
                             :allowCreate="false" :key="'acc1-search-' . $type . '-' . $branch_id" />
                         @error('acc1_id')
                             <span class="text-danger small"><strong>{{ $message }}</strong></span>
@@ -101,13 +102,13 @@
                 </div>
             </div>
 
-            {{-- Ø§Ù„Ù…Ø®Ø²Ù† acc2 --}}
+            {{-- المخزن acc2 --}}
             <div class="col-lg-2" wire:key="acc2-{{ $branch_id }}">
                 <label class="form-label" style="font-size: 1em;">{{ $acc2Role }}</label>
                 <select wire:model.live="acc2_id"
                     class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('acc2_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                    <option value="">Ø§Ø®ØªØ± {{ $acc2Role }}</option>
+                    <option value="">اختر {{ $acc2Role }}</option>
                     @foreach ($acc2List as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
                     @endforeach
@@ -117,13 +118,13 @@
                 @enderror
             </div>
 
-            {{-- Ø§Ù„Ù…ÙˆØ¸Ù --}}
+            {{-- الموظف --}}
             <div class="col-lg-2" wire:key="emp-{{ $branch_id }}">
-                <label for="emp_id" class="form-label" style="font-size: 1em;">{{ __('Ø§Ù„Ù…ÙˆØ¸Ù') }}</label>
+                <label for="emp_id" class="form-label" style="font-size: 1em;">{{ __('الموظف') }}</label>
                 <select wire:model="emp_id"
                     class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('emp_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                    <option value="">Ø§Ø®ØªØ± Ø§Ù„Ù…ÙˆØ¸Ù</option>
+                    <option value="">اختر الموظف</option>
                     @foreach ($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->aname }}</option>
                     @endforeach
@@ -133,13 +134,13 @@
                 @enderror
             </div>
 
-            @if ($type != 21) {{-- Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ù†Ø¯ÙˆØ¨ Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+            @if ($type != 21) {{-- Ø¥Ø¶Ø§ÙØ© المندوب Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
                 <div class="col-lg-2" wire:key="delivery-{{ $branch_id }}">
-                    <label for="delivery_id" class="form-label" style="font-size: 1em;">{{ __('Ø§Ù„Ù…Ù†Ø¯ÙˆØ¨') }}</label>
+                    <label for="delivery_id" class="form-label" style="font-size: 1em;">{{ __('المندوب') }}</label>
                     <select wire:model="delivery_id"
                         class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('delivery_id') is-invalid @enderror"
                         style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                        <option value="">Ø§Ø®ØªØ± Ø§Ù„Ù…Ù†Ø¯ÙˆØ¨</option>
+                        <option value="">اختر المندوب</option>
                         @foreach ($deliverys as $delivery)
                             <option value="{{ $delivery->id }}">{{ $delivery->aname }}</option>
                         @endforeach
@@ -148,11 +149,11 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
-            @endif {{-- Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ù†Ø¯ÙˆØ¨ Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+            @endif {{-- Ø¥Ø¶Ø§ÙØ© المندوب Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
 
-            {{-- Ø§Ù„ØªØ§Ø±ÙŠØ® --}}
+            {{-- التاريخ --}}
             <div class="col-lg-1">
-                <label for="pro_date" class="form-label" style="font-size: 1em;">{{ __('Ø§Ù„ØªØ§Ø±ÙŠØ®') }}</label>
+                <label for="pro_date" class="form-label" style="font-size: 1em;">{{ __('التاريخ') }}</label>
                 <input type="date" wire:model="pro_date"
                     class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('pro_date') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
@@ -163,12 +164,12 @@
             </div>
 
             @if (setting('invoice_use_due_date'))
-                {{-- ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚ --}}
+                {{-- تاريخ الاستحقاق --}}
                 @if ($type != 21)
-                    {{-- ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚ Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+                    {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
                     <div class="col-lg-1">
                         <label for="accural_date" class="form-label"
-                            style="font-size: 1em;">{{ __('ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚') }}</label>
+                            style="font-size: 1em;">{{ __('تاريخ الاستحقاق') }}</label>
                         <input type="date" wire:model="accural_date"
                             class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('accural_date') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -176,7 +177,7 @@
                             <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                         @enderror
                     </div>
-                @endif {{-- ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚ Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+                @endif {{-- تاريخ الاستحقاق لا ينطبق على التحويلات --}}
             @endif
 
             {{-- Ø±Ù‚Ù… Ø§Ù„ÙØ§ØªÙˆØ±Ø© (pro_id) Ø«Ø§Ø¨Øª --}}
@@ -190,9 +191,9 @@
                 @enderror
             </div>
 
-            {{-- S.N Ø£Ùˆ Serial Number --}}
+            {{-- S.N أو Serial Number --}}
             @if ($type != 21)
-                {{-- S.N Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+                {{-- S.N لا ينطبق على التحويلات --}}
                 <div class="col-lg-1">
                     <label for="serial_number" class="form-label" style="font-size: 1em;">{{ __('S.N') }}</label>
                     <input type="text" wire:model="serial_number"
@@ -202,7 +203,7 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
-            @endif {{-- S.N Ù„Ø§ ÙŠÙ†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª --}}
+            @endif {{-- S.N لا ينطبق على التحويلات --}}
         </div>
     </div>
 </div>
@@ -218,10 +219,10 @@
                         class: 'font-family-cairo fw-bold font-14'
                     },
                     remove_button: {
-                        title: 'Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ù…Ø­Ø¯Ø¯'
+                        title: 'إزالة المحدد'
                     }
                 },
-                placeholder: 'Ø§Ø®ØªØ±',
+                placeholder: 'اختر',
                 onChange: (value) => {
                     console.log('TomSelect changed:', value);
                     Livewire.dispatch('input', {
