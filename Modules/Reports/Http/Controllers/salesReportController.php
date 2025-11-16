@@ -312,7 +312,7 @@ class salesReportController extends Controller
             }
         }
 
-        return view('reports.sales.daily', compact(
+        return view('reports::sales.daily', compact(
             'customers',
             'sales',
             'fromDate',
@@ -326,5 +326,115 @@ class salesReportController extends Controller
             'averageInvoiceValue',
             'totalItemsCount'
         ));
+    }
+
+    public function generalSalesDailyReport(Request $request)
+    {
+        $customers = AccHead::where('code', 'like', '1103%')
+            ->where('isdeleted', 0)
+            ->orderBy('aname')
+            ->get();
+
+        $fromDate = $request->input('from_date', today()->format('Y-m-d'));
+        $toDate = $request->input('to_date', today()->format('Y-m-d'));
+        $customerId = $request->input('customer_id');
+
+        // جلب الفواتير مع الأصناف
+        $query = OperHead::where('pro_type', 10)
+            ->with(['acc1Head', 'operationItems'])
+            ->whereDate('pro_date', '>=', $fromDate)
+            ->whereDate('pro_date', '<=', $toDate)
+            ->when($customerId, fn($q) => $q->where('acc1', $customerId));
+
+        // حساب عدد الأصناف لكل فاتورة
+        $sales = $query->get()->map(function ($sale) {
+            $sale->items_count = $sale->operationItems->count() ?? 0;
+            $sale->total_quantity = $sale->operationItems->sum('qty_out') ?? 0;
+            $sale->total_sales = $sale->fat_total ?? 0;
+            $sale->net_sales = $sale->fat_net ?? 0;
+            $sale->status = $sale->isdeleted == 0 ? 'completed' : 'pending';
+            return $sale;
+        });
+
+        // حساب الإجماليات من جميع البيانات (قبل pagination)
+        $totalQuantity = $sales->sum('total_quantity');
+        $totalSalesAmount = $sales->sum('total_sales');
+        $totalDiscount = $sales->sum('fat_disc') ?? 0;
+        $totalNetSales = $sales->sum('net_sales');
+        $totalInvoices = $sales->count();
+        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
+
+        // Pagination manual
+        $perPage = 50;
+        $currentPage = $request->input('page', 1);
+        $items = $sales->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $paginatedSales = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $sales->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('reports::sales.general-sales-daily-report', [
+            'customers' => $customers,
+            'sales' => $paginatedSales,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'customerId' => $customerId,
+            'totalQuantity' => $totalQuantity,
+            'totalSales' => $totalSalesAmount,
+            'totalDiscount' => $totalDiscount,
+            'totalNetSales' => $totalNetSales,
+            'totalInvoices' => $totalInvoices,
+            'averageInvoiceValue' => $averageInvoiceValue
+        ]);
+    }
+
+    public function generalSalesReport()
+    {
+        $customers = AccHead::where('code', 'like', '1103%')->where('isdeleted', 0)->get();
+
+        $sales = OperHead::where('pro_type', 10)
+            ->with('acc1Head')
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('pro_date', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('pro_date', '<=', request('to_date'));
+            })
+            ->when(request('customer_id'), function ($q) {
+                $q->where('acc1', request('customer_id'));
+            })
+            ->orderBy('pro_date', 'desc')
+            ->paginate(50);
+
+        $totalQuantity = $sales->sum('total_quantity');
+        $totalSales = $sales->sum('total_sales');
+        $totalDiscount = $sales->sum('discount');
+        $totalNetSales = $sales->sum('net_sales');
+        $totalInvoices = $sales->count();
+        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
+
+        return view('reports::sales.general-sales-report', compact(
+            'customers',
+            'sales',
+            'totalQuantity',
+            'totalSales',
+            'totalDiscount',
+            'totalNetSales',
+            'totalInvoices',
+            'averageInvoiceValue'
+        ));
+    }
+
+    public function salesReportByAddress()
+    {
+        return view('reports::sales.manage-sales-report-by-adress');
+    }
+
+    public function manageItemSales()
+    {
+        return view('reports::sales.manage-item-sales');
     }
 }

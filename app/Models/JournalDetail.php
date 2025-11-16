@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Accounts\Models\AccHead;
 
 class JournalDetail extends Model
 {

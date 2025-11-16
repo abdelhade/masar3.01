@@ -121,4 +121,5 @@ return [
     'in_progress' => 'قيد التنفيذ',
     'cancelled' => 'ملغي',
     'expired' => 'منتهي الصلاحية',
+    'not_specified' => 'غير محدد',
 ]; 

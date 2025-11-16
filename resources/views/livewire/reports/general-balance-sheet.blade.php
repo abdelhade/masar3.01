@@ -23,6 +23,9 @@
                         <div class="card-header bg-primary text-white d-flex align-items-center">
                             <i class="fas fa-university me-2"></i>
                             <h4 class="mb-0">{{ __('الأصول') }}</h4>
+                            <h1>123</h1>
+                            <h1>123</h1>
+                            <h1>123</h1>
                         </div>
                         <div class="card-body p-0">
                             <table class="table table-bordered mb-0">

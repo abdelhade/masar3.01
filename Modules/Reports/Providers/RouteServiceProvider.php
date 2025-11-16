@@ -36,9 +36,14 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')->group(module_path($this->name, '/routes/web.php'));
-        // Route::middleware('web')->group(module_path($this->name, '/routes/reports/items.php'));
-        // Route::middleware('web')->group(module_path($this->name, '/routes/reports/sales.php'));
-        // Route::middleware('web')->group(module_path($this->name, '/routes/reports/purchase.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/items.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/sales.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/purchase.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/inventory.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/customers.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/suppliers.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/expenses.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/cost-centers.php'));
         Route::middleware('web')->group(module_path($this->name, '/routes/GeneralReports/general-reports.php'));
         Route::middleware('web')->group(module_path($this->name, '/routes/AccountsReports/accounts-reports.php'));
     }

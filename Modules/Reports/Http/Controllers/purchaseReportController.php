@@ -3,6 +3,8 @@
 namespace Modules\Reports\Http\Controllers;
 
 use App\Models\OperationItems;
+use App\Models\OperHead;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -163,5 +165,84 @@ class purchaseReportController extends Controller
             'lowestPurchases',
             'averagePurchases'
         ));
+    }
+
+    public function generalPurchasesReport()
+    {
+        $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
+
+        $purchases = OperHead::where('pro_type', 11)
+            ->with('acc1Head')
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('pro_date', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('pro_date', '<=', request('to_date'));
+            })
+            ->when(request('supplier_id'), function ($q) {
+                $q->where('acc1', request('supplier_id'));
+            })
+            ->orderBy('pro_date', 'desc')
+            ->paginate(50);
+
+        $totalQuantity = $purchases->sum('total_quantity');
+        $totalPurchases = $purchases->sum('total_purchases');
+        $totalDiscount = $purchases->sum('discount');
+        $totalNetPurchases = $purchases->sum('net_purchases');
+        $totalInvoices = $purchases->count();
+        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetPurchases / $totalInvoices : 0;
+
+        return view('reports::purchases.general-purchases-report', compact(
+            'suppliers',
+            'purchases',
+            'totalQuantity',
+            'totalPurchases',
+            'totalDiscount',
+            'totalNetPurchases',
+            'totalInvoices',
+            'averageInvoiceValue'
+        ));
+    }
+
+    public function generalPurchasesDailyReport()
+    {
+        $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
+
+        $purchases = OperHead::where('pro_type', 11)
+            ->with('acc1Head')
+            ->when(request('from_date'), function ($q) {
+                $q->whereDate('pro_date', '>=', request('from_date'));
+            })
+            ->when(request('to_date'), function ($q) {
+                $q->whereDate('pro_date', '<=', request('to_date'));
+            })
+            ->when(request('supplier_id'), function ($q) {
+                $q->where('acc1', request('supplier_id'));
+            })
+            ->orderBy('pro_date', 'desc')
+            ->paginate(50);
+
+        $totalQuantity = $purchases->sum('total_quantity');
+        $totalPurchases = $purchases->sum('total_purchases');
+        $totalDiscount = $purchases->sum('discount');
+        $totalNetPurchases = $purchases->sum('net_purchases');
+        $totalInvoices = $purchases->count();
+        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetPurchases / $totalInvoices : 0;
+
+        return view('reports::purchases.general-purchases-daily-report', compact(
+            'suppliers',
+            'purchases',
+            'totalQuantity',
+            'totalPurchases',
+            'totalDiscount',
+            'totalNetPurchases',
+            'totalInvoices',
+            'averageInvoiceValue'
+        ));
+    }
+
+    public function manageItemPurchaseReport()
+    {
+        return view('reports::purchases.manage-item-purchase-report');
     }
 }

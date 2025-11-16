@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.journals')
+    @include('components.sidebar.reports')
 @endsection
 
 @section('content')

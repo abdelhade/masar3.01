@@ -4,7 +4,7 @@ use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperHead;
 use App\Models\JournalDetail;
 
@@ -110,23 +110,23 @@ new class extends Component {
         $translations = [
             '10' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø¨ÙŠØ¹Ø§Øª',
             '11' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø´ØªØ±ÙŠØ§Øª',
-            '12' => 'Ù…Ø±Ø¯ÙˆØ¯ Ù…Ø¨ÙŠØ¹Ø§Øª',
-            '13' => 'Ù…Ø±Ø¯ÙˆØ¯ Ù…Ø´ØªØ±ÙŠØ§Øª',
-            '14' => 'Ø§Ù…Ø± Ø¨ÙŠØ¹',
-            '15' => 'Ø§Ù…Ø± Ø´Ø±Ø§Ø¡',
-            '16' => 'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù„Ø¹Ù…ÙŠÙ„',
-            '17' => 'Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù…Ù† Ù…ÙˆØ±Ø¯',
+            '12' => 'مرتجع مبيعات',
+            '13' => 'مرتجع مشتريات',
+            '14' => 'امر بيع',
+            '15' => 'امر شراء',
+            '16' => 'عرض سعر لعميل',
+            '17' => 'عرض سعر من مورد',
             '18' => 'ÙØ§ØªÙˆØ±Ø© ØªÙˆØ§Ù„Ù',
             '19' => 'Ø§Ù…Ø± ØµØ±Ù',
             '20' => 'Ø§Ù…Ø± Ø§Ø¶Ø§ÙØ©',
-            '21' => 'ØªØ­ÙˆÙŠÙ„ Ù…Ù† Ù…Ø®Ø²Ù† Ù„Ù…Ø®Ø²Ù†',
-            '22' => 'Ø§Ù…Ø± Ø­Ø¬Ø²',
+            '21' => 'تحويل من مخزن لمخزن',
+            '22' => 'امر حجز',
             '23' => 'ØªØ­ÙˆÙŠÙ„ Ø¨ÙŠÙ† ÙØ±ÙˆØ¹',
             '35' => 'Ø³Ù†Ø¯ Ø¥ØªÙ„Ø§Ù Ù…Ø®Ø²ÙˆÙ†',
-            '56' => 'Ù†Ù…ÙˆØ°Ø¬ ØªØµÙ†ÙŠØ¹',
-            '57' => 'Ø§Ù…Ø± ØªØ´ØºÙŠÙ„',
-            '58' => 'ØªØµÙ†ÙŠØ¹ Ù…Ø¹ÙŠØ§Ø±ÙŠ',
-            '59' => 'ØªØµÙ†ÙŠØ¹ Ø­Ø±',
+            '56' => 'نموذج تصنيع',
+            '57' => 'امر تشغيل',
+            '58' => 'تصنيع معياري',
+            '59' => 'تصنيع حر',
             '60' => 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø§Ø±ØµØ¯Ù‡ Ø§Ù„Ø§ÙØªØªØ§Ø­ÙŠÙ‡ Ù„Ù„Ù…Ø®Ø§Ø²Ù†',
             '61' => 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø§Ø±ØµØ¯Ù‡ Ø§Ù„Ø§ÙØªØªØ§Ø­ÙŠÙ‡ Ù„Ù„Ø­Ø³Ø§Ø¨Ø§Øª',
         ];
@@ -182,17 +182,17 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">ØªÙ‚Ø±ÙŠØ± Ø­Ø±ÙƒÙ‡ Ø­Ø³Ø§Ø¨</h4>
+                <h4 class="page-title font-family-cairo fw-bold">تقرير حركة حساب</h4>
             </div>
         </div>
     </div>
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-family-cairo fw-bold">ÙÙ„Ø§ØªØ± Ø§Ù„Ø¨Ø­Ø«</h4>
+            <h4 class="font-family-cairo fw-bold">تقرير حركة حساب</h4>
             @if ($accountId)
                 <div class="d-flex align-items-center">
-                    <span class="font-family-cairo fw-bold me-2">Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ù„Ø­Ø³Ø§Ø¨ {{ $accountName }}:</span>
+                    <span class="font-family-cairo fw-bold me-2">الرصيد الحالي للحساب {{ $accountName }}:</span>
                     <span
                         class="font-family-cairo fw-bold font-16 @if ($this->runningBalance < 0) bg-soft-danger @else bg-soft-primary @endif">{{ number_format($this->runningBalance, 2) }}</span>
                 </div>
@@ -202,10 +202,10 @@ new class extends Component {
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="account" class="form-label font-family-cairo fw-bold">Ø§Ù„Ø­Ø³Ø§Ø¨</label>
+                        <label for="account" class="form-label font-family-cairo fw-bold">الحساب</label>
                         <div class="dropdown" wire:click.outside="hideDropdown">
                             <input type="text" class="form-control font-family-cairo fw-bold"
-                                placeholder="Ø§Ø¨Ø­Ø« Ø¹Ù† Ø­Ø³Ø§Ø¨..." wire:model.live.debounce.300ms="searchTerm"
+                                placeholder="ابحث عن حساب..." wire:model.live.debounce.300ms="searchTerm"
                                 wire:keydown.arrow-down.prevent="arrowDown" wire:keydown.arrow-up.prevent="arrowUp"
                                 wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
                                 onclick="this.select()">
@@ -223,8 +223,8 @@ new class extends Component {
                                 </ul>
                             @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $accountName)
                                 <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span class="dropdown-item-text font-family-cairo fw-bold text-danger">Ù„Ø§ ÙŠÙˆØ¬Ø¯
-                                            Ù†ØªØ§Ø¦Ø¬ Ù„Ù‡Ø°Ø§ Ø§Ù„Ø¨Ø­Ø«</span></li>
+                                    <li><span class="dropdown-item-text font-family-cairo fw-bold text-danger">لا يوجد
+                                            نتائج لهذا البحث</span></li>
                                 </ul>
                             @endif
                         </div>
@@ -232,14 +232,14 @@ new class extends Component {
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="fromDate" class="form-label font-family-cairo fw-bold">Ù…Ù† ØªØ§Ø±ÙŠØ®</label>
+                        <label for="fromDate" class="form-label font-family-cairo fw-bold">من تاريخ</label>
                         <input type="date" wire:model.live="fromDate" id="fromDate"
                             class="form-control font-family-cairo fw-bold">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="toDate" class="form-label font-family-cairo fw-bold">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®</label>
+                        <label for="toDate" class="form-label font-family-cairo fw-bold">إلى تاريخ</label>
                         <input type="date" wire:model.live="toDate" id="toDate"
                             class="form-control font-family-cairo fw-bold">
                     </div>
@@ -255,14 +255,14 @@ new class extends Component {
                     <table class="table table-striped table-centered mb-0">
                         <thead>
                             <tr>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
-                                <th class="font-family-cairo fw-bold">Ù…ØµØ¯Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
-                                <th class="font-family-cairo fw-bold">Ù†ÙˆØ¹ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ù…Ø¯ÙŠÙ†</th>
-                                <th class="font-family-cairo fw-bold">Ø¯Ø§Ø¦Ù†</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª</th>
+                                <th class="font-family-cairo fw-bold">التاريخ</th>
+                                <th class="font-family-cairo fw-bold">مصدر العملية</th>
+                                <th class="font-family-cairo fw-bold">نوع الحركة</th>
+                                <th class="font-family-cairo fw-bold">الرصيد قبل الحركة</th>
+                                <th class="font-family-cairo fw-bold">مدين</th>
+                                <th class="font-family-cairo fw-bold">دائن</th>
+                                <th class="font-family-cairo fw-bold">الرصيد بعد الحركة</th>
+                                <th class="font-family-cairo fw-bold">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -284,9 +284,9 @@ new class extends Component {
                                     </td>
                                     <td class="font-family-cairo fw-bold">
                                         @if ($movement->debit > 0)
-                                            <span class="badge bg-primary">Ù…Ø¯ÙŠÙ†</span>
+                                            <span class="badge bg-primary">مدين</span>
                                         @else
-                                            <span class="badge bg-danger">Ø¯Ø§Ø¦Ù†</span>
+                                            <span class="badge bg-danger">دائن</span>
                                         @endif
                                     </td>
                                     <td class="font-family-cairo fw-bold">{{ number_format($balanceBefore, 2) }}</td>
@@ -323,8 +323,8 @@ new class extends Component {
                                 @endphp
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center font-family-cairo fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø­Ø±ÙƒØ§Øª
-                                        Ù„Ù„Ù…Ø¹Ø§ÙŠÙŠØ± Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©.</td>
+                                    <td colspan="12" class="text-center font-family-cairo fw-bold">لا يوجد حركات
+                                        للمعايير المحددة.</td>
                                 </tr>
                             @endforelse
                         </tbody>

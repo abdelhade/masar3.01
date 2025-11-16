@@ -5,7 +5,7 @@ use Livewire\WithPagination;
 use App\Models\Item;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperationItems;
 
 new class extends Component {
@@ -206,7 +206,7 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">ØªÙ‚Ø±ÙŠØ± Ø­Ø±ÙƒÙ‡ ØµÙ†Ù</h4>
+                <h4 class="page-title font-family-cairo fw-bold">{{ __('items.item_movement_report') }}</h4>
             </div>
         </div>
     </div>
@@ -222,7 +222,7 @@ new class extends Component {
                         'toDate' => $toDate
                     ]) }}" target="_blank" class="btn btn-primary font-family-cairo fw-bold" style="text-decoration: none;">
                         <i class="fas fa-print"></i>
-                        Ø·Ø¨Ø§Ø¹Ø© Ø§Ù„ØªÙ‚Ø±ÙŠØ±
+                        {{ __('items.print_report') }}
                     </a>
                 </div>
             </div>
@@ -231,11 +231,10 @@ new class extends Component {
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-family-cairo fw-bold">ÙÙ„Ø§ØªØ± Ø§Ù„Ø¨Ø­Ø«</h4>
+            <h4 class="font-family-cairo fw-bold">{{ __('items.search_filters') }}</h4>
             @if ($itemId)
                 <div class="d-flex align-items-center">
-                    <span class="font-family-cairo fw-bold me-2">Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ù„ØµÙ†Ù {{ $itemName }} ÙÙ‰ Ø§Ù„Ù…Ø®Ø§Ø²Ù†
-                        Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©:</span>
+                    <span class="font-family-cairo fw-bold me-2">{{ __('items.current_balance_for_item', ['item' => $itemName]) }}:</span>
                     <span
                         class="bg-soft-primary font-family-cairo fw-bold font-16">{{ number_format($this->totalQuantity) }}
                         {{ Item::find($this->itemId)->units->first()->name }}</span>
@@ -246,10 +245,10 @@ new class extends Component {
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="item" class="form-label font-family-cairo fw-bold">Ø§Ù„ØµÙ†Ù</label>
+                        <label for="item" class="form-label font-family-cairo fw-bold">{{ __('items.item') }}</label>
                         <div class="dropdown" wire:click.outside="hideDropdown">
                             <input type="text" class="form-control font-family-cairo fw-bold"
-                                placeholder="Ø§Ø¨Ø­Ø« Ø¹Ù† ØµÙ†Ù..." wire:model.live.debounce.300ms="searchTerm"
+                                placeholder="{{ __('items.search_for_item') }}" wire:model.live.debounce.300ms="searchTerm"
                                 wire:keydown.arrow-down.prevent="arrowDown" wire:keydown.arrow-up.prevent="arrowUp"
                                 wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
                                 onclick="this.select()">
@@ -267,8 +266,7 @@ new class extends Component {
                                 </ul>
                             @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $itemName)
                                 <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span class="dropdown-item-text font-family-cairo fw-bold text-danger">Ù„Ø§ ÙŠÙˆØ¬Ø¯
-                                            Ù†ØªØ§Ø¦Ø¬ Ù„Ù‡Ø°Ø§ Ø§Ù„Ø¨Ø­Ø«</span></li>
+                                    <li><span class="dropdown-item-text font-family-cairo fw-bold text-danger">{{ __('items.no_results_for_search') }}</span></li>
                                 </ul>
                             @endif
                         </div>
@@ -276,10 +274,10 @@ new class extends Component {
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="warehouse" class="form-label font-family-cairo fw-bold">Ø§Ù„Ù…Ø®Ø²Ù†</label>
+                        <label for="warehouse" class="form-label font-family-cairo fw-bold">{{ __('items.warehouse') }}</label>
                         <select wire:model.live="warehouseId" id="warehouse"
                             class="form-select font-family-cairo fw-bold" style = "height: 50px;">
-                            <option class="font-family-cairo fw-bold" value="all">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø®Ø§Ø²Ù†</option>
+                            <option class="font-family-cairo fw-bold" value="all">{{ __('items.all_warehouses') }}</option>
                             @foreach ($warehouses as $id => $name)
                                 <option class="font-family-cairo fw-bold" value="{{ $id }}">
                                     {{ $name }}</option>
@@ -289,14 +287,14 @@ new class extends Component {
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="fromDate" class="form-label font-family-cairo fw-bold">Ù…Ù† ØªØ§Ø±ÙŠØ®</label>
+                        <label for="fromDate" class="form-label font-family-cairo fw-bold">{{ __('items.from_date') }}</label>
                         <input type="date" wire:model.live="fromDate" id="fromDate"
                             class="form-control font-family-cairo fw-bold">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="toDate" class="form-label font-family-cairo fw-bold">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®</label>
+                        <label for="toDate" class="form-label font-family-cairo fw-bold">{{ __('items.to_date') }}</label>
                         <input type="date" wire:model.live="toDate" id="toDate"
                             class="form-control font-family-cairo fw-bold">
                     </div>
@@ -313,15 +311,15 @@ new class extends Component {
                     <table class="table table-striped table-centered mb-0">
                         <thead>
                             <tr>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
-                                <th class="font-family-cairo fw-bold">Ù…ØµØ¯Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
-                                <th class="font-family-cairo fw-bold">Ù†ÙˆØ¹ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ù…Ø®Ø²Ù†</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ÙˆØ­Ø¯Ù‡</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¦Ø§Øª</th>
+                                <th class="font-family-cairo fw-bold">{{ __('common.date') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('items.operation_source') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('items.movement_type') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('items.warehouse') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('items.unit') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('items.balance_before_movement') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('common.quantity') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('items.balance_after_movement') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('common.actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -357,7 +355,7 @@ new class extends Component {
                                     <td class="font-family-cairo fw-bold">
                                         <span
                                             class="badge {{ $movement->qty_in != 0 ? 'badge-soft-success' : 'badge-soft-danger' }} font-family-cairo fw-bold">
-                                            {{ $movement->qty_in != 0 ? 'in' : 'out' }}
+                                            {{ $movement->qty_in != 0 ? __('items.in') : __('items.out') }}
                                         </span>
                                     </td>
                                     <td class="font-family-cairo fw-bold">
@@ -378,7 +376,7 @@ new class extends Component {
                                     <td class="font-family-cairo fw-bold">{{ $balanceAfter }}</td>
                                     <td class="font-family-cairo fw-bold">
                                         <a href="{{ route('invoice.view', $movement->pro_id) }}" class="btn btn-xs btn-info" target="_blank">
-                                            <i class="fas fa-eye"></i> Ø¹Ø±Ø¶
+                                            <i class="fas fa-eye"></i> {{ __('common.view') }}
                                         </a>
                                 </td>
                                 </tr>
@@ -387,8 +385,7 @@ new class extends Component {
                                 @endphp
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center font-family-cairo fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø­Ø±ÙƒØ§Øª
-                                        Ù„Ù„Ù…Ø¹Ø§ÙŠÙŠØ± Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©.</td>
+                                    <td colspan="12" class="text-center font-family-cairo fw-bold">{{ __('items.no_movements_for_criteria') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

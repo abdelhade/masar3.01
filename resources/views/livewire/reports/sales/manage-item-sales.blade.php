@@ -5,7 +5,7 @@ use Livewire\WithPagination;
 use App\Models\Item;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\OperationItems;
 
 new class extends Component {

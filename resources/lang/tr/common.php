@@ -120,4 +120,5 @@ return [
     'in_progress' => 'Devam Ediyor',
     'cancelled' => 'İptal Edildi',
     'expired' => 'Süresi Doldu',
+    'not_specified' => 'Belirtilmemiş',
 ];

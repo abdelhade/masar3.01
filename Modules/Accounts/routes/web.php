@@ -6,8 +6,6 @@ use Modules\Accounts\Http\Controllers\AccHeadController;
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('accounts', AccHeadController::class)->except(['show'])->names('accounts');
     
-    // Account Movement Report
-    Route::get('account-movement/{accountId?}', [AccHeadController::class, 'accountMovementReport'])->name('account-movement');
     
     // Start Balance
     Route::get('accounts/start-balance', [AccHeadController::class, 'startBalance'])->name('accounts.startBalance');

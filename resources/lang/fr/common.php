@@ -120,4 +120,5 @@ return [
     'in_progress' => 'En cours',
     'cancelled' => 'Annulé',
     'expired' => 'Expiré',
+    'not_specified' => 'Non spécifié',
 ];
