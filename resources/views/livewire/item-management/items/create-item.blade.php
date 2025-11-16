@@ -4,7 +4,7 @@ use Livewire\Volt\Component;
 use App\Models\Unit;
 use App\Models\Price;
 use App\Models\Item;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\Note;
 use App\Models\NoteDetails;
 use App\Models\Varibal;
@@ -83,7 +83,7 @@ new class extends Component {
                 'distinct',
                 function ($attribute, $value, $fail) {
                     if ($value != 1) {
-                        $fail('Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù„Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 1.');
+                        $fail(__('items.base_unit_conversion_factor_must_be_one'));
                     }
                 },
             ],
@@ -94,33 +94,36 @@ new class extends Component {
         ];
     }
 
-    protected $messages = [
-        'item.name.required' => 'Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù Ù…Ø·Ù„ÙˆØ¨.',
-        'item.name.min' => 'Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ø·ÙˆÙ„ Ù…Ù† 3 Ø£Ø­Ø±Ù.',
-        'item.name.unique' => 'Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
-        'item.type.required' => 'Ù†ÙˆØ¹ Ø§Ù„ØµÙ†Ù Ù…Ø·Ù„ÙˆØ¨.',
-        'item.type.in' => 'Ù†ÙˆØ¹ Ø§Ù„ØµÙ†Ù ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯.',
-        'item.*.notes.*.exists' => 'Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©.',
-        'unitRows.*.unit_id.exists' => 'Ø§Ù„ÙˆØ­Ø¯Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©.',
-        'unitRows.*.unit_id.required' => 'Ø§Ù„ÙˆØ­Ø¯Ø© Ù…Ø·Ù„ÙˆØ¨Ø©.',
-        'unitRows.*.unit_id.distinct' => 'Ø§Ù„ÙˆØ­Ø¯Ø© Ù…Ø³ØªØ®Ø¯Ù…Ø© Ø¨Ø§Ù„ÙØ¹Ù„.',
-        'unitRows.*.barcodes.*.string' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ù†ØµØ§Ù‹.',
-        'unitRows.*.barcodes.*.distinct' => 'Ø¨Ø§Ø±ÙƒÙˆØ¯ Ø¥Ø¶Ø§ÙÙ‰ Ù…ÙƒØ±Ø± Ø±Ø§Ø¬Ø¹ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ Ø§Ù„Ø¥Ø¶Ø§ÙÙ‰',
-        'unitRows.*.barcodes.*.unique' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
-        'unitRows.*.barcodes.*.max' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ù‚ØµØ± Ù…Ù† 25 Ø­Ø±Ù.',
-        'unitRows.*.barcodes.*.required' => 'Ø§Ù„Ø¨Ø§Ø±ÙƒÙˆØ¯ Ù…Ø·Ù„ÙˆØ¨.',
-        'unitRows.*.cost.required' => 'Ø§Ù„ØªÙƒÙ„ÙØ© Ù…Ø·Ù„ÙˆØ¨Ø©.',
-        'unitRows.*.cost.numeric' => 'Ø§Ù„ØªÙƒÙ„ÙØ© ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹.',
-        'unitRows.*.cost.min' => 'Ø§Ù„ØªÙƒÙ„ÙØ© ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† 0 Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.',
-        'unitRows.*.cost.distinct' => 'Ø§Ù„ØªÙƒÙ„ÙØ© Ù…Ø³ØªØ®Ø¯Ù…Ø© Ø¨Ø§Ù„ÙØ¹Ù„.',
-        'unitRows.*.u_val.required' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù…Ø·Ù„ÙˆØ¨.',
-        'unitRows.*.u_val.numeric' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹.',
-        'unitRows.*.u_val.min' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 0.0001 Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.',
-        'unitRows.*.u_val.distinct' => 'Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
-        'unitRows.*.prices.*.required' => 'Ø§Ù„Ø³Ø¹Ø± Ù…Ø·Ù„ÙˆØ¨.',
-        'unitRows.*.prices.*.numeric' => 'Ø§Ù„Ø³Ø¹Ø± ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø±Ù‚Ù…Ø§Ù‹.',
-        'unitRows.*.prices.*.min' => 'Ø§Ù„Ø³Ø¹Ø± ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 0 Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.',
-    ];
+    protected function messages(): array
+    {
+        return [
+            'item.name.required' => __('items.item_name_required'),
+            'item.name.min' => __('items.item_name_min_length'),
+            'item.name.unique' => __('items.item_name_unique'),
+            'item.type.required' => __('items.item_type_required'),
+            'item.type.in' => __('items.item_type_invalid'),
+            'item.*.notes.*.exists' => __('items.note_detail_not_exists'),
+            'unitRows.*.unit_id.exists' => __('items.unit_not_exists'),
+            'unitRows.*.unit_id.required' => __('items.unit_required'),
+            'unitRows.*.unit_id.distinct' => __('items.unit_already_used'),
+            'unitRows.*.barcodes.*.string' => __('items.barcode_must_be_string'),
+            'unitRows.*.barcodes.*.distinct' => __('items.barcode_duplicate_in_list'),
+            'unitRows.*.barcodes.*.unique' => __('items.barcode_already_exists'),
+            'unitRows.*.barcodes.*.max' => __('items.barcode_max_length'),
+            'unitRows.*.barcodes.*.required' => __('items.barcode_required'),
+            'unitRows.*.cost.required' => __('items.cost_required'),
+            'unitRows.*.cost.numeric' => __('items.cost_must_be_numeric'),
+            'unitRows.*.cost.min' => __('items.cost_min_value'),
+            'unitRows.*.cost.distinct' => __('items.cost_already_used'),
+            'unitRows.*.u_val.required' => __('items.conversion_factor_required'),
+            'unitRows.*.u_val.numeric' => __('items.conversion_factor_must_be_numeric'),
+            'unitRows.*.u_val.min' => __('items.conversion_factor_min_value'),
+            'unitRows.*.u_val.distinct' => __('items.conversion_factor_already_used'),
+            'unitRows.*.prices.*.required' => __('items.price_required'),
+            'unitRows.*.prices.*.numeric' => __('items.price_must_be_numeric'),
+            'unitRows.*.prices.*.min' => __('items.price_min_value'),
+        ];
+    }
 
     public function addUnitRow()
     {
@@ -346,7 +349,7 @@ new class extends Component {
     {
         // Transaction committed successfully
         $this->creating = false;
-        session()->flash('success', 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„ØµÙ†Ù Ø¨Ù†Ø¬Ø§Ø­!');
+        session()->flash('success', __('items.item_created_successfully'));
     }
 
     private function handleError(\Exception $e)
@@ -358,7 +361,7 @@ new class extends Component {
             'item' => $this->item,
             'unit_rows' => $this->unitRows,
         ]);
-        session()->flash('error', 'Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­ÙØ¸ Ø§Ù„ØµÙ†Ù. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.');
+        session()->flash('error', __('items.error_saving_item'));
     }
 
     public function edit($itemId)
@@ -418,7 +421,7 @@ new class extends Component {
                     'distinct',
                     function ($attribute, $value, $fail) {
                         if ($value != 1) {
-                            $fail('Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù„Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 1.');
+                            $fail(__('items.base_unit_conversion_factor_must_be_one'));
                         }
                     },
                 ],
@@ -471,10 +474,10 @@ new class extends Component {
         $this->resetModalData();
         
         if ($type === 'unit') {
-            $this->modalTitle = 'Ø¥Ù†Ø´Ø§Ø¡ ÙˆØ­Ø¯Ø© Ø¬Ø¯ÙŠØ¯Ø©';
+            $this->modalTitle = __('items.create_new_unit');
         } elseif ($type === 'note_detail' && $noteId) {
             $note = Note::find($noteId);
-            $this->modalTitle = 'Ø¥Ø¶Ø§ÙØ© Ø¬Ø¯ÙŠØ¯' . ' ' . '[ ' . $note->name . ' ]';
+            $this->modalTitle = __('items.add_new_note_detail', ['note' => $note->name]);
             $this->modalData['note_id'] = $noteId;
         }
         
@@ -511,10 +514,10 @@ new class extends Component {
         }
 
         $this->validate($rules, [
-            'modalData.name.required' => 'Ø§Ù„Ø§Ø³Ù… Ù…Ø·Ù„ÙˆØ¨.',
-            'modalData.name.min' => 'Ø§Ù„Ø§Ø³Ù… ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ø·ÙˆÙ„ Ù…Ù† Ø­Ø±Ù ÙˆØ§Ø­Ø¯.',
-            'modalData.name.max' => 'Ø§Ù„Ø§Ø³Ù… ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£Ù‚ØµØ± Ù…Ù† 255 Ø­Ø±Ù.',
-            'modalData.name.unique' => 'Ø§Ù„Ø§Ø³Ù… Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø§Ù„ÙØ¹Ù„.',
+            'modalData.name.required' => __('common.name') . ' ' . __('validation.required'),
+            'modalData.name.min' => __('common.name') . ' ' . __('validation.min.string', ['min' => 1]),
+            'modalData.name.max' => __('common.name') . ' ' . __('validation.max.string', ['max' => 255]),
+            'modalData.name.unique' => __('common.name') . ' ' . __('validation.unique'),
         ]);
 
         try {
@@ -530,7 +533,7 @@ new class extends Component {
                 // Refresh units list
                 $this->units = Unit::all();
                 
-                session()->flash('success', 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„ÙˆØ­Ø¯Ø© Ø¨Ù†Ø¬Ø§Ø­!');
+                session()->flash('success', __('items.unit_created_successfully'));
             } elseif ($this->modalType === 'note_detail' && $this->modalData['note_id']) {
                 // Create new note detail
                 $noteDetail = NoteDetails::create([
@@ -541,7 +544,7 @@ new class extends Component {
                 // Refresh notes list
                 $this->notes = Note::with('noteDetails')->get();
                 
-                session()->flash('success', 'ØªÙ… Ø¥Ø¶Ø§ÙØ© ' . $this->modalData['name'] . ' Ø¨Ù†Ø¬Ø§Ø­!');
+                session()->flash('success', __('items.note_detail_added_successfully', ['name' => $this->modalData['name']]));
             }
 
             DB::commit();
@@ -553,7 +556,7 @@ new class extends Component {
                 'modal_type' => $this->modalType,
                 'modal_data' => $this->modalData,
             ]);
-            session()->flash('error', 'Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø­ÙØ¸. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.');
+            session()->flash('error', __('items.error_saving_modal_data'));
         }
     }
 
@@ -623,7 +626,7 @@ new class extends Component {
             $key = 'text_' . time() . '_' . rand(1000, 9999);
             $this->selectedVaribalCombinations[$key] = trim($this->newCombinationText);
             $this->newCombinationText = '';
-            session()->flash('success', 'ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø§Ù„ØªÙˆÙ„ÙŠÙØ© Ø¨Ù†Ø¬Ø§Ø­!');
+            session()->flash('success', __('items.combination_added_successfully'));
         }
     }
 
@@ -631,7 +634,7 @@ new class extends Component {
     {
         if (isset($this->selectedVaribalCombinations[$key])) {
             unset($this->selectedVaribalCombinations[$key]);
-            session()->flash('success', 'ØªÙ… Ø­Ø°Ù Ø§Ù„ØªÙˆÙ„ÙŠÙØ© Ø¨Ù†Ø¬Ø§Ø­!');
+            session()->flash('success', __('items.combination_removed_successfully'));
         }
     }
 
@@ -648,7 +651,7 @@ new class extends Component {
         if ($this->editingCombinationKey && !empty(trim($this->editingCombinationText))) {
             $this->selectedVaribalCombinations[$this->editingCombinationKey] = trim($this->editingCombinationText);
             $this->cancelEditingCombination();
-            session()->flash('success', 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„ØªÙˆÙ„ÙŠÙØ© Ø¨Ù†Ø¬Ø§Ø­!');
+            session()->flash('success', __('items.combination_updated_successfully'));
         }
     }
 
@@ -804,7 +807,7 @@ new class extends Component {
                     'distinct',
                     function ($attribute, $value, $fail) {
                         if ($value != 1) {
-                            $fail('Ù…Ø¹Ø§Ù…Ù„ Ø§Ù„ØªØ­ÙˆÙŠÙ„ Ù„Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† 1.');
+                            $fail(__('items.base_unit_conversion_factor_must_be_one'));
                         }
                     },
                 ],
@@ -980,7 +983,7 @@ new class extends Component {
     <div class="">
         <div class="">
             <h5 class="">
-                {{ 'Ø¥Ø¶Ø§ÙØ© ØµÙ†Ù Ø¬Ø¯ÙŠØ¯' }}</h5>
+                {{ __('items.add_new_item') }}</h5>
         </div>
         @include('livewire.item-management.items.partials.alerts')
         <div class="">
@@ -991,8 +994,7 @@ new class extends Component {
                     <div class="col-md-12 p-3">
                         <div class="row">
                             <div class="col-md-1 mb-3">
-                                <label for="code" class="form-label font-family-cairo fw-bold">Ø±Ù‚Ù…
-                                    Ø§Ù„ØµÙ†Ù</label>
+                                <label for="code" class="form-label font-family-cairo fw-bold">{{ __('items.item_code') }}</label>
                                 <input type="text" wire:model.live="item.code"
                                     class="form-control font-family-cairo fw-bold" id="code"
                                     value="{{ $item['code'] }}" readonly disabled>
@@ -1001,10 +1003,10 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="col-md-1 mb-3">
-                                <label for="type" class="form-label font-family-cairo fw-bold">Ù†ÙˆØ¹ Ø§Ù„ØµÙ†Ù</label>
+                                <label for="type" class="form-label font-family-cairo fw-bold">{{ __('items.item_type') }}</label>
                                 <select wire:model="item.type" class="form-select font-family-cairo fw-bold"
                                     id="type">
-                                    <option class="font-family-cairo fw-bold" value="">Ø¥Ø®ØªØ±</option>
+                                    <option class="font-family-cairo fw-bold" value="">{{ __('common.select') }}</option>
                                     @foreach (ItemType::cases() as $type)
                                         <option class="font-family-cairo fw-bold" value="{{ $type->value }}">
                                             {{ $type->label() }}</option>
@@ -1015,8 +1017,7 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="name" class="form-label font-family-cairo fw-bold">Ø§Ø³Ù…
-                                    Ø§Ù„ØµÙ†Ù</label>
+                                <label for="name" class="form-label font-family-cairo fw-bold">{{ __('items.item_name') }}</label>
                                 <input type="text" wire:model="item.name"
                                     class="form-control font-family-cairo fw-bold frst" id="item-name" x-ref="nameInput"
                                     @if (!$creating) disabled readonly @endif>
@@ -1031,14 +1032,14 @@ new class extends Component {
                                     <div class="input-group">
                                         <button type="button" class="btn btn-outline-success font-family-cairo fw-bold"
                                             wire:click="openModal('note_detail', {{ $note->id }})"
-                                            @if (!$creating) disabled @endif title="Ø¥Ø¶Ø§ÙØ© Ø¬Ø¯ÙŠØ¯">
+                                            @if (!$creating) disabled @endif title="{{ __('items.add_new') }}">
                                             <i class="las la-plus"></i>
                                         </button>
                                         <select wire:model="item.notes.{{ $note->id }}"
                                             @if (!$creating) disabled readonly @endif
                                             class="form-select font-family-cairo fw-bold"
                                             id="note-{{ $note->id }}">
-                                            <option class="font-family-cairo fw-bold" value="">Ø¥Ø®ØªØ±</option>
+                                            <option class="font-family-cairo fw-bold" value="">{{ __('common.select') }}</option>
                                             @foreach ($note->noteDetails as $noteDetail)
                                                 <option class="font-family-cairo fw-bold"
                                                     value="{{ $noteDetail->name }}">
@@ -1053,7 +1054,7 @@ new class extends Component {
                                 </div>
                             @endforeach
                             <div class="col-md-12 mb-3">
-                                <label for="Details" class="form-label font-family-cairo fw-bold">Ø§Ù„ØªÙØ§ØµÙŠÙ„</label>
+                                <label for="Details" class="form-label font-family-cairo fw-bold">{{ __('items.item_description') }}</label>
                                 <textarea wire:model="item.info" class="form-control font-family-cairo fw-bold" id="description" rows="2"
                                     @if (!$creating) disabled readonly @endif></textarea>
                                 @error('item.details')
@@ -1064,7 +1065,7 @@ new class extends Component {
                             <div class="col-md-1 mb-3">
                                 <input type="checkbox" wire:model.live="hasVaribals" class="form-check-input"
                                     id="hasVaribals">
-                                <label for="hasVaribals" class="form-label font-family-cairo fw-bold">Ù„Ù‡ Ù…ØªØºÙŠØ±Ø§Øª</label>
+                                <label for="hasVaribals" class="form-label font-family-cairo fw-bold">{{ __('items.has_variations') }}</label>
                             </div>
                         </div>
                         @include('livewire.item-management.items.partials.varibals-grid')
@@ -1082,19 +1083,19 @@ new class extends Component {
                         @if ($creating)
                             <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
-                                Ø¹ÙˆØ¯Ù‡ ( Ø¥Ù„ØºØ§Ø¡ )
+                                {{ __('common.back') }} ( {{ __('common.cancel') }} )
                             </button>
                             <button type="submit" class="btn btn-lg btn-primary font-family-cairo fw-bold"
-                                wire:loading.attr="disabled" wire:target="save">{{ 'Ø­ÙØ¸' }}</button>
+                                wire:loading.attr="disabled" wire:target="save">{{ __('common.save') }}</button>
                         @else
                             <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
-                                Ø¹ÙˆØ¯Ù‡
+                                {{ __('common.back') }}
                             </button>
                             <button type="button" class="btn btn-lg btn-info font-family-cairo fw-bold"
-                                wire:click="createNew">{{ 'Ø¬Ø¯ÙŠØ¯' }}</button>
+                                wire:click="createNew">{{ __('common.new') }}</button>
                             <button type="button" class="btn btn-lg btn-warning font-family-cairo fw-bold"
-                                wire:click="createNewFromCurrent">{{ 'Ø¬Ø¯ÙŠØ¯ Ù…Ù† Ø§Ù„ØµÙ†Ù Ø§Ù„Ø­Ø§Ù„Ù‰' }}</button>
+                                wire:click="createNewFromCurrent">{{ __('items.new_from_current_item') }}</button>
                         @endif
                     </div>
                 </div>

@@ -10,6 +10,7 @@ return [
     'view' => 'Görüntüle',
     'create' => 'Oluştur',
     'add' => 'Ekle',
+    'new' => 'Yeni',
     'back' => 'Geri',
     'confirm' => 'Onayla',
     'reset' => 'Sıfırla',

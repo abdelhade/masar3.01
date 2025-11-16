@@ -10,6 +10,7 @@ return [
     'view' => 'View',
     'create' => 'Create',
     'add' => 'Add',
+    'new' => 'New',
     'back' => 'Back',
     'confirm' => 'Confirm',
     'reset' => 'Reset',
