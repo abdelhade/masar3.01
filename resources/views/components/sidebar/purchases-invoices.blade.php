@@ -2,12 +2,13 @@
     $purchases = [
         11 => 'فاتورة مشتريات',
         13 => 'مردود مشتريات',
-        15 => 'أمر شراء',
+        15 => 'امر شراء',
         17 => 'عرض سعر من مورد',
-        24 => 'فاتورة خدمه',
+        24 => 'فاتورة خدمة',
         25 => 'طلب احتياج',
     ];
 @endphp
+
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('discounts.general-statistics') }}">
@@ -15,7 +16,7 @@
     </a>
 </li>
 
-@can('عرض قائمة الخصومات المكتسبة')
+@can('view قائمة الخصومات المكتسبة')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.index', ['type' => 31]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.earned_discounts') }}
@@ -23,7 +24,7 @@
     </li>
 @endcan
 
-@can('عرض خصم مكتسب')
+@can('create خصم مكتسب')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.create', ['type' => 31, 'q' => md5(31)]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.earned_discount') }}
@@ -44,13 +45,13 @@
 </li>
 
 @foreach ($purchases as $type => $label)
-    {{-- @can('عرض ' . $label) --}}
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
-            <i class="ti-control-record"></i> {{ __($label) }}
-        </a>
-    </li>
-    {{-- @endcan --}}
+    @can('view ' . $label)
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
+                <i class="ti-control-record"></i> {{ __($label) }}
+            </a>
+        </li>
+    @endcan
 @endforeach
 
 <li class="nav-item">

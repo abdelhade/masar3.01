@@ -2,12 +2,11 @@
     $sales = [
         10 => 'فاتورة مبيعات',
         12 => 'مردود مبيعات',
-        14 => 'أمر بيع',
+        14 => 'امر بيع',
         16 => 'عرض سعر لعميل',
-        22 => 'أمر حجز',
+        22 => 'امر حجز',
         26 => 'اتفاقية تسعير',
     ];
-    $viewPermissions = collect($sales)->map(fn($label) => 'عرض ' . $label)->toArray();
 @endphp
 
 
@@ -17,7 +16,7 @@
     </a>
 </li>
 
-@can('عرض قائمة الخصومات المسموح بها')
+@can('view قائمة الخصومات المسموح بها')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.index', ['type' => 30]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discounts') }}
@@ -25,7 +24,7 @@
     </li>
 @endcan
 
-@can('عرض خصم مسموح به')
+@can('create خصم مسموح به')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.create', ['type' => 30, 'q' => md5(30)]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discount') }}
@@ -46,11 +45,11 @@
 </li>
 
 @foreach ($sales as $type => $label)
-    {{-- @can('عرض ' . $label) --}}
+    @can('view ' . $label)
         <li class="nav-item">
             <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
                 <i class="ti-control-record"></i> {{ __($label) }}
             </a>
         </li>
-    {{-- @endcan --}}
+    @endcan
 @endforeach

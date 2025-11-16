@@ -63,7 +63,8 @@ class DatabaseSeeder extends Seeder
             InquiriesRolesSeeder::class,
             CRMPermissionsSeeder::class,
             RentalsPermissionsSeeder::class,
-            InstallmentsPermissionsSeeder::class
+            InstallmentsPermissionsSeeder::class,
+            InvoicesPermissionsSeeder::class
 
         ]);
     }

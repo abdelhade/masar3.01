@@ -135,15 +135,38 @@ class CreateInvoiceForm extends Component
 
     public function mount($type, $hash)
     {
+        $titles = [
+            10 => 'فاتورة مبيعات',
+            11 => 'فاتورة مشتريات',
+            12 => 'مردود مبيعات',
+            13 => 'مردود مشتريات',
+            14 => 'أمر بيع',
+            15 => 'أمر شراء',
+            16 => 'عرض سعر لعميل',
+            17 => 'عرض سعر من مورد',
+            18 => 'فاتورة توالف',
+            19 => 'أمر صرف',
+            20 => 'أمر إضافة',
+            21 => 'تحويل من مخزن لمخزن',
+            22 => 'أمر حجز',
+            24 => 'فاتورة خدمة',
+            25 => 'طلب احتياج',
+            26 => 'اتفاقية تسعير',
+        ];
+
+        $permissionName = 'create ' . ($titles[$type] ?? 'غير معروف');
+        if (!auth()->user()->can($permissionName)) {
+            abort(403, 'ليس لديك صلاحية لإنشاء ' . $titles[$type]);
+        }
+
         $this->op2 = request()->get('op2');
         $this->enableDimensionsCalculation = (setting('enable_dimensions_calculation') ?? '0') == '1';
         $this->dimensionsUnit = setting('dimensions_unit', 'cm');
-
         $this->loadExpirySettings();
-
         $this->initializeInvoice($type, $hash);
         $this->loadTemplatesForType();
     }
+
 
 
     public function handleItemSelected($data)
