@@ -532,13 +532,13 @@
                     iconColor: "#2E7D32",
                     route: "{{ route('items.index') }}"
                 },
-                // {
-                //     name: "الخصومات",
-                //     icon: "tag",
-                //     iconBg: "#E3F2FD",
-                //     iconColor: "#1565C0",
-                //     route: "{{ route('discounts.index') }}"
-                // },
+                {
+                    name: "ادارة التقسيط",
+                    icon: "tag",
+                    iconBg: "#E3F2FD",
+                    iconColor: "#1565C0",
+                    route: "{{ route('installments.plans.index') }}"
+                },
                 {
                     name: "الصلاحيات",
                     icon: "key",
