@@ -24,51 +24,51 @@ new class extends Component {
         $today = Carbon::now()->startOfDay();
         $startDate = $today->copy()->subDays($toDays ?? $fromDays);
         $endDate = $fromDays > 0 ? $today->copy()->subDays($fromDays - 1) : $today;
-        
-        // Ø¬Ù„Ø¨ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù„Ù„ÙØªØ±Ø© Ø§Ù„Ø¹Ù…Ø±ÙŠØ© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©
+
+        // جلب مجموع الديون للفترة العمرية المحددة
         $debtSum = OperHead::where('acc1', $customerId)
             ->whereBetween('accural_date', [$startDate, $endDate])
             ->selectRaw('SUM(fat_net - paid_from_client) as debt_sum')
             ->value('debt_sum');
-            
+
         return $debtSum ?? 0;
     }
 
-    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 1 Ø¥Ù„Ù‰ 15 ÙŠÙˆÙ…
+    // دالة للحصول على الديون من 1 إلى 15 يوم
     public function getDebt1to15($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 1, 15);
     }
 
-    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 16 Ø¥Ù„Ù‰ 30 ÙŠÙˆÙ…
+    // دالة للحصول على الديون من 16 إلى 30 يوم
     public function getDebt16to30($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 16, 30);
     }
 
-    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 31 Ø¥Ù„Ù‰ 60 ÙŠÙˆÙ…
+    // دالة للحصول على الديون من 31 إلى 60 يوم
     public function getDebt31to60($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 31, 60);
     }
 
-    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 61 Ø¥Ù„Ù‰ 90 ÙŠÙˆÙ…
+    // دالة للحصول على الديون من 61 إلى 90 يوم
     public function getDebt61to90($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 61, 90);
     }
 
-    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ù…Ù† 91 Ø¥Ù„Ù‰ 120 ÙŠÙˆÙ…
+    // دالة للحصول على الديون من 91 إلى 120 يوم
     public function getDebt91to120($customerId)
     {
         return $this->getCustomerDebtByAgeRange($customerId, 91, 120);
     }
 
-    // Ø¯Ø§Ù„Ø© Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø¯ÙŠÙˆÙ† Ø£ÙƒØ«Ø± Ù…Ù† 120 ÙŠÙˆÙ…
+    // دالة للحصول على الديون أكثر من 120 يوم
     public function getDebtOver120($customerId)
     {
         $today = Carbon::now()->startOfDay();
-        $startDate = $today->copy()->subDays(9999); // ØªØ§Ø±ÙŠØ® Ù‚Ø¯ÙŠÙ… Ø¬Ø¯Ø§Ù‹
+        $startDate = $today->copy()->subDays(9999); // تاريخ قديم جداً كبداية للفترة
         $endDate = $today->copy()->subDays(121);
         
         $debtSum = OperHead::where('acc1', $customerId)

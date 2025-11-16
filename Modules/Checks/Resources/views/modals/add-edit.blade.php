@@ -67,8 +67,8 @@
                             <select name="acc_id" id="acc_id" class="form-select">
                                 <option value="">Ø§Ø®ØªØ± Ø§Ù„Ø­Ø³Ø§Ø¨</option>
                                 @php
-                                    $clients = \Modules\\Accounts\\Models\\AccHead::where('code', 'like', '1103%')->get();
-                                    $suppliers = \Modules\\Accounts\\Models\\AccHead::where('code', 'like', '2101%')->get();
+                                    $clients = \Modules\Accounts\Models\AccHead::where('code', 'like', '1103%')->get();
+                                    $suppliers = \Modules\Accounts\Models\AccHead::where('code', 'like', '2101%')->get();
                                 @endphp
                                 <optgroup label="Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡" id="clients_group">
                                     @foreach($clients as $client)

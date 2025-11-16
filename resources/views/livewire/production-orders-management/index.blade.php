@@ -2,7 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\ProductionOrder;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
 use Livewire\Attributes\Url;

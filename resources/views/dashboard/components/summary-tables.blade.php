@@ -4,7 +4,7 @@
             <div class="card-header">Ø£Ø­Ø¯Ø« Ø§Ù„Ø­Ø³Ø§Ø¨Ø§Øª</div>
             <div class="card-body p-0">
                 @php
-                use Modules\\Accounts\\Models\\AccHead;
+                use Modules\Accounts\Models\AccHead;
 
                 $lastAccounts = AccHead::with('haveParent')
                 ->orderBy('id', 'desc')

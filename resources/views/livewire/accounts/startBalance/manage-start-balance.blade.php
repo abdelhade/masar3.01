@@ -1,7 +1,7 @@
 <?php
 
 use Livewire\Volt\Component;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\DB;
 use Modules\\Accounts\\Services\\AccountService;
 use Illuminate\Support\Facades\Log;

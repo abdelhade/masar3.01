@@ -3,7 +3,7 @@
 use Livewire\Volt\Component;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use Carbon\Carbon;
 use Modules\Settings\Models\PublicSetting;

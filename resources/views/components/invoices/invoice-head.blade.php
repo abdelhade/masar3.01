@@ -81,7 +81,7 @@
             <div class="col-lg-2" wire:key="acc1-{{ $branch_id }}">
                 <div class="d-flex align-items-end gap-2">
                     <div class="flex-grow-1">
-                        <livewire:app::searchable-select :model="'Modules\\Accounts\\Models\\AccHead'" :label="$acc1Role" :labelField="'aname'"
+                        <livewire:app::searchable-select :model="'Modules\Accounts\Models\AccHead'" :label="$acc1Role" :labelField="'aname'"
                             :placeholder="'ابحث عن ' . $acc1Role . '...'" :wireModel="'acc1_id'" :selectedId="$acc1_id" :where="$this->getAcc1WhereConditions()" :searchFields="['code', 'aname']"
                             :allowCreate="false" :key="'acc1-search-' . $type . '-' . $branch_id" />
                         @error('acc1_id')

@@ -762,7 +762,7 @@
                 @endif
                 @if ($warehouseId !== 'all')
                     @php
-                        $warehouse = \Modules\\Accounts\\Models\\AccHead::find($warehouseId);
+                        $warehouse = \Modules\Accounts\Models\AccHead::find($warehouseId);
                     @endphp
                     <span class="filter-item">Ø§Ù„Ù…Ø®Ø²Ù†: {{ $warehouse ? $warehouse->aname : 'ØºÙŠØ± Ù…Ø­Ø¯Ø¯' }}</span>
                 @else
@@ -866,7 +866,7 @@
                             }
 
                             // Get warehouse name
-                            $warehouse = \Modules\\Accounts\\Models\\AccHead::find($movement->detail_store);
+                            $warehouse = \Modules\Accounts\Models\AccHead::find($movement->detail_store);
                             $warehouseName = $warehouse ? $warehouse->aname : 'N/A';
 
                             // Get unit name

@@ -2,7 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\ProductionOrder;
-use Modules\\Accounts\\Models\\AccHead;
+use Modules\Accounts\Models\AccHead;
 use App\Models\Item;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

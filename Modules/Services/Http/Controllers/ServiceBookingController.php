@@ -61,7 +61,7 @@ class ServiceBookingController extends Controller
             ->paginate(15);
 
         $services = Service::where('is_active', true)->orderBy('name')->get();
-        $customers = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $customers = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
             ->where('aname', 'like', '%Ø¹Ù…ÙŠÙ„%')
             ->orderBy('aname')
             ->get();
@@ -81,11 +81,11 @@ class ServiceBookingController extends Controller
     {
         $booking = new ServiceBooking();
         $services = Service::where('is_active', true)->orderBy('name')->get();
-        $customers = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $customers = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
             ->where('aname', 'like', '%Ø¹Ù…ÙŠÙ„%')
             ->orderBy('aname')
             ->get();
-        $employees = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $employees = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
             ->where('aname', 'like', '%Ù…ÙˆØ¸Ù%')
             ->orderBy('aname')
             ->get();
@@ -133,11 +133,11 @@ class ServiceBookingController extends Controller
     public function edit(ServiceBooking $booking)
     {
         $services = Service::where('is_active', true)->orderBy('name')->get();
-        $customers = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $customers = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
             ->where('aname', 'like', '%Ø¹Ù…ÙŠÙ„%')
             ->orderBy('aname')
             ->get();
-        $employees = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+        $employees = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
             ->where('aname', 'like', '%Ù…ÙˆØ¸Ù%')
             ->orderBy('aname')
             ->get();

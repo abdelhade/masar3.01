@@ -53,7 +53,7 @@
                                 <select name="acc1_id" id="acc_id" class="form-control select2" required>
                                     <option value="">Ø§Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„Ø­Ø³Ø§Ø¨...</option>
                                     @php
-                                        $allAccounts = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+                                        $allAccounts = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
                                             ->where('is_basic', 0)
                                             ->select('id', 'aname', 'code', 'balance')
                                             ->orderBy('code')
@@ -109,7 +109,7 @@
                                 <select name="portfolio_id" id="portfolio_id" class="form-select" required>
                                     @php
                                         $portfolioCode = $pageType === 'incoming' ? '1105' : '2103';
-                                        $portfolios = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+                                        $portfolios = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
                                             ->where('code', 'like', $portfolioCode . '%')
                                             ->select('id', 'aname', 'code', 'balance')
                                             ->get();

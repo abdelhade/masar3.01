@@ -14,7 +14,7 @@
                         <select name="bank_account_id" id="bank_account_id" class="form-select" required>
                             <option value="">Ø§Ø®ØªØ± Ø§Ù„Ø¨Ù†Ùƒ</option>
                             @php
-                                $banks = \Modules\\Accounts\\Models\\AccHead::where('isdeleted', 0)
+                                $banks = \Modules\Accounts\Models\AccHead::where('isdeleted', 0)
                                     ->where('is_basic', 0)
                                     ->where('code', 'like', '1102%')
                                     ->select('id', 'aname', 'code', 'balance')
