@@ -109,23 +109,24 @@ class CreateInvoiceForm extends Component
     public $dimensionsUnit = 'cm'; // cm أو m
 
     public $titles = [
-        10 => 'فاتوره مبيعات',
-        11 => 'فاتورة مشتريات',
-        12 => 'مردود مبيعات',
-        13 => 'مردود مشتريات',
-        14 => 'امر بيع',
-        15 => 'امر شراء',
-        16 => 'عرض سعر لعميل',
-        17 => 'عرض سعر من مورد',
-        18 => 'فاتورة توالف',
-        19 => 'امر صرف',
-        20 => 'امر اضافة',
-        21 => 'تحويل من مخزن لمخزن',
-        22 => 'امر حجز',
-        24 => 'فاتورة خدمه',
-        25 => 'طلب احتياج',
-        26 => 'اتفاقية تسعير',
+        10 => 'Sales Invoice',
+        11 => 'Purchase Invoice',
+        12 => 'Sales Return',
+        13 => 'Purchase Return',
+        14 => 'Sales Order',
+        15 => 'Purchase Order',
+        16 => 'Quotation to Customer',
+        17 => 'Quotation from Supplier',
+        18 => 'Damaged Goods Invoice',
+        19 => 'Dispatch Order',
+        20 => 'Addition Order',
+        21 => 'Store-to-Store Transfer',
+        22 => 'Booking Order',
+        24 => 'Service Invoice',
+        25 => 'Requisition',
+        26 => 'Pricing Agreement',
     ];
+
     protected $listeners = [
         'account-created' => 'handleAccountCreated',
         'branch-changed' => 'handleBranchChange',
@@ -135,15 +136,19 @@ class CreateInvoiceForm extends Component
 
     public function mount($type, $hash)
     {
+        $permissionName = 'create ' . ($this->titles[$type] ?? 'Unknown');
+        if (!auth()->user()->can($permissionName)) {
+            abort(403, 'You do not have permission to create ' . ($this->titles[$type] ?? 'this invoice type'));
+        }
+
         $this->op2 = request()->get('op2');
         $this->enableDimensionsCalculation = (setting('enable_dimensions_calculation') ?? '0') == '1';
         $this->dimensionsUnit = setting('dimensions_unit', 'cm');
-
         $this->loadExpirySettings();
-
         $this->initializeInvoice($type, $hash);
         $this->loadTemplatesForType();
     }
+
 
 
     public function handleItemSelected($data)

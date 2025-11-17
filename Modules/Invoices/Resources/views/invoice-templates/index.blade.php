@@ -1,6 +1,5 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.sales-invoices')
     @include('components.sidebar.purchases-invoices')
@@ -9,48 +8,55 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('نماذج الفواتير'),
+        'title' => __('Invoice Templates'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('نماذج الفواتير')],
+            ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
+            ['label' => __('Invoice Templates')],
         ],
     ])
+
 
     <div class="row">
         <div class="col-lg-12">
             {{-- @can('إضافة نموذج فاتورة') --}}
             <a href="{{ route('invoice-templates.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                {{ __('إضافة نموذج جديد') }}
+                {{ __('Add New Template') }}
                 <i class="fas fa-plus me-2"></i>
             </a>
             {{-- @endcan --}}
 
+
             <br><br>
+
 
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
+
                         <x-table-export-actions table-id="invoice-templates-table" filename="invoice-templates"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                            excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                            print-label="{{ __('Print') }}" />
+
 
                         <table id="invoice-templates-table" class="table table-striped mb-0 text-center align-middle"
                             style="min-width: 1200px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('الاسم') }}</th>
-                                    <th>{{ __('الكود') }}</th>
-                                    <th>{{ __('الوصف') }}</th>
-                                    <th>{{ __('أنواع الفواتير') }}</th>
-                                    <th>{{ __('عدد الأعمدة') }}</th>
-                                    <th>{{ __('الحالة') }}</th>
-                                    <th>{{ __('الترتيب') }}</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Code') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Invoice Types') }}</th>
+                                    <th>{{ __('Number of Columns') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Order') }}</th>
                                     {{-- @canany(['تعديل نموذج فاتورة', 'حذف نموذج فاتورة']) --}}
-                                    <th>{{ __('الإجراءات') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                     {{-- @endcanany --}}
                                 </tr>
                             </thead>
+
 
                             <tbody>
                                 @forelse($templates as $template)
@@ -81,11 +87,12 @@
                                                 <button type="submit"
                                                     class="btn btn-sm btn-{{ $template->is_active ? 'success' : 'secondary' }}">
                                                     <i class="fas fa-{{ $template->is_active ? 'check' : 'times' }}"></i>
-                                                    {{ $template->is_active ? __('نشط') : __('غير نشط') }}
+                                                    {{ $template->is_active ? __('Active') : __('Inactive') }}
                                                 </button>
                                             </form>
                                         </td>
                                         <td>{{ $template->sort_order }}</td>
+
 
                                         {{-- @canany(['تعديل نموذج فاتورة', 'حذف نموذج فاتورة']) --}}
                                         <td>
@@ -96,10 +103,11 @@
                                             </a>
                                             {{-- @endcan --}}
 
+
                                             {{-- @can('حذف نموذج فاتورة') --}}
                                             <form action="{{ route('invoice-templates.destroy', $template) }}"
                                                 method="POST" style="display:inline-block;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا النموذج؟');">
+                                                onsubmit="return confirm('{{ __('Are you sure you want to delete this template?') }}');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-icon-square-sm">
@@ -116,13 +124,14 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                {{ __('لا توجد نماذج متاحة') }}
+                                                {{ __('No templates available') }}
                                             </div>
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
+
 
                         <div class="mt-3">
                             {{ $templates->links() }}

@@ -1,11 +1,12 @@
+{{-- Purchases Invoices Sidebar --}}
 @php
     $purchases = [
-        11 => 'فاتورة مشتريات',
-        13 => 'مردود مشتريات',
-        15 => 'أمر شراء',
-        17 => 'عرض سعر من مورد',
-        24 => 'فاتورة خدمه',
-        25 => 'طلب احتياج',
+        11 => 'Purchase Invoice',
+        13 => 'Purchase Return',
+        15 => 'Purchase Order',
+        17 => 'Quotation from Supplier',
+        24 => 'Service Invoice',
+        25 => 'Requisition',
     ];
 @endphp
 
@@ -15,7 +16,7 @@
     </a>
 </li>
 
-@can('عرض قائمة الخصومات المكتسبة')
+@can('view Earned Discounts List')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.index', ['type' => 31]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.earned_discounts') }}
@@ -23,7 +24,7 @@
     </li>
 @endcan
 
-@can('عرض خصم مكتسب')
+@can('create Earned Discount')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.create', ['type' => 31, 'q' => md5(31)]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.earned_discount') }}
@@ -33,28 +34,29 @@
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('purchases.statistics') }}">
-        <i class="ti-control-record"></i>Purchases Statistics
+        <i class="ti-control-record"></i>{{ __('Purchases Statistics') }}
     </a>
 </li>
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('invoice-templates.index') }}">
-        <i class="ti-control-record"></i>نماذج الفواتير
+        <i class="ti-control-record"></i>{{ __('Invoice Templates') }}
     </a>
 </li>
 
+{{-- Loop through all purchases invoices with permissions --}}
 @foreach ($purchases as $type => $label)
-    {{-- @can('عرض ' . $label) --}}
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
-            <i class="ti-control-record"></i> {{ __($label) }}
-        </a>
-    </li>
-    {{-- @endcan --}}
+    @can('view ' . $label)
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
+                <i class="ti-control-record"></i> {{ __($label) }}
+            </a>
+        </li>
+    @endcan
 @endforeach
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('invoices.track.search') }}">
-        <i class="ti-control-record"></i> تتبع مسار الفاتورة
+        <i class="ti-control-record"></i> {{ __('Track Invoice Path') }}
     </a>
 </li>

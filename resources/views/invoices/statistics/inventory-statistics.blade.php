@@ -8,31 +8,31 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <h2 class="mb-4">إحصائيات المخزون</h2>
+                <h2 class="mb-4">{{ __('Inventory Statistics') }}</h2>
             </div>
         </div>
         <div class="row">
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">إجمالي الهدر</h5>
-                        <p class="card-text">{{ number_format($stats['total_waste'], 2) }} جنيه</p>
+                        <h5 class="card-title">{{ __('Total Waste') }}</h5>
+                        <p class="card-text">{{ number_format($stats['total_waste'], 2) }} {{ __('EGP') }}</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">إجمالي الإصدارات</h5>
-                        <p class="card-text">{{ number_format($stats['total_issues'], 2) }} جنيه</p>
+                        <h5 class="card-title">{{ __('Total Issues') }}</h5>
+                        <p class="card-text">{{ number_format($stats['total_issues'], 2) }} {{ __('EGP') }}</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">إجمالي الإضافات</h5>
-                        <p class="card-text">{{ number_format($stats['total_additions'], 2) }} جنيه</p>
+                        <h5 class="card-title">{{ __('Total Additions') }}</h5>
+                        <p class="card-text">{{ number_format($stats['total_additions'], 2) }} {{ __('EGP') }}</p>
                     </div>
                 </div>
             </div>
@@ -41,7 +41,7 @@
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">إجمالي التحويلات</h5>
+                        <h5 class="card-title">{{ __('Total Transfers') }}</h5>
                         <p class="card-text">{{ $stats['total_transfers'] }}</p>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">إجمالي العناصر</h5>
+                        <h5 class="card-title">{{ __('Total Items') }}</h5>
                         <p class="card-text">{{ $stats['total_items'] }}</p>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">عناصر منخفضة المخزون</h5>
+                        <h5 class="card-title">{{ __('Low Stock Items') }}</h5>
                         <p class="card-text">{{ $stats['low_stock_items'] }}</p>
                     </div>
                 </div>
@@ -67,15 +67,16 @@
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">إجمالي قيمة المخزون</h5>
-                        <p class="card-text">{{ number_format($stats['total_inventory_value'], 2) }} جنيه</p>
+                        <h5 class="card-title">{{ __('Total Inventory Value') }}</h5>
+                        <p class="card-text">{{ number_format($stats['total_inventory_value'], 2) }} {{ __('EGP') }}
+                        </p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">أكثر صنف مبيعاً</h5>
+                        <h5 class="card-title">{{ __('Top Selling Item') }}</h5>
                         <p class="card-text">{{ $stats['top_selling_item_name'] }} ({{ $stats['top_selling_item_qty'] }})
                         </p>
                     </div>
@@ -86,7 +87,7 @@
             <div class="col-md-6">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">توزيع عمليات المخزون</h5>
+                        <h5 class="card-title">{{ __('Inventory Operations Distribution') }}</h5>
                         <canvas id="inventoryPieChart" class="chart-canvas"></canvas>
                     </div>
                 </div>
@@ -94,13 +95,14 @@
             <div class="col-md-6">
                 <div class="card stats-card">
                     <div class="card-body">
-                        <h5 class="card-title">عمليات المخزون</h5>
+                        <h5 class="card-title">{{ __('Inventory Operations') }}</h5>
                         <canvas id="inventoryBarChart" class="chart-canvas"></canvas>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     <style>
         .stats-card {
@@ -111,10 +113,12 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+
         .stats-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
+
 
         .card-title {
             font-size: 1.1rem;
@@ -122,22 +126,26 @@
             color: #343a40;
         }
 
+
         .card-text {
             font-size: 1.3rem;
             font-weight: bold;
             color: #007bff;
         }
 
+
         h2 {
             font-weight: 700;
             color: #212529;
         }
+
 
         .chart-canvas {
             max-height: 200px !important;
             max-width: 100% !important;
         }
     </style>
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -146,7 +154,9 @@
         new Chart(pieCtx, {
             type: 'pie',
             data: {
-                labels: ['الهدر', 'الإصدارات', 'الإضافات', 'التحويلات'],
+                labels: ["{{ __('Waste') }}", "{{ __('Issues') }}", "{{ __('Additions') }}",
+                    "{{ __('Transfers') }}"
+                ],
                 datasets: [{
                     data: [
                         @json($stats['inventory_by_type']['waste']),
@@ -172,7 +182,7 @@
                     },
                     title: {
                         display: true,
-                        text: 'توزيع عمليات المخزون',
+                        text: "{{ __('Inventory Operations Distribution') }}",
                         font: {
                             size: 14
                         }
@@ -181,14 +191,17 @@
             }
         });
 
+
         // Bar Chart
         const barCtx = document.getElementById('inventoryBarChart').getContext('2d');
         new Chart(barCtx, {
             type: 'bar',
             data: {
-                labels: ['الهدر', 'الإصدارات', 'الإضافات', 'التحويلات'],
+                labels: ["{{ __('Waste') }}", "{{ __('Issues') }}", "{{ __('Additions') }}",
+                    "{{ __('Transfers') }}"
+                ],
                 datasets: [{
-                    label: 'القيمة (جنيه)',
+                    label: "{{ __('Value (EGP)') }}",
                     data: [
                         @json($stats['inventory_by_type']['waste']),
                         @json($stats['inventory_by_type']['issues']),
@@ -207,7 +220,7 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'القيمة (جنيه)',
+                            text: "{{ __('Value (EGP)') }}",
                             font: {
                                 size: 12
                             }
@@ -216,7 +229,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'نوع العملية',
+                            text: "{{ __('Operation Type') }}",
                             font: {
                                 size: 12
                             }
@@ -234,7 +247,7 @@
                     },
                     title: {
                         display: true,
-                        text: 'عمليات المخزون',
+                        text: "{{ __('Inventory Operations') }}",
                         font: {
                             size: 14
                         }
