@@ -3,9 +3,6 @@ namespace App\Http\Controllers;
 
 
 use Modules\Accounts\Models\AccHead;
-use Illuminate\Support\Facades\DB;
-use App\Models\MultiVoucher;
-use App\Models\JournalHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\MultiVoucher;

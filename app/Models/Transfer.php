@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Modules\Branches\Models\Branch;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Database\Eloquent\Model;
 
 class Transfer extends Model

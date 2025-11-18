@@ -11,7 +11,7 @@
         <form id="myForm" action="{{ route('transfers.update', $transfer->id) }}" method="POST">
             @csrf
             @method('PUT')
-       
+
             <input type="hidden" name="pro_type" value="{{$pro_type}}">
 
             <div class="card col-md-8 container">
@@ -88,13 +88,13 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <label>من حساب: {{ $acc1_text }} <span class="badge badge-outline-info">دائن</span></label>
-                           
-                            <select name="acc2" required id="acc2" class="form-control" onblur="validateRequired(this); checkSameAccounts();">
+
+                            <select name="acc1" required id="acc1" class="form-control" onblur="validateRequired(this); checkSameAccounts();">
                                 <option value="">اختر الحساب</option>
-                                @php $fromAccounts = ($type === 'cash_to_cash' || $type === 'cash_to_bank') ? $cashAccounts : $bankAccounts; 
+                                @php $fromAccounts = ($type === 'cash_to_cash' || $type === 'cash_to_bank') ? $cashAccounts : $bankAccounts;
                                 @endphp
                                 @foreach ($fromAccounts as $account)
-                                    <option value="{{ $account->id }}" {{ old('acc2', $transfer->acc2 ?? '') == $account->id ? 'selected' : '' }}>
+                                    <option value="{{ $account->id }}" {{ old('acc1', $transfer->acc1 ?? '') == $account->id ? 'selected' : '' }}>
                                         {{ $account->aname }}
                                     </option>
                                 @endforeach
@@ -104,11 +104,11 @@
                         </div>
                         <div class="col-lg-6">
                             <label>إلى حساب: {{ $acc2_text }} <span class="badge badge-outline-info">مدين</span></label>
-                            <select name="acc1" id="acc2" required class="form-control" onblur="validateRequired(this); checkSameAccounts();">
+                            <select name="acc2" id="acc2" required class="form-control" onblur="validateRequired(this); ">
                                 <option value="">اختر الحساب</option>
                                 @php $toAccounts = ($type === 'cash_to_cash' || $type === 'bank_to_cash') ? $cashAccounts : $bankAccounts; @endphp
                                 @foreach ($toAccounts as $account)
-                                    <option value="{{ $account->id }}" {{ old('acc1', $transfer->acc1 ?? '') == $account->id ? ' selected ' : '' }}>
+                                    <option value="{{ $account->id }}" {{ old('acc2', $transfer->acc2 ?? '') == $account->id ? ' selected ' : '' }}>
                                         {{ $account->aname }}
                                     </option>
                                 @endforeach
@@ -150,7 +150,11 @@
                             <label>مركز التكلفة</label>
                             <select name="cost_center" class="form-control">
                                 <option value="">بدون مركز تكلفة</option>
-                                {{-- أضف مراكز التكلفة هنا --}}
+                                @if(!empty($costCenters) && count($costCenters))
+                                    @foreach($costCenters as $cc)
+                                        <option value="{{ $cc->id }}" {{ old('cost_center', $transfer->cost_center ?? '') == $cc->id ? 'selected' : '' }}>{{ $cc->name }}</option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
                         <div class="col-lg-6">

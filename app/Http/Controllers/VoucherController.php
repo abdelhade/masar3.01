@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{AccHead, OperHead, CostCenter, Voucher, JournalDetail, JournalHead, Project};
+use Modules\Accounts\Models\AccHead;
+use App\Models\{OperHead, CostCenter, Voucher, JournalDetail, JournalHead, Project};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
