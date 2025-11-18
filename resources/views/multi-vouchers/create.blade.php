@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.multi-vouchers')
+    @include('components.sidebar.vouchers')
 @endsection
 
 @section('content')

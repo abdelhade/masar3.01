@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.multi-vouchers')
+    @include('components.sidebar.vouchers')
 @endsection
 
 @section('content')
@@ -206,48 +206,86 @@
 
     {{-- نفس سكريبت create مع الحساب --}}
     <script>
-        // نفس زر الإضافة زي create
+        // Table body and helpers
         const tableBody = document.querySelector('#entriesTable tbody');
+        const debitTotalEl = document.getElementById('debitTotal');
 
-        document.getElementById('addRow').onclick = () => {
+        function recalcTotal() {
+            let total = 0;
+            tableBody.querySelectorAll('input[name="sub_value[]"]').forEach(i => {
+                const v = parseFloat(i.value) || 0;
+                total += v;
+            });
+            debitTotalEl.textContent = total.toFixed(2);
+        }
+
+        // delegate remove button
+        tableBody.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('removeRow')) {
+                const row = e.target.closest('tr');
+                if (row) row.remove();
+                recalcTotal();
+            }
+        });
+
+        // listen for input changes to update total
+        tableBody.addEventListener('input', function(e) {
+            if (e.target && e.target.name === 'sub_value[]') {
+                recalcTotal();
+            }
+        });
+
+        // add row
+        document.getElementById('addRow').addEventListener('click', function() {
             const lastRow = tableBody.querySelector('tr:last-child');
-            const amount = lastRow.querySelector('input[name="sub_value[]"]').value;
-            const account = lastRow.querySelector('select').value;
 
-            if (!amount || parseFloat(amount) === 0 || !account) {
-                alert("يرجى تعبئة الصف الحالي أولاً قبل إضافة صف جديد.");
-                return;
+            // if there is a last row, ensure it has amount and account selected
+            if (lastRow) {
+                const amountInput = lastRow.querySelector('input[name="sub_value[]"]');
+                const selectEl = lastRow.querySelector('select');
+                const amount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+                const account = selectEl ? selectEl.value : null;
+                if (!amount || amount === 0 || !account) {
+                    alert('يرجى تعبئة الصف الحالي (المبلغ والحساب) أولاً قبل إضافة صف جديد.');
+                    return;
+                }
             }
 
-            const row = tableBody.insertRow();
+            const row = document.createElement('tr');
             row.innerHTML = `
-        <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01" value="0"></td>
-        <td>
-            @if (in_array($pro_type, ['32', '40', '41', '46', '47', '50', '53', '55']))
-                <select name="acc2[]" class="form-control" required>
-                    <option value="">__ اختر حساب __</option>
-                    @foreach ($accounts2 as $acc2)
-                        <option value="{{ $acc2->id }}">{{ $acc2->code }} _ {{ $acc2->aname }}</option>
-                    @endforeach
-                </select>
-            @elseif (in_array($pro_type, ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54']))
-                <select name="acc1[]" class="form-control" required>
-                    <option value="">__ اختر حساب __</option>
-                    @foreach ($accounts1 as $acc1)
-                        <option value="{{ $acc1->id }}">{{ $acc1->code }} _ {{ $acc1->aname }}</option>
-                    @endforeach
-                </select>
-            @endif
-        </td>
-        <td><input type="text" name="note[]" class="form-control"></td>
-        <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
-    `;
+                <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01" value="0"></td>
+                <td>
+                    @if (in_array($pro_type, ['32', '40', '41', '46', '47', '50', '53', '55']))
+                        <select name="acc2[]" class="form-control" required>
+                            <option value="">__ اختر حساب __</option>
+                            @foreach ($accounts2 as $acc2)
+                                <option value="{{ $acc2->id }}">{{ $acc2->code }} _ {{ $acc2->aname }}</option>
+                            @endforeach
+                        </select>
+                    @elseif (in_array($pro_type, ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54']))
+                        <select name="acc1[]" class="form-control" required>
+                            <option value="">__ اختر حساب __</option>
+                            @foreach ($accounts1 as $acc1)
+                                <option value="{{ $acc1->id }}">{{ $acc1->code }} _ {{ $acc1->aname }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+                </td>
+                <td><input type="text" name="note[]" class="form-control"></td>
+                <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
+            `;
+            tableBody.appendChild(row);
 
-            // ركّز على المبلغ الجديد
-            const newRow = tableBody.querySelector('tr:last-child');
-            const newInput = newRow.querySelector('input[name="sub_value[]"]');
-            newInput.focus();
-            newInput.select();
-        };
+            // focus last amount
+            const newInput = row.querySelector('input[name="sub_value[]"]');
+            if (newInput) {
+                newInput.focus();
+                newInput.select();
+            }
+            recalcTotal();
+        });
+
+        // initial total calc
+        recalcTotal();
     </script>
 @endsection

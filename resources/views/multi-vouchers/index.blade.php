@@ -2,7 +2,7 @@
 
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
-    @include('components.sidebar.multi-vouchers')
+    @include('components.sidebar.vouchers')
 @endsection
 @section('content')
     @include('components.breadcrumb', [
@@ -16,15 +16,20 @@
             </div>
         @endif
         <div class="card-header">
-            @if (request('type') == 'multi_payment')
-                <a href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}" class="btn btn-primary">
-                    إضافة سند دفع
-                </a>
-            @elseif (request('type') == 'multi_receipt')
-                <a href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}" class="btn btn-success">
-                    إضافة سند قبض
-                </a>
-            @endif
+            @can('create multi-payment')
+                @if (request('type') == 'multi_payment')
+                    <a href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}" class="btn btn-primary">
+                        إضافة سند دفع
+                    </a>
+                @endif
+            @endcan
+            @can('create multi-receipt')
+                @if (request('type') == 'multi_receipt')
+                    <a href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}" class="btn btn-success">
+                        إضافة سند قبض
+                    </a>
+                @endif
+            @endcan
         </div>
 
         <div class="card-body">
@@ -61,32 +66,50 @@
                                 <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->details }}</td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->pro_value }}</td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ $multi->account1->aname ?? 'مذكروين' }}</td>
+                                    {{ $accountsMap[$multi->id]['debit'] ?? ($multi->account1->aname ?? 'مذكروين') }}
+                                </td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">
-                                    {{ $multi->account2->aname ?? 'مذكروين' }}</td>
+                                    {{ $accountsMap[$multi->id]['credit'] ?? ($multi->account2->aname ?? 'مذكروين') }}
+                                </td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->emp1->aname ?? '' }}
                                 </td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->emp2->aname ?? '' }}
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->user }}</td>
+                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $usersMap[$multi->id] ?? ($multi->user?->name ?? $multi->user) }}</td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->created_at }}</td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->info }}</td>
                                 <td class="font-family-cairo fw-bold font-14 text-center">
                                     {{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
                                 <td class="font-family-cairo fw-bold font-14 text-center" x-show="columns[16]">
+                                    @php
+                                        $pname = $multi->type->pname ?? null;
+                                        $editPerm = match($pname) {
+                                            'multi_payment' => 'edit multi-payment',
+                                            'multi_receipt' => 'edit multi-receipt',
+                                            default => null,
+                                        };
+                                        $deletePerm = match($pname) {
+                                            'multi_payment' => 'delete multi-payment',
+                                            'multi_receipt' => 'delete multi-receipt',
+                                            default => null,
+                                        };
+                                    @endphp
+                                    @if ($editPerm && Auth::user()->can($editPerm))
+                                        <a href="{{ route('multi-vouchers.edit', $multi) }}"
+                                            class="btn btn-success btn-icon-square-sm"><i class="las la-edit"></i></a>
+                                    @endif
 
-                                    <a href="{{ route('multi-vouchers.edit', $multi) }}"
-                                        class="btn btn-success btn-icon-square-sm"><i class="las la-edit"></i></a>
-
-                                    <form action="{{ route('multi-vouchers.destroy', $multi->id) }}" method="POST"
-                                        style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-icon-square-sm"
-                                            onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
-                                            <i class="las la-trash-alt"></i>
-                                        </button>
-                                    </form>
+                                    @if ($deletePerm && Auth::user()->can($deletePerm))
+                                        <form action="{{ route('multi-vouchers.destroy', $multi->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-icon-square-sm"
+                                                onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
+                                                <i class="las la-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

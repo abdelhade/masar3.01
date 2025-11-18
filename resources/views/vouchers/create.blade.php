@@ -20,7 +20,7 @@
         $proTypeMap = [
             'receipt' => 1,
             'payment' => 2,
-            'exp-payment' => 2,
+            'exp-payment' => 3,
         ];
         $pro_type = $proTypeMap[$type] ?? null;
     @endphp
@@ -163,7 +163,8 @@
                                     </div>
                                     <div class="row mt-2">
                                         <div class="col">قبل : <span
-                                                id="acc_before">{{ $otherAccounts->first()->balance ?? 0 }}</span></div>
+                                                id="acc_before">{{ $type === 'exp-payment' ? ($expensesAccounts->first()->balance ?? 0) : ($otherAccounts->first()->balance ?? 0) }}</span></div>
+
                                         <div class="col">بعد : <span id="acc_after">00.00</span></div>
                                     </div>
                                 </div>

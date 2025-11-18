@@ -18,83 +18,98 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h2>{{ $currentTypeInfo['title'] }}</h2>
 
-            @if (isset($currentTypeInfo['show_dropdown']) && $currentTypeInfo['show_dropdown'])
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-plus me-2"></i>
-                        إضافة سند جديد
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
-                                <i class="fas fa-plus-circle text-success me-2"></i>سند قبض عام
-                            </a></li>
-                        <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
-                                <i class="fas fa-minus-circle text-danger me-2"></i>سند دفع عام
-                            </a></li>
-                        <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'exp-payment']) }}">
-                                <i class="fas fa-credit-card text-warning me-2"></i>سند دفع مصاريف
-                            </a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item"
-                                href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
-                                <i class="fas fa-list-alt text-info me-2"></i>سند دفع متعدد
-                            </a></li>
-                        <li><a class="dropdown-item"
-                                href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
-                                <i class="fas fa-list-ul text-primary me-2"></i>سند قبض متعدد
-                            </a></li>
-                    </ul>
-                </div>
-            @else
-                @if (in_array($type, ['multi_payment', 'multi_receipt']))
-                    <a href="{{ route('multi-vouchers.create', ['type' => $type]) }}"
-                        class="btn btn-{{ $currentTypeInfo['color'] }}">
-                        <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
-                        {{ $currentTypeInfo['create_text'] }}
-                    </a>
+            @php
+                // تحديد الصلاحيات المتاحة للإضافة
+                $canCreateReceipt = auth()->user()->can('create recipt');
+                $canCreatePayment = auth()->user()->can('create payment');
+                $canCreateExpPayment = auth()->user()->can('create exp-payment');
+                $canCreateMultiPayment = auth()->user()->can('create multi-payment');
+                $canCreateMultiReceipt = auth()->user()->can('create multi-receipt');
+
+                $hasAnyCreatePermission = $canCreateReceipt || $canCreatePayment || $canCreateExpPayment ||
+                                         $canCreateMultiPayment || $canCreateMultiReceipt;
+            @endphp
+
+            @if($hasAnyCreatePermission)
+                @if (isset($currentTypeInfo['show_dropdown']) && $currentTypeInfo['show_dropdown'])
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-plus me-2"></i>
+                            إضافة سند جديد
+                        </button>
+                        <ul class="dropdown-menu">
+                            @if($canCreateReceipt)
+                                <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'receipt']) }}">
+                                        <i class="fas fa-plus-circle text-success me-2"></i>سند قبض عام
+                                    </a></li>
+                            @endif
+                            @if($canCreatePayment)
+                                <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'payment']) }}">
+                                        <i class="fas fa-minus-circle text-danger me-2"></i>سند دفع عام
+                                    </a></li>
+                            @endif
+                            @if($canCreateExpPayment)
+                                <li><a class="dropdown-item" href="{{ route('vouchers.create', ['type' => 'exp-payment']) }}">
+                                        <i class="fas fa-credit-card text-warning me-2"></i>سند دفع مصاريف
+                                    </a></li>
+                            @endif
+
+                            @if(($canCreateReceipt || $canCreatePayment || $canCreateExpPayment) && ($canCreateMultiPayment || $canCreateMultiReceipt))
+                                <li><hr class="dropdown-divider"></li>
+                            @endif
+
+                            @if($canCreateMultiPayment)
+                                <li><a class="dropdown-item"
+                                        href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}">
+                                        <i class="fas fa-list-alt text-info me-2"></i>سند دفع متعدد
+                                    </a></li>
+                            @endif
+                            @if($canCreateMultiReceipt)
+                                <li><a class="dropdown-item"
+                                        href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}">
+                                        <i class="fas fa-list-ul text-primary me-2"></i>سند قبض متعدد
+                                    </a></li>
+                            @endif
+                        </ul>
+                    </div>
                 @else
-                    <a href="{{ route('vouchers.create', ['type' => $type]) }}"
-                        class="btn btn-{{ $currentTypeInfo['color'] }}">
-                        <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
-                        {{ $currentTypeInfo['create_text'] }}
-                    </a>
+                    @if (in_array($type, ['multi_payment', 'multi_receipt']))
+                        @if($type === 'multi_payment' && $canCreateMultiPayment)
+                            <a href="{{ route('multi-vouchers.create', ['type' => $type]) }}"
+                                class="btn btn-{{ $currentTypeInfo['color'] }}">
+                                <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
+                                {{ $currentTypeInfo['create_text'] }}
+                            </a>
+                        @elseif($type === 'multi_receipt' && $canCreateMultiReceipt)
+                            <a href="{{ route('multi-vouchers.create', ['type' => $type]) }}"
+                                class="btn btn-{{ $currentTypeInfo['color'] }}">
+                                <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
+                                {{ $currentTypeInfo['create_text'] }}
+                            </a>
+                        @endif
+                    @else
+                        @if($type === 'receipt' && $canCreateReceipt)
+                            <a href="{{ route('vouchers.create', ['type' => $type]) }}"
+                                class="btn btn-{{ $currentTypeInfo['color'] }}">
+                                <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
+                                {{ $currentTypeInfo['create_text'] }}
+                            </a>
+                        @elseif($type === 'payment' && $canCreatePayment)
+                            <a href="{{ route('vouchers.create', ['type' => $type]) }}"
+                                class="btn btn-{{ $currentTypeInfo['color'] }}">
+                                <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
+                                {{ $currentTypeInfo['create_text'] }}
+                            </a>
+                        @elseif($type === 'exp-payment' && $canCreateExpPayment)
+                            <a href="{{ route('vouchers.create', ['type' => $type]) }}"
+                                class="btn btn-{{ $currentTypeInfo['color'] }}">
+                                <i class="fas {{ $currentTypeInfo['icon'] }} me-2"></i>
+                                {{ $currentTypeInfo['create_text'] }}
+                            </a>
+                        @endif
+                    @endif
                 @endif
             @endif
-        </div>
-
-        <div class="card-body border-bottom">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="btn-group flex-wrap" role="group">
-                        <a href="{{ route('vouchers.index') }}"
-                            class="btn btn-outline-secondary {{ $type === 'all' ? 'active' : '' }}">
-                            <i class="fas fa-list me-1"></i>الكل
-                        </a>
-                        <a href="{{ route('vouchers.index', ['type' => 'receipt']) }}"
-                            class="btn btn-outline-success {{ $type === 'receipt' ? 'active' : '' }}">
-                            <i class="fas fa-plus-circle me-1"></i>سندات القبض
-                        </a>
-                        <a href="{{ route('vouchers.index', ['type' => 'payment']) }}"
-                            class="btn btn-outline-danger {{ $type === 'payment' ? 'active' : '' }}">
-                            <i class="fas fa-minus-circle me-1"></i>سندات الدفع
-                        </a>
-                        <a href="{{ route('vouchers.index', ['type' => 'exp-payment']) }}"
-                            class="btn btn-outline-warning {{ $type === 'exp-payment' ? 'active' : '' }}">
-                            <i class="fas fa-credit-card me-1"></i>سندات المصاريف
-                        </a>
-                        <a href="{{ route('vouchers.index', ['type' => 'multi_payment']) }}"
-                            class="btn btn-outline-info {{ $type === 'multi_payment' ? 'active' : '' }}">
-                            <i class="fas fa-list-alt me-1"></i>دفع متعدد
-                        </a>
-                        <a href="{{ route('vouchers.index', ['type' => 'multi_receipt']) }}"
-                            class="btn btn-outline-primary {{ $type === 'multi_receipt' ? 'active' : '' }}">
-                            <i class="fas fa-list-ul me-1"></i>قبض متعدد
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="card-body">
@@ -115,14 +130,42 @@
                             <th>تاريخ الإنشاء</th>
                             <th>ملاحظات</th>
                             <th>المراجعة</th>
-                            @canany(['حذف السندات', 'تعديل السندات'])
-                                <th>العمليات</th>
-                            @endcan
+                            <th>العمليات</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $x = 1; @endphp
                         @forelse ($vouchers as $index => $voucher)
+                            @php
+                                // تحديد الصلاحيات بناءً على نوع السند
+                                $canEdit = false;
+                                $canDelete = false;
+
+                                switch($voucher->pro_type) {
+                                    case 1: // receipt
+                                        $canEdit = auth()->user()->can('edit recipt');
+                                        $canDelete = auth()->user()->can('delete recipt');
+                                        break;
+                                    case 2: // payment
+                                        $canEdit = auth()->user()->can('edit payment');
+                                        $canDelete = auth()->user()->can('delete payment');
+                                        break;
+                                    case 3: // exp-payment
+                                        $canEdit = auth()->user()->can('edit exp-payment');
+                                        $canDelete = auth()->user()->can('delete exp-payment');
+                                        break;
+                                    case 4: // multi_payment
+                                        $canEdit = auth()->user()->can('edit multi-payment');
+                                        $canDelete = auth()->user()->can('delete multi-payment');
+                                        break;
+                                    case 5: // multi_receipt
+                                        $canEdit = auth()->user()->can('edit multi-receipt');
+                                        $canDelete = auth()->user()->can('delete multi-receipt');
+                                        break;
+                                }
+
+                                $hasAnyActionPermission = $canEdit || $canDelete;
+                            @endphp
                             <tr>
                                 <td>{{ $x++ }}</td>
                                 <td>{{ $voucher->pro_date }}</td>
@@ -152,18 +195,27 @@
                                         {{ $voucher->is_approved ? 'نعم' : 'لا' }}
                                     </span>
                                 </td>
-                                @canany(['حذف السندات', 'تعديل السندات'])
-                                    <td>
+                                <td>
+                                    @if($hasAnyActionPermission)
                                         <div class="btn-group" role="group">
-                                            @can('تعديل السندات')
-                                                <a href="{{ route('vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning"
-                                                    title="تعديل">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            @endcan
-                                            @can('حذف السندات')
-                                                <form action="{{ route('vouchers.destroy', $voucher->id) }}" method="POST"
-                                                    style="display:inline;">
+                                            @if($canEdit)
+                                                @if(in_array($voucher->pro_type, [4, 5])) {{-- multi vouchers --}}
+                                                    <a href="{{ route('multi-vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                @endif
+                                            @endif
+
+                                            @if($canDelete)
+                                                <form action="{{
+                                                    in_array($voucher->pro_type, [4, 5])
+                                                    ? route('multi-vouchers.destroy', $voucher->id)
+                                                    : route('vouchers.destroy', $voucher->id)
+                                                }}" method="POST" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-sm btn-danger"
@@ -171,10 +223,12 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            @endcan
+                                            @endif
                                         </div>
-                                    </td>
-                                @endcanany
+                                    @else
+                                        <span class="text-muted">غير مسموح</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -207,7 +261,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const activeFilter = '{{ $type }}';
             const tableRows = document.querySelectorAll('tbody tr');
             tableRows.forEach(row => {
                 row.addEventListener('mouseenter', function() {
