@@ -195,7 +195,7 @@
                                 <button class="btn btn-primary" type="submit">تحديث</button>
                             </div>
                             <div class="col">
-                                <button class="btn btn-default" type="reset">تراجع</button>
+                                <button class="btn btn-default" type="button" onclick="window.history.back()">تراجع</button>
                             </div>
                         </div>
                     </div>
