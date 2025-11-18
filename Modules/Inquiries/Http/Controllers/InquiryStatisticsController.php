@@ -12,8 +12,8 @@ class InquiryStatisticsController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:View Inquiries')->only(['index']);
-        $this->middleware('can:View Inquiries Statistics')->only(['index']);
+        $this->middleware('can:view Inquiries')->only(['index']);
+        $this->middleware('can:view Inquiries Statistics')->only(['index']);
     }
 
     public function index()

@@ -21,14 +21,14 @@
                         </h2>
                     </div>
                     <div>
-                        @can('Create Inquiries')
+                        @can('create Inquiries')
                             <a href="{{ route('inquiries.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus me-2"></i>
                                 {{ __('New Inquiry') }}
                             </a>
                         @endcan
 
-                        @can('View Inquiries')
+                        @can('view Inquiries')
                             <a href="{{ route('inquiries.index') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-list me-2"></i>
                                 {{ __('View All Inquiries') }}
@@ -103,7 +103,7 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="btn-group" role="group">
-                                                        @can('Edit Inquiries')
+                                                        @can('edit Inquiries')
                                                             <a href="{{ route('inquiries.edit', $draft->id) }}"
                                                                 class="btn btn-sm btn-primary"
                                                                 title="{{ __('Continue Editing') }}">
@@ -111,7 +111,7 @@
                                                             </a>
                                                         @endcan
 
-                                                        @can('Delete Inquiries')
+                                                        @can('delete Inquiries')
                                                             <button type="button" class="btn btn-sm btn-danger"
                                                                 onclick="confirmDelete({{ $draft->id }})"
                                                                 title="{{ __('Delete Draft') }}">
@@ -120,7 +120,7 @@
                                                         @endcan
                                                     </div>
 
-                                                    @can('Delete Inquiries')
+                                                    @can('delete Inquiries')
                                                         <form id="delete-form-{{ $draft->id }}"
                                                             action="{{ route('inquiries.destroy', $draft->id) }}"
                                                             method="POST" class="d-none">

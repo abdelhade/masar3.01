@@ -22,6 +22,8 @@
                         <!-- Stakeholders Section -->
                         @include('inquiries::components.Stakeholders-Section')
 
+                        @include('inquiries::components.assigned-enginner')
+
                         <div class="row mt-4">
                             <div class="col-12">
                                 <div class="card border-dark">
@@ -291,7 +293,7 @@
                     }
 
                     const select = document.getElementById(`inquiry_source_step_${nextStepNum}`) ||
-                    existingStep;
+                        existingStep;
                     if (select) {
                         select.innerHTML = `<option value="">Select step ${nextStepNum}...</option>`;
                         children.forEach(item => {

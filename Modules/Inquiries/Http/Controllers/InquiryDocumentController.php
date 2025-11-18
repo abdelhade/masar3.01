@@ -11,10 +11,10 @@ class InquiryDocumentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:View Documents')->only('index');
-        $this->middleware('can:Create Documents')->only(['create', 'store']);
-        $this->middleware('can:Edit Documents')->only(['edit', 'update']);
-        $this->middleware('can:Delete Documents')->only('destroy');
+        $this->middleware('can:view Documents')->only('index');
+        $this->middleware('can:create Documents')->only(['create', 'store']);
+        $this->middleware('can:edit Documents')->only(['edit', 'update']);
+        $this->middleware('can:delete Documents')->only('destroy');
     }
 
     public function index()

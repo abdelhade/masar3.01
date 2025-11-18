@@ -52,19 +52,19 @@ class ManufacturingOrderManager extends Component
     public function messages()
     {
         return [
-            'order_number.required' => 'رقم الأمر مطلوب',
-            'branch_id.required' => 'يجب اختيار الفرع',
-            'branch_id.exists' => 'الفرع المختار غير موجود',
-            'item_id.required' => 'يجب اختيار الصنف/المنتج',
-            'item_id.exists' => 'الصنف المختار غير موجود',
-            'selected_stages.required' => 'يجب إضافة مرحلة واحدة على الأقل',
-            'selected_stages.min' => 'يجب إضافة مرحلة واحدة على الأقل',
-            'selected_stages.*.quantity.required' => 'الكمية مطلوبة',
-            'selected_stages.*.quantity.integer' => 'الكمية يجب أن تكون رقم صحيح',
-            'selected_stages.*.quantity.min' => 'الكمية يجب أن تكون صفر أو أكثر',
-            'selected_stages.*.estimated_duration.required' => 'المدة المقدرة مطلوبة',
-            'selected_stages.*.estimated_duration.numeric' => 'المدة المقدرة يجب أن تكون رقم',
-            'selected_stages.*.estimated_duration.min' => 'المدة المقدرة يجب أن تكون صفر أو أكثر',
+            'order_number.required' => __('Order number is required'),
+            'branch_id.required' => __('Branch must be selected'),
+            'branch_id.exists' => __('Selected branch does not exist'),
+            'item_id.required' => __('Item/Product must be selected'),
+            'item_id.exists' => __('Selected item does not exist'),
+            'selected_stages.required' => __('At least one stage must be added'),
+            'selected_stages.min' => __('At least one stage must be added'),
+            'selected_stages.*.quantity.required' => __('Quantity is required'),
+            'selected_stages.*.quantity.integer' => __('Quantity must be an integer'),
+            'selected_stages.*.quantity.min' => __('Quantity must be zero or more'),
+            'selected_stages.*.estimated_duration.required' => __('Estimated duration is required'),
+            'selected_stages.*.estimated_duration.numeric' => __('Estimated duration must be a number'),
+            'selected_stages.*.estimated_duration.min' => __('Estimated duration must be zero or more'),
         ];
     }
 
@@ -93,7 +93,7 @@ class ManufacturingOrderManager extends Component
         $this->validate();
 
         if (empty($this->selected_stages)) {
-            session()->flash('error', 'يجب إضافة مرحلة واحدة على الأقل!');
+            session()->flash('error', __('At least one stage must be added!'));
             return;
         }
 
@@ -122,7 +122,7 @@ class ManufacturingOrderManager extends Component
 
             $order->calculateTotals();
             $this->resetForm();
-            session()->flash('message', 'تم إنشاء أمر التصنيع بنجاح!');
+            session()->flash('message', __('Manufacturing order created successfully!'));
             $this->dispatch('orderCreated');
         });
     }
@@ -154,7 +154,7 @@ class ManufacturingOrderManager extends Component
 
         $order->calculateTotals();
 
-        session()->flash('message', 'تم تحديث حالة المرحلة بنجاح!');
+        session()->flash('message', __('Stage status updated successfully!'));
         $this->dispatch('stageStatusUpdated');
     }
 
@@ -255,7 +255,7 @@ class ManufacturingOrderManager extends Component
 
             $order->calculateTotals();
             $this->resetForm();
-            session()->flash('message', 'تم تحديث أمر التصنيع بنجاح!');
+            session()->flash('message', __('Manufacturing order updated successfully!'));
             $this->dispatch('orderUpdated');
         });
     }
@@ -265,7 +265,7 @@ class ManufacturingOrderManager extends Component
         $order = ManufacturingOrder::findOrFail($id);
         $order->stages()->detach();
         $order->delete();
-        session()->flash('message', 'تم حذف أمر التصنيع بنجاح!');
+        session()->flash('message', __('Manufacturing order deleted successfully!'));
     }
 
     public function resetForm()
@@ -287,7 +287,7 @@ class ManufacturingOrderManager extends Component
 
         $exists = collect($this->selected_stages)->contains('id', $stage->id);
         if ($exists) {
-            session()->flash('error', 'هذه المرحلة موجودة بالفعل!');
+            session()->flash('error', __('This stage already exists!'));
             return;
         }
 

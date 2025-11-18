@@ -1,8 +1,3 @@
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('multi-vouchers.statistics') }}">
-        <i class="ti-control-record"></i>{{ __('Multi vouchers Statistics') }}
-    </a>
-</li>
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('depreciation.index') }}">

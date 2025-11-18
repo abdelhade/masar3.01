@@ -48,6 +48,10 @@
                     </div>
                     <!-- Stakeholders Section -->
                     @include('inquiries::components.Stakeholders-Section')
+                    {{-- بعد حقل المهندس الحالي (Contact Engineer) --}}
+
+                    @include('inquiries::components.assigned-enginner')
+
 
                     <div class="row mt-4">
                         <div class="col-12">

@@ -14,7 +14,7 @@
         <div class="col-lg-12">
 
             {{-- Add Button --}}
-            @can('Create Inquiries Roles')
+            @can('create Inquiries Roles')
                 <a href="{{ route('inquiries-roles.create') }}" class="btn btn-primary font-family-cairo fw-bold">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
@@ -50,16 +50,16 @@
                                         <td>{{ $role->name }}</td>
                                         <td>{{ $role->description ?? '-' }}</td>
 
-                                        @canany(['Edit Inquiries Roles', 'Delete Inquiries Roles'])
+                                        @canany(['edit Inquiries Roles', 'delete Inquiries Roles'])
                                             <td>
-                                                @can('Edit Inquiries Roles')
+                                                @can('edit Inquiries Roles')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('inquiries-roles.edit', $role->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('Delete Inquiries Roles')
+                                                @can('delete Inquiries Roles')
                                                     <form action="{{ route('inquiries-roles.destroy', $role->id) }}" method="POST"
                                                         style="display:inline-block;"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete this role?') }}');">

@@ -74,6 +74,19 @@ class User extends Authenticatable
         return $this->belongsToMany(Branch::class, 'branch_user')->withTimestamps();
     }
 
+    public function assignedInquiries()
+    {
+        return $this->belongsToMany(
+            \Modules\Inquiries\Models\Inquiry::class,
+            'inquiry_assigned_engineers',
+            'user_id',
+            'inquiry_id'
+        )
+            ->withPivot('assigned_at', 'notes')
+            ->withTimestamps();
+    }
+
+
     public function getEmployeeIdAttribute()
     {
         return $this->employee?->id;

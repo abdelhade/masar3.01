@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Database\Eloquent\Model;
 
 class MultiJournal extends Model

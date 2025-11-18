@@ -2,6 +2,7 @@
 
 namespace Modules\Inquiries\Livewire;
 
+use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use App\Models\{City, Town};
@@ -23,6 +24,9 @@ class CreateInquiry extends Component
     public $isDraft = false;
     public $autoSaveEnabled = true;
     public $lastAutoSaveTime = null;
+
+    public $selectedEngineers = [];
+    public $availableEngineers = [];
 
     public $selectedWorkTypes = [];
     public $currentWorkTypeSteps = [1 => null];
@@ -155,6 +159,35 @@ class CreateInquiry extends Component
             // تهيئة النماذج
             $this->initializeForms();
         }
+        $this->availableEngineers = \App\Models\User::select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get()
+            ->toArray();
+    }
+
+    private function saveAssignedEngineers($inquiry)
+    {
+        if (!empty($this->selectedEngineers) && is_array($this->selectedEngineers)) {
+            $attachData = [];
+
+            foreach ($this->selectedEngineers as $engineerId) {
+                $attachData[$engineerId] = [
+                    'assigned_at' => now(),
+                    'notes' => null
+                ];
+            }
+
+            $inquiry->assignedEngineers()->sync($attachData);
+        }
+    }
+
+    public function removeEngineer($engineerId)
+    {
+        $this->selectedEngineers = array_values(
+            array_filter($this->selectedEngineers, function ($id) use ($engineerId) {
+                return $id != $engineerId;
+            })
+        );
     }
 
     private function loadDraft($inquiryId)
@@ -814,6 +847,7 @@ class CreateInquiry extends Component
         $this->saveProjectDocuments($inquiry);
         $this->saveQuotationUnits($inquiry);
         $this->saveComments($inquiry);
+        $this->saveAssignedEngineers($inquiry);
 
         // DB::commit();
         return redirect()->route('inquiries.index');

@@ -13,10 +13,10 @@ class WorkTypeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:View Work Types')->only(['index', 'getTreeData', 'getActiveWorkTypes']);
-        $this->middleware('can:Create Work Types')->only(['store']);
-        $this->middleware('can:Edit Work Types')->only(['update']);
-        $this->middleware('can:Delete Work Types')->only(['destroy']);
+        $this->middleware('can:view Work Types')->only(['index', 'getTreeData', 'getActiveWorkTypes']);
+        $this->middleware('can:create Work Types')->only(['store']);
+        $this->middleware('can:edit Work Types')->only(['update']);
+        $this->middleware('can:delete Work Types')->only(['destroy']);
     }
 
     public function index()

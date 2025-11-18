@@ -1,23 +1,21 @@
 @php
     $sales = [
-        10 => 'فاتورة مبيعات',
-        12 => 'مردود مبيعات',
-        14 => 'أمر بيع',
-        16 => 'عرض سعر لعميل',
-        22 => 'أمر حجز',
-        26 => 'اتفاقية تسعير',
+        10 => 'Sales Invoice',
+        12 => 'Sales Return',
+        14 => 'Sales Order',
+        16 => 'Quotation to Customer',
+        22 => 'Booking Order',
+        26 => 'Pricing Agreement',
     ];
-    $viewPermissions = collect($sales)->map(fn($label) => 'عرض ' . $label)->toArray();
 @endphp
-
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('discounts.general-statistics') }}">
-        <i class="ti-control-record"></i>{{ __('Discounts.Statistics') }}
+        <i class="ti-control-record"></i>{{ __('Discounts Statistics') }}
     </a>
 </li>
 
-@can('عرض قائمة الخصومات المسموح بها')
+@can('view Allowed Discounts')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.index', ['type' => 30]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discounts') }}
@@ -25,7 +23,7 @@
     </li>
 @endcan
 
-@can('عرض خصم مسموح به')
+@can('create Allowed Discounts')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.create', ['type' => 30, 'q' => md5(30)]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discount') }}
@@ -35,22 +33,24 @@
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('sales.statistics') }}">
-        <i class="ti-control-record"></i>Sales Statistics
+        <i class="ti-control-record"></i>{{ __('Sales Statistics') }}
     </a>
 </li>
 
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('invoice-templates.index') }}">
-        <i class="ti-control-record"></i>نماذج الفواتير
-    </a>
-</li>
+@can('view Invoice Templates')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('invoice-templates.index') }}">
+            <i class="ti-control-record"></i>{{ __('Invoice Templates') }}
+        </a>
+    </li>
+@endcan
 
 @foreach ($sales as $type => $label)
-    {{-- @can('عرض ' . $label) --}}
+    @can('view ' . $label)
         <li class="nav-item">
             <a class="nav-link" href="{{ route('invoices.index', ['type' => $type]) }}">
                 <i class="ti-control-record"></i> {{ __($label) }}
             </a>
         </li>
-    {{-- @endcan --}}
+    @endcan
 @endforeach

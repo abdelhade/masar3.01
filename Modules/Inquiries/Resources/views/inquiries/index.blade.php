@@ -16,7 +16,7 @@
 
 
             <div class="d-flex justify-content-between align-items-center mb-3">
-                @can('Create Inquiries')
+                @can('create Inquiries')
                     <a href="{{ route('inquiries.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('Add New Inquiry') }}
@@ -431,21 +431,21 @@
                                         <td class="text-center">
                                             <div class="btn-group">
 
-                                                @can('View Inquiries')
+                                                @can('view Inquiries')
                                                     <a class="btn btn-primary btn-sm"
                                                         href="{{ route('inquiries.show', $inquiry->id) }}">
                                                         <i class="las la-eye"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('Edit Inquiries')
+                                                @can('edit Inquiries')
                                                     <a class="btn btn-success btn-sm"
                                                         href="{{ route('inquiries.edit', $inquiry->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('Delete Inquiries')
+                                                @can('delete Inquiries')
                                                     <form action="{{ route('inquiries.destroy', $inquiry->id) }}"
                                                         method="POST" style="display:inline-block;"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete this item?') }}');">
@@ -457,7 +457,7 @@
                                                     </form>
                                                 @endcan
 
-                                                @can('Edit Inquiries')
+                                                @can('edit Inquiries')
                                                     <button class="btn btn-info btn-sm" data-bs-toggle="modal"
                                                         data-bs-target="#commentModal-{{ $inquiry->id }}">
                                                         <i class="las la-comment"></i>

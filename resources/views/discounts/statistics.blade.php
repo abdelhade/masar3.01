@@ -8,14 +8,14 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="font-family-cairo fw-bold">
                 <i class="las la-chart-line"></i>
-                إحصائيات الخصومات العامة
+                {{ __('General Discounts Statistics') }}
             </h1>
             <div>
                 <a href="{{ route('discounts.index') }}" class="btn btn-secondary font-family-cairo fw-bold">
-                    <i class="las la-arrow-right"></i> رجوع
+                    <i class="las la-arrow-right"></i> {{ __('Back') }}
                 </a>
                 <a href="{{ route('discounts.general-statistics') }}" class="btn btn-primary font-family-cairo fw-bold">
-                    <i class="las la-sync"></i> تحديث
+                    <i class="las la-sync"></i> {{ __('Refresh') }}
                 </a>
             </div>
         </div>
@@ -34,10 +34,10 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted font-family-cairo fw-bold mb-2">إجمالي الخصومات</h6>
+                                <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Total Discounts') }}</h6>
                                 <h2 class="font-family-cairo fw-bold mb-0 text-primary">
                                     {{ number_format($statistics['totalDiscounts']) }}</h2>
-                                <small class="text-muted font-family-cairo">عملية</small>
+                                <small class="text-muted font-family-cairo">{{ __('Transaction') }}</small>
                             </div>
                             <div class="text-primary" style="font-size: 3rem; opacity: 0.3;">
                                 <i class="las la-percent"></i>
@@ -52,10 +52,10 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted font-family-cairo fw-bold mb-2">إجمالي القيمة</h6>
+                                <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Total Value') }}</h6>
                                 <h2 class="font-family-cairo fw-bold mb-0 text-success">
                                     {{ number_format($statistics['totalValue'], 2) }}</h2>
-                                <small class="text-muted font-family-cairo">جنيه</small>
+                                <small class="text-muted font-family-cairo">{{ __('EGP') }}</small>
                             </div>
                             <div class="text-success" style="font-size: 3rem; opacity: 0.3;">
                                 <i class="las la-money-bill-wave"></i>
@@ -70,10 +70,11 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted font-family-cairo fw-bold mb-2">متوسط قيمة الخصم</h6>
+                                <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Average Discount Value') }}
+                                </h6>
                                 <h2 class="font-family-cairo fw-bold mb-0 text-info">
                                     {{ number_format($statistics['avgValue'], 2) }}</h2>
-                                <small class="text-muted font-family-cairo">جنيه</small>
+                                <small class="text-muted font-family-cairo">{{ __('EGP') }}</small>
                             </div>
                             <div class="text-info" style="font-size: 3rem; opacity: 0.3;">
                                 <i class="las la-calculator"></i>
@@ -88,10 +89,11 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted font-family-cairo fw-bold mb-2">أعلى قيمة خصم</h6>
+                                <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Highest Discount Value') }}
+                                </h6>
                                 <h2 class="font-family-cairo fw-bold mb-0 text-warning">
                                     {{ number_format($statistics['maxDiscount'], 2) }}</h2>
-                                <small class="text-muted font-family-cairo">جنيه</small>
+                                <small class="text-muted font-family-cairo">{{ __('EGP') }}</small>
                             </div>
                             <div class="text-warning" style="font-size: 3rem; opacity: 0.3;">
                                 <i class="las la-arrow-up"></i>
@@ -108,10 +110,10 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-body text-center">
                         <i class="las la-calendar-day text-primary mb-2" style="font-size: 2.5rem;"></i>
-                        <h6 class="text-muted font-family-cairo fw-bold mb-2">خصومات الشهر الحالي</h6>
+                        <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Current Month Discounts') }}</h6>
                         <h3 class="font-family-cairo fw-bold text-primary mb-1">
                             {{ number_format($statistics['currentMonthDiscounts']) }}</h3>
-                        <small class="text-muted font-family-cairo d-block mb-2">عملية</small>
+                        <small class="text-muted font-family-cairo d-block mb-2">{{ __('Transaction') }}</small>
                         @if ($statistics['countChange'] != 0)
                             <span
                                 class="badge {{ $statistics['countChange'] > 0 ? 'bg-success' : 'bg-danger' }} font-family-cairo">
@@ -127,10 +129,10 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-body text-center">
                         <i class="las la-coins text-success mb-2" style="font-size: 2.5rem;"></i>
-                        <h6 class="text-muted font-family-cairo fw-bold mb-2">قيمة خصومات الشهر</h6>
+                        <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Month Discounts Value') }}</h6>
                         <h3 class="font-family-cairo fw-bold text-success mb-1">
                             {{ number_format($statistics['currentMonthValue'], 2) }}</h3>
-                        <small class="text-muted font-family-cairo d-block mb-2">جنيه</small>
+                        <small class="text-muted font-family-cairo d-block mb-2">{{ __('EGP') }}</small>
                         @if ($statistics['valueChange'] != 0)
                             <span
                                 class="badge {{ $statistics['valueChange'] > 0 ? 'bg-success' : 'bg-danger' }} font-family-cairo">
@@ -146,10 +148,10 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-body text-center">
                         <i class="las la-calendar-alt text-info mb-2" style="font-size: 2.5rem;"></i>
-                        <h6 class="text-muted font-family-cairo fw-bold mb-2">خصومات السنة الحالية</h6>
+                        <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Current Year Discounts') }}</h6>
                         <h3 class="font-family-cairo fw-bold text-info mb-0">
                             {{ number_format($statistics['currentYearDiscounts']) }}</h3>
-                        <small class="text-muted font-family-cairo">عملية</small>
+                        <small class="text-muted font-family-cairo">{{ __('Transaction') }}</small>
                     </div>
                 </div>
             </div>
@@ -158,10 +160,10 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-body text-center">
                         <i class="las la-hand-holding-usd text-warning mb-2" style="font-size: 2.5rem;"></i>
-                        <h6 class="text-muted font-family-cairo fw-bold mb-2">قيمة خصومات السنة</h6>
+                        <h6 class="text-muted font-family-cairo fw-bold mb-2">{{ __('Year Discounts Value') }}</h6>
                         <h3 class="font-family-cairo fw-bold text-warning mb-0">
                             {{ number_format($statistics['currentYearValue'], 2) }}</h3>
-                        <small class="text-muted font-family-cairo">جنيه</small>
+                        <small class="text-muted font-family-cairo">{{ __('EGP') }}</small>
                     </div>
                 </div>
             </div>
@@ -174,7 +176,7 @@
                     <div class="card-header bg-white border-bottom">
                         <h5 class="font-family-cairo fw-bold mb-0">
                             <i class="las la-trophy text-warning"></i>
-                            أكثر الحسابات حصولاً على خصومات
+                            {{ __('Top Accounts Receiving Discounts') }}
                         </h5>
                     </div>
                     <div class="card-body">
@@ -188,7 +190,7 @@
                                         <span class="font-family-cairo fw-bold">{{ $account['name'] }}</span>
                                     </div>
                                     <span class="badge bg-success font-family-cairo fw-bold">
-                                        {{ number_format($account['total'], 2) }} جنيه
+                                        {{ number_format($account['total'], 2) }} {{ __('EGP') }}
                                     </span>
                                 </div>
                                 <div class="progress" style="height: 8px;">
@@ -197,14 +199,14 @@
                                     </div>
                                 </div>
                                 <small class="text-muted font-family-cairo">
-                                    {{ $account['count'] }} عملية -
+                                    {{ $account['count'] }} {{ __('Transaction') }} -
                                     {{ $statistics['totalValue'] > 0 ? number_format(($account['total'] / $statistics['totalValue']) * 100, 1) : 0 }}%
                                 </small>
                             </div>
                         @empty
                             <div class="text-center py-4">
                                 <i class="las la-inbox text-muted" style="font-size: 3rem;"></i>
-                                <p class="text-muted font-family-cairo fw-bold">لا توجد بيانات</p>
+                                <p class="text-muted font-family-cairo fw-bold">{{ __('No Data Available') }}</p>
                             </div>
                         @endforelse
                     </div>
@@ -216,7 +218,7 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-white border-bottom">
                         <h5 class="font-family-cairo fw-bold mb-0">
-                            <i class="las la-chart-bar text-info"></i> توزيع الخصومات حسب القيمة
+                            <i class="las la-chart-bar text-info"></i> {{ __('Discount Distribution by Value') }}
                         </h5>
                     </div>
                     <div class="card-body">
@@ -229,7 +231,7 @@
                                     </span>
                                     <div>
                                         <span class="badge bg-info font-family-cairo fw-bold me-1">
-                                            {{ $range['count'] }} عملية
+                                            {{ $range['count'] }} {{ __('Transaction') }}
                                         </span>
                                         <span class="badge bg-success font-family-cairo fw-bold">
                                             {{ number_format($range['total'], 2) }}
@@ -243,13 +245,13 @@
                                 </div>
                                 <small class="text-muted font-family-cairo">
                                     {{ $statistics['totalValue'] > 0 ? number_format(($range['total'] / $statistics['totalValue']) * 100, 1) : 0 }}%
-                                    من الإجمالي
+                                    {{ __('of Total') }}
                                 </small>
                             </div>
                         @empty
                             <div class="text-center py-4">
                                 <i class="las la-inbox text-muted" style="font-size: 3rem;"></i>
-                                <p class="text-muted font-family-cairo fw-bold">لا توجد بيانات</p>
+                                <p class="text-muted font-family-cairo fw-bold">{{ __('No Data Available') }}</p>
                             </div>
                         @endforelse
                     </div>
@@ -263,7 +265,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-white border-bottom">
                         <h5 class="font-family-cairo fw-bold mb-0">
-                            <i class="las la-chart-line text-primary"></i> اتجاه الخصومات (آخر 6 أشهر)
+                            <i class="las la-chart-line text-primary"></i> {{ __('Discounts Trend (Last 6 Months)') }}
                         </h5>
                     </div>
                     <div class="card-body">
@@ -275,10 +277,11 @@
                                         </h6>
                                         <h4 class="font-family-cairo fw-bold text-primary mb-1">
                                             {{ number_format($month['count']) }}</h4>
-                                        <small class="text-muted font-family-cairo d-block mb-2">عملية</small>
+                                        <small
+                                            class="text-muted font-family-cairo d-block mb-2">{{ __('Transaction') }}</small>
                                         <h5 class="font-family-cairo fw-bold text-success mb-0">
                                             {{ number_format($month['value'], 2) }}</h5>
-                                        <small class="text-muted font-family-cairo">جنيه</small>
+                                        <small class="text-muted font-family-cairo">{{ __('EGP') }}</small>
                                     </div>
                                 </div>
                             @endforeach
@@ -295,7 +298,7 @@
                     <div class="card shadow-sm">
                         <div class="card-header bg-white border-bottom">
                             <h5 class="font-family-cairo fw-bold mb-0">
-                                <i class="las la-store text-success"></i> إحصائيات الفروع
+                                <i class="las la-store text-success"></i> {{ __('Branch Statistics') }}
                             </h5>
                         </div>
                         <div class="card-body">
@@ -304,10 +307,11 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th class="font-family-cairo fw-bold">#</th>
-                                            <th class="font-family-cairo fw-bold">اسم الفرع</th>
-                                            <th class="font-family-cairo fw-bold text-center">عدد الخصومات</th>
-                                            <th class="font-family-cairo fw-bold text-center">إجمالي القيمة</th>
-                                            <th class="font-family-cairo fw-bold text-center">النسبة</th>
+                                            <th class="font-family-cairo fw-bold">{{ __('Branch Name') }}</th>
+                                            <th class="font-family-cairo fw-bold text-center">
+                                                {{ __('Number of Discounts') }}</th>
+                                            <th class="font-family-cairo fw-bold text-center">{{ __('Total Value') }}</th>
+                                            <th class="font-family-cairo fw-bold text-center">{{ __('Percentage') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -348,7 +352,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-white border-bottom">
                         <h5 class="font-family-cairo fw-bold mb-0">
-                            <i class="las la-clock text-warning"></i> أحدث الخصومات
+                            <i class="las la-clock text-warning"></i> {{ __('Latest Discounts') }}
                         </h5>
                     </div>
                     <div class="card-body">
@@ -358,11 +362,11 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th class="font-family-cairo fw-bold">#</th>
-                                            <th class="font-family-cairo fw-bold">رقم العملية</th>
-                                            <th class="font-family-cairo fw-bold">الحساب</th>
-                                            <th class="font-family-cairo fw-bold text-center">القيمة</th>
-                                            <th class="font-family-cairo fw-bold text-center">التاريخ</th>
-                                            <th class="font-family-cairo fw-bold">ملاحظات</th>
+                                            <th class="font-family-cairo fw-bold">{{ __('Operation Number') }}</th>
+                                            <th class="font-family-cairo fw-bold">{{ __('Account') }}</th>
+                                            <th class="font-family-cairo fw-bold text-center">{{ __('Value') }}</th>
+                                            <th class="font-family-cairo fw-bold text-center">{{ __('Date') }}</th>
+                                            <th class="font-family-cairo fw-bold">{{ __('Notes') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -384,7 +388,7 @@
                         @else
                             <div class="text-center py-4">
                                 <i class="las la-inbox text-muted" style="font-size: 3rem;"></i>
-                                <p class="text-muted font-family-cairo fw-bold">لا توجد بيانات</p>
+                                <p class="text-muted font-family-cairo fw-bold">{{ __('No Data Available') }}</p>
                             </div>
                         @endif
                     </div>

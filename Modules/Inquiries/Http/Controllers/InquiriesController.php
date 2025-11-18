@@ -15,10 +15,10 @@ class InquiriesController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:View Inquiries')->only(['index', 'show', 'drafts']);
-        $this->middleware('can:Create Inquiries')->only(['create', 'store']);
-        $this->middleware('can:Edit Inquiries')->only(['edit', 'update']);
-        $this->middleware('can:Delete Inquiries')->only('destroy');
+        $this->middleware('can:view Inquiries')->only(['index', 'show', 'drafts']);
+        $this->middleware('can:create Inquiries')->only(['create', 'store']);
+        $this->middleware('can:edit Inquiries')->only(['edit', 'update']);
+        $this->middleware('can:delete Inquiries')->only('destroy');
     }
     public function index(Request $request)
     {
@@ -40,8 +40,10 @@ class InquiriesController extends Controller
             'town',
             'contacts.roles',
             'workType',
-            'inquirySource'
+            'inquirySource',
+            'assignedEngineers'
         ]);
+        $query->assignedToUser($user->id);
 
         // تطبيق الفلاتر
         $filters = $request->get('filters', $preferences->filters ?? []);
@@ -292,7 +294,8 @@ class InquiriesController extends Controller
             'media',
             'projectSize',
             'quotationUnits.type',
-            'creator'
+            'creator',
+            'assignedEngineers'
         ])
             ->withCount('comments')
             ->findOrFail($id);

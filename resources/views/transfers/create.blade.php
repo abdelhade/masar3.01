@@ -57,7 +57,7 @@
 
                 <div class="card bg-white mt-3 col-md-10 container">
                     <div class="card-header">
-                        <h2 class="card-title">تحويل</h2>
+                        <h2 class="card-title"> {{ $pro_type }}</h2>
                     </div>
 
                     <input type="text" name="pro_type" value="{{ $pro_type }}" hidden>

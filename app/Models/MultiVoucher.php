@@ -37,8 +37,12 @@ class MultiVoucher extends Model
     {
         return $this->belongsTo(AccHead::class, 'emp2_id');
     }
-    public function user_id()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user'); // تأكد من اسم العمود في جدول transfers
+        return $this->belongsTo(\App\Models\User::class, 'user');
+    }
+    public function journalHead()
+    {
+        return $this->hasOne(JournalHead::class, 'op_id', 'id');
     }
 }

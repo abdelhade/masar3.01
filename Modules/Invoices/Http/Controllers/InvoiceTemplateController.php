@@ -2,12 +2,19 @@
 
 namespace Modules\Invoices\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Modules\Invoices\Models\InvoiceTemplate;
 use Modules\Invoices\Http\Requests\InvoiceTemplateRequest;
 
 class InvoiceTemplateController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view Invoice Templates')->only(['index']);
+        $this->middleware('permission:create Invoice Templates')->only(['create', 'store']);
+        $this->middleware('permission:edit Invoice Templates')->only(['edit', 'update', 'toggleActive']);
+        $this->middleware('permission:delete Invoice Templates')->only(['destroy']);
+    }
     public function index()
     {
         $templates = InvoiceTemplate::with('invoiceTypes')

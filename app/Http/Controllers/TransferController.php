@@ -2,21 +2,86 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{AccHead, OperHead, Transfer, JournalHead};
+use App\Models\{OperHead, Transfer, JournalHead};
 use App\Models\JournalDetail;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 
 class TransferController extends Controller
 {
-
     public function __construct()
     {
-        $this->middleware('can:view cash transfers')->only(['index']);
-        $this->middleware('can:create cash transfers')->only(['create', 'store']);
+        $this->middleware('can:view transfer-statistics')->only('statistics');
+        // خريطة أنواع التحويل إلى slug بصيغة الشرطات المستخدمة في أسماء الصلاحيات
+        $typeSlugs = [
+            3 => 'cash-to-cash',
+            4 => 'cash-to-bank',
+            5 => 'bank-to-cash',
+            6 => 'bank-to-bank',
+        ];
+
+        // middleware عام يسمح بالتحقق من صلاحيات الوصول حسب الإجراء ونوع التحويل
+        $this->middleware(function ($request, $next) use ($typeSlugs) {
+            $action = $request->route()->getActionMethod();
+
+            // Helper: تحقق من صلاحية عبر Gate
+            $allow = function ($perm) {
+                return Gate::allows($perm);
+            };
+
+            // INDEX: إن وُجدت query param `type` نتحقق بصيغة `view {type}`، وإلا نفعل fallback
+            if ($action === 'index') {
+                $type = $request->get('type');
+                if ($type) {
+                    // Normalize incoming type to hyphen form (accept underscores or hyphens)
+                    $normType = str_replace('_', '-', $type);
+                    if ($allow("view {$normType}")) return $next($request);
+                    abort(403);
+                }
+                if ($allow('view transfers')) return $next($request);
+                abort(403);
+            }
+
+            // CREATE / STORE: type يجب أن يأتي كـ query param
+            if (in_array($action, ['create', 'store'])) {
+                $type = $request->get('type');
+                if ($type) {
+                    $normType = str_replace('_', '-', $type);
+                    if ($allow("create {$normType}")) return $next($request);
+                }
+                if ($allow('create transfers')) return $next($request);
+                abort(403);
+            }
+
+            // EDIT / UPDATE / DESTROY: نقرأ السجل لمعرفة pro_type
+            if (in_array($action, ['edit', 'update', 'destroy'])) {
+                $routeParam = $request->route('id') ?? $request->route('transfer') ?? $request->route('operhead') ?? null;
+                $id = null;
+                if (is_object($routeParam) && isset($routeParam->id)) $id = $routeParam->id;
+                elseif (is_numeric($routeParam)) $id = $routeParam;
+
+                $oper = $id ? OperHead::find($id) : null;
+                $typeSlug = $oper && isset($typeSlugs[$oper->pro_type]) ? $typeSlugs[$oper->pro_type] : null;
+
+                if ($action === 'destroy') {
+                    if ($typeSlug && $allow("delete {$typeSlug}")) return $next($request);
+                    if ($allow('delete transfers')) return $next($request);
+                    abort(403);
+                }
+
+                // edit/update
+                if ($typeSlug && $allow("edit {$typeSlug}")) return $next($request);
+                if ($allow('edit transfers')) return $next($request);
+                abort(403);
+            }
+
+            return $next($request);
+        });
     }
 
     public function index()
@@ -32,7 +97,9 @@ class TransferController extends Controller
     public function create(Request $request)
     {
         $branches = userBranches();
-        $type = $request->get('type');
+        // تقبل قيمة النوع مع شرطات أو underscores، وحوّلها إلى المفتاح المُستخدم داخل الخريطة
+        $rawType = $request->get('type');
+        $type = $rawType ? str_replace('-', '_', $rawType) : null;
         $proTypeMap = [
             'receipt' => 1,
             'payment' => 2,
@@ -211,14 +278,14 @@ class TransferController extends Controller
         // حسابات البنك
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '124%')
+            ->where('code', 'like', '1102%')
             ->select('id', 'aname')
             ->get();
 
         // حسابات الموظفين
         $employeeAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '213%')
+            ->where('code', 'like', '2102%')
             ->select('id', 'aname')
             ->get();
 
@@ -231,6 +298,42 @@ class TransferController extends Controller
             ->select('id', 'aname', 'code')
             ->get();
 
+            // تأكد من أن الحسابات الحالية موجودة في القوائم حتى لو تغيرت التصنيفات
+            if ($transfer->acc1) {
+                $acc1 = AccHead::select('id', 'aname')->find($transfer->acc1);
+                if ($acc1 && !$cashAccounts->contains('id', $acc1->id) && !$bankAccounts->contains('id', $acc1->id)) {
+                    // ضع acc1 في otherAccounts كي يظهر في القوائم
+                    $otherAccounts->push($acc1);
+                }
+            }
+
+            if ($transfer->acc2) {
+                $acc2 = AccHead::select('id', 'aname')->find($transfer->acc2);
+                if ($acc2 && !$cashAccounts->contains('id', $acc2->id) && !$bankAccounts->contains('id', $acc2->id)) {
+                    $otherAccounts->push($acc2);
+                }
+            }
+
+            // تأكد أن الموظف/المندوب موجودان في قائمة الحسابات الخاصة بالموظفين
+            if ($transfer->emp_id) {
+                $e1 = AccHead::select('id', 'aname')->find($transfer->emp_id);
+                if ($e1 && !$employeeAccounts->contains('id', $e1->id)) {
+                    $employeeAccounts->push($e1);
+                }
+            }
+            if ($transfer->emp2_id) {
+                $e2 = AccHead::select('id', 'aname')->find($transfer->emp2_id);
+                if ($e2 && !$employeeAccounts->contains('id', $e2->id)) {
+                    $employeeAccounts->push($e2);
+                }
+            }
+
+            // مراكز التكلفة (إن وُجِدَت في التطبيق)
+            $costCenters = [];
+            if (class_exists('\Modules\\CostCenter\\Models\\CostCenter')) {
+                $costCenters = \Modules\CostCenter\Models\CostCenter::where('isdeleted', 0)->select('id', 'name')->get();
+            }
+
         return view('transfers.edit', [
             'transfer' => $transfer,
             'type' => $type,
@@ -239,7 +342,8 @@ class TransferController extends Controller
             'employeeAccounts' => $employeeAccounts,
             'otherAccounts' => $otherAccounts,
             'pro_id' => $transfer->pro_id,
-            'pro_type' => $transfer->pro_type
+            'pro_type' => $transfer->pro_type,
+            'costCenters' => $costCenters,
         ]);
     }
 

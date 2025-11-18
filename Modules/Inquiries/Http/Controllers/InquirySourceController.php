@@ -12,10 +12,10 @@ class InquirySourceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:View Inquiries Source')->only(['index', 'getTreeData']);
-        $this->middleware('can:Create Inquiries Source')->only('store');
-        $this->middleware('can:Edit Inquiries Source')->only('update');
-        $this->middleware('can:Delete Inquiries Source')->only('destroy');
+        $this->middleware('can:view Inquiries Source')->only(['index', 'getTreeData']);
+        $this->middleware('can:create Inquiries Source')->only('store');
+        $this->middleware('can:edit Inquiries Source')->only('update');
+        $this->middleware('can:delete Inquiries Source')->only('destroy');
     }
     public function index()
     {

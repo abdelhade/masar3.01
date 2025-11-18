@@ -4,14 +4,15 @@
         <section class="content">
             <form wire:submit="saveForm">
 
+
                 @include('components.invoices.invoice-head')
-                {{-- أضف هذا في بداية الـ row الخاص بالبحث في الـ View --}}
                 <div class="row">
+
 
                     @if (setting('invoice_use_templates'))
                         @if ($availableTemplates->isNotEmpty())
                             <div class="col-lg-1">
-                                <label for="selectedTemplate">{{ __('نموذج الفاتورة') }}</label>
+                                <label for="selectedTemplate">{{ __('Invoice Template') }}</label>
                                 <select wire:model.live="selectedTemplateId" id="selectedTemplate"
                                     class="form-control @error('selectedTemplateId') is-invalid @enderror">
                                     @foreach ($availableTemplates as $template)
@@ -53,16 +54,18 @@
                     @if ($isCreateNewItemSelected) active @endif"
                                     style="cursor: pointer;" wire:click.prevent="createNewItem('{{ $searchTerm }}')">
                                     <i class="fas fa-plus"></i>
-                                    <strong>إنشاء صنف جديد:</strong> "{{ $searchTerm }}"
+                                    <strong>{{ __('Create new item:') }}</strong> "{{ $searchTerm }}"
                                 </li>
                             </ul>
                         @endif
                     </div>
 
+
                     <div class="col-lg-3 mb-3">
-                        <label>ابحث بالباركود</label>
+                        <label>{{ __('Search by Barcode') }}</label>
                         <input type="text" wire:model.live="barcodeTerm" class="form-control" id="barcode-search"
-                            placeholder="ادخل الباركود " autocomplete="off" wire:keydown.enter="addItemByBarcode" />
+                            placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
+                            wire:keydown.enter="addItemByBarcode" />
                         @if (strlen($barcodeTerm) > 0 && $barcodeSearchResults->count())
                             <ul class="list-group position-absolute w-100" style="z-index: 999;">
                                 @foreach ($barcodeSearchResults as $index => $item)
@@ -79,7 +82,7 @@
                         {{-- اختيار نوع السعر العام للفاتورة --}}
                         @if (in_array($type, [10, 12, 14, 16, 22]))
                             <div class="col-lg-2">
-                                <label for="selectedPriceType">{{ __('اختر نوع السعر للفاتورة') }}</label>
+                                <label for="selectedPriceType">{{ __('Select Price Type for Invoice') }}</label>
                                 <select wire:model.live="selectedPriceType"
                                     class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
                                     {{-- <option value="">{{ __('اختر نوع السعر') }}</option> --}}
@@ -95,9 +98,10 @@
                     @endif
                     {{-- <x-branches::branch-select :branches="$branches" model="branch_id" /> --}}
 
+
                     @if ($type == 14)
                         <div class="col-lg-1">
-                            <label for="status">{{ __('حالة الفاتوره') }}</label>
+                            <label for="status">{{ __('Invoice Status') }}</label>
                             <select wire:model="status" id="status"
                                 class="form-control form-control-sm @error('status') is-invalid @enderror">
                                 @foreach ($statues as $statusCase)
@@ -117,7 +121,6 @@
                     @include('components.invoices.invoice-item-table')
                 </div>
 
-                {{-- قسم الإجماليات والمدفوعات --}}
                 @include('components.invoices.invoice-footer')
 
             </form>
@@ -136,9 +139,11 @@
             });
         });
 
+
         document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('enlarge-menu');
         });
+
 
         document.addEventListener('livewire:init', () => {
             Livewire.on('swal', (data) => {
@@ -153,23 +158,24 @@
         })
 
 
+
         document.addEventListener('livewire:initialized', () => {
             Livewire.on('prompt-create-item-from-barcode', (event) => {
                 Swal.fire({
-                    title: 'صنف غير موجود!',
-                    text: `الباركود "${event.barcode}" غير مسجل. هل تريد إنشاء صنف جديد؟`,
+                    title: "{{ __('Item not found!') }}",
+                    text: `{{ __('Barcode ') }}"${event.barcode}"{{ __(' is not registered. Do you want to create a new item?') }}`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'نعم، قم بالإنشاء',
-                    cancelButtonText: 'إلغاء',
+                    confirmButtonText: "{{ __('Yes, create it') }}",
+                    cancelButtonText: "{{ __('Cancel') }}",
                     input: 'text',
-                    inputLabel: 'الرجاء إدخال اسم الصنف الجديد',
-                    inputPlaceholder: 'اكتب اسم الصنف هنا...',
+                    inputLabel: "{{ __('Please enter the new item name') }}",
+                    inputPlaceholder: "{{ __('Type the item name here...') }}",
                     inputValidator: (value) => {
                         if (!value) {
-                            return 'اسم الصنف مطلوب!'
+                            return "{{ __('Item name is required!') }}"
                         }
                     }
                 }).then((result) => {
@@ -182,6 +188,7 @@
         });
 
 
+
         // document.addEventListener('livewire:init', () => {
         //     Livewire.on('no-quantity', (data) => {
         //         Swal.fire({
@@ -192,6 +199,7 @@
         //     });
         // });
 
+
         document.addEventListener('livewire:init', () => {
             Livewire.on('error', (data) => {
                 Swal.fire({
@@ -201,6 +209,7 @@
                 })
             });
         });
+
 
         document.addEventListener('alpine:init', () => {
             Alpine.directive('focus-next', (el, {
@@ -219,6 +228,7 @@
             });
         });
 
+
         // document.addEventListener('item-not-found', function() {
         // Swal.fire({
         // title: 'الصنف غير موجود',
@@ -234,6 +244,7 @@
         // });
         // });
 
+
         // طريقة بديلة بدون Alpine
         // document.addEventListener('DOMContentLoaded', function() {
         // استمع لحدث Livewire
@@ -243,7 +254,9 @@
             }, 100);
         });
 
+
         addKeyboardListeners();
+
 
         // استمع لحدث التركيز على حقل الكمية الجديد
         window.addEventListener('focusQuantityField', function(e) {
@@ -257,9 +270,11 @@
         });
         // });
 
+
         // دالة للتحقق من إمكانية الوصول للعنصر
         function isElementAccessible(element) {
             if (!element) return false;
+
 
             // التحقق من أن العنصر مرئي وغير مخفي
             const style = window.getComputedStyle(element);
@@ -267,10 +282,12 @@
                 return false;
             }
 
+
             // التحقق من أن العنصر غير معطل
             if (element.disabled || element.readOnly) {
                 return false;
             }
+
 
             // التحقق من أن العنصر داخل viewport
             const rect = element.getBoundingClientRect();
@@ -278,8 +295,10 @@
                 return false;
             }
 
+
             return true;
         }
+
 
         // دالة للعثور على العنصر التالي المتاح
         function findNextAccessibleElement(currentElement, selectors) {
@@ -292,6 +311,7 @@
             return null;
         }
 
+
         // دالة للعثور على العنصر التالي في نفس الصف
         function findNextInRow(currentElement, rowIndex) {
             const fieldOrder = [
@@ -301,8 +321,10 @@
                 `sub_value_${rowIndex}`
             ];
 
+
             const currentId = currentElement.id;
             const currentIndex = fieldOrder.indexOf(currentId);
+
 
             // البحث عن العنصر التالي في نفس الصف
             for (let i = currentIndex + 1; i < fieldOrder.length; i++) {
@@ -312,8 +334,10 @@
                 }
             }
 
+
             return null;
         }
+
 
         // دالة للعثور على العنصر التالي في الصف التالي
         function findNextInNextRow(currentRowIndex) {
@@ -325,6 +349,7 @@
                 `sub_value_${nextRowIndex}`
             ];
 
+
             for (let fieldId of nextRowFields) {
                 const element = document.getElementById(fieldId);
                 if (element && isElementAccessible(element)) {
@@ -332,8 +357,10 @@
                 }
             }
 
+
             return null;
         }
+
 
         // دالة للعثور على العنصر التالي في النموذج
         function findNextFormElement(currentElement) {
@@ -347,8 +374,10 @@
                 'button[type="submit"]'
             ];
 
+
             return findNextAccessibleElement(currentElement, allFormElements);
         }
+
 
         // دالة للعثور على أول حقل كمية متاح
         function findFirstAvailableQuantityField() {
@@ -361,15 +390,18 @@
             return null;
         }
 
+
         // دالة للتحقق من وجود عناصر في الجدول
         function hasTableItems() {
             const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
             return quantityFields.length > 0;
         }
 
+
         // دالة للعثور على آخر حقل متاح في الجدول
         function findLastAvailableTableField() {
             const allTableFields = [];
+
 
             // جمع جميع حقول الجدول
             ['quantity_', 'price_', 'discount_', 'sub_value_'].forEach(function(prefix) {
@@ -378,6 +410,7 @@
                 });
             });
 
+
             // العثور على آخر حقل متاح
             for (let i = allTableFields.length - 1; i >= 0; i--) {
                 if (isElementAccessible(allTableFields[i])) {
@@ -385,15 +418,19 @@
                 }
             }
 
+
             return null;
         }
+
 
         // دالة للتنقل الذكي
         function smartNavigate(currentElement) {
             let nextElement = null;
 
+
             // تحديد نوع العنصر الحالي
             const currentId = currentElement.id;
+
 
             // إذا كان العنصر من حقول الجدول
             if (currentId.startsWith('quantity_') || currentId.startsWith('price_') || currentId.startsWith('discount_')) {
@@ -416,10 +453,12 @@
                 nextElement = findNextFormElement(currentElement);
             }
 
+
             // إذا لم يوجد عنصر تالي، انتقل لأول حقل كمية متاح
             if (!nextElement) {
                 nextElement = findFirstAvailableQuantityField();
             }
+
 
             // إذا لم يوجد أي عنصر متاح، انتقل لأول عنصر في النموذج
             if (!nextElement) {
@@ -429,14 +468,17 @@
                 }
             }
 
+
             return nextElement;
         }
+
 
         function addKeyboardListeners() {
             // إزالة المستمعات القديمة أولاً
             document.querySelectorAll('input[data-listener="true"]').forEach(function(field) {
                 field.removeAttribute('data-listener');
             });
+
 
             // إضافة مستمعات لجميع حقول الجدول (كمية، سعر، خصم، قيمة فرعية)
             const tableFields = ['quantity_', 'price_', 'discount_', 'sub_value_'];
@@ -457,6 +499,7 @@
                     }
                 });
             });
+
 
             // دالة للتركيز على حقل الكمية بعد إضافة صنف من البحث
             window.focusLastQuantityField = function() {
@@ -479,6 +522,7 @@
                 }, 150);
             };
 
+
             // دالة للتركيز على أول حقل متاح
             window.focusFirstAvailableField = function() {
                 setTimeout(function() {
@@ -498,37 +542,43 @@
                 }, 150);
             };
 
+
             document.addEventListener('item-not-found', function(event) {
                 const data = event.detail;
                 const term = data.term || '';
                 const type = data.type || 'barcode';
 
-                let title = 'الصنف غير موجود';
+
+                let title = "{{ __('Item not found') }}";
                 let text = '';
                 let itemCreateUrl = '';
 
+
                 if (type === 'barcode') {
-                    text = `الصنف غير موجود. هل تريد إضافة صنف جديد؟`;
+                    text =
+                        `{{ __('The item with the entered barcode was not found. Do you want to add a new item?') }}`;
                     // تمرير الباركود كمعامل في الرابط
                     itemCreateUrl = `{{ route('items.create') }}?barcode=${encodeURIComponent(term)}`;
                 } else {
-                    text = `الصنف "${term}" غير موجود. هل تريد إضافة صنف جديد؟`;
+                    text = `{{ __('Item ') }}"${term}"{{ __(' not found. Do you want to add a new item?') }}`;
                     // تمرير اسم الصنف كمعامل في الرابط
                     itemCreateUrl = `{{ route('items.create') }}?name=${encodeURIComponent(term)}`;
                 }
+
 
                 Swal.fire({
                     title: title,
                     text: text,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'نعم، إضافة صنف',
-                    cancelButtonText: 'لا',
+                    confirmButtonText: "{{ __('Yes, add item') }}",
+                    cancelButtonText: "{{ __('No') }}",
                     allowEscapeKey: true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.open(itemCreateUrl, '_blank');
                     }
+
 
                     // تنظيف وإعادة التركيز حسب نوع البحث
                     // if (type === 'barcode') {
@@ -550,12 +600,15 @@
                 });
             });
 
+
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     Swal.close();
 
+
                     // تحديد نوع الحقل النشط وتنظيفه
                     const activeElement = document.activeElement;
+
 
                     if (activeElement && activeElement.id === 'barcode-search') {
                         activeElement.value = '';
@@ -580,6 +633,7 @@
                 });
             }
 
+
             // إضافة مستمعات لجميع عناصر النموذج الأخرى
             const formElements = [
                 'input[wire\\:model\\.live="searchTerm"]',
@@ -589,6 +643,7 @@
                 'select[wire\\:model="status"]',
                 'input[id="final_price"]'
             ];
+
 
             formElements.forEach(function(selector) {
                 const elements = document.querySelectorAll(selector);
@@ -610,19 +665,23 @@
             });
         }
 
+
         window.addEventListener('focus-last-quantity-field', function() {
             window.focusLastQuantityField();
         });
 
+
         window.addEventListener('focus-first-available-field', function() {
             window.focusFirstAvailableField();
         });
+
 
         window.addEventListener('focus-barcode-field', () => {
             setTimeout(() => {
                 document.getElementById('barcode-input')?.focus();
             }, 100);
         });
+
 
         window.addEventListener('focus-quantity-field', event => {
             const index = event.detail;
@@ -639,6 +698,7 @@
             }, 100);
         });
 
+
         window.focusBarcodeSearch = function() {
             const barcodeInput = document.getElementById('barcode-search');
             if (barcodeInput && isElementAccessible(barcodeInput)) {
@@ -650,6 +710,7 @@
             }
         };
 
+
         document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('livewire:updated', function() {
                 setTimeout(function() {
@@ -657,8 +718,10 @@
                 }, 100);
             });
 
+
             addKeyboardListeners();
         });
+
 
         // إضافة مستمع عام للتنقل بالـ Enter في جميع أنحاء الصفحة
         document.addEventListener('keydown', function(e) {
@@ -675,6 +738,7 @@
             }
         });
 
+
         document.addEventListener('livewire:init', () => {
             Livewire.on('open-print-window', (event) => {
                 const url = event.url;
@@ -685,7 +749,7 @@
                         printWindow.print();
                     };
                 } else {
-                    alert('يرجى السماح بفتح النوافذ المنبثقة في المتصفح للطباعة.');
+                    alert("{{ __('Please allow pop-ups in your browser for printing.') }}");
                 }
             });
         });

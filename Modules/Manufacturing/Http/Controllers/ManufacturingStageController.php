@@ -2,13 +2,20 @@
 
 namespace Modules\Manufacturing\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
+use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Manufacturing\Models\ManufacturingStage;
 use Modules\Manufacturing\Http\Requests\ManufacturingStageRequest;
-use RealRashid\SweetAlert\Facades\Alert;
 
 class ManufacturingStageController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view Manufacturing Stages')->only(['index', 'show']);
+        $this->middleware('permission:create Manufacturing Stages')->only(['create', 'store']);
+        $this->middleware('permission:edit Manufacturing Stages')->only(['edit', 'update']);
+        $this->middleware('permission:delete Manufacturing Stages')->only(['destroy']);
+    }
 
     public function index()
     {
@@ -27,10 +34,10 @@ class ManufacturingStageController extends Controller
     {
         try {
             ManufacturingStage::create($request->validated());
-            Alert::toast('تم الإنشاء بنجاح', 'success');
+            Alert::toast(__('Created Successfully'), 'success');
             return redirect()->route('manufacturing.stages.index');
-        } catch (\Exception) {
-            Alert::toast('حدث خطأ عند التسجيل', 'error');
+        } catch (\Exception $e) {
+            Alert::toast(__('An error occurred while creating'), 'error');
             return redirect()->back();
         }
     }
@@ -48,10 +55,10 @@ class ManufacturingStageController extends Controller
     {
         try {
             $manufacturingStage->update($request->validated());
-            Alert::toast('تم التعديل بنجاح', 'success');
+            Alert::toast(__('Updated Successfully'), 'success');
             return redirect()->route('manufacturing.stages.index');
-        } catch (\Exception) {
-            Alert::toast('حدث خطأ عند التعديل', 'error');
+        } catch (\Exception ) {
+            Alert::toast(__('An error occurred while updating'), 'error');
             return redirect()->back();
         }
     }
@@ -60,10 +67,10 @@ class ManufacturingStageController extends Controller
     {
         try {
             $manufacturingStage->delete();
-            Alert::toast('تم حذف المرحلة بنجاح', 'success');
+            Alert::toast(__('Stage Deleted Successfully'), 'success');
             return redirect()->route('manufacturing.stages.index');
         } catch (\Exception) {
-            Alert::toast('حدث خطأ أثناء حذف المرحلة', 'error');
+            Alert::toast(__('An error occurred while deleting the stage'), 'error');
             return redirect()->back();
         }
     }

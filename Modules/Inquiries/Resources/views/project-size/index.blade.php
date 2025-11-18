@@ -14,7 +14,7 @@
         <div class="col-lg-12">
 
             {{-- Add Button --}}
-            @can('Create Project Size')
+            @can('create Project Size')
                 <a href="{{ route('project-size.create') }}" class="btn btn-primary font-family-cairo fw-bold">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
@@ -52,14 +52,14 @@
 
                                         @canany(['Edit Project Size', 'Delete Project Size'])
                                             <td>
-                                                @can('Edit Project Size')
+                                                @can('edit Project Size')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('project-size.edit', $size->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('Delete Project Size')
+                                                @can('delete Project Size')
                                                     <form action="{{ route('project-size.destroy', $size->id) }}" method="POST"
                                                         style="display:inline-block;"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete?') }}');">

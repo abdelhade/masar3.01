@@ -11,10 +11,10 @@ class InquiriesRoleController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:View Inquiries Roles')->only('index');
-        $this->middleware('can:Create Inquiries Roles')->only(['create', 'store']);
-        $this->middleware('can:Edit Inquiries Roles')->only(['edit', 'update']);
-        $this->middleware('can:Delete Inquiries Roles')->only('destroy');
+        $this->middleware('can:view Inquiries Roles')->only('index');
+        $this->middleware('can:create Inquiries Roles')->only(['create', 'store']);
+        $this->middleware('can:edit Inquiries Roles')->only(['edit', 'update']);
+        $this->middleware('can:delete Inquiries Roles')->only('destroy');
     }
 
     public function index()

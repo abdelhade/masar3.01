@@ -4,16 +4,16 @@
             <div class="col-12  ">
                 <div class="bg-white shadow-lg rounded-lg p-8">
                     <div class="flex items-center">
-                        <h1 class="text-3xl font-bold text-gray-800">فاتورة التصنيع</h1>
+                        <h1 class="text-3xl font-bold text-gray-800">{{ __('Manufacturing Invoice') }}</h1>
 
                         <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-600"
                             dir="rtl">
                             <!-- بيانات الفاتورة -->
                             <div>
                                 <p class="fw-bold mb-1">
-                                    رقم الفاتورة: <span class="text-primary">{{ $pro_id }}</span>
+                                    {{ __('Invoice Number') }}: <span class="text-primary">{{ $pro_id }}</span>
                                 </p>
-                                <p class="mb-0">التاريخ: {{ $invoiceDate }}</p>
+                                <p class="mb-0">{{ __('Date') }}: {{ $invoiceDate }}</p>
                             </div>
 
                             @if (
@@ -24,8 +24,8 @@
                                         <div class="row">
                                             <!-- الوقت المتوقع -->
                                             <div class="col-md-3">
-                                                <label class="form-label small" style="font-size: 1em;">الوقت
-                                                    المتوقع</label>
+                                                <label class="form-label small"
+                                                    style="font-size: 1em;">{{ __('Expected Time') }}</label>
                                                 <input type="text" wire:model="templateExpectedTime"
                                                     class="form-control form-control-sm" readonly
                                                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -33,8 +33,8 @@
 
                                             <!-- الوقت الفعلي -->
                                             <div class="col-md-3">
-                                                <label class="form-label small" style="font-size: 1em;">الوقت
-                                                    الفعلي</label>
+                                                <label class="form-label small"
+                                                    style="font-size: 1em;">{{ __('Actual Time') }}</label>
                                                 <input type="text" wire:model="actualTime"
                                                     class="form-control form-control-sm" id="actualTimePicker"
                                                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -42,8 +42,8 @@
 
                                             <!-- مضاعف الكمية -->
                                             <div class="col-md-3">
-                                                <label class="form-label small" style="font-size: 1em;">مضاعف
-                                                    الكمية</label>
+                                                <label class="form-label small"
+                                                    style="font-size: 1em;">{{ __('Quantity Multiplier') }}</label>
                                                 <input type="number" wire:model="quantityMultiplier"
                                                     class="form-control form-control-sm" min="0.1" step="0.1"
                                                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
@@ -54,7 +54,7 @@
                                             <div class="col-md-3 d-flex align-items-end">
                                                 <button wire:click="applyQuantityMultiplier"
                                                     class="btn btn-info btn-sm">
-                                                    <i class="fas fa-calculator me-1"></i>تطبيق
+                                                    <i class="fas fa-calculator me-1"></i>{{ __('Apply') }}
                                                 </button>
                                             </div>
                                         </div>
@@ -69,13 +69,13 @@
                                 @if (setting('manufacture_enable_template_saving'))
                                     <button wire:click="openSaveTemplateModal"
                                         class="btn btn-info px-5 py-3 text-lg font-bold">
-                                        حفظ كنموذج <i class="fas fa-save"></i>
+                                        {{ __('Save as Template') }} <i class="fas fa-save"></i>
                                     </button>
 
                                     <!-- زر اختيار نموذج -->
                                     <button wire:click="openLoadTemplateModal"
                                         class="btn btn-warning px-5 py-3 text-lg font-bold">
-                                        اختيار نموذج <i class="fas fa-folder-open"></i>
+                                        {{ __('Select Template') }} <i class="fas fa-folder-open"></i>
                                     </button>
                                 @endif
 
@@ -83,33 +83,25 @@
                                     class="btn btn-primary px-5 py-3 text-lg font-bold"
                                     @if (empty($selectedProducts)) disabled @endif>
                                     <i class="fas fa-calculator me-2"></i>
-                                    توزيع التكاليف حسب النسبة المئوية
+                                    {{ __('Distribute Costs by Percentage') }}
                                 </button>
 
                                 @if (!empty($selectedProducts))
                                     <small class="d-block text-muted mt-1">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        سيتم توزيع إجمالي تكلفة المواد الخام والمصروفات
+                                        {{ __('Total raw materials and expenses will be distributed') }}
                                         (
                                         {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
-                                        جنيه)
-
-
-                                        على المنتجات حسب النسب المحددة
+                                        {{ __('EGP') }})
+                                        {{ __('on products based on specified percentages') }}
                                     </small>
                                 @endif
 
                                 <button wire:click="saveInvoice" class="btn btn-success px-5 py-3 text-lg font-bold">
-                                    حفظ الفاتورة <i class="fas fa-save"></i>
+                                    {{ __('Save Invoice') }} <i class="fas fa-save"></i>
                                 </button>
-
-                                {{-- <button wire:click="cancelInvoice" type="button"
-                                    class="btn btn-danger px-5 py-3 text-lg font-bold">
-                                    إلغاء <i class="fas fa-times-circle"></i>
-                                </button> --}}
                             </div>
                         </div>
-                        <!-- حقول الوقت ومضاعفة الكمية -->
 
                         <!-- مودال حفظ النموذج -->
                         @if ($showSaveTemplateModal)
@@ -117,17 +109,17 @@
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title">حفظ كنموذج تصنيع</h5>
+                                            <h5 class="modal-title">{{ __('Save as Manufacturing Template') }}</h5>
                                         </div>
                                         <div class="modal-body">
                                             <div class="form-group">
-                                                <label>اسم النموذج</label>
+                                                <label>{{ __('Template Name') }}</label>
                                                 <input type="text" wire:model="templateName" class="form-control">
                                             </div>
                                         </div>
                                         <div class="modal-body">
                                             <div class="form-group">
-                                                <label>الوقت المتوقع للإنتاج</label>
+                                                <label>{{ __('Expected Production Time') }}</label>
                                                 <input type="text" wire:model="templateExpectedTime"
                                                     class="form-control" id="timepicker">
                                             </div>
@@ -144,9 +136,10 @@
                                         </script>
 
                                         <div class="modal-footer">
-                                            <button wire:click="saveAsTemplate" class="btn btn-primary">حفظ</button>
+                                            <button wire:click="saveAsTemplate"
+                                                class="btn btn-primary">{{ __('Save') }}</button>
                                             <button wire:click="closeSaveTemplateModal"
-                                                class="btn btn-secondary">إلغاء</button>
+                                                class="btn btn-secondary">{{ __('Cancel') }}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -161,7 +154,7 @@
                                         <div class="modal-header bg-primary text-white">
                                             <h5 class="modal-title">
                                                 <i class="fas fa-folder-open me-2"></i>
-                                                اختيار نموذج تصنيع
+                                                {{ __('Select Manufacturing Template') }}
                                             </h5>
                                             <button type="button" class="btn-close btn-close-white"
                                                 wire:click="closeLoadTemplateModal"></button>
@@ -169,10 +162,12 @@
                                         <div class="modal-body">
                                             @if (count($templates) > 0)
                                                 <div class="mb-3">
-                                                    <label class="form-label fw-bold">اختر النموذج:</label>
+                                                    <label
+                                                        class="form-label fw-bold">{{ __('Choose Template') }}:</label>
                                                     <select wire:model.live="selectedTemplate"
                                                         class="form-select form-select-lg">
-                                                        <option value=""> اختر نموذج --</option>
+                                                        <option value="">{{ __('-- Select Template --') }}
+                                                        </option>
                                                         @foreach ($templates as $template)
                                                             <option value="{{ $template['id'] }}">
                                                                 {{ $template['display_name'] }}
@@ -184,8 +179,8 @@
                                                 @if ($selectedTemplate)
                                                     <div class="alert alert-info">
                                                         <i class="fas fa-info-circle me-2"></i>
-                                                        <strong>ملاحظة:</strong> سيتم تحميل جميع المنتجات والخامات
-                                                        المحفوظة في هذا النموذج.
+                                                        <strong>{{ __('Note') }}:</strong>
+                                                        {{ __('All products and materials saved in this template will be loaded') }}.
                                                     </div>
                                                 @endif
 
@@ -193,7 +188,7 @@
                                                 @if ($selectedTemplate)
                                                     <div class="card">
                                                         <div class="card-header">
-                                                            <h6 class="mb-0">معاينة النموذج</h6>
+                                                            <h6 class="mb-0">{{ __('Template Preview') }}</h6>
                                                         </div>
                                                         <div class="card-body">
                                                             @php
@@ -203,13 +198,15 @@
                                                                 );
                                                             @endphp
                                                             @if ($currentTemplate)
-                                                                {{-- <p class="mb-1"><strong>الاسم:</strong>
-                                                                    {{ $currentTemplate['name'] ?: 'غير محدد' }}</p> --}}
-                                                                <p class="mb-1"><strong>التاريخ:</strong>
-                                                                    {{ $currentTemplate['pro_date'] }}</p>
-                                                                <p class="mb-0"><strong>القيمة:</strong>
+                                                                <p class="mb-1">
+                                                                    <strong>{{ __('Date') }}:</strong>
+                                                                    {{ $currentTemplate['pro_date'] }}
+                                                                </p>
+                                                                <p class="mb-0">
+                                                                    <strong>{{ __('Value') }}:</strong>
                                                                     {{ number_format($currentTemplate['pro_value'], 2) }}
-                                                                    ج.م</p>
+                                                                    {{ __('EGP') }}
+                                                                </p>
                                                             @endif
                                                         </div>
                                                     </div>
@@ -217,9 +214,9 @@
                                             @else
                                                 <div class="text-center py-4">
                                                     <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                                                    <h5 class="text-muted">لا توجد نماذج محفوظة</h5>
-                                                    <p class="text-muted">قم بحفظ نموذج أولاً لتتمكن من تحميله لاحقاً
-                                                    </p>
+                                                    <h5 class="text-muted">{{ __('No Saved Templates') }}</h5>
+                                                    <p class="text-muted">
+                                                        {{ __('Save a template first to load it later') }}</p>
                                                 </div>
                                             @endif
                                         </div>
@@ -228,16 +225,13 @@
                                                 <button wire:click="loadTemplate" class="btn btn-primary px-4"
                                                     {{ !$selectedTemplate ? 'disabled' : '' }}>
                                                     <i class="fas fa-download me-2"></i>
-                                                    تحميل النموذج
-                                                    {{-- @if (!$selectedTemplate)
-                                                        <small class="d-block">(اختر نموذج أولاً)</small>
-                                                    @endif --}}
+                                                    {{ __('Load Template') }}
                                                 </button>
                                             @endif
                                             <button wire:click="closeLoadTemplateModal"
                                                 class="btn btn-secondary px-4">
                                                 <i class="fas fa-times me-2"></i>
-                                                إلغاء
+                                                {{ __('Cancel') }}
                                             </button>
                                         </div>
                                     </div>
@@ -250,7 +244,7 @@
                                 <div class="row">
 
                                     <div class="col-lg-2">
-                                        <label class="form-label" style="font-size: 1em;"> الحساب </label>
+                                        <label class="form-label" style="font-size: 1em;">{{ __('Account') }}</label>
                                         <select wire:model="OperatingAccount" class="form-control form-control-sm"
                                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
                                             @foreach ($OperatingCenter as $keyOperation => $valueOperation)
@@ -263,7 +257,8 @@
                                     </div>
 
                                     <div class="col-lg-2">
-                                        <label class="form-label" style="font-size: 1em;"> الموظف </label>
+                                        <label class="form-label"
+                                            style="font-size: 1em;">{{ __('Employee') }}</label>
                                         <select wire:model="employee" class="form-control form-control-sm"
                                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
                                             @foreach ($employeeList as $keyEmployee => $valueEmployee)
@@ -277,7 +272,7 @@
 
                                     <div class="col-lg-2">
                                         <label for="pro_date" class="form-label"
-                                            style="font-size: 1em;">{{ __('التاريخ') }}</label>
+                                            style="font-size: 1em;">{{ __('Date') }}</label>
                                         <input type="date" wire:model="invoiceDate"
                                             class="form-control form-control-sm @error('pro_date') is-invalid @enderror"
                                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -286,10 +281,9 @@
                                         @enderror
                                     </div>
 
-
                                     <div class="col-lg-2">
                                         <label for="pro_date" class="form-label"
-                                            style="font-size: 1em;">{{ __(' رقم الفاتورة ') }}</label>
+                                            style="font-size: 1em;">{{ __('Invoice Number') }}</label>
                                         <input type="text" wire:model="pro_id"
                                             class="form-control form-control-sm @error('pro_id') is-invalid @enderror"
                                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;" readonly>
@@ -300,7 +294,7 @@
 
                                     <div class="col-lg-2">
                                         <label for="patchNumber" class="form-label"
-                                            style="font-size: 1em;">{{ __('رقم الباتش ') }}</label>
+                                            style="font-size: 1em;">{{ __('Batch Number') }}</label>
                                         <input type="text" wire:model="patchNumber"
                                             class="form-control form-control-sm "
                                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -308,7 +302,7 @@
 
                                     <div class="col-lg-2">
                                         <label for="description" class="form-label"
-                                            style="font-size: 1em;">{{ __('وصف العملية') }}</label>
+                                            style="font-size: 1em;">{{ __('Operation Description') }}</label>
                                         <input type="text" wire:model="description"
                                             class="form-control form-control-sm"
                                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
@@ -325,9 +319,9 @@
                             <div class="row">
                                 <div class="col-lg-3 mb-0" style="position: relative; z-index: 999;">
                                     <input type="text" wire:model.live="productSearchTerm" id="product_search"
-                                        class="form-control form-control-sm frst" placeholder="ابحث عن منتج..."
-                                        autocomplete="off" style="font-size: 1em;"
-                                        wire:keydown.arrow-down="handleKeyDownProduct"
+                                        class="form-control form-control-sm frst"
+                                        placeholder="{{ __('Search for product...') }}" autocomplete="off"
+                                        style="font-size: 1em;" wire:keydown.arrow-down="handleKeyDownProduct"
                                         wire:keydown.arrow-up="handleKeyUpProduct"
                                         wire:keydown.enter.prevent="handleEnterProduct" />
                                     @if (strlen($productSearchTerm) > 0 && $productSearchResults->count())
@@ -343,7 +337,7 @@
                                     @elseif(strlen($productSearchTerm) > 0)
                                         <div class="mt-2" style="position: absolute; z-index: 1000; width: 100%;">
                                             <div class="list-group-item text-danger">
-                                                لا توجد نتائج لـ "{{ $productSearchTerm }}"
+                                                {{ __('No results for') }} "{{ $productSearchTerm }}"
                                             </div>
                                         </div>
                                     @endif
@@ -367,20 +361,20 @@
                                 @if (empty($selectedProducts))
                                     <div class="text-center py-5">
                                         <i class="fas fa-box-open text-muted mb-3" style="font-size: 2rem;"></i>
-                                        <h5 class="text-muted">لا توجد منتجات</h5>
-                                        <p class="text-muted small">أضف المنتجات المستخدمة في التصنيع</p>
+                                        <h5 class="text-muted">{{ __('No Products') }}</h5>
+                                        <p class="text-muted small">{{ __('Add products used in manufacturing') }}</p>
                                     </div>
                                 @else
                                     <div class="space-y-3">
                                         <table class="table table-bordered table-sm">
                                             <thead class="table-light">
                                                 <tr class="text-center">
-                                                    <th style="width: 20%">المنتج</th>
-                                                    <th style="width: 15%">الكمية</th>
-                                                    <th style="width: 15%">تكلفة الوحدة</th>
-                                                    <th style="width: 15%">نسبة التكلفة %</th>
-                                                    <th style="width: 15%">الإجمالي</th>
-                                                    <th style="width: 10%">إجراءات</th>
+                                                    <th style="width: 20%">{{ __('Product') }}</th>
+                                                    <th style="width: 15%">{{ __('Quantity') }}</th>
+                                                    <th style="width: 15%">{{ __('Unit Cost') }}</th>
+                                                    <th style="width: 15%">{{ __('Cost Percentage') }} %</th>
+                                                    <th style="width: 15%">{{ __('Total') }}</th>
+                                                    <th style="width: 10%">{{ __('Actions') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="products_table_body">
@@ -400,7 +394,7 @@
                                                                 min="0.01" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                placeholder="الكمية">
+                                                                placeholder="{{ __('Quantity') }}">
                                                         </td>
 
                                                         <td>
@@ -410,15 +404,16 @@
                                                                 min="0" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                placeholder="تكلفة الوحدة"
-                                                                title="سيتم تعديل سعر الشراء المتوسط للصنف">
+                                                                placeholder="{{ __('Unit Cost') }}"
+                                                                title="{{ __('Average purchase price will be updated') }}">
 
                                                             @if (isset($product['old_unit_cost']) && $product['unit_cost'] != $product['old_unit_cost'])
                                                                 <small class="text-warning d-block">
                                                                     <i class="fas fa-exclamation-triangle"></i>
-                                                                    سيتم تحديث المتوسط من
+                                                                    {{ __('Average will be updated from') }}
                                                                     {{ number_format($product['old_unit_cost'], 2) }}
-                                                                    إلى {{ number_format($product['unit_cost'], 2) }}
+                                                                    {{ __('to') }}
+                                                                    {{ number_format($product['unit_cost'], 2) }}
                                                                 </small>
                                                             @endif
                                                         </td>
@@ -430,11 +425,11 @@
                                                                 min="0" max="100" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                placeholder="نسبة التكلفة">
+                                                                placeholder="{{ __('Cost Percentage') }}">
                                                         </td>
                                                         <td>
                                                             <input type="text"
-                                                                value="{{ number_format($product['total_cost'] ?? 0, 2) }} جنيه"
+                                                                value="{{ number_format($product['total_cost'] ?? 0, 2) }} {{ __('EGP') }}"
                                                                 class="form-control form-control-sm bg-opacity-10 fw-bold text-green-600"
                                                                 readonly
                                                                 style="padding:2px;height:30px;font-size: 0.9em;">
@@ -456,6 +451,7 @@
                         </div>
                     </div>
 
+
                     <hr style=" border: none; border-top: 12px solid #1908da; margin: 0.1rem 0;">
 
                     <div class="container-fluid">
@@ -474,7 +470,7 @@
                                             id="general_chat_tab" data-bs-toggle="pill" href="#general_chat"
                                             onclick="setActiveTab('general_chat')"
                                             wire:click="$set('activeTab', 'general_chat')">
-                                            المواد الخام
+                                            {{ __('Raw Materials') }}
                                         </a>
                                     </li>
 
@@ -484,7 +480,7 @@
                                                 id="group_chat_tab" data-bs-toggle="pill" href="#group_chat"
                                                 onclick="setActiveTab('group_chat')"
                                                 wire:click="$set('activeTab', 'group_chat')">
-                                                المصروفات
+                                                {{ __('Expenses') }}
                                             </a>
                                         </li>
                                     @endif
@@ -513,7 +509,7 @@
                                                                                 wire:model.live="rawMaterialSearchTerm"
                                                                                 id="raw_material_search"
                                                                                 class="form-control form-control-sm frst"
-                                                                                placeholder="ابحث عن مادة خام..."
+                                                                                placeholder="{{ __('Search for raw material...') }}"
                                                                                 autocomplete="off"
                                                                                 style="font-size: 1em;"
                                                                                 wire:keydown.arrow-down="handleKeyDownRawMaterial"
@@ -536,7 +532,7 @@
                                                                                     style="position: absolute; z-index: 1000; width: 100%;">
                                                                                     <div
                                                                                         class="list-group-item text-danger">
-                                                                                        لا توجد نتائج لـ
+                                                                                        {{ __('No results for') }}
                                                                                         "{{ $rawMaterialSearchTerm }}"
                                                                                     </div>
                                                                                 </div>
@@ -565,10 +561,11 @@
                                                                             <div class="text-center py-5">
                                                                                 <i class="fas fa-box-open text-muted mb-3"
                                                                                     style="font-size: 2rem;"></i>
-                                                                                <h5 class="text-muted">لا توجد مواد خام
-                                                                                </h5>
-                                                                                <p class="text-muted small">أضف المواد
-                                                                                    الخام المستخدمة في التصنيع</p>
+                                                                                <h5 class="text-muted">
+                                                                                    {{ __('No Raw Materials') }}</h5>
+                                                                                <p class="text-muted small">
+                                                                                    {{ __('Add raw materials used in manufacturing') }}
+                                                                                </p>
                                                                             </div>
                                                                         @else
                                                                             <div class="space-y-3">
@@ -578,20 +575,23 @@
                                                                                     <thead class="table-light">
                                                                                         <tr class="text-center">
                                                                                             <th style="width: 20%">
-                                                                                                المادة الخام
+                                                                                                {{ __('Raw Material') }}
                                                                                             </th>
                                                                                             <th style="width: 15%">
-                                                                                                الوحدة</th>
-                                                                                            <th style="width: 15%">
-                                                                                                الكمية</th>
-                                                                                            <th style="width: 15%">
-                                                                                                سعر التكلفه
+                                                                                                {{ __('Unit') }}
                                                                                             </th>
                                                                                             <th style="width: 15%">
-                                                                                                الإجمالي
+                                                                                                {{ __('Quantity') }}
+                                                                                            </th>
+                                                                                            <th style="width: 15%">
+                                                                                                {{ __('Cost Price') }}
+                                                                                            </th>
+                                                                                            <th style="width: 15%">
+                                                                                                {{ __('Total') }}
                                                                                             </th>
                                                                                             <th style="width: 10%">
-                                                                                                إجراءات</th>
+                                                                                                {{ __('Actions') }}
+                                                                                            </th>
                                                                                         </tr>
                                                                                     </thead>
                                                                                     <tbody
@@ -618,7 +618,7 @@
                                                                                                                 value="{{ $unit['id'] }}">
                                                                                                                 {{ $unit['name'] }}
                                                                                                                 ({{ number_format($unit['available_qty'], 0, '.', '') }}
-                                                                                                                قطعة)
+                                                                                                                {{ __('pieces') }})
                                                                                                             </option>
                                                                                                         @endforeach
                                                                                                     </select>
@@ -632,24 +632,23 @@
                                                                                                         step="0.01"
                                                                                                         class="form-control form-control-sm"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                                                        placeholder="الكمية">
+                                                                                                        placeholder="{{ __('Quantity') }}">
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <input
                                                                                                         type="number"
                                                                                                         id="raw_unit_cost_{{ $index }}"
                                                                                                         wire:model.live.debounce.300="selectedRawMaterials.{{ $index }}.average_cost"
-                                                                                                        {{-- wire:blur="updateRawMaterialTotal('selectedRawMaterials.{{ $index }}.unit_cost')" --}}
                                                                                                         min="0"
                                                                                                         step="0.01"
                                                                                                         class="form-control form-control-sm cost-input"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                                                        placeholder="سعر التكلفه">
+                                                                                                        placeholder="{{ __('Cost Price') }}">
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <input
                                                                                                         type="text"
-                                                                                                        value="{{ number_format($material['total_cost'] ?? 0, 2) }} ج"
+                                                                                                        value="{{ number_format($material['total_cost'] ?? 0, 2) }} {{ __('EGP') }}"
                                                                                                         class="form-control form-control-sm  bg-opacity-10  fw-bold"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
                                                                                                         readonly>
@@ -668,9 +667,6 @@
                                                                                         @endforeach
                                                                                     </tbody>
                                                                                 </table>
-                                                                                {{-- </div>
-                                                                                    </div> --}}
-                                                                                {{-- @endforeach --}}
                                                                             </div>
                                                                         @endif
                                                                     </div>
@@ -689,7 +685,7 @@
 
                                                                                     <button wire:click="addExpense"
                                                                                         class="btn btn-primary btn-sm">
-                                                                                        إضافة مصروف
+                                                                                        {{ __('Add Expense') }}
                                                                                     </button>
                                                                                 </div>
                                                                             </div>
@@ -700,10 +696,11 @@
                                                                                     <div class="text-center py-5">
                                                                                         <i class="fas fa-money-bill-wave text-muted mb-3"
                                                                                             style="font-size: 2rem;"></i>
-                                                                                        <h5 class="text-muted">لا توجد
-                                                                                            مصاريف إضافية</h5>
-                                                                                        <p class="text-muted small">أضف
-                                                                                            المصاريف الإضافية للتصنيع
+                                                                                        <h5 class="text-muted">
+                                                                                            {{ __('No Additional Expenses') }}
+                                                                                        </h5>
+                                                                                        <p class="text-muted small">
+                                                                                            {{ __('Add additional manufacturing expenses') }}
                                                                                         </p>
                                                                                     </div>
                                                                                 @else
@@ -714,10 +711,14 @@
                                                                                                 class="table table-bordered table-sm">
                                                                                                 <thead>
                                                                                                     <tr>
-                                                                                                        <th>المبلغ</th>
-                                                                                                        <th>الحساب</th>
-                                                                                                        <th>الوصف</th>
-                                                                                                        <th>حذف</th>
+                                                                                                        <th>{{ __('Amount') }}
+                                                                                                        </th>
+                                                                                                        <th>{{ __('Account') }}
+                                                                                                        </th>
+                                                                                                        <th>{{ __('Description') }}
+                                                                                                        </th>
+                                                                                                        <th>{{ __('Delete') }}
+                                                                                                        </th>
                                                                                                     </tr>
                                                                                                 </thead>
                                                                                                 <tbody
@@ -760,7 +761,7 @@
                                                                                                                 <input
                                                                                                                     type="text"
                                                                                                                     wire:model="additionalExpenses.{{ $index }}.description"
-                                                                                                                    placeholder="وصف المصروف"
+                                                                                                                    placeholder="{{ __('Expense Description') }}"
                                                                                                                     class="form-control form-control-sm @error('additionalExpenses.' . $index . '.description') is-invalid @enderror"
                                                                                                                     style="padding:2px;height:30px;">
                                                                                                                 @error('additionalExpenses.'
@@ -795,13 +796,12 @@
                                                                                                 class="card p-3 bg-light">
                                                                                                 <h6
                                                                                                     class="mb-3 fw-bold">
-                                                                                                    إجمالي المصروفات
-                                                                                                    الإضافية</h6>
+                                                                                                    {{ __('Total Additional Expenses') }}
+                                                                                                </h6>
                                                                                                 <p
                                                                                                     class="fs-5 text-success">
                                                                                                     {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
-
-                                                                                                    جنيه
+                                                                                                    {{ __('EGP') }}
                                                                                                 </p>
                                                                                             </div>
                                                                                         </div>
@@ -823,32 +823,36 @@
                         </div>
                     </div>
 
+
                     <div class="row">
                         <div class="col-5">
                             <div class="row gx-2 align-items-end">
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">المواد الخام</label>
+                                    <label
+                                        class="form-label small text-gray-600">{{ __('Raw Materials Cost') }}</label>
                                     <input type="text"
                                         class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalRawMaterialsCost) }} ج" readonly>
-                                </div>
-
-                                <div class="col-4">
-                                    <label class="form-label small text-gray-600">المصاريف</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;"
-                                        value=" {{ number_format(collect($additionalExpenses)->sum(fn($item) => (float) $item['amount'])) }} ج"
+                                        value="{{ number_format($totalRawMaterialsCost) }} {{ __('EGP') }}"
                                         readonly>
                                 </div>
 
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">الإجمالي</label>
+                                    <label class="form-label small text-gray-600">{{ __('Expenses Cost') }}</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
+                                        style="font-size: 0.75rem;"
+                                        value=" {{ number_format(collect($additionalExpenses)->sum(fn($item) => (float) $item['amount'])) }} {{ __('EGP') }}"
+                                        readonly>
+                                </div>
+
+                                <div class="col-4">
+                                    <label class="form-label small text-gray-600">{{ __('Total Cost') }}</label>
                                     <input type="text"
                                         class="form-control form-control-sm text-success fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalManufacturingCost) }} ج" readonly>
+                                        value="{{ number_format($totalManufacturingCost) }} {{ __('EGP') }}"
+                                        readonly>
                                 </div>
                             </div>
                         </div>
@@ -859,28 +863,31 @@
                         <div class="col-5">
                             <div class="row gx-2 align-items-end">
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">الانتاج التام</label>
+                                    <label
+                                        class="form-label small text-gray-600">{{ __('Finished Products') }}</label>
                                     <input type="text"
                                         class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;" value="{{ number_format($totalProductsCost) }} ج"
+                                        style="font-size: 0.75rem;"
+                                        value="{{ number_format($totalProductsCost) }} {{ __('EGP') }}"
                                         readonly>
                                 </div>
 
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">التكلفه المعياريه</label>
+                                    <label class="form-label small text-gray-600">{{ __('Standard Cost') }}</label>
                                     <input type="text"
                                         class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalAdditionalExpenses) }} ج" readonly --}}>
+                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalAdditionalExpenses) }} {{ __('EGP') }}" readonly --}}>
                                 </div>
 
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">فرق التكلفه</label>
+                                    <label class="form-label small text-gray-600">{{ __('Cost Difference') }}</label>
                                     <input type="text" class="form-control form-control-sm  fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalManufacturingCost) }} ج" readonly --}}>
+                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalManufacturingCost) }} {{ __('EGP') }}" readonly --}}>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -891,7 +898,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function setupKeyboardNavigation() {
-                // حقل الكمية - الانتقال لحقل السعر
+                // Product quantity field - navigate to search
                 document.querySelectorAll('input[id^="product_quantity_"]').forEach(function(field) {
                     field.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
@@ -905,7 +912,7 @@
                     });
                 });
 
-                // حقل الكمية - الانتقال لحقل السعر
+                // Raw material quantity field - navigate to price field
                 document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
                     field.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
@@ -919,12 +926,12 @@
                         }
                     });
                 });
-                // حقل السعر - الانتقال لحقل البحث
+
+                // Price field - navigate to search field
                 document.querySelectorAll('input[id^="raw_quantity_"]').forEach(function(field) {
                     field.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
                             e.preventDefault();
-                            // العودة لحقل البحث لإضافة مادة خام جديدة
                             const searchField = document.getElementById('raw_material_search');
                             if (searchField) {
                                 searchField.focus();
@@ -948,7 +955,7 @@
             // Initialize on page load
             setupKeyboardNavigation();
             document.addEventListener('livewire:init', () => {
-                // التركيز على حقل كمية المنتج
+                // Focus on product quantity field
                 Livewire.on('focusProductQuantity', (index) => {
                     setTimeout(() => {
                         const field = document.getElementById(`product_quantity_${index}`);
@@ -958,7 +965,8 @@
                         }
                     }, 300);
                 });
-                // التركيز على حقل كمية المادة الخام
+
+                // Focus on raw material quantity field
                 Livewire.on('focusRawMaterialQuantity', (index) => {
                     setTimeout(() => {
                         const field = document.getElementById(`raw_quantity_${index}`);
@@ -966,7 +974,7 @@
                             field.focus();
                             field.select();
                         }
-                    }, 300); // زيادة الوقت من 100 إلى 300
+                    }, 300);
                 });
 
                 // Re-initialize navigation after Livewire updates
@@ -974,6 +982,7 @@
                     setTimeout(setupKeyboardNavigation, 50);
                 });
             });
+
             // Global focus functions (can be called from anywhere)
             window.focusProductSearch = function() {
                 const field = document.getElementById('product_search');
@@ -982,6 +991,7 @@
                     field.value = '';
                 }
             };
+
             window.focusRawMaterialSearch = function() {
                 const field = document.getElementById('raw_material_search');
                 if (field) {
@@ -989,6 +999,7 @@
                     field.value = '';
                 }
             };
+
             window.focusQuantityField = function(section, index) {
                 setTimeout(() => {
                     const field = document.getElementById(`${section}_quantity_${index}`);
@@ -999,39 +1010,38 @@
                 }, 200);
             };
 
-            //alerts
-            // Alert نجاح
+            // Success Alert
             Livewire.on('success-swal', (data) => {
                 const d = Array.isArray(data) ? data[0] : data;
                 Swal.fire({
-                    title: d.title || 'تم!',
-                    text: d.text || 'تمت العملية بنجاح',
+                    title: d.title || '{{ __('Done!') }}',
+                    text: d.text || '{{ __('Operation completed successfully') }}',
                     icon: d.icon || 'success',
-                    confirmButtonText: 'موافق'
+                    confirmButtonText: '{{ __('OK') }}'
                 }).then(() => {
                     if (d.reload) location.reload();
                 });
             });
 
-            // Alert خطأ
+            // Error Alert
             Livewire.on('error-swal', (data) => {
                 const d = Array.isArray(data) ? data[0] : data;
                 Swal.fire({
-                    title: d.title || 'خطأ!',
-                    text: d.text || 'حدث خطأ غير متوقع',
+                    title: d.title || '{{ __('Error!') }}',
+                    text: d.text || '{{ __('An unexpected error occurred') }}',
                     icon: d.icon || 'error',
-                    confirmButtonText: 'حسنًا'
+                    confirmButtonText: '{{ __('OK') }}'
                 });
             });
 
-            // Alert عام (اختياري)
+            // General Alert (optional)
             Livewire.on('alert-swal', (data) => {
                 const d = Array.isArray(data) ? data[0] : data;
                 Swal.fire(d);
             });
 
             document.addEventListener('DOMContentLoaded', function() {
-                // تتبع تغيير القيم
+                // Track value changes
                 Livewire.on('template-selected', (templateId) => {
                     console.log('Template selected:', templateId);
                 });

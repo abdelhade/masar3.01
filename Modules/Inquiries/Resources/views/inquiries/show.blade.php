@@ -349,7 +349,52 @@
                     </div>
                 </div>
 
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users-cog me-2"></i>
+                            {{ __('Assigned Engineers') }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if ($inquiry->assignedEngineers && $inquiry->assignedEngineers->count() > 0)
+                            <div class="row g-3">
+                                @foreach ($inquiry->assignedEngineers as $engineer)
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <div class="card-body text-center">
+                                                <div class="avatar-circle bg-primary text-white mx-auto mb-3">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <h6 class="mb-1">{{ $engineer->name }}</h6>
+                                                @if ($engineer->email)
+                                                    <small class="text-muted d-block mb-2">
+                                                        <i class="fas fa-envelope me-1"></i>
+                                                        {{ $engineer->email }}
+                                                    </small>
+                                                @endif
+                                                @if ($engineer->pivot->assigned_at)
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-calendar-check me-1"></i>
+                                                        {{ __('Assigned at') }}: {{ $engineer->pivot->assigned_at }}
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                {{ __('No engineers assigned to this inquiry yet.') }}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
             </div>
+
             <!-- ======== نهاية القسم ======== -->
 
             <div class="col-xl-4 col-lg-12 mb-4">
@@ -361,12 +406,12 @@
                     </div>
                     <div class="card-body">
                         @foreach ([
-                                    'client' => ['label' => __('Client'), 'icon' => 'fa-user-tie', 'color' => 'primary'],
-                                    'main_contractor' => ['label' => __('Main Contractor'), 'icon' => 'fa-hard-hat', 'color' => 'success'],
-                                    'consultant' => ['label' => __('Consultant'), 'icon' => 'fa-user-check', 'color' => 'info'],
-                                    'owner' => ['label' => __('Owner'), 'icon' => 'fa-crown', 'color' => 'warning'],
-                                    'engineer' => ['label' => __('Engineer'), 'icon' => 'fa-user-cog', 'color' => 'danger'],
-                                ] as $roleKey => $roleData)
+            'client' => ['label' => __('Client'), 'icon' => 'fa-user-tie', 'color' => 'primary'],
+            'main_contractor' => ['label' => __('Main Contractor'), 'icon' => 'fa-hard-hat', 'color' => 'success'],
+            'consultant' => ['label' => __('Consultant'), 'icon' => 'fa-user-check', 'color' => 'info'],
+            'owner' => ['label' => __('Owner'), 'icon' => 'fa-crown', 'color' => 'warning'],
+            'engineer' => ['label' => __('Engineer'), 'icon' => 'fa-user-cog', 'color' => 'danger'],
+        ] as $roleKey => $roleData)
                             <div class="d-flex align-items-center p-3 border-bottom">
                                 <div class="flex-shrink-0">
                                     <i class="fas {{ $roleData['icon'] }} fa-lg text-{{ $roleData['color'] }}"></i>

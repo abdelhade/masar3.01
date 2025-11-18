@@ -1,4 +1,3 @@
-
 <table class="table table-striped mb-0" style="min-width: 1200px;">
     <thead class="table-light text-center align-middle">
         <tr>
@@ -7,26 +6,26 @@
                     @php
                         $width = $this->currentTemplate->getColumnWidth($columnKey);
                         $columnNames = [
-                            'item_name' => 'الصنف',
-                            'unit' => 'الوحدة',
-                            'quantity' => 'الكمية',
-                            'batch_number' => 'رقم الدفعة', // ✅ جديد
-                            'expiry_date' => 'تاريخ الصلاحية', // ✅ جديد
-                            'length' => 'الطول',
-                            'width' => 'العرض',
-                            'height' => 'الارتفاع',
-                            'density' => 'الكثافة',
-                            'price' => 'السعر',
-                            'discount' => 'الخصم',
-                            'sub_value' => 'القيمة',
+                            'item_name' => __('Item Name'),
+                            'unit' => __('Unit'),
+                            'quantity' => __('Quantity'),
+                            'batch_number' => __('Batch Number'),
+                            'expiry_date' => __('Expiry Date'),
+                            'length' => __('Length'),
+                            'width' => __('Width'),
+                            'height' => __('Height'),
+                            'density' => __('Density'),
+                            'price' => __('Price'),
+                            'discount' => __('Discount'),
+                            'sub_value' => __('Value'),
                         ];
                     @endphp
                     <th class="font-family-cairo fw-bold font-14 text-center" style="width: {{ $width }}%;">
-                        {{ $columnNames[$columnKey] ?? $columnKey }}
+                        {{ __($columnNames[$columnKey] ?? $columnKey) }}
                     </th>
                 @endif
             @endforeach
-            <th class="font-family-cairo fw-bold font-14 text-center" style="width: 5%;">إجراء</th>
+            <th class="font-family-cairo fw-bold font-14 text-center" style="width: 5%;">{{ __('Action') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -43,10 +42,11 @@
                                             <span class="form-control"
                                                 wire:click="selectItemFromTable({{ $row['item_id'] }}, {{ $row['unit_id'] ?? '' }}, {{ $row['price'] ?? 0 }})"
                                                 style="cursor: pointer; font-size: 0.85em; height: 2em; padding: 1px 4px; display: block;">
-                                                {{ $row['name'] ?? 'غير محدد' }}
+                                                {{ $row['name'] ?? __('Not Specified') }}
                                             </span>
                                         </td>
                                     @endif
+
 
                                     {{-- كود الصنف --}}
                                     @if ($this->shouldShowColumn('item_code'))
@@ -57,6 +57,7 @@
                                             </span>
                                         </td>
                                     @endif
+
 
                                     {{-- الوحدة --}}
                                     @if ($this->shouldShowColumn('unit'))
@@ -76,16 +77,18 @@
                                         </td>
                                     @endif
 
+
                                     {{-- الكمية --}}
                                     @if ($this->shouldShowColumn('quantity'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.001" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.quantity"
-                                                id="quantity_{{ $index }}" placeholder="{{ __('الكمية') }}"
+                                                id="quantity_{{ $index }}" placeholder="{{ __('Quantity') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control">
                                         </td>
                                     @endif
+
 
                                     {{-- ✅ رقم الدفعة (محدّث) --}}
                                     @if ($this->shouldShowColumn('batch_number'))
@@ -99,11 +102,13 @@
                                                 // 10 = مبيعات, 12 = مردود مبيعات, 14 = أمر بيع، إلخ
                                             @endphp
 
+
                                             @if ($isIncomingInvoice)
                                                 {{-- 🟢 في فواتير الشراء: الحقل مفتوح للكتابة --}}
                                                 <input type="text"
                                                     wire:model.blur="invoiceItems.{{ $index }}.batch_number"
-                                                    class="form-control text-center" placeholder="رقم الدفعة"
+                                                    class="form-control text-center"
+                                                    placeholder="{{ __('Batch Number') }}"
                                                     style="font-size: 0.85em; height: 2em; padding: 1px 4px;" />
                                             @elseif (
                                                 $isOutgoingInvoice &&
@@ -116,7 +121,7 @@
                                                     wire:change="selectBatch({{ $index }}, $event.target.value)"
                                                     class="form-control"
                                                     style="font-size: 0.85em; height: 2em; padding: 1px 4px;">
-                                                    <option value="">اختر دفعة...</option>
+                                                    <option value="">{{ __('Select Batch...') }}</option>
                                                     @foreach ($this->availableBatches[$row['item_id']] ?? [] as $batch)
                                                         <option value="{{ $batch['batch_number'] }}"
                                                             @if (($row['batch_number'] ?? '') == $batch['batch_number']) selected @endif>
@@ -129,10 +134,11 @@
                                                 <input type="text" value="{{ $row['batch_number'] ?? '' }}"
                                                     class="form-control text-center"
                                                     style="font-size: 0.85em; height: 2em; padding: 1px 4px; background-color: #f8f9fa; cursor: not-allowed;"
-                                                    placeholder="لا يوجد" />
+                                                    placeholder="{{ __('Not available') }}" />
                                             @endif
                                         </td>
                                     @endif
+
 
                                     {{-- ✅ تاريخ الصلاحية (محدّث ومُصلح) --}}
                                     @if ($this->shouldShowColumn('expiry_date'))
@@ -141,6 +147,7 @@
                                                 $isIncomingInvoice = in_array($this->type, [11, 13, 20]);
                                                 $isOutgoingInvoice = in_array($this->type, [10, 12, 14, 16, 19, 22]);
                                             @endphp
+
 
                                             @if ($isIncomingInvoice)
                                                 {{-- 🟢 في فواتير الشراء: حقل date مفتوح --}}
@@ -155,8 +162,9 @@
                                                     value="{{ isset($row['expiry_date']) ? \Carbon\Carbon::parse($row['expiry_date'])->format('Y-m-d') : '' }}"
                                                     class="form-control text-center" readonly
                                                     style="font-size: 0.85em; height: 2em; padding: 1px 4px; background-color: #f8f9fa; cursor: not-allowed;"
-                                                    placeholder="لا يوجد" />
+                                                    placeholder="{{ __('Not available') }}" />
                                             @endif
+
 
                                             {{-- تنبيه إذا كانت الصلاحية قريبة --}}
                                             @if (isset($row['expiry_date']))
@@ -169,16 +177,18 @@
                                                     }
                                                 @endphp
 
+
                                                 @if ($daysUntilExpiry !== null)
                                                     @if ($daysUntilExpiry >= 0 && $daysUntilExpiry <= 30)
                                                         <small class="text-warning d-block" style="font-size: 0.75em;">
                                                             <i class="fas fa-exclamation-triangle"></i>
-                                                            باقي {{ $daysUntilExpiry }} يوم
+                                                            {{ __('Remaining') }} {{ $daysUntilExpiry }}
+                                                            {{ __('day(s)') }}
                                                         </small>
                                                     @elseif($daysUntilExpiry < 0)
                                                         <small class="text-danger d-block" style="font-size: 0.75em;">
                                                             <i class="fas fa-times-circle"></i>
-                                                            منتهية الصلاحية
+                                                            {{ __('Expired') }}
                                                         </small>
                                                     @endif
                                                 @endif
@@ -188,83 +198,91 @@
 
 
 
+
                                     {{-- الطول --}}
                                     @if ($this->shouldShowColumn('length'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.length"
-                                                placeholder="{{ __('الطول') }} ({{ $dimensionsUnit }})"
+                                                placeholder="{{ __('Length') }} ({{ $dimensionsUnit }})"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control" @if (!$enableDimensionsCalculation) disabled @endif>
                                         </td>
                                     @endif
+
 
                                     {{-- العرض --}}
                                     @if ($this->shouldShowColumn('width'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.width"
-                                                placeholder="{{ __('العرض') }} ({{ $dimensionsUnit }})"
+                                                placeholder="{{ __('Width') }} ({{ $dimensionsUnit }})"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control" @if (!$enableDimensionsCalculation) disabled @endif>
                                         </td>
                                     @endif
+
 
                                     {{-- الارتفاع --}}
                                     @if ($this->shouldShowColumn('height'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.height"
-                                                placeholder="{{ __('الارتفاع') }} ({{ $dimensionsUnit }})"
+                                                placeholder="{{ __('Height') }} ({{ $dimensionsUnit }})"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control" @if (!$enableDimensionsCalculation) disabled @endif>
                                         </td>
                                     @endif
+
 
                                     {{-- الكثافة --}}
                                     @if ($this->shouldShowColumn('density'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0.01"
                                                 wire:model.blur="invoiceItems.{{ $index }}.density"
-                                                placeholder="{{ __('الكثافة') }}" value="{{ $row['density'] ?? 1 }}"
+                                                placeholder="{{ __('Density') }}" value="{{ $row['density'] ?? 1 }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control"
                                                 @if (!$enableDimensionsCalculation) disabled @endif>
                                         </td>
                                     @endif
 
+
                                     {{-- السعر --}}
                                     @if ($this->shouldShowColumn('price'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.price"
-                                                id="price_{{ $index }}" placeholder="{{ __('السعر') }}"
+                                                id="price_{{ $index }}" placeholder="{{ __('Price') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control">
                                         </td>
                                     @endif
+
 
                                     {{-- الخصم --}}
                                     @if ($this->shouldShowColumn('discount'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.discount"
-                                                id="discount_{{ $index }}" placeholder="{{ __('الخصم') }}"
+                                                id="discount_{{ $index }}" placeholder="{{ __('Discount') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control">
                                         </td>
                                     @endif
+
 
                                     {{-- القيمة الفرعية --}}
                                     @if ($this->shouldShowColumn('sub_value'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 wire:model.blur="invoiceItems.{{ $index }}.sub_value"
-                                                id="sub_value_{{ $index }}" placeholder="{{ __('القيمة') }}"
+                                                id="sub_value_{{ $index }}" placeholder="{{ __('Value') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control">
                                         </td>
                                     @endif
+
 
                                     {{-- زر الحذف --}}
                                     <td class="text-center" style="width: 10%; font-size: 1.2em;">
@@ -279,7 +297,7 @@
                                 <tr>
                                     <td colspan="20">
                                         <div class="alert alert-info text-center mb-0">
-                                            لا توجد أصناف مضافة. استخدم البحث أعلاه لإضافة أصناف.
+                                            {{ __('No items have been added. Use the search above to add items.') }}
                                         </div>
                                     </td>
                                 </tr>

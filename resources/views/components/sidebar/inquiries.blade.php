@@ -4,7 +4,7 @@
     </a>
 </li> --}}
 
-@can('View Inquiries')
+@can('view Inquiries')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inquiries.index') }}">
             <i class="ti-control-record"></i>{{ __('Inquiries') }}
@@ -12,7 +12,7 @@
     </li>
 @endcan
 
-@can('View My Drafts')
+@can('view My Drafts')
     <li>
         <a class="dropdown-item" href="{{ route('inquiries.drafts') }}">
             <i class="fas fa-file-alt me-2"></i>
@@ -27,7 +27,7 @@
     </li>
 @endcan
 
-@can('View Inquiries Source')
+@can('view Inquiries Source')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inquiry.sources.index') }}">
             <i class="ti-control-record"></i>{{ __('Inquiries Source') }}
@@ -35,7 +35,7 @@
     </li>
 @endcan
 
-@can('View Work Types')
+@can('view Work Types')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('work.types.index') }}">
             <i class="ti-control-record"></i>{{ __('Work Types') }}
@@ -43,7 +43,7 @@
     </li>
 @endcan
 
-@can('View Difficulty Matrix')
+@can('view Difficulty Matrix')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('difficulty-matrix.create') }}">
             <i class="ti-control-record"></i>{{ __('Difficulty Matrix') }}
@@ -51,7 +51,7 @@
     </li>
 @endcan
 
-@can('View Quotation Info')
+@can('view Quotation Info')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('quotation-info.create') }}">
             <i class="ti-control-record"></i>{{ __('Quotation Info') }}
@@ -59,7 +59,7 @@
     </li>
 @endcan
 
-@can('View Documents')
+@can('view Documents')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inquiry.documents.index') }}">
             <i class="ti-control-record"></i>{{ __('Documents') }}
@@ -67,7 +67,7 @@
     </li>
 @endcan
 
-@can('View Project Size')
+@can('view Project Size')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('project-size.index') }}">
             <i class="ti-control-record"></i>{{ __('Project Size') }}
@@ -75,7 +75,7 @@
     </li>
 @endcan
 
-@can('View Inquiries Roles')
+@can('view Inquiries Roles')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inquiries-roles.index') }}">
             <i class="ti-control-record"></i>{{ __('Inquiries Roles') }}
@@ -83,7 +83,7 @@
     </li>
 @endcan
 
-@can('View Inquiries Statistics')
+@can('view Inquiries Statistics')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inquiries.dashboard.statistics') }}">
             <i class="ti-bar-chart"></i>{{ __('Inquiries Statistics') }}

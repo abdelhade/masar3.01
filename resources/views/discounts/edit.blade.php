@@ -1,17 +1,16 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar: الخصومات والحسابات --}}
 @section('sidebar')
     @include('components.sidebar.discounts')
 @endsection
 @section('content')
 
     @include('components.breadcrumb', [
-        'title' => __('الخصومات'),
+        'title' => __('Discounts'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('الخصومات'), 'url' => route('discounts.index')],
-            ['label' => __('تعديل خصم')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Discounts'), 'url' => route('discounts.index')],
+            ['label' => __('Edit Discount')],
         ],
     ])
 
@@ -33,7 +32,7 @@
                             @if ($type == 30)
                                 <input type="hidden" name="acc2" value="{{ $acc2Fixed->id }}">
                                 <div class="col-lg-3">
-                                    <label>الحساب المدين (acc1 - العملاء)</label>
+                                    <label>{{ __('Debit Account (acc1 - Clients)') }}</label>
                                     <select name="acc1" class="form-control" required>
                                         @foreach ($clientsAccounts as $acc)
                                             <option value="{{ $acc->id }}" @selected($discount->acc1 == $acc->id)>
@@ -45,7 +44,7 @@
                             @elseif ($type == 31)
                                 <input type="hidden" name="acc1" value="{{ $acc1Fixed->id }}">
                                 <div class="col-lg-3">
-                                    <label>الحساب الدائن (acc2 - الموردين)</label>
+                                    <label>{{ __('Credit Account (acc2 - Suppliers)') }}</label>
                                     <select name="acc2" class="form-control" required>
                                         @foreach ($suppliers as $acc)
                                             <option value="{{ $acc->id }}" @selected($discount->acc2 == $acc->id)>
@@ -57,18 +56,20 @@
                             @endif
 
                             <div class="col-lg-3">
-                                <label>التاريخ</label>
-                                <input type="date" name="pro_date" class="form-control" value="{{ $discount->pro_date }}">
+                                <label>{{ __('Date') }}</label>
+                                <input type="date" name="pro_date" class="form-control"
+                                    value="{{ $discount->pro_date }}">
                             </div>
 
                             <div class="col-lg-3">
-                                <label>رقم السند</label>
-                                <input type="number" name="pro_id" class="form-control" value="{{ $discount->pro_id }}" readonly>
+                                <label>{{ __('Document Number') }}</label>
+                                <input type="number" name="pro_id" class="form-control" value="{{ $discount->pro_id }}"
+                                    readonly>
                             </div>
 
                             <div class="col-lg-3">
                                 <div class="form-group">
-                                    <label for="pro_value">{{ __('قيمة الخصم ') }}</label>
+                                    <label for="pro_value">{{ __('Discount Value') }}</label>
                                     <input type="number" name="pro_value" id="pro_value" step="0.01" min="0.01"
                                         class="form-control @error('pro_value') is-invalid @enderror"
                                         value="{{ $discount->pro_value }}">
@@ -79,13 +80,13 @@
                             </div>
 
                             <div class="col-lg-12">
-                                <label>ملاحظات</label>
+                                <label>{{ __('Notes') }}</label>
                                 <textarea name="info" class="form-control">{{ $discount->info }}</textarea>
                             </div>
 
                             <div class="col-sm-10 mt-4">
-                                <button type="submit" class="btn btn-primary">تحديث</button>
-                                <a href="{{ route('discounts.index') }}" class="btn btn-danger">إلغاء</a>
+                                <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                                <a href="{{ route('discounts.index') }}" class="btn btn-danger">{{ __('Cancel') }}</a>
                             </div>
                         </div>
                     </div>

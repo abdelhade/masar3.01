@@ -62,15 +62,15 @@ class ManufacturingIndex extends Component
             $invoice->delete();
             DB::commit();
             $this->dispatch('success-swal', [
-                'title' => 'تم الحذف!',
-                'text' => 'تم حذف فاتورة التصنيع بنجاح',
+                'title' => __('Deleted!'),
+                'text' => __('Manufacturing invoice deleted successfully'),
                 'icon' => 'success'
             ]);
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('error-swal', [
-                'title' => 'خطأ!',
-                'text' => 'حدث خطأ أثناء الحذف: ',
+                'title' => __('Error!'),
+                'text' => __('An error occurred while deleting'),
                 'icon' => 'error'
             ]);
         }
@@ -79,11 +79,11 @@ class ManufacturingIndex extends Component
     public function confirmDelete($invoiceId)
     {
         $this->dispatch('confirm-delete', [
-            'title' => 'هل أنت متأكد؟',
-            'text' => 'سيتم حذف فاتورة التصنيع وجميع البيانات المرتبطة بها',
+            'title' => __('Are you sure?'),
+            'text' => __('The manufacturing invoice and all related data will be deleted'),
             'icon' => 'warning',
-            'confirmButtonText' => 'نعم، احذف',
-            'cancelButtonText' => 'إلغاء',
+            'confirmButtonText' => __('Yes, delete it'),
+            'cancelButtonText' => __('Cancel'),
             'invoiceId' => $invoiceId
         ]);
         $this->deleteInvoice($invoiceId);
@@ -94,7 +94,7 @@ class ManufacturingIndex extends Component
         $query = OperHead::where('pro_type', 59)
             ->with(['acc1Head', 'acc2Head', 'employee', 'branch']);
 
-        // البحث
+        // Search
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('pro_id', 'like', '%' . $this->search . '%')
@@ -108,7 +108,7 @@ class ManufacturingIndex extends Component
             });
         }
 
-        // فلتر التاريخ
+        // Date filter
         if ($this->dateFrom) {
             $query->whereDate('pro_date', '>=', $this->dateFrom);
         }
@@ -116,17 +116,17 @@ class ManufacturingIndex extends Component
             $query->whereDate('pro_date', '<=', $this->dateTo);
         }
 
-        // فلتر الفرع
+        // Branch filter
         if ($this->branchFilter) {
             $query->where('branch_id', $this->branchFilter);
         }
 
-        // الترتيب
+        // Sorting
         $query->orderBy($this->sortField, $this->sortDirection);
 
         $invoices = $query->paginate($this->perPage);
 
-        // إحصائيات سريعة
+        // Quick statistics
         $statistics = [
             'total' => OperHead::where('pro_type', 59)->count(),
             'thisMonth' => OperHead::where('pro_type', 59)

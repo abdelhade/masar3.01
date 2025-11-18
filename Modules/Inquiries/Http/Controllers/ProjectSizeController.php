@@ -11,10 +11,10 @@ class ProjectSizeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:View Project Size')->only('index');
-        $this->middleware('can:Create Project Size')->only(['create', 'store']);
-        $this->middleware('can:Edit Project Size')->only(['edit', 'update']);
-        $this->middleware('can:Delete Project Size')->only('destroy');
+        $this->middleware('can:view Project Size')->only('index');
+        $this->middleware('can:create Project Size')->only(['create', 'store']);
+        $this->middleware('can:edit Project Size')->only(['edit', 'update']);
+        $this->middleware('can:delete Project Size')->only('destroy');
     }
 
     public function index()

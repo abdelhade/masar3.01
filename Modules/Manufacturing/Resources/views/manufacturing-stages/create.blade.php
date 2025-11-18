@@ -4,11 +4,11 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('مراحل التصنيع'),
+        'title' => __('Manufacturing Stages'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('مراحل التصنيع'), 'url' => route('manufacturing.stages.index')],
-            ['label' => __('إنشاء')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Manufacturing Stages'), 'url' => route('manufacturing.stages.index')],
+            ['label' => __('Create')],
         ],
     ])
 
@@ -17,7 +17,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2>إضافة مرحلة جديدة</h2>
+                    <h2>{{ __('Add New Stage') }}</h2>
                 </div>
 
                 <div class="card-body">
@@ -25,17 +25,18 @@
                         @csrf
                         <div class="row">
                             <div class="mb-3 col-lg-3">
-                                <label class="form-label" for="name">اسم المرحلة</label>
+                                <label class="form-label" for="name">{{ __('Stage Name') }}</label>
                                 <input type="text" class="form-control" id="name" name="name"
-                                    placeholder="ادخل اسم المرحلة" value="{{ old('name') }}">
+                                    placeholder="{{ __('Enter stage name') }}" value="{{ old('name') }}">
                                 @error('name')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
 
                             <div class="mb-3 col-lg-8">
-                                <label class="form-label" for="description">الوصف</label>
-                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="ادخل وصف المرحلة">{{ old('description') }}</textarea>
+                                <label class="form-label" for="description">{{ __('Description') }}</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                    placeholder="{{ __('Enter stage description') }}">{{ old('description') }}</textarea>
                                 @error('description')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -43,16 +44,15 @@
 
                             <x-branches::branch-select :branches="$branches" />
 
-
                         </div>
 
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-primary me-2" id="submitBtn">
-                                <i class="las la-save"></i> حفظ
+                                <i class="las la-save"></i> {{ __('Save') }}
                             </button>
 
                             <a href="{{ route('manufacturing.stages.index') }}" class="btn btn-danger">
-                                <i class="las la-times"></i> إلغاء
+                                <i class="las la-times"></i> {{ __('Cancel') }}
                             </a>
                         </div>
                     </form>

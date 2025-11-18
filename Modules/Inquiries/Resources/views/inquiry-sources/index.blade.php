@@ -238,7 +238,7 @@
                 }
             </div>
             <div class="action-buttons">
-                @can('Create Inquiries Source')
+                @can('create Inquiries Source')
                     <button class="add-child-btn" onclick="addChild(${source.id})" title="{{ __('Add Branch') }}">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -554,7 +554,7 @@
                 <td class="text-center align-middle">
                     <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
                         <div class="form-check form-switch m-0">
-                            @can('Edit Inquiries Source')
+                            @can('edit Inquiries Source')
                                 <input class="form-check-input toggle-status" type="checkbox"
                                     data-id="${source.id}" ${source.is_active ? 'checked' : ''}>
                             @else
@@ -566,13 +566,13 @@
                     </div>
                 </td>
                 <td>
-                    @can('Edit Inquiries Source')
+                    @can('edit Inquiries Source')
                         <button class="btn btn-success btn-sm me-1" onclick="editSource(${source.id})" title="{{ __('Edit') }}">
                             <i class="fas fa-edit"></i>
                         </button>
                     @endcan
 
-                    @can('Delete Inquiries Source')
+                    @can('delete Inquiries Source')
                         <button class="btn btn-danger btn-sm" onclick="deleteSource(${source.id})" title="{{ __('Delete') }}">
                             <i class="fas fa-trash"></i>
                         </button>

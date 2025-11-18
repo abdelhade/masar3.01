@@ -2,6 +2,7 @@
 
 namespace Modules\Inquiries\Models;
 
+use App\Models\User;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Support\Facades\Auth;
 use App\Models\{City, Town, Project};
@@ -57,6 +58,28 @@ class Inquiry extends Model implements HasMedia
             })
             ->first();
     }
+
+    public function assignedEngineers()
+    {
+        return $this->belongsToMany(
+            \App\Models\User::class,
+            'inquiry_assigned_engineers',
+            'inquiry_id',
+            'user_id'
+        )
+            ->withPivot('assigned_at', 'notes')
+            ->withTimestamps();
+    }
+
+    public function scopeAssignedToUser($query, $userId = null)
+    {
+        $userId = $userId ?? auth()->id();
+
+        return $query->whereHas('assignedEngineers', function ($q) use ($userId) {
+            $q->where('users.id', $userId);
+        });
+    }
+
 
     /**
      * Get the first consultant contact
@@ -191,12 +214,12 @@ class Inquiry extends Model implements HasMedia
         });
     }
 
-    public function assignedEngineers()
-    {
-        return $this->contacts()->whereHas('roles', function ($query) {
-            $query->where('name', 'Engineer');
-        });
-    }
+    // public function assignedEngineers()
+    // {
+    //     return $this->contacts()->whereHas('roles', function ($query) {
+    //         $query->where('name', 'Engineer');
+    //     });
+    // }
 
     public function city()
     {

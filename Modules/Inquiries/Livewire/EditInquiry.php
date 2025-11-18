@@ -28,6 +28,9 @@ class EditInquiry extends Component
     public $lastAutoSaveTime = null;
     public $inquiry;
 
+    public $selectedEngineers = [];
+    public $availableEngineers = [];
+
     // Multi-worktype selection (match CreateInquiry)
     public $selectedWorkTypes = [];
     public $currentWorkTypeSteps = [1 => null];
@@ -260,6 +263,11 @@ class EditInquiry extends Component
 
         $this->clientCategories = ClientCategory::all()->toArray();
         $this->documentFiles = [];
+
+        $this->availableEngineers = \App\Models\User::select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get()
+            ->toArray();
     }
 
     private function populateFormData()
@@ -393,6 +401,9 @@ class EditInquiry extends Component
                 $this->toLocationLng = $inquiry->town->longitude;
             }
         }
+        $this->selectedEngineers = $this->inquiry->assignedEngineers()
+            ->pluck('users.id')
+            ->toArray();
     }
 
     public function openContactModal($roleType = null)
@@ -439,6 +450,14 @@ class EditInquiry extends Component
         $this->dispatch('openContactModal');
     }
 
+    public function removeEngineer($engineerId)
+    {
+        $this->selectedEngineers = array_values(
+            array_filter($this->selectedEngineers, function ($id) use ($engineerId) {
+                return $id != $engineerId;
+            })
+        );
+    }
     public function saveNewContact()
     {
         $this->validate([
@@ -1164,202 +1183,203 @@ class EditInquiry extends Component
         // try {
         //     DB::beginTransaction();
 
-            // ✅ إصلاح: تخزين الموقع فقط إذا كانت البيانات موجودة
-            $cityId = $this->cityId;
-            $townId = $this->townId;
+        // ✅ إصلاح: تخزين الموقع فقط إذا كانت البيانات موجودة
+        $cityId = $this->cityId;
+        $townId = $this->townId;
+        $townDistance = $this->calculatedDistance;
+
+        // إذا كانت المواقع والمسافة محسوبة، احفظها
+        if ($this->toLocationLat && $this->toLocationLng && $this->calculatedDistance) {
+            list($city, $town) = $this->storeLocationInDatabase();
+            $cityId = $city->id ?? $this->cityId;
+            $townId = $town->id ?? $this->townId;
             $townDistance = $this->calculatedDistance;
+        }
 
-            // إذا كانت المواقع والمسافة محسوبة، احفظها
-            if ($this->toLocationLat && $this->toLocationLng && $this->calculatedDistance) {
-                list($city, $town) = $this->storeLocationInDatabase();
-                $cityId = $city->id ?? $this->cityId;
-                $townId = $town->id ?? $this->townId;
-                $townDistance = $this->calculatedDistance;
+        // ✅ إصلاح: التأكد من الـ work_type_id
+        $workTypeId = $this->getMainWorkTypeId();
+
+        // ✅ إصلاح: التأكد من inquiry_source_id
+        $inquirySourceId = null;
+        if (!empty($this->inquirySourceSteps)) {
+            $inquirySourceId = end($this->inquirySourceSteps);
+            // تنظيف القيم الفارغة
+            if ($inquirySourceId === '' || $inquirySourceId === null) {
+                $inquirySourceId = null;
             }
+        }
 
-            // ✅ إصلاح: التأكد من الـ work_type_id
-            $workTypeId = $this->getMainWorkTypeId();
+        // تحديث الـ Inquiry
+        $this->inquiry->update([
+            'project_id' => $this->projectId,
+            'inquiry_date' => $this->inquiryDate,
+            'req_submittal_date' => $this->reqSubmittalDate,
+            'project_start_date' => $this->projectStartDate,
+            'city_id' => $cityId,
+            'town_id' => $townId,
+            'town_distance' => $townDistance,
+            'status' => $this->status,
+            'status_for_kon' => $this->statusForKon,
+            'kon_title' => $this->konTitle,
+            'work_type_id' => $workTypeId,
+            'final_work_type' => $this->finalWorkType,
+            'inquiry_source_id' => $inquirySourceId,
+            'final_inquiry_source' => $this->finalInquirySource,
+            'total_check_list_score' => $this->totalScore,
+            'project_difficulty' => $this->projectDifficulty,
+            'tender_number' => $this->tenderNo,
+            'tender_id' => $this->tenderId,
+            'estimation_start_date' => $this->estimationStartDate,
+            'estimation_finished_date' => $this->estimationFinishedDate,
+            'submitting_date' => $this->submittingDate,
+            'total_project_value' => $this->totalProjectValue,
+            'quotation_state' => $this->quotationState,
+            'rejection_reason' => $this->quotationStateReason,
+            'assigned_engineer_date' => $this->assignEngineerDate,
+            'project_size_id' => $this->projectSize,
+            'client_priority' => $this->clientPriority,
+            'kon_priority' => $this->konPriority,
+            'type_note' => $this->type_note,
+        ]);
 
-            // ✅ إصلاح: التأكد من inquiry_source_id
-            $inquirySourceId = null;
-            if (!empty($this->inquirySourceSteps)) {
-                $inquirySourceId = end($this->inquirySourceSteps);
-                // تنظيف القيم الفارغة
-                if ($inquirySourceId === '' || $inquirySourceId === null) {
-                    $inquirySourceId = null;
+        // ✅ حفظ Contacts (حذف التكرار)
+        $this->inquiry->contacts()->detach();
+
+        $roleMap = [
+            'client' => 'Client',
+            'main_contractor' => 'Main Contractor',
+            'consultant' => 'Consultant',
+            'owner' => 'Owner',
+            'engineer' => 'Engineer',
+        ];
+
+        foreach ($this->selectedContacts as $roleKey => $contactId) {
+            if ($contactId && isset($roleMap[$roleKey])) {
+                $role = InquirieRole::where('name', $roleMap[$roleKey])->first();
+                if ($role) {
+                    $this->inquiry->contacts()->attach($contactId, ['role_id' => $role->id]);
                 }
             }
+        }
 
-            // تحديث الـ Inquiry
-            $this->inquiry->update([
-                'project_id' => $this->projectId,
-                'inquiry_date' => $this->inquiryDate,
-                'req_submittal_date' => $this->reqSubmittalDate,
-                'project_start_date' => $this->projectStartDate,
-                'city_id' => $cityId,
-                'town_id' => $townId,
-                'town_distance' => $townDistance,
-                'status' => $this->status,
-                'status_for_kon' => $this->statusForKon,
-                'kon_title' => $this->konTitle,
-                'work_type_id' => $workTypeId,
-                'final_work_type' => $this->finalWorkType,
-                'inquiry_source_id' => $inquirySourceId,
-                'final_inquiry_source' => $this->finalInquirySource,
-                'total_check_list_score' => $this->totalScore,
-                'project_difficulty' => $this->projectDifficulty,
-                'tender_number' => $this->tenderNo,
-                'tender_id' => $this->tenderId,
-                'estimation_start_date' => $this->estimationStartDate,
-                'estimation_finished_date' => $this->estimationFinishedDate,
-                'submitting_date' => $this->submittingDate,
-                'total_project_value' => $this->totalProjectValue,
-                'quotation_state' => $this->quotationState,
-                'rejection_reason' => $this->quotationStateReason,
-                'assigned_engineer_date' => $this->assignEngineerDate,
-                'project_size_id' => $this->projectSize,
-                'client_priority' => $this->clientPriority,
-                'kon_priority' => $this->konPriority,
-                'type_note' => $this->type_note,
-            ]);
+        // ✅ حفظ Work Types
+        $this->inquiry->workTypes()->detach();
+        $this->saveAllWorkTypes($this->inquiry);
 
-            // ✅ حفظ Contacts (حذف التكرار)
-            $this->inquiry->contacts()->detach();
+        // ✅ Handle project image
+        if ($this->projectImage) {
+            if ($this->existingProjectImage) {
+                $this->existingProjectImage->delete();
+            }
+            $this->inquiry
+                ->addMedia($this->projectImage->getRealPath())
+                ->usingFileName($this->projectImage->getClientOriginalName())
+                ->toMediaCollection('project-image');
+        }
 
-            $roleMap = [
-                'client' => 'Client',
-                'main_contractor' => 'Main Contractor',
-                'consultant' => 'Consultant',
-                'owner' => 'Owner',
-                'engineer' => 'Engineer',
-            ];
-
-            foreach ($this->selectedContacts as $roleKey => $contactId) {
-                if ($contactId && isset($roleMap[$roleKey])) {
-                    $role = InquirieRole::where('name', $roleMap[$roleKey])->first();
-                    if ($role) {
-                        $this->inquiry->contacts()->attach($contactId, ['role_id' => $role->id]);
-                    }
+        // ✅ Handle document files
+        if (!empty($this->documentFiles) && is_array($this->documentFiles)) {
+            foreach ($this->documentFiles as $file) {
+                if ($file && method_exists($file, 'getRealPath')) {
+                    $this->inquiry
+                        ->addMedia($file->getRealPath())
+                        ->usingFileName($file->getClientOriginalName())
+                        ->toMediaCollection('inquiry-documents');
                 }
             }
+        }
 
-            // ✅ حفظ Work Types
-            $this->inquiry->workTypes()->detach();
-            $this->saveAllWorkTypes($this->inquiry);
-
-            // ✅ Handle project image
-            if ($this->projectImage) {
-                if ($this->existingProjectImage) {
-                    $this->existingProjectImage->delete();
+        // ✅ Sync submittal checklists
+        // $submittalIds = [];
+        $this->inquiry->submittalChecklists()->detach();
+        foreach ($this->submittalChecklist as $item) {
+            if (!empty($item['checked']) && isset($item['id'])) {
+                $data = [];
+                if (isset($item['selectedOption'])) {
+                    $data['selected_option'] = $item['selectedOption'];
                 }
-                $this->inquiry
-                    ->addMedia($this->projectImage->getRealPath())
-                    ->usingFileName($this->projectImage->getClientOriginalName())
-                    ->toMediaCollection('project-image');
+                $this->inquiry->submittalChecklists()->attach($item['id'], $data);
             }
+        }
 
-            // ✅ Handle document files
-            if (!empty($this->documentFiles) && is_array($this->documentFiles)) {
-                foreach ($this->documentFiles as $file) {
-                    if ($file && method_exists($file, 'getRealPath')) {
-                        $this->inquiry
-                            ->addMedia($file->getRealPath())
-                            ->usingFileName($file->getClientOriginalName())
-                            ->toMediaCollection('inquiry-documents');
-                    }
+        // حفظ Working Conditions مع selectedOption
+        $this->inquiry->workConditions()->detach();
+        foreach ($this->workingConditions as $item) {
+            if (!empty($item['checked']) && isset($item['id'])) {
+                $data = [];
+                if (isset($item['selectedOption'])) {
+                    $data['selected_option'] = $item['selectedOption'];
                 }
+                $this->inquiry->workConditions()->attach($item['id'], $data);
             }
+        }
+        // ✅ Sync project documents
+        $this->inquiry->projectDocuments()->detach();
+        foreach ($this->projectDocuments as $document) {
+            if (!empty($document['checked']) && isset($document['name'])) {
+                $projectDocument = InquiryDocument::firstOrCreate(
+                    ['name' => $document['name']]
+                );
 
-            // ✅ Sync submittal checklists
-            // $submittalIds = [];
-            $this->inquiry->submittalChecklists()->detach();
-            foreach ($this->submittalChecklist as $item) {
-                if (!empty($item['checked']) && isset($item['id'])) {
-                    $data = [];
-                    if (isset($item['selectedOption'])) {
-                        $data['selected_option'] = $item['selectedOption'];
-                    }
-                    $this->inquiry->submittalChecklists()->attach($item['id'], $data);
+                $this->inquiry->projectDocuments()->attach($projectDocument->id, [
+                    'description' => $document['description'] ?? null
+                ]);
+            }
+        }
+
+        // ✅ إصلاح: Sync quotation units
+        $attachments = [];
+
+        if (!empty($this->selectedQuotationUnits) && is_array($this->selectedQuotationUnits)) {
+            foreach ($this->selectedQuotationUnits as $typeId => $unitIds) {
+                // تنظيف typeId
+                if (!is_numeric($typeId) || (int)$typeId <= 0) {
+                    continue;
                 }
-            }
+                $typeId = (int) $typeId;
 
-            // حفظ Working Conditions مع selectedOption
-            $this->inquiry->workConditions()->detach();
-            foreach ($this->workingConditions as $item) {
-                if (!empty($item['checked']) && isset($item['id'])) {
-                    $data = [];
-                    if (isset($item['selectedOption'])) {
-                        $data['selected_option'] = $item['selectedOption'];
-                    }
-                    $this->inquiry->workConditions()->attach($item['id'], $data);
-                }
-            }
-            // ✅ Sync project documents
-            $this->inquiry->projectDocuments()->detach();
-            foreach ($this->projectDocuments as $document) {
-                if (!empty($document['checked']) && isset($document['name'])) {
-                    $projectDocument = InquiryDocument::firstOrCreate(
-                        ['name' => $document['name']]
-                    );
-
-                    $this->inquiry->projectDocuments()->attach($projectDocument->id, [
-                        'description' => $document['description'] ?? null
-                    ]);
-                }
-            }
-
-            // ✅ إصلاح: Sync quotation units
-            $attachments = [];
-
-            if (!empty($this->selectedQuotationUnits) && is_array($this->selectedQuotationUnits)) {
-                foreach ($this->selectedQuotationUnits as $typeId => $unitIds) {
-                    // تنظيف typeId
-                    if (!is_numeric($typeId) || (int)$typeId <= 0) {
-                        continue;
-                    }
-                    $typeId = (int) $typeId;
-
-                    if (!empty($unitIds) && is_array($unitIds)) {
-                        foreach ($unitIds as $unitId => $isSelected) {
-                            // تحقق من أن القيمة true
-                            if (($isSelected === true || $isSelected === 1 || $isSelected === '1')) {
-                                // تنظيف unitId
-                                if (is_numeric($unitId) && (int)$unitId > 0) {
-                                    $unitId = (int) $unitId;
-                                    $attachments[$unitId] = ['quotation_type_id' => $typeId];
-                                }
+                if (!empty($unitIds) && is_array($unitIds)) {
+                    foreach ($unitIds as $unitId => $isSelected) {
+                        // تحقق من أن القيمة true
+                        if (($isSelected === true || $isSelected === 1 || $isSelected === '1')) {
+                            // تنظيف unitId
+                            if (is_numeric($unitId) && (int)$unitId > 0) {
+                                $unitId = (int) $unitId;
+                                $attachments[$unitId] = ['quotation_type_id' => $typeId];
                             }
                         }
                     }
                 }
             }
+        }
 
-            // حفظ الـ units
-            if (!empty($attachments)) {
-                $this->inquiry->quotationUnits()->sync($attachments);
-            } else {
-                // إذا لم يكن هناك units، احذف القديمة
-                $this->inquiry->quotationUnits()->detach();
-            }
+        // حفظ الـ units
+        if (!empty($attachments)) {
+            $this->inquiry->quotationUnits()->sync($attachments);
+        } else {
+            // إذا لم يكن هناك units، احذف القديمة
+            $this->inquiry->quotationUnits()->detach();
+        }
 
-            // ✅ Save new temporary comments
-            if (!empty($this->tempComments) && is_array($this->tempComments)) {
-                foreach ($this->tempComments as $tempComment) {
-                    if (isset($tempComment['comment']) && !empty($tempComment['comment'])) {
-                        InquiryComment::create([
-                            'inquiry_id' => $this->inquiry->id,
-                            'user_id' => Auth::id(),
-                            'comment' => $tempComment['comment'],
-                        ]);
-                    }
+        // ✅ Save new temporary comments
+        if (!empty($this->tempComments) && is_array($this->tempComments)) {
+            foreach ($this->tempComments as $tempComment) {
+                if (isset($tempComment['comment']) && !empty($tempComment['comment'])) {
+                    InquiryComment::create([
+                        'inquiry_id' => $this->inquiry->id,
+                        'user_id' => Auth::id(),
+                        'comment' => $tempComment['comment'],
+                    ]);
                 }
             }
+        }
+        $this->inquiry->assignedEngineers()->sync($this->selectedEngineers);
 
-            // إعادة حساب النتائج
-            $this->calculateScores();
+        // إعادة حساب النتائج
+        $this->calculateScores();
 
-            // DB::commit();
-            return redirect()->route('inquiries.index')->with('message', __('Inquiry Updated Success'));
+        // DB::commit();
+        return redirect()->route('inquiries.index')->with('message', __('Inquiry Updated Success'));
         // } catch (\Exception) {
         //     DB::rollBack();
         //     session()->flash('error', __('Error During Update: '));

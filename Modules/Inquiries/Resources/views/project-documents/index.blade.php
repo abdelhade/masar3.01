@@ -16,7 +16,7 @@
     <div class="row">
         <div class="col-lg-12">
 
-            @can('Create Documents')
+            @can('create Documents')
                 <a href="{{ route('inquiry.documents.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
@@ -51,16 +51,16 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $doc->name }}</td>
 
-                                        @canany(['Edit Documents', 'Delete Documents'])
+                                        @canany(['edit Documents', 'delete Documents'])
                                             <td>
-                                                @can('Edit Documents')
+                                                @can('edit Documents')
                                                     <a href="{{ route('inquiry.documents.edit', $doc->id) }}"
                                                         class="btn btn-success btn-icon-square-sm">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('Delete Documents')
+                                                @can('delete Documents')
                                                     <form action="{{ route('inquiry.documents.destroy', $doc->id) }}"
                                                         method="POST" style="display:inline-block;"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete this document?') }}');">

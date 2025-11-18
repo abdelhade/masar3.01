@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class ManufacturingController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض فاتورة تصنيع')->only(['index', 'show']);
-    //     $this->middleware('can:إضافة فاتورة تصنيع')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل فاتورة تصنيع')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف فاتورة تصنيع')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('permission:view Manufacturing Invoices')->only(['index', 'show']);
+        $this->middleware('permission:create Manufacturing Invoices')->only(['create', 'store']);
+        $this->middleware('permission:edit Manufacturing Invoices')->only(['edit', 'update']);
+        $this->middleware('permission:delete Manufacturing Invoices')->only(['destroy']);
+    }
 
     /**
      * Display a listing of the resource.
@@ -100,7 +100,7 @@ class ManufacturingController extends Controller
             ->get()
             ->map(function ($item) {
                 return [
-                    'name' => $item->item->name ?? 'غير معروف',
+                    'name' => $item->item->name ?? __('Unknown'),
                     'count' => $item->count,
                     'total' => $item->total
                 ];
@@ -124,18 +124,18 @@ class ManufacturingController extends Controller
                 ->sum('pro_value');
 
             $monthName = [
-                '01' => 'يناير',
-                '02' => 'فبراير',
-                '03' => 'مارس',
-                '04' => 'أبريل',
-                '05' => 'مايو',
-                '06' => 'يونيو',
-                '07' => 'يوليو',
-                '08' => 'أغسطس',
-                '09' => 'سبتمبر',
-                '10' => 'أكتوبر',
-                '11' => 'نوفمبر',
-                '12' => 'ديسمبر'
+                '01' => __('January'),
+                '02' => __('February'),
+                '03' => __('March'),
+                '04' => __('April'),
+                '05' => __('May'),
+                '06' => __('June'),
+                '07' => __('July'),
+                '08' => __('August'),
+                '09' => __('September'),
+                '10' => __('October'),
+                '11' => __('November'),
+                '12' => __('December')
             ][$month] ?? '';
 
             $monthlyManufacturing[] = [
@@ -151,11 +151,11 @@ class ManufacturingController extends Controller
             ->where('pro_type', 59)
             ->select(
                 DB::raw('CASE
-                    WHEN pro_value < 100 THEN "أقل من 100"
-                    WHEN pro_value >= 100 AND pro_value < 500 THEN "100 - 500"
-                    WHEN pro_value >= 500 AND pro_value < 1000 THEN "500 - 1000"
-                    WHEN pro_value >= 1000 AND pro_value < 5000 THEN "1000 - 5000"
-                    ELSE "أكثر من 5000"
+                    WHEN pro_value < 100 THEN "' . __('Less than 100') . '"
+                    WHEN pro_value >= 100 AND pro_value < 500 THEN "' . __('100 - 500') . '"
+                    WHEN pro_value >= 500 AND pro_value < 1000 THEN "' . __('500 - 1000') . '"
+                    WHEN pro_value >= 1000 AND pro_value < 5000 THEN "' . __('1000 - 5000') . '"
+                    ELSE "' . __('More than 5000') . '"
                 END as `range`'),
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(pro_value) as total')
@@ -195,7 +195,7 @@ class ManufacturingController extends Controller
             ->get()
             ->map(function ($item) {
                 return [
-                    'branch_name' => $item->branch->name ?? 'غير محدد',
+                    'branch_name' => $item->branch->name ?? __('Not Specified'),
                     'count' => $item->count,
                     'total' => $item->total
                 ];
