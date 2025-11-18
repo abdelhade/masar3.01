@@ -10,6 +10,7 @@ use App\Models\JournalHead;
 use Illuminate\Http\Request;
 use App\Models\JournalDetail;
 use App\Models\OperationItems;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Modules\Accounts\Models\AccHead;

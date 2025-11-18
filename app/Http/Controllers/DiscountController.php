@@ -7,49 +7,32 @@ use Illuminate\Routing\Controller;
 use Modules\Accounts\Models\AccHead;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\{DB, Auth};
-use App\Http\Requests\CreatDiscountRequest;
+use App\Http\Requests\CreateDiscountRequest;
 use App\Models\{OperHead, JournalHead, JournalDetail};
 
 class DiscountController extends Controller
 {
-    //     public function __construct()
-    // {
-
-    //     $this->middleware('can:إضافة قائمة الخصومات المسموح بها')->only(['create', 'store']);
-    //     $this->middleware('can:إضافة قائمة الخصومات المكتسبة')->only(['create', 'store']);
-    //     $this->middleware('can:إضافة خصم مسموح به')->only(['create', 'store']);
-
-    //     $this->middleware('can:تعديل قائمة الخصومات المكتسبة')->only(['edit', 'update']);
-    //     $this->middleware('can:تعديل قائمة الخصومات المسموح بها')->only(['edit', 'update']);
-    //     $this->middleware('can:تعديل خصم مسموح به')->only(['edit', 'update']);
-
-    //     $this->middleware('can:حذف قائمة الخصومات المكتسبة')->only(['destroy']);
-    //     $this->middleware('can:حذف قائمة الخصومات المسموح بها')->only(['destroy']);
-    //     $this->middleware('can:حذف خصم مسموح به')->only(['destroy']);
-    // }
-
     public function index(Request $request)
     {
         $type = (int) $request->input('type');
 
         if (!$type) {
             // لو معاه صلاحية واحدة بس، يحوله عليها
-            if (auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
+            if (auth()->user()->can('view Allowed Discounts')) {
                 return redirect()->route('discounts.index', ['type' => 30]);
-            } elseif (auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
+            } elseif (auth()->user()->can('view Earned Discounts')) {
                 return redirect()->route('discounts.index', ['type' => 31]);
             } else {
-                abort(403, 'غير مصرح لك بعرض هذه الصفحة');
+                abort(403, __('You are not authorized to view this page'));
             }
         }
 
-        // تحقق من صلاحية العرض حسب النوع
-        if ($type == 30 && !auth()->user()->can('عرض قائمة الخصومات المسموح بها')) {
-            abort(403, 'غير مصرح لك بعرض قائمة الخصومات المسموح بها');
+        if ($type == 30 && !auth()->user()->can('view Allowed Discounts')) {
+            abort(403, __('You are not authorized to view the allowed discounts list'));
         }
 
-        if ($type == 31 && !auth()->user()->can('عرض قائمة الخصومات المكتسبة')) {
-            abort(403, 'غير مصرح لك بعرض قائمة الخصومات المكتسبة');
+        if ($type == 31 && !auth()->user()->can('view Earned Discounts')) {
+            abort(403, __('You are not authorized to view the earned discounts list'));
         }
 
         $discounts = OperHead::with(['acc1Head', 'acc2Head']);
@@ -77,30 +60,25 @@ class DiscountController extends Controller
         $hash = $request->get('q');
 
         if ($hash !== md5($type)) {
-            abort(403, __('نوع الرمز غير صالح'));
+            abort(403, __('Invalid code type'));
         }
 
         // تحقق من الصلاحية قبل الدخول
-        if ($type == 30 && !auth()->user()->can('إضافة قائمة الخصومات المسموح بها')) {
-            abort(403, 'غير مصرح لك بإضافة هذه القائمة');
+        if ($type == 30 && !auth()->user()->can('create Allowed Discounts')) {
+            abort(403, __('You are not authorized to add this list'));
         }
 
-        if ($type == 31 && !auth()->user()->can('إضافة قائمة الخصومات المكتسبة')) {
-            abort(403, 'غير مصرح لك بإضافة هذه القائمة');
+        if ($type == 31 && !auth()->user()->can('create Earned Discounts')) {
+            abort(403, __('You are not authorized to add this list'));
         }
-        $type = (int) $request->get('type');
-        $hash = $request->get('q');
 
-        if ($hash !== md5($type)) {
-            abort(403, __('نوع الرمز غير صالح'));
-        }
         $branches = userBranches();
 
         $lastProId = OperHead::max('pro_id');
         $nextProId = $lastProId ? $lastProId + 1 : 1;
 
         if ($type == 30) {
-            // خصم مسموح به: acc1 العملاء - acc2 ثابت (id 91)
+            // خصم مسموح به: acc1 العملاء - acc2 ثابت (id 49)
             $acc2Fixed = AccHead::findOrFail(49);
             $clientsAccounts = AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
@@ -115,10 +93,9 @@ class DiscountController extends Controller
                 'acc2Fixed' => $acc2Fixed,
                 'clientsAccounts' => $clientsAccounts,
                 'branches' => $branches
-
             ]);
         } elseif ($type == 31) {
-            // خصم مكتسب: acc1 ثابت (id 97) - acc2 الموردين
+            // خصم مكتسب: acc1 ثابت (id 54) - acc2 الموردين
             $acc1Fixed = AccHead::findOrFail(54);
             $suppliers = AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
@@ -152,123 +129,127 @@ class DiscountController extends Controller
         return $totalDebit - $totalCredit;
     }
 
-    public function store(CreatDiscountRequest $request)
+    public function store(CreateDiscountRequest $request)
     {
+        try {
+            DB::beginTransaction();
+            $validated = $request->validated();
 
-        // try {
-        //     DB::beginTransaction();
-        $validated = $request->validated();
-        $oper = new OperHead();
-        $oper->pro_type = $request->type;
-        $oper->pro_id = $request->pro_id;
-        $oper->pro_date = $request->pro_date;
-        $oper->info = $request->info ?? null;
-        $oper->pro_value = $request->pro_value;
-        $oper->branch_id = $request->branch_id;
+            if ($validated['type'] == 30 && !auth()->user()->can('create Allowed Discounts')) {
+                abort(403, __('You are not authorized to add this list'));
+            }
 
-        if ($validated['type'] == 30) {
-            // خصم مسموح به: acc1 = العملاء، acc2 ثابت (91)
-            $oper->acc1 = $validated['acc1'];
-            $oper->acc2 = 49;
-        } elseif ($validated['type'] == 31) {
-            // خصم مكتسب: acc1 ثابت (97), acc2 = المورد
-            $oper->acc1 = 54;
-            $oper->acc2 = $validated['acc2'];
+            if ($validated['type'] == 31 && !auth()->user()->can('create Earned Discounts')) {
+                abort(403, __('You are not authorized to add this list'));
+            }
+
+            $oper = new OperHead();
+            $oper->pro_type = $request->type;
+            $oper->pro_id = $request->pro_id;
+            $oper->pro_date = $request->pro_date;
+            $oper->info = $request->info ?? null;
+            $oper->pro_value = $request->pro_value;
+            $oper->branch_id = $request->branch_id;
+
+            if ($validated['type'] == 30) {
+                // خصم مسموح به: acc1 = العملاء، acc2 ثابت (49)
+                $oper->acc1 = $validated['acc1'];
+                $oper->acc2 = 49;
+            } elseif ($validated['type'] == 31) {
+                // خصم مكتسب: acc1 ثابت (54), acc2 = المورد
+                $oper->acc1 = 54;
+                $oper->acc2 = $validated['acc2'];
+            }
+            $oper->save();
+
+            $journalId = JournalHead::max('journal_id') + 1;
+            JournalHead::create([
+                'journal_id' => $journalId,
+                'total' => $oper->pro_value,
+                'op_id' => $oper->id,
+                'op2' => 0,
+                'pro_type' => $oper->pro_type,
+                'date' => $oper->pro_date,
+                'details' => $oper->info ?? ($oper->pro_type == 30 ? __('Allowed Discount') : __('Earned Discount')),
+                'user' => Auth::id(),
+                'branch_id' => $request->branch_id
+            ]);
+
+            if ($oper->pro_type == 30) {
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $oper->acc1,
+                    'debit' => 0,
+                    'credit' => $oper->pro_value,
+                    'type' => 1,
+                    'info' => $oper->info ?? __('Allowed Discount'),
+                    'op_id' => $oper->id,
+                    'branch_id' => $request->branch_id
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 49,
+                    'debit' => $oper->pro_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => $oper->info ?? __('Allowed Discount'),
+                    'op_id' => $oper->id,
+                    'branch_id' => $request->branch_id
+                ]);
+            } elseif ($oper->pro_type == 31) {
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 54,
+                    'debit' => $oper->pro_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => $oper->info ?? __('Earned Discount'),
+                    'op_id' => $oper->id,
+                    'branch_id' => $request->branch_id
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $oper->acc2,
+                    'debit' => 0,
+                    'credit' => $oper->pro_value,
+                    'type' => 1,
+                    'info' => $oper->info ?? __('Earned Discount'),
+                    'op_id' => $oper->id,
+                    'branch_id' => $request->branch_id
+                ]);
+            }
+            DB::commit();
+            Alert::toast(__('Data saved successfully'), 'success');
+            return redirect()->route('discounts.index', ['type' => $oper->pro_type]);
+        } catch (\Exception) {
+            DB::rollBack();
+            Alert::toast(__('An error occurred while saving the discount'), 'error');
+            return back()->withInput();
         }
-        $oper->save();
-
-        $journalId = JournalHead::max('journal_id') + 1;
-        JournalHead::create([
-            'journal_id' => $journalId,
-            'total' => $oper->pro_value,
-            'op_id' => $oper->id,
-            'op2' => 0,
-            'pro_type' => $oper->pro_type,
-            'date' => $oper->pro_date,
-            'details' => $oper->info ?? ($oper->pro_type == 30 ? 'خصم مسموح به' : 'خصم مكتسب'),
-            'user' => Auth::id(),
-            'branch_id' => $request->branch_id
-        ]);
-
-        if ($oper->pro_type == 30) {
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $oper->acc1,
-                'debit' => 0,
-                'credit' => $oper->pro_value,
-                'type' => 1,
-                'info' => $oper->info ?? 'خصم مسموح به',
-                'op_id' => $oper->id,
-                'branch_id' => $request->branch_id
-            ]);
-
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => 49,
-                'debit' => $oper->pro_value,
-                'credit' => 0,
-                'type' => 1,
-                'info' => $oper->info ?? 'خصم مسموح به',
-                'op_id' => $oper->id,
-                'branch_id' => $request->branch_id
-            ]);
-        } elseif ($oper->pro_type == 31) {
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => 54,
-                'debit' => $oper->pro_value,
-                'credit' => 0,
-                'type' => 1,
-                'info' => $oper->info ?? 'خصم مكتسب',
-                'op_id' => $oper->id,
-                'branch_id' => $request->branch_id
-            ]);
-
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $oper->acc2,
-                'debit' => 0,
-                'credit' => $oper->pro_value,
-                'type' => 1,
-                'info' => $oper->info ?? 'خصم مكتسب',
-                'op_id' => $oper->id,
-                'branch_id' => $request->branch_id
-            ]);
-        }
-        // DB::commit();
-        Alert::toast('تم حفظ البيانات بنجاح', 'success');
-        return redirect()->route('discounts.index', ['type' => $oper->pro_type]);
-        // } catch (\Exception $e) {
-        //     logger()->error('خطأ أثناء حفظ الخصم: ');
-        //     Alert::toast('حدث خطأ أثناء حفظ الخصم', 'error');
-        //     return back()->withInput();
-        // }
     }
 
     public function edit(Request $request, OperHead $discount)
     {
-        $type = (int) $request->get('type');
-
+        $type = $discount->pro_type;
 
         if (!in_array($type, [30, 31])) {
-            abort(403, 'نوع الخصم غير صحيح');
+            abort(403, __('Incorrect discount type'));
         }
 
-        // تحقق من صلاحية التعديل حسب النوع
-        if ($type == 30 && !Auth::user()->can('تعديل قائمة الخصومات المسموح بها')) {
-            abort(403, 'غير مصرح لك بتعديل هذه القائمة');
+        if ($type == 30 && !Auth::user()->can('edit Allowed Discounts')) {
+            abort(403, __('You are not authorized to edit this list'));
         }
 
-        if ($type == 31 && !Auth::user()->can('تعديل قائمة الخصومات المكتسبة')) {
-            abort(403, 'غير مصرح لك بتعديل هذه القائمة');
+        if ($type == 31 && !Auth::user()->can('edit Earned Discounts')) {
+            abort(403, __('You are not authorized to edit this list'));
         }
+
         $titles = [
-            30 => 'خصم مسموح به',
-            31 => 'خصم مكتسب',
+            30 => __('Allowed Discount'),
+            31 => __('Earned Discount'),
         ];
-        if (!in_array($type, [30, 31])) {
-            abort(403, 'نوع الخصم غير صحيح');
-        }
 
         if ($type == 30) {
             $acc2Fixed = AccHead::findOrFail(49);
@@ -291,12 +272,27 @@ class DiscountController extends Controller
         }
     }
 
-    public function update(CreatDiscountRequest $request, OperHead $discount)
+    public function update(CreateDiscountRequest $request, OperHead $discount)
     {
+        if ($request->type == 30 && !auth()->user()->can('edit Allowed Discounts')) {
+            abort(403, __('You are not authorized to edit this list'));
+        }
+
+        if ($request->type == 31 && !auth()->user()->can('edit Earned Discounts')) {
+            abort(403, __('You are not authorized to edit this list'));
+        }
+
         try {
+            DB::beginTransaction();
+
+            $discount->pro_type = $request->type;
             $discount->pro_date = $request->pro_date;
             $discount->info = $request->info ?? null;
             $discount->pro_value = $request->pro_value;
+
+            if ($request->filled('branch_id')) {
+                $discount->branch_id = $request->branch_id;
+            }
 
             if ($request->type == 30) {
                 $discount->acc1 = $request->acc1;
@@ -307,8 +303,8 @@ class DiscountController extends Controller
             }
             $discount->save();
 
-            JournalDetail::where('op_id', $discount->id)->delete();
-            JournalHead::where('op_id', $discount->id)->delete();
+            JournalDetail::withoutGlobalScopes()->where('op_id', $discount->id)->delete();
+            JournalHead::withoutGlobalScopes()->where('op_id', $discount->id)->delete();
 
             $journalId = JournalHead::max('journal_id') + 1;
             JournalHead::create([
@@ -318,38 +314,46 @@ class DiscountController extends Controller
                 'op2' => 0,
                 'pro_type' => $discount->pro_type,
                 'date' => $discount->pro_date,
-                'details' => $discount->info ?? ($discount->pro_type == 30 ? 'خصم مسموح به' : 'خصم مكتسب'),
+                'details' => $discount->info ?? ($discount->pro_type == 30 ? __('Allowed Discount') : __('Earned Discount')),
                 'user' => Auth::id(),
+                'branch_id' => $discount->branch_id,
             ]);
+
+            // القيود المحاسبية
             if ($discount->pro_type == 30) {
+                // خصم مسموح به
                 JournalDetail::create([
                     'journal_id' => $journalId,
                     'account_id' => $discount->acc1,
-                    'debit' => $discount->pro_value,
-                    'credit' => 0,
+                    'debit' => 0,
+                    'credit' => $discount->pro_value,
                     'type' => 1,
-                    'info' => $discount->info ?? 'خصم مسموح به',
+                    'info' => $discount->info ?? __('Allowed Discount'),
                     'op_id' => $discount->id,
+                    'branch_id' => $discount->branch_id,
                 ]);
 
                 JournalDetail::create([
                     'journal_id' => $journalId,
                     'account_id' => 49,
-                    'debit' => 0,
-                    'credit' => $discount->pro_value,
+                    'debit' => $discount->pro_value,
+                    'credit' => 0,
                     'type' => 1,
-                    'info' => $discount->info ?? 'خصم مسموح به',
+                    'info' => $discount->info ?? __('Allowed Discount'),
                     'op_id' => $discount->id,
+                    'branch_id' => $discount->branch_id,
                 ]);
             } elseif ($discount->pro_type == 31) {
+                // خصم مكتسب
                 JournalDetail::create([
                     'journal_id' => $journalId,
                     'account_id' => 54,
                     'debit' => $discount->pro_value,
                     'credit' => 0,
                     'type' => 1,
-                    'info' => $discount->info ?? 'خصم مكتسب',
+                    'info' => $discount->info ?? __('Earned Discount'),
                     'op_id' => $discount->id,
+                    'branch_id' => $discount->branch_id,
                 ]);
 
                 JournalDetail::create([
@@ -358,15 +362,18 @@ class DiscountController extends Controller
                     'debit' => 0,
                     'credit' => $discount->pro_value,
                     'type' => 1,
-                    'info' => $discount->info ?? 'خصم مكتسب',
+                    'info' => $discount->info ?? __('Earned Discount'),
                     'op_id' => $discount->id,
+                    'branch_id' => $discount->branch_id,
                 ]);
             }
-            Alert::toast('تم تحديث الخصم بنجاح', 'success');
+
+            DB::commit();
+            Alert::toast(__('Discount updated successfully'), 'success');
             return redirect()->route('discounts.index', ['type' => $discount->pro_type]);
-        } catch (\Exception $e) {
-            logger()->error('خطأ أثناء تحديث الخصم: ');
-            Alert::toast('حدث خطأ أثناء تحديث الخصم', 'error');
+        } catch (\Exception) {
+            DB::rollBack();
+            Alert::toast(__('An error occurred while updating the discount'), 'error');
             return back()->withInput();
         }
     }
@@ -376,25 +383,23 @@ class DiscountController extends Controller
         $discount = OperHead::findOrFail($id);
 
         // تحقق من الصلاحية حسب نوع العملية
-        if ($discount->pro_type == 30 && !Auth::user()->can('حذف قائمة الخصومات المسموح بها')) {
-            abort(403, 'غير مصرح لك بحذف هذه القائمة');
+        if ($discount->pro_type == 30 && !Auth::user()->can('delete Allowed Discounts')) {
+            abort(403, __('You are not authorized to delete this list'));
         }
 
-        if ($discount->pro_type == 31 && !Auth::user()->can('حذف قائمة الخصومات المكتسبة')) {
-            abort(403, 'غير مصرح لك بحذف هذه القائمة');
+        if ($discount->pro_type == 31 && !Auth::user()->can('delete Earned Discounts')) {
+            abort(403, __('You are not authorized to delete this list'));
         }
 
         try {
-            $discount = OperHead::findOrFail($id);
             JournalDetail::where('op_id', $discount->id)->delete();
             JournalHead::where('op_id', $discount->id)->delete();
 
             $discount->delete();
-            Alert::toast('تم حذف الخصم بنجاح', 'success');
-            return redirect()->route('discounts.index');
-        } catch (\Exception $e) {
-            logger()->error('خطأ أثناء حذف الخصم: ' . $e->getMessage());
-            Alert::toast('حدث خطأ أثناء حذف الخصم', 'error');
+            Alert::toast(__('Discount deleted successfully'), 'success');
+            return redirect()->route('discounts.index', ['type' => $discount->pro_type]);
+        } catch (\Exception) {
+            Alert::toast(__('An error occurred while deleting the discount'), 'error');
             return back();
         }
     }
@@ -440,7 +445,7 @@ class DiscountController extends Controller
             ->get()
             ->map(function ($item) {
                 return [
-                    'name' => $item->acc1Head->aname ?? $item->acc2Head->aname ?? 'غير معروف',
+                    'name' => $item->acc1Head->aname ?? $item->acc2Head->aname ?? __('Unknown'),
                     'count' => $item->count,
                     'total' => $item->total
                 ];
@@ -462,18 +467,18 @@ class DiscountController extends Controller
                 ->sum('pro_value');
 
             $monthName = [
-                '01' => 'يناير',
-                '02' => 'فبراير',
-                '03' => 'مارس',
-                '04' => 'أبريل',
-                '05' => 'مايو',
-                '06' => 'يونيو',
-                '07' => 'يوليو',
-                '08' => 'أغسطس',
-                '09' => 'سبتمبر',
-                '10' => 'أكتوبر',
-                '11' => 'نوفمبر',
-                '12' => 'ديسمبر'
+                '01' => __('January'),
+                '02' => __('February'),
+                '03' => __('March'),
+                '04' => __('April'),
+                '05' => __('May'),
+                '06' => __('June'),
+                '07' => __('July'),
+                '08' => __('August'),
+                '09' => __('September'),
+                '10' => __('October'),
+                '11' => __('November'),
+                '12' => __('December')
             ][$month] ?? '';
 
             $monthlyDiscounts[] = [
@@ -488,11 +493,11 @@ class DiscountController extends Controller
         $valueRanges = DB::table('operhead')
             ->select(
                 DB::raw('CASE
-                    WHEN pro_value < 100 THEN "أقل من 100"
-                    WHEN pro_value >= 100 AND pro_value < 500 THEN "100 - 500"
-                    WHEN pro_value >= 500 AND pro_value < 1000 THEN "500 - 1000"
-                    WHEN pro_value >= 1000 AND pro_value < 5000 THEN "1000 - 5000"
-                    ELSE "أكثر من 5000"
+                    WHEN pro_value < 100 THEN "' . __('Less than 100') . '"
+                    WHEN pro_value >= 100 AND pro_value < 500 THEN "' . __('100 - 500') . '"
+                    WHEN pro_value >= 500 AND pro_value < 1000 THEN "' . __('500 - 1000') . '"
+                    WHEN pro_value >= 1000 AND pro_value < 5000 THEN "' . __('1000 - 5000') . '"
+                    ELSE "' . __('More than 5000') . '"
                     END as value_range'),
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(pro_value) as total')
@@ -506,7 +511,6 @@ class DiscountController extends Controller
                     'total' => $item->total
                 ];
             });
-
 
         // أحدث الخصومات
         $recentDiscounts = OperHead::with(['acc1Head:id,aname', 'acc2Head:id,aname'])
@@ -531,7 +535,7 @@ class DiscountController extends Controller
             ->get()
             ->map(function ($item) {
                 return [
-                    'branch_name' => $item->branch->name ?? 'غير محدد',
+                    'branch_name' => $item->branch->name ?? __('Not specified'),
                     'count' => $item->count,
                     'total' => $item->total
                 ];

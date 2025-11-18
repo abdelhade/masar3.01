@@ -1,14 +1,13 @@
 @extends('admin.dashboard')
 
-{{-- Dynamic Sidebar: الخصومات والحسابات --}}
 @section('sidebar')
     @include('components.sidebar.discounts')
-@endsection 
+@endsection
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('الخصومات'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('الخصومات')]],
+        'title' => __('Discounts'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Discounts')]],
     ])
     <div class="row">
         <div class="col-lg-12">
@@ -16,16 +15,16 @@
 
                 @if (is_null($type))
                     <div class="alert alert-warning text-center">
-                        يرجى اختيار نوع الخصم من القائمة.
+                        {{ __('Please select discount type from the menu.') }}
                     </div>
                 @else
                     <h4>
                         @if ($type == 30)
-                            {{ __('قائمة الخصومات المسموح بها') }}
+                            {{ __('Allowed Discounts List') }}
                         @elseif ($type == 31)
-                            {{ __('قائمة الخصومات المكتسبة') }}
+                            {{ __('Earned Discounts List') }}
                         @else
-                            {{ __('جميع الخصومات') }}
+                            {{ __('All Discounts') }}
                         @endif
                     </h4>
 
@@ -33,21 +32,22 @@
                         <div class="table-responsive" style="overflow-x: auto;">
 
                             <x-table-export-actions table-id="discount-table" filename="discount-table"
-                                excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                                excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                                print-label="{{ __('Print') }}" />
 
                             <table id="discount-table" class="table table-striped mb-0 text-center"
                                 style="min-width: 1000px;">
                                 <thead class="table-light">
                                     <tr>
                                         <th>#</th>
-                                        <th>{{ __('نوع الخصم') }}</th>
-                                        <th>{{ __('قيمة الخصم') }}</th>
-                                        <th>{{ __('تاريخ السند') }}</th>
-                                        <th>{{ __('رقم السند') }}</th>
-                                        <th>{{ __('الحساب المدين') }}</th>
-                                        <th>{{ __('الحساب الدائن') }}</th>
-                                        <th>{{ __('ملاحظات') }}</th>
-                                        <th>{{ __('العمليات') }}</th>
+                                        <th>{{ __('Discount Type') }}</th>
+                                        <th>{{ __('Discount Value') }}</th>
+                                        <th>{{ __('Document Date') }}</th>
+                                        <th>{{ __('Document Number') }}</th>
+                                        <th>{{ __('Debit Account') }}</th>
+                                        <th>{{ __('Credit Account') }}</th>
+                                        <th>{{ __('Notes') }}</th>
+                                        <th>{{ __('Actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -64,9 +64,9 @@
                                                     bg-secondary @endif
                                                 text-uppercase">
                                                     @if ($discount->acc1 == 49 || $discount->acc2 == 49)
-                                                        خصم مسموح به
+                                                        {{ __('Allowed Discount') }}
                                                     @elseif($discount->acc1 == 54 || $discount->acc2 == 54)
-                                                        خصم مكتسب
+                                                        {{ __('Earned Discount') }}
                                                     @else
                                                         -
                                                     @endif
@@ -78,18 +78,18 @@
                                             <td>{{ $discount->acc1Head->aname ?? '-' }}</td>
                                             <td>{{ $discount->acc2Head->aname ?? '-' }}</td>
                                             <td>{{ $discount->info }}</td>
-                                            @canany(['تعديل قائمة الخصومات المسموح بها', 'حذف قائمة الخصومات المسموح بها'])
+                                            @canany(['edit Allowed Discounts', 'delete Allowed Discounts'])
                                                 <td>
-                                                    @can('تعديل قائمة الخصومات المسموح بها')
+                                                    @can('edit Allowed Discounts')
                                                         <a href="{{ route('discounts.edit', ['discount' => $discount->id, 'type' => $discount->acc1 == 97 ? 31 : 30]) }}"
                                                             class="btn btn-success btn-sm">
                                                             <i class="las la-edit"></i>
                                                         </a>
                                                     @endcan
-                                                    @can('حذف قائمة الخصومات المسموح بها')
+                                                    @can('delete Allowed Discounts')
                                                         <form action="{{ route('discounts.destroy', $discount->id) }}"
                                                             method="POST" style="display:inline-block;"
-                                                            onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                                                            onsubmit="return confirm('{{ __('Are you sure you want to delete?') }}');">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-danger btn-sm">
@@ -104,7 +104,7 @@
                                         <tr>
                                             <td colspan="13">
                                                 <div class="alert alert-info text-center mb-0">
-                                                    لا توجد بيانات مضافة حتى الآن
+                                                    {{ __('No data added yet') }}
                                                 </div>
                                             </td>
                                         </tr>

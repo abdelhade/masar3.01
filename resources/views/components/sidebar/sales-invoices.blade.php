@@ -11,11 +11,11 @@
 
 <li class="nav-item">
     <a class="nav-link" href="{{ route('discounts.general-statistics') }}">
-        <i class="ti-control-record"></i>{{ __('Discounts.Statistics') }}
+        <i class="ti-control-record"></i>{{ __('Discounts Statistics') }}
     </a>
 </li>
 
-@can('view Allowed Discounts List')
+@can('view Allowed Discounts')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.index', ['type' => 30]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discounts') }}
@@ -23,7 +23,7 @@
     </li>
 @endcan
 
-@can('create Allowed Discount')
+@can('create Allowed Discounts')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('discounts.create', ['type' => 30, 'q' => md5(30)]) }}">
             <i class="ti-control-record"></i>{{ __('navigation.allowed_discount') }}
@@ -37,11 +37,13 @@
     </a>
 </li>
 
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('invoice-templates.index') }}">
-        <i class="ti-control-record"></i>{{ __('Invoice Templates') }}
-    </a>
-</li>
+@can('view Invoice Templates')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('invoice-templates.index') }}">
+            <i class="ti-control-record"></i>{{ __('Invoice Templates') }}
+        </a>
+    </li>
+@endcan
 
 @foreach ($sales as $type => $label)
     @can('view ' . $label)
