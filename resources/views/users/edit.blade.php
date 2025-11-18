@@ -249,10 +249,18 @@
                         <div class="tab-pane fade" id="v-pills-selective-permissions" role="tabpanel">
                             <div class="card shadow-sm border-0">
                                 <div class="card-header bg-white border-bottom py-3">
-                                    <h6 class="m-0 fw-bold text-primary">
-                                        <i class="fas fa-shield-alt me-2"></i>
-                                        الخيارات
-                                    </h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 fw-bold text-primary">
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            الخيارات
+                                        </h6>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="selectAllSelective">
+                                            <label class="form-check-label fw-semibold" for="selectAllSelective">
+                                                تحديد الكل
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="card-body">
                                     @if ($selectivePermissions->isNotEmpty())
@@ -264,14 +272,14 @@
                                                         <th class="text-center">تحديد</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody id="selectivePermissionsTableBody">
                                                     @foreach ($selectivePermissions as $category => $perms)
                                                         @foreach ($perms as $permission)
                                                             <tr>
                                                                 <td class="text-start">{{ $permission->description }}</td>
                                                                 <td class="text-center">
                                                                     <input type="checkbox" name="permissions[]"
-                                                                        class="form-check-input" value="{{ $permission->id }}"
+                                                                        class="form-check-input selective-permission-checkbox" value="{{ $permission->id }}"
                                                                         {{ in_array($permission->id, old('permissions', $userPermissions)) ? 'checked' : '' }}>
                                                                 </td>
                                                             </tr>
@@ -388,6 +396,33 @@
                     }
                 });
             });
+
+            // Select All للخيارات (Selective Permissions)
+            const selectAllSelective = document.getElementById('selectAllSelective');
+            const selectiveCheckboxes = document.querySelectorAll('.selective-permission-checkbox');
+
+            if (selectAllSelective && selectiveCheckboxes.length > 0) {
+                // تحديث حالة Select All بناءً على حالة جميع checkboxes
+                function updateSelectAllSelectiveState() {
+                    const allChecked = Array.from(selectiveCheckboxes).every(cb => cb.checked);
+                    selectAllSelective.checked = allChecked;
+                }
+
+                // تحديد/إلغاء تحديد الكل
+                selectAllSelective.addEventListener('change', function() {
+                    selectiveCheckboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                });
+
+                // تحديث حالة Select All عند تغيير أي checkbox يدوياً
+                selectiveCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSelectAllSelectiveState);
+                });
+
+                // تحديث الحالة الأولية
+                updateSelectAllSelectiveState();
+            }
         });
     </script>
 @endpush

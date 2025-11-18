@@ -13,7 +13,8 @@ use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensions
 use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
 use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
 use Modules\Accounts\database\seeders\{AccHeadSeeder, AccountsTypesSeeder};
-use Database\Seeders\PermissionSelectiveOptionsSeeder;
+use Modules\Authorization\Database\Seeders\PermissionSeeder;
+use Modules\Authorization\Database\Seeders\PermissionSelectiveOptionsSeeder;
 
 
 class DatabaseSeeder extends Seeder
@@ -63,7 +64,10 @@ class DatabaseSeeder extends Seeder
             InquiriesRolesSeeder::class,
             CRMPermissionsSeeder::class,
             RentalsPermissionsSeeder::class,
-            InstallmentsPermissionsSeeder::class
+            InstallmentsPermissionsSeeder::class,
+            PermissionSeeder::class,
+            PermissionSelectiveOptionsSeeder::class
+           
 
         ]);
     }

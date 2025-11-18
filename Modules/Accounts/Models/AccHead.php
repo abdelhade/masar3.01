@@ -9,18 +9,31 @@ use App\Models\OperHead;
 use App\Models\State;
 use App\Models\Town;
 use App\Models\Transfer;
-use Modules\Branches\Models\Branch;
-use Modules\Depreciation\Models\AccountAsset;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Branches\Models\Branch;
+use Modules\Depreciation\Models\AccountAsset;
 
 class AccHead extends Model
 {
+    use HasFactory;
+
     protected $table = 'acc_head';
 
     protected $guarded = ['id'];
 
     public $timestamps = false;
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\AccHeadFactory
+    {
+        return \Database\Factories\AccHeadFactory::new();
+    }
 
     protected static function booted()
     {
@@ -158,6 +171,94 @@ class AccHead extends Model
     public function hasActiveChildren()
     {
         return $this->children()->exists();
+    }
+
+    // ============================================
+    // Query Scopes
+    // ============================================
+
+    /**
+     * Scope للبحث في الحسابات (الكود، الاسم، ID)
+     */
+    public function scopeSearch($query, ?string $search)
+    {
+        if (empty($search)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
+            $q->where('code', 'like', "%{$search}%")
+                ->orWhere('aname', 'like', "%{$search}%")
+                ->orWhere('id', $search);
+        });
+    }
+
+    /**
+     * Scope للفلترة حسب نوع الحساب
+     */
+    public function scopeByType($query, ?string $type)
+    {
+        if (empty($type)) {
+            return $query;
+        }
+
+        return $query->whereHas('accountType', function ($q) use ($type) {
+            $q->where('name', $type);
+        });
+    }
+
+    /**
+     * Scope للحسابات غير الأساسية فقط
+     */
+    public function scopeNonBasic(Builder $query): Builder
+    {
+        return $query->where('is_basic', 0);
+    }
+
+    /**
+     * Scope لإخفاء الحسابات السرية عن المستخدمين غير المصرح لهم
+     */
+    public function scopeVisibleForUser(Builder $query, ?User $user): Builder
+    {
+        // لو نظام الحسابات السرية غير مفعل، نعرض كل الحسابات
+        $secretEnabled = (bool) setting('enable_secret_accounts', 1);
+
+        if (! $secretEnabled) {
+            return $query;
+        }
+
+        // لو المستخدم عنده صلاحية رؤية الحسابات السرية، نعرض كل الحسابات
+        if ($user && $user->can('allow_secret_accounts')) {
+            return $query;
+        }
+
+        // إخفاء الحسابات السرية عن باقي المستخدمين
+        return $query->where('secret', false);
+    }
+
+    /**
+     * Scope للحصول على الحسابات مع العلاقات الأساسية
+     */
+    public function scopeWithBasicRelations($query)
+    {
+        return $query->with('accountType')
+            ->select([
+                'id',
+                'code',
+                'acc_type',
+                'balance',
+                'address',
+                'phone',
+                'aname',
+                'is_basic',
+                'is_stock',
+                'is_fund',
+                'employees_expensses',
+                'deletable',
+                'editable',
+                'rentable',
+                'secret',
+            ]);
     }
 
     /**

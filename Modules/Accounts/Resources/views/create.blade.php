@@ -136,7 +136,7 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="branch_id">{{ __('الفرع') }}</label>
-                                                <select class="form-control font-bold" name="branch_id" id="branch_id">
+                                                <select required class="form-control font-bold" name="branch_id" id="branch_id">
                                                     <option value="">{{ __('اختر الفرع') }}</option>
                                                     @foreach ($branches as $branch)
                                                         <option value="{{ $branch->id }}">{{ $branch->name }}</option>
@@ -233,42 +233,60 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="is_stock">مخزون</label>
-                                                <input type="checkbox" name="is_stock" value="0" hidden>
-                                                <input type="checkbox" name="is_stock" id="is_stock"
-                                                    {{ $parent == '123' ? 'checked' : '' }}>
+                                                <label for="is_stock" class="d-flex align-items-center gap-2">
+                                                    <input type="hidden" name="is_stock" value="0">
+                                                    <input type="checkbox" name="is_stock" id="is_stock" value="1" 
+                                                        class="form-check-input mt-0"
+                                                        {{ $parent == '123' ? 'checked' : '' }}>
+                                                    <span>مخزون</span>
+                                                </label>
                                             </div>
                                         </div>
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="secret">حساب سري</label>
-                                                <input type="checkbox" name="secret" id="secret">
+                                                <label for="secret" class="d-flex align-items-center gap-2">
+                                                    <input type="hidden" name="secret" value="0">
+                                                    <input type="checkbox" name="secret" id="secret" value="1" class="form-check-input mt-0">
+                                                    <span>حساب سري</span>
+                                                </label>
                                             </div>
                                         </div>
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="is_fund">حساب صندوق</label>
-                                                <input type="checkbox" name="is_fund" id="is_fund"
-                                                    {{ $parent == '121' ? 'checked' : '' }}>
+                                                <label for="is_fund" class="d-flex align-items-center gap-2">
+                                                    <input type="hidden" name="is_fund" value="0">
+                                                    <input type="checkbox" name="is_fund" id="is_fund" value="1" 
+                                                        class="form-check-input mt-0"
+                                                        {{ $parent == '121' ? 'checked' : '' }}>
+                                                    <span>حساب صندوق</span>
+                                                </label>
                                             </div>
                                         </div>
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="rentable">أصل قابل للتأجير</label>
-                                                <input type="checkbox" name="rentable" id="rentable"
-                                                    {{ $parent == '112' ? 'checked' : '' }}>
+                                                <label for="rentable" class="d-flex align-items-center gap-2">
+                                                    <input type="hidden" name="rentable" value="0">
+                                                    <input type="checkbox" name="rentable" id="rentable" value="1" 
+                                                        class="form-check-input mt-0"
+                                                        {{ $parent == '112' ? 'checked' : '' }}>
+                                                    <span>أصل قابل للتأجير</span>
+                                                </label>
                                             </div>
                                         </div>
 
                                         @if ($parent == 44)
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label for="employees_expensses">حساب رواتب للموظفين</label>
-                                                    <input type="checkbox" name="employees_expensses"
-                                                        id="employees_expensses">
+                                                    <label for="employees_expensses" class="d-flex align-items-center gap-2">
+                                                        <input type="hidden" name="employees_expensses" value="0">
+                                                        <input type="checkbox" name="employees_expensses" 
+                                                            id="employees_expensses" value="1" 
+                                                            class="form-check-input mt-0">
+                                                        <span>حساب رواتب للموظفين</span>
+                                                    </label>
                                                 </div>
                                             </div>
                                         @endif

@@ -694,48 +694,57 @@ class CreateInvoiceForm extends Component
         $this->searchResults = collect();
         $this->selectedResultIndex = -1;
 
-        if (empty(trim($value))) {
+        $searchTerm = trim($value);
+        if (empty($searchTerm)) {
             return;
         }
 
-        $limit = strlen(trim($value)) == 1 ? 10 : 20;
-        $searchTerm = trim($value);
+        $limit = strlen($searchTerm) == 1 ? 10 : 20;
 
-        // البحث السريع بدون relations
-        $this->searchResults = Item::select('id', 'name', 'code') // فقط الحقول المطلوبة
-            ->where(function ($query) use ($searchTerm) {
-                $query->where('name', 'like', $searchTerm . '%') // بدل % في الأول
-                    ->orWhere('code', 'like', $searchTerm . '%');
-            })
-            ->when(in_array($this->type, [11, 13, 15, 17]), function ($query) {
-                $query->where('type', ItemType::Inventory->value);
-            })
-            ->when($this->type == 24, function ($query) {
-                $query->where('type', ItemType::Service->value);
-            })
-            ->limit($limit)
-            ->get();
+        // تحسين: ترتيب الشروط حسب السرعة - البحث بالاسم أولاً (أسرع مع الفهرس)
+        $query = Item::select('id', 'name', 'code')
+            ->where('name', 'like', $searchTerm . '%');
 
-        // لو مفيش نتائج، دوّر في الباركود
+        // إضافة البحث بالكود فقط إذا لم يكن رقم (لأن البحث بالرقم أبطأ)
+        if (!is_numeric($searchTerm)) {
+            $query->orWhere('code', 'like', $searchTerm . '%');
+        } else {
+            // إذا كان رقم، ابحث بالكود مباشرة (أسرع)
+            $query->orWhere('code', $searchTerm);
+        }
+
+        // تطبيق الفلاتر حسب نوع الفاتورة
+        if (in_array($this->type, [11, 13, 15, 17])) {
+            $query->where('type', ItemType::Inventory->value);
+        } elseif ($this->type == 24) {
+            $query->where('type', ItemType::Service->value);
+        }
+
+        $this->searchResults = $query->limit($limit)->get();
+
+        // البحث في الباركود فقط إذا لم توجد نتائج
         if ($this->searchResults->isEmpty()) {
-            $this->searchResults = Item::select('items.id', 'items.name', 'items.code')
+            $barcodeQuery = Item::select('items.id', 'items.name', 'items.code')
                 ->join('barcodes', 'items.id', '=', 'barcodes.item_id')
-                ->where('barcodes.barcode', 'like', $searchTerm . '%')
-                ->when(in_array($this->type, [11, 13, 15, 17]), function ($query) {
-                    $query->where('items.type', ItemType::Inventory->value);
-                })
-                ->when($this->type == 24, function ($query) {
-                    $query->where('items.type', ItemType::Service->value);
-                })
-                ->limit($limit)
-                ->get();
+                ->where('barcodes.barcode', 'like', $searchTerm . '%');
+
+            if (in_array($this->type, [11, 13, 15, 17])) {
+                $barcodeQuery->where('items.type', ItemType::Inventory->value);
+            } elseif ($this->type == 24) {
+                $barcodeQuery->where('items.type', ItemType::Service->value);
+            }
+
+            $this->searchResults = $barcodeQuery->limit($limit)->distinct()->get();
         }
     }
 
     public function addItemFromSearch($itemId)
     {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
-            ->find($itemId);
+        // تحسين: تحميل محسّن مع ترتيب الوحدات
+        $item = Item::with([
+            'units' => fn($q) => $q->orderBy('pivot_u_val', 'asc'),
+            'prices'
+        ])->find($itemId);
 
         if (!$item) return;
         // التحقق من وجود الصنف في الفاتورة

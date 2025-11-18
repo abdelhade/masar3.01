@@ -44,7 +44,6 @@ public function __construct()
         if ($type) {
             $this->checkIndexPermission($type);
         } else {
-            // لو مفيش type, يبقي نحاول نحدده من الـ ID
             $id = $request->route('account') ?? $request->route('id');
 
             if ($id) {
@@ -125,43 +124,23 @@ public function __construct()
         return $permissionMap[$type] ?? 'accounts';
     }
 
-    public function index(Request $request)
+    public function index(\Modules\Accounts\Http\Requests\IndexAccountRequest $request)
     {
-
-        $type = $request->query('type');
+        $type = $request->getType();
+        
+        // Check permissions
         if ($type && ! auth()->user()->can("view " . $this->getPermissionNameByType($type))) {
             abort(403, 'غير مصرح لك بعرض هذه الصفحة');
         }
-        $accountsQuery = AccHead::query()
-            ->where('is_basic', 0);
 
-        if ($type) {
-            // Get account type ID from accounts_types table
-            $accountType = AccountsType::where('name', $type)->first();
-
-            if ($accountType) {
-                $accountsQuery->where('acc_type', $accountType->id);
-            }
-        }
-
-        $accounts = $accountsQuery->with('accountType')
-            ->get([
-                'id',
-                'code',
-                'acc_type',
-                'balance',
-                'address',
-                'phone',
-                'aname',
-                'is_basic',
-                'is_stock',
-                'is_fund',
-                'employees_expensses',
-                'deletable',
-                'editable',
-                'rentable',
-                'acc_type',
-            ]);
+        // Build query using scopes
+        $accounts = AccHead::nonBasic()
+            ->byType($type)
+            ->search($request->getSearch())
+            ->withBasicRelations()
+            ->orderBy('code')
+            ->paginate($request->getPerPage())
+            ->withQueryString();
 
         return view('accounts::index', compact('accounts'));
     }
@@ -223,27 +202,27 @@ public function __construct()
             'address'             => 'nullable|string|max:250',
             'e_mail'              => 'nullable|email|max:100',
             'constant'            => 'nullable|string|max:50',
-            'is_stock'            => 'nullable|boolean',
-            'is_fund'             => 'nullable|boolean',
-            'rentable'            => 'nullable|boolean',
-            'employees_expensses' => 'nullable|boolean',
+            'is_stock'            => 'nullable',
+            'is_fund'             => 'nullable',
+            'rentable'            => 'nullable',
+            'employees_expensses' => 'nullable',
             'parent_id'           => 'required|integer|exists:acc_head,id',
             'nature'              => 'nullable|string|max:50',
             'kind'                => 'nullable|string|max:50',
             'acc_type'            => 'nullable|integer|exists:accounts_types,id',
-            'is_basic'            => 'nullable|boolean',
+            'is_basic'            => 'nullable',
             'start_balance'       => 'nullable|numeric',
             'credit'              => 'nullable|numeric',
             'debit'               => 'nullable|numeric',
             'balance'             => 'nullable|numeric',
-            'secret'              => 'nullable|boolean',
+            'secret'              => 'nullable',
             'info'                => 'nullable|string|max:500',
             'tenant'              => 'nullable|integer',
             'branch'              => 'nullable|integer',
-            'deletable'           => 'nullable|boolean',
-            'editable'            => 'nullable|boolean',
-            'isdeleted'           => 'nullable|boolean',
-            'reserve'             => 'nullable|boolean',
+            'deletable'           => 'nullable',
+            'editable'            => 'nullable',
+            'isdeleted'           => 'nullable',
+            'reserve'             => 'nullable',
             'zatca_name'          => 'nullable|string|max:100',
             'vat_number'          => 'nullable|string|max:50',
             'national_id'         => 'nullable|string|max:50',
@@ -289,7 +268,7 @@ public function __construct()
                 'parent_id'           => $validated['parent_id'],
                 'nature'              => $validated['nature'] ?? null,
                 'kind'                => $validated['kind'] ?? null,
-                'acc_type'            => $validated['acc_type'] ?? null,
+                'acc_type'            => $account_type,
                 'is_basic'            => $validated['is_basic'] ?? 0,
                 'start_balance'       => $validated['start_balance'] ?? 0,
                 'credit'              => $validated['credit'] ?? 0,
@@ -313,7 +292,6 @@ public function __construct()
                 'state_id'            => $validated['state_id'] ?? null,
                 'town_id'             => $validated['town_id'] ?? null,
                 'branch_id'           => $validated['branch_id'],
-                'acc_type'            => $validated['acc_type'],
             ]);
 
             if (($validated['reserve'] ?? 0) == 1) {
@@ -527,16 +505,16 @@ public function __construct()
             'address'             => 'nullable|string|max:250',
             'e_mail'              => 'nullable|email|max:100',
             'constant'            => 'nullable|string|max:50',
-            'is_stock'            => 'nullable|boolean',
-            'is_fund'             => 'nullable|boolean',
-            'rentable'            => 'nullable|boolean',
-            'employees_expensses' => 'nullable|boolean',
+            'is_stock'            => 'nullable',
+            'is_fund'             => 'nullable',
+            'rentable'            => 'nullable',
+            'employees_expensses' => 'nullable',
             'parent_id'           => 'required|integer|exists:acc_head,id',
             'nature'              => 'nullable|string|max:50',
             'kind'                => 'nullable|string|max:50',
             'acc_type'            => 'nullable|integer',
-            'is_basic'            => 'nullable|boolean',
-            'secret'              => 'nullable|boolean',
+            'is_basic'            => 'nullable',
+            'secret'              => 'nullable',
             'info'                => 'nullable|string|max:500',
             'zatca_name'          => 'nullable|string|max:100',
             'vat_number'          => 'nullable|string|max:50',
@@ -549,7 +527,7 @@ public function __construct()
             'state_id'            => 'nullable|integer|exists:states,id',
             'town_id'             => 'nullable|integer|exists:towns,id',
             'branch_id'           => 'required|exists:branches,id',
-            'reserve'             => 'nullable|boolean', // Added for depreciation accounts handling
+            'reserve'             => 'nullable', // Added for depreciation accounts handling
         ]);
 
         try {
