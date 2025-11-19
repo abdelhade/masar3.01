@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 use App\Models\State;
 use App\Models\Town;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AccHeadController extends Controller
 {
-    // خريطة ربط الأكواد بأنواع الحسابات
     private const ACCOUNT_TYPE_MAP = [
         '1103' => 'clients',
         '2101' => 'suppliers',
@@ -34,16 +34,15 @@ class AccHeadController extends Controller
         '2103' => 'check-portfolios-outgoing', // حافظات أوراق الدفع
     ];
 
-public function __construct()
-{
-    $this->middleware('can:view basicData-statistics')->only(['basicDataStatistics']);
-    $this->middleware(function ($request, $next) {
-        $type = $request->query('type');
-
-        // لو في type في الـ query, ده معناه إننا في الـ index
-        if ($type) {
-            $this->checkIndexPermission($type);
-        } else {
+    public function __construct()
+    {
+        // حماية صفحة الإحصائيات
+        $this->middleware('can:view basicData-statistics')->only(['basicDataStatistics']);
+        
+        // ملاحظة: صلاحيات index يتم فحصها في IndexAccountRequest::authorize()
+        
+        // حماية صفحات التعديل والحذف حسب نوع الحساب
+        $this->middleware(function ($request, $next) {
             $id = $request->route('account') ?? $request->route('id');
 
             if ($id) {
@@ -56,27 +55,60 @@ public function __construct()
                     }
                 }
             }
-        }
 
-        return $next($request);
-    });
-}
-    private function checkIndexPermission($type)
+            return $next($request);
+        })->only(['edit', 'update', 'destroy']);
+
+        // حماية صفحة الإضافة حسب الـ parent
+        $this->middleware(function ($request, $next) {
+            $parentId = null;
+            
+            // في create: parent يأتي من query string (كود الـ parent)
+            if ($request->routeIs('accounts.create')) {
+                $parentCode = $request->query('parent');
+                if ($parentCode) {
+                    $type = $this->determineAccountType($parentCode);
+                    if ($type) {
+                        $this->checkPermissionByType($type, 'create');
+                    }
+                }
+            }
+            
+            // في store: parent_id يأتي من form body (id الـ parent)
+            if ($request->routeIs('accounts.store')) {
+                $parentId = $request->input('parent_id');
+                if ($parentId) {
+                    $parentAccount = AccHead::find($parentId);
+                    if ($parentAccount) {
+                        $type = $this->determineAccountType($parentAccount->code);
+                        if ($type) {
+                            $this->checkPermissionByType($type, 'create');
+                        }
+                    }
+                }
+            }
+
+            return $next($request);
+        })->only(['create', 'store']);
+    }
+    private function checkIndexPermission($type): void
     {
         $permissionName = $this->getPermissionNameByType($type);
         $permission     = "view $permissionName";
 
-        if (! auth()->user()->can($permission)) {
+        $user = Auth::user();
+        if (!$user || !$user->can($permission)) {
             abort(403, 'غير مصرح لك بعرض هذه الصفحة');
         }
     }
 
-    private function checkPermissionByType($type, $action)
+    private function checkPermissionByType($type, $action): void
     {
         $permissionName = $this->getPermissionNameByType($type);
         $permission     = "$action $permissionName";
 
-        if (! auth()->user()->can($permission)) {
+        $user = Auth::user();
+        if (!$user || !$user->can($permission)) {
             abort(403, 'غير مصرح لك بهذا الإجراء');
         }
     }
@@ -126,12 +158,8 @@ public function __construct()
 
     public function index(\Modules\Accounts\Http\Requests\IndexAccountRequest $request)
     {
-        $type = $request->getType();
         
-        // Check permissions
-        if ($type && ! auth()->user()->can("view " . $this->getPermissionNameByType($type))) {
-            abort(403, 'غير مصرح لك بعرض هذه الصفحة');
-        }
+        $type = $request->getType();
 
         // Build query using scopes
         $accounts = AccHead::nonBasic()
@@ -155,14 +183,7 @@ public function __construct()
     {
         $branches = userBranches();
         $parent   = $request->query('parent', 0);
-
-        // تحقق من صلاحية الإضافة
-        if ($parent) {
-            $type = $this->determineAccountType($parent);
-            if ($type && ! auth()->user()->can("create " . $this->getPermissionNameByType($type))) {
-                abort(403, 'غير مصرح لك بإضافة حساب جديد');
-            }
-        }
+        
         $last_id      = '';
         $resacs       = [];
         $accountTypes = AccountsType::all();
@@ -235,11 +256,6 @@ public function __construct()
             'town_id'             => 'nullable|integer|exists:towns,id',
             'branch_id'           => 'required|exists:branches,id',
         ]);
-
-        $parentType = $this->determineParentType($validated['parent_id']);
-        if ($parentType && ! auth()->user()->can("create " . $this->getPermissionNameByType($parentType))) {
-            abort(403, 'غير مصرح لك بإضافة حساب جديد');
-        }
 
         if (isset($validated['acc_type']) && ! empty($validated['acc_type'])) {
             $account_type = $validated['acc_type'];
@@ -468,12 +484,7 @@ public function __construct()
     public function edit($id)
     {
         $account = AccHead::findOrFail($id);
-
-        // تحقق من صلاحية التعديل
-        $type = $this->determineAccountType($account->code);
-        if ($type && ! auth()->user()->can("edit " . $this->getPermissionNameByType($type))) {
-            abort(403, 'غير مصرح لك بتعديل هذا الحساب');
-        }
+        
         $parent = substr($account->code, 0, -3);
         $resacs = DB::table('acc_head')
             ->where('is_basic', 1)
@@ -492,12 +503,6 @@ public function __construct()
     public function update(Request $request, $id)
     {
         $account = AccHead::findOrFail($id);
-
-        // تحقق من صلاحية التعديل
-        $type = $this->determineAccountType($account->code);
-        if ($type && ! auth()->user()->can("edit " . $this->getPermissionNameByType($type))) {
-            abort(403, 'غير مصرح لك بتعديل هذا الحساب');
-        }
 
         $validated = $request->validate([
             'aname'               => 'required|string|max:100|unique:acc_head,aname,' . $id,
@@ -610,11 +615,6 @@ public function __construct()
     {
         $acc = AccHead::findOrFail($id);
 
-        // تحقق من صلاحية الحذف
-        $type = $this->determineAccountType($acc->code);
-        if ($type && ! auth()->user()->can("delete " . $this->getPermissionNameByType($type))) {
-            abort(403, 'غير مصرح لك بحذف هذا الحساب');
-        }
         if (! $acc->deletable) {
             return redirect()->back()->with('error', 'هذا الحساب غير قابل للحذف.');
         }

@@ -259,7 +259,7 @@
                                                     <input type="hidden" name="is_fund" value="0">
                                                     <input type="checkbox" name="is_fund" id="is_fund" value="1" 
                                                         class="form-check-input mt-0"
-                                                        {{ $parent == '121' ? 'checked' : '' }}>
+                                                        {{ $parent == '1101' || $parent == '1102' ? 'checked readonly' : '' }}>
                                                     <span>حساب صندوق</span>
                                                 </label>
                                             </div>

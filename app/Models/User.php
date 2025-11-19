@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Support\Str;
 use Modules\Branches\Models\Branch;
-use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 use Spatie\Permission\Traits\HasPermissions;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Modules\Inquiries\Models\UserInquiryPreference;
@@ -14,6 +14,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+    // HasRoles trait required by Spatie package but not actively used
+    // Permissions are assigned directly via model_has_permissions table
     use HasFactory, HasPermissions, HasRoles, Notifiable, Authorizable;
 
     /**

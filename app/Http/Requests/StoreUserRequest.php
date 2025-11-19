@@ -17,10 +17,10 @@ class StoreUserRequest extends FormRequest
             'name'                  => ['required', 'string', 'max:255'],
             'email'                 => ['required', 'email', 'unique:users,email'],
             'password'              => ['required', 'string', 'confirmed', 'min:6'],
-            'roles'                 => ['nullable', 'array'],
             'permissions'           => ['nullable', 'array'],
-            'roles.*'               => ['string'],
-            'permissions.*'         => ['integer'],
+            'permissions.*'         => ['integer', 'exists:permissions,id'],
+            'branches'              => ['nullable', 'array'],
+            'branches.*'            => ['integer', 'exists:branches,id'],
         ];
     }
 
@@ -34,6 +34,8 @@ class StoreUserRequest extends FormRequest
             'password.required' => 'كلمة المرور مطلوبة',
             'password.confirmed' => 'كلمة المرور غير متطابقة',
             'password.min' => 'كلمة المرور يجب أن تكون على الأقل 6 أحرف',
+            'permissions.*.exists' => 'أحد الصلاحيات المحددة غير صحيحة',
+            'branches.*.exists' => 'أحد الفروع المحددة غير صحيح',
         ];
     }
 }

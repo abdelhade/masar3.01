@@ -4,7 +4,6 @@ namespace Modules\POS\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class POSPermissionsSeeder extends Seeder
 {
@@ -28,52 +27,8 @@ class POSPermissionsSeeder extends Seeder
             ]);
         }
 
-        // إنشاء أدوار POS
-        $posRoles = [
-            'كاشير' => [
-                'description' => 'موظف نقاط البيع - صلاحيات أساسية',
-                'permissions' => [
-                    'استخدام نظام نقاط البيع',
-                    'إنشاء معاملة نقاط البيع',
-                    'عرض معاملة نقاط البيع',
-                    'طباعة فاتورة نقاط البيع',
-                ]
-            ],
-            'مشرف نقاط البيع' => [
-                'description' => 'مشرف نقاط البيع - صلاحيات متقدمة',
-                'permissions' => [
-                    'استخدام نظام نقاط البيع',
-                    'إنشاء معاملة نقاط البيع',
-                    'عرض معاملة نقاط البيع',
-                    'طباعة فاتورة نقاط البيع',
-                    'حذف معاملة نقاط البيع',
-                    'عرض تقارير نقاط البيع',
-                ]
-            ],
-            'مدير نقاط البيع' => [
-                'description' => 'مدير نقاط البيع - صلاحيات كاملة',
-                'permissions' => [
-                    'استخدام نظام نقاط البيع',
-                    'إنشاء معاملة نقاط البيع',
-                    'عرض معاملة نقاط البيع',
-                    'طباعة فاتورة نقاط البيع',
-                    'حذف معاملة نقاط البيع',
-                    'عرض تقارير نقاط البيع',
-                    'إدارة إعدادات نقاط البيع',
-                ]
-            ]
-        ];
-
-        foreach ($posRoles as $roleName => $roleData) {
-            $role = Role::firstOrCreate([
-                'name' => $roleName,
-                'guard_name' => 'web'
-            ]);
-
-            // إضافة الصلاحيات للدور
-            $permissions = Permission::whereIn('name', $roleData['permissions'])->get();
-            $role->syncPermissions($permissions);
-        }
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
 
         $this->command->info('تم إنشاء صلاحيات وأدوار POS بنجاح!');
     }

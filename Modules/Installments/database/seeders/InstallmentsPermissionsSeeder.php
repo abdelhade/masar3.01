@@ -40,19 +40,7 @@ class InstallmentsPermissionsSeeder extends Seeder
             }
         }
 
-        // Find the admin and user roles, or create them if they don't exist
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['guard_name' => 'web']);
-        $userRole = Role::firstOrCreate(['name' => 'user'], ['guard_name' => 'web']);
-
-        // Assign all Installments permissions to the admin role
-        $installmentPermissions = Permission::where('category', 'Installments')->get();
-        $adminRole->givePermissionTo($installmentPermissions);
-
-        // Assign only "view" permissions to the user role
-        $userViewPermissions = Permission::where('category', 'Installments')
-            ->where('name', 'like', 'view%')
-            ->get();
-
-        $userRole->givePermissionTo($userViewPermissions);
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
     }
 }

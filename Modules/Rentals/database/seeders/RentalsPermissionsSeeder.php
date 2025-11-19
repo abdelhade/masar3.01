@@ -36,21 +36,7 @@ class RentalsPermissionsSeeder extends Seeder
             }
         }
 
-        // إنشاء أو جلب الأدوار
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['guard_name' => 'web']);
-        $userRole  = Role::firstOrCreate(['name' => 'user'],  ['guard_name' => 'web']);
-
-        // إسناد جميع صلاحيات CRM للـ admin
-        $rentalsCategories = array_keys($groupedPermissions);
-        $adminPermissions = Permission::whereIn('category', $rentalsCategories)->get();
-        $adminRole->givePermissionTo($adminPermissions);
-
-        // إسناد صلاحيات العرض فقط للـ user
-        $userViewPermissions = Permission::whereIn('category', $rentalsCategories)
-            ->where(function ($q) {
-                $q->where('name', 'like', 'view %');
-            })->get();
-
-        $userRole->givePermissionTo($userViewPermissions);
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
     }
 }

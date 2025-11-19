@@ -76,11 +76,9 @@
         {{-- الأكشنات (إضافة + بحث) --}}
         <div class="row mt-3 justify-content-between align-items-center">
             <div class="col-md-3">
-                    @can("create $permName")
-                        <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
-                            <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
-                        </a>
-                    @endcan
+                <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
+                    <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
+                </a>
             </div>
 
             <div class="col-md-4">
@@ -129,9 +127,7 @@
                                 <th>العنوان</th>
                                 <th>التليفون</th>
                                 <th>ID</th>
-                                @canany(["edit $permName", "delete $permName"])
-                                    <th>عمليات</th>
-                                @endcanany
+                                <th>عمليات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -151,14 +147,7 @@
                                                 {{ number_format($acc->balance ?? 0, 2) }}
                                             </a>
                                         @else
-                                            @can("allow_secret_accounts")
-                                                <a class="btn btn-sm btn-outline-dark"
-                                                    href="{{ route('account-movement', ['accountId' => $acc->id]) }}">
-                                                    {{ number_format($acc->balance ?? 0, 2) }}
-                                                </a>
-                                            @else
-                                                <span class="text-danger">(X-X-X)</span>
-                                            @endcan
+                                            <span class="text-muted">----</span>
                                         @endif
                                     </td>
                                     <td>
@@ -169,34 +158,27 @@
                                     </td>
                                     <td>{{ $acc->phone ?? '__' }}</td>
                                     <td><span class="badge bg-secondary">{{ $acc->id }}</span></td>
+                                    <td>
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <a href="{{ route('accounts.edit', $acc->id) }}" 
+                                               class="btn btn-success btn-sm"
+                                               title="تعديل">
+                                                <i class="las la-pen"></i>
+                                            </a>
 
-                                    @canany(["edit $permName", "delete $permName"])
-                                        <td>
-                                            <div class="d-flex gap-1 justify-content-center">
-                                                @can("edit $permName")
-                                                    <a href="{{ route('accounts.edit', $acc->id) }}" 
-                                                       class="btn btn-success btn-sm"
-                                                       title="تعديل">
-                                                        <i class="las la-pen"></i>
-                                                    </a>
-                                                @endcan
-
-                                                @can("delete $permName")
-                                                    <form action="{{ route('accounts.destroy', $acc->id) }}" 
-                                                          method="POST"
-                                                          style="display:inline;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button class="btn btn-danger btn-sm"
-                                                                title="حذف"
-                                                                onclick="return confirm('هل أنت متأكد من الحذف؟')">
-                                                            <i class="las la-trash-alt"></i>
-                                                        </button>
-                                                    </form>
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    @endcanany
+                                            <form action="{{ route('accounts.destroy', $acc->id) }}" 
+                                                  method="POST"
+                                                  style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-danger btn-sm"
+                                                        title="حذف"
+                                                        onclick="return confirm('هل أنت متأكد من الحذف؟')">
+                                                    <i class="las la-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>

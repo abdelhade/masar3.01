@@ -18,6 +18,8 @@ use Modules\Branches\database\seeders\{AttachUserToDefaultBranchSeeder, BranchSe
 use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensionsSeeder};
 use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
 use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
+use Modules\Authorization\Database\Seeders\PermissionSeeder;
+use Modules\Authorization\Database\Seeders\PermissionSelectiveOptionsSeeder;
 
 
 class DatabaseSeeder extends Seeder

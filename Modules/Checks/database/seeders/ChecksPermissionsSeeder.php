@@ -4,7 +4,7 @@ namespace Modules\Checks\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+
 
 class ChecksPermissionsSeeder extends Seeder
 {
@@ -39,11 +39,8 @@ class ChecksPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Assign all permissions to admin role
-        $adminRole = Role::where('name', 'admin')->first();
-        if ($adminRole) {
-            $adminRole->givePermissionTo($permissions);
-        }
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
 
         $this->command->info('Checks permissions created successfully!');
     }

@@ -79,10 +79,13 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'        => 'required|string',
-            'email'       => 'required|email|unique:users,email,' . $user->id,
-            'password'    => 'nullable|confirmed|min:6',
-            'permissions' => 'nullable|array',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email,' . $user->id,
+            'password'      => 'nullable|confirmed|min:6',
+            'permissions'   => 'nullable|array',
+            'permissions.*' => 'integer|exists:permissions,id',
+            'branches'      => 'nullable|array',
+            'branches.*'    => 'integer|exists:branches,id',
         ]);
 
         try {

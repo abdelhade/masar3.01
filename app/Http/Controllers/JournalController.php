@@ -17,10 +17,7 @@ class JournalController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view journal entries')->only(['index', 'show']);
-        $this->middleware('can:create journal entries')->only(['create', 'store']);
-    }
-    // __________________________________________________________________________________________index
+      }
     public function index()
     {
         $journals = Journal::where('isdeleted', 0)

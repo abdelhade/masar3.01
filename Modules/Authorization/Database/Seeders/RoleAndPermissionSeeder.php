@@ -4,7 +4,6 @@ namespace Modules\Authorization\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Models\Permission;
-use Modules\Authorization\Models\Role;
 
 class RoleAndPermissionSeeder extends Seeder
 {
@@ -45,59 +44,8 @@ class RoleAndPermissionSeeder extends Seeder
             }
         }
 
-        $adminRole = Role::firstOrCreate([
-            'name' => 'admin',
-            'guard_name' => 'web'
-        ]);
-
-        $userRole = Role::firstOrCreate([
-            'name' => 'user',
-            'guard_name' => 'web'
-        ]);
-
-        // Assign permissions to roles
-        $adminRole->syncPermissions(Permission::all());
-
-        $userPermissions = Permission::where('name', 'like', 'view%')->get();
-        $userRole->syncPermissions($userPermissions);
-
-        // Create POS-specific roles
-        $posRoles = [
-            'Cashier' => [
-                'view POS System',
-                'create POS Transaction',
-                'view POS Transaction',
-                'print POS Transaction',
-            ],
-            'POS Supervisor' => [
-                'view POS System',
-                'create POS Transaction',
-                'view POS Transaction',
-                'edit POS Transaction',
-                'print POS Transaction',
-                'view POS Reports',
-            ],
-            'POS Manager' => [
-                'view POS System',
-                'create POS Transaction',
-                'view POS Transaction',
-                'edit POS Transaction',
-                'delete POS Transaction',
-                'print POS Transaction',
-                'view POS Reports',
-                'create POS Settings',
-                'edit POS Settings',
-            ]
-        ];
-
-        foreach ($posRoles as $roleName => $permissions) {
-            $role = Role::firstOrCreate([
-                'name' => $roleName,
-                'guard_name' => 'web'
-            ]);
-
-            $rolePermissions = Permission::whereIn('name', $permissions)->get();
-            $role->syncPermissions($rolePermissions);
-        }
+        // Note: Roles are created but not assigned permissions
+        // Permissions are assigned directly to users via model_has_permissions table
+        // This maintains compatibility with Spatie package while using direct permission assignment
     }
 }

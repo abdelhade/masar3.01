@@ -20,17 +20,18 @@ public function __construct()
             // ✅ حالة 1: إذا طلب عرض "جميع السندات"
             if ($type === 'all') {
                 // تحقق: هل عنده أي صلاحية من الثلاثة؟
-                if (!Auth::user()->can('view recipt') &&
-                    !Auth::user()->can('view payment') &&
+                if (!Auth::user()->can('view receipt vouchers') &&
+                    !Auth::user()->can('view payment vouchers') &&
                     !Auth::user()->can('view exp-payment')) {
+                       
                     abort(403, 'غير مصرح لك بعرض أي سندات');
                 }
             } else {
                 // ✅ حالة 2: إذا طلب نوع محدد (receipt, payment, exp-payment)
                 // ربط كل نوع بصلاحيته المطلوبة
                 $permissionMap = [
-                    'receipt' => 'view recipt',           // سندات القبض
-                    'payment' => 'view payment',           // سندات الدفع
+                    'receipt' => 'view receipt vouchers',           // سندات القبض
+                    'payment' => 'view payment vouchers',           // سندات الدفع
                     'exp-payment' => 'view exp-payment',   // سندات المصاريف
                     'multi_payment' => 'view multi-payment',     // سندات دفع متعددة
                     'multi_receipt' => 'view multi-receipt',     // سندات قبض متعددة
@@ -46,7 +47,7 @@ public function __construct()
         })->only(['index']); // تطبيق الحماية على index فقط
     $this->middleware(function ($request, $next) {
             $type = $request->get('type'); // نوع السند المطلوب إنشاؤه
-
+dd($type);
             // ربط كل نوع بصلاحيته المطلوبة للإنشاء
             $permissionMap = [
                 'receipt' => 'create recipt',
@@ -159,28 +160,6 @@ public function __construct()
     {
         $type = $request->get('type', 'all'); // افتراضي: عرض الكل
 
-        // If the request is for multi vouchers, delegate to MultiVoucherController
-        if (in_array($type, ['multi_payment', 'multi_receipt'])) {
-            return redirect()->route('multi-vouchers.index', ['type' => $type]);
-        }
-    // تحديد النوع التلقائي بناءً على صلاحيات المستخدم
-        if ($type === 'all') {
-            $userPermissions = [];
-            if (Auth::user()->can('view recipt')) {
-                $userPermissions[] = 'receipt';
-            }
-            if (Auth::user()->can('view payment')) {
-                $userPermissions[] = 'payment';
-            }
-            if (Auth::user()->can('view exp-payment')) {
-                $userPermissions[] = 'exp-payment';
-            }
-
-            // إذا كان لديه صلاحية واحدة فقط، اعرض هذا النوع مباشرة
-            if (count($userPermissions) === 1) {
-                $type = $userPermissions[0];
-            }
-        }
         $typeMapping = [
             'receipt' => 1,
             'payment' => 2,

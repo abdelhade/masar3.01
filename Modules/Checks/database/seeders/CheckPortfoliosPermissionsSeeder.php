@@ -4,7 +4,7 @@ namespace Modules\Checks\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Models\Permission;
-use Modules\Authorization\Models\Role;
+
 
 class CheckPortfoliosPermissionsSeeder extends Seeder
 {
@@ -42,14 +42,8 @@ class CheckPortfoliosPermissionsSeeder extends Seeder
             );
         }
 
-        $adminRole = Role::where('name', 'admin')->first();
-
-        if ($adminRole) {
-            $adminRole->givePermissionTo([
-                ...$localizedPermissions,
-                ...$sidebarPermissions,
-            ]);
-        }
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
 
         $this->command?->info('Check portfolios permissions created successfully!');
     }

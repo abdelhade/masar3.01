@@ -4,7 +4,6 @@ namespace Modules\CRM\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Models\Permission;
-use Modules\Authorization\Models\Role;
 
 class CRMPermissionsSeeder extends Seeder
 {
@@ -42,21 +41,7 @@ class CRMPermissionsSeeder extends Seeder
             }
         }
 
-        // إنشاء أو جلب الأدوار
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['guard_name' => 'web']);
-        $userRole  = Role::firstOrCreate(['name' => 'user'],  ['guard_name' => 'web']);
-
-        // إسناد جميع صلاحيات CRM للـ admin
-        $crmCategories = array_keys($groupedPermissions);
-        $adminPermissions = Permission::whereIn('category', $crmCategories)->get();
-        $adminRole->givePermissionTo($adminPermissions);
-
-        // إسناد صلاحيات العرض فقط للـ user
-        $userViewPermissions = Permission::whereIn('category', $crmCategories)
-            ->where(function ($q) {
-                $q->where('name', 'like', 'View %');
-            })->get();
-
-        $userRole->givePermissionTo($userViewPermissions);
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
     }
 }
