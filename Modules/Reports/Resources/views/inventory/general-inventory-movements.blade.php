@@ -11,34 +11,40 @@
             <h2>حركة الصنف</h2>
         </div>
         <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <label for="item_id">الصنف:</label>
-                    <select id="item_id" class="form-control" wire:model="itemId">
-                        <option value="">اختر الصنف</option>
-                        @foreach($items as $item)
-                            <option value="{{ $item->id }}">{{ $item->code }} - {{ $item->aname }}</option>
-                        @endforeach
-                    </select>
+            <form method="GET" action="{{ request()->url() }}">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="item_id">الصنف:</label>
+                        <select id="item_id" name="item_id" class="form-control">
+                            <option value="">اختر الصنف</option>
+                            @foreach($items as $item)
+                                <option value="{{ $item->id }}" {{ request('item_id') == $item->id ? 'selected' : '' }}>{{ $item->code }} - {{ $item->aname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="warehouse_id">المخزن:</label>
+                        <select id="warehouse_id" name="warehouse_id" class="form-control">
+                            <option value="all" {{ request('warehouse_id', 'all') == 'all' ? 'selected' : '' }}>كل المخازن</option>
+                            @foreach($warehouses as $warehouse)
+                                <option value="{{ $warehouse->id }}" {{ request('warehouse_id') == $warehouse->id ? 'selected' : '' }}>{{ $warehouse->aname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="from_date">من تاريخ:</label>
+                        <input type="date" id="from_date" name="from_date" class="form-control" value="{{ request('from_date') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="to_date">إلى تاريخ:</label>
+                        <input type="date" id="to_date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary form-control">توليد التقرير</button>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="warehouse_id">المخزن:</label>
-                    <select id="warehouse_id" class="form-control" wire:model="warehouseId">
-                        <option value="all">كل المخازن</option>
-                        @foreach($warehouses as $warehouse)
-                                                                <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="from_date">من تاريخ:</label>
-                    <input type="date" id="from_date" class="form-control" wire:model="fromDate">
-                </div>
-                <div class="col-md-3">
-                    <label for="to_date">إلى تاريخ:</label>
-                    <input type="date" id="to_date" class="form-control" wire:model="toDate">
-                </div>
-            </div>
+            </form>
 
             @if($selectedItem)
             <div class="row mb-3">
@@ -46,7 +52,7 @@
                     <div class="alert alert-info">
                         <strong>الصنف المحدد:</strong> {{ $selectedItem->code }} - {{ $selectedItem->aname }}
                         <br>
-                        <strong>الوحدة:</strong> {{ $selectedItem->unit->aname ?? '---' }}
+                        <strong>الوحدة:</strong> {{ $selectedItem->units->first()->aname ?? '---' }}
                         <br>
                         <strong>الرصيد الحالي:</strong> {{ number_format($currentBalance, 2) }}
                     </div>
@@ -69,20 +75,30 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            use App\Enums\OperationTypeEnum;
+                            use Modules\Accounts\Models\AccHead;
+                        @endphp
                         @forelse($movements as $movement)
+                        @php
+                            $operationType = $movement->pro_tybe ? OperationTypeEnum::tryFrom($movement->pro_tybe) : null;
+                            $operationTypeText = $operationType ? $operationType->getArabicName() : '---';
+                            $warehouse = $movement->detail_store ? AccHead::find($movement->detail_store) : null;
+                            $warehouseName = $warehouse ? $warehouse->aname : '---';
+                        @endphp
                         <tr>
                             <td>{{ $movement->created_at ? \Carbon\Carbon::parse($movement->created_at)->format('Y-m-d') : '---' }}</td>
                             <td>
                                 <span class="badge bg-{{ $movement->qty_in > 0 ? 'success' : 'danger' }}">
-                                    {{ $movement->getOperationTypeText() }}
+                                    {{ $operationTypeText }}
                                 </span>
                             </td>
                             <td>{{ $movement->pro_id ?? '---' }}</td>
-                            <td>---</td>
+                            <td>{{ $warehouseName }}</td>
                             <td class="text-end">{{ $movement->qty_in > 0 ? number_format($movement->qty_in, 2) : '---' }}</td>
                             <td class="text-end">{{ $movement->qty_out > 0 ? number_format($movement->qty_out, 2) : '---' }}</td>
-                            <td class="text-end">{{ number_format($movement->running_balance, 2) }}</td>
-                            <td>{{ $movement->details ?? '---' }}</td>
+                            <td class="text-end">{{ isset($movement->running_balance) ? number_format($movement->running_balance, 2) : '---' }}</td>
+                            <td>{{ $movement->notes ?? '---' }}</td>
                         </tr>
                         @empty
                         <tr>

@@ -44,6 +44,7 @@ class RouteServiceProvider extends ServiceProvider
         Route::middleware('web')->group(module_path($this->name, '/routes/reports/suppliers.php'));
         Route::middleware('web')->group(module_path($this->name, '/routes/reports/expenses.php'));
         Route::middleware('web')->group(module_path($this->name, '/routes/reports/cost-centers.php'));
+        Route::middleware('web')->group(module_path($this->name, '/routes/reports/cash-box-bank.php'));
         Route::middleware('web')->group(module_path($this->name, '/routes/GeneralReports/general-reports.php'));
         Route::middleware('web')->group(module_path($this->name, '/routes/AccountsReports/accounts-reports.php'));
     }

@@ -121,6 +121,23 @@ class OperHead extends Model
     }
 
     /**
+     * Get the view route for this operation
+     */
+    public function getViewRoute(): string
+    {
+        $operationType = $this->getOperationTypeEnum();
+        return $operationType?->getViewRoute() ?? $this->getEditRoute();
+    }
+
+    /**
+     * Get the view URL for this operation
+     */
+    public function getViewUrl(): string
+    {
+        return route($this->getViewRoute(), $this->id);
+    }
+
+    /**
      * Check if this operation is an invoice
      */
     public function isInvoice(): bool

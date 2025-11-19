@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
-use Modules\\Accounts\\Services\\AccountService;
+use Modules\Accounts\Services\AccountService;
 
 
 new class extends Component {

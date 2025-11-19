@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
 use App\Models\OperHead;
 use App\Models\JournalDetail;
+use App\Enums\OperationTypeEnum;
 
 new class extends Component {
     use WithPagination;
@@ -54,7 +55,7 @@ new class extends Component {
             return collect();
         }
 
-        return AccHead::where('aname', 'like', '%' . $this->searchTerm . '%')
+        return AccHead::where('is_basic',0)->where('aname', 'like', '%' . $this->searchTerm . '%')
             ->select('id', 'aname')
             ->limit(7)
             ->get();
@@ -106,32 +107,8 @@ new class extends Component {
 
     public function getArabicReferenceName(int $referenceId): string
     {
-        $baseId = $referenceId;
-        $translations = [
-            '10' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø¨ÙŠØ¹Ø§Øª',
-            '11' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø´ØªØ±ÙŠØ§Øª',
-            '12' => 'مرتجع مبيعات',
-            '13' => 'مرتجع مشتريات',
-            '14' => 'امر بيع',
-            '15' => 'امر شراء',
-            '16' => 'عرض سعر لعميل',
-            '17' => 'عرض سعر من مورد',
-            '18' => 'ÙØ§ØªÙˆØ±Ø© ØªÙˆØ§Ù„Ù',
-            '19' => 'Ø§Ù…Ø± ØµØ±Ù',
-            '20' => 'Ø§Ù…Ø± Ø§Ø¶Ø§ÙØ©',
-            '21' => 'تحويل من مخزن لمخزن',
-            '22' => 'امر حجز',
-            '23' => 'ØªØ­ÙˆÙŠÙ„ Ø¨ÙŠÙ† ÙØ±ÙˆØ¹',
-            '35' => 'Ø³Ù†Ø¯ Ø¥ØªÙ„Ø§Ù Ù…Ø®Ø²ÙˆÙ†',
-            '56' => 'نموذج تصنيع',
-            '57' => 'امر تشغيل',
-            '58' => 'تصنيع معياري',
-            '59' => 'تصنيع حر',
-            '60' => 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø§Ø±ØµØ¯Ù‡ Ø§Ù„Ø§ÙØªØªØ§Ø­ÙŠÙ‡ Ù„Ù„Ù…Ø®Ø§Ø²Ù†',
-            '61' => 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø§Ø±ØµØ¯Ù‡ Ø§Ù„Ø§ÙØªØªØ§Ø­ÙŠÙ‡ Ù„Ù„Ø­Ø³Ø§Ø¨Ø§Øª',
-        ];
-
-        return $translations[$baseId] ?? 'N/A';
+        $operationType = OperationTypeEnum::fromValue($referenceId);
+        return $operationType?->getArabicName() ?? 'عملية غير محددة';
     }
 
     public function with(): array
@@ -313,7 +290,7 @@ new class extends Component {
                                         @if ($operation && in_array($operation->pro_type, [10, 11, 12, 13]))
                                             <a href="{{ route('invoice.view', $movement->op_id) }}"
                                                 class="btn btn-xs btn-info" target="_blank">
-                                                <i class="fas fa-eye"></i> Ø¹Ø±Ø¶
+                                                <i class="fas fa-eye"></i> {{ __('عرض') }}
                                             </a>
                                         @endif
                                     </td>
