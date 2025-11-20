@@ -41,6 +41,8 @@
                         <!-- Quotation State Section -->
                         @include('inquiries::components.quotation-state')
 
+                        @include('inquiries::components.assigned-enginner')
+
                         @include('inquiries::components.cities-select')
 
                         <!-- Work Types Section & Inquiry Sources -->
@@ -50,7 +52,6 @@
                     @include('inquiries::components.Stakeholders-Section')
                     {{-- بعد حقل المهندس الحالي (Contact Engineer) --}}
 
-                    @include('inquiries::components.assigned-enginner')
 
 
                     <div class="row mt-4">
