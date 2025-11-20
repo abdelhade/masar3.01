@@ -7,8 +7,8 @@
 
 @section('content')
     @php
-        $parent = request()->get('parent');
-        $isClientOrSupplier = in_array($parent, ['1103', '2101']);
+        $parent = request()->get('parent') ?? substr($account->code, 0, -3);
+        $isClientOrSupplier = in_array(substr($account->code, 0, 4), ['1103', '2101']);
         // خريطة تربط parent_id بنوع الحساب
         $parentTypeMap = [
             '1103' => '1', // العملاء
@@ -147,6 +147,7 @@
                                             <div class="form-group">
                                                 <label for="company_type">{{ __('نوع العميل') }}</label>
                                                 <select class="form-control" name="company_type" id="company_type">
+                                                    <option value="">{{ __('اختر النوع') }}</option>
                                                     <option value="شركة" {{ $account->company_type == 'شركة' ? 'selected' : '' }}>{{ __('شركة') }}</option>
                                                     <option value="فردي" {{ $account->company_type == 'فردي' ? 'selected' : '' }}>{{ __('فردي') }}</option>
                                                 </select>
@@ -158,6 +159,8 @@
                                                 <input class="form-control" type="text" name="nationality" id="nationality" value="{{ $account->nationality }}" placeholder="{{ __('الجنسية') }}">
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <x-dynamic-search name="country_id" label="الدولة" column="title" model="App\Models\Country" placeholder="ابحث عن الدولة..." :required="false" :class="'form-select'" :selected="$account->country_id" />
                                         </div>
@@ -172,44 +175,35 @@
                                         </div>
                                     </div>
                                 @endif
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="is_stock">{{ __('مخزون') }}</label><br>
-                                            <input type="hidden" name="is_stock" value="0">
-                                            <input type="checkbox" name="is_stock" id="is_stock" value="1" {{ $account->is_stock ? 'checked' : '' }}>
-                                        </div>
+                                {{-- Hidden flags: keep values but do not show editable checkboxes on edit form --}}
+                                @php
+                                    $edit_is_stock = $account->is_stock ? 1 : 0;
+                                    $edit_secret = $account->secret ? 1 : 0;
+                                    $edit_is_fund = $account->is_fund ? 1 : 0;
+                                    $edit_rentable = $account->rentable ? 1 : 0;
+                                    $edit_employees_expensses = $account->employees_expensses ? 1 : 0;
+                                @endphp
+
+                                <input type="hidden" name="is_stock" value="{{ $edit_is_stock }}">
+                                <input type="hidden" name="secret" value="{{ $edit_secret }}">
+                                <input type="hidden" name="is_fund" value="{{ $edit_is_fund }}">
+                                <input type="hidden" name="rentable" value="{{ $edit_rentable }}">
+                                @if ($parent == 44)
+                                    <input type="hidden" name="employees_expensses" value="{{ $edit_employees_expensses }}">
+                                @endif
+
+                                {{-- Summary badges (non-editable) to indicate current flags --}}
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            الإعدادات الحالية للحساب:
+                                            @if($edit_is_stock) <span class="badge bg-info me-1">مخزون</span> @endif
+                                            @if($edit_is_fund) <span class="badge bg-success me-1">صندوق/بنك</span> @endif
+                                            @if($edit_rentable) <span class="badge bg-warning me-1">أصل قابل للتأجير</span> @endif
+                                            @if($edit_secret) <span class="badge bg-secondary me-1">حساب سري</span> @endif
+                                            @if($parent == 44 && $edit_employees_expensses) <span class="badge bg-primary me-1">حساب رواتب</span> @endif
+                                        </small>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="secret">{{ __('حساب سري') }}</label><br>
-                                            <input type="hidden" name="secret" value="0">
-                                            <input type="checkbox" name="secret" id="secret" value="1" {{ $account->secret ? 'checked' : '' }}>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="is_fund">{{ __('حساب صندوق') }}</label><br>
-                                            <input type="hidden" name="is_fund" value="0">
-                                            <input type="checkbox" name="is_fund" id="is_fund" value="1" {{ $account->is_fund ? 'checked' : '' }}>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="rentable">{{ __('أصل قابل للتأجير') }}</label><br>
-                                            <input type="hidden" name="rentable" value="0">
-                                            <input type="checkbox" name="rentable" id="rentable" value="1" {{ $account->rentable ? 'checked' : '' }}>
-                                        </div>
-                                    </div>
-                                    @if ($parent == 44)
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label for="employees_expensses">{{ __('حساب رواتب للموظفين') }}</label><br>
-                                                <input type="hidden" name="employees_expensses" value="0">
-                                                <input type="checkbox" name="employees_expensses" id="employees_expensses" value="1" {{ $account->employees_expensses ? 'checked' : '' }}>
-                                            </div>
-                                        </div>
-                                    @endif
                                 </div>
                                 @if ($parent == '12')
                                     <div class="alert alert-warning" style="font-family: 'Cairo', sans-serif; direction: rtl;">
