@@ -8,7 +8,7 @@
 @section('content')
     @include('components.breadcrumb', [
         'title' => __('انشاء حساب'),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('انشاء')]],
+        'items' => [['label' => 'الرئيسية' , 'url' => route('admin.dashboard')], ['label' => __('انشاء')]],
     ])
     <div class="content-wrapper">
         <section class="content-header">
@@ -231,50 +231,31 @@
                                         </div>
                                     @endif
                                     <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label for="is_stock" class="d-flex align-items-center gap-2">
-                                                    <input type="hidden" name="is_stock" value="0">
-                                                    <input type="checkbox" name="is_stock" id="is_stock" value="1" 
-                                                        class="form-check-input mt-0"
-                                                        {{ $parent == '123' ? 'checked' : '' }}>
-                                                    <span>مخزون</span>
-                                                </label>
-                                            </div>
-                                        </div>
+                                        {{-- Hidden flags: do not show checkboxes in the form, set defaults by parent type --}}
+                                        @php
+                                            // defaults: if parent corresponds to warehouses -> is_stock
+                                            $default_is_stock = ($parent == '1104') ? 1 : 0;
+                                            // secret stays default 0 (hidden account) unless explicitly needed
+                                            $default_secret = 0;
+                                            // funds/banks -> is_fund
+                                            $default_is_fund = in_array($parent, ['1101', '1102']) ? 1 : 0;
+                                            // rentable default (keep original condition if used elsewhere)
+                                            $default_rentable = ($parent == '112') ? 1 : 0;
+                                        @endphp
 
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label for="secret" class="d-flex align-items-center gap-2">
-                                                    <input type="hidden" name="secret" value="0">
-                                                    <input type="checkbox" name="secret" id="secret" value="1" class="form-check-input mt-0">
-                                                    <span>حساب سري</span>
-                                                </label>
-                                            </div>
-                                        </div>
+                                        <input type="hidden" name="is_stock" value="{{ $default_is_stock }}">
+                                        <input type="hidden" name="secret" value="{{ $default_secret }}">
+                                        <input type="hidden" name="is_fund" value="{{ $default_is_fund }}">
+                                        <input type="hidden" name="rentable" value="{{ $default_rentable }}">
 
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label for="is_fund" class="d-flex align-items-center gap-2">
-                                                    <input type="hidden" name="is_fund" value="0">
-                                                    <input type="checkbox" name="is_fund" id="is_fund" value="1" 
-                                                        class="form-check-input mt-0"
-                                                        {{ $parent == '1101' || $parent == '1102' ? 'checked readonly' : '' }}>
-                                                    <span>حساب صندوق</span>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label for="rentable" class="d-flex align-items-center gap-2">
-                                                    <input type="hidden" name="rentable" value="0">
-                                                    <input type="checkbox" name="rentable" id="rentable" value="1" 
-                                                        class="form-check-input mt-0"
-                                                        {{ $parent == '112' ? 'checked' : '' }}>
-                                                    <span>أصل قابل للتأجير</span>
-                                                </label>
-                                            </div>
+                                        {{-- Optional small summary showing which flags are applied by default --}}
+                                        <div class="col-12 mb-3">
+                                            <small class="text-muted">
+                                                الإعدادات الافتراضية للحساب:
+                                                @if($default_is_stock) <span class="badge bg-info me-1">مخزون</span> @endif
+                                                @if($default_is_fund) <span class="badge bg-success me-1">صندوق/بنك</span> @endif
+                                                @if($default_rentable) <span class="badge bg-warning me-1">أصل قابل للتأجير</span> @endif
+                                            </small>
                                         </div>
 
                                         @if ($parent == 44)
@@ -282,8 +263,8 @@
                                                 <div class="form-group">
                                                     <label for="employees_expensses" class="d-flex align-items-center gap-2">
                                                         <input type="hidden" name="employees_expensses" value="0">
-                                                        <input type="checkbox" name="employees_expensses" 
-                                                            id="employees_expensses" value="1" 
+                                                        <input type="checkbox" name="employees_expensses"
+                                                            id="employees_expensses" value="1"
                                                             class="form-check-input mt-0">
                                                         <span>حساب رواتب للموظفين</span>
                                                     </label>

@@ -47,7 +47,29 @@
         ];
 
         $type = request('type');
-        $permName = $permissionTypes[$type] ?? 'accounts';
+
+        // Arabic labels for display without modifying the original $permissionTypes
+        $permissionLabels = [
+            'clients' => 'العملاء',
+            'suppliers' => 'الموردين',
+            'funds' => 'الصناديق',
+            'banks' => 'البنوك',
+            'employees' => 'الموظفين',
+            'warhouses' => 'المخازن',
+            'expenses' => 'المصروفات',
+            'revenues' => 'الايرادات',
+            'creditors' => 'دائنين آخرين',
+            'debtors' => 'مدينين آخرين',
+            'partners' => 'الشركاء',
+            'current-partners' => 'جاري الشريك',
+            'assets' => 'الأصول',
+            'rentables' => 'الممتلكات القابلة للإيجار',
+            'check-portfolios-incoming' => 'حافظات أوراق القبض',
+            'check-portfolios-outgoing' => 'حافظات أوراق الدفع',
+        ];
+
+        // Prefer the Arabic label when available, otherwise fall back to the original mapping
+        $permName = $permissionLabels[$type] ?? ($permissionTypes[$type] ?? 'accounts');
         $parentCode = $parentCodes[$type] ?? null;
     @endphp
 
@@ -66,7 +88,7 @@
                 @include('components.breadcrumb', [
                     'title' => $permName ? __('قائمة الحسابات - ' . $permName) : __('قائمة الحسابات'),
                     'items' => [
-                        ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
+                        ['label' => 'الصفحه الرئيسية', 'url' => route('admin.dashboard')],
                         $permName ? ['label' => $permName] : ['label' => __('قائمة الحسابات')],
                     ],
                 ])
@@ -76,9 +98,17 @@
         {{-- الأكشنات (إضافة + بحث) --}}
         <div class="row mt-3 justify-content-between align-items-center">
             <div class="col-md-3">
+                @if ($type == 'current-partners')
+                <p class="p-1 bg-primary text-white">يتم اضافة حساب مع اضافة شريك جديد</p>
+                @elseif($type && isset($permissionTypes[$type]) && auth()->user()->can('create ' . $permissionTypes[$type]))
                 <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
                     <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
                 </a>
+                @elseif(!$type)
+                <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
+                    <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
+                </a>
+                @endif
             </div>
 
             <div class="col-md-4">
@@ -86,19 +116,19 @@
                     @if($type)
                         <input type="hidden" name="type" value="{{ $type }}">
                     @endif
-                    
-                    <input 
-                        class="form-control" 
-                        type="text" 
+
+                    <input
+                        class="form-control"
+                        type="text"
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="بحث بالكود | اسم الحساب | ID"
                         autocomplete="off">
-                    
+
                     <button type="submit" class="btn btn-primary">
                         <i class="las la-search"></i>
                     </button>
-                    
+
                     @if(request('search'))
                         <a href="{{ route('accounts.index', ['type' => $type]) }}" class="btn btn-secondary">
                             <i class="las la-times"></i>
@@ -151,7 +181,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" 
+                                        <span class="text-truncate d-inline-block" style="max-width: 150px;"
                                               title="{{ $acc->address }}">
                                             {{ $acc->address ?? '__' }}
                                         </span>
@@ -159,14 +189,33 @@
                                     <td>{{ $acc->phone ?? '__' }}</td>
                                     <td><span class="badge bg-secondary">{{ $acc->id }}</span></td>
                                     <td>
+                                        @php
+                                            // تحديد نوع الحساب من الكود - ترتيب من الأطول للأقصر
+                                            $accountType = null;
+                                            $sortedCodes = $parentCodes;
+                                            uksort($sortedCodes, function($a, $b) use ($parentCodes) {
+                                                return strlen($parentCodes[$b]) - strlen($parentCodes[$a]);
+                                            });
+                                            
+                                            foreach($sortedCodes as $typeKey => $code) {
+                                                if(str_starts_with($acc->code, $code)) {
+                                                    $accountType = $typeKey;
+                                                    break;
+                                                }
+                                            }
+                                            $permissionName = $accountType && isset($permissionTypes[$accountType]) ? $permissionTypes[$accountType] : 'accounts';
+                                        @endphp
                                         <div class="d-flex gap-1 justify-content-center">
-                                            <a href="{{ route('accounts.edit', $acc->id) }}" 
+                                            @if(auth()->user()->can('edit ' . $permissionName))
+                                            <a href="{{ route('accounts.edit', $acc->id) }}"
                                                class="btn btn-success btn-sm"
                                                title="تعديل">
                                                 <i class="las la-pen"></i>
                                             </a>
+                                            @endif
 
-                                            <form action="{{ route('accounts.destroy', $acc->id) }}" 
+                                            @if($acc->deletable && auth()->user()->can('delete ' . $permissionName))
+                                            <form action="{{ route('accounts.destroy', $acc->id) }}"
                                                   method="POST"
                                                   style="display:inline;">
                                                 @csrf
@@ -177,6 +226,7 @@
                                                     <i class="las la-trash-alt"></i>
                                                 </button>
                                             </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -203,10 +253,10 @@
                     <div class="card-footer border-0 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="text-muted small">
-                                عرض {{ $accounts->firstItem() }} إلى {{ $accounts->lastItem() }} 
+                                عرض {{ $accounts->firstItem() }} إلى {{ $accounts->lastItem() }}
                                 من أصل {{ $accounts->total() }} حساب
                             </div>
-                            
+
                             <div>
                                 {{ $accounts->links() }}
                             </div>

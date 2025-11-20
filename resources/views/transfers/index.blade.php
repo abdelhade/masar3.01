@@ -6,8 +6,8 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('Transfers'),
-        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Transfers')]],
+        'title' => 'التحويلات النقدية',
+        'items' => [['label' => 'الرئيسية', 'url' => route('admin.dashboard')], ['label' => 'التحويلات النقدية']],
     ])
 
 
