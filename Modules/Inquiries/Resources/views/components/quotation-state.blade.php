@@ -55,19 +55,21 @@
 
                     <div class="col-md-2 mb-3">
                         <label class="form-label fw-bold">{{ __('Pricing Status') }}</label>
-                        <select wire:model.live="quotationState" class="form-select">
-                            <option value="">{{ __('Select status...') }}</option>
-                            @foreach ($quotationStateOptions as $state)
-                                <option value="{{ $state->value }}">
-                                    {{ $state->label() }}</option>
+                        <select wire:model="pricingStatusId" class="form-select">
+                            <option value="">{{ __('Select Status') }}</option>
+                            @foreach ($pricingStatuses as $status)
+                                <option value="{{ $status->id }}" style="color: {{ $status->color }};">
+                                    {{ __($status->name) }}
+                                </option>
                             @endforeach
                         </select>
+
                         @error('quotationState')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
 
-                    @if (in_array($this->quotationState, [
+                    {{-- @if (in_array($this->quotationState, [
                             \Modules\Inquiries\Enums\QuotationStateEnum::REJECTED->value,
                             \Modules\Inquiries\Enums\QuotationStateEnum::RE_ESTIMATION->value,
                         ]))
@@ -79,7 +81,7 @@
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    @endif
+                    @endif --}}
                     {{-- <div class="col-md-3 mb-3 d-flex flex-column">
                         <label class="form-label fw-bold">{{ __('Project') }}</label>
                         <livewire:app::searchable-select :model="Modules\Progress\Models\ProjectProgress::class" label-field="name" wire-model="projectId"

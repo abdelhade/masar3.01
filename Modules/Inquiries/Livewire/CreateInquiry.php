@@ -10,6 +10,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Modules\Inquiries\Models\ProjectSize;
+use Modules\Inquiries\Models\PricingStatus;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Inquiries\Models\InquiryDocument;
 use Modules\Inquiries\Models\{Contact, InquirieRole};
@@ -72,7 +73,7 @@ class CreateInquiry extends Component
     public $submittingDate;
     public $totalProjectValue;
     public $quotationStateReason;
-    public $quotationState;
+    // public $quotationState;
     public $totalSubmittalScore = 0;
     public $totalConditionsScore = 0;
     public $projectDifficulty = 1;
@@ -106,6 +107,10 @@ class CreateInquiry extends Component
         'relatedContacts' => [],
     ];
 
+    public $pricingStatuses = [];
+    public $pricingStatusId;
+
+
     // البيانات المحملة
     public $contacts = [];
     public $inquirieRoles = [];
@@ -124,7 +129,7 @@ class CreateInquiry extends Component
     public $konPriority;
     public $clientPriorityOptions = [];
     public $konPriorityOptions = [];
-    public $quotationStateOptions = [];
+    // public $quotationStateOptions = [];
     public $projectDocuments = [];
     public $type_note = null;
     public $submittalChecklist = [];
@@ -448,7 +453,9 @@ class CreateInquiry extends Component
     private function loadInitialData()
     {
         $this->contacts = Contact::with(['roles', 'parent'])->get()->toArray();
-        $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
+        $this->pricingStatuses = PricingStatus::active()->get();
+
+        // $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
         $this->projectSizeOptions = ProjectSize::pluck('name', 'id')->toArray();
         $this->inquiryDate = now()->format('Y-m-d');
         $this->workTypes = WorkType::where('is_active', true)->whereNull('parent_id')->get()->toArray();
@@ -791,6 +798,7 @@ class CreateInquiry extends Component
             'project_start_date' => $this->projectStartDate,
             'city_id' => $city->id ?? null,
             'town_id' => $town->id ?? null,
+            'pricing_status_id' => $this->pricingStatusId,
             'town_distance' => $this->calculatedDistance,
             'status' => $this->status,
             'status_for_kon' => $this->statusForKon,

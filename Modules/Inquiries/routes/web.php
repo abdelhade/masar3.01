@@ -11,7 +11,8 @@ use Modules\Inquiries\Http\Controllers\{
     InquiriesRoleController,
     QuotationInfoController,
     InquiryDocumentController,
-    InquiryStatisticsController
+    InquiryStatisticsController,
+    PricingStatusController
 };
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -41,6 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
 
     Route::resource('contacts', ContactController::class)->names('contacts');
+    Route::resource('pricing-statuses', PricingStatusController::class)->names('pricing-statuses');
+
 
     Route::resource('inquiry-sources', InquirySourceController::class)->names('inquiry.sources')->except(['show']);
 

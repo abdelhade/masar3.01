@@ -18,7 +18,7 @@ class ManufacturingPermissionsSeeder extends Seeder
             ],
         ];
 
-        $actions = ['view', 'create', 'edit', 'delete', 'approve', 'print'];
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
 
         foreach ($groupedPermissions as $category => $permissions) {
             foreach ($permissions as $basePermission) {

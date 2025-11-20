@@ -347,12 +347,6 @@ class PermissionSeeder extends Seeder
             'print invoices',
             'confirm requirement requests',
             'track requirement requests',
-
-            // Manufacturing
-            'view manufacturing invoices',
-            'create manufacturing invoices',
-            'edit manufacturing invoices',
-            'delete manufacturing invoices',
         ];
 
         // Create permissions

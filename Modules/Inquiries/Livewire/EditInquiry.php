@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Modules\Inquiries\Models\Contact;
 use Modules\CRM\Models\ClientCategory;
 use Modules\Inquiries\Models\InquirieRole;
+use Modules\Inquiries\Models\PricingStatus;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Inquiries\Services\DistanceCalculatorService;
 use Modules\Inquiries\Enums\{KonPriorityEnum, ClientPriorityEnum};
@@ -65,7 +66,7 @@ class EditInquiry extends Component
     public $submittingDate;
     public $totalProjectValue;
     public $quotationStateReason;
-    public $quotationState;
+    // public $quotationState;
     public $totalSubmittalScore = 0;
     public $totalConditionsScore = 0;
     public $projectDifficulty = 1;
@@ -99,7 +100,9 @@ class EditInquiry extends Component
     public $konPriorityOptions = [];
 
     public $clientCategories = [];
-    public $quotationStateOptions = [];
+    // public $quotationStateOptions = [];
+    public $pricingStatuses = [];
+    public $pricingStatusId;
 
     public $projectDocuments = [];
 
@@ -211,7 +214,8 @@ class EditInquiry extends Component
     private function loadInitialData()
     {
         $this->contacts = Contact::with(['roles', 'parent'])->get()->toArray();
-        $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
+        // $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
+        $this->pricingStatuses = PricingStatus::active()->get();
         $this->projectSizeOptions = ProjectSize::all();
         $this->inquiryDate = now()->format('Y-m-d');
         $this->workTypes = WorkType::where('is_active', true)->whereNull('parent_id')->get()->toArray();
@@ -1253,6 +1257,7 @@ class EditInquiry extends Component
             'project_difficulty' => $this->projectDifficulty,
             'tender_number' => $this->tenderNo,
             'tender_id' => $this->tenderId,
+            'pricing_status_id' => $this->pricingStatusId,
             'estimation_start_date' => $this->estimationStartDate,
             'estimation_finished_date' => $this->estimationFinishedDate,
             'submitting_date' => $this->submittingDate,

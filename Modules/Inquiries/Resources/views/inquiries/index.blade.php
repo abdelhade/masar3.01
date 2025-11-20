@@ -368,9 +368,22 @@
                                                     @endif
                                                 @elseif($column === 'quotation_state')
                                                     @if ($inquiry->quotation_state)
-                                                        <span class="badge bg-{{ $inquiry->quotation_state->color() }}">
-                                                            {{ $inquiry->quotation_state->label() }}
-                                                        </span>
+                                                        @php
+                                                            // تحويل string إلى enum إذا لزم الأمر
+                                                            $quotationState = is_string($inquiry->quotation_state)
+                                                                ? \Modules\Inquiries\Enums\QuotationStateEnum::tryFrom(
+                                                                    $inquiry->quotation_state,
+                                                                )
+                                                                : $inquiry->quotation_state;
+                                                        @endphp
+                                                        @if ($quotationState)
+                                                            <span class="badge bg-{{ $quotationState->color() }}">
+                                                                {{ $quotationState->label() }}
+                                                            </span>
+                                                        @else
+                                                            <span
+                                                                class="badge bg-secondary">{{ $inquiry->quotation_state }}</span>
+                                                        @endif
                                                     @else
                                                         -
                                                     @endif
