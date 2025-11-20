@@ -217,6 +217,34 @@ enum OperationTypeEnum: int
     }
 
     /**
+     * Get the appropriate route name for viewing this operation type
+     */
+    public function getViewRoute(): string
+    {
+        return match($this) {
+            // Invoices - use specific view route
+            self::RECEIPT,
+            self::PAYMENT ,
+            self::SALES_INVOICE,
+            self::PURCHASE_INVOICE,
+            self::SALES_RETURN,
+            self::PURCHASE_RETURN,
+            self::DAMAGE_INVOICE,
+            self::SALE_ORDER,
+            self::PURCHASE_ORDER,
+            self::QUOTATION_CUSTOMER,
+            self::QUOTATION_SUPPLIER,
+            self::WITHDRAW_ORDER,
+            self::ADD_ORDER,
+            self::INVENTORY_TRANSFER,
+            self::RESERVATION_ORDER => 'invoice.view',
+
+            // For other types, fallback to edit route (which typically shows the form in view mode)
+            default => $this->getEditRoute(),
+        };
+    }
+
+    /**
      * Check if this operation type is an invoice
      */
     public function isInvoice(): bool

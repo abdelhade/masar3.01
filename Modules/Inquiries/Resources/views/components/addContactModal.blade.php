@@ -1,186 +1,246 @@
-<!-- Modal لإضافة Contact جديد -->
-<div wire:ignore.self class="modal fade" id="addContactModal" tabindex="-1" aria-labelledby="addContactModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addContactModalLabel">
-                    <i class="fas fa-user-plus me-2"></i>
-                    {{ __('Add New') }} {{ $modalContactTypeLabel }}
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form wire:submit.prevent="saveNewContact">
-                    <div class="row">
-                        <!-- Contact Type (Person/Company) -->
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">{{ __('Contact Type') }} <span
-                                    class="text-danger">*</span></label>
-                            <div class="btn-group w-100" role="group">
-                                <input type="radio" class="btn-check" name="contactType" id="typePerson"
-                                    value="person" wire:model="newContact.type" checked>
-                                <label class="btn btn-outline-primary" for="typePerson">
-                                    <i class="fas fa-user me-2"></i>{{ __('Person') }}
-                                </label>
+<div>
+    <div wire:ignore.self class="modal fade" id="contactModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus me-2"></i>
+                        {{ __('Add New Contact') }}
+                        @if ($modalContactTypeLabel)
+                            - {{ __($modalContactTypeLabel) }}
+                        @endif
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
 
-                                <input type="radio" class="btn-check" name="contactType" id="typeCompany"
-                                    value="company" wire:model="newContact.type">
-                                <label class="btn btn-outline-primary" for="typeCompany">
-                                    <i class="fas fa-building me-2"></i>{{ __('Company') }}
+                <div class="modal-body">
+                    <form wire:submit.prevent="saveNewContact">
+                        <div class="row g-3">
+                            <!-- Name -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-signature me-1"></i>{{ __('Name') }} <span
+                                        class="text-danger">*</span>
                                 </label>
+                                <input type="text" wire:model="newContact.name" class="form-control"
+                                    placeholder="{{ __('Enter contact name') }}">
+                                @error('newContact.name')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
-                        </div>
 
-                        <!-- Name -->
-                        <div class="col-md-6 mb-3">
-                            <label for="contactName" class="form-label fw-bold">
-                                {{ __('Name') }} <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control @error('newContact.name') is-invalid @enderror"
-                                id="contactName" wire:model="newContact.name" placeholder="{{ __('Enter name') }}">
-                            @error('newContact.name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-1"></i>{{ __('Email') }}
+                                </label>
+                                <input type="email" wire:model="newContact.email" class="form-control"
+                                    placeholder="{{ __('Enter email address') }}">
+                                @error('newContact.email')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
 
-                        <!-- Email -->
-                        <div class="col-md-6 mb-3">
-                            <label for="contactEmail" class="form-label fw-bold">{{ __('Email') }}</label>
-                            <input type="email" class="form-control @error('newContact.email') is-invalid @enderror"
-                                id="contactEmail" wire:model="newContact.email" placeholder="{{ __('Enter email') }}">
-                            @error('newContact.email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <!-- Phone 1 -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-phone me-1"></i>{{ __('Phone 1') }} <span
+                                        class="text-danger">*</span>
+                                </label>
+                                <input type="text" wire:model="newContact.phone_1" class="form-control"
+                                    placeholder="{{ __('Enter primary phone') }}">
+                                @error('newContact.phone_1')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
 
-                        <!-- Phone 1 -->
-                        <div class="col-md-6 mb-3">
-                            <label for="contactPhone1" class="form-label fw-bold">
-                                {{ __('Phone 1') }} <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control @error('newContact.phone_1') is-invalid @enderror"
-                                id="contactPhone1" wire:model="newContact.phone_1"
-                                placeholder="{{ __('Enter phone number') }}">
-                            @error('newContact.phone_1')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <!-- Phone 2 -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-phone me-1"></i>{{ __('Phone 2') }}
+                                </label>
+                                <input type="text" wire:model="newContact.phone_2" class="form-control"
+                                    placeholder="{{ __('Enter secondary phone') }}">
+                                @error('newContact.phone_2')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
 
-                        <!-- Phone 2 -->
-                        <div class="col-md-6 mb-3">
-                            <label for="contactPhone2" class="form-label fw-bold">{{ __('Phone 2') }}</label>
-                            <input type="text" class="form-control" id="contactPhone2"
-                                wire:model="newContact.phone_2" placeholder="{{ __('Enter alternative phone') }}">
-                        </div>
+                            <!-- Type -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user-tag me-1"></i>{{ __('Type') }} <span
+                                        class="text-danger">*</span>
+                                </label>
+                                <select wire:model.live="newContact.type" class="form-select">
+                                    <option value="person">{{ __('Person') }}</option>
+                                    <option value="company">{{ __('Company') }}</option>
+                                </select>
+                                @error('newContact.type')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
 
-                        <!-- Contact Roles (Multi-select with Checkboxes) -->
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">
-                                {{ __('Contact Classification') }} <span class="text-danger">*</span>
-                            </label>
-                            <div class="border rounded p-3 bg-light">
-                                <div class="row">
+                            <!-- Tax Number -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-hashtag me-1"></i>{{ __('Tax Number') }}
+                                </label>
+                                <input type="text" wire:model="newContact.tax_number" class="form-control"
+                                    placeholder="{{ __('Enter tax number') }}">
+                                @error('newContact.tax_number')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <!-- Address 1 -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ __('Address 1') }}
+                                </label>
+                                <input type="text" wire:model="newContact.address_1" class="form-control"
+                                    placeholder="{{ __('Enter address') }}">
+                                @error('newContact.address_1')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <!-- Address 2 -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ __('Address 2') }}
+                                </label>
+                                <input type="text" wire:model="newContact.address_2" class="form-control"
+                                    placeholder="{{ __('Enter additional address') }}">
+                                @error('newContact.address_2')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <!-- Roles -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user-shield me-1"></i>{{ __('Roles') }} <span
+                                        class="text-danger">*</span>
+                                </label>
+                                <div class="row g-2">
                                     @foreach ($inquirieRoles as $role)
-                                        <div class="col-md-6 mb-2">
+                                        <div class="col-md-4">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox"
-                                                    value="{{ $role['id'] }}" id="role{{ $role['id'] }}"
-                                                    wire:model="selectedRoles">
-                                                <label class="form-check-label" for="role{{ $role['id'] }}">
-                                                    @switch($role['name'])
-                                                        @case('Client')
-                                                            <i class="fas fa-user-tie text-primary me-1"></i>
-                                                        @break
-
-                                                        @case('Main Contractor')
-                                                            <i class="fas fa-hard-hat text-warning me-1"></i>
-                                                        @break
-
-                                                        @case('Consultant')
-                                                            <i class="fas fa-user-graduate text-info me-1"></i>
-                                                        @break
-
-                                                        @case('Owner')
-                                                            <i class="fas fa-crown text-success me-1"></i>
-                                                        @break
-
-                                                        @case('Engineer')
-                                                            <i class="fas fa-user-cog text-danger me-1"></i>
-                                                        @break
-
-                                                        @default
-                                                            <i class="fas fa-user me-1"></i>
-                                                    @endswitch
+                                                    wire:model="selectedRoles" value="{{ $role['id'] }}"
+                                                    id="role_{{ $role['id'] }}">
+                                                <label class="form-check-label" for="role_{{ $role['id'] }}">
                                                     {{ __($role['name']) }}
                                                 </label>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
+                                @error('selectedRoles')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
-                            @error('selectedRoles')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
 
-                        <!-- Address 1 -->
-                        <div class="col-md-6 mb-3">
-                            <label for="contactAddress1" class="form-label fw-bold">{{ __('Address 1') }}</label>
-                            <input type="text" class="form-control" id="contactAddress1"
-                                wire:model="newContact.address_1" placeholder="{{ __('Enter address') }}">
-                        </div>
-
-                        <!-- Address 2 -->
-                        <div class="col-md-6 mb-3">
-                            <label for="contactAddress2" class="form-label fw-bold">{{ __('Address 2') }}</label>
-                            <input type="text" class="form-control" id="contactAddress2"
-                                wire:model="newContact.address_2"
-                                placeholder="{{ __('Enter alternative address') }}">
-                        </div>
-
-                        <!-- Tax Number (for companies) -->
-                        @if ($newContact['type'] === 'company')
-                            <div class="col-md-6 mb-3">
-                                <label for="contactTaxNumber"
-                                    class="form-label fw-bold">{{ __('Tax Number') }}</label>
-                                <input type="text" class="form-control" id="contactTaxNumber"
-                                    wire:model="newContact.tax_number" placeholder="{{ __('Enter tax number') }}">
-                            </div>
-                        @endif
-
-                        <!-- Parent Company (for persons) -->
-                        @if ($newContact['type'] === 'person')
-                            <div class="col-md-6 mb-3">
-                                <label for="contactParent"
-                                    class="form-label fw-bold">{{ __('Parent Company') }}</label>
-                                <select class="form-select" id="contactParent" wire:model="newContact.parent_id">
-                                    <option value="">{{ __('Select parent company (optional)') }}</option>
-                                    @foreach ($contacts as $contact)
-                                        @if ($contact['type'] === 'company')
-                                            <option value="{{ $contact['id'] }}">{{ $contact['name'] }}</option>
+                            <!-- Related Contacts (Checkboxes) -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">
+                                    @if ($newContact['type'] === 'person')
+                                        <i class="fas fa-building me-1"></i>{{ __('Related Companies') }}
+                                    @else
+                                        <i class="fas fa-user me-1"></i>{{ __('Related Persons') }}
+                                    @endif
+                                </label>
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="row g-2">
+                                        @if ($newContact['type'] === 'person')
+                                            @php
+                                                $filteredContacts = array_filter($contacts, function ($c) {
+                                                    return $c['type'] === 'company';
+                                                });
+                                            @endphp
+                                            @if (count($filteredContacts) > 0)
+                                                @foreach ($filteredContacts as $contact)
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                wire:model="newContact.relatedContacts"
+                                                                value="{{ $contact['id'] }}"
+                                                                id="company_{{ $contact['id'] }}">
+                                                            <label class="form-check-label"
+                                                                for="company_{{ $contact['id'] }}">
+                                                                <i class="fas fa-building me-1 text-primary"></i>
+                                                                {{ $contact['name'] }}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <div class="col-12 text-center text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    {{ __('No companies available') }}
+                                                </div>
+                                            @endif
+                                        @else
+                                            @php
+                                                $filteredContacts = array_filter($contacts, function ($c) {
+                                                    return $c['type'] === 'person';
+                                                });
+                                            @endphp
+                                            @if (count($filteredContacts) > 0)
+                                                @foreach ($filteredContacts as $contact)
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                wire:model="newContact.relatedContacts"
+                                                                value="{{ $contact['id'] }}"
+                                                                id="person_{{ $contact['id'] }}">
+                                                            <label class="form-check-label"
+                                                                for="person_{{ $contact['id'] }}">
+                                                                <i class="fas fa-user me-1 text-success"></i>
+                                                                {{ $contact['name'] }}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <div class="col-12 text-center text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    {{ __('No persons available') }}
+                                                </div>
+                                            @endif
                                         @endif
-                                    @endforeach
-                                </select>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {{ __('Select related contacts for this person/company') }}
+                                </small>
                             </div>
-                        @endif
 
-                        <!-- Notes -->
-                        <div class="col-md-12 mb-3">
-                            <label for="contactNotes" class="form-label fw-bold">{{ __('Notes') }}</label>
-                            <textarea class="form-control" id="contactNotes" rows="3" wire:model="newContact.notes"
-                                placeholder="{{ __('Enter any additional notes') }}"></textarea>
+                            <!-- Notes -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-sticky-note me-1"></i>{{ __('Notes') }}
+                                </label>
+                                <textarea wire:model="newContact.notes" class="form-control" rows="3"
+                                    placeholder="{{ __('Enter any additional notes') }}"></textarea>
+                                @error('newContact.notes')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>{{ __('Cancel') }}
-                </button>
-                <button type="button" class="btn btn-primary" wire:click="saveNewContact">
-                    <i class="fas fa-save me-2"></i>{{ __('Save Contact') }}
-                </button>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>{{ __('Cancel') }}
+                    </button>
+                    <button type="button" wire:click="saveNewContact" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>{{ __('Save Contact') }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -188,34 +248,12 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('livewire:initialized', function() {
-            Livewire.on('openContactModal', function() {
-                const modal = new bootstrap.Modal(document.getElementById('addContactModal'));
-                modal.show();
-            });
+        window.addEventListener('openContactModal', event => {
+            $('#contactModal').modal('show');
+        });
 
-            Livewire.on('closeContactModal', function() {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addContactModal'));
-                if (modal) {
-                    modal.hide();
-                }
-            });
+        window.addEventListener('closeContactModal', event => {
+            $('#contactModal').modal('hide');
         });
     </script>
 @endpush
-<style>
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-
-    .form-check-label {
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .form-check:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-        border-radius: 4px;
-    }
-</style>

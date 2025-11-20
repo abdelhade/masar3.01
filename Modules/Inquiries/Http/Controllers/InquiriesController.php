@@ -41,7 +41,8 @@ class InquiriesController extends Controller
             'contacts.roles',
             'workType',
             'inquirySource',
-            'assignedEngineers'
+            'assignedEngineers',
+            'pricingStatus',
         ]);
         $query->assignedToUser($user->id);
 
@@ -257,6 +258,8 @@ class InquiriesController extends Controller
             'consultants' => $consultants,
             'owners' => $owners,
             'engineers' => $engineers,
+            'pricing_statuses' => \Modules\Inquiries\Models\PricingStatus::where('is_active', true)
+                ->get(),
         ];
     }
 

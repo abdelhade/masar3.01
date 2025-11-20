@@ -17,10 +17,12 @@ trait ReportCalculationTrait
      */
     protected function calculateItemBalance(int $itemId): float
     {
-        return OperationItems::where('item_id', $itemId)
+        $balance = OperationItems::where('item_id', $itemId)
             ->where('isdeleted', 0)
             ->selectRaw('SUM(qty_in) - SUM(qty_out) as balance')
-            ->value('balance') ?? 0.0;
+            ->value('balance');
+        
+        return (float) ($balance ?? 0.0);
     }
 
     /**
@@ -28,11 +30,13 @@ trait ReportCalculationTrait
      */
     protected function calculateItemBalanceByWarehouse(int $itemId, int $warehouseId): float
     {
-        return OperationItems::where('item_id', $itemId)
+        $balance = OperationItems::where('item_id', $itemId)
             ->where('detail_store', $warehouseId)
             ->where('isdeleted', 0)
             ->selectRaw('SUM(qty_in) - SUM(qty_out) as balance')
-            ->value('balance') ?? 0.0;
+            ->value('balance');
+        
+        return (float) ($balance ?? 0.0);
     }
 
     /**

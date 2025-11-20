@@ -25,6 +25,8 @@ class ContactRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:inquiries_roles,id'],
+            'related_contacts' => 'nullable|array', // جديد
+            'related_contacts.*' => 'exists:contacts,id', // جديد
         ];
     }
 

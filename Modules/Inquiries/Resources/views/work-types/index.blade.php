@@ -76,6 +76,7 @@
             transition: opacity 0.3s ease;
         }
 
+
         .tree-item:hover .add-child-btn {
             opacity: 1;
         }
@@ -234,11 +235,9 @@
                         }
                     </div>
                     <div class="action-buttons">
-                        @can('Create Work Types')
-                            <button class="add-child-btn" onclick="addChild(${workType.id})" title="{{ __('Add Branch') }}">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        @endcan
+                        <button class="add-child-btn" onclick="addChild(${workType.id})" title="{{ __('Add Branch') }}">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
                 </div>
             `;

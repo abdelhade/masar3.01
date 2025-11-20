@@ -23,26 +23,21 @@
                     <i class="ti-control-record"></i>اليومية العامة
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-journal-details') }}">
                     <i class="ti-control-record"></i>كشف حساب عام
                 </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('reports.general-accounts-report') }}">
-                    <i class="ti-control-record"></i>تقرير الحسابات العام
-                </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-account-statement-report') }}">
                     <i class="ti-control-record"></i>كشف حساب عام
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.oper-aging') }}">
                     <i class="ti-control-record"></i>تقرير الأعمار
                 </a>
-            </li>
+            </li> --}}
         </ul>
     </div>
 </li>
@@ -77,16 +72,16 @@
                     <i class="ti-control-record"></i>ميزان الحسابات
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-account-statement') }}">
                     <i class="ti-control-record"></i>كشف حساب
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-account-balances-by-store') }}">
                     <i class="ti-control-record"></i>ميزان الحسابات حسب المستودع
                 </a>
-            </li>
+            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('account-movement') }}">
                     <i class="ti-control-record"></i>حركة حساب
@@ -121,21 +116,21 @@
                     <i class="ti-control-record"></i>حركة الصنف
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-inventory-report') }}">
                     <i class="ti-control-record"></i>تقرير المخزون العام
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-inventory-daily-movement-report') }}">
                     <i class="ti-control-record"></i>حركة المخزون اليومية
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-inventory-stocktaking-report') }}">
                     <i class="ti-control-record"></i>جرد المخزون
                 </a>
-            </li>
+            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.get-items-max-min-quantity') }}">
                     <i class="ti-control-record"></i>حد الطلب الأدنى والأقصى
@@ -161,21 +156,21 @@
                     <i class="ti-control-record"></i>مراقبة جرد الأصناف
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.items.check-all-quantity-limits') }}">
                     <i class="ti-control-record"></i>فحص حدود الكميات لجميع الأصناف
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.items.with-quantity-issues') }}">
                     <i class="ti-control-record"></i>الأصناف بمشاكل الكميات
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.items.clear-all-notifications') }}">
                     <i class="ti-control-record"></i>مسح جميع الإشعارات
                 </a>
-            </li>
+            </li> --}}
         </ul>
     </div>
 </li>
@@ -428,6 +423,11 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-cashbox-movement-report') }}">
                     <i class="ti-control-record"></i>حركة الصندوق
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('reports.general-cash-bank-report') }}">
+                    <i class="ti-control-record"></i>حركة البنك
                 </a>
             </li>
         </ul>

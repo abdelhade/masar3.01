@@ -20,7 +20,8 @@ class Inquiry extends Model implements HasMedia
         'status' => InquiryStatus::class,
         'status_for_kon' => StatusForKon::class,
         'kon_title' => KonTitle::class,
-        'quotation_state' => QuotationStateEnum::class,
+
+        // 'quotation_state' => QuotationStateEnum::class,
         'inquiry_date' => 'date',
         'req_submittal_date' => 'date',
         'project_start_date' => 'date',
@@ -47,9 +48,11 @@ class Inquiry extends Model implements HasMedia
             ->first();
     }
 
-    /**
-     * Get the first main contractor contact
-     */
+    public function pricingStatus()
+    {
+        return $this->belongsTo(PricingStatus::class, 'pricing_status_id');
+    }
+
     public function getMainContractorAttribute()
     {
         return $this->contacts()

@@ -24,10 +24,6 @@ class Contact extends Model
         'type' => 'string',
     ];
 
-    /**
-     * Accessor for 'cname' - returns 'name' field
-     * This makes $contact->cname work
-     */
     public function getCnameAttribute()
     {
         return $this->name;
@@ -40,7 +36,12 @@ class Contact extends Model
 
     public function roles()
     {
-        return $this->belongsToMany(InquirieRole::class, 'contact_role', 'contact_id', 'role_id');
+        return $this->belongsToMany(
+            InquirieRole::class,
+            'contact_role',
+            'contact_id',
+            'role_id'
+        );
     }
 
     public function parent()
@@ -53,6 +54,46 @@ class Contact extends Model
         return $this->hasMany(Contact::class, 'parent_id');
     }
 
+    // ========== العلاقات الجديدة Many-to-Many ==========
+
+    public function companies()
+    {
+        return $this->belongsToMany(
+            Contact::class,
+            'contact_relationships',
+            'contact_id',
+            'related_contact_id'
+        )
+            ->where('contacts.type', 'company')
+            ->withPivot('relationship_type')
+            ->withTimestamps();
+    }
+
+    public function persons()
+    {
+        return $this->belongsToMany(
+            Contact::class,
+            'contact_relationships',
+            'related_contact_id',
+            'contact_id'
+        )
+            ->where('contacts.type', 'person')
+            ->withPivot('relationship_type')
+            ->withTimestamps();
+    }
+
+    public function relatedContacts()
+    {
+        return $this->belongsToMany(
+            Contact::class,
+            'contact_relationships',
+            'contact_id',
+            'related_contact_id'
+        )
+            ->withPivot('relationship_type')
+            ->withTimestamps();
+    }
+
     public function inquiries()
     {
         return $this->belongsToMany(Inquiry::class, 'inquiry_contact')
@@ -60,25 +101,16 @@ class Contact extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Scope للحصول على الأشخاص فقط
-     */
     public function scopePersons($query)
     {
         return $query->where('type', 'person');
     }
 
-    /**
-     * Scope للحصول على الشركات فقط
-     */
     public function scopeCompanies($query)
     {
         return $query->where('type', 'company');
     }
 
-    /**
-     * Scope للحصول على Contacts بدور معين
-     */
     public function scopeWithRole($query, $roleName)
     {
         return $query->whereHas('roles', function ($q) use ($roleName) {

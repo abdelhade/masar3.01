@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Reports;
 
-use App\Models\{Item, AccHead, OperHead, JournalHead, JournalDetail, OperationItems};
+use App\Models\{Item, OperHead, JournalHead, JournalDetail, OperationItems};
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\{DB, Auth};
 use Livewire\Component;
 use Modules\Settings\Models\PublicSetting;
@@ -23,6 +24,7 @@ class InventoryDiscrepancy extends Component
     public $itemsMatching = 0;
 
     public $inventoryDifferenceAccount;
+    public $inventoryDifferenceAccountValue; // القيمة المحفوظة في الإعدادات
 
     protected $listeners = ['refreshComponent' => '$refresh'];
 
@@ -57,18 +59,41 @@ class InventoryDiscrepancy extends Component
     {
         try {
             $setting = PublicSetting::where('key', 'show_inventory_difference_account')->first();
-            if ($setting && $setting->value) {
-                // البحث عن الحساب بالكود والحصول على الـ ID
-                $account = AccHead::where('code', $setting->value)
+            
+            if (!$setting) {
+                $this->inventoryDifferenceAccount = null;
+                $this->inventoryDifferenceAccountValue = null;
+                return;
+            }
+
+            $value = trim($setting->value ?? '');
+            $this->inventoryDifferenceAccountValue = $value; // حفظ القيمة للعرض
+            
+            if (empty($value) || $value === '0' || $value === '') {
+                $this->inventoryDifferenceAccount = null;
+                return;
+            }
+
+            // محاولة البحث بالكود أولاً
+            $account = AccHead::where('code', $value)
+                ->where('isdeleted', 0)
+                ->first();
+
+            // إذا لم يُوجد بالكود، جرب البحث بالـ ID
+            if (!$account && is_numeric($value)) {
+                $account = AccHead::where('id', (int) $value)
                     ->where('isdeleted', 0)
                     ->first();
-
-                $this->inventoryDifferenceAccount = $account ? $account->id : null;
-            } else {
-                $this->inventoryDifferenceAccount = null;
             }
+
+            if (!$account) {
+                // Account not found
+            }
+
+            $this->inventoryDifferenceAccount = $account ? $account->id : null;
         } catch (\Exception $e) {
             $this->inventoryDifferenceAccount = null;
+            $this->inventoryDifferenceAccountValue = null;
         }
     }
 
@@ -115,10 +140,7 @@ class InventoryDiscrepancy extends Component
             // تحديث البيانات
             $this->refreshData();
         } catch (\Exception $e) {
-            $this->dispatch('show-alert', [
-                'type' => 'error',
-                'message' => 'حدث خطأ في تحديث البيانات: ' . $e->getMessage()
-            ]);
+            session()->flash('error', 'حدث خطأ في تحديث البيانات: ' . $e->getMessage());
         }
     }
 
@@ -183,10 +205,7 @@ class InventoryDiscrepancy extends Component
             $this->totalItems = count($this->inventoryData);
             $this->hasUnsavedChanges = false;
         } catch (\Exception $e) {
-            $this->dispatch('show-alert', [
-                'type' => 'error',
-                'message' => 'حدث خطأ في تحديث البيانات: ' . $e->getMessage()
-            ]);
+            session()->flash('error', 'حدث خطأ في تحديث البيانات: ' . $e->getMessage());
         }
     }
 
@@ -249,7 +268,6 @@ class InventoryDiscrepancy extends Component
                         $discrepancyValue = 0;
 
                         // Option 2: Log for debugging (add use Illuminate\Support\Facades\Log;)
-                        // Log::warning("Item {$itemId} has cost 0 and shortage; skipping value calc.");
 
                         // Or throw a custom alert
                         // $this->dispatch('show-alert', ['type' => 'warning', 'message' => 'تكلفة الصنف 0، لا يمكن حساب قيمة النقص.']);
@@ -275,9 +293,7 @@ class InventoryDiscrepancy extends Component
                 $this->hasUnsavedChanges = true;
             }
         } catch (\Exception $e) {
-            // Add logging for better debugging
-            \Illuminate\Support\Facades\Log::error('UpdatedQuantities error: ' . $e->getMessage() . ' | Item ID: ' . $itemId);
-            $this->safeRefreshData(); // Assuming this is defined; if not, use $this->refreshData();
+            $this->safeRefreshData();
         }
     }
 
@@ -333,10 +349,7 @@ class InventoryDiscrepancy extends Component
 
             // التحقق من وجود حساب الفروقات
             if (!$this->inventoryDifferenceAccount) {
-                $this->dispatch('show-alert', [
-                    'type' => 'error',
-                    'message' => 'حساب فروقات الجرد غير محدد في الإعدادات العامة.'
-                ]);
+                session()->flash('error', 'حساب فروقات الجرد غير محدد في الإعدادات العامة.');
                 return;
             }
 
@@ -345,7 +358,7 @@ class InventoryDiscrepancy extends Component
             $itemsToAdjust = array_filter($this->inventoryData, fn($data) => ($data['discrepancy'] ?? 0) != 0);
 
             if (empty($itemsToAdjust)) {
-                $this->dispatch('show-alert', ['type' => 'info', 'message' => 'لا توجد فروقات لتسويتها.']);
+                session()->flash('info', 'لا توجد فروقات لتسويتها.');
                 DB::rollBack();
                 return;
             }
@@ -406,11 +419,11 @@ class InventoryDiscrepancy extends Component
             $this->createJournalEntries($operHead, $totalIncreaseValue, $totalDecreaseValue);
 
             DB::commit();
-            $this->dispatch('show-alert', ['type' => 'success', 'message' => 'تم تطبيق تسوية الجرد بنجاح.']);
+            session()->flash('success', 'تم تطبيق تسوية الجرد بنجاح.');
             $this->safeRefreshData();
         } catch (\Exception $e) {
             DB::rollback();
-            $this->dispatch('show-alert', ['type' => 'error', 'message' => 'حدث خطأ: ' . $e->getMessage()]);
+            session()->flash('error', 'حدث خطأ: ' . $e->getMessage());
         }
     }
 

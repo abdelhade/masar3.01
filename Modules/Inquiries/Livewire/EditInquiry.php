@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Modules\Inquiries\Models\Contact;
 use Modules\CRM\Models\ClientCategory;
 use Modules\Inquiries\Models\InquirieRole;
+use Modules\Inquiries\Models\PricingStatus;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Inquiries\Services\DistanceCalculatorService;
 use Modules\Inquiries\Enums\{KonPriorityEnum, ClientPriorityEnum};
@@ -65,7 +66,7 @@ class EditInquiry extends Component
     public $submittingDate;
     public $totalProjectValue;
     public $quotationStateReason;
-    public $quotationState;
+    // public $quotationState;
     public $totalSubmittalScore = 0;
     public $totalConditionsScore = 0;
     public $projectDifficulty = 1;
@@ -99,7 +100,9 @@ class EditInquiry extends Component
     public $konPriorityOptions = [];
 
     public $clientCategories = [];
-    public $quotationStateOptions = [];
+    // public $quotationStateOptions = [];
+    public $pricingStatuses = [];
+    public $pricingStatusId;
 
     public $projectDocuments = [];
 
@@ -124,6 +127,7 @@ class EditInquiry extends Component
         'tax_number' => '',
         'parent_id' => null,
         'notes' => '',
+        'relatedContacts' => [],
     ];
 
     public $contacts = [];
@@ -210,7 +214,8 @@ class EditInquiry extends Component
     private function loadInitialData()
     {
         $this->contacts = Contact::with(['roles', 'parent'])->get()->toArray();
-        $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
+        // $this->quotationStateOptions = Inquiry::getQuotationStateOptions();
+        $this->pricingStatuses = PricingStatus::active()->get();
         $this->projectSizeOptions = ProjectSize::all();
         $this->inquiryDate = now()->format('Y-m-d');
         $this->workTypes = WorkType::where('is_active', true)->whereNull('parent_id')->get()->toArray();
@@ -425,14 +430,12 @@ class EditInquiry extends Component
         }
 
         $role = InquirieRole::where('name', $roleMap[$roleType])->first();
-
         if (!$role) {
             return;
         }
 
         $this->modalContactType = $role->id;
         $this->modalContactTypeLabel = $role->name;
-
         $this->newContact = [
             'name' => '',
             'email' => '',
@@ -444,11 +447,13 @@ class EditInquiry extends Component
             'tax_number' => '',
             'parent_id' => null,
             'notes' => '',
+            'relatedContacts' => [],
         ];
-
+        $this->selectedRoles = [];
         $this->resetValidation();
         $this->dispatch('openContactModal');
     }
+
 
     public function removeEngineer($engineerId)
     {
@@ -458,6 +463,7 @@ class EditInquiry extends Component
             })
         );
     }
+
     public function saveNewContact()
     {
         $this->validate([
@@ -467,44 +473,65 @@ class EditInquiry extends Component
             'newContact.type' => 'required|in:person,company',
             'selectedRoles' => 'required|array|min:1',
             'selectedRoles.*' => 'exists:inquiries_roles,id',
+            'newContact.relatedContacts' => 'nullable|array', // جديد
+            'newContact.relatedContacts.*' => 'exists:contacts,id', // جديد
         ]);
 
-        $contact = Contact::create([
-            'name' => $this->newContact['name'],
-            'email' => $this->newContact['email'],
-            'phone_1' => $this->newContact['phone_1'],
-            'phone_2' => $this->newContact['phone_2'],
-            'type' => $this->newContact['type'],
-            'address_1' => $this->newContact['address_1'],
-            'address_2' => $this->newContact['address_2'],
-            'tax_number' => $this->newContact['tax_number'],
-            'parent_id' => $this->newContact['parent_id'],
-            'notes' => $this->newContact['notes'],
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $contact->roles()->attach($this->selectedRoles);
+            $contact = Contact::create([
+                'name' => $this->newContact['name'],
+                'email' => $this->newContact['email'],
+                'phone_1' => $this->newContact['phone_1'],
+                'phone_2' => $this->newContact['phone_2'],
+                'type' => $this->newContact['type'],
+                'address_1' => $this->newContact['address_1'],
+                'address_2' => $this->newContact['address_2'],
+                'tax_number' => $this->newContact['tax_number'],
+                'notes' => $this->newContact['notes'],
+            ]);
 
-        $mainRole = InquirieRole::find($this->modalContactType);
-        if ($mainRole) {
-            $roleKey = match ($mainRole->name) {
-                'Client' => 'client',
-                'Main Contractor' => 'main_contractor',
-                'Consultant' => 'consultant',
-                'Owner' => 'owner',
-                'Engineer' => 'engineer',
-                default => 'client'
-            };
+            // ربط الـ Roles
+            $contact->roles()->attach($this->selectedRoles);
 
-            $this->selectedContacts[$roleKey] = $contact->id;
+            // ربط الشركات أو الأشخاص (Many-to-Many) - جديد
+            if (!empty($this->newContact['relatedContacts'])) {
+                if ($this->newContact['type'] === 'person') {
+                    // شخص يتبع لشركات
+                    $contact->companies()->attach($this->newContact['relatedContacts']);
+                } else {
+                    // شركة لديها أشخاص
+                    $contact->persons()->attach($this->newContact['relatedContacts']);
+                }
+            }
+
+            // تحديد الخانة المناسبة للدور الأساسي
+            $mainRole = InquirieRole::find($this->modalContactType);
+            if ($mainRole) {
+                $roleKey = match ($mainRole->name) {
+                    'Client' => 'client',
+                    'Main Contractor' => 'main_contractor',
+                    'Consultant' => 'consultant',
+                    'Owner' => 'owner',
+                    'Engineer' => 'engineer',
+                    default => 'client'
+                };
+                $this->selectedContacts[$roleKey] = $contact->id;
+            }
+
+            DB::commit();
+            $this->dispatch('closeContactModal');
+            $this->refreshContactsList();
+            $this->dispatch('contactAdded');
+            session()->flash('message', __('Added Successfully'));
+            $this->resetContactForm();
+        } catch (\Exception) {
+            DB::rollBack();
+            session()->flash('error', __('Error Adding Contact: '));
         }
-
-        $this->dispatch('closeContactModal');
-        $this->refreshContactsList();
-        $this->dispatch('contactAdded');
-
-        session()->flash('message', __('Added Successfully'));
-        $this->resetContactForm();
     }
+
 
     private function refreshContactsList()
     {
@@ -531,6 +558,7 @@ class EditInquiry extends Component
             'tax_number' => '',
             'parent_id' => null,
             'notes' => '',
+            'relatedContacts' => [],
         ];
         $this->modalContactType = null;
         $this->modalContactTypeLabel = '';
@@ -1229,6 +1257,7 @@ class EditInquiry extends Component
             'project_difficulty' => $this->projectDifficulty,
             'tender_number' => $this->tenderNo,
             'tender_id' => $this->tenderId,
+            'pricing_status_id' => $this->pricingStatusId,
             'estimation_start_date' => $this->estimationStartDate,
             'estimation_finished_date' => $this->estimationFinishedDate,
             'submitting_date' => $this->submittingDate,

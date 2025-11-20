@@ -74,6 +74,7 @@ class InvoiceController extends Controller
                 break;
             }
         }
+        $titles = $this->titles;
 
         return view('invoices.index', compact(
             'invoices',
@@ -81,7 +82,8 @@ class InvoiceController extends Controller
             'endDate',
             'invoiceType',
             'invoiceTitle',
-            'currentSection'
+            'currentSection',
+            'titles'
         ));
     }
 

@@ -214,19 +214,20 @@
                                 </select>
                             </div>
 
-                            <!-- Quotation Status Filter -->
+                            <!-- Pricing Status Filter -->
                             <div class="col-md-3">
-                                <label>{{ __('Quotation Status') }}</label>
-                                <select name="filters[quotation_state]" class="form-select">
+                                <label>{{ __('Pricing Status') }}</label>
+                                <select name="filters[pricing_status]" class="form-select">
                                     <option value="">{{ __('All') }}</option>
-                                    @foreach ($filterData['quotation_states'] as $state)
-                                        <option value="{{ $state->value }}"
-                                            {{ ($filters['quotation_state'] ?? '') == $state->value ? 'selected' : '' }}>
-                                            {{ $state->label() }}
+                                    @foreach ($filterData['pricing_statuses'] ?? [] as $status)
+                                        <option value="{{ $status->id }}"
+                                            {{ ($filters['pricing_status'] ?? '') == $status->id ? 'selected' : '' }}>
+                                            {{ __($status->name) }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
+
 
                             <!-- Date Range Filter -->
                             <div class="col-md-3">
@@ -367,10 +368,16 @@
                                                         -
                                                     @endif
                                                 @elseif($column === 'quotation_state')
-                                                    @if ($inquiry->quotation_state)
-                                                        <span class="badge bg-{{ $inquiry->quotation_state->color() }}">
-                                                            {{ $inquiry->quotation_state->label() }}
+                                                    @if ($inquiry->pricingStatus)
+                                                        <span class="badge"
+                                                            style="background-color: {{ $inquiry->pricingStatus->color }}">
+                                                            {{ __($inquiry->pricingStatus->name) }}
                                                         </span>
+                                                        @if ($inquiry->pricing_reason)
+                                                            <i class="las la-info-circle text-info"
+                                                                data-bs-toggle="tooltip"
+                                                                title="{{ $inquiry->pricing_reason }}"></i>
+                                                        @endif
                                                     @else
                                                         -
                                                     @endif

@@ -38,11 +38,11 @@
             </div>
             <div class="col-md-3">
                 <label for="date_from" class="form-label">{{ __('reports.from_date') }}</label>
-                <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request('date_from') }}">
+                <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request('date_from') ?? now()->startOfDay()->format('Y-m-d') }}">
             </div>
             <div class="col-md-3">
                 <label for="date_to" class="form-label">{{ __('reports.to_date') }}</label>
-                <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') }}">
+                <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') ?? now()->endOfDay()->format('Y-m-d') }}">
             </div>
             <div class="col-md-12 text-end mt-2">
                 <button type="submit" class="btn btn-primary">
@@ -71,7 +71,7 @@
                         <tr>
                             <td>{{ $log->created_at->format('Y-m-d') }}</td>
                             <td>{{ $log->created_at->format('H:i') }}</td>
-                            <td>{{ $log->user->name ?? '---' }}</td>
+                            <td>{{ \App\Models\User::where('id', $log->user)->first()->name ?? '---' }}</td>
                             <td>
                                 @if($log->pro_type && $log->id)
                                     @php
