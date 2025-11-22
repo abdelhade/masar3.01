@@ -10,62 +10,46 @@
     "Tasks": "المهام",
     "Tasks types": "أنواع المهام",
     "Activities": "الأنشطة",
-    "مصدر الفرص": "Chance Sources",
-    "العنوان": "Title",
-    "العمليات": "Actions",
-    "هل أنت متأكد من حذف هذا التخصص؟": "Are you sure you want to delete this major?",
-    "لا توجد بيانات": "No data available",
-    "إضافة مصدر الفرص": "create Chance Sources",
-    "تعديل مصدر الفرص": "edit Chance Sources",
-    "حذف مصدر الفرص": "delete Chance Sources",
-    "تصنيفات العملاء": "Client Categories",
-    "الرئيسيه": "Dashboard",
-    "اضافه جديده": "Add New",
-    "تصدير Excel": "Export Excel",
-    "تصدير PDF": "Export PDF",
-    "طباعة": "Print",
-    "الاسم": "Name",
-    "الوصف": "Description",
-    "هل أنت متأكد من حذف هذا التصنيف؟": "Are you sure you want to delete this category?",
-    "إضافة تصنيف عميل": "create Client Types",
-    "تعديل تصنيف عميل": "edit Client Types",
-    "حذف تصنيف عميل": "delete Client Types",
-    "جهات اتصال الشركات": "Client Contacts",
-    "الشركه": "Company",
-    "البريد الالكتروني": "Email",
-    "الهاتف": "Phone",
-    "المنصب": "Position",
-    "لا توجد بيانات مضافة حتى الآن": "No data added yet",
-    "إضافة جهات اتصال الشركات": "create Client Contacts",
-    "تعديل جهات اتصال الشركات": "edit Client Contacts",
-    "حذف جهات اتصال الشركات": "delete Client Contacts",
-    "Client Types": "أنواع العملاء",
+    "Chance Sources": "مصدر الفرص",
+    "Title": "العنوان",
+    "Actions": "العمليات",
+    "Are you sure you want to delete this major?": "هل أنت متأكد من حذف هذا التخصص؟",
+    "No data available": "لا توجد بيانات",
+    "create Chance Sources": "إضافة مصدر الفرص",
+    "edit Chance Sources": "تعديل مصدر الفرص",
+    "delete Chance Sources": "حذف مصدر الفرص",
+    "Client Categories": "تصنيفات العملاء",
     "Dashboard": "الرئيسيه",
     "Add New": "اضافه جديده",
     "Export Excel": "تصدير Excel",
     "Export PDF": "تصدير PDF",
     "Print": "طباعة",
-    "Title": "العنوان",
+    "Name": "الاسم",
+    "Description": "الوصف",
+    "Are you sure you want to delete this category?": "هل أنت متأكد من حذف هذا التصنيف؟",
+    "create Client Types": "إضافة تصنيف عميل",
+    "edit Client Types": "تعديل تصنيف عميل",
+    "delete Client Types": "حذف تصنيف عميل",
+    "Company": "الشركه",
+    "Email": "البريد الالكتروني",
+    "Phone": "الهاتف",
+    "Position": "المنصب",
+    "No data added yet": "لا توجد بيانات مضافة حتى الآن",
+    "create Client Contacts": "إضافة جهات اتصال الشركات",
+    "edit Client Contacts": "تعديل جهات اتصال الشركات",
+    "delete Client Contacts": "حذف جهات اتصال الشركات",
+    "Client Types": "أنواع العملاء",
     "Branch": "الفرع",
-    "Actions": "العمليات",
     "add client types": "إضافة انواع العملاء",
-    "edit client types": "تعديل انواع العملاء",
-    "delete client types": "حذف انواع العملاء",
     "Are you sure you want to delete this type?": "هل أنت متأكد من حذف هذا النوع؟",
-    "No data available": "لا توجد بيانات",
-    "edit Client Types": "تعديل انواع العملاء",
-    "delete Client Types": "حذف انواع العملاء",
-    "create Client Types": "إنشاء أنواع العملاء",
     "Lead Statuses": "حالات الفرص",
     "Lead Sources": "مصدر الفرص",
-    "Name": "الاسم",
     "Color": "اللون",
     "Order": "الترتيب",
     "create Lead Statuses": "إضافة حالات الفرص",
     "edit Lead Statuses": "تعديل حالات الفرص",
     "delete Lead Statuses": "حذف حالات الفرص",
     "Are you sure you want to delete this status?": "هل أنت متأكد من حذف هذه الحالة؟",
-    "No data added yet": "لا توجد بيانات مضافة حتى الآن",
     "Task Types": "انواع المهمات",
     "create Task Types": "إضافة انواع المهمات",
     "edit Task Types": "تعديل انواع المهمات",
@@ -106,7 +90,6 @@
     "Time": "الوقت",
     "Assigned To": "المكلف",
     "Select employee": "اختر الموظف",
-    "Description": "الوصف",
     "Enter activity details": "اكتب تفاصيل النشاط",
     "Save Changes": "حفظ التعديلات",
     "Cancel": "إلغاء",
@@ -114,19 +97,13 @@
     "Create": "إنشاء",
     "Add New Activity": "إضافة نشاط جديد",
     "Save": "حفظ",
-    "Chance Sources": "مصدر الفرص",
     "Enter the name": "ادخل الاسم",
     "Edit Chance Source": "تعديل مصدر الفرص",
-    "Client Categories": "تصنيفات العملاء",
     "Edit Category": "تعديل التصنيف",
     "Enter a description for the category": "اكتب وصف للتصنيف",
     "Add New Category": "إضافة تصنيف جديد",
     "Edit Contact": "تعديل جهة اتصال",
-    "Company": "الشركة",
     "Search for a company...": "ابحث عن شركة...",
-    "Email": "البريد الإلكتروني",
-    "Phone": "الهاتف",
-    "Position": "المنصب",
     "Add New Contact": "اضافة جهة اتصال جديده",
     "Edit Client Type": "تعديل نوع العميل",
     "Add New Client Type": "اضافة نوع عميل جديد",
@@ -163,51 +140,41 @@
     "-- Select Task Type --": "-- اختر نوع المهمة --",
     "The selected type is invalid. It must be a call, message, or meeting.": "النوع المختار غير صالح. يجب أن يكون مكالمة، رسالة، أو اجتماع.",
     "The time does not match the correct format (HH:MM).": "صيغة الوقت غير صحيحة (يجب أن تكون HH:MM).",
-
     "The color must be a valid hex code (e.g., #FFFFFF).": "صيغة اللون يجب أن تكون كود ست عشري صالح (مثال: #FFFFFF).",
     "This order is already taken. Please choose a different one.": "هذا الترتيب مستخدم بالفعل. الرجاء اختيار ترتيب مختلف.",
-
     "The due date must be a date after or equal to the start date.": "تاريخ التسليم يجب أن يكون تاريخًا بعد أو يساوي تاريخ البدء.",
     "Unsupported file format. Allowed formats: jpg, jpeg, png, pdf, doc, docx.": "صيغة الملف غير مدعومة. الصيغ المسموحة: jpg, jpeg, png, pdf, doc, docx.",
-
     "Activity added successfully": "تم إضافة النشاط بنجاح ✅",
     "An error occurred while processing the data": "حدث خطأ أثناء معالجة البيانات",
     "Activity updated successfully": "تم تحديث النشاط بنجاح ✏️",
     "Activity deleted successfully": "تم حذف النشاط بنجاح 🗑️",
     "An error occurred while deleting the activity": "حدث خطأ أثناء حذف النشاط",
-
     "Item created successfully": "تم إنشاء العنصر بنجاح",
     "Item updated successfully": "تم تعديل العنصر بنجاح",
     "Item deleted successfully": "تم حذف العنصر بنجاح",
     "An error occurred while deleting the item": "حدث خطأ أثناء حذف العنصر",
-
     "Category created successfully": "تم إنشاء التصنيف بنجاح",
     "Category updated successfully": "تم تعديل التصنيف بنجاح",
     "Category deleted successfully": "تم حذف التصنيف بنجاح",
     "An error occurred while deleting the category": "حدث خطأ أثناء حذف التصنيف",
-
     "Contact created successfully": "تم إنشاء جهة الاتصال بنجاح",
     "Contact updated successfully": "تم تعديل جهة الاتصال بنجاح",
     "Contact deleted successfully": "تم حذف جهة الاتصال بنجاح",
     "An error occurred while deleting the contact": "حدث خطأ أثناء حذف جهة الاتصال",
-
     "Client type created successfully": "تم إنشاء نوع العميل بنجاح",
     "Client type updated successfully": "تم تعديل نوع العميل بنجاح",
     "Client type deleted successfully": "تم حذف نوع العميل بنجاح",
     "An error occurred while deleting the client type": "حدث خطأ أثناء حذف نوع العميل",
-
     "Lead status created successfully": "تم إنشاء حالة الفرصة بنجاح",
     "Lead status updated successfully": "تم تعديل حالة الفرصة بنجاح",
     "Lead status deleted successfully": "تم حذف حالة الفرصة بنجاح",
     "An error occurred while deleting the lead status": "حدث خطأ أثناء حذف حالة الفرصة",
-
     "Task created successfully": "تم إنشاء المهمة بنجاح",
     "An error occurred while creating the task": "حدث خطأ أثناء إنشاء المهمة",
     "Task updated successfully": "تم تحديث المهمة بنجاح",
     "An error occurred while updating the task": "حدث خطأ أثناء تحديث المهمة",
     "Task deleted successfully": "تم حذف المهمة بنجاح",
     "An error occurred while deleting the task": "حدث خطأ أثناء حذف المهمة",
-
     "lead_added_successfully": "تمت إضافة الفرصة بنجاح!",
     "lead_status_updated": "تم تحديث حالة الفرصة بنجاح!",
     "lead_deleted_successfully": "تم حذف الفرصة بنجاح!"

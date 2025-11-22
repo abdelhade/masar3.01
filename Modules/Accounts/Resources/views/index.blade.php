@@ -166,13 +166,15 @@
                                     <td>{{ $accounts->firstItem() + $index }}</td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="fw-bold">{{ Str::limit($acc->aname, 40) }}</span>
-                                            <span class="text-muted small">{{ $acc->code }}</span>
+                                        
+                                            <span class="fw-bold">
+                                            <i class="text-muted small">{{ $acc->code }}</i> - {{ Str::limit($acc->aname, 40) }}</span>
+                                            
                                         </div>
                                     </td>
                                     <td>
                                         @if(!$acc->secret)
-                                            <a class="btn btn-sm btn-outline-dark"
+                                            <a class="btn btn-lg btn-outline-dark text-lg"
                                                 href="{{ route('account-movement', ['accountId' => $acc->id]) }}">
                                                 {{ number_format($acc->balance ?? 0, 2) }}
                                             </a>
