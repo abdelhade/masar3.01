@@ -333,10 +333,10 @@
                             <i class="fas fa-user-tie"></i>
                             <span>{{ __('reports.sales_by_representative') }}</span>
                         </a>
-                        <a href="{{ route('reports.sales.daily') }}" class="report-link">
+                        {{-- <a href="{{ route('reports.sales.daily') }}" class="report-link">
                             <i class="fas fa-calendar-day"></i>
                             <span>{{ __('reports.sales_daily_report') }}</span>
-                        </a>
+                        </a> --}}
                         <a href="{{ route('reports.general-sales-total-report') }}" class="report-link">
                             <i class="fas fa-chart-line"></i>
                             <span>{{ __('reports.sales_total_report') }}</span>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use App\Models\Attendance;
 use Livewire\WithPagination;
@@ -12,14 +14,13 @@ use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     use WithPagination, WithFileUploads;
-    // bootstrap pagination
     protected $paginationTheme = 'bootstrap';
 
     public string $search_employee_name = '';
     public string $search_employee_id = '';
     public string $search_fingerprint_name = '';
-    public $date_from = null;
-    public $date_to = null;
+    public ?string $date_from = null;
+    public ?string $date_to = null;
 
     // CRUD state
     public $showCreateModal = false;
@@ -126,7 +127,10 @@ new class extends Component {
         $this->resetForm();
         $this->showCreateModal = true;
     }
-    public function store()
+    /**
+     * Store new attendance record.
+     */
+    public function store(): void
     {
         $this->validate([
             'form.employee_id' => 'required|exists:employees,id',
@@ -140,17 +144,23 @@ new class extends Component {
         ]);
         
         $data = $this->form;
+        $data['user_id'] = Auth::id();
         
         Attendance::create($data);
         $this->showCreateModal = false;
         $this->resetForm();
-        session()->flash('success', __('تم إضافة الحضور بنجاح'));
+        session()->flash('success', __('hr.attendance_created_successfully'));
     }
-    public function edit($id)
+    /**
+     * Open edit modal and load attendance data.
+     *
+     * @param int $id
+     */
+    public function edit(int $id): void
     {
         $attendance = Attendance::findOrFail($id);
         if ($attendance->status === 'approved') {
-            session()->flash('error', __('لا يمكن تعديل سجل حضور معتمد'));
+            session()->flash('error', __('hr.cannot_edit_approved_attendance'));
             return;
         }
         $this->editId = $id;
@@ -162,15 +172,19 @@ new class extends Component {
             'date' => $attendance->date ? Carbon::parse($attendance->date)->format('Y-m-d') : '',
             'time' => $attendance->time,
             'status' => $attendance->status,
-            'notes' => $attendance->notes,
+            'notes' => $attendance->notes ?? '',
         ];
         $this->showEditModal = true;
     }
-    public function update()
+
+    /**
+     * Update attendance record.
+     */
+    public function update(): void
     {
         $attendance = Attendance::findOrFail($this->editId);
         if ($attendance->status === 'approved') {
-            session()->flash('error', __('لا يمكن تعديل سجل حضور معتمد'));
+            session()->flash('error', __('hr.cannot_edit_approved_attendance'));
             $this->showEditModal = false;
             return;
         }
@@ -190,29 +204,23 @@ new class extends Component {
         $attendance->update($data);
         $this->showEditModal = false;
         $this->resetForm();
-        session()->flash('success', __('تم تعديل الحضور بنجاح'));
+        session()->flash('success', __('hr.attendance_updated_successfully'));
     }
-    public function confirmDelete($id)
+
+    /**
+     * Delete attendance record.
+     *
+     * @param int $id
+     */
+    public function delete(int $id): void
     {
         $attendance = Attendance::findOrFail($id);
         if ($attendance->status === 'approved') {
-            session()->flash('error', __('لا يمكن حذف سجل حضور معتمد'));
-            return;
-        }
-        $this->deleteId = $id;
-        $this->showDeleteModal = true;
-    }
-    public function delete()
-    {
-        $attendance = Attendance::findOrFail($this->deleteId);
-        if ($attendance->status === 'approved') {
-            session()->flash('error', __('لا يمكن حذف سجل حضور معتمد'));
-            $this->showDeleteModal = false;
+            session()->flash('error', __('hr.cannot_delete_approved_attendance'));
             return;
         }
         $attendance->delete();
-        $this->showDeleteModal = false;
-        session()->flash('success', __('تم حذف الحضور بنجاح'));
+        session()->flash('success', __('hr.attendance_deleted_successfully'));
     }
     public function resetForm()
     {
@@ -229,7 +237,13 @@ new class extends Component {
         $this->editId = null;
         $this->deleteId = null;
     }
-    public function getEmployeesProperty()
+    /**
+     * Get employees list for dropdown.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Employee>
+     */
+    #[Computed]
+    public function employees()
     {
         return Employee::orderBy('name')->get();
     }
@@ -465,17 +479,17 @@ new class extends Component {
             }
 
             if ($acNoIndex === null) {
-                session()->flash('error', __('لم يتم العثور على عمود "AC-No." في ملف Excel'));
+                session()->flash('error', __('hr.column_not_found', ['column' => 'AC-No.']));
                 return;
             }
 
             if ($nameIndex === null) {
-                session()->flash('error', __('لم يتم العثور على عمود "Name" في ملف Excel'));
+                session()->flash('error', __('hr.column_not_found', ['column' => 'Name']));
                 return;
             }
 
             if ($timeIndex === null) {
-                session()->flash('error', __('لم يتم العثور على عمود "Time" في ملف Excel. يجب أن يحتوي هذا العمود على التاريخ والوقت معاً'));
+                session()->flash('error', __('hr.time_column_required'));
                 return;
             }
 
@@ -582,7 +596,11 @@ new class extends Component {
                         }
                     } catch (\Exception $e) {
                         $failedCount++;
-                        $errors[] = __('السطر ' . $row . ': التاريخ والوقت غير صحيحين - ' . $e->getMessage() . ' (' . $dateTimeValue . ')');
+                        $errors[] = __('hr.row_error_datetime_invalid', [
+                            'row' => $row,
+                            'error' => $e->getMessage(),
+                            'value' => $dateTimeValue
+                        ]);
                         continue;
                     }
 
@@ -618,20 +636,24 @@ new class extends Component {
                             ->select('finger_print_name', 'name')
                             ->get();
                         
-                        $errorMsg = __('السطر ' . $row . ': لم يتم العثور على موظف برقم بصمة ' . $acNo . ' واسم "' . $normalizedName . '"');
+                        $errorMsg = __('hr.row_error_employee_not_found', [
+                            'row' => $row,
+                            'acNo' => $acNo,
+                            'name' => $normalizedName
+                        ]);
                         
                         if ($similarEmployees->count() > 0) {
                             $names = $similarEmployees->pluck('finger_print_name')->filter()->unique()->implode(', ');
                             if ($names) {
-                                $errorMsg .= __(' (الموجود في قاعدة البيانات: ' . $names . ')');
+                                $errorMsg .= __('hr.found_in_database', ['names' => $names]);
                             } else {
                                 $regularNames = $similarEmployees->pluck('name')->filter()->unique()->implode(', ');
                                 if ($regularNames) {
-                                    $errorMsg .= __(' (الموظفون بنفس رقم البصمة: ' . $regularNames . ')');
+                                    $errorMsg .= __('hr.employees_with_same_fingerprint', ['names' => $regularNames]);
                                 }
                             }
                         } else {
-                            $errorMsg .= __(' (لا يوجد موظفون برقم البصمة ' . $acNo . ')');
+                            $errorMsg .= __('hr.no_employee_with_fingerprint', ['acNo' => $acNo]);
                         }
                         
                         $errors[] = $errorMsg;
@@ -650,7 +672,7 @@ new class extends Component {
 
                     if ($existingAttendance) {
                         $failedCount++;
-                        $errorMsg = __('السطر ' . $row . ': سجل حضور موجود مسبقاً');
+                        $errorMsg = __('hr.row_error_duplicate_record', ['row' => $row]);
                         $errors[] = $errorMsg;
                         continue;
                     }
@@ -671,7 +693,7 @@ new class extends Component {
 
                 } catch (\Exception $e) {
                     $failedCount++;
-                    $errors[] = __('السطر ' . $row . ': ' . $e->getMessage());
+                    $errors[] = __('hr.row_error_general', ['row' => $row, 'error' => $e->getMessage()]);
                 }
             }
 
@@ -685,10 +707,10 @@ new class extends Component {
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->isReadingFile = false;
-            session()->flash('error', __('خطأ في التحقق: ' . implode(', ', $e->errors()['excelFile'] ?? [])));
+            session()->flash('error', __('Validation error: :errors', ['errors' => implode(', ', $e->errors()['excelFile'] ?? [])]));
         } catch (\Exception $e) {
             $this->isReadingFile = false;
-            session()->flash('error', __('حدث خطأ أثناء استيراد الملف: ' . $e->getMessage()));
+            session()->flash('error', __('hr.import_file_error', ['error' => $e->getMessage()]));
         }
     }
 
@@ -696,7 +718,7 @@ new class extends Component {
     {
         try {
             if (empty($this->importPreviewData)) {
-                session()->flash('error', __('لا توجد بيانات للاستيراد'));
+                session()->flash('error', __('hr.no_data_to_import'));
                 return;
             }
 
@@ -737,10 +759,10 @@ new class extends Component {
 
             // Flash results
             if ($savedCount > 0) {
-                session()->flash('success', __('تم حفظ ' . $savedCount . ' سجل حضور بنجاح'));
+                session()->flash('success', __('hr.import_saved_successfully', ['count' => $savedCount]));
             }
             if ($failedCount > 0) {
-                session()->flash('error', __('فشل حفظ ' . $failedCount . ' سجل'));
+                session()->flash('error', __('hr.import_failed_count', ['count' => $failedCount]));
             }
 
             // Reset and close modal
@@ -749,7 +771,7 @@ new class extends Component {
             $this->resetPage();
 
         } catch (\Exception $e) {
-            session()->flash('error', __('حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()));
+            session()->flash('error', __('hr.import_save_error', ['error' => $e->getMessage()]));
         }
     }
 }; ?>
@@ -770,13 +792,13 @@ new class extends Component {
     @endif
 
     <div class="row mb-3">
-        @can('إضافة البصمات')
+        @can('create Attendances')
             <div class="col-12 d-flex justify-content-end gap-2">
                 <button class="btn btn-success font-family-cairo fw-bold" wire:click="openImportModal">
-                    <i class="las la-file-excel"></i> {{ __('استيراد من Excel') }}
+                    <i class="las la-file-excel me-2"></i> {{ __('hr.import_from_excel') }}
                 </button>
                 <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
-                    <i class="las la-plus"></i> {{ __('إضافة حضور') }}
+                    <i class="las la-plus me-2"></i> {{ __('hr.add_attendance') }}
                 </button>
             </div>
         @endcan
@@ -787,36 +809,43 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0 font-family-cairo fw-bold">{{ __('سجلات الحضور') }}</h5>
+                    <h5 class="mb-0 font-family-cairo fw-bold">{{ __('hr.attendance_records') }}</h5>
                     <div class="row w-100 align-items-center">
                         <div class="col-md-2">
-                            <input type="text" class="form-control font-family-cairo"
-                                placeholder="{{ __('اسم الموظف') }}"
-                                wire:model.live.debounce.500ms="search_employee_name">
+                            <input type="text" 
+                                   class="form-control font-family-cairo"
+                                   placeholder="{{ __('hr.employee_name') }}"
+                                   wire:model.live.debounce.500ms="search_employee_name">
                         </div>
                         <div class="col-md-2">
-                            <input type="text" class="form-control font-family-cairo"
-                                placeholder="{{ __('رقم الموظف') }}"
-                                wire:model.live.debounce.500ms="search_employee_id">
+                            <input type="text" 
+                                   class="form-control font-family-cairo"
+                                   placeholder="{{ __('hr.employee_number') }}"
+                                   wire:model.live.debounce.500ms="search_employee_id">
                         </div>
                         <div class="col-md-2">
-                            <input type="text" class="form-control font-family-cairo"
-                                placeholder="{{ __('اسم البصمة') }}"
-                                wire:model.live.debounce.500ms="search_fingerprint_name">
+                            <input type="text" 
+                                   class="form-control font-family-cairo"
+                                   placeholder="{{ __('hr.fingerprint_name') }}"
+                                   wire:model.live.debounce.500ms="search_fingerprint_name">
                         </div>
                         <div class="col-md-2">
-                            <input type="date" class="form-control font-family-cairo" wire:model.live="date_from"
-                                placeholder="{{ __('من تاريخ') }}">
+                            <input type="date" 
+                                   class="form-control font-family-cairo" 
+                                   wire:model.blur="date_from"
+                                   placeholder="{{ __('hr.from_date') }}">
                         </div>
                         <div class="col-md-2">
-                            <input type="date" class="form-control font-family-cairo" wire:model.live="date_to"
-                                placeholder="{{ __('إلى تاريخ') }}">
+                            <input type="date" 
+                                   class="form-control font-family-cairo" 
+                                   wire:model.blur="date_to"
+                                   placeholder="{{ __('hr.to_date') }}">
                         </div>
                         <div class="col-md-2 d-flex align-items-center mt-2 mt-md-0">
-
-                            <button type="button" class="btn btn-outline-secondary font-family-cairo fw-bold w-100"
-                                wire:click="clearFilters">
-                                <i class="las la-broom me-1"></i> {{ __('مسح الفلاتر') }}
+                            <button type="button" 
+                                    class="btn btn-outline-secondary font-family-cairo fw-bold w-100"
+                                    wire:click="clearFilters">
+                                <i class="las la-broom me-1"></i> {{ __('hr.clear_filters') }}
                             </button>
                         </div>
                     </div>
@@ -828,35 +857,33 @@ new class extends Component {
                             class="table table-striped table-hover table-bordered table-light text-center align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">{{ __('رقم') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('اسم الموظف') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('رقم الموظف') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('اسم البصمة') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('النوع') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('التاريخ') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('الوقت') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('الموقع') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('المشروع') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('الحالة') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('ملاحظات') }}</th>
-                                    @canany(['حذف البصمات', 'تعديل البصمات'])
-                                        <th class="font-family-cairo fw-bold">{{ __('الإجراءات') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.number') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.employee_name') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.employee_number') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.fingerprint_name') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.type') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.date') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.time') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.location') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.project') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.status') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.notes') }}</th>
+                                    @canany(['edit Attendances', 'delete Attendances'])
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
-
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($attendances as $attendance)
                                     <tr>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->id }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->employee->name ?? '-' }}
-                                        </td>
+                                        <td class="font-family-cairo fw-bold">{{ $attendance->employee?->name ?? '-' }}</td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->employee_id }}</td>
                                         <td class="font-family-cairo fw-bold">
                                             {{ $attendance->employee_attendance_finger_print_name }}
                                         </td>
                                         <td class="font-family-cairo fw-bold">
-                                            {{ $attendance->type == 'check_in' ? __('دخول') : __('خروج') }}
+                                            {{ $attendance->type == 'check_in' ? __('hr.check_in') : __('hr.check_out') }}
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->date->format('Y-m-d') }}
                                         </td>
@@ -866,30 +893,38 @@ new class extends Component {
                                         <td class="font-family-cairo fw-bold">{{ $attendance->project_code ?? '-' }}</td>
                                         <td class="font-family-cairo fw-bold">
                                             @if ($attendance->status == 'pending')
-                                                <span
-                                                    class="badge bg-warning font-family-cairo">{{ __('قيد المراجعة') }}</span>
+                                                <span class="badge bg-warning font-family-cairo">{{ __('hr.under_review') }}</span>
                                             @elseif($attendance->status == 'approved')
-                                                <span
-                                                    class="badge bg-success font-family-cairo">{{ __('معتمد') }}</span>
+                                                <span class="badge bg-success font-family-cairo">{{ __('hr.approved') }}</span>
                                             @else
-                                                <span
-                                                    class="badge bg-danger font-family-cairo">{{ __('مرفوض') }}</span>
+                                                <span class="badge bg-danger font-family-cairo">{{ __('hr.rejected') }}</span>
                                             @endif
                                         </td>
                                         <td class="font-family-cairo fw-bold">{{ $attendance->notes ?? '-' }}</td>
-                                        @canany(['حذف البصمات', 'تعديل البصمات'])
+                                        @canany(['edit Attendances', 'delete Attendances'])
                                             <td class="font-family-cairo fw-bold">
                                                 @if ($attendance->status !== 'approved')
-                                                    @can('تعديل البصمات')
-                                                        <button class="btn btn-sm btn-info me-1 font-family-cairo"
-                                                            wire:click="edit({{ $attendance->id }})">{{ __('تعديل') }}</button>
-                                                    @endcan
-                                                    @can('حذف البصمات')
-                                                        <button class="btn btn-sm btn-danger font-family-cairo"
-                                                            wire:click="confirmDelete({{ $attendance->id }})">{{ __('حذف') }}</button>
-                                                    @endcan
+                                                    <div class="btn-group" role="group">
+                                                        @can('edit Attendances')
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-info me-1 font-family-cairo"
+                                                                    wire:click="edit({{ $attendance->id }})"
+                                                                    title="{{ __('hr.edit') }}">
+                                                                {{ __('hr.edit') }}
+                                                            </button>
+                                                        @endcan
+                                                        @can('delete Attendances')
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-danger font-family-cairo"
+                                                                    wire:click="delete({{ $attendance->id }})"
+                                                                    wire:confirm="{{ __('hr.confirm_delete_attendance') }}"
+                                                                    title="{{ __('hr.delete') }}">
+                                                                {{ __('hr.delete') }}
+                                                            </button>
+                                                        @endcan
+                                                    </div>
                                                 @else
-                                                    <span class="text-muted">{{ __('غير قابل للتعديل/الحذف') }}</span>
+                                                    <span class="text-muted font-family-cairo">{{ __('hr.cannot_edit_delete') }}</span>
                                                 @endif
                                             </td>
                                         @endcanany
@@ -897,9 +932,12 @@ new class extends Component {
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center font-family-cairo fw-bold">
-                                            {{ __('لا توجد سجلات حضور') }}
-
+                                        <td colspan="{{ auth()->user()->canany(['edit Attendances', 'delete Attendances']) ? '12' : '11' }}" 
+                                            class="text-center font-family-cairo fw-bold py-4">
+                                            <div class="alert alert-info mb-0">
+                                                <i class="las la-info-circle me-2"></i>
+                                                {{ __('hr.no_attendance_records') }}
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -922,17 +960,17 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo">{{ __('إضافة حضور') }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.add_attendance') }}</h5>
                         <button type="button" class="btn-close" wire:click="$set('showCreateModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <form wire:submit.prevent="store">
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('الموظف') }}</label>
+                                <label class="form-label font-family-cairo fw-bold">{{ __('hr.employee') }} <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.employee_id">
+                                    wire:model.blur="form.employee_id" required>
                                     <option class="text-muted font-family-cairo fw-bold font-14" value="">
-                                        {{ __('اختر الموظف') }}
+                                        {{ __('hr.select_employee_option') }}
                                     </option>
                                     @foreach ($this->employees as $employee)
                                         <option class="font-family-cairo fw-bold font-14" value="{{ $employee->id }}">
@@ -963,7 +1001,7 @@ new class extends Component {
                             <div class="mb-3">
                                 <label class="form-label font-family-cairo">{{ __('النوع') }}</label>
                                 <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.type">
+                                    wire:model.blur="form.type">
                                     <option class="font-family-cairo fw-bold font-14" value="check_in">
                                         {{ __('دخول') }}
                                     </option>
@@ -978,7 +1016,7 @@ new class extends Component {
                             <div class="mb-3">
                                 <label class="form-label font-family-cairo">{{ __('التاريخ') }}</label>
                                 <input type="date" class="form-control font-family-cairo"
-                                    wire:model.live="form.date">
+                                    wire:model.blur="form.date">
                                 @error('form.date')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
@@ -994,7 +1032,7 @@ new class extends Component {
                                 <label
                                     class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
                                 <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.status">
+                                    wire:model.blur="form.status">
                                     <option class="font-family-cairo fw-bold font-14" value="pending">
                                         {{ __('قيد المراجعة') }}
                                     </option>
@@ -1012,7 +1050,7 @@ new class extends Component {
                             <div class="mb-3">
                                 <label
                                     class="form-label font-family-cairo fw-bold font-14">{{ __('ملاحظات') }}</label>
-                                <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.live="form.notes"></textarea>
+                                <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.blur="form.notes"></textarea>
                                 @error('form.notes')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
@@ -1035,19 +1073,18 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo">{{ __('تعديل الحضور') }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.edit_attendance') }}</h5>
                         <button type="button" class="btn-close" wire:click="$set('showEditModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <form wire:submit.prevent="update">
                             {{-- Same fields as create modal, but bound to form and update --}}
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('الموظف') }}</label>
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.employee') }} <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.employee_id">
+                                    wire:model.blur="form.employee_id" required>
                                     <option class="text-muted font-family-cairo fw-bold font-14" value="">
-                                        {{ __('اختر الموظف') }}
+                                        {{ __('hr.select_employee_option') }}
                                     </option>
                                     @foreach ($this->employees as $employee)
                                         <option class="font-family-cairo fw-bold font-14"
@@ -1061,33 +1098,34 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('رقم البصمة') }}</label>
-                                <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                    value="{{ $this->form['employee_attendance_finger_print_id'] }}" disabled>
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.fingerprint_number') }}</label>
+                                <input type="text" 
+                                       class="form-control font-family-cairo fw-bold font-14"
+                                       value="{{ $this->form['employee_attendance_finger_print_id'] }}" 
+                                       disabled>
                                 @error('form.employee_attendance_finger_print_id')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('اسم البصمة') }}</label>
-                                <input type="text" class="form-control font-family-cairo fw-bold font-14"
-                                    value="{{ $this->form['employee_attendance_finger_print_name'] }}" disabled>
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.fingerprint_name') }}</label>
+                                <input type="text" 
+                                       class="form-control font-family-cairo fw-bold font-14"
+                                       value="{{ $this->form['employee_attendance_finger_print_name'] }}" 
+                                       disabled>
                                 @error('form.employee_attendance_finger_print_name')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('النوع') }}</label>
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.type') }} <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.type">
+                                    wire:model.blur="form.type" required>
                                     <option class="font-family-cairo fw-bold font-14" value="check_in">
-                                        {{ __('دخول') }}
+                                        {{ __('hr.check_in') }}
                                     </option>
                                     <option class="font-family-cairo fw-bold font-14" value="check_out">
-                                        {{ __('خروج') }}
+                                        {{ __('hr.check_out') }}
                                     </option>
                                 </select>
                                 @error('form.type')
@@ -1095,36 +1133,37 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('التاريخ') }}</label>
-                                <input type="date" class="form-control font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.date">
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.date') }} <span class="text-danger">*</span></label>
+                                <input type="date" 
+                                       class="form-control font-family-cairo fw-bold font-14"
+                                       wire:model.blur="form.date" 
+                                       required>
                                 @error('form.date')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('الوقت') }}</label>
-                                <input type="time" class="form-control font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.time">
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.time') }} <span class="text-danger">*</span></label>
+                                <input type="time" 
+                                       class="form-control font-family-cairo fw-bold font-14"
+                                       wire:model.blur="form.time" 
+                                       required>
                                 @error('form.time')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.status') }} <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold font-14"
-                                    wire:model.live="form.status">
+                                    wire:model.blur="form.status" required>
                                     <option class="font-family-cairo fw-bold font-14" value="pending">
-                                        {{ __('قيد المراجعة') }}
+                                        {{ __('hr.under_review') }}
                                     </option>
                                     <option class="font-family-cairo fw-bold font-14" value="approved">
-                                        {{ __('معتمد') }}
+                                        {{ __('hr.approved') }}
                                     </option>
                                     <option class="font-family-cairo fw-bold font-14" value="rejected">
-                                        {{ __('مرفوض') }}
+                                        {{ __('hr.rejected') }}
                                     </option>
                                 </select>
                                 @error('form.status')
@@ -1132,19 +1171,19 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('ملاحظات') }}</label>
-                                <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.live="form.notes"></textarea>
+                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.notes') }}</label>
+                                <textarea class="form-control font-family-cairo fw-bold font-14" 
+                                          wire:model.blur="form.notes"
+                                          rows="3"></textarea>
                                 @error('form.notes')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary font-family-cairo"
-                                    wire:click="$set('showEditModal', false)">{{ __('إلغاء') }}</button>
+                                    wire:click="$set('showEditModal', false)">{{ __('hr.cancel') }}</button>
                                 <button type="submit"
-                                    class="btn btn-primary font-family-cairo">{{ __('حفظ التعديلات') }}</button>
-
+                                    class="btn btn-primary font-family-cairo">{{ __('hr.save_changes') }}</button>
                             </div>
                         </form>
                     </div>
@@ -1159,18 +1198,18 @@ new class extends Component {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo">{{ __('تأكيد الحذف') }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.confirm_delete') }}</h5>
                         <button type="button" class="btn-close"
                             wire:click="$set('showDeleteModal', false)"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="font-family-cairo">{{ __('هل أنت متأكد من حذف هذا السجل؟') }}</p>
+                        <p class="font-family-cairo">{{ __('hr.confirm_delete_attendance') }}</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary font-family-cairo"
-                            wire:click="$set('showDeleteModal', false)">{{ __('إلغاء') }}</button>
+                            wire:click="$set('showDeleteModal', false)">{{ __('hr.cancel') }}</button>
                         <button type="button" class="btn btn-danger font-family-cairo"
-                            wire:click="delete">{{ __('حذف') }}</button>
+                            wire:click="delete">{{ __('hr.delete') }}</button>
                     </div>
                 </div>
             </div>
@@ -1183,36 +1222,37 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo">{{ __('استيراد بيانات البصمات من Excel') }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.import_attendance_from_excel') }}</h5>
                         <button type="button" class="btn-close"
                             wire:click="$set('showImportModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <p class="font-family-cairo mb-2">{{ __('ملاحظات مهمة:') }}</p>
+                            <p class="font-family-cairo mb-2 fw-bold">{{ __('hr.important_notes') }}</p>
                             <ul class="font-family-cairo" style="font-size: 0.9rem;">
-                                <li>{{ __('يجب أن يحتوي ملف Excel على عمود "AC-No." (إجباري) الذي يمثل رقم البصمة') }}</li>
-                                <li>{{ __('يجب أن يحتوي ملف Excel على عمود "Name" (إجباري) الذي يمثل اسم البصمة') }}</li>
-                                <li>{{ __('يجب أن يحتوي ملف Excel على عمود "Time" (إجباري) الذي يحتوي على التاريخ والوقت معاً') }}</li>
-                                <li>{{ __('تنسيق عمود Time: "DD/MM/YYYY HH:MM ص" أو "DD/MM/YYYY HH:MM م" (مثال: "03/01/2025 04:20 ص")') }}</li>
-                                <li>{{ __('سيتم البحث عن الموظف بناءً على رقم البصمة (AC-No.) واسم البصمة (Name) معاً') }}</li>
-                                <li>{{ __('سيتم تحديد نوع البصمة (دخول/خروج) تلقائياً بناءً على وقت البصمة ونطاق الوردية') }}</li>
-                                <li>{{ __('التاريخ والوقت إجباريان لأن المعالجة والرواتب تعتمد عليهما') }}</li>
-                                <li>{{ __('إذا لم يتم العثور على الموظف أو كانت البيانات غير صحيحة، سيتم تخطي السجل') }}</li>
-                                <li>{{ __('السجلات المكررة (نفس الموظف، التاريخ، والوقت) سيتم تخطيها') }}</li>
+                                <li>{{ __('hr.excel_ac_no_column_required') }}</li>
+                                <li>{{ __('hr.excel_name_column_required') }}</li>
+                                <li>{{ __('hr.excel_time_column_required') }}</li>
+                                <li>{{ __('hr.excel_time_column_format') }}</li>
+                                <li>{{ __('hr.employee_search_fingerprint') }}</li>
+                                <li>{{ __('hr.attendance_type_auto_determined') }}</li>
+                                <li>{{ __('hr.date_time_required_processing') }}</li>
+                                <li>{{ __('hr.employee_not_found_skipped') }}</li>
+                                <li>{{ __('hr.duplicate_records_skipped') }}</li>
                             </ul>
                         </div>
                         <form wire:submit.prevent="importExcel">
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold">{{ __('ملف Excel') }}</label>
-                                <input type="file" class="form-control font-family-cairo" 
-                                    accept=".xls,.xlsx,.csv"
-                                    wire:model="excelFile"
-                                    @if($isReadingFile || $isFileRead) disabled @endif>
+                                <label class="form-label font-family-cairo fw-bold">{{ __('hr.excel_file') }}</label>
+                                <input type="file" 
+                                       class="form-control font-family-cairo" 
+                                       accept=".xls,.xlsx,.csv"
+                                       wire:model="excelFile"
+                                       @if($isReadingFile || $isFileRead) disabled @endif>
                                 @error('excelFile')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
-                                <small class="text-muted font-family-cairo">{{ __('صيغ المدعومة: .xls, .xlsx, .csv') }}</small>
+                                <small class="text-muted font-family-cairo">{{ __('hr.supported_formats') }}</small>
                             </div>
 
                             {{-- Progress Section --}}
@@ -1222,7 +1262,7 @@ new class extends Component {
                                         <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
                                             <span class="visually-hidden">جاري القراءة...</span>
                                         </div>
-                                        <span class="font-family-cairo fw-bold">{{ __('جاري قراءة وتحليل الملف...') }}</span>
+                                        <span class="font-family-cairo fw-bold">{{ __('hr.reading_file') }}</span>
                                     </div>
                                     @if($importTotalRows > 0)
                                         <div class="progress mb-2" style="height: 25px;">
@@ -1233,12 +1273,12 @@ new class extends Component {
                                                  aria-valuemin="0" 
                                                  aria-valuemax="{{ $importTotalRows }}">
                                                 <span class="font-family-cairo fw-bold text-white">
-                                                    {{ $importProgress }} / {{ $importTotalRows }} صف
+                                                    {{ $importProgress }} / {{ $importTotalRows }} {{ __('Rows') }}
                                                 </span>
                                             </div>
                                         </div>
                                         <small class="text-muted font-family-cairo">
-                                            {{ __('تم معالجة') }} {{ $importProgress }} {{ __('من') }} {{ $importTotalRows }} {{ __('صف') }}
+                                            {{ __('hr.processed') }} {{ $importProgress }} {{ __('hr.of') }} {{ $importTotalRows }} {{ __('hr.rows') }}
                                         </small>
                                     @endif
                                 </div>
@@ -1251,28 +1291,28 @@ new class extends Component {
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="las la-check-circle me-2" style="font-size: 1.5rem; color: #28a745;"></i>
                                         <span class="font-family-cairo fw-bold" style="font-size: 1.1rem;">
-                                            {{ __('تم رفع وتحليل الملف بنجاح') }}
+                                            {{ __('hr.file_read_successfully') }}
                                         </span>
                                     </div>
                                     <div class="mt-2">
                                         <span class="badge bg-success me-2 font-family-cairo">
-                                            {{ __('ناجح:') }} {{ $importSuccessCount }}
+                                            {{ __('hr.successful') }} {{ $importSuccessCount }}
                                         </span>
                                         @if($importFailedCount > 0)
                                             <span class="badge bg-danger me-2 font-family-cairo">
-                                                {{ __('فشل:') }} {{ $importFailedCount }}
+                                                {{ __('hr.failed') }} {{ $importFailedCount }}
                                             </span>
                                         @endif
                                     </div>
                                     @if($importFailedCount > 0 && count($importErrors) > 0 && count($importErrors) <= 5)
                                         <div class="mt-2">
                                             <small class="text-danger font-family-cairo">
-                                                <strong>{{ __('الأخطاء:') }}</strong><br>
+                                                <strong>{{ __('hr.errors') }}</strong><br>
                                                 @foreach(array_slice($importErrors, 0, 5) as $error)
                                                     • {{ $error }}<br>
                                                 @endforeach
                                                 @if(count($importErrors) > 5)
-                                                    ... {{ __('و') }} {{ count($importErrors) - 5 }} {{ __('أخطاء أخرى') }}
+                                                    ... {{ __('hr.and') }} {{ count($importErrors) - 5 }} {{ __('hr.other_errors') }}
                                                 @endif
                                             </small>
                                         </div>
@@ -1284,7 +1324,7 @@ new class extends Component {
                                 <button type="button" class="btn btn-secondary font-family-cairo"
                                     wire:click="resetImportState(); $set('showImportModal', false)"
                                     @if($isReadingFile) disabled @endif>
-                                    {{ __('إلغاء') }}
+                                    {{ __('hr.cancel') }}
                                 </button>
                                 
                                 @if(!$isFileRead)
@@ -1292,11 +1332,11 @@ new class extends Component {
                                         wire:loading.attr="disabled"
                                         @if($isReadingFile || !$excelFile) disabled @endif>
                                         <span wire:loading.remove wire:target="importExcel">
-                                            <i class="las la-file-upload me-1"></i> {{ __('قراءة وتحليل الملف') }}
+                                            <i class="las la-file-upload me-1"></i> {{ __('hr.read_and_analyze_file') }}
                                         </span>
                                         <span wire:loading wire:target="importExcel">
                                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                            {{ __('جاري القراءة...') }}
+                                            {{ __('hr.reading_file') }}
                                         </span>
                                     </button>
                                 @else
@@ -1304,11 +1344,11 @@ new class extends Component {
                                         wire:click="confirmImport"
                                         wire:loading.attr="disabled">
                                         <span wire:loading.remove wire:target="confirmImport">
-                                            <i class="las la-save me-1"></i> {{ __('تأكيد حفظ البيانات') }}
+                                            <i class="las la-save me-1"></i> {{ __('hr.confirm_save_data') }}
                                         </span>
                                         <span wire:loading wire:target="confirmImport">
                                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                            {{ __('جاري الحفظ...') }}
+                                            {{ __('hr.saving_data') }}
                                         </span>
                                     </button>
                                 @endif

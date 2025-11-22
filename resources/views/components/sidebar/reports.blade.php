@@ -190,16 +190,16 @@
                     <i class="ti-control-record"></i>تقرير المبيعات العام
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.sales.daily') }}">
                     <i class="ti-control-record"></i>المبيعات اليومية
                 </a>
-            </li>
-            <li class="nav-item">
+            </li> --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.general-sales-daily-report') }}">
                     <i class="ti-control-record"></i>تقرير المبيعات اليومية العام
                 </a>
-            </li>
+            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('reports.sales.total') }}">
                     <i class="ti-control-record"></i>المبيعات إجماليات

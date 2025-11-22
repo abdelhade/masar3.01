@@ -10,6 +10,6 @@
     ])
 
 
-<livewire:reports.sales.manage-item-sales />
+<livewire:sales.manage-item-sales />
  
 @endsection

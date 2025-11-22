@@ -25,6 +25,7 @@ class RoleAndPermissionSeeder extends Seeder
             'POS' => ['POS System', 'POS Transaction', 'POS Reports', 'POS Settings'],
             'Reports' => ['Financial Reports', 'Sales Reports', 'Inventory Reports'],
             'Settings' => ['System Settings'],
+            
         ];
 
         $actions = ['view', 'create', 'edit', 'delete', 'print'];

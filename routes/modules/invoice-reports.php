@@ -43,6 +43,3 @@ Route::get(
     '/reports/customer-quotations-comparison',
     [InvoiceReportController::class, 'customerQuotationsComparisonReport']
 )->name('reports.customer-quotations-comparison');
-
-Route::get('/reports/sales/daily', [salesReportController::class, 'daily'])
-    ->name('reports.sales.daily');

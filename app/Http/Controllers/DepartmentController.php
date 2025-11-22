@@ -9,10 +9,10 @@ class DepartmentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view departments')->only(['index']);
-        $this->middleware('can:create departments')->only(['create', 'store']);
-        $this->middleware('can:edit departments')->only(['update', 'edit']);
-        $this->middleware('can:delete departments')->only(['destroy']);
+        $this->middleware('can:view Departments')->only(['index']);
+        $this->middleware('can:create Departments')->only(['create', 'store']);
+        $this->middleware('can:edit Departments')->only(['update', 'edit']);
+        $this->middleware('can:delete Departments')->only(['destroy']);
     }
 
     public function index()

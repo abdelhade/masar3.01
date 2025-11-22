@@ -9,10 +9,10 @@ class StateController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view states')->only(['index']);
-        $this->middleware('can:create states')->only(['create', 'store']);
-        $this->middleware('can:edit states')->only(['update', 'edit']);
-        $this->middleware('can:delete states')->only(['destroy']);
+        $this->middleware('can:view States')->only(['index']);
+        $this->middleware('can:create States')->only(['create', 'store']);
+        $this->middleware('can:edit States')->only(['update', 'edit']);
+        $this->middleware('can:delete States')->only(['destroy']);
     }
 
     public function index()

@@ -19,6 +19,7 @@ use Modules\Branches\database\seeders\{AttachUserToDefaultBranchSeeder, BranchSe
 use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensionsSeeder};
 use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
 use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
+use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
 
 
 class DatabaseSeeder extends Seeder
@@ -70,6 +71,7 @@ class DatabaseSeeder extends Seeder
             RentalsPermissionsSeeder::class,
             InstallmentsPermissionsSeeder::class,
             PermissionSeeder::class,
+            HRPermissionsSeeder::class,
             PermissionSelectiveOptionsSeeder::class,
             InvoicesPermissionsSeeder::class,
             InvoiceTemplatesDiscountsPermissionsSeeder::class,

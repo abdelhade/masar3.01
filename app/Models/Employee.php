@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Modules\Branches\Models\Branch;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,6 +24,85 @@ class Employee extends Model implements HasMedia
     ];
 
     protected $guarded = ['id'];
+
+    // Mapping arrays for marital_status, education, and status
+    private static $maritalStatusMap = [
+        'single' => 'غير متزوج',
+        'married' => 'متزوج',
+        'divorced' => 'مطلق',
+        'widowed' => 'أرمل',
+    ];
+
+    private static $educationMap = [
+        'diploma' => 'دبلوم',
+        'bachelor' => 'بكالوريوس',
+        'master' => 'ماجستير',
+        'doctorate' => 'دكتوراه',
+    ];
+
+    private static $statusMap = [
+        'active' => 'مفعل',
+        'inactive' => 'معطل',
+    ];
+
+    // Mutators: Convert English to Arabic when saving
+    public function setMaritalStatusAttribute($value)
+    {
+        if ($value && isset(self::$maritalStatusMap[$value])) {
+            $this->attributes['marital_status'] = self::$maritalStatusMap[$value];
+        } else {
+            $this->attributes['marital_status'] = $value;
+        }
+    }
+
+    public function setEducationAttribute($value)
+    {
+        if ($value && isset(self::$educationMap[$value])) {
+            $this->attributes['education'] = self::$educationMap[$value];
+        } else {
+            $this->attributes['education'] = $value;
+        }
+    }
+
+    public function setStatusAttribute($value)
+    {
+        if ($value && isset(self::$statusMap[$value])) {
+            $this->attributes['status'] = self::$statusMap[$value];
+        } else {
+            $this->attributes['status'] = $value;
+        }
+    }
+
+    // Accessors: Convert Arabic to English when reading
+    public function getMaritalStatusAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        // Convert Arabic (from DB) to English
+        $englishValue = array_search($value, self::$maritalStatusMap);
+        return $englishValue !== false ? $englishValue : $value;
+    }
+
+    public function getEducationAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        // Convert Arabic (from DB) to English
+        $englishValue = array_search($value, self::$educationMap);
+        return $englishValue !== false ? $englishValue : $value;
+    }
+
+    public function getStatusAttribute($value)
+    {
+        if (!$value) {
+            return 'active'; // Default to active
+        }
+        // Convert Arabic (from DB) to English
+        $englishValue = array_search($value, self::$statusMap);
+        return $englishValue !== false ? $englishValue : $value;
+    }
 
     protected $hidden = [
         'password',
@@ -190,12 +270,16 @@ class Employee extends Model implements HasMedia
     // Helper methods for status
     public function isActive(): bool
     {
-        return $this->status === 'مفعل';
+        // Check raw database value directly (bypass accessor)
+        $rawStatus = $this->attributes['status'] ?? null;
+        return $rawStatus === 'مفعل' || $rawStatus === 'active';
     }
 
     public function isInactive(): bool
     {
-        return $this->status === 'معطل';
+        // Check raw database value directly (bypass accessor)
+        $rawStatus = $this->attributes['status'] ?? null;
+        return $rawStatus === 'معطل' || $rawStatus === 'inactive';
     }
 
     // Helper methods for employment
