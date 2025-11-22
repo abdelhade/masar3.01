@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Contract;
 use App\Models\ContractPoint;
 use App\Models\ContractType;
@@ -8,6 +10,7 @@ use App\Models\EmployeesJob;
 use App\Models\SalaryPoint;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 
 new class extends Component {
     use WithPagination;
@@ -18,9 +21,18 @@ new class extends Component {
     public bool $isEdit = false;
     public ?int $contractId = null;
 
-    public $name, $contract_type_id, $contract_start_date, $contract_end_date, $fixed_work_hours, $additional_work_hours, $monthly_holidays, $monthly_sick_days, $information, $job_id, $job_description, $employee_id;
-
-    public $contractTypes, $jobs, $employees;
+    public string $name = '';
+    public ?int $contract_type_id = null;
+    public ?string $contract_start_date = null;
+    public ?string $contract_end_date = null;
+    public ?float $fixed_work_hours = null;
+    public ?float $additional_work_hours = null;
+    public ?float $monthly_holidays = null;
+    public ?float $monthly_sick_days = null;
+    public ?string $information = null;
+    public ?int $job_id = null;
+    public ?string $job_description = null;
+    public ?int $employee_id = null;
 
     public array $contractPoints = [];
     public array $salaryPoints = [];
@@ -72,20 +84,60 @@ new class extends Component {
         $this->salaryPoints = array_values($this->salaryPoints);
     }
 
-    public function mount()
+    /**
+     * Reset pagination when search changes.
+     */
+    public function updatingSearch(): void
     {
-        $this->contractTypes = ContractType::all();
-        $this->jobs = EmployeesJob::all();
-        $this->employees = Employee::all();
+        $this->resetPage();
     }
 
+    /**
+     * Get contract types list for dropdown.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, ContractType>
+     */
+    #[Computed]
+    public function contractTypes()
+    {
+        return ContractType::orderBy('name')->get();
+    }
+
+    /**
+     * Get jobs list for dropdown.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, EmployeesJob>
+     */
+    #[Computed]
+    public function jobs()
+    {
+        return EmployeesJob::orderBy('title')->get();
+    }
+
+    /**
+     * Get employees list for dropdown.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Employee>
+     */
+    #[Computed]
+    public function employees()
+    {
+        return Employee::orderBy('name')->get();
+    }
+
+    /**
+     * Get filtered contracts list.
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
     public function with(): array
     {
         $contracts = Contract::with(['employee', 'contract_type', 'contract_points', 'salary_points'])
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')->orWhereHas('employee', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
-                });
+                $query->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhereHas('employee', function ($q) {
+                          $q->where('name', 'like', '%' . $this->search . '%');
+                      });
             })
             ->orderByDesc('id')
             ->paginate(15);
@@ -95,10 +147,13 @@ new class extends Component {
         ];
     }
 
-    public function create()
+    /**
+     * Open create modal and reset form.
+     */
+    public function create(): void
     {
         $this->resetValidation();
-        $this->resetExcept('contractTypes', 'jobs', 'employees', 'search');
+        $this->resetExcept(['search']);
         $this->isEdit = false;
         $this->contractPoints = [];
         $this->salaryPoints = [];
@@ -107,7 +162,12 @@ new class extends Component {
         $this->showModal = true;
     }
 
-    public function edit($id)
+    /**
+     * Open edit modal and load contract data.
+     *
+     * @param int $id
+     */
+    public function edit(int $id): void
     {
         $this->resetValidation();
         $contract = Contract::with('contract_points', 'salary_points')->findOrFail($id);
@@ -123,11 +183,11 @@ new class extends Component {
         $this->additional_work_hours = $contract->additional_work_hours;
         $this->monthly_holidays = $contract->monthly_holidays;
         $this->monthly_sick_days = $contract->monthly_sick_days;
-        $this->information = $contract->information;
-        $this->job_description = $contract->job_description;
+        $this->information = $contract->information ?? '';
+        $this->job_description = $contract->job_description ?? '';
 
-        $this->contractPoints = $contract->contract_points->map(fn($p) => ['name' => $p->name, 'information' => $p->information, 'sequence' => $p->sequence])->toArray();
-        $this->salaryPoints = $contract->salary_points->map(fn($p) => ['name' => $p->name, 'information' => $p->information, 'sequence' => $p->sequence])->toArray();
+        $this->contractPoints = $contract->contract_points->map(fn($p) => ['name' => $p->name, 'information' => $p->information ?? '', 'sequence' => $p->sequence])->toArray();
+        $this->salaryPoints = $contract->salary_points->map(fn($p) => ['name' => $p->name, 'information' => $p->information ?? '', 'sequence' => $p->sequence])->toArray();
 
         if (empty($this->contractPoints)) {
             $this->addContractPointInput();
@@ -137,7 +197,11 @@ new class extends Component {
         }
         $this->showModal = true;
     }
-    public function save()
+
+    /**
+     * Save contract (create or update).
+     */
+    public function save(): void
     {
         $validatedData = $this->validate();
 
@@ -146,51 +210,62 @@ new class extends Component {
             ->toArray();
 
         if ($this->isEdit) {
-            $contract = Contract::find($this->contractId);
+            $contract = Contract::findOrFail($this->contractId);
             $contract->update($contractData);
-            session()->flash('success', __('Contract updated successfully.'));
+            session()->flash('success', __('hr.contract_updated_successfully'));
         } else {
             $contractData['created_by'] = auth()->id();
             $contract = Contract::create($contractData);
-            session()->flash('success', __('Contract created successfully.'));
+            session()->flash('success', __('hr.contract_created_successfully'));
         }
 
-        $contract->contract_points()?->delete();
+        $contract->contract_points()->delete();
         foreach ($this->contractPoints as $index => $point) {
             if (!empty($point['name'])) {
                 $contract->contract_points()->create([
                     'name' => $point['name'],
-                    'information' => $point['information'],
-                    'sequence' => $point['sequence'],
+                    'information' => $point['information'] ?? '',
+                    'sequence' => $point['sequence'] ?? ($index + 1),
                 ]);
             }
         }
 
-        $contract->salary_points()?->delete();
+        $contract->salary_points()->delete();
         foreach ($this->salaryPoints as $index => $point) {
             if (!empty($point['name'])) {
                 $contract->salary_points()->create([
                     'name' => $point['name'],
-                    'information' => $point['information'],
-                    'sequence' => $point['sequence'],
+                    'information' => $point['information'] ?? '',
+                    'sequence' => $point['sequence'] ?? ($index + 1),
                 ]);
             }
         }
 
         $this->showModal = false;
+        $this->reset(['name', 'contract_type_id', 'contract_start_date', 'contract_end_date', 'fixed_work_hours', 'additional_work_hours', 'monthly_holidays', 'monthly_sick_days', 'information', 'job_id', 'job_description', 'employee_id', 'contractPoints', 'salaryPoints', 'contractId', 'isEdit']);
     }
 
-    public function delete($id)
+    /**
+     * Delete contract.
+     *
+     * @param int $id
+     */
+    public function delete(int $id): void
     {
         $contract = Contract::findOrFail($id);
         $contract->contract_points()->delete();
         $contract->salary_points()->delete();
         $contract->delete();
 
-        session()->flash('success', __('Contract deleted successfully.'));
+        session()->flash('success', __('hr.contract_deleted_successfully'));
     }
 
-    public function view($id)
+    /**
+     * View contract details.
+     *
+     * @param int $id
+     */
+    public function view(int $id): void
     {
         $this->viewContract = Contract::with(['contract_points', 'salary_points', 'employee', 'contract_type', 'job'])->findOrFail($id);
         $this->showViewModal = true;
@@ -202,13 +277,15 @@ new class extends Component {
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
 
-            @can('إضافة العقود')
+            @can('create Contracts')
                 <button class="btn btn-primary font-family-cairo fw-bold font-14" wire:click="create">
-                    {{ __('اضافه عقد') }} <i class="las la-plus font-14"></i>
+                    <i class="las la-plus font-14 me-2"></i>{{ __('hr.add_contract') }}
                 </button>
             @endcan
-            <input type="text" class="form-control w-25" placeholder="{{ __('البحث عن العقود') }}"
-                wire:model.live.debounce.300ms="search">
+            <input type="text" 
+                   class="form-control w-25 font-family-cairo" 
+                   placeholder="{{ __('hr.search_by_title') }}"
+                   wire:model.live.debounce.300ms="search">
         </div>
 
         @if (session()->has('success'))
@@ -237,8 +314,8 @@ new class extends Component {
                                 <th class="font-family-cairo fw-bold font-14">{{ __('Start Date') }}</th>
                                 <th class="font-family-cairo fw-bold font-14">{{ __('End Date') }}</th>
 
-                                @canany(['تعديل العقود', 'حذف العقود'])
-                                    <th class="font-family-cairo fw-bold font-14">{{ __('Actions') }}</th>
+                                @canany(['edit Contracts', 'delete Contracts', 'view Contracts'])
+                                    <th class="font-family-cairo fw-bold font-14">{{ __('hr.actions') }}</th>
                                 @endcanany
                             </tr>
                         </thead>
@@ -258,32 +335,45 @@ new class extends Component {
                                     <td class="font-family-cairo fw-bold font-14">
                                         {{ $contract->contract_end_date }}
                                     </td>
-                                    @canany(['تعديل العقود', 'حذف العقود'])
+                                    @canany(['edit Contracts', 'delete Contracts', 'view Contracts'])
                                         <td class="font-family-cairo fw-bold font-14">
-                                            <button class="btn btn-primary btn-icon-square-sm font-family-cairo fw-bold"
-                                                wire:click="view({{ $contract->id }})"><i
-                                                    class="las la-eye font-18"></i></button>
-                                            @can('تعديل العقود')
-                                                <button class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
-                                                    wire:click="edit({{ $contract->id }})"><i
-                                                        class="las la-edit font-18"></i></button>
-                                            @endcan
-                                            @can('حذف العقود')
-                                                <button class="btn btn-danger btn-icon-square-sm font-family-cairo fw-bold"
-                                                    wire:click="delete({{ $contract->id }})"
-                                                    wire:confirm="{{ __('Are you sure?') }}"><i
-                                                        class="las la-trash font-18"></i></button>
-                                            @endcan
+                                            <div class="btn-group" role="group">
+                                                @can('view Contracts')
+                                                    <button type="button" 
+                                                            class="btn btn-primary btn-icon-square-sm font-family-cairo fw-bold"
+                                                            wire:click="view({{ $contract->id }})"
+                                                            title="{{ __('hr.view') }}">
+                                                        <i class="las la-eye font-18"></i>
+                                                    </button>
+                                                @endcan
+                                                @can('edit Contracts')
+                                                    <button type="button" 
+                                                            class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
+                                                            wire:click="edit({{ $contract->id }})"
+                                                            title="{{ __('hr.edit') }}">
+                                                        <i class="las la-edit font-18"></i>
+                                                    </button>
+                                                @endcan
+                                                @can('delete Contracts')
+                                                    <button type="button" 
+                                                            class="btn btn-danger btn-icon-square-sm font-family-cairo fw-bold"
+                                                            wire:click="delete({{ $contract->id }})"
+                                                            wire:confirm="{{ __('hr.confirm_delete_contract') }}"
+                                                            title="{{ __('hr.delete') }}">
+                                                        <i class="las la-trash font-18"></i>
+                                                    </button>
+                                                @endcan
+                                            </div>
                                         </td>
                                     @endcanany
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center">
-                                        <div class="alert alert-info py-3 mb-0"
-                                            style="font-size: 1.2rem; font-weight: 500;">
+                                    <td colspan="{{ auth()->user()->canany(['edit Contracts', 'delete Contracts', 'view Contracts']) ? '7' : '6' }}" 
+                                        class="text-center font-family-cairo fw-bold py-4">
+                                        <div class="alert alert-info mb-0">
                                             <i class="las la-info-circle me-2"></i>
-                                            لا توجد بيانات
+                                            {{ __('hr.no_contracts_found') }}
                                         </div>
                                     </td>
                                 </tr>
@@ -303,7 +393,7 @@ new class extends Component {
             <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ $isEdit ? __('Edit Contract') : __('Add Contract') }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ $isEdit ? __('hr.edit_contract') : __('hr.add_contract') }}</h5>
                         <button type="button" class="btn-close p-4" wire:click="$set('showModal', false)"></button>
                     </div>
                     <div class="modal-body">
@@ -313,8 +403,8 @@ new class extends Component {
                                     <!-- Basic Info Section -->
                                     <div class="card mb-4">
                                         <div class="card-header bg-light">
-                                            <h5 class="mb-0"><i class="las la-info-circle"></i>
-                                                {{ __('Basic Information') }}</h5>
+                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-info-circle"></i>
+                                                {{ __('hr.basic_information') }}</h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
@@ -322,7 +412,7 @@ new class extends Component {
                                                     <label class="form-label">{{ __('Contract Name') }}</label>
                                                     <input type="text"
                                                         class="form-control font-family-cairo fw-bold font-18"
-                                                        wire:model="name" required>
+                                                        wire:model.blur="name" required>
                                                     @error('name')
                                                         <span class="text-danger">
                                                             {{ $message }}</span>
@@ -335,10 +425,10 @@ new class extends Component {
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Contract Type') }}</label>
                                                     <select class="form-select font-family-cairo fw-bold font-18"
-                                                        wire:model="contract_type_id" required style="height: 50px;">
+                                                        wire:model.blur="contract_type_id" required style="height: 50px;">
                                                         <option class="font-family-cairo fw-bold" value="">
-                                                            {{ __('Select...') }}</option>
-                                                        @foreach ($contractTypes as $type)
+                                                            {{ __('hr.select_option') }}</option>
+                                                        @foreach ($this->contractTypes as $type)
                                                             <option value="{{ $type->id }}">{{ $type->name }}
                                                             </option>
                                                         @endforeach
@@ -350,11 +440,11 @@ new class extends Component {
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Employee') }}</label>
                                                     <select class="form-select font-family-cairo fw-bold font-18"
-                                                        wire:model="employee_id" required style="height: 50px;">
+                                                        wire:model.blur="employee_id" required style="height: 50px;">
                                                         <option class="font-family-cairo fw-bold font-14"
                                                             value="">
-                                                            {{ __('Select...') }}</option>
-                                                        @foreach ($employees as $employee)
+                                                            {{ __('hr.select_option') }}</option>
+                                                        @foreach ($this->employees as $employee)
                                                             <option class="font-family-cairo fw-bold font-14"
                                                                 value="{{ $employee->id }}">{{ $employee->name }}
                                                             </option>
@@ -371,11 +461,11 @@ new class extends Component {
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Job') }}</label>
                                                     <select class="form-select font-family-cairo fw-bold font-18"
-                                                        wire:model="job_id" required style="height: 50px;">
+                                                        wire:model.blur="job_id" required style="height: 50px;">
                                                         <option class="font-family-cairo fw-bold font-14"
                                                             value="">
-                                                            {{ __('Select...') }}</option>
-                                                        @foreach ($jobs as $job)
+                                                            {{ __('hr.select_option') }}</option>
+                                                        @foreach ($this->jobs as $job)
                                                             <option class="font-family-cairo fw-bold font-14"
                                                                 value="{{ $job->id }}">{{ $job->title }}
                                                             </option>
@@ -390,7 +480,7 @@ new class extends Component {
                                                     <label class="form-label">{{ __('Start Date') }}</label>
                                                     <input type="date"
                                                         class="form-control font-family-cairo fw-bold font-18"
-                                                        wire:model="contract_start_date" required>
+                                                        wire:model.blur="contract_start_date" required>
 
                                                     @error('contract_start_date')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -400,7 +490,7 @@ new class extends Component {
                                                     <label class="form-label">{{ __('End Date') }}</label>
                                                     <input type="date"
                                                         class="form-control font-family-cairo fw-bold font-18"
-                                                        wire:model="contract_end_date" required>
+                                                        wire:model.blur="contract_end_date" required>
 
                                                     @error('contract_end_date')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -413,20 +503,19 @@ new class extends Component {
                                     <!-- Work Hours & Details Section -->
                                     <div class="card mb-4">
                                         <div class="card-header bg-light">
-
-                                            <h5 class="mb-0"><i class="las la-clock"></i>
-                                                {{ __('Work Hours & Details') }}
+                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-clock"></i>
+                                                {{ __('hr.work_hours_details') }}
                                             </h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6 col-lg-3 mb-3">
-                                                    <label class="form-label">{{ __('Fixed Work Hours') }}</label>
+                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.fixed_work_hours') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-clock"></i></span>
                                                         <input type="number" step="0.01" class="form-control"
-                                                            wire:model="fixed_work_hours">
+                                                            wire:model.blur="fixed_work_hours">
                                                     </div>
 
                                                     @error('fixed_work_hours')
@@ -435,12 +524,12 @@ new class extends Component {
                                                 </div>
                                                 <div class="col-md-6 col-lg-3 mb-3">
                                                     <label
-                                                        class="form-label">{{ __('Additional Work Hours') }}</label>
+                                                        class="form-label font-family-cairo fw-bold">{{ __('hr.additional_work_hours') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-business-time"></i></span>
                                                         <input type="number" step="0.01" class="form-control"
-                                                            wire:model="additional_work_hours">
+                                                            wire:model.blur="additional_work_hours">
                                                     </div>
 
                                                     @error('additional_work_hours')
@@ -448,12 +537,12 @@ new class extends Component {
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 col-lg-3 mb-3">
-                                                    <label class="form-label">{{ __('Monthly Holidays') }}</label>
+                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.monthly_holidays') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-calendar"></i></span>
                                                         <input type="number" step="0.01" class="form-control"
-                                                            wire:model="monthly_holidays">
+                                                            wire:model.blur="monthly_holidays">
                                                     </div>
 
                                                     @error('monthly_holidays')
@@ -461,37 +550,37 @@ new class extends Component {
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 col-lg-3 mb-3">
-                                                    <label class="form-label">{{ __('Monthly Sick Days') }}</label>
+                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.monthly_sick_days') }}</label>
                                                     <div class="input-group">
 
                                                         <span class="input-group-text"><i
                                                                 class="las la-medkit"></i></span>
                                                         <input type="number" step="0.01" class="form-control"
-                                                            wire:model="monthly_sick_days">
+                                                            wire:model.blur="monthly_sick_days">
                                                     </div>
                                                     @error('monthly_sick_days')
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label">{{ __('Information') }}</label>
+                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-info-circle"></i></span>
 
-                                                        <textarea class="form-control" wire:model="information" rows="3"></textarea>
+                                                        <textarea class="form-control" wire:model.blur="information" rows="3"></textarea>
                                                     </div>
                                                     @error('information')
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label">{{ __('Job Description') }}</label>
+                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.job_description') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-briefcase"></i></span>
 
-                                                        <textarea class="form-control" wire:model="job_description" rows="3"></textarea>
+                                                        <textarea class="form-control" wire:model.blur="job_description" rows="3"></textarea>
                                                     </div>
                                                     @error('job_description')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -505,13 +594,13 @@ new class extends Component {
                                     <div class="card mb-4">
                                         <div
                                             class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0"><i class="las la-list-ul"></i>
-                                                {{ __('Contract Points') }}
+                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-list-ul"></i>
+                                                {{ __('hr.contract_points') }}
                                             </h5>
                                             <button type="button"
-                                                class="btn btn-md btn-primary font-family-cairo fw-bold 18"
+                                                class="btn btn-md btn-primary font-family-cairo fw-bold"
                                                 wire:click="addContractPointInput">
-                                                <i class="las la-plus font-18"></i> {{ __('Add Point') }}
+                                                <i class="las la-plus font-18 me-1"></i> {{ __('hr.add_point') }}
                                             </button>
                                         </div>
                                         <div class="card-body">
@@ -540,7 +629,7 @@ new class extends Component {
                                                                 <td>
                                                                     <input type="number"
                                                                         class="form-control form-control-sm"
-                                                                        wire:model="contractPoints.{{ $index }}.sequence"
+                                                                        wire:model.blur="contractPoints.{{ $index }}.sequence"
                                                                         required>
                                                                     @error('contractPoints.' . $index . '.sequence')
                                                                         <span
@@ -550,7 +639,7 @@ new class extends Component {
                                                                 <td>
                                                                     <input type="text"
                                                                         class="form-control form-control-sm"
-                                                                        wire:model="contractPoints.{{ $index }}.name"
+                                                                        wire:model.blur="contractPoints.{{ $index }}.name"
                                                                         required>
                                                                     @error('contractPoints.' . $index . '.name')
                                                                         <span
@@ -558,7 +647,7 @@ new class extends Component {
                                                                     @enderror
                                                                 </td>
                                                                 <td>
-                                                                    <textarea class="form-control form-control-sm" wire:model="contractPoints.{{ $index }}.information"
+                                                                    <textarea class="form-control form-control-sm" wire:model.blur="contractPoints.{{ $index }}.information"
                                                                         rows="1"></textarea>
                                                                     @error('contractPoints.' . $index . '.information')
                                                                         <span
@@ -594,13 +683,13 @@ new class extends Component {
                                     <div class="card mb-4">
                                         <div
                                             class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0"><i class="las la-money-bill"></i>
-                                                {{ __('Salary Points') }}
+                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-money-bill"></i>
+                                                {{ __('hr.salary_points') }}
                                             </h5>
                                             <button type="button"
-                                                class="btn btn-md btn-primary font-family-cairo fw-bold 18"
+                                                class="btn btn-md btn-primary font-family-cairo fw-bold"
                                                 wire:click="addSalaryPointInput">
-                                                <i class="las la-plus font-18"></i> {{ __('Add Point') }}
+                                                <i class="las la-plus font-18 me-1"></i> {{ __('hr.add_point') }}
                                             </button>
                                         </div>
                                         <div class="card-body">
@@ -629,7 +718,7 @@ new class extends Component {
                                                                 <td>
                                                                     <input type="number"
                                                                         class="form-control form-control-sm"
-                                                                        wire:model="salaryPoints.{{ $index }}.sequence"
+                                                                        wire:model.blur="salaryPoints.{{ $index }}.sequence"
                                                                         required>
                                                                     @error('salaryPoints.' . $index . '.sequence')
                                                                         <span
@@ -639,7 +728,7 @@ new class extends Component {
                                                                 <td>
                                                                     <input type="text"
                                                                         class="form-control form-control-sm"
-                                                                        wire:model="salaryPoints.{{ $index }}.name"
+                                                                        wire:model.blur="salaryPoints.{{ $index }}.name"
                                                                         required>
                                                                     @error('salaryPoints.' . $index . '.name')
                                                                         <span
@@ -647,7 +736,7 @@ new class extends Component {
                                                                     @enderror
                                                                 </td>
                                                                 <td>
-                                                                    <textarea class="form-control form-control-sm" wire:model="salaryPoints.{{ $index }}.information"
+                                                                    <textarea class="form-control form-control-sm" wire:model.blur="salaryPoints.{{ $index }}.information"
                                                                         rows="1"></textarea>
                                                                     @error('salaryPoints.' . $index . '.information')
                                                                         <span
@@ -683,10 +772,10 @@ new class extends Component {
                             <div class="modal-footer d-flex justify-content-center">
                                 <button type="button" class="btn btn-secondary font-family-cairo fw-bold font-14"
                                     wire:click="$set('showModal', false)">
-                                    <i class="las la-times"></i> {{ __('Cancel') }}
+                                    <i class="las la-times me-1"></i> {{ __('hr.cancel') }}
                                 </button>
                                 <button type="submit" class="btn btn-primary font-family-cairo fw-bold font-14">
-                                    <i class="las la-save"></i> {{ $isEdit ? __('Update') : __('Save') }}
+                                    <i class="las la-save me-1"></i> {{ $isEdit ? __('hr.update') : __('hr.save') }}
                                 </button>
                             </div>
                         </form>
@@ -701,7 +790,7 @@ new class extends Component {
             <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('View Contract') }}: {{ $viewContract?->name }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.view_contract') }}: {{ $viewContract?->name }}</h5>
                         <button type="button" class="btn-close p-4"
                             wire:click="$set('showViewModal', false)"></button>
                     </div>
@@ -711,8 +800,8 @@ new class extends Component {
                                 {{-- Basic Info --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0"><i class="las la-info-circle"></i>
-                                            {{ __('Basic Information') }}</h5>
+                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-info-circle"></i>
+                                            {{ __('hr.basic_information') }}</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
@@ -734,8 +823,8 @@ new class extends Component {
                                 {{-- Work Hours --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0"><i class="las la-clock"></i>
-                                            {{ __('Work Hours & Details') }}</h5>
+                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-clock"></i>
+                                            {{ __('hr.work_hours_details') }}</h5>
                                     </div>
                                     <div class="card-body">
                                         {{-- <div class="row">
@@ -757,17 +846,17 @@ new class extends Component {
                                                         {{ __('Information') }}:</span>
                                                 </div>
                                                 <div class="border rounded p-2 bg-light">
-                                                    {{ $viewContract->information ?: __('No information provided.') }}
+                                                    {{ $viewContract->information ?: __('hr.no_information_provided') }}
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <div class="mb-2">
-                                                    <span class="fw-bold"><i
+                                                    <span class="fw-bold font-family-cairo"><i
                                                             class="las la-briefcase text-primary"></i>
-                                                        {{ __('Job Description') }}:</span>
+                                                        {{ __('hr.job_description') }}:</span>
                                                 </div>
-                                                <div class="border rounded p-2 bg-light">
-                                                    {{ $viewContract->job_description ?: __('No job description provided.') }}
+                                                <div class="border rounded p-2 bg-light font-family-cairo">
+                                                    {{ $viewContract->job_description ?: __('hr.no_job_description_provided') }}
                                                 </div>
                                             </div>
                                         </div>
@@ -777,8 +866,8 @@ new class extends Component {
                                 {{-- Contract Points --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0"><i class="las la-list-ul"></i>
-                                            {{ __('Contract Points') }}</h5>
+                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-list-ul"></i>
+                                            {{ __('hr.contract_points') }}</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -801,13 +890,17 @@ new class extends Component {
                                                             <td class="font-family-cairo fw-bold font-14">
                                                                 {{ $point->name }}</td>
                                                             <td class="font-family-cairo fw-bold font-14">
-                                                                {{ $point->information ?: __('No information provided.') }}
+                                                                {{ $point->information ?: __('hr.no_information_provided') }}
                                                             </td>
                                                         </tr>
                                                     @empty
                                                         <tr>
-                                                            <td colspan="3" class="text-center">
-                                                                {{ __('No contract points found.') }}</td>
+                                                            <td colspan="3" class="text-center font-family-cairo fw-bold py-4">
+                                                                <div class="alert alert-info mb-0">
+                                                                    <i class="las la-info-circle me-2"></i>
+                                                                    {{ __('hr.no_contract_points_found') }}
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     @endforelse
                                                 </tbody>
@@ -819,8 +912,8 @@ new class extends Component {
                                 {{-- Salary Points --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0"><i class="las la-money-bill"></i>
-                                            {{ __('Salary Points') }}</h5>
+                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-money-bill"></i>
+                                            {{ __('hr.salary_points') }}</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -843,16 +936,15 @@ new class extends Component {
                                                             <td class="font-family-cairo fw-bold font-14">
                                                                 {{ $point->name }}</td>
                                                             <td class="font-family-cairo fw-bold font-14">
-                                                                {{ $point->information ?: __('No information provided.') }}
+                                                                {{ $point->information ?: __('hr.no_information_provided') }}
                                                             </td>
                                                         </tr>
                                                     @empty
                                                         <tr>
-                                                            <td colspan="3" class="text-center">
-                                                                <div class="alert alert-info py-3 mb-0"
-                                                                    style="font-size: 1.2rem; font-weight: 500;">
+                                                            <td colspan="3" class="text-center font-family-cairo fw-bold py-4">
+                                                                <div class="alert alert-info mb-0">
                                                                     <i class="las la-info-circle me-2"></i>
-                                                                    لا توجد بيانات
+                                                                    {{ __('hr.no_salary_points_found') }}
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -869,7 +961,7 @@ new class extends Component {
                     <div class="modal-footer d-flex justify-content-center">
                         <button type="button" class="btn btn-secondary font-family-cairo fw-bold font-14"
                             wire:click="$set('showViewModal', false)">
-                            <i class="las la-times"></i> {{ __('Close') }}
+                            <i class="las la-times me-1"></i> {{ __('hr.close') }}
                         </button>
                     </div>
 

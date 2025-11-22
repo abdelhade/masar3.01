@@ -35,12 +35,12 @@
                         <div class="col-md-3">
                             <label for="from_date">من تاريخ:</label>
                             <input type="date" name="from_date" id="from_date" class="form-control"
-                                value="{{ request('from_date') }}">
+                                value="{{ $fromDate }}">
                         </div>
                         <div class="col-md-3">
                             <label for="to_date">إلى تاريخ:</label>
                             <input type="date" name="to_date" id="to_date" class="form-control"
-                                value="{{ request('to_date') }}">
+                                value="{{ $toDate }}">
                         </div>
                         <div class="col-md-2">
                             <label>&nbsp;</label>
@@ -68,7 +68,6 @@
                                 <th>ك المبيعات</th>
                                 <th>ق المبيعات</th>
                                 <th>متوسط البيع</th>
-                                <th>س البيع</th>
                                 <th>س ش متوسط</th>
                                 <th>الربح</th>
                                 <th>% الربح/ المبيعات</th>
@@ -88,9 +87,6 @@
                                     } elseif ($averagePrice < 30 && $averagePrice > 0) {
                                         $rowClass = 'table-negative';
                                     }
-
-                                    // حساب نسبة المبيعات
-                                    $percentage = $totalSales > 0 ? ($item->total_sales / $totalSales) * 100 : 0;
                                 @endphp
                                 <tr class="{{ $rowClass }}">
                                     <td>{{ $salesItems->firstItem() + $index }}</td>
@@ -99,10 +95,9 @@
                                     <td class="text-end">{{ number_format($item->invoices_count, 0) }}</td>
                                     <td class="text-end">{{ number_format($item->total_sales, 2) }}</td>
                                     <td class="text-end">{{ number_format($averagePrice, 2) }}</td>
-                                    <td class="text-end">{{ number_format($item->total_quantity, 0) }}</td>
-                                    <td class="text-end">0</td>
-                                    <td class="text-end">0</td>
-                                    <td class="text-end">{{ number_format($percentage, 2) }}%</td>
+                                    <td class="text-end">{{ number_format(($item->item->average_cost ?? 0) * ($item->total_quantity ?? 0), 2) }}</td>
+                                    <td class="text-end">{{ number_format($item->total_sales - (($item->item->average_cost ?? 0) * ($item->total_quantity ?? 0)), 2) }}</td>
+                                    <td class="text-end">{{ number_format(($item->total_sales - (($item->item->average_cost ?? 0) * ($item->total_quantity ?? 0))) / $item->total_sales * 100, 2) }}%</td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use App\Models\Kpi;
 use Livewire\WithPagination;
 use Livewire\Attributes\Rule;
+use Livewire\Attributes\Computed;
 
 new class extends Component {
     use WithPagination;
@@ -18,21 +21,37 @@ new class extends Component {
 
     public string $search = '';
 
-    public function with(): array
+    /**
+     * Reset pagination when search changes.
+     */
+    public function updatingSearch(): void
     {
-        return [
-            'kpis' => Kpi::where('name', 'like', '%' . $this->search . '%')
-                ->orWhere('description', 'like', '%' . $this->search . '%')
-                ->orderBy('created_at', 'desc')
-                ->paginate(10),
-        ];
+        $this->resetPage();
     }
 
+    /**
+     * Get filtered KPIs list.
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    #[Computed]
+    public function kpis()
+    {
+        return Kpi::query()
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('description', 'like', '%' . $this->search . '%');
+            })
+            ->orderByDesc('created_at')
+            ->paginate(10);
+    }
+
+    /**
+     * Save KPI (create or update).
+     */
     public function save(): void
     {
         if ($this->editing) {
-            // $this->authorize('update', $this->editing);
-
             $this->validate([
                 'name' => 'required|min:3|max:255|unique:kpis,name,' . $this->editing->id,
                 'description' => 'nullable|max:1000',
@@ -43,39 +62,47 @@ new class extends Component {
                 'description' => $this->description,
             ]);
 
+            session()->flash('success', __('hr.kpi_updated_successfully'));
             $this->dispatch('kpi-updated');
         } else {
-            // $this->authorize('create', Kpi::class);
-
             $validated = $this->validate();
-
             Kpi::create($validated);
-
+            session()->flash('success', __('hr.kpi_created_successfully'));
             $this->dispatch('kpi-created');
         }
 
         $this->reset('editing', 'name', 'description');
     }
 
+    /**
+     * Open edit modal and load KPI data.
+     *
+     * @param Kpi $kpi
+     */
     public function edit(Kpi $kpi): void
     {
-        // $this->authorize('update', $kpi);
-
         $this->editing = $kpi;
         $this->name = $kpi->name;
-        $this->description = $kpi->description;
+        $this->description = $kpi->description ?? '';
     }
 
+    /**
+     * Cancel edit and reset form.
+     */
     public function cancelEdit(): void
     {
         $this->reset('editing', 'name', 'description');
     }
 
+    /**
+     * Delete KPI.
+     *
+     * @param Kpi $kpi
+     */
     public function delete(Kpi $kpi): void
     {
-        // $this->authorize('delete', $kpi);
-
         $kpi->delete();
+        session()->flash('success', __('hr.kpi_deleted_successfully'));
         $this->dispatch('kpi-deleted');
     }
 }; ?>
@@ -89,16 +116,18 @@ new class extends Component {
             <div class="search-box">
                 <i class="fas fa-search search-icon"></i>
                 <div class="position-relative">
-                    <input type="text" wire:model.live="search" class="form-control"
-                        placeholder="{{ __('Search KPIs...') }}">
+                    <input type="text" 
+                           wire:model.live.debounce.300ms="search" 
+                           class="form-control font-family-cairo"
+                           placeholder="{{ __('hr.search_kpis') }}">
 
                 </div>
             </div>
 
             <div class="col-lg-6 mt-3">
-                @can('إضافة المعدلات')
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
-                        <i class="fas fa-plus me-2"></i>{{ __('Add New KPI') }}
+                @can('create KPIS')
+                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
+                        <i class="fas fa-plus me-2"></i>{{ __('hr.add_new_kpi') }}
                     </button>
                 @endcan
             </div>
@@ -118,12 +147,12 @@ new class extends Component {
                             <thead class="table-light text-center align-middle">
 
                                 <tr>
-                                    <th>#</th>
-                                    <th>{{ __('Name') }}</th>
-                                    <th>{{ __('Description') }}</th>
-                                    <th>{{ __('Created At') }}</th>
-                                    @canany(['حذف المعدلات', 'تعديل المعدلات'])
-                                        <th>{{ __('Actions') }}</th>
+                                    <th class="font-family-cairo fw-bold">#</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.kpi_name') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.description') }}</th>
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.created_at') }}</th>
+                                    @canany(['edit KPIS', 'delete KPIS'])
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
 
 
@@ -136,28 +165,39 @@ new class extends Component {
                                         <td>{{ $kpi->name }}</td>
                                         <td>{{ $kpi->description }}</td>
                                         <td>{{ $kpi->created_at->format('Y-m-d') }}</td>
-                                        @canany(['حذف المعدلات', 'تعديل المعدلات'])
+                                        @canany(['edit KPIS', 'delete KPIS'])
                                             <td>
-                                                <button wire:click="edit({{ $kpi->id }})"
-                                                    class="btn btn-sm btn-success me-2" data-bs-toggle="modal"
-                                                    data-bs-target="#kpiFormModal">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button wire:click="delete({{ $kpi->id }})"
-                                                    class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('{{ __('Are you sure you want to delete this KPI?') }}')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
+                                                <div class="btn-group" role="group">
+                                                    @can('edit KPIS')
+                                                        <button type="button" 
+                                                                wire:click="edit({{ $kpi->id }})"
+                                                                class="btn btn-sm btn-success me-2" 
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#kpiFormModal"
+                                                                title="{{ __('hr.edit') }}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    @endcan
+                                                    @can('delete KPIS')
+                                                        <button type="button" 
+                                                                wire:click="delete({{ $kpi->id }})"
+                                                                wire:confirm="{{ __('hr.confirm_delete_kpi') }}"
+                                                                class="btn btn-sm btn-danger"
+                                                                title="{{ __('hr.delete') }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    @endcan
+                                                </div>
                                             </td>
                                         @endcanany
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="13" class="text-center">
-                                            <div class="alert alert-info py-3 mb-0"
-                                                style="font-size: 1.2rem; font-weight: 500;">
+                                        <td colspan="{{ auth()->user()->canany(['edit KPIS', 'delete KPIS']) ? '5' : '4' }}" 
+                                            class="text-center font-family-cairo fw-bold py-4">
+                                            <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات
+                                                {{ __('hr.no_kpis_found') }}
                                             </div>
                                         </td>
                                     </tr>
@@ -180,26 +220,31 @@ new class extends Component {
             <div class="modal-content">
                 <form wire:submit="save">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="kpiFormModalLabel">
-                            {{ $editing ? __('Edit KPI') : __('Create New KPI') }}
+                        <h5 class="modal-title font-family-cairo fw-bold" id="kpiFormModalLabel">
+                            {{ $editing ? __('hr.edit_kpi') : __('hr.add_new_kpi') }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label">{{ __('Name') }} <span
+                            <label for="name" class="form-label font-family-cairo fw-bold">{{ __('hr.kpi_name') }} <span
                                     class="text-danger">*</span></label>
-                            <input type="text" wire:model="name"
-                                class="form-control @error('name') is-invalid @enderror" id="name">
+                            <input type="text" 
+                                   wire:model.blur="name"
+                                   class="form-control @error('name') is-invalid @enderror font-family-cairo" 
+                                   id="name"
+                                   required>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label for="description" class="form-label">{{ __('Description') }}</label>
-                            <textarea wire:model="description" class="form-control @error('description') is-invalid @enderror" id="description"
-                                rows="3"></textarea>
+                            <label for="description" class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
+                            <textarea wire:model.blur="description" 
+                                      class="form-control @error('description') is-invalid @enderror font-family-cairo" 
+                                      id="description"
+                                      rows="3"></textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -207,10 +252,10 @@ new class extends Component {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                        <button type="submit" class="btn btn-primary">
-                            {{ $editing ? __('Update') : __('Create') }}
+                        <button type="button" class="btn btn-secondary font-family-cairo"
+                            data-bs-dismiss="modal">{{ __('hr.cancel') }}</button>
+                        <button type="submit" class="btn btn-primary font-family-cairo">
+                            {{ $editing ? __('hr.update') : __('hr.save') }}
                         </button>
                     </div>
 
@@ -238,16 +283,16 @@ new class extends Component {
     <script>
         $wire.on('kpi-created', () => {
             bootstrap.Modal.getInstance(document.getElementById('kpiFormModal')).hide();
-            showToast('{{ __('KPI created successfully') }}');
+            showToast('{{ __('hr.kpi_created_successfully') }}');
         });
 
         $wire.on('kpi-updated', () => {
             bootstrap.Modal.getInstance(document.getElementById('kpiFormModal')).hide();
-            showToast('{{ __('KPI updated successfully') }}');
+            showToast('{{ __('hr.kpi_updated_successfully') }}');
         });
 
         $wire.on('kpi-deleted', () => {
-            showToast('{{ __('KPI deleted successfully') }}');
+            showToast('{{ __('hr.kpi_deleted_successfully') }}');
         });
 
         function showToast(message) {

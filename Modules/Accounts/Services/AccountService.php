@@ -261,6 +261,76 @@ class AccountService
             }
         }
     }
+
+    // create journal head 
+    public function createJournalHead($data)
+    {
+        $journalHead = JournalHead::create([
+            'journal_id' => JournalHead::max('journal_id') + 1,
+            'pro_type' => $data['pro_type'],
+            'total' => $data['total'],
+            'date' => now(),
+            'op_id' => $data['op_id'],
+            'user' => Auth::id(),
+            'branch' => Auth::user()->branch_id,
+        ]);
+        $this->createJournalDetail($data,$journalHead->id);
+    }
+
+    // create journal detail
+    private function createJournalDetail($data,$journalHeadId)
+    {
+        // debit account
+        JournalDetail::create([
+            'journal_id' => $journalHeadId,
+            'account_id' => $data['debit_Account_id'],
+            'debit' => $data['total'],
+            'credit' => 0,
+            'type' => 1,
+        ]);
+        // credit account
+        JournalDetail::create([
+            'journal_id' => $journalHeadId,
+            'account_id' => $data['credit_Account_id'],
+            'debit' => 0,
+            'credit' => $data['total'],
+            'type' => 0,
+        ]);
+
+        // update the debit account balance and all the parents balances by the data total
+        $this->updateAccountBalanceRecursive($data['debit_Account_id'],$data['total']   );
+        // update the credit account balance and all the parents balances
+        $this->updateAccountBalanceRecursive($data['credit_Account_id'],-$data['total']);
+    }
+
+    /**
+     * Recursively update account balance and all parent accounts by adding/subtracting the total
+     */
+    private function updateAccountBalanceRecursive(int $accountId, float $total): void
+    {
+        try {
+            $accHead = AccHead::find($accountId);
+            if (!$accHead) {
+                return;
+            }
+
+            // Update current account balance by adding/subtracting the total
+            $currentBalance = (float) ($accHead->balance ?? 0);
+            $accHead->balance = $currentBalance + $total;
+            $accHead->save();
+
+            // Recursively update parent account with the same total
+            if ($accHead->parent_id) {
+                $this->updateAccountBalanceRecursive($accHead->parent_id, $total);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to update account balance recursively: ' . $e->getMessage(), [
+                'account_id' => $accountId,
+                'total' => $total,
+                'exception' => $e
+            ]);
+        }
+    }
 }
 
 

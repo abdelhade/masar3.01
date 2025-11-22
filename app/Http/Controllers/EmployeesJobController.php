@@ -10,11 +10,11 @@ class EmployeesJobController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view jobs')->only(['index']);
-        $this->middleware('can:create jobs')->only(['create', 'store']);
-        $this->middleware('can:edit jobs')->only(['edit', 'update']);
-        $this->middleware('can:delete jobs')->only(['destroy']);
-        $this->middleware('can:print jobs')->only(['print']);
+        $this->middleware('can:view Jobs')->only(['index']);
+        $this->middleware('can:create Jobs')->only(['create', 'store']);
+        $this->middleware('can:edit Jobs')->only(['edit', 'update']);
+        $this->middleware('can:delete Jobs')->only(['destroy']);
+        $this->middleware('can:print Jobs')->only(['print']);
     }
 
     public function index()

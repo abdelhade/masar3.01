@@ -59,12 +59,12 @@
                         <div class="col-md-2">
                             <label for="from_date">من تاريخ:</label>
                             <input type="date" name="from_date" id="from_date" class="form-control"
-                                value="{{ request('from_date') }}">
+                                value="{{ $fromDate }}">
                         </div>
                         <div class="col-md-2">
                             <label for="to_date">إلى تاريخ:</label>
                             <input type="date" name="to_date" id="to_date" class="form-control"
-                                value="{{ request('to_date') }}">
+                                value="{{ $toDate }}">
                         </div>
                         <div class="col-md-2">
                             <label>&nbsp;</label>

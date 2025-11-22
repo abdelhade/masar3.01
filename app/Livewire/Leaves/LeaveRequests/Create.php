@@ -1,53 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Leaves\LeaveRequests;
 
 use App\LeaveBalanceService;
 use App\Models\Employee;
+use App\Models\EmployeeLeaveBalance;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('طلب إجازة جديد')]
+#[Title('Add Leave Request')]
 class Create extends Component
 {
-    public $employees = [];
+    /** @var Collection<int, Employee> */
+    public Collection $employees;
 
-    public $leaveTypes = [];
+    /** @var Collection<int, LeaveType> */
+    public Collection $leaveTypes;
 
-    public $selectedEmployeeBalance = null;
+    public ?EmployeeLeaveBalance $selectedEmployeeBalance = null;
 
     protected array $validationAttributes = [
-        'employee_id' => 'الموظف',
-        'leave_type_id' => 'نوع الإجازة',
-        'start_date' => 'تاريخ البداية',
-        'end_date' => 'تاريخ النهاية',
-        'reason' => 'السبب',
+        'employee_id' => __('hr.employee'),
+        'leave_type_id' => __('hr.leave_type'),
+        'start_date' => __('hr.start_date'),
+        'end_date' => __('hr.end_date'),
+        'reason' => __('hr.reason'),
     ];
 
     #[Rule('required|exists:employees,id')]
-    public $employee_id = '';
+    public string $employee_id = '';
 
     #[Rule('required|exists:leave_types,id')]
-    public $leave_type_id = '';
+    public string $leave_type_id = '';
 
     #[Rule('required|date|after_or_equal:today')]
-    public $start_date = '';
+    public string $start_date = '';
 
     #[Rule('required|date|after_or_equal:start_date')]
-    public $end_date = '';
+    public string $end_date = '';
 
     #[Rule('nullable|string|max:1000')]
-    public $reason = '';
+    public string $reason = '';
 
-    public $calculated_days = 0;
+    public float $calculated_days = 0;
 
-    public $available_balance = 0;
+    public float $available_balance = 0;
 
-    public $overlaps_attendance = false;
+    public bool $overlaps_attendance = false;
 
     public function mount(): void
     {
@@ -122,14 +128,12 @@ class Create extends Component
     public function checkAttendanceOverlap(): void
     {
         if ($this->employee_id && $this->start_date && $this->end_date) {
-            $employee = Employee::find($this->employee_id);
-            if ($employee) {
-                $overlap = $employee->attendances()
-                    ->whereBetween('date', [$this->start_date, $this->end_date])
-                    ->exists();
+            $employee = Employee::findOrFail($this->employee_id);
+            $overlap = $employee->attendances()
+                ->whereBetween('date', [$this->start_date, $this->end_date])
+                ->exists();
 
-                $this->overlaps_attendance = $overlap;
-            }
+            $this->overlaps_attendance = $overlap;
         }
     }
 
@@ -137,7 +141,7 @@ class Create extends Component
     {
         $this->validate();
 
-        // التحقق من تداخل الطلبات المعتمدة
+        // Check for overlapping approved requests
         $service = new LeaveBalanceService;
         $hasOverlap = $service->hasOverlappingApprovedRequests(
             $this->employee_id,
@@ -146,15 +150,15 @@ class Create extends Component
         );
 
         if ($hasOverlap) {
-            $this->addError('general', 'يوجد تداخل مع طلب إجازة معتمد آخر في نفس الفترة.');
+            $this->addError('general', __('hr.overlapping_approved_request'));
 
             return;
         }
 
-        // التحقق من كفاية الرصيد
+        // Check for sufficient balance
         if ($this->selectedEmployeeBalance && $this->selectedEmployeeBalance->leaveType->is_paid) {
             if (! $this->selectedEmployeeBalance->hasSufficientBalance($this->calculated_days)) {
-                $this->addError('general', 'الرصيد المتاح غير كافي لهذا الطلب.');
+                $this->addError('general', __('hr.insufficient_balance'));
 
                 return;
             }
@@ -173,7 +177,7 @@ class Create extends Component
 
         $request = LeaveRequest::create($data);
 
-        session()->flash('message', 'تم إنشاء طلب الإجازة بنجاح.');
+        session()->flash('message', __('hr.leave_request_created_successfully'));
         $this->redirect(route('leaves.requests.show', $request->id));
     }
 

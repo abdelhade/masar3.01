@@ -31,7 +31,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/item-sales', [salesReportController::class, 'manageItemSales'])
         ->name('reports.item-sales');
 
-    // تقرير المبيعات اليومية العام
-    Route::get('/reports/general-sales-daily-report', [salesReportController::class, 'generalSalesDailyReport'])
-        ->name('reports.general-sales-daily-report');
 });
