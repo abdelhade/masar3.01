@@ -783,7 +783,7 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('create Employees')
+                    @can('create Hr-Employees')
                         <button wire:click="create" 
                             type="button"
                             wire:loading.attr="disabled"
@@ -817,7 +817,7 @@ new class extends Component {
                                         <th class="font-family-cairo fw-bold">{{ __('hr.department') }}</th>
                                         <th class="font-family-cairo fw-bold">{{ __('hr.job') }}</th>
                                         <th class="font-family-cairo fw-bold">{{ __('hr.status') }}</th>
-                                        @canany(['edit Employees', 'delete Employees'])
+                                        @canany(['edit Hr-Employees', 'delete Hr-Employees'])
                                             <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
                                         @endcanany
                                     </tr>
@@ -835,7 +835,7 @@ new class extends Component {
                                             </td>
                                             <td class="font-family-cairo fw-bold">{{ $employee->status }}</td>
 
-                                            @canany(['edit Employees', 'delete Employees'])
+                                            @canany(['edit Hr-Employees', 'delete Hr-Employees'])
                                                 <td>
                                                     <button 
                                                         wire:click="view({{ $employee->id }})"
@@ -846,7 +846,7 @@ new class extends Component {
                                                         <span wire:loading wire:target="view({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                         <i class="las la-eye fa-lg" wire:loading.remove wire:target="view({{ $employee->id }})"></i>
                                                     </button>
-                                                    @can('edit Employees')
+                                                    @can('edit Hr-Employees')
                                                         <a 
                                                             wire:click="edit({{ $employee->id }})"
                                                             wire:loading.attr="disabled"
@@ -857,7 +857,7 @@ new class extends Component {
                                                             <i class="las la-edit fa-lg" wire:loading.remove wire:target="edit({{ $employee->id }})"></i>
                                                         </a>
                                                     @endcan
-                                                    @can('delete Employees')
+                                                    @can('delete Hr-Employees')
                                                         <button 
                                                             type="button"
                                                             class="btn btn-danger btn-sm"
@@ -875,7 +875,7 @@ new class extends Component {
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="{{ auth()->user()->canany(['edit Employees', 'delete Employees']) ? '8' : '7' }}" 
+                                            <td colspan="{{ auth()->user()->canany(['edit Hr-Employees', 'delete Hr-Employees']) ? '8' : '7' }}" 
                                                 class="text-center font-family-cairo fw-bold py-4">
                                                 <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Authorization\Database\Seeders;
 
+
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
@@ -24,7 +25,7 @@ class HRPermissionsSeeder extends Seeder
                 'Cities',
                 'Towns',
                 'Shifts',
-                'Employees',
+                'Hr-Employees',
                 'KPIs',
                 'Employee Evaluations',
                 'Contracts',
