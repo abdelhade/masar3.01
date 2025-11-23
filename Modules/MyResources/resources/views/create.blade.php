@@ -1,4 +1,8 @@
-@extends('layouts.app')
+@extends('admin.dashboard')
+
+@section('sidebar')
+    @include('components.sidebar.myresources')
+@endsection
 
 @section('content')
 <div class="container-fluid">

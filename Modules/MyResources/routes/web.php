@@ -14,30 +14,30 @@ Route::middleware(['auth', 'verified'])->prefix('myresources')->name('myresource
         ->name('dashboard')
         ->middleware('can:view MyResources Dashboard');
 
-    // Resources
-    Route::resource('/', ResourceController::class)->parameters(['' => 'resource'])->except(['index', 'show']);
-    Route::get('/', [ResourceController::class, 'index'])->name('index')->middleware('can:view MyResources');
-    Route::get('/{resource}', [ResourceController::class, 'show'])->name('show')->middleware('can:view MyResources');
-    
-    // API route for getting types by category
+    // API route for getting types by category (must come before resource routes)
     Route::get('/api/types-by-category', [ResourceController::class, 'getTypesByCategory'])->name('api.types-by-category');
 
-    // Categories
+    // Categories (must come before resource routes)
     Route::resource('/categories', ResourceCategoryController::class)
         ->except(['show'])
         ->middleware('can:view Resource Categories');
 
-    // Types
+    // Types (must come before resource routes)
     Route::resource('/types', ResourceTypeController::class)
         ->except(['show'])
         ->middleware('can:view Resource Types');
 
-    // Statuses
+    // Statuses (must come before resource routes)
     Route::resource('/statuses', ResourceStatusController::class)
         ->except(['show'])
         ->middleware('can:view Resource Statuses');
 
-    // Assignments
+    // Assignments (must come before resource routes)
     Route::resource('/assignments', ResourceAssignmentController::class)
         ->middleware('can:view Resource Assignments');
+
+    // Resources (must come last to avoid conflicts)
+    Route::resource('/', ResourceController::class)->parameters(['' => 'resource'])->except(['index', 'show']);
+    Route::get('/', [ResourceController::class, 'index'])->name('index')->middleware('can:view MyResources');
+    Route::get('/{resource}', [ResourceController::class, 'show'])->name('show');
 });

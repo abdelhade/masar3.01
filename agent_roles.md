@@ -42,4 +42,9 @@ Follow these rules STRICTLY:
    If a change could break something,
    YOU MUST WARN ME FIRST.
 
+9) MAKE PERMISSIONS SEEDER  
+
+
+
+
 Reply “READY” when you understand

@@ -53,7 +53,7 @@ Route::get('/locale/{locale}', function (string $locale) {
     return back();
 })->name('locale.switch');
 
-// test for dashboard
+// Admin Dashboard
 Route::get('/admin/dashboard', function () {
     return view('admin.main-dashboard');
 })->middleware(['auth', 'verified'])->name('admin.dashboard');
@@ -193,9 +193,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/discounts/general-statistics', [DiscountController::class, 'generalStatistics'])->name('discounts.general-statistics');
     Route::resource('discounts', DiscountController::class)->names('discounts');
-
-    // abdelhade
-    Route::resource('cost_centers', CostCenterController::class);
 
     Route::get('/vouchers/statistics', [VoucherController::class, 'statistics'])->name('vouchers.statistics');
     Route::resource('vouchers', VoucherController::class)->names('vouchers');

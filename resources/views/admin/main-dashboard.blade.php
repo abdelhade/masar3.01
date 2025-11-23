@@ -197,9 +197,8 @@
                     'icon' => 'cog',
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
-                    // 'route' => route('resources.index'),
-
-                    'isNew' => true,
+                    'route' => route('myresources.index'),
+                   
                 ],
             ],
         ],
@@ -592,6 +591,7 @@
 
                         ['name' => 'التقدم اليومي', 'icon' => 'bar-chart-3', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('progress.projcet.index'), 'permission' => null],
                         ['name' => 'عمليات الاصول', 'icon' => 'building', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('depreciation.index'), 'permission' => null],
+                        ['name' => 'إدارة الموارد', 'icon' => 'cog', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('myresources.index'), 'permission' => null],
                     ]
                 ],
                 [
