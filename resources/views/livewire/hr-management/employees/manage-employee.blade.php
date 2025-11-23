@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Computed;
 use App\Models\Employee;
 use App\Models\Country;
 use App\Models\City;
@@ -19,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
 use Modules\Accounts\Services\AccountService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 
 new class extends Component {
@@ -55,7 +59,7 @@ new class extends Component {
         $marital_status,
         $education,
         $information,
-        $status = 'Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€ž';
+        $status = 'مفعل';
     public $country_id, $city_id, $state_id, $town_id;
     public $job_id, $department_id, $date_of_hire, $date_of_fire, $job_level, $salary, $finger_print_id, $finger_print_name, $salary_type, $shift_id, $password, $additional_hour_calculation, $additional_day_calculation, $late_hour_calculation, $late_day_calculation;
 
@@ -81,10 +85,10 @@ new class extends Component {
             'gender' => 'nullable|in:male,female',
             'date_of_birth' => 'nullable|date',
             'nationalId' => 'nullable|string|unique:employees,nationalId,' . $this->employeeId,
-            'marital_status' => 'nullable|in:Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜Â²Ã™Ë†Ã˜Â¬,Ã™â€¦Ã˜ÂªÃ˜Â²Ã™Ë†Ã˜Â¬,Ã™â€¦Ã˜Â·Ã™â€žÃ™â€š,Ã˜Â£Ã˜Â±Ã™â€¦Ã™â€ž',
-            'education' => 'nullable|in:Ã˜Â¯Ã˜Â¨Ã™â€žÃ™Ë†Ã™â€¦,Ã˜Â¨Ã™Æ’Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â±Ã™Å Ã™Ë†Ã˜Â³,Ã™â€¦Ã˜Â§Ã˜Â¬Ã˜Â³Ã˜ÂªÃ™Å Ã˜Â±,Ã˜Â¯Ã™Æ’Ã˜ÂªÃ™Ë†Ã˜Â±Ã˜Â§Ã™â€¡',
+            'marital_status' => 'nullable|in:single,married,divorced,widowed,غير متزوج,متزوج,مطلق,أرمل',
+            'education' => 'nullable|in:diploma,bachelor,master,doctorate,دبلوم,بكالوريوس,ماجستير,دكتوراه',
             'information' => 'nullable|string',
-            'status' => 'required|in:Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€ž,Ã™â€¦Ã˜Â¹Ã˜Â·Ã™â€ž',
+            'status' => 'required|in:مفعل,معطل,active,inactive',
             'country_id' => 'nullable|exists:countries,id',
             'city_id' => 'nullable|exists:cities,id',
             'state_id' => 'nullable|exists:states,id',
@@ -127,38 +131,121 @@ new class extends Component {
     protected function messages()
     {
         return [
-            'name.required' => 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
-            'email.required' => 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
-            'phone.required' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
-            'marital_status.in' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â¬Ã˜ÂªÃ™â€¦Ã˜Â§Ã˜Â¹Ã™Å Ã˜Â© Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯Ã˜Â©.',
-            'education.in' => 'Ã™â€¦Ã˜Â³Ã˜ÂªÃ™Ë†Ã™â€° Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¹Ã™â€žÃ™Å Ã™â€¦ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯',
-            'status.required' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨Ã˜Â©.',
-            'status.in' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â© Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯Ã˜Â©.',
-            'name.unique' => 'Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦ Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â¢Ã˜Â®Ã˜Â±.',
-            'email.unique' => 'Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å  Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â¢Ã˜Â®Ã˜Â±.',
-            'phone.unique' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â±Ã™â€šÃ™â€¦ Ã™â€¡Ã˜Â§Ã˜ÂªÃ™Â Ã˜Â¢Ã˜Â®Ã˜Â±.',
-            'nationalId.unique' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã™Ë†Ã™Å Ã˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â±Ã™â€šÃ™â€¦ Ã™â€¡Ã™Ë†Ã™Å Ã˜Â© Ã˜Â¢Ã˜Â®Ã˜Â±.',
-            'finger_print_id.integer' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã™â€šÃ™â€¦Ã˜Â§Ã™â€¹ Ã˜ÂµÃ˜Â­Ã™Å Ã˜Â­Ã˜Â§Ã™â€¹.',
-            'finger_print_id.unique' => 'Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã˜Â¢Ã˜Â®Ã˜Â±.',
-            'finger_print_name.unique' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™â€¦Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã˜Â¢Ã˜Â®Ã˜Â±.',
-            'finger_print_name.string' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã™â€ Ã˜ÂµÃ˜Â§Ã™â€¹.',
-            'finger_print_name.max' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â£Ã™â€šÃ™â€ž Ã™â€¦Ã™â€  255 Ã˜Â­Ã˜Â±Ã™ÂÃ˜Â§Ã™â€¹.',
-            'finger_print_name.min' => 'Ã˜Â§Ã˜Â³Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã˜ÂµÃ™â€¦Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â£Ã™Æ’Ã˜Â«Ã˜Â± Ã™â€¦Ã™â€  3 Ã˜Â­Ã˜Â±Ã™ÂÃ˜Â§Ã™â€¹.',
-            'kpi_ids.array' => 'Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ã˜Â©.',
-            'kpi_ids.*.exists' => 'Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯.',
-            'kpi_weights.array' => 'Ã˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€  Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  Ã™â€šÃ˜Â§Ã˜Â¦Ã™â€¦Ã˜Â©.',
-            'kpi_weights.*.integer' => 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã™â€šÃ™â€¦Ã˜Â§Ã™â€¹ Ã˜ÂµÃ˜Â­Ã™Å Ã˜Â­Ã˜Â§Ã™â€¹.',
-            'kpi_weights.*.min' => 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  0 Ã˜Â£Ã™Ë† Ã˜Â£Ã™Æ’Ã˜Â«Ã˜Â±.',
-            'kpi_weights.*.max' => 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â²Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  100 Ã˜Â£Ã™Ë† Ã˜Â£Ã™â€šÃ™â€ž.',
-            'selected_kpi_id.exists' => 'Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯.',
-            'image.image' => 'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™ÂÃ™â€š Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜ÂµÃ™Ë†Ã˜Â±Ã˜Â©.',
-            'image.mimes' => 'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€ : jpeg, png, jpg, gif.',
-            'image.max' => 'Ã˜Â­Ã˜Â¬Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â£Ã™â€šÃ™â€ž Ã™â€¦Ã™â€  2 Ã™â€¦Ã™Å Ã˜Â¬Ã˜Â§Ã˜Â¨Ã˜Â§Ã™Å Ã˜Âª.',
-            'password.required' => 'Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â± Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨Ã˜Â©.',
-            'password.min' => 'Ã™Æ’Ã™â€žÃ™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â± Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  6 Ã˜Â£Ã˜Â­Ã˜Â±Ã™Â Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ™â€ž.',
-            'salary_basic_account_id.required' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¦Ã™Å Ã˜Â³Ã™Å  Ã™â€žÃ™â€žÃ™â€¦Ã˜Â±Ã˜ÂªÃ˜Â¨ Ã™â€¦Ã˜Â·Ã™â€žÃ™Ë†Ã˜Â¨.',
-            'salary_basic_account_id.exists' => 'Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨ Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â¦Ã™Å Ã˜Â³Ã™Å  Ã™â€žÃ™â€žÃ™â€¦Ã˜Â±Ã˜ÂªÃ˜Â¨ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Ë†Ã˜Â¬Ã™Ë†Ã˜Â¯.',
-            'opening_balance.numeric' => 'Ã˜Â§Ã™â€žÃ˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™ÂÃ˜ÂªÃ˜ÂªÃ˜Â§Ã˜Â­Ã™Å  Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Ã˜Â±Ã™â€šÃ™â€¦Ã˜Â§Ã™â€¹.',
+            // Name validation
+            'name.required' => __('hr.name_required'),
+            'name.string' => __('hr.name_string'),
+            'name.unique' => __('hr.name_unique'),
+            
+            // Email validation
+            'email.required' => __('hr.email_required'),
+            'email.email' => __('hr.email_email'),
+            'email.unique' => __('hr.email_unique'),
+            
+            // Phone validation
+            'phone.required' => __('hr.phone_required'),
+            'phone.string' => __('hr.phone_string'),
+            'phone.unique' => __('hr.phone_unique'),
+            
+            // Image validation
+            'image.image' => __('hr.image_image'),
+            'image.mimes' => __('hr.image_mimes'),
+            'image.max' => __('hr.image_max'),
+            
+            // Gender validation
+            'gender.in' => __('hr.gender_invalid'),
+            
+            // Date of birth validation
+            'date_of_birth.date' => __('hr.date_of_birth_date'),
+            
+            // National ID validation
+            'nationalId.string' => __('hr.nationalId_string'),
+            'nationalId.unique' => __('hr.nationalId_unique'),
+            
+            // Marital status validation
+            'marital_status.in' => __('hr.marital_status_invalid'),
+            
+            // Education validation
+            'education.in' => __('hr.education_invalid'),
+            
+            // Information validation
+            'information.string' => __('hr.information_string'),
+            
+            // Status validation
+            'status.required' => __('hr.status_required'),
+            'status.in' => __('hr.status_invalid'),
+            
+            // Location validation
+            'country_id.exists' => __('hr.country_id_exists'),
+            'city_id.exists' => __('hr.city_id_exists'),
+            'state_id.exists' => __('hr.state_id_exists'),
+            'town_id.exists' => __('hr.town_id_exists'),
+            
+            // Job and department validation
+            'job_id.exists' => __('hr.job_id_exists'),
+            'department_id.exists' => __('hr.department_id_exists'),
+            
+            // Date validation
+            'date_of_hire.date' => __('hr.date_of_hire_date'),
+            'date_of_fire.date' => __('hr.date_of_fire_date'),
+            
+            // Salary validation
+            'salary.numeric' => __('hr.salary_numeric'),
+            
+            // Fingerprint validation
+            'finger_print_id.integer' => __('hr.finger_print_id_integer'),
+            'finger_print_id.unique' => __('hr.finger_print_id_unique'),
+            'finger_print_name.string' => __('hr.finger_print_name_string'),
+            'finger_print_name.unique' => __('hr.finger_print_name_unique'),
+            'finger_print_name.max' => __('hr.finger_print_name_max'),
+            'finger_print_name.min' => __('hr.finger_print_name_min'),
+            
+            // Shift validation
+            'shift_id.exists' => __('hr.shift_id_exists'),
+            
+            // Password validation
+            'password.required' => __('hr.password_required'),
+            'password.string' => __('hr.password_string'),
+            'password.min' => __('hr.password_min'),
+            
+            // Calculation validation
+            'additional_hour_calculation.numeric' => __('hr.additional_hour_calculation_numeric'),
+            'additional_day_calculation.numeric' => __('hr.additional_day_calculation_numeric'),
+            'late_hour_calculation.numeric' => __('hr.late_hour_calculation_numeric'),
+            'late_day_calculation.numeric' => __('hr.late_day_calculation_numeric'),
+            
+            // KPI validation
+            'kpi_ids.array' => __('hr.kpi_ids_array'),
+            'kpi_ids.*.exists' => __('hr.kpi_ids_exists'),
+            'kpi_weights.array' => __('hr.kpi_weights_array'),
+            'kpi_weights.*.integer' => __('hr.kpi_weights_integer'),
+            'kpi_weights.*.min' => __('hr.kpi_weights_min'),
+            'kpi_weights.*.max' => __('hr.kpi_weights_max'),
+            'selected_kpi_id.exists' => __('hr.selected_kpi_id_exists'),
+            
+            // Account validation
+            'salary_basic_account_id.required' => __('hr.salary_basic_account_id_required'),
+            'salary_basic_account_id.exists' => __('hr.salary_basic_account_id_exists'),
+            'opening_balance.numeric' => __('hr.opening_balance_numeric'),
+            
+            // Leave balance validation
+            'leave_balances.*.leave_type_id.required' => __('hr.leave_balances_leave_type_id_required'),
+            'leave_balances.*.leave_type_id.exists' => __('hr.leave_balances_leave_type_id_exists'),
+            'leave_balances.*.year.required' => __('hr.leave_balances_year_required'),
+            'leave_balances.*.year.integer' => __('hr.leave_balances_year_integer'),
+            'leave_balances.*.year.min' => __('hr.leave_balances_year_min'),
+            'leave_balances.*.year.max' => __('hr.leave_balances_year_max'),
+            'leave_balances.*.opening_balance_days.numeric' => __('hr.leave_balances_opening_balance_days_numeric'),
+            'leave_balances.*.opening_balance_days.min' => __('hr.leave_balances_opening_balance_days_min'),
+            'leave_balances.*.accrued_days.numeric' => __('hr.leave_balances_accrued_days_numeric'),
+            'leave_balances.*.accrued_days.min' => __('hr.leave_balances_accrued_days_min'),
+            'leave_balances.*.used_days.numeric' => __('hr.leave_balances_used_days_numeric'),
+            'leave_balances.*.used_days.min' => __('hr.leave_balances_used_days_min'),
+            'leave_balances.*.pending_days.numeric' => __('hr.leave_balances_pending_days_numeric'),
+            'leave_balances.*.pending_days.min' => __('hr.leave_balances_pending_days_min'),
+            'leave_balances.*.carried_over_days.numeric' => __('hr.leave_balances_carried_over_days_numeric'),
+            'leave_balances.*.carried_over_days.min' => __('hr.leave_balances_carried_over_days_min'),
+            'leave_balances.*.notes.string' => __('hr.leave_balances_notes_string'),
+            'selected_leave_type_id.exists' => __('hr.selected_leave_type_id_exists'),
         ];
     }
 
@@ -182,17 +269,21 @@ new class extends Component {
         $this->selectedFileSize = '';
     }
 
-    public function updatingSearch()
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
-    public function getEmployeesProperty()
+    #[Computed]
+    public function employees(): LengthAwarePaginator
     {
-        return Employee::with('media')->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))->orderByDesc('id')->paginate(10);
+        return Employee::with(['media', 'department', 'job', 'shift'])
+            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->orderByDesc('id')
+            ->paginate(10);
     }
 
-    public function create()
+    public function create(): void
     {
         $this->resetValidation();
         $this->resetEmployeeFields();
@@ -201,33 +292,42 @@ new class extends Component {
         $this->showModal = true;
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
         $this->resetValidation();
         DB::transaction(function () use ($id) {
-            $employee = Employee::with('media', 'account', 'kpis', 'leaveBalances.leaveType')->findOrFail($id);
+            // Eager load all relationships to avoid N+1 queries
+            $employee = Employee::with([
+                'media',
+                'account.haveParent', // Load parent account relationship
+                'kpis',
+                'leaveBalances.leaveType',
+                'department',
+                'job',
+                'shift',
+                'country',
+                'city',
+                'state',
+                'town'
+            ])->findOrFail($id);
             $this->employeeId = $employee->id;
 
             // Set current image URL using the accessor (works in both local and production)
             $this->currentImageUrl = $employee->image_url;
 
-            foreach (['name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'kpi_ids', 'kpi_weights', 'salary_basic_account_id', 'opening_balance'] as $field) {
-                // use case to set the value of the field
-                switch ($field) {
-                    case ['date_of_birth', 'date_of_hire', 'date_of_fire']:
-                        $this->$field = $employee->$field ? $employee->$field->format('Y-m-d') : null;
-                        break;
-                    case 'salary_basic_account_id':
-                        $this->$field = $employee->account->parent_id ?? null;
-                        break;
-                    case 'opening_balance':
-                        $this->$field = $employee->account->start_balance ?? null;
-                        break;
-                    default:
-                        $this->$field = $employee->$field;
-                        break;
-                }
+            // Load basic employee fields
+            foreach (['name', 'email', 'phone', 'image', 'gender', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation'] as $field) {
+                $this->$field = $employee->$field;
             }
+
+            // Handle date fields
+            $this->date_of_birth = $employee->date_of_birth ? $employee->date_of_birth->format('Y-m-d') : null;
+            $this->date_of_hire = $employee->date_of_hire ? $employee->date_of_hire->format('Y-m-d') : null;
+            $this->date_of_fire = $employee->date_of_fire ? $employee->date_of_fire->format('Y-m-d') : null;
+
+            // Handle account fields (with eager loading to avoid N+1)
+            $this->salary_basic_account_id = $employee->account?->parent_id ?? null;
+            $this->opening_balance = $employee->account?->start_balance ?? null;
 
             // Clear any previous upload and don't load password in edit mode - leave it empty for security
             $this->password = null;
@@ -288,7 +388,7 @@ new class extends Component {
             }
 
             if ($selectedKpis > 0 && $totalWeight != 100) {
-                $this->addError('kpi_weights', 'Ã™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã™Å Ã˜Â© Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â¯Ã™â€žÃ˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â£Ã™â€  Ã™Å Ã™Æ’Ã™Ë†Ã™â€  100% Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¶Ã˜Â¨Ã˜Â·. Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å : ' . $totalWeight . '%');
+                $this->addError('kpi_weights', __('hr.kpi_weights_error', ['total' => $totalWeight]));
                 return;
             }
         }
@@ -321,7 +421,7 @@ new class extends Component {
                 unset($validated['kpi_ids'], $validated['kpi_weights'], $validated['leave_balances']);
 
                 if ($this->isEdit && $this->employeeId) {
-                    $employee = Employee::find($this->employeeId);
+                    $employee = Employee::findOrFail($this->employeeId);
                     $employee->update($validated);
 
                     // Sync KPIs with weights
@@ -338,7 +438,7 @@ new class extends Component {
 
                     // sync the employee Account 
                     $this->syncEmployeeAccount($employee);
-                    session()->flash('success', __('Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'));
+                    session()->flash('success', __('hr.employee_updated'));
                 } else {
                     $employee = Employee::create($validated);
 
@@ -357,7 +457,7 @@ new class extends Component {
                     // Create employee account for new employee
                     $this->syncEmployeeAccount($employee);
 
-                    session()->flash('success', __('Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã™â€ Ã˜Â´Ã˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'));
+                    session()->flash('success', __('hr.employee_created'));
                 }
             });
 
@@ -379,16 +479,16 @@ new class extends Component {
 
             $this->showModal = false;
         } catch (\Throwable $th) {
-            session()->flash('error', __('Ã˜Â­Ã˜Â¯Ã˜Â« Ã˜Â®Ã˜Â·Ã˜Â£ Ã™â€¦Ã˜Â§.'));
+            session()->flash('error', __('hr.error_occurred'));
             Log::error($th);
         }
     }
 
-    public function delete($id)
+    public function delete(int $id): void
     {
         $employee = Employee::findOrFail($id);
         $employee->delete();
-        session()->flash('success', __('Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'));
+        session()->flash('success', __('hr.employee_deleted'));
     }
 
     public function resetEmployeeFields()
@@ -401,13 +501,26 @@ new class extends Component {
         $this->kpi_weights = [];
         $this->leave_balances = [];
         $this->selected_leave_type_id = '';
-        $this->status = 'Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€ž';
+        $this->status = 'مفعل';
         $this->image = null;
     }
 
     public function view($id)
     {
-        $this->viewEmployee = Employee::with(['country', 'city', 'state', 'town', 'job', 'department', 'shift', 'kpis', 'leaveBalances.leaveType', 'media'])->find($id);
+        // Eager load all relationships to avoid N+1 queries
+        $this->viewEmployee = Employee::with([
+            'country',
+            'city',
+            'state',
+            'town',
+            'job',
+            'department',
+            'shift',
+            'kpis',
+            'leaveBalances.leaveType',
+            'media',
+            'account.haveParent' // Load account with parent to avoid N+1
+        ])->findOrFail($id);
         $this->showViewModal = true;
     }
 
@@ -452,18 +565,18 @@ new class extends Component {
 
                 $this->dispatch('notify', [
                     'type' => 'success',
-                    'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
+                    'message' => __('hr.kpi_added'),
                 ]);
             } else {
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => __('Ã™â€¡Ã˜Â°Ã˜Â§ Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã™â€¦Ã˜Â¶Ã˜Â§Ã™Â Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž.'),
+                    'message' => __('hr.kpi_already_added'),
                 ]);
             }
         } else {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => __('Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡.'),
+                'message' => __('hr.kpi_required'),
             ]);
         }
     }
@@ -484,7 +597,7 @@ new class extends Component {
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã™â€¦Ã˜Â¹Ã˜Â¯Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
+            'message' => __('hr.kpi_removed'),
         ]);
     }
 
@@ -502,7 +615,7 @@ new class extends Component {
             if (isset($this->leave_balances[$key])) {
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => __('Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â¹ Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã™â€žÃ™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã™â€žÃ™â€žÃ˜Â³Ã™â€ Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯Ã˜Â©.'),
+                    'message' => __('hr.leave_balance_already_exists'),
                 ]);
                 return;
             }
@@ -518,7 +631,7 @@ new class extends Component {
                 if ($existingBalances) {
                     $this->dispatch('notify', [
                         'type' => 'error',
-                        'message' => __('Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€ Ã™Ë†Ã˜Â¹ Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã™â€¦Ã˜Â³Ã˜Â¬Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¹Ã™â€ž Ã™â€žÃ™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â Ã™â€žÃ™â€žÃ˜Â³Ã™â€ Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â¯Ã˜Â¯Ã˜Â©.'),
+                        'message' => __('hr.leave_balance_already_exists'),
                     ]);
                     return;
                 }
@@ -543,12 +656,12 @@ new class extends Component {
 
             $this->dispatch('notify', [
                 'type' => 'success',
-                'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
+                'message' => __('hr.leave_balance_added'),
             ]);
         } else {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => __('Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â©.'),
+                'message' => __('hr.leave_type_required'),
             ]);
         }
     }
@@ -565,7 +678,7 @@ new class extends Component {
 
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => __('Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¬Ã˜Â§Ã˜Â²Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­.'),
+            'message' => __('hr.leave_balance_removed'),
         ]);
     }
 
@@ -692,7 +805,7 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ')
+                    @can('create Hr-Employees')
                         <button wire:click="create" 
                             type="button"
                             wire:loading.attr="disabled"
@@ -700,34 +813,34 @@ new class extends Component {
                             class="btn btn-primary font-family-cairo fw-bold">
                             <span wire:loading wire:target="create" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                             <span wire:loading.remove wire:target="create">
-                                {{ __('Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}
+                                {{ __('hr.add_employee') }}
                                 <i class="fas fa-plus me-2"></i>
                             </span>
                         </button>
                     @endcan
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
-                        style="min-width:200px" placeholder="{{ __('Ã˜Â¨Ã˜Â­Ã˜Â« Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦...') }}">
+                        style="min-width:200px" placeholder="{{ __('hr.search_by_name') }}">
                 </div>
 
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive" style="overflow-x: auto;">
                             <x-table-export-actions table-id="employee-table" filename="employee-table"
-                                excel-label="Ã˜ÂªÃ˜ÂµÃ˜Â¯Ã™Å Ã˜Â± Excel" pdf-label="Ã˜ÂªÃ˜ÂµÃ˜Â¯Ã™Å Ã˜Â± PDF" print-label="Ã˜Â·Ã˜Â¨Ã˜Â§Ã˜Â¹Ã˜Â©" />
+                                excel-label="{{ __('hr.export_excel') }}" pdf-label="{{ __('hr.export_pdf') }}" print-label="{{ __('hr.print') }}" />
 
                             <table id="employee-table" class="table table-striped text-center mb-0"
                                 style="min-width: 1200px;">
                                 <thead class="table-light align-middle">
                                     <tr>
                                         <th class="font-family-cairo fw-bold">#</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ˜Â¨Ã˜Â±Ã™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å ') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â±Ã™â€šÃ™â€¦ Ã˜Â§Ã™â€žÃ™â€¡Ã˜Â§Ã˜ÂªÃ™Â') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ™â€šÃ˜Â³Ã™â€¦') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â¸Ã™Å Ã™ÂÃ˜Â©') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ˜Â©') }}</th>
-                                        @canany(['Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ', 'Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ '])
-                                            <th class="font-family-cairo fw-bold">{{ __('Ã˜Â¥Ã˜Â¬Ã˜Â±Ã˜Â§Ã˜Â¡Ã˜Â§Ã˜Âª') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.name') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.email') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.phone') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.department') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.job') }}</th>
+                                        <th class="font-family-cairo fw-bold">{{ __('hr.status') }}</th>
+                                        @canany(['edit Hr-Employees', 'delete Hr-Employees'])
+                                            <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
                                         @endcanany
                                     </tr>
                                 </thead>
@@ -744,37 +857,37 @@ new class extends Component {
                                             </td>
                                             <td class="font-family-cairo fw-bold">{{ $employee->status }}</td>
 
-                                            @canany(['Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ', 'Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ '])
+                                            @canany(['edit Hr-Employees', 'delete Hr-Employees'])
                                                 <td>
                                                     <button 
                                                         wire:click="view({{ $employee->id }})"
                                                         wire:loading.attr="disabled"
                                                         wire:target="view"
                                                         class="btn btn-info btn-sm me-1"
-                                                        title="{{ __('Ã˜Â¹Ã˜Â±Ã˜Â¶') }}">
+                                                        title="{{ __('hr.view') }}">
                                                         <span wire:loading wire:target="view({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                         <i class="las la-eye fa-lg" wire:loading.remove wire:target="view({{ $employee->id }})"></i>
                                                     </button>
-                                                    @can('Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ')
+                                                    @can('edit Hr-Employees')
                                                         <a 
                                                             wire:click="edit({{ $employee->id }})"
                                                             wire:loading.attr="disabled"
                                                             wire:target="edit"
                                                             class="btn btn-success btn-sm me-1"
-                                                            title="{{ __('Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž') }}">
+                                                            title="{{ __('hr.edit') }}">
                                                             <span wire:loading wire:target="edit({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                             <i class="las la-edit fa-lg" wire:loading.remove wire:target="edit({{ $employee->id }})"></i>
                                                         </a>
                                                     @endcan
-                                                    @can('Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ™Å Ã™Å Ã™â€ ')
+                                                    @can('delete Hr-Employees')
                                                         <button 
                                                             type="button"
                                                             class="btn btn-danger btn-sm"
                                                             wire:click="delete({{ $employee->id }})"
+                                                            wire:confirm="{{ __('hr.confirm_delete_employee') }}"
                                                             wire:loading.attr="disabled"
                                                             wire:target="delete"
-                                                            onclick="confirm('Ã™â€¡Ã™â€ž Ã˜Â£Ã™â€ Ã˜Âª Ã™â€¦Ã˜ÂªÃ˜Â£Ã™Æ’Ã˜Â¯ Ã™â€¦Ã™â€  Ã˜Â­Ã˜Â°Ã™Â Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™ÂÃ˜Å¸') || event.stopImmediatePropagation()"
-                                                            title="{{ __('Ã˜Â­Ã˜Â°Ã™Â') }}">
+                                                            title="{{ __('hr.delete') }}">
                                                             <span wire:loading wire:target="delete({{ $employee->id }})" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                                                             <i class="las la-trash fa-lg" wire:loading.remove wire:target="delete({{ $employee->id }})"></i>
                                                         </button>
@@ -784,11 +897,11 @@ new class extends Component {
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">
-                                                <div class="alert alert-info py-3 mb-0"
-                                                    style="font-size: 1.2rem; font-weight: 500;">
+                                            <td colspan="{{ auth()->user()->canany(['edit Hr-Employees', 'delete Hr-Employees']) ? '8' : '7' }}" 
+                                                class="text-center font-family-cairo fw-bold py-4">
+                                                <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>
-                                                    Ã™â€žÃ˜Â§ Ã˜ÂªÃ™Ë†Ã˜Â¬Ã˜Â¯ Ã˜Â¨Ã™Å Ã˜Â§Ã™â€ Ã˜Â§Ã˜Âª
+                                                    {{ __('hr.no_employees_found') }}
                                                 </div>
                                             </td>
                                         </tr>
@@ -819,10 +932,10 @@ new class extends Component {
                             <div class="modal-header">
                                 <h5 class="modal-title font-family-cairo fw-bold">
                                     <span
-                                        x-text="isEdit ? '{{ __('Ã˜ÂªÃ˜Â¹Ã˜Â¯Ã™Å Ã™â€ž Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}' : '{{ __('Ã˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}'"></span>
+                                            x-text="isEdit ? '{{ __('hr.edit_employee') }}' : '{{ __('hr.add_employee') }}'"></span>
                                 </h5>
                                 <button type="button" class="btn-close m-3" @click="closeEmployeeModal()"
-                                    aria-label="Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š"></button>
+                                    aria-label="{{ __('hr.close') }}"></button>
                             </div>
 
                             <div class="modal-body">
@@ -845,10 +958,10 @@ new class extends Component {
                             <div class="modal-footer justify-content-center">
                                 <button type="button" class="btn btn-secondary btn-md"
                                     @click="closeEmployeeModal()">
-                                    {{ __('Ã˜Â¥Ã™â€žÃ˜ÂºÃ˜Â§Ã˜Â¡') }}
+                                    {{ __('hr.cancel') }}
                                 </button>
                                 <button type="button" class="btn btn-primary btn-md" @click="$wire.save()" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed">
-                                    <span x-text="isEdit ? '{{ __('Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«') }}' : '{{ __('Ã˜Â­Ã™ÂÃ˜Â¸') }}'"></span>
+                                    <span x-text="isEdit ? '{{ __('hr.update') }}' : '{{ __('hr.save') }}'"></span>
                                 </button>
                             </div>
                         </div>
@@ -871,10 +984,10 @@ new class extends Component {
                             <!-- Modal Header -->
                             <div class="modal-header">
                                 <h5 class="modal-title font-family-cairo fw-bold">
-                                    {{ __('Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â¸Ã™Â') }}
+                                    {{ __('hr.view_employee') }}
                                 </h5>
                                 <button type="button" class="btn-close m-3" @click="closeViewEmployeeModal()"
-                                    aria-label="Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š"></button>
+                                    aria-label="{{ __('hr.close') }}"></button>
                             </div>
 
                             <div class="modal-body">
@@ -882,7 +995,7 @@ new class extends Component {
                                     @include('livewire.hr-management.employees.partials.employee-view')
                                 @else
                                     <div class="alert alert-danger">
-                                        <strong>Error:</strong> No employee data loaded
+                                        <strong>{{ __('hr.error') }}:</strong> {{ __('hr.no_employee_data_loaded') }}
                                     </div>
                                 @endif
                             </div>
@@ -891,7 +1004,7 @@ new class extends Component {
                             <div class="modal-footer justify-content-center">
                                 <button type="button" class="btn btn-secondary btn-md"
                                     @click="closeViewEmployeeModal()">
-                                    {{ __('Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š') }}
+                                    {{ __('hr.close') }}
                                 </button>
                             </div>
                         </div>
@@ -900,9 +1013,6 @@ new class extends Component {
             </div>
         </template>
     </div>
-    @foreach ($this->employees as $employee)
-        {{ $employee->id }} - {{ $employee->image_url }} <br>
-    @endforeach
 </div>
 
 <!-- Alpine.js Component Definition -->
@@ -960,11 +1070,11 @@ new class extends Component {
 
                 get weightMessage() {
                     if (this.totalKpiWeight === 100) {
-                        return 'Ã™â€¦Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â²! Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™Æ’Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ™â€ Ã˜Â³Ã˜Â¨Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­. Ã™Å Ã™â€¦Ã™Æ’Ã™â€ Ã™Æ’ Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€  Ã˜Â­Ã™ÂÃ˜Â¸ Ã˜Â§Ã™â€žÃ˜Â¨Ã™Å Ã˜Â§Ã™â€ Ã˜Â§Ã˜Âª.';
+                        return __('hr.total_weight_100');
                     } else if (this.totalKpiWeight > 100) {
-                        return `Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å  ${this.totalKpiWeight}% Ã˜Â£Ã™Æ’Ã˜Â¨Ã˜Â± Ã™â€¦Ã™â€  100%. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜ÂªÃ™â€šÃ™â€žÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€ .`;
+                        return `{{ __('hr.total_weight_greater_100', ['total' => '']) }}`.replace(':total', this.totalKpiWeight);
                     } else {
-                        return `Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å  ${this.totalKpiWeight}% Ã˜Â£Ã™â€šÃ™â€ž Ã™â€¦Ã™â€  100%. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â¥Ã™Æ’Ã™â€¦Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã˜Â²Ã˜Â§Ã™â€ .`;
+                        return `{{ __('hr.total_weight_less_100', ['total' => '']) }}`.replace(':total', this.totalKpiWeight);
                     }
                 },
 
@@ -1070,7 +1180,7 @@ new class extends Component {
                         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                         if (!validTypes.includes(file.type)) {
                             this.addNotification('error',
-                                'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜Â¯Ã˜Â¹Ã™Ë†Ã™â€¦. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© (JPG, PNG, GIF)');
+                                __('hr.image_invalid_type'));
                             event.target.value = '';
                             return;
                         }
@@ -1079,7 +1189,7 @@ new class extends Component {
                         const maxSize = 2 * 1024 * 1024;
                         if (file.size > maxSize) {
                             this.addNotification('error',
-                                'Ã˜Â­Ã˜Â¬Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Æ’Ã˜Â¨Ã™Å Ã˜Â± Ã˜Â¬Ã˜Â¯Ã˜Â§Ã™â€¹. Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ˜ÂµÃ™â€° 2 Ã™â€¦Ã™Å Ã˜Â¬Ã˜Â§Ã˜Â¨Ã˜Â§Ã™Å Ã˜Âª');
+                                __('hr.image_size_error'));
                             event.target.value = '';
                             return;
                         }
@@ -1104,7 +1214,7 @@ new class extends Component {
                         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                         if (!validTypes.includes(file.type)) {
                             this.addNotification('error',
-                                'Ã™â€ Ã™Ë†Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ™Â Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜Â¯Ã˜Â¹Ã™Ë†Ã™â€¦. Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© (JPG, PNG, GIF)');
+                                __('hr.image_invalid_type'));
                             return;
                         }
 
@@ -1112,7 +1222,7 @@ new class extends Component {
                         const maxSize = 2 * 1024 * 1024;
                         if (file.size > maxSize) {
                             this.addNotification('error',
-                                'Ã˜Â­Ã˜Â¬Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™Æ’Ã˜Â¨Ã™Å Ã˜Â± Ã˜Â¬Ã˜Â¯Ã˜Â§Ã™â€¹. Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â£Ã™â€šÃ˜ÂµÃ™â€° 2 Ã™â€¦Ã™Å Ã˜Â¬Ã˜Â§Ã˜Â¨Ã˜Â§Ã™Å Ã˜Âª');
+                                __('hr.image_size_error'));
                             return;
                         }
 
@@ -1138,7 +1248,7 @@ new class extends Component {
                         };
                         reader.readAsDataURL(file);
 
-                        this.addNotification('success', 'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­');
+                        this.addNotification('success', __('hr.image_selected_successfully'));
                     }
                 },
 
@@ -1158,7 +1268,7 @@ new class extends Component {
                     // Clear Livewire model
                     this.$wire.set('image', null);
 
-                    this.addNotification('info', 'Ã˜ÂªÃ™â€¦ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â©');
+                    this.addNotification('info', __('hr.image_removed'));
                 },
 
                 formatFileSize(bytes) {

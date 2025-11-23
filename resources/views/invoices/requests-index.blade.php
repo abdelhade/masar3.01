@@ -66,6 +66,11 @@
                                             </a>
                                             {{-- @endcan --}}
 
+                                            <button type="button" class="btn btn-info"
+                                                onclick='Livewire.dispatch("openManufacturingModal", { items: {{ json_encode($req->operationItems->map(fn($item) => ["id" => $item->item_id, "name" => $item->item->name ?? "Unknown", "qty" => $item->qty_in ?? $item->qty])->values()) }} })'>
+                                                <i class="fas fa-industry"></i> {{ __('Manufacturing Details') }}
+                                            </button>
+
 
                                             {{-- مثال على الموافقة (تقدر تفعلها لما تحتاج) --}}
                                             {{--
@@ -106,4 +111,5 @@
             </div>
         </div>
     </div>
+    <livewire:manufacturing-cost-modal />
 @endsection

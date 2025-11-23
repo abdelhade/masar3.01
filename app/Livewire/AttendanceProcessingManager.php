@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use Livewire\Component;
@@ -8,35 +10,42 @@ use App\Models\Department;
 use App\Models\AttendanceProcessing;
 use App\Models\AttendanceProcessingDetail;
 use App\Services\AttendanceProcessingService;
+use Modules\Accounts\Services\AccountService;
+use Modules\Accounts\Models\AccHead;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceProcessingManager extends Component
 {
-    public $processingType = 'single';
-    public $selectedEmployee = null;
-    public $selectedDepartment = null;
-    public $selectedEmployees = [];
-    public $startDate;
-    public $endDate;
-    public $notes = '';
-    public $isProcessing = false;
-    public $showResults = false;
-    public $processingResults = [];
-    public $processings;
-    public $selectedProcessing = null;
-    public $showDetails = false;
-    public $processingDetails = [];
+    public string $processingType = 'single';
+    public ?int $selectedEmployee = null;
+    public ?int $selectedDepartment = null;
+    /** @var array<int> */
+    public array $selectedEmployees = [];
+    public string $startDate = '';
+    public string $endDate = '';
+    public string $notes = '';
+    public bool $isProcessing = false;
+    public bool $showResults = false;
+    /** @var array<string, mixed> */
+    public array $processingResults = [];
+    /** @var Collection<int, AttendanceProcessing> */
+    public ?Collection $processings = null;
+    public ?AttendanceProcessing $selectedProcessing = null;
+    public bool $showDetails = false;
+    /** @var Collection<int, AttendanceProcessingDetail> */
+    public ?Collection $processingDetails = null;
 
-    protected $attendanceProcessingService;
+    protected AttendanceProcessingService $attendanceProcessingService;
 
-    public function boot()
+    public function boot(): void
     {
         $this->attendanceProcessingService = app(AttendanceProcessingService::class);
     }
 
-    public function mount()
+    public function mount(): void
     {
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
@@ -78,7 +87,7 @@ class AttendanceProcessingManager extends Component
         $this->processingResults = [];
     }
 
-    public function processAttendance()
+    public function processAttendance(): void
     {
         try {
             // Validate the form
@@ -86,7 +95,7 @@ class AttendanceProcessingManager extends Component
             
             // Additional validation for selectedEmployees
             if ($this->processingType === 'multiple' && empty($this->selectedEmployees)) {
-                session()->flash('error', 'يرجى اختيار موظف واحد على الأقل');
+                session()->flash('error', __('hr.please_select_at_least_one_employee'));
                 return;
             }
             
@@ -210,7 +219,7 @@ class AttendanceProcessingManager extends Component
         }
     }
 
-    public function loadProcessings()
+    public function loadProcessings(): void
     {
         
         try {
@@ -224,7 +233,7 @@ class AttendanceProcessingManager extends Component
         }
     }
 
-    public function viewProcessingDetails($processingId)
+    public function viewProcessingDetails(int $processingId): void
     {
         
         try {
@@ -238,34 +247,57 @@ class AttendanceProcessingManager extends Component
             $this->showDetails = true;
             
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء تحميل تفاصيل المعالجة');
+            session()->flash('error', __('hr.error_loading_processing_details'));
         }
     }
 
-    public function closeDetails()
+    public function closeDetails(): void
     {
         $this->showDetails = false;
         $this->selectedProcessing = null;
-        $this->processingDetails = [];
+        $this->processingDetails = null;
     }
 
-    public function approveProcessing($processingId)
+    public function approveProcessing(int $processingId): void
     {
+        DB::beginTransaction();
         
         try {
             $processing = AttendanceProcessing::findOrFail($processingId);
-
-            $processing->update(['status' => 'approved']);
+            $employee = Employee::with('account')->findOrFail($processing->employee_id);
+            $debitAccount = AccHead::where('code', 5301)->first()->id;
+            $data = [
+                'pro_type' => 74,
+                'processing_id' => $processingId,
+                'total' => $processing->total_salary,
+                'debit_Account_id' => $debitAccount,
+                'credit_Account_id' => $employee->account->id,
+                'op_id' => $processing->id,
+            ];
+            if ($processing->total_salary < 0) {
+                $accountService = app(AccountService::class);
+                // create journal head and create journal detail
+                $accountService->createJournalHead($data);
+                // update processing status to approved
+                $processing->status = 'approved';
+                $processing->save();
+            }
             
+            DB::commit();
             $this->loadProcessings();
-            session()->flash('success', 'تم اعتماد المعالجة بنجاح');
+            session()->flash('success', __('hr.processing_approved_successfully'));
             
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء اعتماد المعالجة: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error approving processing: ' . $e->getMessage(), [
+                'processing_id' => $processingId,
+                'exception' => $e
+            ]);
+            session()->flash('error', __('hr.error_approving_processing', ['error' => $e->getMessage()]));
         }
     }
 
-    public function rejectProcessing($processingId)
+    public function rejectProcessing(int $processingId): void
     {
         
         try {
@@ -274,21 +306,21 @@ class AttendanceProcessingManager extends Component
             $processing->update(['status' => 'rejected']);
             
             $this->loadProcessings();
-            session()->flash('success', 'تم رفض المعالجة');
+            session()->flash('success', __('hr.processing_rejected_successfully'));
             
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء رفض المعالجة: ' . $e->getMessage());
+            session()->flash('error', __('hr.error_rejecting_processing', ['error' => $e->getMessage()]));
         }
     }
 
-    public function deleteProcessing($processingId)
+    public function deleteProcessing(int $processingId): void
     {
         try {
             $processing = AttendanceProcessing::findOrFail($processingId);
             
             // منع حذف المعالجات المعتمدة فقط
             if ($processing->status === 'approved') {
-                session()->flash('error', 'لا يمكن حذف المعالجة المعتمدة');
+                session()->flash('error', __('hr.cannot_delete_approved_processing'));
                 return;
             }
             
@@ -301,12 +333,12 @@ class AttendanceProcessingManager extends Component
             }
             
             $this->loadProcessings();
-            session()->flash('success', 'تم حذف المعالجة بنجاح');
+            session()->flash('success', __('hr.processing_deleted_successfully'));
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            session()->flash('error', 'لم يتم العثور على المعالجة');
+            session()->flash('error', __('hr.processing_not_found'));
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء حذف المعالجة: ' . $e->getMessage());
+            session()->flash('error', __('hr.error_deleting_processing', ['error' => $e->getMessage()]));
         }
     }
 

@@ -1,49 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Leaves\LeaveBalances;
 
 use App\Models\Employee;
 use App\Models\EmployeeLeaveBalance;
 use App\Models\LeaveType;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('إدارة رصيد الإجازات')]
+#[Title('Leave Balances')]
 class CreateEdit extends Component
 {
     public ?EmployeeLeaveBalance $balance = null;
 
-    public $employees = [];
+    /** @var Collection<int, Employee> */
+    public Collection $employees;
 
-    public $leaveTypes = [];
+    /** @var Collection<int, LeaveType> */
+    public Collection $leaveTypes;
 
     #[Rule('required|exists:employees,id')]
-    public $employee_id = '';
+    public string $employee_id = '';
 
     #[Rule('required|exists:leave_types,id')]
-    public $leave_type_id = '';
+    public string $leave_type_id = '';
 
     #[Rule('required|integer|min:2020|max:2030')]
-    public $year = '';
+    public int $year;
 
     #[Rule('required|numeric|min:0')]
-    public $opening_balance_days = 0;
+    public float $opening_balance_days = 0;
 
     #[Rule('required|numeric|min:0')]
-    public $accrued_days = 0;
+    public float $accrued_days = 0;
 
     #[Rule('required|numeric|min:0')]
-    public $used_days = 0;
+    public float $used_days = 0;
 
     #[Rule('required|numeric|min:0')]
-    public $pending_days = 0;
+    public float $pending_days = 0;
 
     #[Rule('required|numeric|min:0')]
-    public $carried_over_days = 0;
+    public float $carried_over_days = 0;
 
     #[Rule('nullable|string')]
-    public $notes = '';
+    public string $notes = '';
 
     public function mount($balanceId = null): void
     {
@@ -86,7 +91,7 @@ class CreateEdit extends Component
     {
         $this->validate();
 
-        // التحقق من عدم وجود رصيد مكرر
+        // Check for duplicate balance
         $existingBalance = EmployeeLeaveBalance::where([
             'employee_id' => $this->employee_id,
             'leave_type_id' => $this->leave_type_id,
@@ -94,7 +99,7 @@ class CreateEdit extends Component
         ])->where('id', '!=', $this->balance?->id)->first();
 
         if ($existingBalance) {
-            $this->addError('general', 'يوجد رصيد مسبق لهذا الموظف ونوع الإجازة في هذه السنة.');
+            $this->addError('general', __('hr.duplicate_leave_balance'));
 
             return;
         }
@@ -113,10 +118,10 @@ class CreateEdit extends Component
 
         if ($this->balance) {
             $this->balance->update($data);
-            session()->flash('message', 'تم تحديث رصيد الإجازة بنجاح.');
+            session()->flash('message', __('hr.leave_balance_updated_successfully'));
         } else {
             EmployeeLeaveBalance::create($data);
-            session()->flash('message', 'تم إنشاء رصيد الإجازة بنجاح.');
+            session()->flash('message', __('hr.leave_balance_created_successfully'));
         }
 
         $this->redirect(route('leaves.balances.index'));

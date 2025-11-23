@@ -1,20 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use App\Models\ContractType;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 
 new class extends Component {
     use WithPagination;
 
-    public $contractTypeId = null;
-    public $name = '';
-    public $description = '';
-    public $showModal = false;
-    public $isEdit = false;
+    public ?int $contractTypeId = null;
+    public string $name = '';
+    public ?string $description = null;
+    public bool $showModal = false;
+    public bool $isEdit = false;
     public string $search = '';
 
-    public function rules()
+    /**
+     * Get validation rules for contract type form.
+     *
+     * @return array<string, string>
+     */
+    public function rules(): array
     {
         return [
             'name' => 'required|string|max:255',
@@ -22,21 +30,32 @@ new class extends Component {
         ];
     }
 
-    public function with(): array
-    {
-        return [
-            'contractTypes' => ContractType::where('name', 'like', '%' . $this->search . '%')
-                ->orderByDesc('id')
-                ->paginate(10),
-        ];
-    }
-
-    public function updatingSearch()
+    /**
+     * Reset pagination when search changes.
+     */
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
-    public function create()
+    /**
+     * Get filtered contract types list.
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    #[Computed]
+    public function contractTypes()
+    {
+        return ContractType::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->orderByDesc('id')
+            ->paginate(10);
+    }
+
+    /**
+     * Open create modal and reset form.
+     */
+    public function create(): void
     {
         $this->resetValidation();
         $this->reset(['name', 'description', 'contractTypeId']);
@@ -45,7 +64,12 @@ new class extends Component {
         $this->dispatch('show-create-modal');
     }
 
-    public function edit($id)
+    /**
+     * Open edit modal and load contract type data.
+     *
+     * @param int $id
+     */
+    public function edit(int $id): void
     {
         $this->resetValidation();
         $contractType = ContractType::findOrFail($id);
@@ -57,16 +81,19 @@ new class extends Component {
         $this->dispatch('show-edit-modal');
     }
 
-    public function save()
+    /**
+     * Save contract type (create or update).
+     */
+    public function save(): void
     {
         $validated = $this->validate();
 
         if ($this->isEdit) {
-            ContractType::find($this->contractTypeId)->update($validated);
-            session()->flash('success', __('تم تحديث نوع العقد بنجاح'));
+            ContractType::findOrFail($this->contractTypeId)->update($validated);
+            session()->flash('success', __('hr.contract_type_updated_successfully'));
         } else {
             ContractType::create($validated);
-            session()->flash('success', __('تم إنشاء نوع العقد بنجاح'));
+            session()->flash('success', __('hr.contract_type_created_successfully'));
         }
 
         $this->showModal = false;
@@ -74,13 +101,21 @@ new class extends Component {
         $this->dispatch('hide-modals');
     }
 
-    public function delete($id)
+    /**
+     * Delete contract type.
+     *
+     * @param int $id
+     */
+    public function delete(int $id): void
     {
         ContractType::findOrFail($id)->delete();
-        session()->flash('success', __('تم حذف نوع العقد بنجاح'));
+        session()->flash('success', __('hr.contract_type_deleted_successfully'));
     }
 
-    public function closeModal()
+    /**
+     * Close modal and reset form.
+     */
+    public function closeModal(): void
     {
         $this->showModal = false;
         $this->reset(['name', 'description', 'contractTypeId', 'isEdit']);
@@ -96,13 +131,16 @@ new class extends Component {
     @endif
 
     <div class="d-flex justify-content-between align-items-center mb-1">
-        @can('إضافة انواع العقود')
-            <button class="btn btn-primary" wire:click="create">
-                <i class="las la-plus"></i> إضافة نوع عقد جديد
+        @can('create Contract Types')
+            <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
+                <i class="las la-plus me-2"></i> {{ __('hr.add_contract_type') }}
             </button>
         @endcan
         <div class="mb-3">
-            <input type="text" wire:model.live="search" class="form-control" placeholder="بحث بالاسم...">
+            <input type="text" 
+                   wire:model.live.debounce.300ms="search" 
+                   class="form-control font-family-cairo" 
+                   placeholder="{{ __('hr.search_by_name') }}">
         </div>
     </div>
 
@@ -116,44 +154,52 @@ new class extends Component {
                     style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th>#</th>
-                            <th>الاسم</th>
-                            <th>الوصف</th>
-                            @canany(['حذف انواع العقود', 'تعديل انواع العقود'])
-                                <th>الإجراءات</th>
+                            <th class="font-family-cairo fw-bold">#</th>
+                            <th class="font-family-cairo fw-bold">{{ __('hr.title') }}</th>
+                            <th class="font-family-cairo fw-bold">{{ __('hr.description') }}</th>
+                            @canany(['edit Contract Types', 'delete Contract Types'])
+                                <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
                             @endcanany
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($contractTypes as $index => $type)
+                        @forelse ($this->contractTypes as $index => $type)
                             <tr>
-                                <td>{{ $contractTypes->firstItem() + $index }}</td>
+                                <td>{{ $this->contractTypes->firstItem() + $index }}</td>
                                 <td>{{ $type->name }}</td>
                                 <td>{{ $type->description }}</td>
 
-                                @canany(['حذف انواع العقود', 'تعديل انواع العقود'])
+                                @canany(['edit Contract Types', 'delete Contract Types'])
                                     <td>
-                                        @can('تعديل انواع العقود')
-                                            <button class="btn btn-success btn-sm me-1" wire:click="edit({{ $type->id }})">
-                                                <i class="las la-edit"></i>
-                                            </button>
-                                        @endcan
-                                        @can('حذف انواع العقود')
-                                            <button class="btn btn-danger btn-sm" wire:click="delete({{ $type->id }})"
-                                                onclick="return confirm('هل أنت متأكد أنك تريد الحذف؟')">
-                                                <i class="las la-trash"></i>
-                                            </button>
-                                        @endcan
+                                        <div class="btn-group" role="group">
+                                            @can('edit Contract Types')
+                                                <button type="button" 
+                                                        class="btn btn-success btn-sm me-1" 
+                                                        wire:click="edit({{ $type->id }})"
+                                                        title="{{ __('hr.edit') }}">
+                                                    <i class="las la-edit"></i>
+                                                </button>
+                                            @endcan
+                                            @can('delete Contract Types')
+                                                <button type="button" 
+                                                        class="btn btn-danger btn-sm" 
+                                                        wire:click="delete({{ $type->id }})"
+                                                        wire:confirm="{{ __('hr.confirm_delete_contract_type') }}"
+                                                        title="{{ __('hr.delete') }}">
+                                                    <i class="las la-trash"></i>
+                                                </button>
+                                            @endcan
+                                        </div>
                                     </td>
                                 @endcanany
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center">
-                                    <div class="alert alert-info py-3 mb-0"
-                                        style="font-size: 1.2rem; font-weight: 500;">
+                                <td colspan="{{ auth()->user()->canany(['edit Contract Types', 'delete Contract Types']) ? '4' : '3' }}" 
+                                    class="text-center font-family-cairo fw-bold py-4">
+                                    <div class="alert alert-info mb-0">
                                         <i class="las la-info-circle me-2"></i>
-                                        لا توجد أنواع عقود
+                                        {{ __('hr.no_contract_types_found') }}
                                     </div>
                                 </td>
                             </tr>
@@ -161,7 +207,7 @@ new class extends Component {
                     </tbody>
                 </table>
             </div>
-            {{ $contractTypes->links('pagination::bootstrap-5') }}
+            {{ $this->contractTypes->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
@@ -172,29 +218,29 @@ new class extends Component {
             <form wire:submit.prevent="save">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ $isEdit ? 'تعديل نوع العقد' : 'إضافة نوع عقد جديد' }}</h5>
+                        <h5 class="modal-title font-family-cairo fw-bold">{{ $isEdit ? __('hr.edit_contract_type') : __('hr.add_contract_type') }}</h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label">الاسم</label>
-                            <input wire:model="name" type="text" class="form-control" id="name">
+                            <label for="name" class="form-label font-family-cairo fw-bold">{{ __('hr.title') }} <span class="text-danger">*</span></label>
+                            <input wire:model.blur="name" type="text" class="form-control font-family-cairo" id="name" required>
                             @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label">الوصف</label>
-                            <textarea wire:model="description" class="form-control" id="description" rows="3"></textarea>
+                            <label for="description" class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
+                            <textarea wire:model.blur="description" class="form-control font-family-cairo" id="description" rows="3"></textarea>
                             @error('description')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeModal">إلغاء</button>
-                        <button type="submit" class="btn btn-primary">
-                            {{ $isEdit ? 'تحديث' : 'حفظ' }}
+                        <button type="button" class="btn btn-secondary font-family-cairo" wire:click="closeModal">{{ __('hr.cancel') }}</button>
+                        <button type="submit" class="btn btn-primary font-family-cairo">
+                            {{ $isEdit ? __('hr.update') : __('hr.save') }}
                         </button>
                     </div>
                 </div>

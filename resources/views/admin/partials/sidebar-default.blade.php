@@ -40,7 +40,8 @@
     <div class="menu-content h-100" data-simplebar>
         <ul class="metismenu left-sidenav-menu">
 
-            <li class="menu-label my-2"><a href="{{ route('home') }}">{{ config('public_settings.campany_name') }}</a>
+            <li class="">
+                <a href="{{ route('home') }}">{{ config('public_settings.campany_name') }}</a>
             </li>
 
             <li class="nav-item border-bottom pb-1 mb-2">

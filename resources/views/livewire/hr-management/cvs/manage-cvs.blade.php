@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use App\Models\Cv;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 new class extends Component {
     use WithPagination, WithFileUploads;
-    protected $paginationTheme = 'bootstrap';
+    protected string $paginationTheme = 'bootstrap';
 
     // Properties for form fields
     #[Rule('required|string|max:255')]
@@ -84,26 +88,26 @@ new class extends Component {
 
     // UI state properties
     #[Rule('nullable|file|mimes:pdf,doc,docx|max:10240')]
-    public $cv_file;
-    public $search = '';
-    public $filter_gender = '';
-    public $filter_marital_status = '';
-    public $filter_nationality = '';
-    public $showModal = false;
-    public $editingCv = null;
-    public $deleteId = null;
-    public $showDeleteModal = false;
-    public $viewCv = null;
-    public $showViewModal = false;
+    public mixed $cv_file = null;
+    public string $search = '';
+    public string $filter_gender = '';
+    public string $filter_marital_status = '';
+    public string $filter_nationality = '';
+    public bool $showModal = false;
+    public ?Cv $editingCv = null;
+    public ?int $deleteId = null;
+    public bool $showDeleteModal = false;
+    public ?Cv $viewCv = null;
+    public bool $showViewModal = false;
 
-    protected $queryString = ['search'];
+    protected array $queryString = ['search'];
 
-    public function mount()
+    public function mount(): void
     {
         $this->resetForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         $this->reset([
             'name', 'email', 'phone', 'country', 'state', 'city', 'address',
@@ -114,7 +118,12 @@ new class extends Component {
         ]);
     }
 
-    public function create()
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function create(): void
     {
         $this->resetForm();
         $this->showModal = true;
@@ -161,11 +170,11 @@ new class extends Component {
 
         $this->resetForm();
         $this->showModal = false;
-        session()->flash('message', 'CV created successfully!');
+        session()->flash('message', __('hr.cv_created_successfully'));
         $this->dispatch('closeModal', 'createModal');
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
         $this->editingCv = Cv::findOrFail($id);
         $this->name = $this->editingCv->name;
@@ -239,25 +248,25 @@ new class extends Component {
 
         $this->resetForm();
         $this->showModal = false;
-        session()->flash('message', 'CV updated successfully!');
+        session()->flash('message', __('hr.cv_updated_successfully'));
         $this->dispatch('closeModal', 'editModal');
     }
 
-    public function view($id)
+    public function view(int $id): void
     {
         $this->viewCv = Cv::findOrFail($id);
         $this->showViewModal = true;
         $this->dispatch('openModal', 'viewModal');
     }
 
-    public function delete($id)
+    public function delete(int $id): void
     {
         $this->deleteId = $id;
         $this->showDeleteModal = true;
         $this->dispatch('openModal', 'deleteModal');
     }
 
-    public function confirmDelete()
+    public function confirmDelete(): void
     {
         $cv = Cv::findOrFail($this->deleteId);
         $cv->clearMediaCollection('HR_Cvs');
@@ -265,11 +274,11 @@ new class extends Component {
         
         $this->showDeleteModal = false;
         $this->deleteId = null;
-        session()->flash('message', 'CV deleted successfully!');
+        session()->flash('message', __('hr.cv_deleted_successfully'));
         $this->dispatch('closeModal', 'deleteModal');
     }
 
-    public function downloadCv($id)
+    public function downloadCv(int $id)
     {
         $cv = Cv::findOrFail($id);
         $media = $cv->getFirstMedia('HR_Cvs');
@@ -278,15 +287,16 @@ new class extends Component {
             return response()->download($media->getPath(), $media->file_name);
         }
         
-        session()->flash('error', 'CV file not found!');
+        session()->flash('error', __('hr.cv_file_not_found'));
     }
 
-    public function clearFilters()
+    public function clearFilters(): void
     {
         $this->reset(['search', 'filter_gender', 'filter_marital_status', 'filter_nationality']);
     }
 
-    public function getCvsProperty()
+    #[Computed]
+    public function cvs(): LengthAwarePaginator
     {
         return Cv::query()
             ->when($this->search, function ($query) {
@@ -310,25 +320,28 @@ new class extends Component {
             ->paginate(10);
     }
 
-    public function getGenderOptionsProperty()
+    #[Computed]
+    public function genderOptions(): array
     {
         return [
-            'male' => 'Male',
-            'female' => 'Female',
+            'male' => __('hr.male'),
+            'female' => __('hr.female'),
         ];
     }
 
-    public function getMaritalStatusOptionsProperty()
+    #[Computed]
+    public function maritalStatusOptions(): array
     {
         return [
-            'single' => 'Single',
-            'married' => 'Married',
-            'divorced' => 'Divorced',
-            'widowed' => 'Widowed'
+            'single' => __('hr.single'),
+            'married' => __('hr.married'),
+            'divorced' => __('hr.divorced'),
+            'widowed' => __('hr.widowed')
         ];
     }
 
-    public function getNationalityOptionsProperty()
+    #[Computed]
+    public function nationalityOptions(): array
     {
         return Cv::distinct()->pluck('nationality')->filter()->values()->toArray();
     }
@@ -358,23 +371,25 @@ new class extends Component {
                     <i class="mdi mdi-file-document-multiple text-primary" style="font-size: 2.5rem;"></i>
                 </div>
                 <div>
-                    <h4 class="mb-1">CV Management</h4>
-                    <p class="text-muted mb-0">Manage and review candidate CVs</p>
+                    <h4 class="mb-1">{{ __('hr.cv_management') }}</h4>
+                    <p class="text-muted mb-0">{{ __('hr.manage_and_review_candidate_cvs') }}</p>
                 </div>
             </div>
         </div>
         <div class="col-md-6 text-end">
-            <button wire:click="create" 
-                    class="btn btn-primary btn-lg shadow-sm"
-                    wire:loading.attr="disabled"
-                    wire:target="create">
-                <span wire:loading.remove wire:target="create">
-                <i class="mdi mdi-plus me-2"></i> Add New CV
-                </span>
-                <span wire:loading wire:target="create">
-                    <i class="mdi mdi-loading mdi-spin me-2"></i> Opening...
-                </span>
-            </button>
+            @can('create CVs')
+                <button wire:click="create" 
+                        class="btn btn-primary btn-lg shadow-sm"
+                        wire:loading.attr="disabled"
+                        wire:target="create">
+                    <span wire:loading.remove wire:target="create">
+                    <i class="mdi mdi-plus me-2"></i> {{ __('hr.add_new_cv') }}
+                    </span>
+                    <span wire:loading wire:target="create">
+                        <i class="mdi mdi-loading mdi-spin me-2"></i> {{ __('hr.opening') }}...
+                    </span>
+                </button>
+            @endcan
         </div>
     </div>
 
@@ -385,12 +400,12 @@ new class extends Component {
                 <div class="col-md-3">
                     <div class="position-relative">
                         <i class="mdi mdi-magnify position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                        <input wire:model.live="search" type="text" class="form-control ps-5" placeholder="Search CVs...">
+                        <input wire:model.live.debounce.300ms="search" type="text" class="form-control ps-5" placeholder="{{ __('hr.search_cvs') }}">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <select wire:model.live="filter_gender" class="form-select">
-                        <option value="">All Genders</option>
+                        <option value="">{{ __('hr.all_genders') }}</option>
                         @foreach($this->genderOptions as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
@@ -398,18 +413,18 @@ new class extends Component {
                 </div>
                 <div class="col-md-2">
                     <select wire:model.live="filter_marital_status" class="form-select">
-                        <option value="">All Status</option>
+                        <option value="">{{ __('hr.all_status') }}</option>
                         @foreach($this->maritalStatusOptions as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <input wire:model.live="filter_nationality" type="text" class="form-control" placeholder="Filter by nationality...">
+                    <input wire:model.live="filter_nationality" type="text" class="form-control" placeholder="{{ __('hr.filter_by_nationality') }}">
                 </div>
                 <div class="col-md-2">
                     <button wire:click="clearFilters" class="btn btn-outline-secondary w-100">
-                        <i class="mdi mdi-filter-remove me-1"></i> Clear
+                        <i class="mdi mdi-filter-remove me-1"></i> {{ __('hr.clear') }}
                     </button>
                 </div>
             </div>
@@ -421,11 +436,11 @@ new class extends Component {
         <div class="card-header bg-white border-0 py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
-                    <i class="mdi mdi-format-list-bulleted me-2"></i>CVs List
+                    <i class="mdi mdi-format-list-bulleted me-2"></i>{{ __('hr.cvs_list') }}
                     <span class="badge bg-primary ms-2">{{ $this->cvs->total() }}</span>
             </h6>
                 <div class="d-flex align-items-center text-muted">
-                    <small>Showing {{ $this->cvs->firstItem() ?? 0 }} to {{ $this->cvs->lastItem() ?? 0 }} of {{ $this->cvs->total() }} results</small>
+                    <small>{{ __('hr.showing') }} {{ $this->cvs->firstItem() ?? 0 }} {{ __('hr.to') }} {{ $this->cvs->lastItem() ?? 0 }} {{ __('hr.of') }} {{ $this->cvs->total() }} {{ __('hr.results') }}</small>
                 </div>
             </div>
         </div>
@@ -434,13 +449,15 @@ new class extends Component {
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="border-0 fw-semibold">Name</th>
-                            <th class="border-0 fw-semibold">Contact</th>
-                            <th class="border-0 fw-semibold">Location</th>
-                            <th class="border-0 fw-semibold">Personal Info</th>
-                            <th class="border-0 fw-semibold">CV File</th>
-                            <th class="border-0 fw-semibold">Created</th>
-                            <th class="border-0 fw-semibold text-center">Actions</th>
+                            <th class="border-0 fw-semibold">{{ __('hr.name') }}</th>
+                            <th class="border-0 fw-semibold">{{ __('hr.contact') }}</th>
+                            <th class="border-0 fw-semibold">{{ __('hr.location') }}</th>
+                            <th class="border-0 fw-semibold">{{ __('hr.personal_info') }}</th>
+                            <th class="border-0 fw-semibold">{{ __('hr.cv_file') }}</th>
+                            <th class="border-0 fw-semibold">{{ __('hr.created_at') }}</th>
+                            @canany(['view CVs', 'edit CVs', 'delete CVs'])
+                                <th class="border-0 fw-semibold text-center">{{ __('hr.actions') }}</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -501,75 +518,86 @@ new class extends Component {
                                 </td>
                                 <td>
                                     @if($cv->getFirstMedia('HR_Cvs'))
-                                        <button wire:click="downloadCv({{ $cv->id }})" class="btn btn-sm btn-outline-primary" title="Download CV">
+                                        <button wire:click="downloadCv({{ $cv->id }})" class="btn btn-sm btn-outline-primary" title="{{ __('hr.download_cv') }}">
                                             <i class="mdi mdi-download"></i>
                                         </button>
                                     @else
                                         <span class="text-muted">
-                                            <i class="mdi mdi-file-document-outline"></i> No file
+                                            <i class="mdi mdi-file-document-outline"></i> {{ __('hr.no_file') }}
                                         </span>
                                     @endif
                                 </td>
                                 <td>{{ $cv->created_at->format('M d, Y') }}</td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <button wire:click="view({{ $cv->id }})" 
-                                                class="btn btn-sm btn-outline-info" 
-                                                title="View Details"
-                                                wire:loading.attr="disabled"
-                                                wire:target="view({{ $cv->id }})">
-                                            <span wire:loading.remove wire:target="view({{ $cv->id }})">
-                                                <i class="mdi mdi-eye"></i>
-                                            </span>
-                                            <span wire:loading wire:target="view({{ $cv->id }})">
-                                                <i class="mdi mdi-loading mdi-spin"></i>
-                                            </span>
-                                        </button>
-                                        <button wire:click="edit({{ $cv->id }})" 
-                                                class="btn btn-sm btn-outline-warning" 
-                                                title="Edit CV"
-                                                wire:loading.attr="disabled"
-                                                wire:target="edit({{ $cv->id }})">
-                                            <span wire:loading.remove wire:target="edit({{ $cv->id }})">
-                                                <i class="mdi mdi-pencil"></i>
-                                            </span>
-                                            <span wire:loading wire:target="edit({{ $cv->id }})">
-                                                <i class="mdi mdi-loading mdi-spin"></i>
-                                            </span>
-                                        </button>
-                                        <button wire:click="delete({{ $cv->id }})" 
-                                                class="btn btn-sm btn-outline-danger" 
-                                                title="Delete CV"
-                                                wire:loading.attr="disabled"
-                                                wire:target="delete({{ $cv->id }})">
-                                            <span wire:loading.remove wire:target="delete({{ $cv->id }})">
-                                                <i class="mdi mdi-delete"></i>
-                                            </span>
-                                            <span wire:loading wire:target="delete({{ $cv->id }})">
-                                                <i class="mdi mdi-loading mdi-spin"></i>
-                                            </span>
-                                        </button>
-                                    </div>
-                                </td>
+                                @canany(['view CVs', 'edit CVs', 'delete CVs'])
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            @can('view CVs')
+                                                <button wire:click="view({{ $cv->id }})" 
+                                                        class="btn btn-sm btn-outline-info" 
+                                                        title="{{ __('hr.view') }}"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="view({{ $cv->id }})">
+                                                    <span wire:loading.remove wire:target="view({{ $cv->id }})">
+                                                        <i class="mdi mdi-eye"></i>
+                                                    </span>
+                                                    <span wire:loading wire:target="view({{ $cv->id }})">
+                                                        <i class="mdi mdi-loading mdi-spin"></i>
+                                                    </span>
+                                                </button>
+                                            @endcan
+                                            @can('edit CVs')
+                                                <button wire:click="edit({{ $cv->id }})" 
+                                                        class="btn btn-sm btn-outline-warning" 
+                                                        title="{{ __('hr.edit') }}"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="edit({{ $cv->id }})">
+                                                    <span wire:loading.remove wire:target="edit({{ $cv->id }})">
+                                                        <i class="mdi mdi-pencil"></i>
+                                                    </span>
+                                                    <span wire:loading wire:target="edit({{ $cv->id }})">
+                                                        <i class="mdi mdi-loading mdi-spin"></i>
+                                                    </span>
+                                                </button>
+                                            @endcan
+                                            @can('delete CVs')
+                                                <button wire:click="delete({{ $cv->id }})" 
+                                                        wire:confirm="{{ __('hr.confirm_delete_cv') }}"
+                                                        class="btn btn-sm btn-outline-danger" 
+                                                        title="{{ __('hr.delete') }}"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="delete({{ $cv->id }})">
+                                                    <span wire:loading.remove wire:target="delete({{ $cv->id }})">
+                                                        <i class="mdi mdi-delete"></i>
+                                                    </span>
+                                                    <span wire:loading wire:target="delete({{ $cv->id }})">
+                                                        <i class="mdi mdi-loading mdi-spin"></i>
+                                                    </span>
+                                                </button>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                @endcanany
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5">
+                                <td colspan="@canany(['view CVs', 'edit CVs', 'delete CVs'])7@else6@endcanany" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="mdi mdi-file-document-outline text-muted" style="font-size: 4rem;"></i>
-                                        <h5 class="mt-3 mb-2">No CVs Found</h5>
-                                        <p class="mb-3">Start by adding your first CV record</p>
-                                        <button wire:click="create" 
-                                                class="btn btn-primary"
-                                                wire:loading.attr="disabled"
-                                                wire:target="create">
-                                            <span wire:loading.remove wire:target="create">
-                                            <i class="mdi mdi-plus me-2"></i> Add First CV
-                                            </span>
-                                            <span wire:loading wire:target="create">
-                                                <i class="mdi mdi-loading mdi-spin me-2"></i> Opening...
-                                            </span>
-                                        </button>
+                                        <h5 class="mt-3 mb-2">{{ __('hr.no_cvs_found') }}</h5>
+                                        <p class="mb-3">{{ __('hr.start_by_adding_first_cv') }}</p>
+                                        @can('create CVs')
+                                            <button wire:click="create" 
+                                                    class="btn btn-primary"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="create">
+                                                <span wire:loading.remove wire:target="create">
+                                                <i class="mdi mdi-plus me-2"></i> {{ __('hr.add_first_cv') }}
+                                                </span>
+                                                <span wire:loading wire:target="create">
+                                                    <i class="mdi mdi-loading mdi-spin me-2"></i> {{ __('hr.opening') }}...
+                                                </span>
+                                            </button>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

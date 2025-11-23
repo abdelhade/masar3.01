@@ -10,10 +10,10 @@ class CityController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:view cities')->only(['index']);
-        $this->middleware('can:create cities')->only(['create', 'store']);
-        $this->middleware('can:edit cities')->only(['edit', 'update']);
-        $this->middleware('can:delete cities')->only(['destroy']);
+        $this->middleware('can:view Cities')->only(['index']);
+        $this->middleware('can:create Cities')->only(['create', 'store']);
+        $this->middleware('can:edit Cities')->only(['edit', 'update']);
+        $this->middleware('can:delete Cities')->only(['destroy']);
     }
     public function index()
     {

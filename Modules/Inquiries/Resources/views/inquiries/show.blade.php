@@ -201,13 +201,22 @@
                         <div class="mb-3">
                             <strong class="text-gray-700">{{ __('Status') }}:</strong>
                             <p class="mb-0">
-                                @if ($inquiry->quotation_state)
-                                    <span class="badge bg-{{ $inquiry->quotation_state->color() }} px-3 py-2">
-                                        {{ $inquiry->quotation_state->label() }}
+                                @if ($inquiry->pricingStatus)
+                                    <span class="badge px-3 py-2"
+                                        style="background-color: {{ $inquiry->pricingStatus->color }}">
+                                        {{ __($inquiry->pricingStatus->name) }}
                                     </span>
+                                    @if ($inquiry->pricing_reason)
+                                        <div class="alert alert-info mt-2 small mb-0">
+                                            <strong><i
+                                                    class="fas fa-info-circle me-1"></i>{{ __('Reason') }}:</strong><br>
+                                            {{ $inquiry->pricing_reason }}
+                                        </div>
+                                    @endif
                                 @else
-                                    {{ __('Not Specified') }}
+                                    <span class="badge bg-secondary px-3 py-2">{{ __('Not Specified') }}</span>
                                 @endif
+
                             </p>
                         </div>
                         @if ($inquiry->rejection_reason)
@@ -390,6 +399,13 @@
                                 {{ __('No engineers assigned to this inquiry yet.') }}
                             </div>
                         @endif
+                        @if ($inquiry->assigned_engineer_date)
+                            <div class="alert alert-light small mt-3 mb-0 p-2">
+                                <i class="fas fa-calendar-check me-1"></i>
+                                <strong>{{ __('Engineer Assignment Date') }}:</strong>
+                                <strong>{{ \Carbon\Carbon::parse($inquiry->assigned_engineer_date)->format('Y-m-d') }}</strong>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -410,7 +426,7 @@
             'main_contractor' => ['label' => __('Main Contractor'), 'icon' => 'fa-hard-hat', 'color' => 'success'],
             'consultant' => ['label' => __('Consultant'), 'icon' => 'fa-user-check', 'color' => 'info'],
             'owner' => ['label' => __('Owner'), 'icon' => 'fa-crown', 'color' => 'warning'],
-            'engineer' => ['label' => __('Engineer'), 'icon' => 'fa-user-cog', 'color' => 'danger'],
+            // 'engineer' => ['label' => __('Engineer'), 'icon' => 'fa-user-cog', 'color' => 'danger'],
         ] as $roleKey => $roleData)
                             <div class="d-flex align-items-center p-3 border-bottom">
                                 <div class="flex-shrink-0">
@@ -452,13 +468,7 @@
                             </div>
                         @endforeach
 
-                        @if ($inquiry->assigned_engineer_date)
-                            <div class="alert alert-light small mt-3 mb-0 p-2">
-                                <i class="fas fa-calendar-check me-1"></i>
-                                <strong>{{ __('Engineer Assignment Date') }}:</strong>
-                                <strong>{{ \Carbon\Carbon::parse($inquiry->assigned_engineer_date)->format('Y-m-d') }}</strong>
-                            </div>
-                        @endif
+
                     </div>
                 </div>
 

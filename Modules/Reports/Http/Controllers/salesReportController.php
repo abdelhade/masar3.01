@@ -18,14 +18,16 @@ class salesReportController extends Controller
         })->with(['item', 'operhead']);
 
         // الفلترة حسب التاريخ
-        if (request('from_date')) {
-            $query->whereHas('operhead', function ($q) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
+        $fromDate = request('from_date') ?? today()->format('Y-m-d');
+        $toDate = request('to_date') ?? today()->format('Y-m-d');
+        if ($fromDate) {
+            $query->whereHas('operhead', function ($q) use ($fromDate) {
+                $q->whereDate('pro_date', '>=', $fromDate);
             });
         }
-        if (request('to_date')) {
-            $query->whereHas('operhead', function ($q) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
+        if ($toDate) {
+            $query->whereHas('operhead', function ($q) use ($toDate) {
+                $q->whereDate('pro_date', '<=', $toDate);
             });
         }
 
@@ -42,14 +44,14 @@ class salesReportController extends Controller
             ->paginate(50);
 
         // حساب الإجماليات
-        $allData = OperationItems::whereHas('operhead', function ($q) {
+        $allData = OperationItems::whereHas('operhead', function ($q) use ($fromDate, $toDate) {
             $q->where('pro_type', 10);
 
-            if (request('from_date')) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
+            if ($fromDate) {
+                $q->whereDate('pro_date', '>=', $fromDate);
             }
-            if (request('to_date')) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
+            if ($toDate) {
+                $q->whereDate('pro_date', '<=', $toDate);
             }
         })
             ->selectRaw('
@@ -73,6 +75,8 @@ class salesReportController extends Controller
         $averageSalesPerItem = $totalItems > 0 ? $totalSales / $totalItems : 0;
 
         return view('reports::sales.general-sales-items', compact(
+            'fromDate',
+            'toDate',
             'salesItems',
             'totalQuantity',
             'totalSales',
@@ -86,102 +90,15 @@ class salesReportController extends Controller
 
     public function generalSalesTotalReport()
     {
-        $groupBy = request('group_by', 'day');
-        $fromDate = request('from_date');
-        $toDate = request('to_date');
-
-        $query = DB::table('operhead')
-            ->join('operation_items', 'operhead.id', '=', 'operation_items.pro_id')
-            ->where('operhead.pro_type', 10);
-
-        if ($fromDate) {
-            $query->whereDate('operhead.pro_date', '>=', $fromDate);
-        }
-        if ($toDate) {
-            $query->whereDate('operhead.pro_date', '<=', $toDate);
-        }
-
-        if ($groupBy === 'day') {
-            $salesTotals = $query->selectRaw('
-                DATE(operhead.pro_date) as period_name,
-                COUNT(DISTINCT operhead.id) as invoices_count,
-                SUM(operation_items.qty_out) as total_quantity,
-                SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
-                SUM(operhead.fat_disc) as total_discount,
-                SUM(operhead.fat_net) as net_sales
-            ')
-                ->groupBy('period_name')
-                ->orderBy('period_name', 'desc')
-                ->paginate(50);
-        } elseif ($groupBy === 'month') {
-            $salesTotals = $query->selectRaw('
-                YEAR(operhead.pro_date) as year,
-                MONTH(operhead.pro_date) as month,
-                CONCAT(YEAR(operhead.pro_date), "-", LPAD(MONTH(operhead.pro_date), 2, "0")) as period_name,
-                COUNT(DISTINCT operhead.id) as invoices_count,
-                SUM(operation_items.qty_out) as total_quantity,
-                SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
-                SUM(operhead.fat_disc) as total_discount,
-                SUM(operhead.fat_net) as net_sales
-            ')
-                ->groupBy('year', 'month')
-                ->orderBy('year', 'desc')
-                ->orderBy('month', 'desc')
-                ->paginate(50);
-        } else {
-            $salesTotals = $query->selectRaw('
-                "الإجمالي" as period_name,
-                COUNT(DISTINCT operhead.id) as invoices_count,
-                SUM(operation_items.qty_out) as total_quantity,
-                SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
-                SUM(operhead.fat_disc) as total_discount,
-                SUM(operhead.fat_net) as net_sales
-            ')
-                ->paginate(50);
-        }
-
-        // أضف متوسط الفاتورة لكل صف
-        foreach ($salesTotals as $row) {
-            $row->average_invoice = $row->invoices_count > 0
-                ? $row->net_sales / $row->invoices_count
-                : 0;
-        }
-
-        // إجماليات عامة
-        $grandTotalInvoices = $salesTotals->sum('invoices_count');
-        $grandTotalQuantity = $salesTotals->sum('total_quantity');
-        $grandTotalSales = $salesTotals->sum('total_sales');
-        $grandTotalDiscount = $salesTotals->sum('total_discount');
-        $grandTotalNetSales = $salesTotals->sum('net_sales');
-        $grandAverageInvoice = $grandTotalInvoices > 0 ? $grandTotalNetSales / $grandTotalInvoices : 0;
-
-        $totalPeriods = $salesTotals->count();
-        $highestSales = $salesTotals->max('net_sales') ?? 0;
-        $lowestSales = $salesTotals->min('net_sales') ?? 0;
-        $averageSales = $totalPeriods > 0 ? $grandTotalNetSales / $totalPeriods : 0;
-
-        return view('reports::sales.general-sales-total', compact(
-            'salesTotals',
-            'groupBy',
-            'grandTotalInvoices',
-            'grandTotalQuantity',
-            'grandTotalSales',
-            'grandTotalDiscount',
-            'grandTotalNetSales',
-            'grandAverageInvoice',
-            'totalPeriods',
-            'highestSales',
-            'lowestSales',
-            'averageSales'
-        ));
+        return view('reports::sales.general-sales-total');
     }
 
     // أضف هذه الدالة في salesReportController
 
     public function salesByRepresentativeReport()
     {
-        $fromDate = request('from_date');
-        $toDate = request('to_date');
+        $fromDate = request('from_date') ?? today()->format('Y-m-d');
+        $toDate = request('to_date') ?? today()->format('Y-m-d');
         $representativeId = request('representative_id');
 
         // Query أساسي
@@ -258,6 +175,8 @@ class salesReportController extends Controller
             ->get();
 
         return view('reports::sales.sales-by-representative', compact(
+            'fromDate',
+            'toDate',
             'salesByRep',
             'representatives',
             'totalInvoices',
@@ -272,160 +191,128 @@ class salesReportController extends Controller
             'topRepSales'
         ));
     }
-    public function daily(Request $request)
-    {
-        $customers = AccHead::where('code', 'like', '1103%')
-            ->where('isdeleted', 0)
-            ->orderBy('aname')
-            ->get();
+    // public function daily(Request $request)
+    // {
+    //     $customers = AccHead::where('code', 'like', '1103%')
+    //         ->where('isdeleted', 0)
+    //         ->orderBy('aname')
+    //         ->get();
 
-        $fromDate = $request->input('from_date', today()->format('Y-m-d'));
-        $toDate = $request->input('to_date', today()->format('Y-m-d'));
-        $customerId = $request->input('customer_id');
+    //     $fromDate = $request->input('from_date', today()->format('Y-m-d'));
+    //     $toDate = $request->input('to_date', today()->format('Y-m-d'));
+    //     $customerId = $request->input('customer_id');
 
-        // جلب الفواتير مع الأصناف
-        $sales = OperHead::where('pro_type', 10)
-            ->with(['acc1Head', 'operationItems'])
-            ->whereDate('pro_date', '>=', $fromDate)
-            ->whereDate('pro_date', '<=', $toDate)
-            ->when($customerId, fn($q) => $q->where('acc1', $customerId))
-            ->orderBy('pro_date', 'desc')
-            ->orderBy('pro_num', 'desc')
-            ->paginate(50)
-            ->appends($request->query());
+    //     // جلب الفواتير مع الأصناف
+    //     $sales = OperHead::where('pro_type', 10)
+    //         ->with(['acc1Head', 'operationItems'])
+    //         ->whereDate('pro_date', '>=', $fromDate)
+    //         ->whereDate('pro_date', '<=', $toDate)
+    //         ->when($customerId, fn($q) => $q->where('acc1', $customerId))
+    //         ->orderBy('pro_date', 'desc')
+    //         ->orderBy('pro_num', 'desc')
+    //         ->paginate(50)
+    //         ->appends($request->query());
 
-        // === الحسابات من الفواتير (OperHead) ===
-        $totalSales = $sales->sum('fat_total');
-        $totalDiscount = $sales->sum('fat_disc');
-        $totalNetSales = $sales->sum('fat_net');
-        $totalInvoices = $sales->count();
-        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
+    //     // === الحسابات من الفواتير (OperHead) ===
+    //     $totalSales = $sales->sum('fat_total');
+    //     $totalDiscount = $sales->sum('fat_disc');
+    //     $totalNetSales = $sales->sum('fat_net');
+    //     $totalInvoices = $sales->count();
+    //     $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
 
-        // === الحسابات من الأصناف (OperationItems) ===
-        $totalQuantity = 0;
-        $totalItemsCount = 0;
+    //     // === الحسابات من الأصناف (OperationItems) ===
+    //     $totalQuantity = 0;
+    //     $totalItemsCount = 0;
 
-        foreach ($sales as $sale) {
-            if ($sale->items) {
-                $totalQuantity += $sale->items->sum('fat_quantity'); // الكمية الفعلية
-                $totalItemsCount += $sale->items->count();
-            }
-        }
+    //     foreach ($sales as $sale) {
+    //         if ($sale->items) {
+    //             $totalQuantity += $sale->items->sum('fat_quantity'); // الكمية الفعلية
+    //             $totalItemsCount += $sale->items->count();
+    //         }
+    //     }
 
-        return view('reports::sales.daily', compact(
-            'customers',
-            'sales',
-            'fromDate',
-            'toDate',
-            'customerId',
-            'totalQuantity',
-            'totalSales',
-            'totalDiscount',
-            'totalNetSales',
-            'totalInvoices',
-            'averageInvoiceValue',
-            'totalItemsCount'
-        ));
-    }
+    //     return view('reports::sales.daily', compact(
+    //         'customers',
+    //         'sales',
+    //         'fromDate',
+    //         'toDate',
+    //         'customerId',
+    //         'totalQuantity',
+    //         'totalSales',
+    //         'totalDiscount',
+    //         'totalNetSales',
+    //         'totalInvoices',
+    //         'averageInvoiceValue',
+    //         'totalItemsCount'
+    //     ));
+    // }
 
-    public function generalSalesDailyReport(Request $request)
-    {
-        $customers = AccHead::where('code', 'like', '1103%')
-            ->where('isdeleted', 0)
-            ->orderBy('aname')
-            ->get();
+    // public function generalSalesDailyReport(Request $request)
+    // {
+    //     $customers = AccHead::where('code', 'like', '1103%')
+    //         ->where('isdeleted', 0)
+    //         ->orderBy('aname')
+    //         ->get();
 
-        $fromDate = $request->input('from_date', today()->format('Y-m-d'));
-        $toDate = $request->input('to_date', today()->format('Y-m-d'));
-        $customerId = $request->input('customer_id');
+    //     $fromDate = $request->input('from_date', today()->format('Y-m-d'));
+    //     $toDate = $request->input('to_date', today()->format('Y-m-d'));
+    //     $customerId = $request->input('customer_id');
 
-        // جلب الفواتير مع الأصناف
-        $query = OperHead::where('pro_type', 10)
-            ->with(['acc1Head', 'operationItems'])
-            ->whereDate('pro_date', '>=', $fromDate)
-            ->whereDate('pro_date', '<=', $toDate)
-            ->when($customerId, fn($q) => $q->where('acc1', $customerId));
+    //     // جلب الفواتير مع الأصناف
+    //     $query = OperHead::where('pro_type', 10)
+    //         ->with(['acc1Head', 'operationItems'])
+    //         ->whereDate('pro_date', '>=', $fromDate)
+    //         ->whereDate('pro_date', '<=', $toDate)
+    //         ->when($customerId, fn($q) => $q->where('acc1', $customerId));
 
-        // حساب عدد الأصناف لكل فاتورة
-        $sales = $query->get()->map(function ($sale) {
-            $sale->items_count = $sale->operationItems->count() ?? 0;
-            $sale->total_quantity = $sale->operationItems->sum('qty_out') ?? 0;
-            $sale->total_sales = $sale->fat_total ?? 0;
-            $sale->net_sales = $sale->fat_net ?? 0;
-            $sale->status = $sale->isdeleted == 0 ? 'completed' : 'pending';
-            return $sale;
-        });
+    //     // حساب عدد الأصناف لكل فاتورة
+    //     $sales = $query->get()->map(function ($sale) {
+    //         $sale->items_count = $sale->operationItems->count() ?? 0;
+    //         $sale->total_quantity = $sale->operationItems->sum('qty_out') ?? 0;
+    //         $sale->total_sales = $sale->fat_total ?? 0;
+    //         $sale->net_sales = $sale->fat_net ?? 0;
+    //         $sale->status = $sale->isdeleted == 0 ? 'completed' : 'pending';
+    //         return $sale;
+    //     });
 
-        // حساب الإجماليات من جميع البيانات (قبل pagination)
-        $totalQuantity = $sales->sum('total_quantity');
-        $totalSalesAmount = $sales->sum('total_sales');
-        $totalDiscount = $sales->sum('fat_disc') ?? 0;
-        $totalNetSales = $sales->sum('net_sales');
-        $totalInvoices = $sales->count();
-        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
+    //     // حساب الإجماليات من جميع البيانات (قبل pagination)
+    //     $totalQuantity = $sales->sum('total_quantity');
+    //     $totalSalesAmount = $sales->sum('total_sales');
+    //     $totalDiscount = $sales->sum('fat_disc') ?? 0;
+    //     $totalNetSales = $sales->sum('net_sales');
+    //     $totalInvoices = $sales->count();
+    //     $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
 
-        // Pagination manual
-        $perPage = 50;
-        $currentPage = $request->input('page', 1);
-        $items = $sales->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $paginatedSales = new \Illuminate\Pagination\LengthAwarePaginator(
-            $items,
-            $sales->count(),
-            $perPage,
-            $currentPage,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+    //     // Pagination manual
+    //     $perPage = 50;
+    //     $currentPage = $request->input('page', 1);
+    //     $items = $sales->slice(($currentPage - 1) * $perPage, $perPage)->values();
+    //     $paginatedSales = new \Illuminate\Pagination\LengthAwarePaginator(
+    //         $items,
+    //         $sales->count(),
+    //         $perPage,
+    //         $currentPage,
+    //         ['path' => $request->url(), 'query' => $request->query()]
+    //     );
 
-        return view('reports::sales.general-sales-daily-report', [
-            'customers' => $customers,
-            'sales' => $paginatedSales,
-            'fromDate' => $fromDate,
-            'toDate' => $toDate,
-            'customerId' => $customerId,
-            'totalQuantity' => $totalQuantity,
-            'totalSales' => $totalSalesAmount,
-            'totalDiscount' => $totalDiscount,
-            'totalNetSales' => $totalNetSales,
-            'totalInvoices' => $totalInvoices,
-            'averageInvoiceValue' => $averageInvoiceValue
-        ]);
-    }
+    //     return view('reports::sales.general-sales-daily-report', [
+    //         'customers' => $customers,
+    //         'sales' => $paginatedSales,
+    //         'fromDate' => $fromDate,
+    //         'toDate' => $toDate,
+    //         'customerId' => $customerId,
+    //         'totalQuantity' => $totalQuantity,
+    //         'totalSales' => $totalSalesAmount,
+    //         'totalDiscount' => $totalDiscount,
+    //         'totalNetSales' => $totalNetSales,
+    //         'totalInvoices' => $totalInvoices,
+    //         'averageInvoiceValue' => $averageInvoiceValue
+    //     ]);
+    // }
 
     public function generalSalesReport()
     {
-        $customers = AccHead::where('code', 'like', '1103%')->where('isdeleted', 0)->get();
-
-        $sales = OperHead::where('pro_type', 10)
-            ->with('acc1Head')
-            ->when(request('from_date'), function ($q) {
-                $q->whereDate('pro_date', '>=', request('from_date'));
-            })
-            ->when(request('to_date'), function ($q) {
-                $q->whereDate('pro_date', '<=', request('to_date'));
-            })
-            ->when(request('customer_id'), function ($q) {
-                $q->where('acc1', request('customer_id'));
-            })
-            ->orderBy('pro_date', 'desc')
-            ->paginate(50);
-
-        $totalQuantity = $sales->sum('total_quantity');
-        $totalSales = $sales->sum('total_sales');
-        $totalDiscount = $sales->sum('discount');
-        $totalNetSales = $sales->sum('net_sales');
-        $totalInvoices = $sales->count();
-        $averageInvoiceValue = $totalInvoices > 0 ? $totalNetSales / $totalInvoices : 0;
-
-        return view('reports::sales.general-sales-report', compact(
-            'customers',
-            'sales',
-            'totalQuantity',
-            'totalSales',
-            'totalDiscount',
-            'totalNetSales',
-            'totalInvoices',
-            'averageInvoiceValue'
-        ));
+        return view('reports::sales.general-sales-report');
     }
 
     public function salesReportByAddress()

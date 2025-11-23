@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\DB;
 class GeneralReportController extends Controller
 {
     use ReportCalculationTrait;
+
+    public function index(): \Illuminate\Contracts\View\View
+    {
+        return view('reports::general-reports.index');
+    }
+
     // محلل العمل اليومي
     public function overall()
     {

@@ -27,6 +27,6 @@ class PricingStatus extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true)->orderBy('order');
+        return $query->where('is_active', true);
     }
 }

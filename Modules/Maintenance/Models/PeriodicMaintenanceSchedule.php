@@ -24,6 +24,8 @@ class PeriodicMaintenanceSchedule extends Model
         'is_active',
         'notes',
         'branch_id',
+        'maintainable_id',
+        'maintainable_type',
     ];
 
 
@@ -66,6 +68,11 @@ class PeriodicMaintenanceSchedule extends Model
     public function notifications()
     {
         return $this->hasMany(MaintenanceNotification::class, 'periodic_schedule_id');
+    }
+
+    public function maintainable()
+    {
+        return $this->morphTo();
     }
 
     /**

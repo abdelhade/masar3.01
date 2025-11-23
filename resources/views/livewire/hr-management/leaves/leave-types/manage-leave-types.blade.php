@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use App\Models\LeaveType;
 use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 
 new class extends Component {
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
 
-    public $leaveTypes;
-    public $name = '';
-    public $code = '';
-    public $is_paid = false;
-    public $requires_approval = false;
-    public $max_per_request_days = 0;
-    public $accrual_rate_per_month = 0;
-    public $carry_over_limit_days = 0;
-    public $showModal = false;
-    public $isEdit = false;
-    public $search = '';
-    public $leaveTypeId = null;
+    public string $name = '';
+    public string $code = '';
+    public bool $is_paid = false;
+    public bool $requires_approval = false;
+    public int $max_per_request_days = 0;
+    public float $accrual_rate_per_month = 0.0;
+    public int $carry_over_limit_days = 0;
+    public bool $showModal = false;
+    public bool $isEdit = false;
+    public string $search = '';
+    public ?int $leaveTypeId = null;
 
     public function rules()
     {
@@ -34,20 +36,26 @@ new class extends Component {
         ];
     }
 
-    public function mount()
-    {
-        $this->loadLeaveTypes();
-    }
-    
-    public function updatingSearch()
+    /**
+     * Reset pagination when search changes.
+     */
+    public function updatingSearch(): void
     {
         $this->resetPage();
-        $this->loadLeaveTypes();
     }
-    
-    public function loadLeaveTypes()
+
+    /**
+     * Get filtered leave types list.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, LeaveType>
+     */
+    #[Computed]
+    public function leaveTypes()
     {
-        $this->leaveTypes = LeaveType::when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))->orderByDesc('id')->get();
+        return LeaveType::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->orderByDesc('id')
+            ->get();
     }
 
     public function openModal()
@@ -76,22 +84,30 @@ new class extends Component {
         $this->resetErrorBag();
     }
 
-    public function edit($id)
+    /**
+     * Open edit modal and load leave type data.
+     *
+     * @param int $id
+     */
+    public function edit(int $id): void
     {
         $leaveType = LeaveType::findOrFail($id);
         $this->leaveTypeId = $leaveType->id;
         $this->name = $leaveType->name;
         $this->code = $leaveType->code;
-        $this->is_paid = $leaveType->is_paid;
-        $this->requires_approval = $leaveType->requires_approval;
-        $this->max_per_request_days = $leaveType->max_per_request_days;
-        $this->accrual_rate_per_month = $leaveType->accrual_rate_per_month;
-        $this->carry_over_limit_days = $leaveType->carry_over_limit_days;
+        $this->is_paid = (bool) $leaveType->is_paid;
+        $this->requires_approval = (bool) $leaveType->requires_approval;
+        $this->max_per_request_days = (int) $leaveType->max_per_request_days;
+        $this->accrual_rate_per_month = (float) $leaveType->accrual_rate_per_month;
+        $this->carry_over_limit_days = (int) $leaveType->carry_over_limit_days;
         $this->isEdit = true;
         $this->showModal = true;
     }
 
-    public function save()
+    /**
+     * Save leave type (create or update).
+     */
+    public function save(): void
     {
         $this->validate();
 
@@ -106,22 +122,25 @@ new class extends Component {
         ];
 
         if ($this->isEdit) {
-            LeaveType::where('id', $this->leaveTypeId)->update($data);
-            session()->flash('message', 'تم تحديث نوع الإجازة بنجاح');
+            LeaveType::findOrFail($this->leaveTypeId)->update($data);
+            session()->flash('message', __('hr.leave_type_updated_successfully'));
         } else {
             LeaveType::create($data);
-            session()->flash('message', 'تم إنشاء نوع الإجازة بنجاح');
+            session()->flash('message', __('hr.leave_type_created_successfully'));
         }
 
         $this->closeModal();
-        $this->loadLeaveTypes();
     }
 
-    public function delete($id)
+    /**
+     * Delete leave type.
+     *
+     * @param int $id
+     */
+    public function delete(int $id): void
     {
         LeaveType::findOrFail($id)->delete();
-        session()->flash('message', 'تم حذف نوع الإجازة بنجاح');
-        $this->loadLeaveTypes();
+        session()->flash('message', __('hr.leave_type_deleted_successfully'));
     }
     
 }; ?>
@@ -131,13 +150,15 @@ new class extends Component {
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
-<div>
-                    <h2 class="mb-0">إدارة أنواع الإجازات</h2>
-                    <p class="text-muted mb-0">إدارة أنواع الإجازات المختلفة في النظام</p>
+                <div>
+                    <h2 class="mb-0 font-family-cairo fw-bold">{{ __('hr.leave_types') }}</h2>
+                    <p class="text-muted mb-0 font-family-cairo">{{ __('hr.leave_management') }}</p>
                 </div>
-                <button type="button" class="btn btn-primary" wire:click="openModal">
-                    <i class="fas fa-plus me-2"></i>إضافة نوع إجازة جديد
-                </button>
+                @can('create Leave Types')
+                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" wire:click="openModal">
+                        <i class="fas fa-plus me-2"></i>{{ __('hr.add_leave_type') }}
+                    </button>
+                @endcan
             </div>
         </div>
     </div>
@@ -149,7 +170,9 @@ new class extends Component {
                 <span class="input-group-text">
                     <i class="fas fa-search"></i>
                 </span>
-                <input type="text" class="form-control" placeholder="البحث في أنواع الإجازات..." 
+                <input type="text" 
+                       class="form-control font-family-cairo" 
+                       placeholder="{{ __('hr.search_by_name') }}" 
                        wire:model.live.debounce.300ms="search">
             </div>
         </div>
@@ -166,23 +189,25 @@ new class extends Component {
     <!-- Leave Types Table -->
     <div class="card">
         <div class="card-body">
-            @if($leaveTypes->count() > 0)
+            @if($this->leaveTypes->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>الاسم</th>
-                                <th>الكود</th>
-                                <th>مدفوعة</th>
-                                <th>تتطلب موافقة</th>
-                                <th>الحد الأقصى للطلب</th>
-                                <th>معدل التراكم/شهر</th>
-                                <th>حد التحويل</th>
-                                <th>الإجراءات</th>
+                                <th class="font-family-cairo fw-bold">{{ __('hr.title') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('Code') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('Paid') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('Requires Approval') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('Max Per Request') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('Accrual Rate/Month') }}</th>
+                                <th class="font-family-cairo fw-bold">{{ __('Carry Over Limit') }}</th>
+                                @canany(['edit Leave Types', 'delete Leave Types'])
+                                    <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                @endcanany
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leaveTypes as $leaveType)
+                            @foreach($this->leaveTypes as $leaveType)
                                 <tr>
                                     <td>
                                         <strong>{{ $leaveType->name }}</strong>
@@ -192,44 +217,54 @@ new class extends Component {
                                     </td>
                                     <td>
                                         @if($leaveType->is_paid)
-                                            <span class="badge bg-success">مدفوعة</span>
+                                            <span class="badge bg-success font-family-cairo">{{ __('Yes') }}</span>
                                         @else
-                                            <span class="badge bg-warning">غير مدفوعة</span>
+                                            <span class="badge bg-warning font-family-cairo">{{ __('No') }}</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($leaveType->requires_approval)
-                                            <span class="badge bg-info">نعم</span>
+                                            <span class="badge bg-info font-family-cairo">{{ __('Yes') }}</span>
                                         @else
-                                            <span class="badge bg-secondary">لا</span>
+                                            <span class="badge bg-secondary font-family-cairo">{{ __('No') }}</span>
                                         @endif
                                     </td>
-                                    <td>{{ $leaveType->max_per_request_days }} يوم</td>
-                                    <td>{{ $leaveType->accrual_rate_per_month }} يوم</td>
-                                    <td>{{ $leaveType->carry_over_limit_days }} يوم</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                    wire:click="edit({{ $leaveType->id }})" title="تعديل">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    wire:click="delete({{ $leaveType->id }})"
-                                                    onclick="return confirm('هل أنت متأكد من حذف هذا النوع؟')" title="حذف">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <td class="font-family-cairo fw-bold">{{ $leaveType->max_per_request_days }} {{ __('hr.days') }}</td>
+                                    <td class="font-family-cairo fw-bold">{{ $leaveType->accrual_rate_per_month }} {{ __('hr.days') }}</td>
+                                    <td class="font-family-cairo fw-bold">{{ $leaveType->carry_over_limit_days }} {{ __('hr.days') }}</td>
+                                    @canany(['edit Leave Types', 'delete Leave Types'])
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                @can('edit Leave Types')
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-primary font-family-cairo" 
+                                                            wire:click="edit({{ $leaveType->id }})" 
+                                                            title="{{ __('hr.edit') }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                @endcan
+                                                @can('delete Leave Types')
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger font-family-cairo" 
+                                                            wire:click="delete({{ $leaveType->id }})"
+                                                            wire:confirm="{{ __('hr.confirm_delete_leave_type') }}"
+                                                            title="{{ __('hr.delete') }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                @endcan
+                                            </div>
+                                        </td>
+                                    @endcanany
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             @else
-                <div class="text-center py-5">
+                <div class="text-center py-5 font-family-cairo">
                     <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">لا توجد أنواع إجازات</h5>
-                    <p class="text-muted">ابدأ بإضافة نوع إجازة جديد</p>
+                    <h5 class="text-muted fw-bold">{{ __('hr.no_leave_types_found') }}</h5>
+                    <p class="text-muted">{{ __('hr.add_leave_type') }}</p>
                 </div>
             @endif
         </div>
@@ -241,12 +276,8 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">
-                            @if($isEdit)
-                                تعديل نوع الإجازة
-                            @else
-                                إضافة نوع إجازة جديد
-                            @endif
+                        <h5 class="modal-title font-family-cairo fw-bold">
+                            {{ $isEdit ? __('hr.edit_leave_type') : __('hr.add_leave_type') }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
@@ -256,13 +287,13 @@ new class extends Component {
                                 <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label">اسم نوع الإجازة <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                           id="name" wire:model="name" placeholder="مثال: إجازة سنوية">
+                                           id="name" wire:model.blur="name" placeholder="مثال: إجازة سنوية">
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="code" class="form-label">كود نوع الإجازة <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('code') is-invalid @enderror" 
-                                           id="code" wire:model="code" placeholder="مثال: AL">
+                                           id="code" wire:model.blur="code" placeholder="مثال: AL">
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
@@ -271,13 +302,13 @@ new class extends Component {
                                 <div class="col-md-6 mb-3">
                                     <label for="max_per_request_days" class="form-label">الحد الأقصى للطلب (أيام) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('max_per_request_days') is-invalid @enderror" 
-                                           id="max_per_request_days" wire:model="max_per_request_days" min="0">
+                                           id="max_per_request_days" wire:model.blur="max_per_request_days" min="0">
                                     @error('max_per_request_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="accrual_rate_per_month" class="form-label">معدل التراكم/شهر (أيام) <span class="text-danger">*</span></label>
                                     <input type="number" step="0.01" class="form-control @error('accrual_rate_per_month') is-invalid @enderror" 
-                                           id="accrual_rate_per_month" wire:model="accrual_rate_per_month" min="0">
+                                           id="accrual_rate_per_month" wire:model.blur="accrual_rate_per_month" min="0">
                                     @error('accrual_rate_per_month') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
@@ -286,7 +317,7 @@ new class extends Component {
                                 <div class="col-md-6 mb-3">
                                     <label for="carry_over_limit_days" class="form-label">حد التحويل (أيام) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('carry_over_limit_days') is-invalid @enderror" 
-                                           id="carry_over_limit_days" wire:model="carry_over_limit_days" min="0">
+                                           id="carry_over_limit_days" wire:model.blur="carry_over_limit_days" min="0">
                                     @error('carry_over_limit_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
@@ -294,7 +325,7 @@ new class extends Component {
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_paid" wire:model="is_paid">
+                                        <input class="form-check-input" type="checkbox" id="is_paid" wire:model.blur="is_paid">
                                         <label class="form-check-label" for="is_paid">
                                             إجازة مدفوعة
                                         </label>
@@ -302,7 +333,7 @@ new class extends Component {
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="requires_approval" wire:model="requires_approval">
+                                        <input class="form-check-input" type="checkbox" id="requires_approval" wire:model.blur="requires_approval">
                                         <label class="form-check-label" for="requires_approval">
                                             تتطلب موافقة
                                         </label>
@@ -311,17 +342,13 @@ new class extends Component {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" wire:click="closeModal">إلغاء</button>
-                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-secondary font-family-cairo" wire:click="closeModal">{{ __('hr.cancel') }}</button>
+                            <button type="submit" class="btn btn-primary font-family-cairo" wire:loading.attr="disabled">
                                 <span wire:loading.remove>
-                                    @if($isEdit)
-                                        تحديث
-                                    @else
-                                        حفظ
-                                    @endif
+                                    {{ $isEdit ? __('hr.update') : __('hr.save') }}
                                 </span>
                                 <span wire:loading>
-                                    <i class="fas fa-spinner fa-spin"></i> جاري الحفظ...
+                                    <i class="fas fa-spinner fa-spin"></i> {{ __('hr.saving') }}
                                 </span>
                             </button>
                         </div>

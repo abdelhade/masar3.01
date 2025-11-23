@@ -198,6 +198,14 @@
                                                     </a>
                                                 @endcan
 
+                                                @if ($invoice->pro_type == 25)
+                                                    <button type="button" class="btn btn-info btn-icon-square-sm"
+                                                        title="{{ __('Manufacturing Details') }}"
+                                                        onclick='Livewire.dispatch("openManufacturingModal", { items: {{ json_encode($invoice->operationItems->map(fn($item) => ["id" => $item->item_id, "name" => $item->item->name ?? "Unknown", "qty" => $item->qty_in ?? $item->qty])->values()) }} })'>
+                                                        <i class="fas fa-industry"></i>
+                                                    </button>
+                                                @endif
+
                                                 @can('delete ' . $titles[$invoice->pro_type])
                                                     <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete this invoice?') }}');">
@@ -231,4 +239,5 @@
             </div>
         </div>
     </div>
+    <livewire:manufacturing-cost-modal />
 @endsection

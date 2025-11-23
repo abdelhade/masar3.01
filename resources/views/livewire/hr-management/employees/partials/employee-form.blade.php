@@ -152,13 +152,13 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('الحالة الاجتماعية') }}</label>
+                                    <label class="form-label fw-bold text-dark">{{ __('hr.marital_status') }}</label>
                                     <select class="form-select" wire:model.defer="marital_status">
-                                        <option value="">{{ __('اختر الحالة') }}</option>
-                                        <option value="غير متزوج">{{ __('غير متزوج') }}</option>
-                                        <option value="متزوج">{{ __('متزوج') }}</option>
-                                        <option value="مطلق">{{ __('مطلق') }}</option>
-                                        <option value="أرمل">{{ __('أرمل') }}</option>
+                                        <option value="">{{ __('hr.select_marital_status') }}</option>
+                                        <option value="single">{{ __('hr.single') }}</option>
+                                        <option value="married">{{ __('hr.married') }}</option>
+                                        <option value="divorced">{{ __('hr.divorced') }}</option>
+                                        <option value="widowed">{{ __('hr.widowed') }}</option>
                                     </select>
                                     @error('marital_status')
                                         <div class="text-danger small mt-1">
@@ -167,13 +167,13 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-dark">{{ __('مستوى التعليم') }}</label>
+                                    <label class="form-label fw-bold text-dark">{{ __('hr.education_level') }}</label>
                                     <select class="form-select" wire:model.defer="education">
-                                        <option value="">{{ __('اختر المستوى') }}</option>
-                                        <option value="دبلوم">{{ __('دبلوم') }}</option>
-                                        <option value="بكالوريوس">{{ __('بكالوريوس') }}</option>
-                                        <option value="ماجستير">{{ __('ماجستير') }}</option>
-                                        <option value="دكتوراه">{{ __('دكتوراه') }}</option>
+                                        <option value="">{{ __('hr.select_education_level') }}</option>
+                                        <option value="diploma">{{ __('hr.diploma') }}</option>
+                                        <option value="bachelor">{{ __('hr.bachelor') }}</option>
+                                        <option value="master">{{ __('hr.master') }}</option>
+                                        <option value="doctorate">{{ __('hr.doctorate') }}</option>
                                     </select>
                                     @error('education')
                                         <div class="text-danger small mt-1">
@@ -285,7 +285,6 @@
                                 <label class="form-label fw-bold text-dark">{{ __('حالة الموظف') }}
                                     <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold" wire:model.defer="status">
-                                    <option value="">{{ __('اختر الحالة') }}</option>
                                     <option value="مفعل">{{ __('مفعل') }}</option>
                                     <option value="معطل">{{ __('معطل') }}</option>
                                 </select>

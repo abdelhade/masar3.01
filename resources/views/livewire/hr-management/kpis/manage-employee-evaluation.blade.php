@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Component;
 use App\Models\Employee;
 use App\Models\Employee_Evaluation;
 use App\Models\Kpi;
 use Livewire\WithPagination;
 use Livewire\Attributes\Rule;
+
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 new class extends Component {
     use WithPagination;
@@ -38,35 +43,39 @@ new class extends Component {
         $this->evaluation_period_to = now()->endOfMonth()->format('Y-m-d');
     }
 
-    public function with(): array
+    public function getEmployeesProperty(): Collection
     {
-        return [
-            'employees' => Employee::where('name', 'like', '%' . $this->search . '%')->get(),
-            'evaluations' => Employee_Evaluation::with(['employee', 'kpis'])
-                ->when($this->search, function ($query) {
-                    $query->whereHas('employee', function ($q) {
-                        $q->where('name', 'like', '%' . $this->search . '%');
-                    });
-                })
-                ->latest()
-                ->paginate(10),
-            'kpis' => $this->employee_id ? Employee::find($this->employee_id)?->kpis ?? collect() : collect(),
-        ];
+        return Employee::where('name', 'like', '%' . $this->search . '%')->get();
     }
 
-    public function calculateTotalScore()
+    public function getEvaluationsProperty(): LengthAwarePaginator
+    {
+        return Employee_Evaluation::with(['employee.job', 'employee.department', 'kpis'])
+            ->when($this->search, function ($query) {
+                $query->whereHas('employee', function ($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->latest()
+            ->paginate(10);
+    }
+
+    public function getKpisProperty(): Collection
+    {
+        return $this->employee_id ? Employee::findOrFail($this->employee_id)->kpis : collect();
+    }
+
+    public function calculateTotalScore(): void
     {
         $totalScore = 0;
         if ($this->employee_id) {
-            $employee = Employee::find($this->employee_id);
-            if ($employee) {
-                foreach ($this->scores as $kpi_id => $score) {
-                    $kpi = $employee->kpis()->where('kpi_id', $kpi_id)->first();
-                    if ($kpi) {
-                        $weight = $kpi->pivot->weight_percentage;
-                        $contribution = ($score / 100) * $weight;
-                        $totalScore += $contribution;
-                    }
+            $employee = Employee::findOrFail($this->employee_id);
+            foreach ($this->scores as $kpi_id => $score) {
+                $kpi = $employee->kpis()->where('kpi_id', $kpi_id)->first();
+                if ($kpi) {
+                    $weight = $kpi->pivot->weight_percentage;
+                    $contribution = ($score / 100) * $weight;
+                    $totalScore += $contribution;
                 }
             }
         }
@@ -74,34 +83,32 @@ new class extends Component {
         $this->calculateFinalRating();
     }
 
-    public function calculateFinalRating()
+    public function calculateFinalRating(): void
     {
         $this->final_rating = match (true) {
-            $this->total_score >= 85 => __('ممتاز'),
-            $this->total_score >= 75 => __('جيد جدا'),
-            $this->total_score >= 60 => __('جيد'),
-            $this->total_score >= 50 => __('مقبول'),
-            $this->total_score >= 35 => __('ضعيف'),
-            $this->total_score >= 20 => __('ضعيف جدا'),
-            default => __('غير مقبول'),
+            $this->total_score >= 85 => __('hr.excellent'),
+            $this->total_score >= 75 => __('hr.very_good'),
+            $this->total_score >= 60 => __('hr.good'),
+            $this->total_score >= 50 => __('hr.acceptable'),
+            $this->total_score >= 35 => __('hr.weak'),
+            $this->total_score >= 20 => __('hr.very_weak'),
+            default => __('hr.unacceptable'),
         };
     }
 
-    public function loadEmployeeDetails()
+    public function loadEmployeeDetails(): void
     {
         if ($this->employee_id) {
-            $employee = Employee::with('job', 'department')->find($this->employee_id);
-            if ($employee) {
-                $this->job_title = $employee->job?->title;
-                $this->department = $employee->department?->title;
-            }
+            $employee = Employee::with('job', 'department')->findOrFail($this->employee_id);
+            $this->job_title = $employee->job?->title ?? '';
+            $this->department = $employee->department?->title ?? '';
         } else {
             $this->job_title = '';
             $this->department = '';
         }
     }
 
-    public function save()
+    public function save(): void
     {
         $this->validate([
             'employee_id' => 'required|exists:employees,id',
@@ -124,15 +131,15 @@ new class extends Component {
         foreach ($this->scores as $kpi_id => $score) {
             $evaluation->kpis()->attach($kpi_id, ['score' => $score, 'notes' => $this->notes[$kpi_id] ?? '']);
         }
-        session()->flash('message', __('تم حفظ التقييم بنجاح'));
+        session()->flash('message', __('hr.evaluation_saved_successfully'));
         $this->resetForm();
         $this->dispatch('hide-evaluation-modal');
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
         $this->evaluationId = $id;
-        $evaluation = Employee_Evaluation::with(['kpis'])->find($id);
+        $evaluation = Employee_Evaluation::with(['kpis'])->findOrFail($id);
         $this->employee_id = $evaluation->employee_id;
         $this->evaluation_date = $evaluation->evaluation_date ? Carbon::parse($evaluation->evaluation_date)->format('Y-m-d') : '';
         $this->direct_manager = $evaluation->direct_manager;
@@ -148,7 +155,7 @@ new class extends Component {
         $this->dispatch('show-evaluation-modal');
     }
 
-    public function update()
+    public function update(): void
     {
         $this->validate([
             'employee_id' => 'required|exists:employees,id',
@@ -159,7 +166,7 @@ new class extends Component {
             'scores.*' => 'required|numeric|min:0|max:100',
         ]);
 
-        $evaluation = Employee_Evaluation::find($this->evaluationId);
+        $evaluation = Employee_Evaluation::findOrFail($this->evaluationId);
         $evaluation->update([
             'employee_id' => $this->employee_id,
             'evaluation_date' => $this->evaluation_date,
@@ -176,25 +183,25 @@ new class extends Component {
 
         $this->showEditModal = false;
         $this->resetForm();
-        session()->flash('message', __('تم تحديث التقييم بنجاح'));
+        session()->flash('message', __('hr.evaluation_updated_successfully'));
         $this->dispatch('hide-evaluation-modal');
     }
 
-    public function confirmDelete($id)
+    public function confirmDelete(int $id): void
     {
         $this->evaluationId = $id;
         $this->showDeleteModal = true;
         $this->dispatch('show-delete-modal');
     }
 
-    public function delete()
+    public function delete(): void
     {
-        $evaluation = Employee_Evaluation::find($this->evaluationId);
+        $evaluation = Employee_Evaluation::findOrFail($this->evaluationId);
         $evaluation->kpis()->detach();
         $evaluation->delete();
 
         $this->showDeleteModal = false;
-        session()->flash('message', __('تم حذف التقييم بنجاح'));
+        session()->flash('message', __('hr.evaluation_deleted_successfully'));
         $this->dispatch('hide-delete-modal');
     }
 
@@ -204,14 +211,14 @@ new class extends Component {
         $this->dispatch('hide-delete-modal');
     }
 
-    public function view($id)
+    public function view(int $id): void
     {
-        $this->viewEvaluation = Employee_Evaluation::with(['employee', 'kpis'])->find($id);
+        $this->viewEvaluation = Employee_Evaluation::with(['employee', 'kpis'])->findOrFail($id);
         $this->showViewModal = true;
         $this->dispatch('show-view-modal');
     }
 
-    public function closeView()
+    public function closeView(): void
     {
         $this->showViewModal = false;
         $this->viewEvaluation = null;
@@ -256,13 +263,14 @@ new class extends Component {
         <!-- Search and Add New Button -->
         <div class="row mb-3">
             <div class="col-md-6">
-                <input type="text" wire:model.live="search" class="form-control" placeholder="{{ __('بحث...') }}">
+                <input type="text" wire:model.live.debounce.300ms="search" class="form-control"
+                    placeholder="{{ __('hr.search') }}">
             </div>
-            @can('إضافة معدلات اداء الموظفين')
+            @can('create Employee Evaluations')
                 <div class="col-md-6">
                     <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal"
                         data-bs-target="#addEvaluationModal">
-                        {{ __('إضافة تقييم جديد') }}
+                        {{ __('hr.add_new_evaluation') }}
                     </button>
                 </div>
             @endcan
@@ -284,13 +292,13 @@ new class extends Component {
                                         <th>{{ __('المدير المباشر') }}</th>
                                         <th>{{ __('الدرجة الكلية') }}</th>
                                         <th>{{ __('التقدير') }}</th>
-                                        {{-- @canany(['تعديل معدلات اداء الموظفين', 'حذف معدلات اداء الموظفين']) --}}
-                                        <th>{{ __('الإجراءات') }}</th>
-                                        {{-- @endcanany --}}
+                                        @canany(['edit Employee Evaluations', 'delete Employee Evaluations'])
+                                            <th>{{ __('hr.actions') }}</th>
+                                        @endcanany
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($evaluations as $evaluation)
+                                    @forelse ($this->evaluations as $evaluation)
                                         <tr>
                                             <td>{{ $evaluation->employee->name }}</td>
                                             <td>{{ $evaluation->employee->job?->title }}</td>
@@ -299,34 +307,37 @@ new class extends Component {
                                             <td>{{ $evaluation->direct_manager }}</td>
                                             <td>{{ $evaluation->total_score }}</td>
                                             <td>{{ $evaluation->final_rating }}</td>
-                                            {{-- @canany(['تعديل معدلات اداء الموظفين', 'حذف معدلات اداء الموظفين']) --}}
-                                            <td>
-                                                <button wire:click="view({{ $evaluation->id }})"
-                                                    class="btn btn-info btn-icon-square-sm me-1" title="{{ __('عرض') }}">
-                                                    <i class="las la-eye fa-lg"></i>
-                                                </button>
-                                                {{-- @can('تعديل معدلات أداء الموظفين') --}}
-                                                <button wire:click="edit({{ $evaluation->id }})"
-                                                    class="btn btn-success btn-icon-square-sm me-1" title="{{ __('تعديل') }}">
-                                                    <i class="las la-edit fa-lg"></i>
-                                                </button>
-                                                {{-- @endcan
-                                                    @can('حذف معدلات أداء الموظفين') --}}
-                                                <button wire:click="confirmDelete({{ $evaluation->id }})"
-                                                    class="btn btn-danger btn-icon-square-sm" title="{{ __('حذف') }}">
-                                                    <i class="las la-trash fa-lg"></i>
-                                                </button>
-                                                {{-- @endcan --}}
-                                            </td>
-                                            {{-- @endcanany --}}
+                                            @canany(['edit Employee Evaluations', 'delete Employee Evaluations'])
+                                                <td>
+                                                    <button wire:click="view({{ $evaluation->id }})"
+                                                        class="btn btn-info btn-icon-square-sm me-1"
+                                                        title="{{ __('hr.view') }}">
+                                                        <i class="las la-eye fa-lg"></i>
+                                                    </button>
+                                                    @can('edit Employee Evaluations')
+                                                        <button wire:click="edit({{ $evaluation->id }})"
+                                                            class="btn btn-success btn-icon-square-sm me-1"
+                                                            title="{{ __('hr.edit') }}">
+                                                            <i class="las la-edit fa-lg"></i>
+                                                        </button>
+                                                    @endcan
+                                                    @can('delete Employee Evaluations')
+                                                        <button wire:click="confirmDelete({{ $evaluation->id }})"
+                                                            wire:confirm="{{ __('hr.confirm_delete_evaluation') }}"
+                                                            class="btn btn-danger btn-icon-square-sm" title="{{ __('hr.delete') }}">
+                                                            <i class="las la-trash fa-lg"></i>
+                                                        </button>
+                                                    @endcan
+                                                </td>
+                                            @endcanany
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="8" class="text-center">
-                                                <div class="alert alert-info py-3 mb-0"
-                                                    style="font-size: 1.2rem; font-weight: 500;">
+                                            <td colspan="{{ auth()->user()->canany(['edit Employee Evaluations', 'delete Employee Evaluations']) ? '8' : '7' }}"
+                                                class="text-center font-family-cairo fw-bold py-4">
+                                                <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>
-                                                    لا توجد بيانات
+                                                    {{ __('hr.no_evaluations_found') }}
                                                 </div>
                                             </td>
                                         </tr>
@@ -334,7 +345,7 @@ new class extends Component {
                                 </tbody>
                             </table>
                         </div>
-                        {{ $evaluations->links('pagination::bootstrap-5') }}
+                        {{ $this->evaluations->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>
@@ -357,7 +368,7 @@ new class extends Component {
                                     <select wire:model.live="employee_id" wire:change="loadEmployeeDetails"
                                         class="form-control">
                                         <option value="">{{ __('اختر الموظف') }}</option>
-                                        @foreach ($employees as $employee)
+                                        @foreach ($this->employees as $employee)
                                             <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                         @endforeach
                                     </select>
@@ -426,7 +437,7 @@ new class extends Component {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($kpis as $index => $kpi)
+                                        @foreach ($this->kpis as $index => $kpi)
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $kpi->name }}</td>
@@ -436,8 +447,8 @@ new class extends Component {
                                                 </td>
                                                 <td>
                                                     <input type="number" wire:model="scores.{{ $kpi->id }}"
-                                                        wire:change="calculateTotalScore" class="form-control"
-                                                        min="0" max="100" step="1">
+                                                        wire:change="calculateTotalScore" class="form-control" min="0"
+                                                        max="100" step="1">
                                                     @error('scores.' . $kpi->id)
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
@@ -493,8 +504,7 @@ new class extends Component {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ __('تأكيد الحذف') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         {{ __('هل أنت متأكد من حذف هذا التقييم؟') }}
@@ -502,8 +512,7 @@ new class extends Component {
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             wire:click="cancelDelete">{{ __('إلغاء') }}</button>
-                        <button type="button" class="btn btn-danger"
-                            wire:click="delete">{{ __('حذف') }}</button>
+                        <button type="button" class="btn btn-danger" wire:click="delete">{{ __('حذف') }}</button>
                     </div>
                 </div>
             </div>
@@ -539,7 +548,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('المسمى الوظيفي') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -547,7 +557,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('القسم') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -564,7 +575,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('تاريخ التقييم') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -572,7 +584,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('المدير المباشر') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -581,7 +594,8 @@ new class extends Component {
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('فترة التقييم') }}</h6>
                                             <p class="card-text fw-bold mb-0">
-                                                {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} - {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
+                                                {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} -
+                                                {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
                                             </p>
                                         </div>
                                     </div>
@@ -629,7 +643,8 @@ new class extends Component {
                                                             <span class="badge bg-primary fs-6">{{ $score }}</span>
                                                         </td>
                                                         <td class="text-center">
-                                                            <span class="badge bg-success fs-6">{{ number_format($contribution, 2) }}</span>
+                                                            <span
+                                                                class="badge bg-success fs-6">{{ number_format($contribution, 2) }}</span>
                                                         </td>
                                                         <td>{{ $kpi->pivot->notes ?? __('لا توجد ملاحظات') }}</td>
                                                     </tr>
@@ -641,10 +656,12 @@ new class extends Component {
                                                         <strong class="fs-5">{{ __('المجموع الكلي') }}</strong>
                                                     </td>
                                                     <td class="text-center">
-                                                        <strong class="fs-4 text-primary">{{ number_format($viewEvaluation->total_score, 2) }}</strong>
+                                                        <strong
+                                                            class="fs-4 text-primary">{{ number_format($viewEvaluation->total_score, 2) }}</strong>
                                                     </td>
                                                     <td class="text-center">
-                                                        <span class="badge bg-success fs-5 px-3 py-2">{{ $viewEvaluation->final_rating }}</span>
+                                                        <span
+                                                            class="badge bg-success fs-5 px-3 py-2">{{ $viewEvaluation->final_rating }}</span>
                                                     </td>
                                                     <td></td>
                                                 </tr>
@@ -656,7 +673,8 @@ new class extends Component {
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeView">{{ __('إغلاق') }}</button>
+                        <button type="button" class="btn btn-secondary"
+                            wire:click="closeView">{{ __('إغلاق') }}</button>
                     </div>
                 </div>
             </div>
@@ -665,40 +683,40 @@ new class extends Component {
 </div>
 
 @script
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            const addEvaluationModal = new bootstrap.Modal(document.getElementById('addEvaluationModal'));
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        const addEvaluationModal = new bootstrap.Modal(document.getElementById('addEvaluationModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
 
-            window.addEventListener('show-evaluation-modal', event => {
-                addEvaluationModal.show();
-            });
-
-            window.addEventListener('hide-evaluation-modal', event => {
-                addEvaluationModal.hide();
-            });
-
-            window.addEventListener('show-delete-modal', event => {
-                deleteModal.show();
-            });
-
-            window.addEventListener('hide-delete-modal', event => {
-                deleteModal.hide();
-            });
-
-            window.addEventListener('show-view-modal', event => {
-                viewModal.show();
-            });
-
-            window.addEventListener('hide-view-modal', event => {
-                viewModal.hide();
-            });
-
-            // Reset form when modal is hidden
-            document.getElementById('addEvaluationModal').addEventListener('hidden.bs.modal', function () {
-                @this.call('resetForm');
-            });
+        window.addEventListener('show-evaluation-modal', event => {
+            addEvaluationModal.show();
         });
-    </script>
+
+        window.addEventListener('hide-evaluation-modal', event => {
+            addEvaluationModal.hide();
+        });
+
+        window.addEventListener('show-delete-modal', event => {
+            deleteModal.show();
+        });
+
+        window.addEventListener('hide-delete-modal', event => {
+            deleteModal.hide();
+        });
+
+        window.addEventListener('show-view-modal', event => {
+            viewModal.show();
+        });
+
+        window.addEventListener('hide-view-modal', event => {
+            viewModal.hide();
+        });
+
+        // Reset form when modal is hidden
+        document.getElementById('addEvaluationModal').addEventListener('hidden.bs.modal', function () {
+            @this.call('resetForm');
+        });
+    });
+</script>
 @endscript

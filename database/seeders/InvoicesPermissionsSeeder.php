@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class InvoicesPermissionsSeeder extends Seeder
 {
@@ -51,18 +50,7 @@ class InvoicesPermissionsSeeder extends Seeder
             }
         }
 
-        // Find or create roles
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['guard_name' => 'web']);
-        $userRole = Role::firstOrCreate(['name' => 'user'], ['guard_name' => 'web']);
-
-        // Grant all permissions to admin
-        $allInvoicePermissions = Permission::whereIn('category', ['Sales', 'Purchases', 'Inventory'])->get();
-        $adminRole->givePermissionTo($allInvoicePermissions);
-
-        // Grant 'view' only permissions to user
-        $userViewPermissions = Permission::whereIn('category', ['Sales', 'Purchases', 'Inventory'])
-            ->where('name', 'like', 'view%')
-            ->get();
-        $userRole->givePermissionTo($userViewPermissions);
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
     }
 }

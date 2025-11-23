@@ -16,7 +16,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\RentalController;
-use App\Http\Controllers\ReportController;
+use Modules\Reports\Http\Controllers\GeneralReportController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\JournalController;
@@ -108,31 +108,31 @@ Route::middleware(['auth'])->group(function () {
         // Leave Balances
         Route::get('/balances', function () {
             return view('hr-management.leaves.leave-balances.index');
-        })->name('leaves.balances.index');
+        })->name('leaves.balances.index')->middleware('can:view Leave Balances');
         Route::get('/balances/create', function () {
             return view('hr-management.leaves.leave-balances.create-edit');
-        })->name('leaves.balances.create');
+        })->name('leaves.balances.create')->middleware('can:create Leave Balances');
         Route::get('/balances/{balanceId}/edit', function () {
             return view('hr-management.leaves.leave-balances.create-edit');
-        })->name('leaves.balances.edit');
+        })->name('leaves.balances.edit')->middleware('can:edit Leave Balances');
 
         // Leave Requests
         Route::get('/requests', function () {
             return view('hr-management.leaves.leave-requests.index');
-        })->name('leaves.requests.index');
+        })->name('leaves.requests.index')->middleware('can:view Leave Requests');
         Route::get('/requests/create', function () {
             return view('hr-management.leaves.leave-requests.create');
-        })->name('leaves.requests.create');
+        })->name('leaves.requests.create')->middleware('can:create Leave Requests');
         Route::get('/requests/{requestId}', function ($requestId) {
             return view('hr-management.leaves.leave-requests.show', ['requestId' => $requestId]);
-        })->name('leaves.requests.show');
+        })->name('leaves.requests.show')->middleware('can:view Leave Requests');
         Route::get('/requests/{requestId}/edit', function ($requestId) {
             return view('hr-management.leaves.leave-requests.edit', ['requestId' => $requestId]);
-        })->name('leaves.requests.edit');
+        })->name('leaves.requests.edit')->middleware('can:edit Leave Requests');
         // Leave Types
         Route::get('/leave-types', function () {
             return view('hr-management.leaves.leave-types.manage-leave-types');
-        })->name('leaves.types.manage');
+        })->name('leaves.types.manage')->middleware('can:view Leave Types');
     });
     // ############################################################################################################
     // 📁 Projects
@@ -216,7 +216,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/store', [InventoryStartBalanceController::class, 'store'])->name('inventory-start-balance.store');
     Route::post('/update-opening-balance', [InventoryStartBalanceController::class, 'updateOpeningBalance'])->name('inventory-start-balance.update-opening-balance');
 
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('home', [HomeController::class, 'index'])->name('home.index');
 
 

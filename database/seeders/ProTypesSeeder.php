@@ -86,6 +86,8 @@ class ProTypesSeeder extends Seeder
             ['id' => 72, 'pname' => 'check_transfer', 'ptext' => 'صرف ورقة دفع', 'ptype' => 'ورقة دفع'],
 
             ['id' => 73, 'pname' => 'auto_depreciation', 'ptext' => 'اهلاك تلقائي', 'ptype' => 'أصل'],
+            ['id' => 74, 'pname' => 'Salary entitlement', 'ptext' => 'إستحقاق رواتب', 'ptype'=> 'رواتب'],
+            ['id' => 75, 'pname' => 'POS Transaction', 'ptext' => 'فاتوره كاشير', 'ptype'=> 'نقاط البيع'],
 
         ];
 

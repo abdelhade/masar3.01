@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Leaves\LeaveBalances;
 
 use App\Models\Employee;
 use App\Models\EmployeeLeaveBalance;
 use App\Models\LeaveType;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,18 +16,20 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
-    protected $paginationTheme = 'bootstrap';
-    public $search = '';
+    protected string $paginationTheme = 'bootstrap';
+    public string $search = '';
 
-    public $selectedEmployee = '';
+    public string $selectedEmployee = '';
 
-    public $selectedLeaveType = '';
+    public string $selectedLeaveType = '';
 
-    public $selectedYear = '';
+    public int $selectedYear;
 
-    public $employees = [];
+    /** @var Collection<int, Employee> */
+    public Collection $employees;
 
-    public $leaveTypes = [];
+    /** @var Collection<int, LeaveType> */
+    public Collection $leaveTypes;
 
     public function mount(): void
     {

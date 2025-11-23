@@ -4,9 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Cv;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class CvController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view CVs')->only(['index']);
+        $this->middleware('can:create CVs')->only(['create', 'store']);
+        $this->middleware('can:edit CVs')->only(['edit', 'update']);
+        $this->middleware('can:delete CVs')->only(['destroy']);
+    }
     /**
      * Display a listing of the resource.
      */

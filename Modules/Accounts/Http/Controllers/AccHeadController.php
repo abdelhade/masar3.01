@@ -115,24 +115,24 @@ class AccHeadController extends Controller
         }
     }
 
- private function getActionName($request)
-{
-    $route = $request->route();
-    if ($route) {
-        $action = $request->route()->getActionMethod();
+    private function getActionName($request)
+    {
+        $route = $request->route();
+        if ($route) {
+            $action = $request->route()->getActionMethod();
 
-        if (in_array($action, ['edit', 'update'])) {
-            return 'edit';
-        } elseif (in_array($action, ['create', 'store'])) {
-            return 'create';
-        } elseif ($action === 'destroy') {
-            return 'delete';
-        } elseif ($action === 'show') {
-            return 'view';
+            if (in_array($action, ['edit', 'update'])) {
+                return 'edit';
+            } elseif (in_array($action, ['create', 'store'])) {
+                return 'create';
+            } elseif ($action === 'destroy') {
+                return 'delete';
+            } elseif ($action === 'show') {
+                return 'view';
+            }
         }
+        return 'view';
     }
-    return 'view';
-}
 
     private function getPermissionNameByType($type): string
     {
@@ -761,4 +761,3 @@ class AccHeadController extends Controller
         return view('accounts::statistics.basic-data-statistics', compact('stats'));
     }
 }
-

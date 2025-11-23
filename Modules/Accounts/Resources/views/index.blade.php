@@ -163,8 +163,10 @@
                                     <td>{{ $accounts->firstItem() + $index }}</td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <span class="fw-bold">{{ Str::limit($acc->aname, 40) }}</span>
-                                            <span class="text-muted small">{{ $acc->code }}</span>
+                                        
+                                            <span class="fw-bold">
+                                            <i class="text-muted small">{{ $acc->code }}</i> - {{ Str::limit($acc->aname, 40) }}</span>
+                                            
                                         </div>
                                     </td>
                                     <td>

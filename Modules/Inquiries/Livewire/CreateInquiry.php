@@ -815,7 +815,7 @@ class CreateInquiry extends Component
             'estimation_finished_date' => $this->estimationFinishedDate,
             'submitting_date' => $this->submittingDate,
             'total_project_value' => $this->totalProjectValue,
-            'quotation_state' => $this->quotationState,
+            // 'quotation_state' => $this->quotationState,
             'rejection_reason' => $this->quotationStateReason,
             'assigned_engineer_date' => $this->assignEngineerDate,
             'project_size_id' => $this->projectSize,

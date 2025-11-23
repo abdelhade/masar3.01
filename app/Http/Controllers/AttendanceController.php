@@ -10,10 +10,10 @@ class AttendanceController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view attendances')->only(['index']);
-        $this->middleware('can:create attendances')->only(['create', 'store']);
-        $this->middleware('can:edit attendances')->only(['edit', 'update']);
-        $this->middleware('can:delete attendances')->only(['destroy']);
+        $this->middleware('can:view Attendances')->only(['index']);
+        $this->middleware('can:create Attendances')->only(['create', 'store']);
+        $this->middleware('can:edit Attendances')->only(['edit', 'update']);
+        $this->middleware('can:delete Attendances')->only(['destroy']);
     }
 
     public function index()

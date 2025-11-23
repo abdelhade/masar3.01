@@ -15,7 +15,7 @@ class UpdateAccHeadAccTypeSeeder extends Seeder
             '2101' => 'suppliers',
             '1101' => 'funds',
             '1102' => 'banks',
-            '57'   => 'expenses',
+            '5'   => 'expenses',
             '42'   => 'revenues',
             '2104' => 'creditors',
             '1106' => 'debtors',
