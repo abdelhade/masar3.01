@@ -32,16 +32,12 @@ class QualityCertificateController extends Controller
         $validated = $request->validate([
             'certificate_number' => 'required|string|unique:quality_certificates,certificate_number',
             'certificate_name' => 'required|string',
-            'certificate_type' => 'required',
-            'custom_type' => 'nullable|string',
             'issuing_authority' => 'required|string',
-            'authority_contact' => 'nullable|string',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'scope' => 'nullable|string',
             'notification_days' => 'required|integer|min:1',
             'certificate_cost' => 'nullable|numeric|min:0',
-            'renewal_cost' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 

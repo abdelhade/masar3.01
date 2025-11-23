@@ -6,7 +6,6 @@
 @endsection
 
 @section('content')
-
     @php
         $permissionTypes = [
             'clients' => 'Clients',
@@ -99,37 +98,35 @@
         <div class="row mt-3 justify-content-between align-items-center">
             <div class="col-md-3">
                 @if ($type == 'current-partners')
-                <p class="p-1 bg-primary text-white">يتم اضافة حساب مع اضافة شريك جديد</p>
-                @elseif($type && isset($permissionTypes[$type]) && auth()->user()->can('create ' . $permissionTypes[$type]))
-                <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
-                    <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
-                </a>
+                    <p class="p-1 bg-primary text-white">يتم اضافة حساب مع اضافة شريك جديد</p>
+                @elseif(
+                    $type &&
+                        isset($permissionTypes[$type]) &&
+                        auth()->user()->can('create ' . $permissionTypes[$type]))
+                    <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
+                        <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
+                    </a>
                 @elseif(!$type)
-                <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
-                    <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
-                </a>
+                    <a href="{{ route('accounts.create', ['parent' => $parentCode]) }}" class="btn btn-primary">
+                        <i class="las la-plus"></i> {{ __('إضافة حساب جديد') }}
+                    </a>
                 @endif
             </div>
 
             <div class="col-md-4">
                 <form method="GET" action="{{ route('accounts.index') }}" class="d-flex gap-2">
-                    @if($type)
+                    @if ($type)
                         <input type="hidden" name="type" value="{{ $type }}">
                     @endif
 
-                    <input
-                        class="form-control"
-                        type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="بحث بالكود | اسم الحساب | ID"
-                        autocomplete="off">
+                    <input class="form-control" type="text" name="search" value="{{ request('search') }}"
+                        placeholder="بحث بالكود | اسم الحساب | ID" autocomplete="off">
 
                     <button type="submit" class="btn btn-primary">
                         <i class="las la-search"></i>
                     </button>
 
-                    @if(request('search'))
+                    @if (request('search'))
                         <a href="{{ route('accounts.index', ['type' => $type]) }}" class="btn btn-secondary">
                             <i class="las la-times"></i>
                         </a>
@@ -173,8 +170,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @if(!$acc->secret)
-                                            <a class="btn btn-lg btn-outline-dark text-lg"
+                                        @if (!$acc->secret)
+                                            <a class="btn btn-sm btn-outline-dark"
                                                 href="{{ route('account-movement', ['accountId' => $acc->id]) }}">
                                                 {{ number_format($acc->balance ?? 0, 2) }}
                                             </a>
@@ -184,7 +181,7 @@
                                     </td>
                                     <td>
                                         <span class="text-truncate d-inline-block" style="max-width: 150px;"
-                                              title="{{ $acc->address }}">
+                                            title="{{ $acc->address }}">
                                             {{ $acc->address ?? '__' }}
                                         </span>
                                     </td>
@@ -195,39 +192,40 @@
                                             // تحديد نوع الحساب من الكود - ترتيب من الأطول للأقصر
                                             $accountType = null;
                                             $sortedCodes = $parentCodes;
-                                            uksort($sortedCodes, function($a, $b) use ($parentCodes) {
+                                            uksort($sortedCodes, function ($a, $b) use ($parentCodes) {
                                                 return strlen($parentCodes[$b]) - strlen($parentCodes[$a]);
                                             });
-                                            
-                                            foreach($sortedCodes as $typeKey => $code) {
-                                                if(str_starts_with($acc->code, $code)) {
+
+                                            foreach ($sortedCodes as $typeKey => $code) {
+                                                if (str_starts_with($acc->code, $code)) {
                                                     $accountType = $typeKey;
                                                     break;
                                                 }
                                             }
-                                            $permissionName = $accountType && isset($permissionTypes[$accountType]) ? $permissionTypes[$accountType] : 'accounts';
+                                            $permissionName =
+                                                $accountType && isset($permissionTypes[$accountType])
+                                                    ? $permissionTypes[$accountType]
+                                                    : 'accounts';
                                         @endphp
                                         <div class="d-flex gap-1 justify-content-center">
-                                            @if(auth()->user()->can('edit ' . $permissionName))
-                                            <a href="{{ route('accounts.edit', $acc->id) }}"
-                                               class="btn btn-success btn-sm"
-                                               title="تعديل">
-                                                <i class="las la-pen"></i>
-                                            </a>
+                                            @if (auth()->user()->can('edit ' . $permissionName))
+                                                <a href="{{ route('accounts.edit-direct', $acc->id) }}" class="btn btn-success btn-sm" title="تعديل">
+                                                    <i class="las la-pen"></i>
+                                                </a>
                                             @endif
 
-                                            @if($acc->deletable && auth()->user()->can('delete ' . $permissionName))
-                                            <form action="{{ route('accounts.destroy', $acc->id) }}"
-                                                  method="POST"
-                                                  style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-danger btn-sm"
-                                                        title="حذف"
+                                            @if (
+                                                $acc->deletable &&
+                                                    auth()->user()->can('delete ' . $permissionName))
+                                                <form action="{{ route('accounts.destroy', $acc->id) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-danger btn-sm" title="حذف"
                                                         onclick="return confirm('هل أنت متأكد من الحذف؟')">
-                                                    <i class="las la-trash-alt"></i>
-                                                </button>
-                                            </form>
+                                                        <i class="las la-trash-alt"></i>
+                                                    </button>
+                                                </form>
                                             @endif
                                         </div>
                                     </td>
@@ -237,7 +235,7 @@
                                     <td colspan="7">
                                         <div class="alert alert-info py-3 mb-0">
                                             <i class="las la-info-circle me-2"></i>
-                                            @if(request('search'))
+                                            @if (request('search'))
                                                 لا توجد نتائج للبحث عن "{{ request('search') }}"
                                             @else
                                                 لا توجد بيانات
@@ -251,7 +249,7 @@
                 </div>
 
                 {{-- Pagination --}}
-                @if($accounts->hasPages())
+                @if ($accounts->hasPages())
                     <div class="card-footer border-0 bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="text-muted small">
@@ -268,5 +266,6 @@
             </div>
         </div>
     </div>
-
 @endsection
+
+

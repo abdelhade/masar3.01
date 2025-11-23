@@ -6,7 +6,7 @@
         <select class="form-control" id="branch_id" name="branch_id"
             @if ($model) wire:model="{{ $model }}" @endif>
             @foreach ($branches as $branch)
-                <option value="{{ $branch->id }}" {{ old('branch_id', $selected) == $branch->id ? 'selected' : '' }}>
+                <option value="{{ $branch->id }}" {{ (old('branch_id') ?? $selected) == $branch->id ? 'selected' : '' }}>
                     {{ $branch->name }}
                 </option>
             @endforeach

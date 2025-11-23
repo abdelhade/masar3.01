@@ -38,12 +38,21 @@ class QualityInspectionController extends Controller
             'fail_quantity' => 'required|numeric|min:0',
             'result' => 'required|in:pass,fail,conditional',
             'action_taken' => 'required',
+            'supplier_id' => 'nullable|exists:acc_head,id',
+            'batch_number' => 'nullable|string|max:255',
+            'defects_found' => 'nullable|string',
+            'inspector_notes' => 'nullable|string',
         ]);
 
         $validated['inspector_id'] = auth()->id();
         $validated['branch_id'] = auth()->user()->branches()->where('is_active', 1)->first()->id ?? 1;
         $validated['created_by'] = auth()->id();
         $validated['status'] = 'completed';
+        
+        // إنشاء رقم فحص فريد
+        $date = date('Ymd', strtotime($validated['inspection_date']));
+        $timestamp = now()->format('His');
+        $validated['inspection_number'] = 'INS-' . $date . '-' . $timestamp;
 
         $inspection = QualityInspection::create($validated);
 
@@ -70,13 +79,17 @@ class QualityInspectionController extends Controller
     {
         $validated = $request->validate([
             'item_id' => 'required|exists:items,id',
-            'inspection_type' => 'required',
+            'inspection_type' => 'required|in:receiving,in_process,final,random,customer_complaint',
             'inspection_date' => 'required|date',
             'quantity_inspected' => 'required|numeric|min:0',
             'pass_quantity' => 'required|numeric|min:0',
             'fail_quantity' => 'required|numeric|min:0',
             'result' => 'required|in:pass,fail,conditional',
             'action_taken' => 'required',
+            'supplier_id' => 'nullable|exists:acc_head,id',
+            'batch_number' => 'nullable|string|max:255',
+            'defects_found' => 'nullable|string',
+            'inspector_notes' => 'nullable|string',
         ]);
 
         $validated['updated_by'] = auth()->id();

@@ -138,15 +138,12 @@ class NonConformanceReportController extends Controller
             'source' => 'required',
             'detected_date' => 'required|date',
             'problem_description' => 'required|string',
-            'root_cause' => 'nullable|string',
             'severity' => 'required|in:critical,major,minor',
             'estimated_cost' => 'nullable|numeric|min:0',
-            'actual_cost' => 'nullable|numeric|min:0',
             'immediate_action' => 'nullable|string',
             'disposition' => 'nullable',
             'assigned_to' => 'nullable|exists:users,id',
             'target_closure_date' => 'nullable|date',
-            'status' => 'required',
         ]);
 
         $validated['updated_by'] = auth()->id();

@@ -64,10 +64,6 @@ class QualityInspection extends Model
     protected static function booted()
     {
         static::creating(function ($inspection) {
-            if (empty($inspection->inspection_number)) {
-                $inspection->inspection_number = 'INS-' . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
-            }
-            
             // Auto-calculate pass percentage
             if ($inspection->quantity_inspected > 0) {
                 $inspection->pass_percentage = ($inspection->pass_quantity / $inspection->quantity_inspected) * 100;
