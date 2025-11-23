@@ -14,7 +14,7 @@ class ResourceAssignmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'resource_id' => ['required', 'exists:resources,id'],
+            'resource_id' => ['nullable', 'exists:resources,id'],
             'project_id' => ['required', 'exists:projects,id'],
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
@@ -29,7 +29,6 @@ class ResourceAssignmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'resource_id.required' => 'المورد مطلوب',
             'resource_id.exists' => 'المورد غير موجود',
             'project_id.required' => 'المشروع مطلوب',
             'project_id.exists' => 'المشروع غير موجود',

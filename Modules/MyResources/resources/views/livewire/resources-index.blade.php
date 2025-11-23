@@ -8,15 +8,15 @@
             <select wire:model.live="categoryFilter" class="form-control">
                 <option value="">كل التصنيفات</option>
                 @foreach($categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name_ar }}</option>
+                    <option value="{{ $category->id }}">{{ $category->name ?? $category->name_ar }}</option>
                 @endforeach
             </select>
         </div>
         <div class="col-md-2">
-            <select wire:model.live="typeFilter" class="form-control" @if(!$categoryFilter) disabled @endif>
+            <select wire:model.live="typeFilter" class="form-control">
                 <option value="">كل الأنواع</option>
                 @foreach($types as $type)
-                    <option value="{{ $type->id }}">{{ $type->name_ar }}</option>
+                    <option value="{{ $type->id }}">{{ $type->name ?? $type->name_ar }}</option>
                 @endforeach
             </select>
         </div>
@@ -24,7 +24,7 @@
             <select wire:model.live="statusFilter" class="form-control">
                 <option value="">كل الحالات</option>
                 @foreach($statuses as $status)
-                    <option value="{{ $status->id }}">{{ $status->name_ar }}</option>
+                    <option value="{{ $status->id }}">{{ $status->name ?? $status->name_ar }}</option>
                 @endforeach
             </select>
         </div>
@@ -54,11 +54,11 @@
                     <tr>
                         <td>{{ $resource->code }}</td>
                         <td>{{ $resource->name }}</td>
-                        <td>{{ $resource->category->name_ar }}</td>
-                        <td>{{ $resource->type->name_ar }}</td>
+                        <td>{{ $resource->category->name ?? $resource->category->name_ar ?? '-' }}</td>
+                        <td>{{ $resource->type->name ?? $resource->type->name_ar ?? '-' }}</td>
                         <td>
-                            <span class="badge bg-{{ $resource->status->color }}">
-                                {{ $resource->status->name_ar }}
+                            <span class="badge bg-{{ $resource->status->color ?? 'secondary' }}">
+                                {{ $resource->status->name ?? $resource->status->name_ar ?? '-' }}
                             </span>
                         </td>
                         <td>{{ $resource->branch->name ?? '-' }}</td>

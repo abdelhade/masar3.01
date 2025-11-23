@@ -29,7 +29,6 @@ class ResourcesIndex extends Component
 
     public function updatingCategoryFilter(): void
     {
-        $this->typeFilter = '';
         $this->resetPage();
     }
 
@@ -70,11 +69,9 @@ class ResourcesIndex extends Component
             ->latest()
             ->paginate($this->perPage);
 
-        $categories = ResourceCategory::active()->ordered()->get();
-        $types = $this->categoryFilter 
-            ? ResourceType::active()->forCategory($this->categoryFilter)->get() 
-            : collect();
-        $statuses = ResourceStatus::active()->ordered()->get();
+        $categories = ResourceCategory::all();
+        $types = ResourceType::active()->get();
+        $statuses = ResourceStatus::all();
 
         return view('myresources::livewire.resources-index', compact('resources', 'categories', 'types', 'statuses'));
     }

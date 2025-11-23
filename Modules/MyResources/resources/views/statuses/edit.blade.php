@@ -32,8 +32,8 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="name_ar" class="form-label">الاسم العربي <span class="text-danger">*</span></label>
-                                <input type="text" name="name_ar" id="name_ar" class="form-control @error('name_ar') is-invalid @enderror" value="{{ old('name_ar', $status->name_ar) }}" required>
+                                <label for="name_ar" class="form-label">الاسم العربي</label>
+                                <input type="text" name="name_ar" id="name_ar" class="form-control @error('name_ar') is-invalid @enderror" value="{{ old('name_ar', $status->name_ar) }}">
                                 @error('name_ar')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

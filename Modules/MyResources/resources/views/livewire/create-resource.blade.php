@@ -16,7 +16,7 @@
                     <select wire:model.live="resource_category_id" class="form-control @error('resource_category_id') is-invalid @enderror">
                         <option value="">اختر التصنيف</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name_ar }}</option>
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
                     </select>
                     @error('resource_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -26,10 +26,10 @@
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">النوع <span class="text-danger">*</span></label>
-                    <select wire:model="resource_type_id" class="form-control @error('resource_type_id') is-invalid @enderror" @if(!$resource_category_id) disabled @endif>
+                    <select wire:model="resource_type_id" class="form-control @error('resource_type_id') is-invalid @enderror">
                         <option value="">اختر النوع</option>
                         @foreach($availableTypes as $type)
-                            <option value="{{ $type->id }}">{{ $type->name_ar }}</option>
+                            <option value="{{ $type->id }}">{{ $type->name }}</option>
                         @endforeach
                     </select>
                     @error('resource_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -42,7 +42,7 @@
                     <select wire:model="resource_status_id" class="form-control @error('resource_status_id') is-invalid @enderror">
                         <option value="">اختر الحالة</option>
                         @foreach($statuses as $status)
-                            <option value="{{ $status->id }}">{{ $status->name_ar }}</option>
+                            <option value="{{ $status->id }}">{{ $status->name }}</option>
                         @endforeach
                     </select>
                     @error('resource_status_id') <div class="invalid-feedback">{{ $message }}</div> @enderror

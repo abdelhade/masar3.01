@@ -100,13 +100,8 @@ class EditResource extends Component
 
     public function loadTypes(): void
     {
-        if ($this->resource_category_id) {
-            $this->availableTypes = ResourceType::active()
-                ->forCategory($this->resource_category_id)
-                ->get();
-        } else {
-            $this->availableTypes = [];
-        }
+        // Load all active types regardless of category
+        $this->availableTypes = ResourceType::active()->get();
     }
 
     public function save()

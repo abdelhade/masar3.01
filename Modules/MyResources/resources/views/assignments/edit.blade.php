@@ -24,9 +24,9 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="resource_id" class="form-label">المورد <span class="text-danger">*</span></label>
-                                <select name="resource_id" id="resource_id" class="form-select @error('resource_id') is-invalid @enderror" required>
-                                    <option value="">اختر المورد</option>
+                                <label for="resource_id" class="form-label">المورد</label>
+                                <select name="resource_id" id="resource_id" class="form-select @error('resource_id') is-invalid @enderror">
+                                    <option value="">اختر المورد (اختياري)</option>
                                     @foreach($resources as $resource)
                                         <option value="{{ $resource->id }}" {{ old('resource_id', $assignment->resource_id) == $resource->id ? 'selected' : '' }}>
                                             {{ $resource->code }} - {{ $resource->name }}

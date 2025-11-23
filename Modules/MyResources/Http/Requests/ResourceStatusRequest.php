@@ -15,7 +15,7 @@ class ResourceStatusRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'name_ar' => ['required', 'string', 'max:255'],
+            'name_ar' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'color' => ['nullable', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:255'],
@@ -28,7 +28,6 @@ class ResourceStatusRequest extends FormRequest
     {
         return [
             'name.required' => 'الاسم بالإنجليزية مطلوب',
-            'name_ar.required' => 'الاسم بالعربية مطلوب',
             'sort_order.integer' => 'ترتيب العرض يجب أن يكون رقمًا',
             'sort_order.min' => 'ترتيب العرض يجب أن يكون أكبر من أو يساوي 0',
         ];
