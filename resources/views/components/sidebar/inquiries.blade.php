@@ -85,6 +85,14 @@
     </li>
 @endcan
 
+@can('view Pricing Statuses')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('pricing-statuses.index') }}">
+            <i class="ti-control-record"></i>{{ __('Pricing Status') }}
+        </a>
+    </li>
+@endcan
+
 @can('view Inquiries Statistics')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inquiries.dashboard.statistics') }}">

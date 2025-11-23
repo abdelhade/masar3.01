@@ -1,44 +1,58 @@
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card border-primary shadow-sm">
-            <div class="card-header ">
+            <div class="card-header">
                 <h6 class="mb-0">
                     <i class="fas fa-users-cog me-2"></i>
                     {{ __('Assigned Engineer To Inquiry') }}
                 </h6>
             </div>
             <div class="card-body">
-                <div class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
-                    @if (count($availableEngineers) > 0)
-                        <div class="row g-2">
-                            @foreach ($availableEngineers as $engineer)
-                                <div class="col-md-3 col-sm-6">
-                                    <div class="form-check p-2 border rounded bg-white hover-shadow"
-                                        style="transition: all 0.2s;">
-                                        <input class="form-check-input" type="checkbox" value="{{ $engineer['id'] }}"
-                                            wire:model.live="selectedEngineers" id="engineer_{{ $engineer['id'] }}">
-                                        <label class="form-check-label w-100 cursor-pointer"
-                                            for="engineer_{{ $engineer['id'] }}">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-user-circle text-primary me-2"></i>
-                                                <div>
-                                                    <div class="fw-bold text-dark">{{ $engineer['name'] }}</div>
-                                                    @if (!empty($engineer['email']))
-                                                        <small class="text-muted">{{ $engineer['email'] }}</small>
-                                                    @endif
-                                                </div>
+                <div class="row">
+                    <!-- Engineers List Section - col-8 -->
+                    <div class="col-md-10">
+                        <div class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                            @if (count($availableEngineers) > 0)
+                                <div class="row g-2">
+                                    @foreach ($availableEngineers as $engineer)
+                                        <div class="col-md-3 col-sm-3">
+                                            <div class="form-check p-2 border rounded bg-white hover-shadow"
+                                                style="transition: all 0.2s;">
+                                                <input class="form-check-input" type="checkbox" value="{{ $engineer['id'] }}"
+                                                    wire:model.live="selectedEngineers" id="engineer_{{ $engineer['id'] }}">
+                                                <label class="form-check-label w-100 cursor-pointer"
+                                                    for="engineer_{{ $engineer['id'] }}">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user-circle text-primary me-2"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark">{{ $engineer['name'] }}</div>
+                                                            @if (!empty($engineer['email']))
+                                                                <small class="text-muted">{{ $engineer['email'] }}</small>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </label>
                                             </div>
-                                        </label>
-                                    </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
+                            @else
+                                <div class="text-center py-4 text-muted">
+                                    <i class="fas fa-users fa-2x mb-2"></i>
+                                    <p class="mb-0">{{ __('No Available Engineers') }}</p>
+                                </div>
+                            @endif
                         </div>
-                    @else
-                        <div class="text-center py-4 text-muted">
-                            <i class="fas fa-users fa-2x mb-2"></i>
-                            <p class="mb-0">{{ __('No Available Engineers') }}</p>
-                        </div>
-                    @endif
+                    </div>
+
+                    <!-- Date Input Section - col-4 -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">{{ __('Assign Engineer Date') }}</label>
+                        <input type="date" wire:model="assignEngineerDate" class="form-control">
+                        @error('assignEngineerDate')
+                            <span class="text-danger d-block mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
                 @if (!empty($selectedEngineers) && count($selectedEngineers) > 0)
@@ -48,7 +62,6 @@
                                 <i class="fas fa-check-circle me-1"></i>
                                 {{ __('Selected Engineers') }} ({{ count($selectedEngineers) }})
                             </strong>
-
                         </div>
                         <div class="d-flex flex-wrap gap-2">
                             @foreach ($selectedEngineers as $engId)
@@ -99,6 +112,11 @@
 
         .cursor-pointer {
             cursor: pointer;
+        }
+
+        /* RTL support for date input */
+        input[type="date"] {
+            direction: rtl;
         }
     </style>
 @endpush

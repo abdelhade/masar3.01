@@ -3,11 +3,12 @@
 namespace Modules\Rentals\Http\Controllers;
 
 use Exception;
-use App\Models\{AccHead, OperHead, JournalHead, JournalDetail};
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Modules\Accounts\Models\AccHead;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\{OperHead, JournalHead, JournalDetail};
 use Modules\Rentals\Http\Requests\RentalsLeaseRequest;
 use Modules\Rentals\Models\{RentalsUnit, RentalsLease};
 

@@ -12,11 +12,11 @@
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-2">
                         <label class="form-label">من تاريخ</label>
-                        <input type="date" id="filterDateFrom" class="form-control">
+                        <input type="date" id="filterDateFrom" class="form-control" value="{{ date('Y-m-d') }}">
                     </div>
                     <div class="col-sm-2">
                         <label class="form-label">إلى تاريخ</label>
-                        <input type="date" id="filterDateTo" class="form-control">
+                        <input type="date" id="filterDateTo" class="form-control" value="{{ date('Y-m-d') }}">
                     </div>
                     <div class="col-sm-2">
                         <label class="form-label">رقم القيد</label>
@@ -28,7 +28,12 @@
                     </div>
                     <div class="col-sm-2">
                         <label class="form-label">نوع العملية</label>
-                        <input type="text" id="filterType" class="form-control" placeholder="مثال: سند قبض">
+                        <select id="filterType" class="form-select">
+                            <option value="">الكل</option>
+                            @foreach ($operationTypes as $type)
+                                <option value="{{ $type->ptext }}">{{ $type->ptext }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-sm-1">
                         <label class="form-label">الحركة</label>
@@ -104,9 +109,9 @@
             <div class="mt-2 small text-muted" id="rowsCount"></div>
         </div>
     </div>
-@endsection
+
     <script>
-        (function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const rows = () => Array.from(document.querySelectorAll('.journal-row'));
             const els = {
                 from: document.getElementById('filterDateFrom'),
@@ -118,15 +123,32 @@
                 cnt: document.getElementById('rowsCount')
             };
 
+            // التحقق من وجود العناصر
+            if (!els.from || !els.to || !els.jid || !els.acc || !els.type || !els.dc) {
+                console.error('بعض عناصر الفلترة غير موجودة في DOM');
+                return;
+            }
+
+            // تعيين تاريخ اليوم إذا كانت الحقول فارغة
+            const today = new Date().toISOString().split('T')[0];
+            if (!els.from.value) {
+                els.from.value = today;
+            }
+            if (!els.to.value) {
+                els.to.value = today;
+            }
+
             function inRange(dateStr, fromStr, toStr) {
                 if (!dateStr) return false;
                 const d = new Date(dateStr);
                 if (fromStr) {
                     const f = new Date(fromStr);
+                    f.setHours(0, 0, 0, 0); // بداية اليوم
                     if (d < f) return false;
                 }
                 if (toStr) {
                     const t = new Date(toStr);
+                    t.setHours(23, 59, 59, 999); // نهاية اليوم
                     if (d > t) return false;
                 }
                 return true;
@@ -140,34 +162,59 @@
                 const fType = els.type.value.trim().toLowerCase();
                 const fDC = els.dc.value;
                 let visible = 0;
+                
                 rows().forEach(tr => {
-                    const jid = (tr.getAttribute('data-journal-id') || '').toLowerCase();
-                    const acc = (tr.getAttribute('data-accname') || '').toLowerCase();
-                    const typ = (tr.getAttribute('data-type') || '').toLowerCase();
+                    const jid = String(tr.getAttribute('data-journal-id') || '').toLowerCase();
+                    const acc = String(tr.getAttribute('data-accname') || '').toLowerCase();
+                    const typ = String(tr.getAttribute('data-type') || '').toLowerCase();
                     const dat = tr.getAttribute('data-date') || '';
                     const debit = parseFloat(tr.getAttribute('data-debit') || '0');
                     const credit = parseFloat(tr.getAttribute('data-credit') || '0');
 
                     let ok = true;
-                    if (fFrom || fTo) ok = ok && inRange(dat, fFrom, fTo);
+                    // تطبيق فلترة التاريخ (إلزامي إذا كان هناك قيمة)
+                    if (fFrom || fTo) {
+                        ok = ok && inRange(dat, fFrom, fTo);
+                    }
                     if (fJid) ok = ok && jid.includes(fJid);
                     if (fAcc) ok = ok && acc.includes(fAcc);
-                    if (fType) ok = ok && typ.includes(fType);
+                    // فلترة نوع العملية - مطابقة كاملة
+                    if (fType) ok = ok && typ === fType;
                     if (fDC === 'debit') ok = ok && debit > 0;
                     if (fDC === 'credit') ok = ok && credit > 0;
 
                     tr.style.display = ok ? '' : 'none';
                     if (ok) visible++;
                 });
+                
                 if (els.cnt) {
                     els.cnt.textContent = `عدد الأسطر الظاهرة: ${visible}`;
                 }
             }
-            ['change', 'keyup'].forEach(ev => {
-                ['from', 'to', 'jid', 'acc', 'type', 'dc'].forEach(k => {
-                    els[k].addEventListener(ev, applyFilters);
+
+            // جعل الدالة متاحة عالمياً للزر
+            window.applyFilters = applyFilters;
+
+            // إضافة مستمعي الأحداث
+            // للحقول النصية: keyup و input
+            ['keyup', 'input'].forEach(ev => {
+                ['jid', 'acc'].forEach(k => {
+                    if (els[k]) {
+                        els[k].addEventListener(ev, applyFilters);
+                    }
                 });
             });
+            // للحقول التاريخية والـ select: change فقط
+            ['change'].forEach(ev => {
+                ['from', 'to', 'type', 'dc'].forEach(k => {
+                    if (els[k]) {
+                        els[k].addEventListener(ev, applyFilters);
+                    }
+                });
+            });
+            
+            // تطبيق الفلاتر عند التحميل لعرض نتائج اليوم
             applyFilters();
-        })();
+        });
     </script>
+@endsection

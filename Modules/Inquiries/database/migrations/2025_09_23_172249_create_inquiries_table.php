@@ -50,7 +50,7 @@ return new class extends Migration
             $table->date('submitting_date')->nullable();
             $table->decimal('total_project_value', 15, 2)->nullable();
 
-            $table->enum('quotation_state', QuotationStateEnum::values())->nullable();
+            // $table->enum('quotation_state', QuotationStateEnum::values())->nullable();
             $table->string('rejection_reason')->nullable();
 
             $table->foreignId('project_size_id')->nullable()->constrained('project_sizes')->onDelete('set null');

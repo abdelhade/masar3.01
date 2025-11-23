@@ -66,6 +66,13 @@ new class extends Component {
     // Individual price visibility settings
     public $visiblePrices = [];
 
+    // Check if we're in a reports context
+    public function isReportsPage(): bool
+    {
+        $url = request()->fullUrl() ?? url()->current() ?? '';
+        return str_contains($url, 'reports');
+    }
+
     public function mount()
     {
         // Cache static data for 60 minutes

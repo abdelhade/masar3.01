@@ -15,9 +15,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/general-inventory-movements', [InventoryReportController::class, 'generalInventoryMovements'])
         ->name('reports.general-inventory-movements');
 
-    Route::get('/reports/general-inventory-report', [InventoryReportController::class, 'generalInventoryReport'])
-        ->name('reports.general-inventory-report');
-
     Route::get('/reports/general-inventory-daily-movement-report', [InventoryReportController::class, 'generalInventoryDailyMovementReport'])
         ->name('reports.general-inventory-daily-movement-report');
 
@@ -33,8 +30,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/discrepancy-report', [InventoryReportController::class, 'inventoryDiscrepancyReport'])
         ->name('reports.inventory-discrepancy-report');
 
-    Route::get('/reports/items/check-all-quantity-limits', [InventoryReportController::class, 'checkAllItemsQuantityLimits'])
-        ->name('reports.items.check-all-quantity-limits');
+    // Route::get('/reports/items/check-all-quantity-limits', [InventoryReportController::class, 'checkAllItemsQuantityLimits'])
+    //     ->name('reports.items.check-all-quantity-limits');
 
     Route::get('/reports/items/with-quantity-issues', [InventoryReportController::class, 'getItemsWithQuantityIssues'])
         ->name('reports.items.with-quantity-issues');

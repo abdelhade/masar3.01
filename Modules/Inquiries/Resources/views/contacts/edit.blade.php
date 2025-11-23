@@ -6,7 +6,7 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('Contacts'),
+        'title' => __('Edit Contact'),
         'items' => [
             ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
             ['label' => __('Contacts'), 'url' => route('contacts.index')],
@@ -14,223 +14,234 @@
         ],
     ])
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">{{ __('Edit Contact') }}</h3>
-        </div>
-
-        <form action="{{ route('contacts.update', $contact->id) }}" method="POST">
-            @csrf
-            @method('PUT')
-
+    <div class="container-fluid">
+        <div class="card">
             <div class="card-body">
-                <div class="row">
-                    <!-- Name -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="name">{{ __('Name') }} <span class="text-danger">*</span></label>
-                            <input type="text" name="name" id="name"
-                                class="form-control @error('name') is-invalid @enderror"
+                <form action="{{ route('contacts.update', $contact->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="row g-3">
+                        <!-- Name -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                {{ __('Name') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="name" class="form-control"
                                 value="{{ old('name', $contact->name) }}" required>
                             @error('name')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Type -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="type">{{ __('Type') }} <span class="text-danger">*</span></label>
-                            <select name="type" id="type" class="form-control @error('type') is-invalid @enderror"
-                                required>
-                                <option value="">{{ __('Select Type') }}</option>
-                                <option value="person" {{ old('type', $contact->type) == 'person' ? 'selected' : '' }}>
-                                    {{ __('Person') }}</option>
-                                <option value="company" {{ old('type', $contact->type) == 'company' ? 'selected' : '' }}>
-                                    {{ __('Company') }}</option>
-                            </select>
-                            @error('type')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Email -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="email">{{ __('Email') }}</label>
-                            <input type="email" name="email" id="email"
-                                class="form-control @error('email') is-invalid @enderror"
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ __('Email') }}</label>
+                            <input type="email" name="email" class="form-control"
                                 value="{{ old('email', $contact->email) }}">
                             @error('email')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Phone 1 -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="phone_1">{{ __('Phone 1') }}</label>
-                            <input type="text" name="phone_1" id="phone_1"
-                                class="form-control @error('phone_1') is-invalid @enderror"
-                                value="{{ old('phone_1', $contact->phone_1) }}">
+                        <!-- Phone 1 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                {{ __('Phone 1') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="phone_1" class="form-control"
+                                value="{{ old('phone_1', $contact->phone_1) }}" required>
                             @error('phone_1')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Phone 2 -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="phone_2">{{ __('Phone 2') }}</label>
-                            <input type="text" name="phone_2" id="phone_2"
-                                class="form-control @error('phone_2') is-invalid @enderror"
+                        <!-- Phone 2 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ __('Phone 2') }}</label>
+                            <input type="text" name="phone_2" class="form-control"
                                 value="{{ old('phone_2', $contact->phone_2) }}">
                             @error('phone_2')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Tax Number -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="tax_number">{{ __('Tax Number') }}</label>
-                            <input type="text" name="tax_number" id="tax_number"
-                                class="form-control @error('tax_number') is-invalid @enderror"
+                        <!-- Type -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                {{ __('Type') }} <span class="text-danger">*</span>
+                            </label>
+                            <select name="type" id="contactType" class="form-select" required>
+                                <option value="person" {{ old('type', $contact->type) === 'person' ? 'selected' : '' }}>
+                                    {{ __('Person') }}
+                                </option>
+                                <option value="company" {{ old('type', $contact->type) === 'company' ? 'selected' : '' }}>
+                                    {{ __('Company') }}
+                                </option>
+                            </select>
+                            @error('type')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Tax Number -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ __('Tax Number') }}</label>
+                            <input type="text" name="tax_number" class="form-control"
                                 value="{{ old('tax_number', $contact->tax_number) }}">
                             @error('tax_number')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Address 1 -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="address_1">{{ __('Address 1') }}</label>
-                            <input type="text" name="address_1" id="address_1"
-                                class="form-control @error('address_1') is-invalid @enderror"
+                        <!-- Address 1 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ __('Address 1') }}</label>
+                            <input type="text" name="address_1" class="form-control"
                                 value="{{ old('address_1', $contact->address_1) }}">
                             @error('address_1')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Address 2 -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="address_2">{{ __('Address 2') }}</label>
-                            <input type="text" name="address_2" id="address_2"
-                                class="form-control @error('address_2') is-invalid @enderror"
+                        <!-- Address 2 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ __('Address 2') }}</label>
+                            <input type="text" name="address_2" class="form-control"
                                 value="{{ old('address_2', $contact->address_2) }}">
                             @error('address_2')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
-                    <!-- Main Role -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="role_id">{{ __('Main Role') }}</label>
-                            <select name="role_id" id="role_id"
-                                class="form-control @error('role_id') is-invalid @enderror">
-                                <option value="">{{ __('Select Role') }}</option>
-                                @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}"
-                                        {{ old('role_id', $contact->role_id) == $role->id ? 'selected' : '' }}>
-                                        {{ $role->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('role_id')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Parent Contact -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="parent_id">{{ __('Parent Contact') }}</label>
-                            <select name="parent_id" id="parent_id"
-                                class="form-control @error('parent_id') is-invalid @enderror">
-                                <option value="">{{ __('None') }}</option>
-                                @foreach ($parents as $parent)
-                                    <option value="{{ $parent->id }}"
-                                        {{ old('parent_id', $contact->parent_id) == $parent->id ? 'selected' : '' }}>
-                                        {{ $parent->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('parent_id')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Multiple Roles -->
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label>{{ __('Additional Roles') }}</label>
-                            <div class="row">
+                        <!-- Roles -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">{{ __('Roles') }}</label>
+                            <div class="row g-2">
                                 @foreach ($roles as $role)
                                     <div class="col-md-4">
                                         <div class="form-check">
-                                            <input type="checkbox" name="roles[]" value="{{ $role->id }}"
-                                                id="role_{{ $role->id }}"
-                                                class="form-check-input @error('roles') is-invalid @enderror"
+                                            <input class="form-check-input" type="checkbox" name="roles[]"
+                                                value="{{ $role->id }}" id="role_{{ $role->id }}"
                                                 {{ in_array($role->id, old('roles', $contact->roles->pluck('id')->toArray())) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="role_{{ $role->id }}">
-                                                {{ $role->name }}
+                                                {{ __($role->name) }}
                                             </label>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                             @error('roles')
-                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
 
+                        <!-- Related Contacts -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">
+                                <span id="relatedLabel">
+                                    @if ($contact->type === 'person')
+                                        {{ __('Related Companies') }}
+                                    @else
+                                        {{ __('Related Persons') }}
+                                    @endif
+                                </span>
+                            </label>
+                            <div class="border rounded p-3" style="max-height: 250px; overflow-y: auto;">
+                                <div class="row g-2" id="relatedContactsContainer">
+                                    @if (isset($allContacts) && count($allContacts) > 0)
+                                        @foreach ($allContacts as $c)
+                                            @php
+                                                $isSelected = false;
+                                                if ($contact->type === 'person' && $c->type === 'company') {
+                                                    $isSelected = $contact->companies->contains($c->id);
+                                                } elseif ($contact->type === 'company' && $c->type === 'person') {
+                                                    $isSelected = $contact->persons->contains($c->id);
+                                                }
+                                            @endphp
+                                            <div class="col-md-4 contact-checkbox" data-type="{{ $c->type }}"
+                                                style="display: {{ ($contact->type === 'person' && $c->type === 'company') || ($contact->type === 'company' && $c->type === 'person') ? 'block' : 'none' }};">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="related_contacts[]" value="{{ $c->id }}"
+                                                        id="contact_{{ $c->id }}"
+                                                        {{ $isSelected || in_array($c->id, old('related_contacts', [])) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="contact_{{ $c->id }}">
+                                                        @if ($c->type === 'company')
+                                                            <i class="fas fa-building text-primary me-1"></i>
+                                                        @else
+                                                            <i class="fas fa-user text-success me-1"></i>
+                                                        @endif
+                                                        {{ $c->name }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="col-12 text-center text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            {{ __('No contacts available') }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ __('Select related contacts') }}
+                            </small>
+                        </div>
 
-                    <!-- Notes -->
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="notes">{{ __('Notes') }}</label>
-                            <textarea name="notes" id="notes" rows="3" class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $contact->notes) }}</textarea>
+                        <!-- Notes -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">{{ __('Notes') }}</label>
+                            <textarea name="notes" class="form-control" rows="3">{{ old('notes', $contact->notes) }}</textarea>
                             @error('notes')
-                                <span class="invalid-feedback">{{ $message }}</span>
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="card-footer">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> {{ __('Update') }}
-                </button>
-                <a href="{{ route('contacts.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> {{ __('Cancel') }}
-                </a>
+                    <!-- Buttons -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>{{ __('Update') }}
+                        </button>
+                        <a href="{{ route('contacts.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>{{ __('Back') }}
+                        </a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 
     @push('scripts')
         <script>
-            $(document).ready(function() {
-                $('.select2').select2({
-                    theme: 'bootstrap4',
-                    placeholder: '{{ __('Select Roles') }}'
-                });
+            document.addEventListener('DOMContentLoaded', function() {
+                const typeSelect = document.getElementById('contactType');
+                const relatedLabel = document.getElementById('relatedLabel');
+                const checkboxes = document.querySelectorAll('.contact-checkbox');
+
+                function updateRelatedContacts() {
+                    const selectedType = typeSelect.value;
+                    const targetType = selectedType === 'person' ? 'company' : 'person';
+
+                    relatedLabel.textContent = selectedType === 'person' ?
+                        '{{ __('Related Companies') }}' :
+                        '{{ __('Related Persons') }}';
+
+                    checkboxes.forEach(checkbox => {
+                        if (checkbox.dataset.type === targetType) {
+                            checkbox.style.display = 'block';
+                        } else {
+                            checkbox.style.display = 'none';
+                            const input = checkbox.querySelector('input[type="checkbox"]');
+                            if (input) input.checked = false;
+                        }
+                    });
+                }
+
+                typeSelect.addEventListener('change', updateRelatedContacts);
             });
         </script>
     @endpush

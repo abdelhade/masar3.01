@@ -5,6 +5,7 @@ use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;
+use App\Models\ProType;
 
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
@@ -68,11 +69,15 @@ new class extends Component {
             'journalDetails' => $journalDetails,
             'accounts' => AccHead::where('isdeleted', 0)->where('is_basic', 0)->orderBy('code')->get(),
 
-            'operationTypes' => OperHead::select('pro_type')
-                ->distinct()
-                ->whereNotNull('pro_type')
-                ->orderBy('pro_type')
-                ->pluck('pro_type'),
+            'operationTypes' => ProType::select('id', 'ptext')
+                ->whereIn('id', OperHead::select('pro_type')
+                    ->whereNotNull('pro_type')
+                    ->distinct()
+                    ->pluck('pro_type')
+                )
+                ->where('isdeleted', 0)
+                ->orderBy('ptext', 'asc')
+                ->get(),
             'totalDebit' => $totalDebit,
             'totalCredit' => $totalCredit,
             'totalBalance' => $totalBalance,
@@ -152,7 +157,7 @@ new class extends Component {
                                 <select id="operation_type" class="form-control" wire:model.live="operationType">
                                     <option value="">{{ __('reports.all_operations') }}</option>
                                     @foreach($operationTypes as $type)
-                                        <option value="{{ $type }}">{{ $type}}</option>
+                                        <option value="{{ $type->id }}">{{ $type->ptext }}</option>
                                     @endforeach
                                 </select>
                             </div>

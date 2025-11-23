@@ -402,7 +402,7 @@
                     'icon' => 'package',
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
-                    'route' => route('reports.general-inventory-report'),
+                    'route' => route('reports.general-inventory-balances'),
                     'permission' => 'view Reports',
                 ],
                 [
@@ -633,7 +633,7 @@
                         ['name' => 'أرباح وخسائر', 'icon' => 'trending-up', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('reports.general-profit-loss-report'), 'permission' => null],
                         ['name' => 'تقارير المبيعات', 'icon' => 'shopping-cart', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('reports.sales.total'), 'permission' => null],
                         ['name' => 'تقارير المشتريات', 'icon' => 'shopping-bag', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('reports.purchases.total'), 'permission' => null],
-                        ['name' => 'تقارير المخزون', 'icon' => 'package', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('reports.general-inventory-report'), 'permission' => null],
+                        ['name' => 'تقارير المخزون', 'icon' => 'package', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('reports.general-inventory-balances'), 'permission' => null],
                         ['name' => 'تقارير المصروفات', 'icon' => 'file-text', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('reports.expenses-balance-report'), 'permission' => null],
                     ]
                 ],

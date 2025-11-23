@@ -1,4 +1,37 @@
 <div>
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show font-family-cairo" role="alert" 
+             x-data="{ show: true }" 
+             x-show="show"
+             x-init="setTimeout(() => show = false, 5000)">
+            <i class="ri-check-line me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+        </div>
+    @endif
+    
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show font-family-cairo" role="alert"
+             x-data="{ show: true }" 
+             x-show="show"
+             x-init="setTimeout(() => show = false, 5000)">
+            <i class="ri-close-line me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+        </div>
+    @endif
+    
+    @if (session()->has('info'))
+        <div class="alert alert-info alert-dismissible fade show font-family-cairo" role="alert"
+             x-data="{ show: true }" 
+             x-show="show"
+             x-init="setTimeout(() => show = false, 5000)">
+            <i class="ri-information-line me-2"></i>
+            {{ session('info') }}
+            <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+        </div>
+    @endif
 
     {{-- Filters --}}
     <div class="card mb-4">
@@ -85,15 +118,25 @@
         </div>
     </div>
 
-    {{-- Alert Container --}}
-    <div id="alertContainer"></div>
 
     {{-- إشعار حساب الفروقات --}}
     @if (!$inventoryDifferenceAccount)
         <div class="alert alert-warning">
             <i class="ri-alert-line"></i>
-            تحذير: حساب فروقات الجرد غير محدد في الإعدادات العامة. يرجى تحديد قيمة للمفتاح
-            <code>show_inventory_difference_account</code> في جدول PublicSettings.
+            <strong>تحذير:</strong> حساب فروقات الجرد غير محدد أو غير موجود.
+            @if($inventoryDifferenceAccountValue)
+                <br>
+                <small>
+                    القيمة المحفوظة في الإعدادات: <code>{{ $inventoryDifferenceAccountValue }}</code>
+                    <br>
+                    يرجى التحقق من أن هذا الكود أو المعرف موجود في جدول الحسابات (AccHead) وغير محذوف.
+                </small>
+            @else
+                <br>
+                <small>
+                    يرجى تحديد قيمة للمفتاح <code>show_inventory_difference_account</code> في الإعدادات العامة.
+                </small>
+            @endif
         </div>
     @endif
 
@@ -279,40 +322,16 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('show-alert', (event) => {
-                const eventData = event[0];
-                const alertContainer = document.getElementById('alertContainer');
-                const alertClass = eventData.type === 'success' ? 'alert-success' :
-                    eventData.type === 'error' ? 'alert-danger' :
-                    eventData.type === 'info' ? 'alert-info' : 'alert-warning';
-
-                alertContainer.innerHTML = `
-                        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                            <i class="ri-${eventData.type === 'success' ? 'check' : eventData.type === 'error' ? 'close' : 'information'}-line"></i>
-                            ${eventData.message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    `;
-
-                // إخفاء التنبيه تلقائياً بعد 5 ثوان
+        // تحسين تجربة المستخدم عند إدخال الكميات
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.type === 'number' && e.target.getAttribute('wire:model.live.debounce.500ms')) {
+                e.target.style.backgroundColor = '#fff3cd'; // تمييز الحقول المعدلة
                 setTimeout(() => {
-                    const alert = alertContainer.querySelector('.alert');
-                    if (alert) {
-                        alert.remove();
-                    }
-                }, 5000);
-            });
-
-            // تحسين تجربة المستخدم عند إدخال الكميات
-            document.addEventListener('input', function(e) {
-                if (e.target.type === 'number' && e.target.getAttribute('wire:model.live.debounce.500ms')) {
-                    e.target.style.backgroundColor = '#fff3cd'; // تمييز الحقول المعدلة
-                    setTimeout(() => {
+                    if (e.target && e.target.style) {
                         e.target.style.backgroundColor = '';
-                    }, 1000);
-                }
-            });
+                    }
+                }, 1000);
+            }
         });
 
         // دالة لطباعة تقرير مخصص
@@ -333,7 +352,7 @@
                         <p>التاريخ: ${new Date().toLocaleDateString('ar-EG')}</p>
                         <p>المخزن: ${document.querySelector('[wire\\:model\\.live="selectedWarehouse"] option:checked')?.textContent || 'غير محدد'}</p>
                     </div>
-                    ${document.querySelector('.table-responsive').innerHTML}
+                    ${document.querySelector('.table-responsive')?.innerHTML || ''}
                 `;
 
             const printWindow = window.open('', '_blank');
