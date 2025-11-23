@@ -23,8 +23,8 @@ use Modules\Authorization\Database\Seeders\PermissionSelectiveOptionsSeeder;
 
 use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
 use Modules\Checks\database\seeders\{ChecksPermissionsSeeder, CheckPortfoliosPermissionsSeeder};
-use Modules\POS\Database\Seeders\POSPermissionsSeeder;
-use Modules\MyResources\Database\Seeders\ResourcesPermissionsSeeder;
+use Modules\POS\database\seeders\POSPermissionsSeeder;
+use Modules\MyResources\database\seeders\ResourcesPermissionsSeeder;
 
 
 
