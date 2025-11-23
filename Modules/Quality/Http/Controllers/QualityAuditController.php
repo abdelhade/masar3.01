@@ -36,7 +36,7 @@ class QualityAuditController extends Controller
         $validated = $request->validate([
             'audit_title' => 'required|string',
             'audit_type' => 'required|in:internal,external,supplier,certification,customer',
-            'audit_scope' => 'required',
+
             'planned_date' => 'required|date',
             'lead_auditor_id' => 'required|exists:users,id',
             'audit_team' => 'nullable|array',

@@ -74,6 +74,13 @@ class SupplierRatingController extends Controller
         $validated['critical_ncrs'] = $ncrs->where('severity', 'critical')->count();
         $validated['major_ncrs'] = $ncrs->where('severity', 'major')->count();
         $validated['minor_ncrs'] = $ncrs->where('severity', 'minor')->count();
+        
+        // Add default values for missing fields
+        $validated['total_deliveries'] = 0;
+        $validated['on_time_deliveries'] = 0;
+        $validated['certificates_required'] = 0;
+        $validated['certificates_received'] = 0;
+        $validated['supplier_status'] = 'approved';
 
         $rating = SupplierRating::create($validated);
 
@@ -81,16 +88,35 @@ class SupplierRatingController extends Controller
             ->with('success', 'تم إنشاء تقييم المورد بنجاح');
     }
 
-    public function show(SupplierRating $rating)
+    public function show(SupplierRating $supplier)
     {
-        $rating->load(['supplier', 'ratedBy', 'approvedBy']);
+        $supplier->load(['supplier', 'ratedBy', 'approvedBy']);
         
-        return view('quality::suppliers.show', compact('rating'));
+        return view('quality::suppliers.show', ['rating' => $supplier]);
     }
 
-    public function destroy(SupplierRating $rating)
+    public function edit(SupplierRating $supplier)
     {
-        $rating->delete();
+        return view('quality::suppliers.edit', ['rating' => $supplier]);
+    }
+
+    public function update(Request $request, SupplierRating $supplier)
+    {
+        $validated = $request->validate([
+            'quality_score' => 'required|numeric|min:0|max:100',
+            'delivery_score' => 'required|numeric|min:0|max:100',
+            'documentation_score' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $supplier->update($validated);
+
+        return redirect()->route('quality.suppliers.show', $supplier)
+            ->with('success', 'تم تحديث التقييم بنجاح');
+    }
+
+    public function destroy(SupplierRating $supplier)
+    {
+        $supplier->delete();
 
         return redirect()->route('quality.suppliers.index')
             ->with('success', 'تم حذف التقييم بنجاح');

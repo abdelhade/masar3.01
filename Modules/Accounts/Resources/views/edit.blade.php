@@ -7,7 +7,17 @@
 
 @section('content')
     @php
-        $parent = request()->get('parent') ?? substr($account->code, 0, -3);
+        // تحديد نوع الحساب بدقة - فحص الأطول قبل الأقصر
+        $parent = request()->get('parent');
+        if (!$parent) {
+            if (str_starts_with($account->code, '1202')) {
+                $parent = '1202'; // الأصول القابلة للتأجير
+            } elseif (str_starts_with($account->code, '12')) {
+                $parent = '12'; // الأصول الثابتة
+            } else {
+                $parent = substr($account->code, 0, -3);
+            }
+        }
         $isClientOrSupplier = in_array(substr($account->code, 0, 4), ['1103', '2101']);
         // خريطة تربط parent_id بنوع الحساب
         $parentTypeMap = [
@@ -39,10 +49,11 @@
         <section class="content-header">
             <div class="container-fluid">
                 <section class="content">
-                    <form action="{{ route('accounts.update', $account->id) }}" method="POST">
+                    <form id="updateAccountForm" action="{{ route('accounts.update', $account->id) }}" method="POST" onsubmit="console.log('Form submitting to:', this.action, 'Method: POST'); return true;">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="id" value="{{ $account->id }}">
+                        <input type="hidden" name="parent" value="{{ $parent }}">
                         <input type="hidden" name="q" value="{{ $parent }}">
                         <div class="card card-info">
                             <div class="card-header">
@@ -93,17 +104,6 @@
                                                     <option value="{{ $rowacs->id }}" {{ $account->parent_id == $rowacs->id ? 'selected' : '' }}>
                                                         {{ $rowacs->code }} - {{ $rowacs->aname }}
                                                     </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="branch_id">{{ __('الفرع') }}</label>
-                                            <select class="form-control font-bold" name="branch_id" id="branch_id">
-                                                <option value="">{{ __('اختر الفرع') }}</option>
-                                                @foreach ($branches as $branch)
-                                                    <option value="{{ $branch->id }}" {{ $account->branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -215,7 +215,7 @@
                             </div>
                             <div class="card-footer">
                                 <div class="d-flex justify-content-start">
-                                    <button class="btn btn-success m-1" type="submit">
+                                    <button class="btn btn-success m-1" type="submit" id="updateBtn">
                                         <i class="las la-save"></i> {{ __('تحديث') }}
                                     </button>
                                 </div>

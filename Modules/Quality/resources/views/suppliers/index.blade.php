@@ -77,8 +77,8 @@
                         <tr>
                             <td><strong>{{ $rating->supplier->aname ?? '---' }}</strong></td>
                             <td>
-                                {{ $rating->period_start->format('Y-m-d') }} <br>
-                                <small class="text-muted">إلى {{ $rating->period_end->format('Y-m-d') }}</small>
+                                {{ $rating->period_start ? $rating->period_start->format('Y-m-d') : '---' }} <br>
+                                <small class="text-muted">إلى {{ $rating->period_end ? $rating->period_end->format('Y-m-d') : '---' }}</small>
                             </td>
                             <td><span class="badge bg-primary">{{ number_format($rating->quality_score, 1) }}</span></td>
                             <td><span class="badge bg-info">{{ number_format($rating->delivery_score, 1) }}</span></td>
@@ -108,9 +108,43 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('quality.suppliers.show', $rating) }}" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('quality.suppliers.show', $rating) }}" class="btn btn-sm btn-info" title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('quality.suppliers.edit', $rating) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal{{ $rating->id }}" 
+                                            title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ $rating->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">تأكيد الحذف</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                هل أنت متأكد من حذف تقييم المورد "{{ $rating->supplier->aname ?? '---' }}"?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                <form action="{{ route('quality.suppliers.destroy', $rating) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">حذف</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         @empty

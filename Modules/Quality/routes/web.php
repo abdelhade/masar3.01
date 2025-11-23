@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->prefix('quality')->name('quality.')->gr
     
     // Quality Inspections
     Route::resource('inspections', QualityInspectionController::class);
+    Route::put('inspections/{inspection}', [QualityInspectionController::class, 'update'])->name('inspections.update');
     Route::post('inspections/{inspection}/approve', [QualityInspectionController::class, 'approve'])->name('inspections.approve');
     Route::post('inspections/{inspection}/reject', [QualityInspectionController::class, 'reject'])->name('inspections.reject');
     
@@ -36,7 +37,7 @@ Route::middleware(['auth', 'verified'])->prefix('quality')->name('quality.')->gr
     Route::resource('batches', BatchTrackingController::class);
     
     // Supplier Ratings
-    Route::resource('suppliers', SupplierRatingController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+    Route::resource('suppliers', SupplierRatingController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     
     // Quality Certificates
     Route::resource('certificates', QualityCertificateController::class);
