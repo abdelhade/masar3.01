@@ -20,6 +20,8 @@ use Modules\Invoices\database\seeders\{InvoiceTemplatesSeeder, InvoiceDimensions
 use Modules\Settings\Database\Seeders\{SettingSeeder, InvoiceOptionsSeeder, SystemSettingsSeeder};
 use Modules\Inquiries\database\seeders\{InquiriesRolesSeeder, DiffcultyMatrixSeeder, InquiriesPermissionsSeeder};
 use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
+use Modules\Checks\database\seeders\{ChecksPermissionsSeeder, CheckPortfoliosPermissionsSeeder};
+use Modules\POS\Database\Seeders\POSPermissionsSeeder;
 
 
 class DatabaseSeeder extends Seeder
@@ -78,6 +80,10 @@ class DatabaseSeeder extends Seeder
             ManufacturingPermissionsSeeder::class,
             ShippingPermissionsSeeder::class,
             PricingStatusPermissionsSeeder::class,
+            ChecksPermissionsSeeder::class,
+            CheckPortfoliosPermissionsSeeder::class,
+            POSPermissionsSeeder::class,
+            GiveAllPermissionsToAdminSeeder::class,
         ]);
     }
 }

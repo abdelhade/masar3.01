@@ -4,7 +4,6 @@ namespace Modules\Inquiries\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Models\Permission;
-use Modules\Authorization\Models\Role;
 
 class PricingStatusPermissionsSeeder extends Seeder
 {
@@ -31,16 +30,7 @@ class PricingStatusPermissionsSeeder extends Seeder
             }
         }
 
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['guard_name' => 'web']);
-        $userRole = Role::firstOrCreate(['name' => 'user'], ['guard_name' => 'web']);
-
-        $pricingStatusPermissions = Permission::where('category', 'Inquiries')->get();
-        $adminRole->givePermissionTo($pricingStatusPermissions);
-
-        $userViewPermissions = Permission::where('category', 'Inquiries')
-            ->where('name', 'like', 'view%')
-            ->get();
-
-        $userRole->givePermissionTo($userViewPermissions);
+        // Note: Permissions are assigned directly to users via model_has_permissions table
+        // Roles are not used for permission assignment
     }
 }

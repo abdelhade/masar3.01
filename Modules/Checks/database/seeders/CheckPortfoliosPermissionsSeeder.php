@@ -10,36 +10,28 @@ class CheckPortfoliosPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        $localizedPermissions = [
-            'عرض حافظات أوراق القبض',
-            'إضافة حافظات أوراق القبض',
-            'تعديل حافظات أوراق القبض',
-            'حذف حافظات أوراق القبض',
-            'عرض حافظات أوراق الدفع',
-            'إضافة حافظات أوراق الدفع',
-            'تعديل حافظات أوراق الدفع',
-            'حذف حافظات أوراق الدفع',
+        // Define permissions structure for Check Portfolios
+        $groupedPermissions = [
+            'Accounts' => [
+                'Check Portfolios Incoming',
+                'Check Portfolios Outgoing',
+            ],
         ];
 
-        foreach ($localizedPermissions as $permission) {
-            Permission::firstOrCreate(
-                ['name' => $permission, 'guard_name' => 'web'],
-                ['category' => 'Checks']
-            );
-        }
+        // Standard actions
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
 
-        $sidebarPermissions = [
-            'view check-portfolios-incoming',
-            'create check-portfolios-incoming',
-            'view check-portfolios-outgoing',
-            'create check-portfolios-outgoing',
-        ];
-
-        foreach ($sidebarPermissions as $permission) {
-            Permission::firstOrCreate(
-                ['name' => $permission, 'guard_name' => 'web'],
-                ['category' => 'Accounts']
-            );
+        // Create permissions
+        foreach ($groupedPermissions as $category => $permissions) {
+            foreach ($permissions as $basePermission) {
+                foreach ($actions as $action) {
+                    $fullName = "$action $basePermission";
+                    Permission::firstOrCreate(
+                        ['name' => $fullName, 'guard_name' => 'web'],
+                        ['category' => $category]
+                    );
+                }
+            }
         }
 
         // Note: Permissions are assigned directly to users via model_has_permissions table

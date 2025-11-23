@@ -13,30 +13,43 @@ class ChecksPermissionsSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create permissions for checks management
-        $permissions = [
-            'عرض الشيكات',
-            'إضافة الشيكات',
-            'تعديل الشيكات',
-            'حذف الشيكات',
-            'تصفية الشيكات',
-            'تمييز الشيكات كمرتدة',
-            'إلغاء الشيكات',
-            'اعتماد الشيكات',
-            'تصدير الشيكات',
-            // حافظات الأوراق المالية
-            'عرض حافظات أوراق القبض',
-            'إضافة حافظات أوراق القبض',
-            'تعديل حافظات أوراق القبض',
-            'حذف حافظات أوراق القبض',
-            'عرض حافظات أوراق الدفع',
-            'إضافة حافظات أوراق الدفع',
-            'تعديل حافظات أوراق الدفع',
-            'حذف حافظات أوراق الدفع',
+        // Define permissions structure for Checks module
+        $groupedPermissions = [
+            'Accounts' => [
+                'Checks',
+            ],
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        // Standard actions for checks
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
+
+        // Create permissions
+        foreach ($groupedPermissions as $category => $permissions) {
+            foreach ($permissions as $basePermission) {
+                foreach ($actions as $action) {
+                    $fullName = "$action $basePermission";
+                    Permission::firstOrCreate(
+                        ['name' => $fullName, 'guard_name' => 'web'],
+                        ['category' => $category]
+                    );
+                }
+            }
+        }
+
+        // Additional special permissions for checks
+        $specialPermissions = [
+            'filter Checks',
+            'mark Checks as bounced',
+            'cancel Checks',
+            'approve Checks',
+            'export Checks',
+        ];
+
+        foreach ($specialPermissions as $permission) {
+            Permission::firstOrCreate(
+                ['name' => $permission, 'guard_name' => 'web'],
+                ['category' => 'Accounts']
+            );
         }
 
         // Note: Permissions are assigned directly to users via model_has_permissions table

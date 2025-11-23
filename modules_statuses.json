@@ -20,5 +20,6 @@
     "Manufacturing": true,
     "Invoices": true,
     "Quality": true,
-    "Installments": true
+    "Installments": true,
+    "Resources": true
 }

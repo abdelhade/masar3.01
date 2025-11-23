@@ -9,27 +9,35 @@ class POSPermissionsSeeder extends Seeder
 {
     public function run()
     {
-        // إنشاء صلاحيات POS
-        $posPermissions = [
-            'استخدام نظام نقاط البيع' => 'الوصول إلى نظام نقاط البيع الرئيسي',
-            'إنشاء معاملة نقاط البيع' => 'إنشاء معاملات بيع جديدة في POS',
-            'عرض معاملة نقاط البيع' => 'عرض تفاصيل معاملات POS',
-            'طباعة فاتورة نقاط البيع' => 'طباعة فواتير POS',
-            'حذف معاملة نقاط البيع' => 'حذف معاملات POS',
-            'عرض تقارير نقاط البيع' => 'الوصول إلى تقارير POS',
-            'إدارة إعدادات نقاط البيع' => 'تعديل إعدادات نظام POS',
+        // Define permissions structure for POS module
+        $groupedPermissions = [
+            'POS' => [
+                'POS System',
+                'POS Transactions',
+                'POS Reports',
+                'POS Settings',
+            ],
         ];
 
-        foreach ($posPermissions as $name => $description) {
-            Permission::firstOrCreate([
-                'name' => $name,
-                'guard_name' => 'web'
-            ]);
+        // Standard actions
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
+
+        // Create permissions
+        foreach ($groupedPermissions as $category => $permissions) {
+            foreach ($permissions as $basePermission) {
+                foreach ($actions as $action) {
+                    $fullName = "$action $basePermission";
+                    Permission::firstOrCreate(
+                        ['name' => $fullName, 'guard_name' => 'web'],
+                        ['category' => $category]
+                    );
+                }
+            }
         }
 
         // Note: Permissions are assigned directly to users via model_has_permissions table
         // Roles are not used for permission assignment
 
-        $this->command->info('تم إنشاء صلاحيات وأدوار POS بنجاح!');
+        $this->command->info('POS permissions created successfully!');
     }
 }

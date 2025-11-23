@@ -81,16 +81,6 @@ class HRPermissionsSeeder extends Seeder
             }
         }
 
-        // إصلاح صلاحيات Employees: تحديث الفئة من Accounts إلى HR
-        $employeesPermissions = Permission::where('name', 'like', '% Employees')
-            ->where('guard_name', 'web')
-            ->get();
-        foreach ($employeesPermissions as $empPerm) {
-            if ($empPerm->category !== 'HR') {
-                $empPerm->update(['category' => 'HR']);
-            }
-        }
-
         // Note: Permissions are assigned directly to users via model_has_permissions table
         // Roles are not used for permission assignment
     }

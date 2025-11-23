@@ -18,7 +18,7 @@ class InvoiceTemplatesDiscountsPermissionsSeeder extends Seeder
             ],
         ];
 
-        $actions = ['view', 'create', 'edit', 'delete'];
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
 
         foreach ($groupedPermissions as $category => $permissions) {
             foreach ($permissions as $basePermission) {

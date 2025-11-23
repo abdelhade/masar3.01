@@ -192,6 +192,15 @@
                     'route' => route('depreciation.index'),
                     'permission' => 'view assets',
                 ],
+                [
+                    'name' => 'إدارة الموارد',
+                    'icon' => 'cog',
+                    'iconBg' => 'white',
+                    'iconColor' => '#00695C',
+                    'route' => route('resources.index'),
+                    
+                    'isNew' => true,
+                ],
             ],
         ],
         [
