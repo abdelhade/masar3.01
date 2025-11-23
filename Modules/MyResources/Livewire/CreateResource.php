@@ -63,19 +63,19 @@ class CreateResource extends Component
 
     public function updatedResourceCategoryId(): void
     {
-        $this->resource_type_id = '';
-        $this->loadTypes();
+        // Do nothing - types are not linked to category
     }
 
     public function loadTypes(): void
     {
-        if ($this->resource_category_id) {
-            $this->availableTypes = ResourceType::active()
-                ->forCategory($this->resource_category_id)
-                ->get();
-        } else {
-            $this->availableTypes = [];
-        }
+        // Load all active types regardless of category
+        $this->availableTypes = ResourceType::active()->get();
+    }
+
+    public function mount(): void
+    {
+        // Load all types initially
+        $this->loadTypes();
     }
 
     public function save()
@@ -113,8 +113,8 @@ class CreateResource extends Component
 
     public function render()
     {
-        $categories = ResourceCategory::active()->ordered()->get();
-        $statuses = ResourceStatus::active()->ordered()->get();
+        $categories = ResourceCategory::all();
+        $statuses = ResourceStatus::all();
         $branches = Branch::all();
         $employees = Employee::where('status', 'active')->get();
 

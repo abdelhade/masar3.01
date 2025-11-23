@@ -42,7 +42,11 @@ Follow these rules STRICTLY:
    If a change could break something,
    YOU MUST WARN ME FIRST.
 
-9) MAKE PERMISSIONS SEEDER  
+9) MAKE PERMISSIONS SEEDER if create page
+   take care of all conflicts about seeders 
+   take care permissions seeders at modules
+   give the permission to the default user 
+
 
 
 

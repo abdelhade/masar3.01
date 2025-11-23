@@ -592,6 +592,7 @@
                         ['name' => 'التقدم اليومي', 'icon' => 'bar-chart-3', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('progress.projcet.index'), 'permission' => null],
                         ['name' => 'عمليات الاصول', 'icon' => 'building', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('depreciation.index'), 'permission' => null],
                         ['name' => 'إدارة الموارد', 'icon' => 'cog', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('myresources.index'), 'permission' => null],
+                        
                     ]
                 ],
                 [
@@ -678,8 +679,8 @@
                                     <span class="new-badge">جديد 🎉</span>
                                 @endif
                                 <div class="app-icon" style="background-color: {{ $app['iconBg'] }};">
-                                    <i data-lucide="{{ $app['icon'] }}" style="color: {{ $app['iconColor'] }}; width: 30px; height: 25px; stroke-width: 2.5;font-size: 60px !important; "></i>
-            </div>
+                                    <i data-lucide="{{ $app['icon'] }}" style="color: {{ $app['iconColor'] }}; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                </div>
                                 <p class="app-name">{{ $app['name'] }}</p>
                             </a>
                         @endforeach
