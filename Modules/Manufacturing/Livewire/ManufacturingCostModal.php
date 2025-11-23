@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Livewire;
+namespace Modules\Manufacturing\Livewire;
 
 use Livewire\Component;
 use App\Models\Item;
-use App\Services\ManufacturingCostService;
+use Modules\Manufacturing\Services\ManufacturingCostService;
+use App\Models\OperHead;
+use App\Models\OperationItems;
+use Illuminate\Support\Facades\DB;
 
 class ManufacturingCostModal extends Component
 {
@@ -36,6 +39,7 @@ class ManufacturingCostModal extends Component
     public function close()
     {
         $this->isOpen = false;
+        $this->reset(['items', 'selectedItemId', 'costData', 'activeTab', 'totalCostData', 'totalRawMaterials', 'grandTotal']);
     }
 
     public function updatedSelectedItemId($value)
@@ -121,7 +125,8 @@ class ManufacturingCostModal extends Component
                     $this->totalRawMaterials[$id] = [
                         'name' => $component['name'],
                         'quantity' => 0,
-                        'total_cost' => 0
+                        'total_cost' => 0,
+                        'unit_cost' => $component['unit_cost']
                     ];
                 }
                 $this->totalRawMaterials[$id]['quantity'] += $component['quantity_needed'];
@@ -130,8 +135,68 @@ class ManufacturingCostModal extends Component
         }
     }
 
+    public function confirmCreatePurchaseOrder()
+    {
+        if (empty($this->totalRawMaterials)) {
+            return;
+        }
+        
+        $this->dispatch('confirm-create-po');
+    }
+
+    public function proceedCreatePurchaseOrder()
+    {
+        if (empty($this->totalRawMaterials)) {
+            return;
+        }
+
+        // Prepare items data for the session
+        $itemsData = [];
+        foreach ($this->totalRawMaterials as $itemId => $material) {
+            $item = \App\Models\Item::with('units')->find($itemId);
+            if (!$item) continue;
+
+            $unitId = $item->units->first()->id ?? null;
+            
+            $itemsData[] = [
+                'item_id' => $itemId,
+                'unit_id' => $unitId,
+                'name' => $material['name'],
+                'quantity' => $material['quantity'],
+                'price' => $material['unit_cost'] > 0 ? $material['unit_cost'] : 0,
+                'sub_value' => $material['total_cost'],
+                'available_units' => $item->units->map(fn($unit) => (object)[
+                    'id' => $unit->id,
+                    'name' => $unit->name
+                ]),
+                'notes' => '',
+            ];
+        }
+
+        // Prepare invoice data
+        $invoiceData = [
+            'invoice_data' => [
+                'notes' => __('Generated from Manufacturing Requisition'),
+                'invoice_date' => now()->format('Y-m-d'),
+                'accural_date' => now()->format('Y-m-d'),
+                'branch_id' => auth()->user()->branch_id ?? 1,
+            ],
+            'items_data' => $itemsData,
+            'subtotal' => $this->grandTotal,
+            'total_after_additional' => $this->grandTotal,
+        ];
+
+        // Store in session
+        session(['convert_invoice_data' => $invoiceData]);
+
+        // Redirect to Create Invoice page (Type 15: Purchase Order)
+        $type = 15;
+        $hash = md5($type);
+        return redirect()->to(url('/invoices/create?type=' . $type . '&q=' . $hash));
+    }
+
     public function render()
     {
-        return view('livewire.manufacturing-cost-modal');
+        return view('manufacturing::livewire.manufacturing-cost-modal');
     }
 }

@@ -14,7 +14,7 @@
 </tr>
 
 @if(!empty($component['components']))
-    @foreach($component['components'] as $subComponent)
-        @include('livewire.partials.manufacturing-cost-row', ['component' => $subComponent, 'level' => $level + 1])
+    @foreach($component['components'] as $child)
+        @include('manufacturing::livewire.partials.manufacturing-cost-row', ['component' => $child, 'level' => $level + 1])
     @endforeach
 @endif

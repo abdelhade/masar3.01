@@ -93,7 +93,7 @@
                                                         @if (!empty($costData['components']))
                                                             @foreach ($costData['components'] as $component)
                                                                 @include(
-                                                                    'livewire.partials.manufacturing-cost-row',
+                                                                    'manufacturing::livewire.partials.manufacturing-cost-row',
                                                                     ['component' => $component, 'level' => 0]
                                                                 )
                                                             @endforeach
@@ -182,6 +182,11 @@
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            <div class="d-flex justify-content-end mt-4">
+                                                <button type="button" class="btn btn-success" wire:click="confirmCreatePurchaseOrder" wire:loading.attr="disabled">
+                                                    <i class="fas fa-file-invoice me-2"></i> {{ __('Convert to Purchase Order') }}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 @endif
@@ -197,4 +202,25 @@
             </div>
         </div>
     @endif
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('confirm-create-po', () => {
+                Swal.fire({
+                    title: '{{ __("Are you sure?") }}',
+                    text: '{{ __("A new purchase order will be created with these items.") }}',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '{{ __("Yes, create it!") }}',
+                    cancelButtonText: '{{ __("Cancel") }}'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.proceedCreatePurchaseOrder();
+                    }
+                });
+            });
+        });
+    </script>
 </div>

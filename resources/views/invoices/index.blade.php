@@ -239,5 +239,5 @@
             </div>
         </div>
     </div>
-    <livewire:manufacturing-cost-modal />
+    <livewire:manufacturing::manufacturing-cost-modal />
 @endsection

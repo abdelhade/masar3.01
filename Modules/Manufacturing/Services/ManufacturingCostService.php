@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace Modules\Manufacturing\Services;
 
 use App\Models\Item;
 use App\Models\OperHead;
