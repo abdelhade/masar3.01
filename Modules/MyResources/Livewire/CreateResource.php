@@ -4,6 +4,7 @@ namespace Modules\MyResources\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
 use Modules\Branches\Models\Branch;
 use Modules\MyResources\Models\Resource;
 use Modules\MyResources\Models\ResourceCategory;
@@ -11,61 +12,30 @@ use Modules\MyResources\Models\ResourceType;
 use Modules\MyResources\Models\ResourceStatus;
 use App\Models\Employee;
 
-class EditResource extends Component
+class CreateResource extends Component
 {
     use WithFileUploads;
 
-    public Resource $resource;
-    
-    public $name;
-    public $description;
-    public $resource_category_id;
-    public $resource_type_id;
-    public $resource_status_id;
-    public $branch_id;
-    public $employee_id;
-    public $serial_number;
-    public $model_number;
-    public $manufacturer;
-    public $purchase_date;
-    public $purchase_cost;
-    public $daily_rate;
-    public $hourly_rate;
-    public $current_location;
-    public $warranty_expiry;
-    public $notes;
-    public $is_active;
+    public $name = '';
+    public $description = '';
+    public $resource_category_id = '';
+    public $resource_type_id = '';
+    public $resource_status_id = '';
+    public $branch_id = '';
+    public $employee_id = '';
+    public $serial_number = '';
+    public $model_number = '';
+    public $manufacturer = '';
+    public $purchase_date = '';
+    public $purchase_cost = '';
+    public $daily_rate = '';
+    public $hourly_rate = '';
+    public $current_location = '';
+    public $warranty_expiry = '';
+    public $notes = '';
+    public $is_active = true;
 
     public $availableTypes = [];
-    public $oldStatusId;
-
-    public function mount(Resource $resource): void
-    {
-        $this->resource = $resource;
-        $this->fill([
-            'name' => $resource->name,
-            'description' => $resource->description,
-            'resource_category_id' => $resource->resource_category_id,
-            'resource_type_id' => $resource->resource_type_id,
-            'resource_status_id' => $resource->resource_status_id,
-            'branch_id' => $resource->branch_id,
-            'employee_id' => $resource->employee_id,
-            'serial_number' => $resource->serial_number,
-            'model_number' => $resource->model_number,
-            'manufacturer' => $resource->manufacturer,
-            'purchase_date' => $resource->purchase_date?->format('Y-m-d'),
-            'purchase_cost' => $resource->purchase_cost,
-            'daily_rate' => $resource->daily_rate,
-            'hourly_rate' => $resource->hourly_rate,
-            'current_location' => $resource->current_location,
-            'warranty_expiry' => $resource->warranty_expiry?->format('Y-m-d'),
-            'notes' => $resource->notes,
-            'is_active' => $resource->is_active,
-        ]);
-
-        $this->oldStatusId = $resource->resource_status_id;
-        $this->loadTypes();
-    }
 
     protected function rules(): array
     {
@@ -108,7 +78,7 @@ class EditResource extends Component
         }
     }
 
-    public function save(): void
+    public function save()
     {
         $this->validate();
 
@@ -131,24 +101,14 @@ class EditResource extends Component
             'warranty_expiry' => $this->warranty_expiry ?: null,
             'notes' => $this->notes,
             'is_active' => $this->is_active,
-            'updated_by' => auth()->id(),
+            'created_by' => Auth::id(),
         ];
 
-        // Track status change
-        if ($this->resource_status_id != $this->oldStatusId) {
-            $this->resource->statusHistory()->create([
-                'old_status_id' => $this->oldStatusId,
-                'new_status_id' => $this->resource_status_id,
-                'changed_by' => auth()->id(),
-                'reason' => 'تحديث المورد',
-            ]);
-        }
+        Resource::create($data);
 
-        $this->resource->update($data);
-
-        session()->flash('success', 'تم تحديث المورد بنجاح');
+        session()->flash('success', 'تم إضافة المورد بنجاح');
         
-        return redirect()->route('myresources.index');
+        return $this->redirect(route('myresources.index'));
     }
 
     public function render()
@@ -158,7 +118,7 @@ class EditResource extends Component
         $branches = Branch::all();
         $employees = Employee::where('status', 'active')->get();
 
-        return view('myresources::livewire.edit-resource', compact('categories', 'statuses', 'branches', 'employees'));
+        return view('myresources::livewire.create-resource', compact('categories', 'statuses', 'branches', 'employees'));
     }
 }
 

@@ -9,6 +9,9 @@ class ResourcesPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $groupedPermissions = [
             'MyResources Management' => [
                 'MyResources',
@@ -35,7 +38,7 @@ class ResourcesPermissionsSeeder extends Seeder
             }
         }
 
-        // Special permissions
+        // Special permissions (no actions, just single permissions)
         $specialPermissions = [
             'change Resource Status',
             'view Resource History',

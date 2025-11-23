@@ -24,6 +24,7 @@ use Modules\Authorization\Database\Seeders\PermissionSelectiveOptionsSeeder;
 use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
 use Modules\Checks\database\seeders\{ChecksPermissionsSeeder, CheckPortfoliosPermissionsSeeder};
 use Modules\POS\Database\Seeders\POSPermissionsSeeder;
+use Modules\MyResources\Database\Seeders\ResourcesPermissionsSeeder;
 
 
 
@@ -86,6 +87,7 @@ class DatabaseSeeder extends Seeder
             ChecksPermissionsSeeder::class,
             CheckPortfoliosPermissionsSeeder::class,
             POSPermissionsSeeder::class,
+            ResourcesPermissionsSeeder::class,
             GiveAllPermissionsToAdminSeeder::class,
         ]);
     }
