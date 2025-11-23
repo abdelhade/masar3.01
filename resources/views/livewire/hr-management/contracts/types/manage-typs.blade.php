@@ -163,9 +163,9 @@ new class extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($contractTypes as $index => $type)
+                        @forelse ($this->contractTypes as $index => $type)
                             <tr>
-                                <td>{{ $contractTypes->firstItem() + $index }}</td>
+                                <td>{{ $this->contractTypes->firstItem() + $index }}</td>
                                 <td>{{ $type->name }}</td>
                                 <td>{{ $type->description }}</td>
 
@@ -207,7 +207,7 @@ new class extends Component {
                     </tbody>
                 </table>
             </div>
-            {{ $contractTypes->links('pagination::bootstrap-5') }}
+            {{ $this->contractTypes->links('pagination::bootstrap-5') }}
         </div>
     </div>
 

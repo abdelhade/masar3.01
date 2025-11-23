@@ -23,7 +23,7 @@ class Index extends Component
 
     public string $selectedLeaveType = '';
 
-    public string $selectedYear = '';
+    public int $selectedYear;
 
     /** @var Collection<int, Employee> */
     public Collection $employees;

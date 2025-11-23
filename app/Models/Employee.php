@@ -26,6 +26,7 @@ class Employee extends Model implements HasMedia
     protected $guarded = ['id'];
 
     // Mapping arrays for marital_status, education, and status
+    // English to Arabic mapping (for form input -> database)
     private static $maritalStatusMap = [
         'single' => 'غير متزوج',
         'married' => 'متزوج',
@@ -45,10 +46,38 @@ class Employee extends Model implements HasMedia
         'inactive' => 'معطل',
     ];
 
-    // Mutators: Convert English to Arabic when saving
+    // Reverse mapping: Arabic to English (for database -> form)
+    private static function getMaritalStatusReverseMap(): array
+    {
+        return array_flip(self::$maritalStatusMap);
+    }
+
+    private static function getEducationReverseMap(): array
+    {
+        return array_flip(self::$educationMap);
+    }
+
+    private static function getStatusReverseMap(): array
+    {
+        return array_flip(self::$statusMap);
+    }
+
+    // Mutators: Convert English to Arabic when saving (also accept Arabic directly)
     public function setMaritalStatusAttribute($value)
     {
-        if ($value && isset(self::$maritalStatusMap[$value])) {
+        if (empty($value)) {
+            $this->attributes['marital_status'] = null;
+            return;
+        }
+        
+        // If value is already in Arabic (from database enum), keep it
+        if (in_array($value, self::$maritalStatusMap)) {
+            $this->attributes['marital_status'] = $value;
+            return;
+        }
+        
+        // Convert English to Arabic
+        if (isset(self::$maritalStatusMap[$value])) {
             $this->attributes['marital_status'] = self::$maritalStatusMap[$value];
         } else {
             $this->attributes['marital_status'] = $value;
@@ -57,7 +86,19 @@ class Employee extends Model implements HasMedia
 
     public function setEducationAttribute($value)
     {
-        if ($value && isset(self::$educationMap[$value])) {
+        if (empty($value)) {
+            $this->attributes['education'] = null;
+            return;
+        }
+        
+        // If value is already in Arabic (from database enum), keep it
+        if (in_array($value, self::$educationMap)) {
+            $this->attributes['education'] = $value;
+            return;
+        }
+        
+        // Convert English to Arabic
+        if (isset(self::$educationMap[$value])) {
             $this->attributes['education'] = self::$educationMap[$value];
         } else {
             $this->attributes['education'] = $value;
@@ -66,22 +107,36 @@ class Employee extends Model implements HasMedia
 
     public function setStatusAttribute($value)
     {
-        if ($value && isset(self::$statusMap[$value])) {
+        if (empty($value)) {
+            $this->attributes['status'] = 'مفعل'; // Default
+            return;
+        }
+        
+        // If value is already in Arabic (from database enum), keep it
+        if (in_array($value, self::$statusMap)) {
+            $this->attributes['status'] = $value;
+            return;
+        }
+        
+        // Convert English to Arabic
+        if (isset(self::$statusMap[$value])) {
             $this->attributes['status'] = self::$statusMap[$value];
         } else {
             $this->attributes['status'] = $value;
         }
     }
 
-    // Accessors: Convert Arabic to English when reading
+    // Accessors: Convert Arabic (from DB) to English for form compatibility
+    // Status form uses Arabic, so status accessor returns Arabic
+    // Marital status and education forms use English, so convert to English
     public function getMaritalStatusAttribute($value)
     {
         if (!$value) {
             return null;
         }
-        // Convert Arabic (from DB) to English
-        $englishValue = array_search($value, self::$maritalStatusMap);
-        return $englishValue !== false ? $englishValue : $value;
+        // Convert Arabic (from DB) to English (form expects English)
+        $reverseMap = self::getMaritalStatusReverseMap();
+        return $reverseMap[$value] ?? $value;
     }
 
     public function getEducationAttribute($value)
@@ -89,19 +144,43 @@ class Employee extends Model implements HasMedia
         if (!$value) {
             return null;
         }
-        // Convert Arabic (from DB) to English
-        $englishValue = array_search($value, self::$educationMap);
-        return $englishValue !== false ? $englishValue : $value;
+        // Convert Arabic (from DB) to English (form expects English)
+        $reverseMap = self::getEducationReverseMap();
+        return $reverseMap[$value] ?? $value;
     }
 
     public function getStatusAttribute($value)
     {
+        // Return Arabic value directly (form expects Arabic)
+        return $value ?: 'مفعل'; // Default to Arabic
+    }
+    
+    // Helper methods to get English values when needed
+    public function getMaritalStatusEnglishAttribute(): ?string
+    {
+        $value = $this->attributes['marital_status'] ?? null;
         if (!$value) {
-            return 'active'; // Default to active
+            return null;
         }
-        // Convert Arabic (from DB) to English
-        $englishValue = array_search($value, self::$statusMap);
-        return $englishValue !== false ? $englishValue : $value;
+        $reverseMap = self::getMaritalStatusReverseMap();
+        return $reverseMap[$value] ?? $value;
+    }
+
+    public function getEducationEnglishAttribute(): ?string
+    {
+        $value = $this->attributes['education'] ?? null;
+        if (!$value) {
+            return null;
+        }
+        $reverseMap = self::getEducationReverseMap();
+        return $reverseMap[$value] ?? $value;
+    }
+
+    public function getStatusEnglishAttribute(): string
+    {
+        $value = $this->attributes['status'] ?? 'مفعل';
+        $reverseMap = self::getStatusReverseMap();
+        return $reverseMap[$value] ?? 'active';
     }
 
     protected $hidden = [

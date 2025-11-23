@@ -8,10 +8,10 @@ use App\Models\Employee_Evaluation;
 use App\Models\Kpi;
 use Livewire\WithPagination;
 use Livewire\Attributes\Rule;
-use Livewire\Attributes\Computed;
+
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 new class extends Component {
     use WithPagination;
@@ -43,14 +43,12 @@ new class extends Component {
         $this->evaluation_period_to = now()->endOfMonth()->format('Y-m-d');
     }
 
-    #[Computed]
-    public function employees(): Collection
+    public function getEmployeesProperty(): Collection
     {
         return Employee::where('name', 'like', '%' . $this->search . '%')->get();
     }
 
-    #[Computed]
-    public function evaluations(): LengthAwarePaginator
+    public function getEvaluationsProperty(): LengthAwarePaginator
     {
         return Employee_Evaluation::with(['employee.job', 'employee.department', 'kpis'])
             ->when($this->search, function ($query) {
@@ -62,8 +60,7 @@ new class extends Component {
             ->paginate(10);
     }
 
-    #[Computed]
-    public function kpis(): Collection
+    public function getKpisProperty(): Collection
     {
         return $this->employee_id ? Employee::findOrFail($this->employee_id)->kpis : collect();
     }
@@ -266,7 +263,8 @@ new class extends Component {
         <!-- Search and Add New Button -->
         <div class="row mb-3">
             <div class="col-md-6">
-                <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="{{ __('hr.search') }}">
+                <input type="text" wire:model.live.debounce.300ms="search" class="form-control"
+                    placeholder="{{ __('hr.search') }}">
             </div>
             @can('create Employee Evaluations')
                 <div class="col-md-6">
@@ -295,7 +293,7 @@ new class extends Component {
                                         <th>{{ __('الدرجة الكلية') }}</th>
                                         <th>{{ __('التقدير') }}</th>
                                         @canany(['edit Employee Evaluations', 'delete Employee Evaluations'])
-                                        <th>{{ __('hr.actions') }}</th>
+                                            <th>{{ __('hr.actions') }}</th>
                                         @endcanany
                                     </tr>
                                 </thead>
@@ -310,30 +308,32 @@ new class extends Component {
                                             <td>{{ $evaluation->total_score }}</td>
                                             <td>{{ $evaluation->final_rating }}</td>
                                             @canany(['edit Employee Evaluations', 'delete Employee Evaluations'])
-                                            <td>
-                                                <button wire:click="view({{ $evaluation->id }})"
-                                                    class="btn btn-info btn-icon-square-sm me-1" title="{{ __('hr.view') }}">
-                                                    <i class="las la-eye fa-lg"></i>
-                                                </button>
-                                                @can('edit Employee Evaluations')
-                                                <button wire:click="edit({{ $evaluation->id }})"
-                                                    class="btn btn-success btn-icon-square-sm me-1" title="{{ __('hr.edit') }}">
-                                                    <i class="las la-edit fa-lg"></i>
-                                                </button>
-                                                @endcan
-                                                @can('delete Employee Evaluations')
-                                                <button wire:click="confirmDelete({{ $evaluation->id }})"
-                                                    wire:confirm="{{ __('hr.confirm_delete_evaluation') }}"
-                                                    class="btn btn-danger btn-icon-square-sm" title="{{ __('hr.delete') }}">
-                                                    <i class="las la-trash fa-lg"></i>
-                                                </button>
-                                                @endcan
-                                            </td>
+                                                <td>
+                                                    <button wire:click="view({{ $evaluation->id }})"
+                                                        class="btn btn-info btn-icon-square-sm me-1"
+                                                        title="{{ __('hr.view') }}">
+                                                        <i class="las la-eye fa-lg"></i>
+                                                    </button>
+                                                    @can('edit Employee Evaluations')
+                                                        <button wire:click="edit({{ $evaluation->id }})"
+                                                            class="btn btn-success btn-icon-square-sm me-1"
+                                                            title="{{ __('hr.edit') }}">
+                                                            <i class="las la-edit fa-lg"></i>
+                                                        </button>
+                                                    @endcan
+                                                    @can('delete Employee Evaluations')
+                                                        <button wire:click="confirmDelete({{ $evaluation->id }})"
+                                                            wire:confirm="{{ __('hr.confirm_delete_evaluation') }}"
+                                                            class="btn btn-danger btn-icon-square-sm" title="{{ __('hr.delete') }}">
+                                                            <i class="las la-trash fa-lg"></i>
+                                                        </button>
+                                                    @endcan
+                                                </td>
                                             @endcanany
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="{{ auth()->user()->canany(['edit Employee Evaluations', 'delete Employee Evaluations']) ? '8' : '7' }}" 
+                                            <td colspan="{{ auth()->user()->canany(['edit Employee Evaluations', 'delete Employee Evaluations']) ? '8' : '7' }}"
                                                 class="text-center font-family-cairo fw-bold py-4">
                                                 <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>
@@ -345,7 +345,7 @@ new class extends Component {
                                 </tbody>
                             </table>
                         </div>
-                        {{ $evaluations->links('pagination::bootstrap-5') }}
+                        {{ $this->evaluations->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>
@@ -368,7 +368,7 @@ new class extends Component {
                                     <select wire:model.live="employee_id" wire:change="loadEmployeeDetails"
                                         class="form-control">
                                         <option value="">{{ __('اختر الموظف') }}</option>
-                                        @foreach ($employees as $employee)
+                                        @foreach ($this->employees as $employee)
                                             <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                         @endforeach
                                     </select>
@@ -437,7 +437,7 @@ new class extends Component {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($kpis as $index => $kpi)
+                                        @foreach ($this->kpis as $index => $kpi)
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $kpi->name }}</td>
@@ -447,8 +447,8 @@ new class extends Component {
                                                 </td>
                                                 <td>
                                                     <input type="number" wire:model="scores.{{ $kpi->id }}"
-                                                        wire:change="calculateTotalScore" class="form-control"
-                                                        min="0" max="100" step="1">
+                                                        wire:change="calculateTotalScore" class="form-control" min="0"
+                                                        max="100" step="1">
                                                     @error('scores.' . $kpi->id)
                                                         <span class="text-danger">{{ $message }}</span>
                                                     @enderror
@@ -504,8 +504,7 @@ new class extends Component {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ __('تأكيد الحذف') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         {{ __('هل أنت متأكد من حذف هذا التقييم؟') }}
@@ -513,8 +512,7 @@ new class extends Component {
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             wire:click="cancelDelete">{{ __('إلغاء') }}</button>
-                        <button type="button" class="btn btn-danger"
-                            wire:click="delete">{{ __('حذف') }}</button>
+                        <button type="button" class="btn btn-danger" wire:click="delete">{{ __('حذف') }}</button>
                     </div>
                 </div>
             </div>
@@ -550,7 +548,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('المسمى الوظيفي') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->employee->job?->title ?? __('غير محدد') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -558,7 +557,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('القسم') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->employee->department?->title ?? __('غير محدد') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -575,7 +575,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('تاريخ التقييم') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->evaluation_date->format('Y-m-d') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -583,7 +584,8 @@ new class extends Component {
                                     <div class="card border-0 bg-light">
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('المدير المباشر') }}</h6>
-                                            <p class="card-text fw-bold mb-0">{{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
+                                            <p class="card-text fw-bold mb-0">
+                                                {{ $viewEvaluation->direct_manager ?? __('غير محدد') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -592,7 +594,8 @@ new class extends Component {
                                         <div class="card-body p-3">
                                             <h6 class="card-title text-muted mb-2">{{ __('فترة التقييم') }}</h6>
                                             <p class="card-text fw-bold mb-0">
-                                                {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} - {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
+                                                {{ $viewEvaluation->evaluation_period_from->format('Y-m-d') }} -
+                                                {{ $viewEvaluation->evaluation_period_to->format('Y-m-d') }}
                                             </p>
                                         </div>
                                     </div>
@@ -640,7 +643,8 @@ new class extends Component {
                                                             <span class="badge bg-primary fs-6">{{ $score }}</span>
                                                         </td>
                                                         <td class="text-center">
-                                                            <span class="badge bg-success fs-6">{{ number_format($contribution, 2) }}</span>
+                                                            <span
+                                                                class="badge bg-success fs-6">{{ number_format($contribution, 2) }}</span>
                                                         </td>
                                                         <td>{{ $kpi->pivot->notes ?? __('لا توجد ملاحظات') }}</td>
                                                     </tr>
@@ -652,10 +656,12 @@ new class extends Component {
                                                         <strong class="fs-5">{{ __('المجموع الكلي') }}</strong>
                                                     </td>
                                                     <td class="text-center">
-                                                        <strong class="fs-4 text-primary">{{ number_format($viewEvaluation->total_score, 2) }}</strong>
+                                                        <strong
+                                                            class="fs-4 text-primary">{{ number_format($viewEvaluation->total_score, 2) }}</strong>
                                                     </td>
                                                     <td class="text-center">
-                                                        <span class="badge bg-success fs-5 px-3 py-2">{{ $viewEvaluation->final_rating }}</span>
+                                                        <span
+                                                            class="badge bg-success fs-5 px-3 py-2">{{ $viewEvaluation->final_rating }}</span>
                                                     </td>
                                                     <td></td>
                                                 </tr>
@@ -667,7 +673,8 @@ new class extends Component {
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="closeView">{{ __('إغلاق') }}</button>
+                        <button type="button" class="btn btn-secondary"
+                            wire:click="closeView">{{ __('إغلاق') }}</button>
                     </div>
                 </div>
             </div>
@@ -676,40 +683,40 @@ new class extends Component {
 </div>
 
 @script
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            const addEvaluationModal = new bootstrap.Modal(document.getElementById('addEvaluationModal'));
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        const addEvaluationModal = new bootstrap.Modal(document.getElementById('addEvaluationModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
 
-            window.addEventListener('show-evaluation-modal', event => {
-                addEvaluationModal.show();
-            });
-
-            window.addEventListener('hide-evaluation-modal', event => {
-                addEvaluationModal.hide();
-            });
-
-            window.addEventListener('show-delete-modal', event => {
-                deleteModal.show();
-            });
-
-            window.addEventListener('hide-delete-modal', event => {
-                deleteModal.hide();
-            });
-
-            window.addEventListener('show-view-modal', event => {
-                viewModal.show();
-            });
-
-            window.addEventListener('hide-view-modal', event => {
-                viewModal.hide();
-            });
-
-            // Reset form when modal is hidden
-            document.getElementById('addEvaluationModal').addEventListener('hidden.bs.modal', function () {
-                @this.call('resetForm');
-            });
+        window.addEventListener('show-evaluation-modal', event => {
+            addEvaluationModal.show();
         });
-    </script>
+
+        window.addEventListener('hide-evaluation-modal', event => {
+            addEvaluationModal.hide();
+        });
+
+        window.addEventListener('show-delete-modal', event => {
+            deleteModal.show();
+        });
+
+        window.addEventListener('hide-delete-modal', event => {
+            deleteModal.hide();
+        });
+
+        window.addEventListener('show-view-modal', event => {
+            viewModal.show();
+        });
+
+        window.addEventListener('hide-view-modal', event => {
+            viewModal.hide();
+        });
+
+        // Reset form when modal is hidden
+        document.getElementById('addEvaluationModal').addEventListener('hidden.bs.modal', function () {
+            @this.call('resetForm');
+        });
+    });
+</script>
 @endscript

@@ -189,7 +189,7 @@ new class extends Component {
     <!-- Leave Types Table -->
     <div class="card">
         <div class="card-body">
-            @if($leaveTypes->count() > 0)
+            @if($this->leaveTypes->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
@@ -207,7 +207,7 @@ new class extends Component {
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($leaveTypes as $leaveType)
+                            @foreach($this->leaveTypes as $leaveType)
                                 <tr>
                                     <td>
                                         <strong>{{ $leaveType->name }}</strong>

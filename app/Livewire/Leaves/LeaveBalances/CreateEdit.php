@@ -30,7 +30,7 @@ class CreateEdit extends Component
     public string $leave_type_id = '';
 
     #[Rule('required|integer|min:2020|max:2030')]
-    public string $year = '';
+    public int $year;
 
     #[Rule('required|numeric|min:0')]
     public float $opening_balance_days = 0;

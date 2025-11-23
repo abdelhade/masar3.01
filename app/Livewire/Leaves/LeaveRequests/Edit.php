@@ -28,14 +28,6 @@ class Edit extends Component
 
     public LeaveRequest $request;
 
-    protected array $validationAttributes = [
-        'employee_id' => __('hr.employee'),
-        'leave_type_id' => __('hr.leave_type'),
-        'start_date' => __('hr.start_date'),
-        'end_date' => __('hr.end_date'),
-        'reason' => __('hr.reason'),
-    ];
-
     #[Rule('required|exists:employees,id')]
     public string $employee_id = '';
 
@@ -69,12 +61,12 @@ class Edit extends Component
         $this->leaveTypes = LeaveType::orderBy('name')->get();
 
         // Set form data from existing request
-        $this->employee_id = $this->request->employee_id;
-        $this->leave_type_id = $this->request->leave_type_id;
+        $this->employee_id = (string) $this->request->employee_id;
+        $this->leave_type_id = (string) $this->request->leave_type_id;
         $this->start_date = $this->request->start_date->format('Y-m-d');
         $this->end_date = $this->request->end_date->format('Y-m-d');
-        $this->reason = $this->request->reason;
-        $this->calculated_days = $this->request->duration_days;
+        $this->reason = $this->request->reason ?? '';
+        $this->calculated_days = (float) $this->request->duration_days;
 
         // Load employee balance
         $this->loadEmployeeBalance();
@@ -118,7 +110,7 @@ class Edit extends Component
         if ($this->employee_id && $this->leave_type_id) {
             $service = new LeaveBalanceService;
             $year = now()->year;
-            $balance = $service->getOrCreateBalance($this->employee_id, $this->leave_type_id, $year);
+            $balance = $service->getOrCreateBalance((int) $this->employee_id, (int) $this->leave_type_id, $year);
             $this->selectedEmployeeBalance = $balance;
             $this->available_balance = $balance->remaining_days;
         }
@@ -156,14 +148,36 @@ class Edit extends Component
         }
     }
 
+    protected function rules(): array
+    {
+        return [
+            'employee_id' => 'required|exists:employees,id',
+            'leave_type_id' => 'required|exists:leave_types,id',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'nullable|string|max:1000',
+        ];
+    }
+
+    protected function getValidationAttributes(): array
+    {
+        return [
+            'employee_id' => __('hr.employee'),
+            'leave_type_id' => __('hr.leave_type'),
+            'start_date' => __('hr.start_date'),
+            'end_date' => __('hr.end_date'),
+            'reason' => __('hr.reason'),
+        ];
+    }
+
     public function save(): void
     {
-        $this->validate();
+        $this->validate($this->rules(), [], $this->getValidationAttributes());
 
         // Check for overlapping approved requests (excluding current request)
         $service = new LeaveBalanceService;
         $hasOverlap = $service->hasOverlappingApprovedRequests(
-            $this->employee_id,
+            (int) $this->employee_id,
             $this->start_date,
             $this->end_date,
             $this->request->id // Exclude current request

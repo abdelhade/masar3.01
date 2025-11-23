@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Livewire\Volt\Component;
 use App\Models\EmployeesJob;
 use Livewire\WithPagination;
-use Livewire\Attributes\Computed;
+
 
 new class extends Component {
     use WithPagination;
@@ -43,8 +43,12 @@ new class extends Component {
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, EmployeesJob>
      */
-    #[Computed]
-    public function jobs()
+    /**
+     * Get filtered jobs list.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, EmployeesJob>
+     */
+    public function getJobsProperty()
     {
         return EmployeesJob::query()
             ->when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
@@ -115,7 +119,8 @@ new class extends Component {
 <div style="font-family: 'Cairo', sans-serif; direction: rtl;">
     <div class="row">
         @if (session()->has('success'))
-            <div class="alert alert-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
+            <div class="alert alert-success" x-data="{ show: true }" x-show="show"
+                x-init="setTimeout(() => show = false, 3000)">
                 {{ session('success') }}
             </div>
         @endif
@@ -127,11 +132,8 @@ new class extends Component {
                         {{ __('hr.add_job') }}
                     </button>
                 @endcan
-                <input type="text" 
-                       wire:model.live.debounce.300ms="search" 
-                       class="form-control w-auto"
-                       style="min-width:200px" 
-                       placeholder="{{ __('hr.search_by_title') }}">
+                <input type="text" wire:model.live.debounce.300ms="search" class="form-control w-auto"
+                    style="min-width:200px" placeholder="{{ __('hr.search_by_title') }}">
             </div>
 
             <div class="card">
@@ -156,7 +158,7 @@ new class extends Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($jobs as $job)
+                                @forelse ($this->jobs as $job)
                                     <tr>
 
                                         <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
@@ -166,19 +168,16 @@ new class extends Component {
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     @can('edit Jobs')
-                                                        <button type="button" 
-                                                                wire:click="edit({{ $job->id }})" 
-                                                                class="btn btn-success btn-sm"
-                                                                title="{{ __('hr.edit') }}">
+                                                        <button type="button" wire:click="edit({{ $job->id }})"
+                                                            class="btn btn-success btn-sm" title="{{ __('hr.edit') }}">
                                                             <i class="las la-edit fa-lg"></i>
                                                         </button>
                                                     @endcan
                                                     @can('delete Jobs')
-                                                        <button type="button" 
-                                                                class="btn btn-danger btn-sm"
-                                                                wire:click="delete({{ $job->id }})"
-                                                                wire:confirm="{{ __('hr.confirm_delete_job') }}"
-                                                                title="{{ __('hr.delete') }}">
+                                                        <button type="button" class="btn btn-danger btn-sm"
+                                                            wire:click="delete({{ $job->id }})"
+                                                            wire:confirm="{{ __('hr.confirm_delete_job') }}"
+                                                            title="{{ __('hr.delete') }}">
                                                             <i class="las la-trash fa-lg"></i>
                                                         </button>
                                                     @endcan
@@ -190,7 +189,7 @@ new class extends Component {
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ auth()->user()->canany(['edit Jobs', 'delete Jobs']) ? '4' : '3' }}" 
+                                        <td colspan="{{ auth()->user()->canany(['edit Jobs', 'delete Jobs']) ? '4' : '3' }}"
                                             class="text-center font-family-cairo fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
@@ -221,13 +220,11 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title"
-                                class="form-label font-family-cairo fw-bold">{{ __('hr.title') }} <span class="text-danger">*</span></label>
+                            <label for="title" class="form-label font-family-cairo fw-bold">{{ __('hr.title') }} <span
+                                    class="text-danger">*</span></label>
                             <input type="text"
                                 class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
-                                id="title" 
-                                wire:model.blur="title" 
-                                required>
+                                id="title" wire:model.blur="title" required>
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -237,8 +234,7 @@ new class extends Component {
                                 class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
                             <input type="text"
                                 class="form-control @error('description') is-invalid @enderror font-family-cairo fw-bold"
-                                id="description" 
-                                wire:model.blur="description">
+                                id="description" wire:model.blur="description">
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -274,7 +270,7 @@ new class extends Component {
             });
 
 
-            modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.addEventListener('hidden.bs.modal', function () {
                 modalInstance = null;
             });
         });

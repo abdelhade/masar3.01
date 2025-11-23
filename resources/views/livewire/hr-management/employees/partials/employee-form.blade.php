@@ -285,7 +285,6 @@
                                 <label class="form-label fw-bold text-dark">{{ __('حالة الموظف') }}
                                     <span class="text-danger">*</span></label>
                                 <select class="form-select font-family-cairo fw-bold" wire:model.defer="status">
-                                    <option value="">{{ __('اختر الحالة') }}</option>
                                     <option value="مفعل">{{ __('مفعل') }}</option>
                                     <option value="معطل">{{ __('معطل') }}</option>
                                 </select>

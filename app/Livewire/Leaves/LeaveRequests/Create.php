@@ -26,14 +26,6 @@ class Create extends Component
 
     public ?EmployeeLeaveBalance $selectedEmployeeBalance = null;
 
-    protected array $validationAttributes = [
-        'employee_id' => __('hr.employee'),
-        'leave_type_id' => __('hr.leave_type'),
-        'start_date' => __('hr.start_date'),
-        'end_date' => __('hr.end_date'),
-        'reason' => __('hr.reason'),
-    ];
-
     #[Rule('required|exists:employees,id')]
     public string $employee_id = '';
 
@@ -99,7 +91,7 @@ class Create extends Component
         if ($this->employee_id && $this->leave_type_id) {
             $service = new LeaveBalanceService;
             $year = now()->year;
-            $balance = $service->getOrCreateBalance($this->employee_id, $this->leave_type_id, $year);
+            $balance = $service->getOrCreateBalance((int) $this->employee_id, (int) $this->leave_type_id, $year);
             $this->selectedEmployeeBalance = $balance;
             $this->available_balance = $balance->remaining_days;
         }
@@ -139,12 +131,12 @@ class Create extends Component
 
     public function save(): void
     {
-        $this->validate();
+        $this->validate($this->rules(), [], $this->getValidationAttributes());
 
         // Check for overlapping approved requests
         $service = new LeaveBalanceService;
         $hasOverlap = $service->hasOverlappingApprovedRequests(
-            $this->employee_id,
+            (int) $this->employee_id,
             $this->start_date,
             $this->end_date
         );
@@ -179,6 +171,28 @@ class Create extends Component
 
         session()->flash('message', __('hr.leave_request_created_successfully'));
         $this->redirect(route('leaves.requests.show', $request->id));
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'employee_id' => 'required|exists:employees,id',
+            'leave_type_id' => 'required|exists:leave_types,id',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'nullable|string|max:1000',
+        ];
+    }
+
+    protected function getValidationAttributes(): array
+    {
+        return [
+            'employee_id' => __('hr.employee'),
+            'leave_type_id' => __('hr.leave_type'),
+            'start_date' => __('hr.start_date'),
+            'end_date' => __('hr.end_date'),
+            'reason' => __('hr.reason'),
+        ];
     }
 
     public function render()

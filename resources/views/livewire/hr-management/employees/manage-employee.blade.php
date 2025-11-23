@@ -59,7 +59,7 @@ new class extends Component {
         $marital_status,
         $education,
         $information,
-        $status = 'active';
+        $status = 'مفعل';
     public $country_id, $city_id, $state_id, $town_id;
     public $job_id, $department_id, $date_of_hire, $date_of_fire, $job_level, $salary, $finger_print_id, $finger_print_name, $salary_type, $shift_id, $password, $additional_hour_calculation, $additional_day_calculation, $late_hour_calculation, $late_day_calculation;
 
@@ -85,10 +85,10 @@ new class extends Component {
             'gender' => 'nullable|in:male,female',
             'date_of_birth' => 'nullable|date',
             'nationalId' => 'nullable|string|unique:employees,nationalId,' . $this->employeeId,
-            'marital_status' => 'nullable|in:single,married,divorced,widowed',
-            'education' => 'nullable|in:diploma,bachelor,master,doctorate',
+            'marital_status' => 'nullable|in:single,married,divorced,widowed,غير متزوج,متزوج,مطلق,أرمل',
+            'education' => 'nullable|in:diploma,bachelor,master,doctorate,دبلوم,بكالوريوس,ماجستير,دكتوراه',
             'information' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:مفعل,معطل,active,inactive',
             'country_id' => 'nullable|exists:countries,id',
             'city_id' => 'nullable|exists:cities,id',
             'state_id' => 'nullable|exists:states,id',
@@ -296,29 +296,38 @@ new class extends Component {
     {
         $this->resetValidation();
         DB::transaction(function () use ($id) {
-            $employee = Employee::with('media', 'account', 'kpis', 'leaveBalances.leaveType')->findOrFail($id);
+            // Eager load all relationships to avoid N+1 queries
+            $employee = Employee::with([
+                'media',
+                'account.haveParent', // Load parent account relationship
+                'kpis',
+                'leaveBalances.leaveType',
+                'department',
+                'job',
+                'shift',
+                'country',
+                'city',
+                'state',
+                'town'
+            ])->findOrFail($id);
             $this->employeeId = $employee->id;
 
             // Set current image URL using the accessor (works in both local and production)
             $this->currentImageUrl = $employee->image_url;
 
-            foreach (['name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'kpi_ids', 'kpi_weights', 'salary_basic_account_id', 'opening_balance'] as $field) {
-                // use case to set the value of the field
-                switch ($field) {
-                    case ['date_of_birth', 'date_of_hire', 'date_of_fire']:
-                        $this->$field = $employee->$field ? $employee->$field->format('Y-m-d') : null;
-                        break;
-                    case 'salary_basic_account_id':
-                        $this->$field = $employee->account->parent_id ?? null;
-                        break;
-                    case 'opening_balance':
-                        $this->$field = $employee->account->start_balance ?? null;
-                        break;
-                    default:
-                        $this->$field = $employee->$field;
-                        break;
-                }
+            // Load basic employee fields
+            foreach (['name', 'email', 'phone', 'image', 'gender', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation'] as $field) {
+                $this->$field = $employee->$field;
             }
+
+            // Handle date fields
+            $this->date_of_birth = $employee->date_of_birth ? $employee->date_of_birth->format('Y-m-d') : null;
+            $this->date_of_hire = $employee->date_of_hire ? $employee->date_of_hire->format('Y-m-d') : null;
+            $this->date_of_fire = $employee->date_of_fire ? $employee->date_of_fire->format('Y-m-d') : null;
+
+            // Handle account fields (with eager loading to avoid N+1)
+            $this->salary_basic_account_id = $employee->account?->parent_id ?? null;
+            $this->opening_balance = $employee->account?->start_balance ?? null;
 
             // Clear any previous upload and don't load password in edit mode - leave it empty for security
             $this->password = null;
@@ -492,13 +501,26 @@ new class extends Component {
         $this->kpi_weights = [];
         $this->leave_balances = [];
         $this->selected_leave_type_id = '';
-        $this->status = 'active';
+        $this->status = 'مفعل';
         $this->image = null;
     }
 
     public function view($id)
     {
-        $this->viewEmployee = Employee::with(['country', 'city', 'state', 'town', 'job', 'department', 'shift', 'kpis', 'leaveBalances.leaveType', 'media'])->findOrFail($id);
+        // Eager load all relationships to avoid N+1 queries
+        $this->viewEmployee = Employee::with([
+            'country',
+            'city',
+            'state',
+            'town',
+            'job',
+            'department',
+            'shift',
+            'kpis',
+            'leaveBalances.leaveType',
+            'media',
+            'account.haveParent' // Load account with parent to avoid N+1
+        ])->findOrFail($id);
         $this->showViewModal = true;
     }
 
