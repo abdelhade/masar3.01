@@ -6,14 +6,14 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('المدراء '),
-        'items' => [['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')], ['label' => __('المدراء')]],
+        'title' => __('Managers'),
+        'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Managers')]],
     ])
     <div class="row">
         <div class="col-lg-12">
             @can('create Users')
                 <a href="{{ route('users.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-             اضافه جديد
+             {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>
             @endcan
@@ -23,20 +23,20 @@
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
-                        <x-table-export-actions table-id="users-table" filename="users-table" excel-label="تصدير Excel"
-                            pdf-label="تصدير PDF" print-label="طباعة" />
+                        <x-table-export-actions table-id="users-table" filename="users-table" excel-label="{{ __('Export Excel') }}"
+                            pdf-label="{{ __('Export PDF') }}" print-label="{{ __('Print') }}" />
 
                         <table id="users-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('الاسم') }}</th>
-                                    <th>{{ __('البريد الالكتروني ') }}</th>
-                                    <th>{{ __('الصلاحيات') }}</th>
-                                    <th>{{ __('الفروع') }}</th>
-                                    <th>{{ __('تم الانشاء في ') }}</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Email') }}</th>
+                                    <th>{{ __('Permissions') }}</th>
+                                    <th>{{ __('Branches') }}</th>
+                                    <th>{{ __('Created At') }}</th>
                                     @canany(['edit Users', 'delete Users'])
-                                        <th>{{ __('العمليات') }}</th>
+                                        <th>{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
@@ -68,7 +68,7 @@
                                                 @can('delete Users')
                                                     <form action="{{ route('users.destroy', $user->id) }}" method="POST"
                                                         style="display:inline-block;"
-                                                        onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                        onsubmit="return confirm('{{ __('Are you sure you want to delete this user?') }}');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-icon-square-sm">
@@ -85,7 +85,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات
+                                                {{ __('No data available') }}
                                             </div>
                                         </td>
                                     </tr>

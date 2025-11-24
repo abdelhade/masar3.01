@@ -1,45 +1,45 @@
-@canany([ 'view Users' , 'view roles' , 'create Users'])
-<div class="sidebar-header mb-3">
-    <h6 class="text-muted fw-bold px-3 mb-2">
-        <i class="fas fa-users-cog me-2"></i>
-        إدارة المستخدمين والصلاحيات
-    </h6>
-</div>
+@canany(['view Users', 'view roles', 'create Users'])
+    <div class="sidebar-header mb-3">
+        <h6 class="text-muted fw-bold px-3 mb-2">
+            <i class="fas fa-users-cog me-2"></i>
+            {{ __('User Management and Permissions') }}
+        </h6>
+    </div>
 @endcanany
 
-{{-- إدارة المستخدمين --}}
+{{-- User Management --}}
 @can(abilities: 'view Users')
     <li class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
         <a class="nav-link " href="{{ route('users.index') }}">
             <i class="fas fa-users"></i>
-            <span class="">المستخدمين</span>
+            <span class="">{{ __('Users') }}</span>
             @can('create Users')
-                <span class="badge bg-primary ms-auto">إدارة</span>
+                <span class="badge bg-primary ms-auto">{{ __('Manage') }}</span>
             @endcan
         </a>
     </li>
 @endcan
 
-{{-- إضافة مستخدم جديد --}}
+{{-- Add New User --}}
 @can('create Users')
     <li class="nav-item {{ request()->routeIs('users.create') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('users.create') }}">
             <i class="fas fa-user-plus"></i>
-            <span>إضافة مستخدم</span>
+            <span>{{ __('Add User') }}</span>
         </a>
     </li>
 @endcan
 
 
-    <li class="nav-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('roles.index') }}">
-            <i class="fas fa-user-shield"></i>
-            <span>الأدوار والصلاحيات</span>
-            @can('create Roles')
-                <span class="badge bg-success ms-auto">إدارة</span>
-            @endcan
-        </a>
-    </li>
+<li class="nav-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('roles.index') }}">
+        <i class="fas fa-user-shield"></i>
+        <span>{{ __('Roles and Permissions') }}</span>
+        @can('create Roles')
+            <span class="badge bg-success ms-auto">{{ __('Manage') }}</span>
+        @endcan
+    </a>
+</li>
 
 
 
@@ -47,29 +47,29 @@
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
         <i class="fas fa-code-branch me-2"></i>
-        إدارة الفروع
+        {{ __('Branch Management') }}
     </h6>
 </div>
 
 
 
-    <li class="nav-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('branches.index') }}">
-            <i class="fas fa-building"></i>
-            <span>الفروع</span>
-        </a>
-    </li>
+<li class="nav-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('branches.index') }}">
+        <i class="fas fa-building"></i>
+        <span>{{ __('Branches') }}</span>
+    </a>
+</li>
 
 
-{{-- إعدادات النظام --}}
+{{-- System Settings --}}
 
-    <li class="nav-item {{ request()->routeIs('mysettings.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('mysettings.index') }}">
-            <i class="fas fa-cogs"></i>
-            <span>إعدادات النظام</span>
-            <span class="badge bg-warning ms-auto">متقدم</span>
-        </a>
-    </li>
+<li class="nav-item {{ request()->routeIs('mysettings.*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('mysettings.index') }}">
+        <i class="fas fa-cogs"></i>
+        <span>{{ __('System Settings') }}</span>
+        <span class="badge bg-warning ms-auto">{{ __('Advanced') }}</span>
+    </a>
+</li>
 
 
 
@@ -78,66 +78,67 @@
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
         <i class="fas fa-history me-2"></i>
-        السجلات والمراقبة
+        {{ __('Logs and Monitoring') }}
     </h6>
 </div>
 
-{{-- سجل تسجيل الدخول --}}
+{{-- Login History --}}
 
-    <li class="nav-item {{ request()->routeIs('users.login-history*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('users.login-history') }}">
-            <i class="fas fa-sign-in-alt"></i>
-            <span>سجل تسجيل الدخول</span>
-        </a>
-    </li>
-
-
-{{-- إدارة الجلسات النشطة --}}
-
-    <li class="nav-item {{ request()->routeIs('users.active-sessions*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('users.active-sessions') }}">
-            <i class="fas fa-desktop"></i>
-            <span>الجلسات النشطة</span>
-            <span class="badge bg-success ms-auto" id="active-sessions-count">{{ \App\Models\LoginSession::whereNull('logout_at')->count() }}</span>
-        </a>
-    </li>
+<li class="nav-item {{ request()->routeIs('users.login-history*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('users.login-history') }}">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>{{ __('Login History') }}</span>
+    </a>
+</li>
 
 
+{{-- Active Sessions Management --}}
 
-    <li class="nav-item {{ request()->routeIs('users.activity-log*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('users.activity-log') }}">
-            <i class="fas fa-list-alt"></i>
-            <span>سجل النشاطات</span>
-        </a>
-    </li>
+<li class="nav-item {{ request()->routeIs('users.active-sessions*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('users.active-sessions') }}">
+        <i class="fas fa-desktop"></i>
+        <span>{{ __('Active Sessions') }}</span>
+        <span class="badge bg-success ms-auto"
+            id="active-sessions-count">{{ \App\Models\LoginSession::whereNull('logout_at')->count() }}</span>
+    </a>
+</li>
 
-    <hr class="my-3 border-secondary">
+
+
+<li class="nav-item {{ request()->routeIs('users.activity-log*') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('users.activity-log') }}">
+        <i class="fas fa-list-alt"></i>
+        <span>{{ __('Activity Log') }}</span>
+    </a>
+</li>
+
+<hr class="my-3 border-secondary">
 
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
         <i class="fas fa-chart-line me-2"></i>
-        إحصائيات سريعة
+        {{ __('Quick Statistics') }}
     </h6>
 </div>
 
-{{-- إحصائيات النظام --}}
+{{-- System Statistics --}}
 
-    <li class="nav-item">
-        <a class="nav-link" href="javascript:void(0);" onclick="showUserStats()">
-            <i class="fas fa-chart-pie"></i>
-            <span>إحصائيات النظام</span>
-        </a>
-    </li>
+<li class="nav-item">
+    <a class="nav-link" href="javascript:void(0);" onclick="showUserStats()">
+        <i class="fas fa-chart-pie"></i>
+        <span>{{ __('System Statistics') }}</span>
+    </a>
+</li>
 
 
 
 
 @push('scripts')
-<script>
-function showUserStats() {
-    Swal.fire({
-        title: '<i class="fas fa-chart-pie text-primary"></i> إحصائيات النظام',
-        html: `
+    <script>
+        function showUserStats() {
+            Swal.fire({
+                title: '<i class="fas fa-chart-pie text-primary"></i> {{ __('System Statistics') }}',
+                html: `
             <div class="text-start">
                 <div class="row g-3">
                     <div class="col-6">
@@ -145,7 +146,7 @@ function showUserStats() {
                             <div class="card-body text-center">
                                 <i class="fas fa-users fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \App\Models\User::count() }}</h3>
-                                <small>إجمالي المستخدمين</small>
+                                <small>{{ __('Total Users') }}</small>
                             </div>
                         </div>
                     </div>
@@ -155,7 +156,7 @@ function showUserStats() {
                             <div class="card-body text-center">
                                 <i class="fas fa-user-check fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \App\Models\User::whereNotNull('email_verified_at')->count() }}</h3>
-                                <small>مستخدمين نشطين</small>
+                                <small>{{ __('Active Users') }}</small>
                             </div>
                         </div>
                     </div>
@@ -165,7 +166,7 @@ function showUserStats() {
                             <div class="card-body text-center">
                                 <i class="fas fa-shield-alt fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \Modules\Authorization\Models\Permission::count() }}</h3>
-                                <small>إجمالي الصلاحيات</small>
+                                <small>{{ __('Total Permissions') }}</small>
                             </div>
                         </div>
                     </div>
@@ -175,7 +176,7 @@ function showUserStats() {
                             <div class="card-body text-center">
                                 <i class="fas fa-code-branch fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \Modules\Branches\Models\Branch::count() }}</h3>
-                                <small>عدد الفروع</small>
+                                <small>{{ __('Branches Count') }}</small>
                             </div>
                         </div>
                     </div>
@@ -185,7 +186,7 @@ function showUserStats() {
                             <div class="card-body text-center">
                                 <i class="fas fa-user-tag fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \Modules\Authorization\Models\Role::count() }}</h3>
-                                <small>عدد الأدوار</small>
+                                <small>{{ __('Roles Count') }}</small>
                             </div>
                         </div>
                     </div>
@@ -195,95 +196,95 @@ function showUserStats() {
                             <div class="card-body text-center">
                                 <i class="fas fa-clock fs-1 mb-2"></i>
                                 <h3 class="mb-0">{{ \App\Models\User::where('created_at', '>=', now()->subDays(7))->count() }}</h3>
-                                <small>مستخدمين جدد (7 أيام)</small>
+                                <small>{{ __('New Users (7 days)') }}</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         `,
-        showConfirmButton: true,
-        confirmButtonText: '<i class="fas fa-times"></i> إغلاق',
-        width: '700px',
-        customClass: {
-            popup: 'animated fadeInDown'
+                showConfirmButton: true,
+                confirmButtonText: '<i class="fas fa-times"></i> {{ __('Close') }}',
+                width: '700px',
+                customClass: {
+                    popup: 'animated fadeInDown'
+                }
+            });
         }
-    });
-}
 
-function showActiveSessions() {
-    // Fetch active sessions via AJAX
-    fetch('/api/active-sessions', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const sessions = data.sessions || [];
-        let html = '<div class="text-start">';
+        function showActiveSessions() {
+            // Fetch active sessions via AJAX
+            fetch('/api/active-sessions', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const sessions = data.sessions || [];
+                    let html = '<div class="text-start">';
 
-        if (sessions.length === 0) {
-            html += `
+                    if (sessions.length === 0) {
+                        html += `
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    لا توجد جلسات نشطة حالياً
+                    {{ __('No active sessions currently') }}
                 </div>
             `;
-        } else {
-            html += '<div class="table-responsive"><table class="table table-hover mb-0">';
-            html += `
+                    } else {
+                        html += '<div class="table-responsive"><table class="table table-hover mb-0">';
+                        html += `
                 <thead class="table-light">
                     <tr>
-                        <th><i class="fas fa-user"></i> المستخدم</th>
-                        <th><i class="fas fa-laptop"></i> الجهاز</th>
-                        <th><i class="fas fa-clock"></i> آخر نشاط</th>
+                        <th><i class="fas fa-user"></i> {{ __('User') }}</th>
+                        <th><i class="fas fa-laptop"></i> {{ __('Device') }}</th>
+                        <th><i class="fas fa-clock"></i> {{ __('Last Activity') }}</th>
                     </tr>
                 </thead>
                 <tbody>
             `;
 
-            sessions.forEach(session => {
-                html += `
+                        sessions.forEach(session => {
+                            html += `
                     <tr>
                         <td class="fw-bold">${session.user}</td>
                         <td><small class="text-muted">${session.device}</small></td>
                         <td><small class="text-muted">${session.last_activity}</small></td>
                     </tr>
                 `;
-            });
+                        });
 
-            html += '</tbody></table></div>';
-        }
+                        html += '</tbody></table></div>';
+                    }
 
-        html += '</div>';
+                    html += '</div>';
 
-        Swal.fire({
-            title: '<i class="fas fa-desktop text-success"></i> الجلسات النشطة',
-            html: html,
-            confirmButtonText: '<i class="fas fa-times"></i> إغلاق',
-            width: '600px',
-            customClass: {
-                popup: 'animated fadeInDown'
-            }
-        });
-    })
-    .catch(error => {
-        Swal.fire({
-            title: '<i class="fas fa-desktop text-info"></i> الجلسات النشطة',
-            html: `
+                    Swal.fire({
+                        title: '<i class="fas fa-desktop text-success"></i> {{ __('Active Sessions') }}',
+                        html: html,
+                        confirmButtonText: '<i class="fas fa-times"></i> {{ __('Close') }}',
+                        width: '600px',
+                        customClass: {
+                            popup: 'animated fadeInDown'
+                        }
+                    });
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: '<i class="fas fa-desktop text-info"></i> {{ __('Active Sessions') }}',
+                        html: `
                 <div class="text-center py-4">
                     <i class="fas fa-users fs-1 text-success mb-3"></i>
-                    <h5 class="text-muted">{{ \App\Models\LoginSession::where('logout_at', null)->count() }} جلسة نشطة</h5>
-                    <p class="text-muted mb-0">المستخدمون المتصلون حالياً بالنظام</p>
+                    <h5 class="text-muted">{{ \App\Models\LoginSession::where('logout_at', null)->count() }} {{ __('active session') }}</h5>
+                    <p class="text-muted mb-0">{{ __('Users currently connected to the system') }}</p>
                 </div>
             `,
-            confirmButtonText: '<i class="fas fa-times"></i> إغلاق',
-            width: '500px'
-        });
-    });
-}
-</script>
+                        confirmButtonText: '<i class="fas fa-times"></i> {{ __('Close') }}',
+                        width: '500px'
+                    });
+                });
+        }
+    </script>
 @endpush
