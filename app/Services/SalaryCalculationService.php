@@ -6,8 +6,10 @@ use App\Models\Attendance;
 use App\Models\AttendanceProcessing;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Services\SalaryCalculation\SalaryStrategyFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -15,45 +17,96 @@ class SalaryCalculationService
 {
     /**
      * Calculate salary for an employee for a specific period
+     *
+     * This method processes attendance records, calculates working hours, overtime, and deductions,
+     * then calculates the salary based on the employee's salary type. Results are cached to improve performance.
+     *
+     * @param Employee $employee The employee to calculate salary for
+     * @param Carbon $startDate Start date of the calculation period (inclusive)
+     * @param Carbon $endDate End date of the calculation period (inclusive)
+     * @return array{
+     *     summary: array{
+     *         total_days: int,
+     *         working_days: int,
+     *         overtime_days: int,
+     *         present_days: float,
+     *         absent_days: int,
+     *         paid_leave_days: int,
+     *         unpaid_leave_days: int,
+     *         total_hours: float,
+     *         actual_hours: float,
+     *         overtime_minutes: int,
+     *         late_minutes: int,
+     *         holiday_days: int
+     *     },
+     *     salary_data: array{
+     *         basic_salary: float,
+     *         overtime_salary: float,
+     *         overtime_days_salary?: float,
+     *         late_hours_deduction?: float,
+     *         unpaid_leave_deduction: float,
+     *         absent_days_deduction: float,
+     *         total_salary: float,
+     *         calculation_type: string,
+     *         hourly_rate: float,
+     *         daily_rate: float
+     *     },
+     *     details: array<string, array{
+     *         date: string,
+     *         status: string,
+     *         day_type: string,
+     *         expected_hours: float,
+     *         actual_hours: float,
+     *         overtime_minutes: int,
+     *         late_minutes: int,
+     *         check_in_time: string|null,
+     *         check_out_time: string|null,
+     *         notes: string|null
+     *     }>
+     * }
      */
     public function calculateSalary(Employee $employee, Carbon $startDate, Carbon $endDate): array
     {
-        return DB::transaction(function () use ($employee, $startDate, $endDate) {
-            // Check if employee is active
-            if ($employee->isInactive()) {
-                // Return empty data for inactive employees
-                return [
-                    'summary' => [
-                        'total_days' => 0,
-                        'working_days' => 0,
-                        'overtime_days' => 0,
-                        'present_days' => 0,
-                        'absent_days' => 0,
-                        'paid_leave_days' => 0,
-                        'unpaid_leave_days' => 0,
-                        'total_hours' => 0,
-                        'actual_hours' => 0,
-                        'overtime_hours' => 0,
-                        'late_hours' => 0,
-                        'holiday_days' => 0,
-                    ],
-                    'salary_data' => [
-                        'basic_salary' => 0,
-                        'overtime_salary' => 0,
-                        'total_salary' => 0,
-                        'daily_rate' => 0,
-                        'hourly_rate' => 0,
-                    ],
-                    'details' => [],
-                ];
-            }
+        // Check if employee is active
+        if ($employee->isInactive()) {
+            // Return empty data for inactive employees
+            return [
+                'summary' => [
+                    'total_days' => 0,
+                    'working_days' => 0,
+                    'overtime_days' => 0,
+                    'present_days' => 0,
+                    'absent_days' => 0,
+                    'paid_leave_days' => 0,
+                    'unpaid_leave_days' => 0,
+                    'total_hours' => 0,
+                    'actual_hours' => 0,
+                    'overtime_hours' => 0,
+                    'late_hours' => 0,
+                    'holiday_days' => 0,
+                ],
+                'salary_data' => [
+                    'basic_salary' => 0,
+                    'overtime_salary' => 0,
+                    'total_salary' => 0,
+                    'daily_rate' => 0,
+                    'hourly_rate' => 0,
+                ],
+                'details' => [],
+            ];
+        }
 
+        // Generate cache key based on employee and period
+        $cacheKey = $this->getCacheKey($employee, $startDate, $endDate);
+        
+        // Try to get from cache first (TTL: 1 hour)
+        return Cache::remember($cacheKey, 3600, function () use ($employee, $startDate, $endDate) {
             // Get attendance records for the period
             $attendances = $this->getAttendanceRecords($employee, $startDate, $endDate);
-            // dd($attendances);
+            
             // Process attendance and calculate hours
             $processedData = $this->processAttendanceData($employee, $attendances, $startDate, $endDate);
-            // dd($processedData);
+            
             // Calculate salary based on type
             $salaryData = $this->calculateSalaryByType($employee, $processedData);
 
@@ -63,6 +116,54 @@ class SalaryCalculationService
                 'details' => $processedData['daily_details'],
             ];
         });
+    }
+
+    /**
+     * Generate cache key for salary calculation
+     * 
+     * Cache key format: employee_salary_{employee_id}_{startDate}_{endDate}
+     * This allows easy invalidation by period
+     */
+    private function getCacheKey(Employee $employee, Carbon $startDate, Carbon $endDate): string
+    {
+        return sprintf(
+            'employee_salary_%d_%s_%s',
+            $employee->id,
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d')
+        );
+    }
+
+    /**
+     * Invalidate cache for employee salary calculations
+     * Should be called when attendance records are created, updated, or deleted
+     *
+     * @param Employee $employee The employee whose cache should be invalidated
+     * @param Carbon|null $startDate Optional start date for specific period invalidation
+     * @param Carbon|null $endDate Optional end date for specific period invalidation
+     */
+    public function invalidateCache(Employee $employee, ?Carbon $startDate = null, ?Carbon $endDate = null): void
+    {
+        if ($startDate && $endDate) {
+            // Invalidate specific period
+            $cacheKey = $this->getCacheKey($employee, $startDate, $endDate);
+            Cache::forget($cacheKey);
+        } else {
+            // Invalidate all cached calculations for this employee
+            // We need to invalidate for all possible date ranges, but that's impractical
+            // Instead, we invalidate for the current month and previous month (most common cases)
+            $now = Carbon::now();
+            $currentMonthStart = $now->copy()->startOfMonth();
+            $currentMonthEnd = $now->copy()->endOfMonth();
+            $previousMonthStart = $now->copy()->subMonth()->startOfMonth();
+            $previousMonthEnd = $now->copy()->subMonth()->endOfMonth();
+            
+            Cache::forget($this->getCacheKey($employee, $currentMonthStart, $currentMonthEnd));
+            Cache::forget($this->getCacheKey($employee, $previousMonthStart, $previousMonthEnd));
+            
+            // Also invalidate for the month containing the attendance date if provided
+            // This is handled in the Attendance model's booted method
+        }
     }
 
     /**
@@ -905,32 +1006,14 @@ class SalaryCalculationService
     }
 
     /**
-     * Calculate salary based on employee's salary type
+     * Calculate salary based on employee's salary type using Strategy Pattern
      */
     private function calculateSalaryByType(Employee $employee, array $processedData): array
     {
         $summary = $processedData['summary'];
-        $salaryType = $employee->salary_type;
-
-        switch ($salaryType) {
-            case 'ساعات عمل فقط':
-                return $this->calculateHoursOnlySalary($employee, $summary);
-
-            case 'ساعات عمل و إضافي يومى':
-                return $this->calculateHoursWithDailyOvertimeSalary($employee, $summary);
-
-            case 'ساعات عمل و إضافي للمده':
-                return $this->calculateHoursWithPeriodOvertimeSalary($employee, $summary);
-
-            case 'حضور فقط':
-                return $this->calculateAttendanceOnlySalary($employee, $summary);
-
-            case 'إنتاج فقط':
-                return $this->calculateProductionOnlySalary($employee, $summary);
-
-            default:
-                return $this->calculateHoursOnlySalary($employee, $summary);
-        }
+        $strategy = SalaryStrategyFactory::create($employee);
+        
+        return $strategy->calculate($employee, $summary);
     }
 
     /**

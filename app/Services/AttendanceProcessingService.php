@@ -7,6 +7,9 @@ use App\Models\AttendanceProcessing;
 use App\Models\AttendanceProcessingDetail;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Exceptions\AttendanceProcessingException;
+use App\Jobs\ProcessAttendanceJob;
+use App\Jobs\ProcessSingleEmployeeJob;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -44,25 +47,23 @@ class AttendanceProcessingService
 
     /**
      * Find all overlapping processing records for an employee
+     * Optimized to use database query instead of memory filtering
      */
     private function findOverlappingProcessings(Employee $employee, Carbon $startDate, Carbon $endDate, ?string $processingType = null): Collection
     {
-        $query = AttendanceProcessing::where('employee_id', $employee->id);
+        $query = AttendanceProcessing::where('employee_id', $employee->id)
+            ->where(function ($q) use ($startDate, $endDate) {
+                // Overlap condition: start1 <= end2 && start2 <= end1
+                // Converted to: period_start <= endDate AND period_end >= startDate
+                $q->where('period_start', '<=', $endDate->format('Y-m-d'))
+                  ->where('period_end', '>=', $startDate->format('Y-m-d'));
+            });
 
         if ($processingType) {
             $query->where('type', $processingType);
         }
 
-        // Get all processings that might overlap
-        $allProcessings = $query->get();
-
-        // Filter to find only overlapping ones
-        return $allProcessings->filter(function ($processing) use ($startDate, $endDate) {
-            $procStart = Carbon::parse($processing->period_start);
-            $procEnd = Carbon::parse($processing->period_end);
-
-            return $this->dateRangesOverlap($startDate, $endDate, $procStart, $procEnd);
-        });
+        return $query->get();
     }
 
     /**
@@ -113,85 +114,160 @@ class AttendanceProcessingService
     }
 
     /**
+     * Process employee attendance data without transaction management
+     * This method contains the core processing logic and can be called from within a transaction
+     *
+     * @param Employee $employee The employee to process attendance for
+     * @param Carbon $startDate Start date of the processing period
+     * @param Carbon $endDate End date of the processing period
+     * @param string $processingType Type of processing: 'single', 'multiple', or 'department'
+     * @param int|null $departmentId Department ID (required for 'department' type)
+     * @param string|null $notes Optional notes for the processing
+     * @return array{
+     *     processing_id?: int,
+     *     employee?: Employee,
+     *     summary?: array<string, mixed>,
+     *     salary_data?: array<string, mixed>,
+     *     daily_details?: array<string, array>,
+     *     error?: string,
+     *     existing_processing_ids?: array<int>,
+     *     overlapping_processings?: array<int, array>
+     * }
+     */
+    private function processEmployeeData(Employee $employee, Carbon $startDate, Carbon $endDate, string $processingType, ?int $departmentId = null, ?string $notes = null): array
+    {
+        // Check if employee is active
+        if ($employee->isInactive()) {
+            throw AttendanceProcessingException::inactiveEmployee($employee->name, $employee->id);
+        }
+
+        // Check for overlapping processing records (including partial overlaps)
+        $overlappingProcessings = $this->findOverlappingProcessings($employee, $startDate, $endDate, $processingType === 'department' ? null : 'single');
+
+        if ($overlappingProcessings->isNotEmpty()) {
+            $errorMessage = $this->generateOverlapErrorMessage($employee, $overlappingProcessings, $startDate, $endDate);
+
+            return [
+                'error' => $errorMessage,
+                'existing_processing_ids' => $overlappingProcessings->pluck('id')->toArray(),
+                'overlapping_processings' => $overlappingProcessings->map(function ($proc) {
+                    return [
+                        'id' => $proc->id,
+                        'period_start' => $proc->period_start,
+                        'period_end' => $proc->period_end,
+                        'created_at' => $proc->created_at->format('Y-m-d H:i:s'),
+                    ];
+                })->toArray(),
+            ];
+        }
+
+        // Process attendance data first
+        $processedData = $this->processEmployeeAttendance($employee, $startDate, $endDate);
+
+        // Create attendance processing record
+        $processing = AttendanceProcessing::create([
+            'type' => $processingType,
+            'employee_id' => $employee->id,
+            'department_id' => $departmentId ?? $employee->department_id,
+            'period_start' => $startDate->format('Y-m-d'),
+            'period_end' => $endDate->format('Y-m-d'),
+            'total_days' => $processedData['summary']['total_days'],
+            'working_days' => $processedData['summary']['working_days'],
+            'actual_work_days' => $processedData['summary']['present_days'],
+            'overtime_work_days' => $processedData['summary']['overtime_days'] ?? 0,
+            'absent_days' => $processedData['summary']['absent_days'],
+            'unpaid_leave_days' => $processedData['summary']['unpaid_leave_days'] ?? 0,
+            'total_hours' => $processedData['summary']['total_hours'],
+            'actual_work_hours' => $processedData['summary']['actual_hours'],
+            'overtime_work_minutes' => $processedData['summary']['overtime_minutes'],
+            'total_late_minutes' => $processedData['summary']['late_minutes'] ?? 0,
+            'calculated_salary_for_day' => $processedData['salary_data']['daily_rate'] ?? 0,
+            'calculated_salary_for_hour' => $processedData['salary_data']['hourly_rate'] ?? 0,
+            'employee_productivity_salary' => $processedData['salary_data']['basic_salary'] ?? 0,
+            'salary_due' => $processedData['salary_data']['overtime_salary'] ?? 0,
+            'total_salary' => $processedData['salary_data']['total_salary'] ?? 0,
+            'notes' => $notes,
+        ]);
+
+        // Save processing details
+        $this->saveProcessingDetails($processing, $processedData, $employee);
+
+        return [
+            'processing_id' => $processing->id,
+            'employee' => $employee,
+            'summary' => $processedData['summary'],
+            'salary_data' => $processedData['salary_data'],
+            'daily_details' => $processedData['details'],
+        ];
+    }
+
+    /**
      * Process attendance for a single employee
+     *
+     * This method processes attendance records for a single employee within a specified date range,
+     * calculates working hours, overtime, and salary, then saves the results to the database.
+     *
+     * @param Employee $employee The employee to process attendance for
+     * @param Carbon $startDate Start date of the processing period (inclusive)
+     * @param Carbon $endDate End date of the processing period (inclusive)
+     * @param string|null $notes Optional notes to attach to the processing record
+     * @return array{
+     *     processing_id?: int,
+     *     employee?: Employee,
+     *     summary?: array{
+     *         total_days: int,
+     *         working_days: int,
+     *         present_days: float,
+     *         absent_days: int,
+     *         overtime_days: int,
+     *         total_hours: float,
+     *         actual_hours: float,
+     *         overtime_minutes: int,
+     *         late_minutes: int
+     *     },
+     *     salary_data?: array{
+     *         basic_salary: float,
+     *         overtime_salary: float,
+     *         total_salary: float,
+     *         hourly_rate: float,
+     *         daily_rate: float
+     *     },
+     *     daily_details?: array<string, array>,
+     *     error?: string,
+     *     existing_processing_ids?: array<int>,
+     *     overlapping_processings?: array<int, array>
+     * }
+     * @throws \Exception If database transaction fails
      */
     public function processSingleEmployee(Employee $employee, Carbon $startDate, Carbon $endDate, ?string $notes = null): array
     {
         DB::beginTransaction();
 
         try {
-            // Check if employee is active
-            if ($employee->isInactive()) {
+            $result = $this->processEmployeeData($employee, $startDate, $endDate, 'single', null, $notes);
+
+            if (isset($result['error'])) {
                 DB::rollBack();
-                return [
-                    'error' => "❌ الموظف {$employee->name} (كود: {$employee->id}) معطل ولا يمكن معالجة بصماته أو رواتبه.",
-                ];
+                return $result;
             }
-
-            // Check for overlapping processing records (including partial overlaps)
-            $overlappingProcessings = $this->findOverlappingProcessings($employee, $startDate, $endDate, 'single');
-
-            if ($overlappingProcessings->isNotEmpty()) {
-                $errorMessage = $this->generateOverlapErrorMessage($employee, $overlappingProcessings, $startDate, $endDate);
-
-                DB::rollBack();
-
-                return [
-                    'error' => $errorMessage,
-                    'existing_processing_ids' => $overlappingProcessings->pluck('id')->toArray(),
-                    'overlapping_processings' => $overlappingProcessings->map(function ($proc) {
-                        return [
-                            'id' => $proc->id,
-                            'period_start' => $proc->period_start,
-                            'period_end' => $proc->period_end,
-                            'created_at' => $proc->created_at->format('Y-m-d H:i:s'),
-                        ];
-                    })->toArray(),
-                ];
-            }
-
-            // Process attendance data first
-            $processedData = $this->processEmployeeAttendance($employee, $startDate, $endDate);
-
-            // Create attendance processing record
-            $processing = AttendanceProcessing::create([
-                'type' => 'single',
-                'employee_id' => $employee->id,
-                'department_id' => $employee->department_id,
-                'period_start' => $startDate->format('Y-m-d'),
-                'period_end' => $endDate->format('Y-m-d'),
-                'total_days' => $processedData['summary']['total_days'],
-                'working_days' => $processedData['summary']['working_days'],
-                'actual_work_days' => $processedData['summary']['present_days'],
-                'overtime_work_days' => $processedData['summary']['overtime_days'] ?? 0,
-                'absent_days' => $processedData['summary']['absent_days'],
-                'unpaid_leave_days' => $processedData['summary']['unpaid_leave_days'] ?? 0,
-                'total_hours' => $processedData['summary']['total_hours'],
-                'actual_work_hours' => $processedData['summary']['actual_hours'],
-                'overtime_work_minutes' => $processedData['summary']['overtime_minutes'],
-                'total_late_minutes' => $processedData['summary']['late_minutes'] ?? 0,
-                'calculated_salary_for_day' => $processedData['salary_data']['daily_rate'] ?? 0,
-                'calculated_salary_for_hour' => $processedData['salary_data']['hourly_rate'] ?? 0,
-                'employee_productivity_salary' => $processedData['salary_data']['basic_salary'] ?? 0,
-                'salary_due' => $processedData['salary_data']['overtime_salary'] ?? 0,
-                'total_salary' => $processedData['salary_data']['total_salary'] ?? 0,
-                'notes' => $notes,
-            ]);
-
-            // Save processing details
-            $this->saveProcessingDetails($processing, $processedData, $employee);
 
             DB::commit();
-
+            return $result;
+        } catch (AttendanceProcessingException $e) {
+            DB::rollBack();
             return [
-                'processing_id' => $processing->id,
-                'employee' => $employee,
-                'summary' => $processedData['summary'],
-                'salary_data' => $processedData['salary_data'],
-                'daily_details' => $processedData['details'],
+                'error' => $e->getMessage(),
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error processing single employee attendance', [
+                'employee_id' => $employee->id,
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return [
                 'error' => $e->getMessage(),
             ];
@@ -200,6 +276,17 @@ class AttendanceProcessingService
 
     /**
      * Process attendance for multiple employees
+     *
+     * Processes attendance for multiple employees in a single transaction.
+     * Each employee is processed independently, and errors for one employee
+     * do not prevent processing of other employees.
+     *
+     * @param array<int> $employeeIds Array of employee IDs to process
+     * @param Carbon $startDate Start date of the processing period (inclusive)
+     * @param Carbon $endDate End date of the processing period (inclusive)
+     * @param string|null $notes Optional notes to attach to processing records
+     * @return array<int, array> Array of results, one for each employee
+     * @throws \Exception If database transaction fails
      */
     public function processMultipleEmployees(array $employeeIds, Carbon $startDate, Carbon $endDate, ?string $notes = null): array
     {
@@ -209,47 +296,24 @@ class AttendanceProcessingService
             $results = [];
 
             foreach ($employeeIds as $employeeId) {
-                $employee = Employee::findOrFail($employeeId);
-
-                // Check if employee is active
-                if ($employee->isInactive()) {
-                    $results[] = [
-                        'error' => "❌ الموظف {$employee->name} (كود: {$employee->id}) معطل ولا يمكن معالجة بصماته أو رواتبه.",
-                        'employee' => $employee,
-                    ];
-                    continue; // Skip inactive employee
-                }
-
-                // Check for overlapping processing records
-                $overlappingProcessings = $this->findOverlappingProcessings($employee, $startDate, $endDate, 'single');
-
-                if ($overlappingProcessings->isNotEmpty()) {
-                    $errorMessage = $this->generateOverlapErrorMessage($employee, $overlappingProcessings, $startDate, $endDate);
-
-                    $results[] = [
-                        'error' => $errorMessage,
-                        'existing_processing_ids' => $overlappingProcessings->pluck('id')->toArray(),
-                        'employee' => $employee,
-                        'overlapping_processings' => $overlappingProcessings->map(function ($proc) {
-                            return [
-                                'id' => $proc->id,
-                                'period_start' => $proc->period_start,
-                                'period_end' => $proc->period_end,
-                                'created_at' => $proc->created_at->format('Y-m-d H:i:s'),
-                            ];
-                        })->toArray(),
-                    ];
-
-                    continue; // Skip this employee
-                }
-
-                $result = $this->processSingleEmployee($employee, $startDate, $endDate, $notes);
-
-                // If processSingleEmployee returns an error, add it to results
-                if (isset($result['error'])) {
+                try {
+                    $employee = Employee::findOrFail($employeeId);
+                    $result = $this->processEmployeeData($employee, $startDate, $endDate, 'single', null, $notes);
                     $results[] = $result;
-                } else {
-                    $results[] = $result;
+                } catch (AttendanceProcessingException $e) {
+                    $results[] = [
+                        'error' => $e->getMessage(),
+                    ];
+                    // Continue processing other employees
+                } catch (\Exception $e) {
+                    Log::error('Error processing employee in multiple processing', [
+                        'employee_id' => $employeeId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $results[] = [
+                        'error' => "❌ خطأ في معالجة الموظف (كود: {$employeeId}): " . $e->getMessage(),
+                    ];
+                    // Continue processing other employees
                 }
             }
 
@@ -258,6 +322,13 @@ class AttendanceProcessingService
             return $results;
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error in processMultipleEmployees', [
+                'employee_ids' => $employeeIds,
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return [
                 [
@@ -269,6 +340,31 @@ class AttendanceProcessingService
 
     /**
      * Process attendance for entire department
+     *
+     * Processes attendance for all active employees in a department within a specified date range.
+     * Returns a summary of all employees' processing results along with department-level totals.
+     *
+     * @param Department $department The department to process
+     * @param Carbon $startDate Start date of the processing period (inclusive)
+     * @param Carbon $endDate End date of the processing period (inclusive)
+     * @param string|null $notes Optional notes to attach to processing records
+     * @return array{
+     *     department?: Department,
+     *     department_summary?: array{
+     *         total_days: int,
+     *         working_days: int,
+     *         actual_work_days: int,
+     *         overtime_work_days: int,
+     *         absent_days: int,
+     *         total_hours: float,
+     *         actual_work_hours: float,
+     *         overtime_work_minutes: int,
+     *         total_salary: float
+     *     },
+     *     results?: array<int, array>,
+     *     error?: string
+     * }
+     * @throws \Exception If database transaction fails
      */
     public function processDepartment(Department $department, Carbon $startDate, Carbon $endDate, ?string $notes = null): array
     {
@@ -327,95 +423,48 @@ class AttendanceProcessingService
             $successfulProcessings = 0;
 
             foreach ($employees as $employee) {
-                // Check if employee is active
-                if ($employee->isInactive()) {
+                try {
+                    $result = $this->processEmployeeData($employee, $startDate, $endDate, 'department', $department->id, $notes);
+
+                    if (isset($result['error'])) {
+                        $results[] = $result;
+                        continue;
+                    }
+
+                    // Accumulate department summary from successful processing
+                    $summary = $result['summary'];
+                    $salaryData = $result['salary_data'];
+                    
+                    $departmentSummary['total_days'] = $summary['total_days'];
+                    $departmentSummary['working_days'] += $summary['working_days'];
+                    $departmentSummary['actual_work_days'] += $summary['present_days'];
+                    $departmentSummary['overtime_work_days'] += $summary['overtime_days'] ?? 0;
+                    $departmentSummary['absent_days'] += $summary['absent_days'];
+                    $departmentSummary['total_hours'] += $summary['total_hours'];
+                    $departmentSummary['actual_work_hours'] += $summary['actual_hours'];
+                    $departmentSummary['overtime_work_minutes'] += $summary['overtime_minutes'];
+                    $departmentSummary['total_salary'] += $salaryData['total_salary'];
+
+                    $results[] = $result;
+                    $successfulProcessings++;
+                } catch (AttendanceProcessingException $e) {
                     $results[] = [
-                        'error' => "❌ الموظف {$employee->name} (كود: {$employee->id}) معطل ولا يمكن معالجة بصماته أو رواتبه.",
+                        'error' => $e->getMessage(),
                         'employee' => $employee,
                     ];
-                    continue; // Skip inactive employee
-                }
-
-                // Check for overlapping processing records (including partial overlaps)
-                $overlappingProcessings = $this->findOverlappingProcessings($employee, $startDate, $endDate);
-
-                // Also check specifically for department type processings
-                $departmentOverlaps = $overlappingProcessings->filter(function ($proc) use ($department) {
-                    return $proc->type == 'department' && $proc->department_id == $department->id;
-                });
-
-                // If there are any overlaps, reject
-                if ($overlappingProcessings->isNotEmpty()) {
-                    $errorMessage = $this->generateOverlapErrorMessage($employee, $overlappingProcessings, $startDate, $endDate);
-
+                    // Continue processing other employees
+                } catch (\Exception $e) {
+                    Log::error('Error processing employee in department processing', [
+                        'employee_id' => $employee->id,
+                        'department_id' => $department->id,
+                        'error' => $e->getMessage(),
+                    ]);
                     $results[] = [
-                        'error' => $errorMessage,
-                        'existing_processing_ids' => $overlappingProcessings->pluck('id')->toArray(),
+                        'error' => "❌ خطأ في معالجة الموظف {$employee->name} (كود: {$employee->id}): " . $e->getMessage(),
                         'employee' => $employee,
-                        'overlapping_processings' => $overlappingProcessings->map(function ($proc) {
-                            return [
-                                'id' => $proc->id,
-                                'type' => $proc->type,
-                                'period_start' => $proc->period_start,
-                                'period_end' => $proc->period_end,
-                                'created_at' => $proc->created_at->format('Y-m-d H:i:s'),
-                            ];
-                        })->toArray(),
                     ];
-
-                    continue; // Skip this employee
+                    // Continue processing other employees
                 }
-
-                $processedData = $this->processEmployeeAttendance($employee, $startDate, $endDate);
-                $salaryData = $processedData['salary_data'];
-
-                // Create individual processing record for each employee
-                $processing = AttendanceProcessing::create([
-                    'type' => 'department',
-                    'employee_id' => $employee->id,
-                    'department_id' => $department->id,
-                    'period_start' => $startDate->format('Y-m-d'),
-                    'period_end' => $endDate->format('Y-m-d'),
-                    'total_days' => $processedData['summary']['total_days'],
-                    'working_days' => $processedData['summary']['working_days'],
-                    'actual_work_days' => $processedData['summary']['present_days'],
-                    'overtime_work_days' => $processedData['summary']['overtime_days'] ?? 0,
-                    'absent_days' => $processedData['summary']['absent_days'],
-                    'unpaid_leave_days' => $processedData['summary']['unpaid_leave_days'] ?? 0,
-                    'total_hours' => $processedData['summary']['total_hours'],
-                    'actual_work_hours' => $processedData['summary']['actual_hours'],
-                    'overtime_work_minutes' => $processedData['summary']['overtime_minutes'],
-                    'total_late_minutes' => $processedData['summary']['late_minutes'] ?? 0,
-                    'calculated_salary_for_day' => $salaryData['daily_rate'] ?? 0,
-                    'calculated_salary_for_hour' => $salaryData['hourly_rate'] ?? 0,
-                    'employee_productivity_salary' => $salaryData['basic_salary'] ?? 0,
-                    'salary_due' => $salaryData['overtime_salary'] ?? 0,
-                    'total_salary' => $salaryData['total_salary'] ?? 0,
-                    'notes' => $notes,
-                ]);
-
-                $this->saveProcessingDetails($processing, $processedData, $employee);
-
-                // Accumulate department summary
-                $departmentSummary['total_days'] = $processedData['summary']['total_days'];
-                $departmentSummary['working_days'] += $processedData['summary']['working_days'];
-                $departmentSummary['actual_work_days'] += $processedData['summary']['present_days'];
-                $departmentSummary['overtime_work_days'] += $processedData['summary']['overtime_days'] ?? 0;
-                $departmentSummary['absent_days'] += $processedData['summary']['absent_days'];
-                $departmentSummary['total_hours'] += $processedData['summary']['total_hours'];
-                $departmentSummary['actual_work_hours'] += $processedData['summary']['actual_hours'];
-                $departmentSummary['overtime_work_minutes'] += $processedData['summary']['overtime_minutes'];
-                $departmentSummary['total_salary'] += $salaryData['total_salary'];
-
-                $results[] = [
-                    'processing_id' => $processing->id,
-                    'employee' => $employee,
-                    'summary' => $processedData['summary'],
-                    'salary_data' => $salaryData,
-                    'daily_details' => $processedData['details'],
-                ];
-                
-                $successfulProcessings++;
             }
 
             // Check if no employees were successfully processed
@@ -443,6 +492,13 @@ class AttendanceProcessingService
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error in processDepartment', [
+                'department_id' => $department->id,
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return [
                 'department' => $department,
                 'department_summary' => [],
@@ -673,5 +729,55 @@ class AttendanceProcessingService
         $workingDaysPerMonth = now()->daysInMonth;
 
         return $monthlySalary / $workingDaysPerMonth;
+    }
+
+    /**
+     * Process department attendance asynchronously using Queue
+     * This is useful for large departments to avoid timeout
+     *
+     * @param Department $department The department to process
+     * @param Carbon $startDate Start date of the processing period
+     * @param Carbon $endDate End date of the processing period
+     * @param string|null $notes Optional notes
+     * @return string Job ID for tracking
+     */
+    /**
+     * Process department attendance asynchronously using Queue
+     * This is useful for large departments to avoid timeout
+     *
+     * @param Department $department The department to process
+     * @param Carbon $startDate Start date of the processing period
+     * @param Carbon $endDate End date of the processing period
+     * @param string|null $notes Optional notes
+     * @return void
+     */
+    public function processDepartmentAsync(Department $department, Carbon $startDate, Carbon $endDate, ?string $notes = null): void
+    {
+        ProcessAttendanceJob::dispatch(
+            $department->id,
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d'),
+            $notes
+        );
+    }
+
+    /**
+     * Process single employee attendance asynchronously using Queue
+     * This is useful when processing might take long time
+     *
+     * @param Employee $employee The employee to process
+     * @param Carbon $startDate Start date of the processing period
+     * @param Carbon $endDate End date of the processing period
+     * @param string|null $notes Optional notes
+     * @return void
+     */
+    public function processSingleEmployeeAsync(Employee $employee, Carbon $startDate, Carbon $endDate, ?string $notes = null): void
+    {
+        ProcessSingleEmployeeJob::dispatch(
+            $employee->id,
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d'),
+            $notes
+        );
     }
 }

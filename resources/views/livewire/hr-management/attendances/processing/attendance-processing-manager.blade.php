@@ -458,6 +458,9 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $this->processings->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
             </div>
         </div>
