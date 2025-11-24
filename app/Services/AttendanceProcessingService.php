@@ -168,8 +168,8 @@ class AttendanceProcessingService
                 'unpaid_leave_days' => $processedData['summary']['unpaid_leave_days'] ?? 0,
                 'total_hours' => $processedData['summary']['total_hours'],
                 'actual_work_hours' => $processedData['summary']['actual_hours'],
-                'overtime_work_hours' => $processedData['summary']['overtime_hours'],
-                'total_late_hours' => $processedData['summary']['late_hours'] ?? 0,
+                'overtime_work_minutes' => $processedData['summary']['overtime_minutes'],
+                'total_late_minutes' => $processedData['summary']['late_minutes'] ?? 0,
                 'calculated_salary_for_day' => $processedData['salary_data']['daily_rate'] ?? 0,
                 'calculated_salary_for_hour' => $processedData['salary_data']['hourly_rate'] ?? 0,
                 'employee_productivity_salary' => $processedData['salary_data']['basic_salary'] ?? 0,
@@ -320,7 +320,7 @@ class AttendanceProcessingService
                 'absent_days' => 0,
                 'total_hours' => 0,
                 'actual_work_hours' => 0,
-                'overtime_work_hours' => 0,
+                'overtime_work_minutes' => 0,
                 'total_salary' => 0,
             ];
             
@@ -384,8 +384,8 @@ class AttendanceProcessingService
                     'unpaid_leave_days' => $processedData['summary']['unpaid_leave_days'] ?? 0,
                     'total_hours' => $processedData['summary']['total_hours'],
                     'actual_work_hours' => $processedData['summary']['actual_hours'],
-                    'overtime_work_hours' => $processedData['summary']['overtime_hours'],
-                    'total_late_hours' => $processedData['summary']['late_hours'] ?? 0,
+                    'overtime_work_minutes' => $processedData['summary']['overtime_minutes'],
+                    'total_late_minutes' => $processedData['summary']['late_minutes'] ?? 0,
                     'calculated_salary_for_day' => $salaryData['daily_rate'] ?? 0,
                     'calculated_salary_for_hour' => $salaryData['hourly_rate'] ?? 0,
                     'employee_productivity_salary' => $salaryData['basic_salary'] ?? 0,
@@ -404,7 +404,7 @@ class AttendanceProcessingService
                 $departmentSummary['absent_days'] += $processedData['summary']['absent_days'];
                 $departmentSummary['total_hours'] += $processedData['summary']['total_hours'];
                 $departmentSummary['actual_work_hours'] += $processedData['summary']['actual_hours'];
-                $departmentSummary['overtime_work_hours'] += $processedData['summary']['overtime_hours'];
+                $departmentSummary['overtime_work_minutes'] += $processedData['summary']['overtime_minutes'];
                 $departmentSummary['total_salary'] += $salaryData['total_salary'];
 
                 $results[] = [
@@ -508,8 +508,38 @@ class AttendanceProcessingService
             // Salary will be calculated later based on production formula
             $dailySalary = 0;
             if ($employee->salary_type !== 'إنتاج فقط') {
-                $dailySalary = ($dayData['actual_hours'] * $hourlyRate) +
-                              ($dayData['overtime_hours'] * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5));
+                if ($dayData['day_type'] === 'overtime_day') {
+                    // If it's an overtime day, the whole day is calculated with the day multiplier
+                    // We calculate the daily rate * multiplier
+                    $dailyRate = $processedData['salary_data']['daily_rate'] ?? 0;
+                    $dailySalary = $dailyRate * ($employee->additional_day_calculation ?? 1.5);
+                    
+                    // If there are specific overtime hours ON TOP of the day (unlikely for "overtime day" which is usually a holiday),
+                    // we might need to decide if we add them. 
+                    // Usually "Overtime Day" means the whole day is overtime.
+                    // But if the system separates "actual hours" and "overtime hours" for that day:
+                    // Let's assume the "Overtime Day" pay covers the "Actual Hours".
+                    // Any "Overtime Hours" (hours beyond the shift) should probably be paid extra?
+                    // For now, let's stick to the user request: "Calculate the overtime day based on the employee's table".
+                    // So we use the Day Multiplier on the Daily Rate.
+                    
+                    // However, we should also check if we need to add overtime hours pay if they exist separately.
+                    // But typically, if I work on Friday, I get paid 1.5 days. 
+                    // So $dailySalary = DailyRate * 1.5.
+                    
+                    // What if I work MORE than 8 hours on Friday? 
+                    // The current logic in SalaryCalculationService separates hours.
+                    // But for "Overtime Day", the `actual_hours` might be 0 in some logic? No, it should be > 0.
+                    
+                    // Let's look at how we calculated total salary in the plan.
+                    // We said: $overtimeDaysSalary = $summary['overtime_days'] * $dailyRate * $multiplier.
+                    // So here, for this specific day, we should set $dailySalary to that amount.
+                    
+                } else {
+                    // Normal working day
+                    $dailySalary = ($dayData['actual_hours'] * $hourlyRate) +
+                                  (($dayData['overtime_minutes'] / 60) * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5));
+                }
             }
 
             // Get shift times if employee has a shift
@@ -553,10 +583,10 @@ class AttendanceProcessingService
                 'check_out_time' => $dayData['check_out_time'],
                 'attendance_basic_hours_count' => $basicHours,
                 'attendance_actual_hours_count' => $dayData['actual_hours'],
-                'attendance_overtime_hours_count' => $dayData['overtime_hours'],
-                'attendance_late_hours_count' => $dayData['late_hours'],
+                'attendance_overtime_minutes_count' => $dayData['overtime_minutes'],
+                'attendance_late_minutes_count' => $dayData['late_minutes'],
                 'early_hours' => $earlyHours,
-                'attendance_total_hours_count' => $dayData['actual_hours'] + $dayData['overtime_hours'],
+                'attendance_total_hours_count' => $dayData['actual_hours'] + ($dayData['overtime_minutes'] / 60),
                 'total_due_hourly_salary' => $dailySalary,
                 'day_type' => $dayData['day_type'],
                 'notes' => $dayData['notes'] ?? null,

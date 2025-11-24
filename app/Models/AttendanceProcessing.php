@@ -22,8 +22,8 @@ class AttendanceProcessing extends Model
         'calculated_salary_for_day' => 'decimal:2',
         'calculated_salary_for_hour' => 'decimal:2',
         'actual_work_hours' => 'decimal:2',
-        'overtime_work_hours' => 'decimal:2',
-        'total_late_hours' => 'decimal:2',
+        'overtime_work_minutes' => 'integer',
+        'total_late_minutes' => 'integer',
         'unpaid_leave_days' => 'decimal:2',
         'employee_productivity_salary' => 'decimal:2',
         'salary_due' => 'decimal:2',
@@ -97,13 +97,13 @@ class AttendanceProcessing extends Model
     public function getTotalOvertimeHoursAttribute(): float
     {
         return $this->attendanceProcessingDetails()
-            ->sum('attendance_overtime_hours_count');
+            ->sum('attendance_overtime_minutes_count');
     }
 
     public function getTotalLateHoursAttribute(): float
     {
         return $this->attendanceProcessingDetails()
-            ->sum('attendance_late_hours_count');
+            ->sum('attendance_late_minutes_count');
     }
 
     public function getTotalSalaryCalculatedAttribute(): float
