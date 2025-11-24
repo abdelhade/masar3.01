@@ -117,8 +117,9 @@ new class extends Component {
         return [
             'attendances' => $query
                 ->with(['employee', 'user'])
-                ->latest()
-                ->paginate(10),
+                ->orderBy('date', 'desc')
+                ->orderBy('time', 'desc')
+                ->paginate(100),
         ];
     }
 
@@ -531,7 +532,7 @@ new class extends Component {
                         
                         // Handle Excel date serial number (if numeric)
                         if (is_numeric($dateTimeString)) {
-                            $dateTime = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dateTimeString);
+                            $dateTime = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$dateTimeString);
                             $date = $dateTime->format('Y-m-d');
                             $time = $dateTime->format('H:i:s');
                         } else {
@@ -569,13 +570,19 @@ new class extends Component {
                             $dateTimeString = trim($dateTimeString);
                             
                             // Try to parse as "DD/MM/YYYY HH:MM" format
-                            // Match pattern: "03/01/2025 04:20"
-                            if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2})/', $dateTimeString, $matches)) {
+                            // Match pattern: "03/01/2025 04:20" or "3/1/25 4:20"
+                            // Supports separators: / - .
+                            if (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\s+(\d{1,2}):(\d{1,2})/', $dateTimeString, $matches)) {
                                 $day = (int)$matches[1];
                                 $month = (int)$matches[2];
                                 $year = (int)$matches[3];
                                 $hour = (int)$matches[4];
                                 $minute = (int)$matches[5];
+                                
+                                // Handle 2-digit year (e.g., 25 -> 2025)
+                                if ($year < 100) {
+                                    $year += 2000;
+                                }
                                 
                                 // Handle AM/PM conversion
                                 if ($isPM && $hour < 12) {
@@ -588,10 +595,35 @@ new class extends Component {
                                 $date = sprintf('%04d-%02d-%02d', $year, $month, $day);
                                 $time = sprintf('%02d:%02d:00', $hour, $minute);
                             } else {
-                                // Try Carbon parse as fallback
-                                $parsedDateTime = Carbon::parse($dateTimeString);
-                                $date = $parsedDateTime->format('Y-m-d');
-                                $time = $parsedDateTime->format('H:i:s');
+                                // Try Carbon parse as fallback, but FORCE d/m/Y format if possible
+                                // This is critical because Carbon defaults to m/d/Y for slash separators
+                                $parsedDateTime = null;
+                                try {
+                                    // Try to parse assuming d/m/Y format first
+                                    $parsedDateTime = Carbon::createFromFormat('d/m/Y H:i', $dateTimeString);
+                                } catch (\Exception $e) {
+                                    // If d/m/Y H:i fails, try d-m-Y H:i
+                                    try {
+                                        $parsedDateTime = Carbon::createFromFormat('d-m-Y H:i', $dateTimeString);
+                                    } catch (\Exception $e) {
+                                        // If both specific formats fail, fall back to general Carbon::parse
+                                        $parsedDateTime = Carbon::parse($dateTimeString);
+                                    }
+                                }
+                                
+                                if ($parsedDateTime) {
+                                    // Handle AM/PM if manually parsed
+                                    if ($isPM && $parsedDateTime->hour < 12) {
+                                        $parsedDateTime->addHours(12);
+                                    } elseif ($isAM && $parsedDateTime->hour == 12) {
+                                        $parsedDateTime->setHour(0);
+                                    }
+                                    
+                                    $date = $parsedDateTime->format('Y-m-d');
+                                    $time = $parsedDateTime->format('H:i:s');
+                                } else {
+                                    throw new \Exception('Format mismatch');
+                                }
                             }
                         }
                     } catch (\Exception $e) {

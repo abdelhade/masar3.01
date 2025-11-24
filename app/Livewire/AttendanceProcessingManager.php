@@ -87,6 +87,8 @@ class AttendanceProcessingManager extends Component
         $this->processingResults = [];
     }
 
+
+
     public function processAttendance(): void
     {
         try {

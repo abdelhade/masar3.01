@@ -18,8 +18,8 @@ class AttendanceProcessingDetail extends Model
         'working_hours_in_shift' => 'decimal:2',
         'attendance_basic_hours_count' => 'decimal:2',
         'attendance_actual_hours_count' => 'decimal:2',
-        'attendance_overtime_hours_count' => 'decimal:2',
-        'attendance_late_hours_count' => 'decimal:2',
+        'attendance_overtime_minutes_count' => 'integer',
+        'attendance_late_minutes_count' => 'integer',
         'early_hours' => 'decimal:2',
         'attendance_total_hours_count' => 'decimal:2',
         'total_due_hourly_salary' => 'decimal:2',
@@ -50,6 +50,7 @@ class AttendanceProcessingDetail extends Model
             'absent' => '<span class="badge bg-danger">غياب</span>',
             'paid_leave' => '<span class="badge bg-info">إجازة مدفوعة الأجر</span>',
             'leave' => '<span class="badge bg-info">خروج مبكر</span>',
+            'half_day' => '<span class="badge bg-warning text-dark">نصف يوم</span>',
             'permission' => '<span class="badge bg-warning">إذن</span>',
             'late' => '<span class="badge bg-warning">متأخر</span>',
             'holiday' => '<span class="badge bg-secondary">إجازة أسبوعية</span>',
@@ -76,7 +77,9 @@ class AttendanceProcessingDetail extends Model
             return 0;
         }
         
-        return ($this->attendance_overtime_hours_count / $this->attendance_basic_hours_count) * 100;
+        // Convert minutes to hours for percentage calculation against basic hours
+        $overtimeHours = $this->attendance_overtime_minutes_count / 60;
+        return ($overtimeHours / $this->attendance_basic_hours_count) * 100;
     }
 
     public function getLatePercentageAttribute(): float
@@ -85,7 +88,9 @@ class AttendanceProcessingDetail extends Model
             return 0;
         }
         
-        return ($this->attendance_late_hours_count / $this->attendance_basic_hours_count) * 100;
+        // Convert minutes to hours for percentage calculation against basic hours
+        $lateHours = $this->attendance_late_minutes_count / 60;
+        return ($lateHours / $this->attendance_basic_hours_count) * 100;
     }
 
     public function getAttendanceEfficiencyAttribute(): float

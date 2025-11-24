@@ -89,18 +89,19 @@ class SalaryCalculationService
         $summary = [
             'total_days' => 0,
             'working_days' => 0,
-            'overtime_days' => 0,
             'present_days' => 0,
             'absent_days' => 0,
             'paid_leave_days' => 0,
             'unpaid_leave_days' => 0,
+            'overtime_days' => 0,
+            'holiday_days' => 0,
             'total_hours' => 0,
             'actual_hours' => 0,
-            'overtime_hours' => 0,
-            'late_hours' => 0,
-            'holiday_days' => 0,
+            'overtime_minutes' => 0,
+            'late_minutes' => 0,
+            'early_hours' => 0,
+            'leave_hours' => 0,
         ];
-
         // Group attendances by date (extract date part only)
         $attendanceByDate = $attendances->groupBy(function ($attendance) {
             return Carbon::parse($attendance->date)->format('Y-m-d');
@@ -137,8 +138,14 @@ class SalaryCalculationService
             if ($dayData['status'] === 'present') {
                 $summary['present_days']++;
                 $summary['actual_hours'] += $dayData['actual_hours'];
-                $summary['overtime_hours'] += $dayData['overtime_hours'];
-                $summary['late_hours'] += $dayData['late_hours'];
+                // Sum minutes directly
+                $summary['overtime_minutes'] += $dayData['overtime_minutes'];
+                $summary['late_minutes'] += $dayData['late_minutes'];
+            } elseif ($dayData['status'] === 'half_day') {
+                $summary['present_days'] += 0.5;
+                $summary['actual_hours'] += $dayData['actual_hours'];
+                $summary['late_minutes'] += $dayData['late_minutes'];
+                // No overtime for half day (fixed half day)
             } elseif ($dayData['status'] === 'absent') {
                 $summary['absent_days']++;
             } elseif ($dayData['status'] === 'paid_leave') {
@@ -152,7 +159,8 @@ class SalaryCalculationService
             }
         }
 
-        $summary['total_hours'] = $summary['working_days'] * $this->getExpectedHours($employee);
+        // Calculate total hours
+        $summary['total_hours'] = $summary['actual_hours'] + ($summary['overtime_minutes'] / 60);
 
         return [
             'summary' => $summary,
@@ -338,8 +346,8 @@ class SalaryCalculationService
                 'day_type' => $dayType,
                 'expected_hours' => $expectedHours,
                 'actual_hours' => 0, // No hours for unpaid leave
-                'overtime_hours' => 0,
-                'late_hours' => 0,
+                'overtime_minutes' => 0,
+                'late_minutes' => 0,
                 'check_in_time' => null,
                 'check_out_time' => null,
                 'notes' => 'إجازة غير مدفوعة الأجر: '.($unpaidLeave->leaveType->name ?? ''),
@@ -354,11 +362,44 @@ class SalaryCalculationService
                 'day_type' => $dayType,
                 'expected_hours' => 0,
                 'actual_hours' => 0,
-                'overtime_hours' => 0,
-                'late_hours' => 0,
+                'overtime_minutes' => 0,
+                'late_minutes' => 0,
                 'check_in_time' => null,
                 'check_out_time' => null,
                 'notes' => null,
+            ];
+        }
+
+        // Handle late check-in with check-out (Half Day)
+        // If there's no valid check-in (rejected because it's late) but there ARE check-ins and check-outs
+        // This means the employee checked in late (after ending_check_in) but still has a check-out
+        if (! $validCheckIn && $checkIns->isNotEmpty() && $checkOuts->isNotEmpty() && $dayType == 'working_day') {
+            $firstCheckIn = $checkIns->first();
+            $lastCheckOut = $this->getAnyCheckOut($checkOuts);
+            
+            // Calculate late minutes (difference between actual check-in and shift start time)
+            $lateMinutes = 0;
+            if ($shift && $shift->start_time) {
+                $checkInTime = Carbon::parse($date->format('Y-m-d').' '.$firstCheckIn->time);
+                $shiftStart = Carbon::parse($date->format('Y-m-d').' '.$shift->start_time);
+                
+                if ($checkInTime->gt($shiftStart)) {
+                    // Calculate late time in total minutes
+                    $lateMinutes = $shiftStart->diffInMinutes($checkInTime);
+                }
+            }
+            
+            return [
+                'date' => $date->format('Y-m-d'),
+                'status' => 'half_day',
+                'day_type' => $dayType,
+                'expected_hours' => $expectedHours,
+                'actual_hours' => $expectedHours / 2, // Half day hours
+                'overtime_minutes' => 0,
+                'late_minutes' => $lateMinutes,
+                'check_in_time' => $firstCheckIn->time,
+                'check_out_time' => $lastCheckOut->time,
+                'notes' => 'نصف يوم (تأخير عن موعد البصمة)',
             ];
         }
 
@@ -371,8 +412,8 @@ class SalaryCalculationService
                 'day_type' => $dayType,
                 'expected_hours' => $expectedHours,
                 'actual_hours' => 0,
-                'overtime_hours' => 0,
-                'late_hours' => 0,
+                'overtime_minutes' => 0,
+                'late_minutes' => 0,
                 'check_in_time' => null,
                 'check_out_time' => null,
                 'notes' => null,
@@ -395,8 +436,8 @@ class SalaryCalculationService
                         'day_type' => $dayType,
                         'expected_hours' => $expectedHours,
                         'actual_hours' => $expectedHours, // يوم كامل فقط بدون إضافي
-                        'overtime_hours' => 0, // لا يوجد إضافي
-                        'late_hours' => 0, // لا يُحسب التأخير لهذا النوع
+                        'overtime_minutes' => 0, // لا يوجد إضافي
+                        'late_minutes' => 0, // لا يُحسب التأخير لهذا النوع
                         'check_in_time' => $validCheckIn->time,
                         'check_out_time' => $anyCheckOut->time,
                         'notes' => null,
@@ -413,19 +454,37 @@ class SalaryCalculationService
                     $checkInTime = Carbon::parse($date->format('Y-m-d').' '.$validCheckIn->time);
                     $checkOutTime = Carbon::parse($date->format('Y-m-d').' '.$anyCheckOut->time);
 
+                    // Clamp check-in time to shift start time if it's early
+                    if ($shift && $shift->start_time) {
+                        $shiftStart = Carbon::parse($date->format('Y-m-d').' '.$shift->start_time);
+                        if ($checkInTime->lt($shiftStart)) {
+                            $checkInTime = $shiftStart;
+                        }
+                    }
+
                     // Basic hours = expected hours
                     $basicHours = $expectedHours;
 
                     // Overtime = hours after end_time, but only if check-out is after ending_check_out
                     $isAfterEndingCheckOut = $this->isCheckOutAfterEndingCheckOut($shift, $checkOutTime);
-                    $overtimeHours = 0;
+                    $overtimeMinutes = 0;
 
                     if ($isAfterEndingCheckOut) {
                         // Calculate overtime after end_time (official shift end time)
-                        $overtimeHours = $this->getOvertimeHoursAfterEndTime($shift, $checkOutTime);
+                        $overtimeMinutes = $this->getOvertimeMinutesAfterEndTime($shift, $checkOutTime);
                     }
 
-                    $lateHours = $this->calculateLateHours($shift, $checkInTime);
+                    // Calculate late hours (pass original check-in time if needed, but here we use clamped/original for calculation?)
+                    // Wait, calculateLateHours uses the passed checkInTime. If we clamped it, late hours would be 0.
+                    // But late hours should be calculated based on ACTUAL check-in.
+                    // However, if check-in is EARLY, late hours is 0 anyway.
+                    // So passing clamped time (which is shift start) results in 0 late hours, which is correct.
+                    // BUT, calculateLateHours might need the original time if we wanted to track "early arrival" (not needed here).
+                    // Actually, let's pass the original time to calculateLateHours just in case, but re-parse it or use validCheckIn->time.
+                    // Ah, I overwrote $checkInTime.
+                    // Let's re-parse for late hours or just use the logic that early check-in = 0 late hours.
+                    
+                    $lateMinutes = $this->calculateLateMinutes($shift, Carbon::parse($date->format('Y-m-d').' '.$validCheckIn->time));
 
                     return [
                         'date' => $date->format('Y-m-d'),
@@ -433,8 +492,8 @@ class SalaryCalculationService
                         'day_type' => $dayType,
                         'expected_hours' => $expectedHours,
                         'actual_hours' => $basicHours,
-                        'overtime_hours' => $overtimeHours > 0 ? $overtimeHours : 0,
-                        'late_hours' => $lateHours > 0 ? $lateHours : 0,
+                        'overtime_minutes' => $overtimeMinutes > 0 ? $overtimeMinutes : 0,
+                        'late_minutes' => $lateMinutes > 0 ? $lateMinutes : 0,
                         'check_in_time' => $validCheckIn->time,
                         'check_out_time' => $anyCheckOut->time,
                         'notes' => null,
@@ -451,19 +510,27 @@ class SalaryCalculationService
                     $checkInTime = Carbon::parse($date->format('Y-m-d').' '.$validCheckIn->time);
                     $checkOutTime = Carbon::parse($date->format('Y-m-d').' '.$anyCheckOut->time);
 
+                    // Clamp check-in time to shift start time if it's early
+                    if ($shift && $shift->start_time) {
+                        $shiftStart = Carbon::parse($date->format('Y-m-d').' '.$shift->start_time);
+                        if ($checkInTime->lt($shiftStart)) {
+                            $checkInTime = $shiftStart;
+                        }
+                    }
+
                     // Basic hours = expected hours
                     $basicHours = $expectedHours;
 
                     // Overtime = hours after end_time, but only if check-out is after ending_check_out
                     $isAfterEndingCheckOut = $this->isCheckOutAfterEndingCheckOut($shift, $checkOutTime);
-                    $overtimeHours = 0;
+                    $overtimeMinutes = 0;
 
                     if ($isAfterEndingCheckOut) {
                         // Calculate overtime after end_time (official shift end time)
-                        $overtimeHours = $this->getOvertimeHoursAfterEndTime($shift, $checkOutTime);
+                        $overtimeMinutes = $this->getOvertimeMinutesAfterEndTime($shift, $checkOutTime);
                     }
 
-                    $lateHours = $this->calculateLateHours($shift, $checkInTime);
+                    $lateMinutes = $this->calculateLateMinutes($shift, Carbon::parse($date->format('Y-m-d').' '.$validCheckIn->time));
 
                     return [
                         'date' => $date->format('Y-m-d'),
@@ -471,8 +538,8 @@ class SalaryCalculationService
                         'day_type' => $dayType,
                         'expected_hours' => $expectedHours,
                         'actual_hours' => $basicHours,
-                        'overtime_hours' => $overtimeHours > 0 ? $overtimeHours : 0,
-                        'late_hours' => $lateHours > 0 ? $lateHours : 0,
+                        'overtime_minutes' => $overtimeMinutes > 0 ? $overtimeMinutes : 0,
+                        'late_minutes' => $lateMinutes > 0 ? $lateMinutes : 0,
                         'check_in_time' => $validCheckIn->time,
                         'check_out_time' => $anyCheckOut->time,
                         'notes' => null,
@@ -495,8 +562,8 @@ class SalaryCalculationService
                         'day_type' => $dayType,
                         'expected_hours' => $expectedHours,
                         'actual_hours' => $expectedHours, // Full day
-                        'overtime_hours' => 0,
-                        'late_hours' => 0, // لا يُحسب التأخير لهذا النوع
+                        'overtime_minutes' => 0,
+                        'late_minutes' => 0, // لا يُحسب التأخير لهذا النوع
                         'check_in_time' => $validCheckIn->time,
                         'check_out_time' => $anyCheckOut ? $anyCheckOut->time : null,
                         'notes' => $anyCheckOut ? null : 'يوم كامل بناءً على بصمة الدخول فقط',
@@ -517,8 +584,8 @@ class SalaryCalculationService
                         'day_type' => $dayType,
                         'expected_hours' => $expectedHours,
                         'actual_hours' => $expectedHours, // Full day for display
-                        'overtime_hours' => 0,
-                        'late_hours' => 0,
+                        'overtime_minutes' => 0,
+                        'late_minutes' => 0,
                         'check_in_time' => $firstCheckIn->time,
                         'check_out_time' => $anyCheckOut ? $anyCheckOut->time : null,
                         'notes' => 'الراتب بناءً على الإنتاج وليس ساعات الحضور',
@@ -531,10 +598,19 @@ class SalaryCalculationService
                 // التأخير لا يُحسب لهذا النوع
                 if ($validCheckIn && $checkOuts->isNotEmpty()) {
                     $anyCheckOut = $this->getAnyCheckOut($checkOuts);
-                    $checkInTime = Carbon::parse($validCheckIn->time);
-                    $checkOutTime = Carbon::parse($anyCheckOut->time);
+                    $checkInTime = Carbon::parse($date->format('Y-m-d').' '.$validCheckIn->time);
+                    $checkOutTime = Carbon::parse($date->format('Y-m-d').' '.$anyCheckOut->time);
+
+                    // Clamp check-in time to shift start time if it's early
+                    if ($shift && $shift->start_time) {
+                        $shiftStart = Carbon::parse($date->format('Y-m-d').' '.$shift->start_time);
+                        if ($checkInTime->lt($shiftStart)) {
+                            $checkInTime = $shiftStart;
+                        }
+                    }
 
                     $actualHours = $checkInTime->diffInHours($checkOutTime, false);
+                    $overtimeHours = 0; // Initialize to 0
 
                     if ($actualHours > $expectedHours) {
                         $overtimeHours = $actualHours - $expectedHours;
@@ -546,8 +622,8 @@ class SalaryCalculationService
                         'day_type' => $dayType,
                         'expected_hours' => $expectedHours,
                         'actual_hours' => $actualHours - $overtimeHours,
-                        'overtime_hours' => $overtimeHours > 0 ? $overtimeHours : 0,
-                        'late_hours' => 0, // لا يُحسب التأخير لهذا النوع
+                        'overtime_minutes' => $overtimeHours > 0 ? $overtimeHours * 60 : 0,
+                        'late_minutes' => 0, // لا يُحسب التأخير لهذا النوع
                         'check_in_time' => $validCheckIn->time,
                         'check_out_time' => $anyCheckOut->time,
                         'notes' => null,
@@ -563,8 +639,8 @@ class SalaryCalculationService
             'day_type' => $dayType,
             'expected_hours' => $expectedHours,
             'actual_hours' => 0,
-            'overtime_hours' => 0,
-            'late_hours' => 0,
+            'overtime_minutes' => 0,
+            'late_minutes' => 0,
             'check_in_time' => null,
             'check_out_time' => null,
             'notes' => null,
@@ -587,6 +663,39 @@ class SalaryCalculationService
     }
 
     /**
+     * Calculate late minutes based on actual start time
+     * Returns total minutes of lateness (0 if not late)
+     */
+    private function calculateLateMinutes($shift, Carbon $checkInTime): int
+    {
+        if (! $shift || ! $shift->start_time) {
+            return 0;
+        }
+        $dateStr = $checkInTime->format('Y-m-d');
+        $shiftStart = Carbon::parse($dateStr.' '.$shift->start_time);
+        if ($checkInTime->gt($shiftStart)) {
+            return $shiftStart->diffInMinutes($checkInTime);
+        }
+        return 0;
+    }
+
+    /**
+     * Calculate overtime minutes after official shift end time
+     */
+    private function getOvertimeMinutesAfterEndTime($shift, Carbon $checkOutTime): int
+    {
+        if (! $shift || ! $shift->end_time) {
+            return 0;
+        }
+        $dateStr = $checkOutTime->format('Y-m-d');
+        $shiftEnd = Carbon::parse($dateStr.' '.$shift->end_time);
+        if ($checkOutTime->gt($shiftEnd)) {
+            return $shiftEnd->diffInMinutes($checkOutTime);
+        }
+        return 0;
+    }
+
+    /**
      * Get first valid check-in within the allowed range
      */
     private function getFirstValidCheckIn($shift, Collection $checkIns, Carbon $date)
@@ -598,14 +707,14 @@ class SalaryCalculationService
 
         // Use the date from parameter for proper comparison
         $dateStr = $date->format('Y-m-d');
-        $beginningCheckIn = Carbon::parse($dateStr.' '.$shift->beginning_check_in);
         $endingCheckIn = Carbon::parse($dateStr.' '.$shift->ending_check_in);
 
         foreach ($checkIns as $checkIn) {
             $checkInTime = Carbon::parse($dateStr.' '.$checkIn->time);
 
-            // Check if check-in is within the allowed range
-            if ($checkInTime->between($beginningCheckIn, $endingCheckIn)) {
+            // Check if check-in is before or equal to ending_check_in
+            // We accept early check-ins (before beginning_check_in) as requested
+            if ($checkInTime->lte($endingCheckIn)) {
                 return $checkIn;
             }
         }
@@ -676,7 +785,12 @@ class SalaryCalculationService
         $endingCheckOut = Carbon::parse($shift->ending_check_out);
 
         if ($checkOutTime->gt($endingCheckOut)) {
-            return $checkOutTime->diffInHours($endingCheckOut, false);
+            // Calculate overtime in hours.minutes format (e.g., 1.30 for 1 hour 30 minutes)
+            $totalMinutes = $endingCheckOut->diffInMinutes($checkOutTime);
+            $hours = floor($totalMinutes / 60);
+            $minutes = $totalMinutes % 60;
+            
+            return $hours + ($minutes / 100);
         }
 
         return 0;
@@ -696,10 +810,12 @@ class SalaryCalculationService
         $endTime = Carbon::parse($checkOutTime->format('Y-m-d').' '.$shift->end_time);
 
         if ($checkOutTime->gt($endTime)) {
-            // Calculate difference: from endTime to checkOutTime (positive value)
-            $overtimeHours = $endTime->diffInHours($checkOutTime, false);
-
-            return $overtimeHours;
+            // Calculate overtime in hours.minutes format (e.g., 1.30 for 1 hour 30 minutes)
+            $totalMinutes = $endTime->diffInMinutes($checkOutTime);
+            $hours = floor($totalMinutes / 60);
+            $minutes = $totalMinutes % 60;
+            
+            return $hours + ($minutes / 100);
         }
 
         return 0;
@@ -751,8 +867,11 @@ class SalaryCalculationService
         if (! $shift->beginning_check_in) {
             // If check-in is after the start time, calculate late hours from start_time
             if ($checkInTime->gt($shiftStart)) {
-                // Calculate late hours from actual start time
-                return abs($checkInTime->diffInHours($shiftStart));
+                // Calculate late hours in hours.minutes format
+                $totalMinutes = $shiftStart->diffInMinutes($checkInTime);
+                $hours = floor($totalMinutes / 60);
+                $minutes = $totalMinutes % 60;
+                return $hours + ($minutes / 100);
             }
 
             return 0;
@@ -774,7 +893,11 @@ class SalaryCalculationService
         if ($checkInTime->gt($allowedCheckInTime)) {
             // Calculate late hours from actual start time (not from allowed time)
             // This gives the total late hours from the official start time
-            return abs($checkInTime->diffInHours($shiftStart));
+            // Calculate in hours.minutes format
+            $totalMinutes = $shiftStart->diffInMinutes($checkInTime);
+            $hours = floor($totalMinutes / 60);
+            $minutes = $totalMinutes % 60;
+            return $hours + ($minutes / 100);
         }
 
         // Check-in is within the range and before or equal to allowed time, no late hours
@@ -820,7 +943,11 @@ class SalaryCalculationService
         $hourlyRate = $employee->salary / $currentMonthDays / $shiftHours;
         $dailyRate = $employee->salary / $currentMonthDays;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
-        $overtimeSalary = $summary['overtime_hours'] * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
+        $overtimeSalary = ($summary['overtime_minutes'] / 60) * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
+        
+        // Calculate Overtime Days Salary
+        // Overtime days (e.g. holidays/weekends) should be paid based on daily rate * day multiplier
+        $overtimeDaysSalary = ($summary['overtime_days'] ?? 0) * $dailyRate * ($employee->additional_day_calculation ?? 1.5);
         
         // Calculate deductions
         // Unpaid leave: full day deduction for each unpaid leave day
@@ -835,9 +962,10 @@ class SalaryCalculationService
         return [
             'basic_salary' => round($basicSalary, 2),
             'overtime_salary' => round($overtimeSalary, 2),
+            'overtime_days_salary' => round($overtimeDaysSalary, 2),
             'unpaid_leave_deduction' => round($unpaidLeaveDeduction, 2),
             'absent_days_deduction' => round($absentDaysDeduction, 2),
-            'total_salary' => round($basicSalary + $overtimeSalary - $totalDeductions, 2),
+            'total_salary' => round($basicSalary + $overtimeSalary + $overtimeDaysSalary - $totalDeductions, 2),
             'calculation_type' => 'hours_only',
             'hourly_rate' => $hourlyRate,
             'daily_rate' => $dailyRate,
@@ -854,12 +982,15 @@ class SalaryCalculationService
         $hourlyRate = $employee->salary / $currentMonthDays / $shiftHours;
         $dailyRate = $employee->salary / $currentMonthDays;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
-        $overtimeSalary = $summary['overtime_hours'] * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
+        $overtimeSalary = ($summary['overtime_minutes'] / 60) * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
         
+        // Calculate Overtime Days Salary
+        $overtimeDaysSalary = ($summary['overtime_days'] ?? 0) * $dailyRate * ($employee->additional_day_calculation ?? 1.5);
+
         // Calculate late hours deduction
         // late_hour_calculation: how many hours each late hour is counted as (e.g., 0.5 means 1 late hour = 0.5 hours deduction)
         $lateHourCalculation = $employee->late_hour_calculation ?? 1.0;
-        $lateHoursDeduction = $summary['late_hours'] * $lateHourCalculation;
+        $lateHoursDeduction = ($summary['late_minutes'] / 60) * $lateHourCalculation;
         $lateDeductionAmount = $lateHoursDeduction * $hourlyRate;
         
         // Calculate deductions for unpaid leave and absent days
@@ -875,10 +1006,11 @@ class SalaryCalculationService
         return [
             'basic_salary' => round($basicSalary, 2),
             'overtime_salary' => round($overtimeSalary, 2),
+            'overtime_days_salary' => round($overtimeDaysSalary, 2),
             'late_hours_deduction' => round($lateDeductionAmount, 2),
             'unpaid_leave_deduction' => round($unpaidLeaveDeduction, 2),
             'absent_days_deduction' => round($absentDaysDeduction, 2),
-            'total_salary' => round($basicSalary + $overtimeSalary - $totalDeductions, 2),
+            'total_salary' => round($basicSalary + $overtimeSalary + $overtimeDaysSalary - $totalDeductions, 2),
             'calculation_type' => 'hours_with_daily_overtime',
             'hourly_rate' => $hourlyRate,
             'daily_rate' => $dailyRate,
@@ -898,13 +1030,17 @@ class SalaryCalculationService
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
 
         // Calculate period overtime (total overtime for the period)
-        $periodOvertimeRate = $employee->additional_day_calculation ?? 1.0;
-        $overtimeSalary = $summary['overtime_hours'] * $hourlyRate * $periodOvertimeRate;
+        // FIX: Use additional_hour_calculation for HOURS, not day calculation
+        $periodOvertimeRate = $employee->additional_hour_calculation ?? 1.5;
+        $overtimeSalary = ($summary['overtime_minutes'] / 60) * $hourlyRate * $periodOvertimeRate;
+        
+        // Calculate Overtime Days Salary
+        $overtimeDaysSalary = ($summary['overtime_days'] ?? 0) * $dailyRate * ($employee->additional_day_calculation ?? 1.5);
         
         // Calculate late hours deduction
         // late_hour_calculation: how many hours each late hour is counted as (e.g., 0.5 means 1 late hour = 0.5 hours deduction)
         $lateHourCalculation = $employee->late_hour_calculation ?? 1.0;
-        $lateHoursDeduction = $summary['late_hours'] * $lateHourCalculation;
+        $lateHoursDeduction = ($summary['late_minutes'] / 60) * $lateHourCalculation;
         $lateDeductionAmount = $lateHoursDeduction * $hourlyRate;
         
         // Calculate deductions for unpaid leave and absent days
@@ -920,10 +1056,11 @@ class SalaryCalculationService
         return [
             'basic_salary' => round($basicSalary, 2),
             'overtime_salary' => round($overtimeSalary, 2),
+            'overtime_days_salary' => round($overtimeDaysSalary, 2),
             'late_hours_deduction' => round($lateDeductionAmount, 2),
             'unpaid_leave_deduction' => round($unpaidLeaveDeduction, 2),
             'absent_days_deduction' => round($absentDaysDeduction, 2),
-            'total_salary' => round($basicSalary + $overtimeSalary - $totalDeductions, 2),
+            'total_salary' => round($basicSalary + $overtimeSalary + $overtimeDaysSalary - $totalDeductions, 2),
             'calculation_type' => 'hours_with_period_overtime',
             'hourly_rate' => $hourlyRate,
             'daily_rate' => $dailyRate,
@@ -984,10 +1121,41 @@ class SalaryCalculationService
      */
     public function getSalaryHistory(Employee $employee, int $limit = 10): Collection
     {
-        return AttendanceProcessing::where('employee_id', $employee->id)
-            ->orderBy('created_at', 'desc')
+        return AttendanceProcessing::with(['employee', 'department'])
+            ->latest()
             ->limit($limit)
             ->get();
     }
+    
+    /**
+     * Convert hours.minutes format to total minutes
+     * Example: 1.35 (1h 35m) => 95 minutes
+     */
+    private function hoursMinutesToMinutes(float $value): int
+    {
+        if (!$value || $value == 0) {
+            return 0;
+        }
+        
+        $hours = floor($value);
+        $minutes = round(($value - $hours) * 100);
+        
+        return ($hours * 60) + $minutes;
+    }
+    
+    /**
+     * Convert total minutes to hours.minutes format
+     * Example: 95 minutes => 1.35 (1h 35m)
+     */
+    private function minutesToHoursMinutes(int $totalMinutes): float
+    {
+        if ($totalMinutes == 0) {
+            return 0;
+        }
+        
+        $hours = floor($totalMinutes / 60);
+        $minutes = $totalMinutes % 60;
+        
+        return $hours + ($minutes / 100);
+    }
 }
-

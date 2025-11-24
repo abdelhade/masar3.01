@@ -150,6 +150,8 @@
                                         @enderror
                                     </div>
                                 </div>
+
+
                             </div>
 
                             {{-- Selection Section with Smooth Transitions --}}
@@ -205,7 +207,7 @@
                                                         {{ __('hr.select_employees') }}
                                                         <span class="text-danger ms-1">*</span>
                                                         <span
-                                                            class="badge bg-info bg-opacity-10 text-white ms-2 px-2 py-1 rounded-pill small text-white">
+                                                            class="badge bg-info bg-opacity-10 text-white ms-2 px-2 py-1 rounded-pill small">
                                                             متعدد
                                                             <i class="fas fa-users"></i>
                                                         </span>
@@ -403,8 +405,8 @@
                                         <td>{{ number_format($processing->actual_work_days, 2) }}</td>
                                         <td>{{ number_format($processing->overtime_work_days, 2) }}</td>
                                         <td>{{ number_format($processing->absent_days, 2) }}</td>
-                                        <td>{{ number_format($processing->total_late_hours, 2) }}</td>
-                                        <td>{{ number_format($processing->overtime_work_hours, 2) }}</td>
+                                        <td>{{ formatHoursMinutes($processing->total_late_minutes / 60) }}</td>
+                                        <td>{{ formatHoursMinutes($processing->overtime_work_minutes / 60) }}</td>
                                         <td>{{ number_format($processing->total_salary, 2) }}</td>
                                         <td>{!! $processing->status_badge !!}</td>
                                         <td>{{ $processing->created_at->format('Y-m-d H:i') }}</td>
@@ -519,8 +521,8 @@
                                             <td>{{ $detail->formatted_check_out_time }}</td>
                                             <td>{{ number_format($detail->attendance_basic_hours_count, 2) }}</td>
                                             <td>{{ number_format($detail->attendance_actual_hours_count, 2) }}</td>
-                                            <td>{{ number_format($detail->attendance_overtime_hours_count, 2) }}</td>
-                                            <td>{{ number_format($detail->attendance_late_hours_count, 2) }}</td>
+                                            <td>{{ formatHoursMinutes($detail->attendance_overtime_minutes_count / 60) }}</td>
+                                            <td>{{ formatHoursMinutes($detail->attendance_late_minutes_count / 60) }}</td>
                                             <td>{{ number_format($detail->total_due_hourly_salary, 2) }}</td>
                                         </tr>
                                     @endforeach
