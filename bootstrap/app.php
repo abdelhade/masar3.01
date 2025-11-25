@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\PersistSidebarSelection::class,
         ]);
 
-        // تسجيل middleware للموظفين والمهندسين
+     
         $middleware->alias([
             'employee.auth' => \App\Http\Middleware\EmployeeAuth::class,
             'engineer.access' => \Modules\Inquiries\Middleware\EngineerAccessMiddleware::class,
@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        // تسجيل middleware groups
+        
         $middleware->group('employee', [
             \App\Http\Middleware\EmployeeAuth::class,
         ]);
@@ -35,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \Modules\Inquiries\Console\TestGoogleMapsCommand::class,
     ])
     ->withExceptions(function (Exceptions $exceptions) {
-        // معالجة أخطاء Phiki Pattern Search
+        
         $exceptions->render(function (Throwable $e, $request) {
             if (
                 str_contains($e->getMessage(), 'FailedToInitializePatternSearchException') ||
