@@ -2,7 +2,7 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 @include('admin.partials.head')
 
-<body class="">
+<body class="{{ session('theme', '') }}">
     {{-- Dynamic Sidebar: كل صفحة تحدد الـ sidebar الخاص بها --}}
     @hasSection('sidebar')
         {{-- Sidebar Wrapper: يحتوي الـ structure الثابت --}}

@@ -10,6 +10,25 @@
                 @livewire('language-switcher')
             </li>
 
+            <!-- مبدل الثيم -->
+            <li class="me-3 dropdown">
+                <a class="nav-link dropdown-toggle transition-base" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #34d3a3;" title="تبديل الثيم">
+                    <i class="fas fa-palette fa-2x" style="color: #34d3a3;"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item {{ session('theme') === '' || session('theme') === null ? 'active' : '' }}" href="{{ route('theme.switch') }}">
+                            <i class="fas fa-circle me-2"></i> الافتراضي
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {{ session('theme') === 'theme-neumorphism-lite' ? 'active' : '' }}" href="{{ route('theme.switch', 'theme-neumorphism-lite') }}">
+                            <i class="fas fa-circle me-2"></i> Neumorphism Lite
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
             @can('view Settings Control')
                 <li>
                     <a title="{{ __('navigation.users') }}" href="{{ route('mysettings.index') }}" class="nav-link transition-base" style="color: #34d3a3;">

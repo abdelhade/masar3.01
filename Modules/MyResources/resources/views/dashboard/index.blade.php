@@ -9,7 +9,7 @@
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-primary text-white">
+            <div class="card bg-primary">
                 <div class="card-body">
                     <h2 class="mb-0">
                         <i class="fas fa-cubes me-2"></i>
@@ -166,7 +166,7 @@
                                 @forelse($resourcesByStatus as $status)
                                 <tr>
                                     <td>
-                                        <span class="badge" style="background-color: {{ $status->status->color ?? '#6c757d' }}">
+                                        <span >
                                             {{ $status->status->name ?? $status->status->name_ar ?? 'غير محدد' }}
                                         </span>
                                     </td>
@@ -268,23 +268,13 @@
                                     <td>{{ $assignment->project->name ?? '---' }}</td>
                                     <td>{{ $assignment->start_date?->format('Y-m-d') ?? '---' }}</td>
                                     <td>
-                                        @php
-                                            $statusColors = [
-                                                'scheduled' => 'info',
-                                                'active' => 'success',
-                                                'completed' => 'secondary',
-                                                'cancelled' => 'danger'
-                                            ];
-                                            $statusLabels = [
-                                                'scheduled' => 'مجدول',
-                                                'active' => 'نشط',
-                                                'completed' => 'مكتمل',
-                                                'cancelled' => 'ملغي'
-                                            ];
-                                            $color = $statusColors[$assignment->status] ?? 'secondary';
-                                            $label = $statusLabels[$assignment->status] ?? $assignment->status;
-                                        @endphp
-                                        <span class="badge bg-{{ $color }}">{{ $label }}</span>
+                                        @if($assignment->status instanceof \Modules\MyResources\Enums\ResourceAssignmentStatus)
+                                            <span class="badge bg-{{ $assignment->status->color() }}">
+                                                {{ $assignment->status->label() }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $assignment->status ?? '---' }}</span>
+                                        @endif
                                     </td>
                                 </tr>
                                 @empty
