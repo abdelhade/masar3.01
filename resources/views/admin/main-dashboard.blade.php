@@ -275,7 +275,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.dashboard'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view quality-dashboard',
                     'isNew' => true,
                 ],
                 [
@@ -284,7 +284,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.inspections.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view inspections',
                 ],
                 [
                     'name' => 'معايير الجودة',
@@ -292,7 +292,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.standards.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view standards',
                 ],
                 [
                     'name' => 'عدم المطابقة (NCR)',
@@ -300,7 +300,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.ncr.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view ncr',
                 ],
                 [
                     'name' => 'الإجراءات التصحيحية',
@@ -308,7 +308,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.capa.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view capa',
                 ],
                 [
                     'name' => 'تتبع الدفعات',
@@ -316,7 +316,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.batches.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view batches',
                 ],
                 [
                     'name' => 'تقييم الموردين',
@@ -324,7 +324,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.suppliers.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view suppliers',
                 ],
                 [
                     'name' => 'الشهادات والامتثال',
@@ -332,7 +332,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.certificates.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view certificates',
                 ],
                 [
                     'name' => 'التدقيق الداخلي',
@@ -340,7 +340,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.audits.index'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view audits',
                 ],
                 [
                     'name' => 'تقارير الجودة',
@@ -348,7 +348,7 @@
                     'iconBg' => 'white',
                     'iconColor' => '#00695C',
                     'route' => route('quality.reports'),
-                    'permission' => 'view Dashboard',
+                    'permission' => 'view quality-reports',
                 ],
             ],
         ],
@@ -576,7 +576,7 @@
                         ['name' => 'الصيانه', 'icon' => 'package', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('service.types.index'), 'permission' => null],
 
                         // ادراة الجودة
-                        ['name' => 'لوحة تحكم الجودة', 'icon' => 'chart-line', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('quality.dashboard'), 'isNew' => true, 'permission' => null],
+                        ['name' => 'لوحة تحكم الجودة', 'icon' => 'chart-line', 'iconBg' => 'white', 'iconColor' => '#00695C', 'route' => route('quality.dashboard'), 'isNew' => true, 'permission' => 'view quality-dashboard'],
 
                     ]
                 ],

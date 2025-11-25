@@ -8,6 +8,13 @@ use Modules\Quality\Models\QualityCertificate;
 
 class QualityCertificateController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view certificates')->only(['index' , 'show']);
+        $this->middleware('can:create certificates')->only(['create', 'store']);
+        $this->middleware('can:edit certificates')->only(['edit', 'update']);
+        $this->middleware('can:delete certificates')->only(['destroy']);
+    }
     public function index()
     {
         $certificates = QualityCertificate::orderBy('expiry_date', 'asc')->paginate(20);
@@ -36,7 +43,7 @@ class QualityCertificateController extends Controller
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'scope' => 'nullable|string',
-            'notification_days' => 'required|integer|min:1',
+            'notification_days' => 'required',
             'certificate_cost' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);

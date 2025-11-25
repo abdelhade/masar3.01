@@ -9,6 +9,13 @@ use App\Models\Item;
 
 class QualityStandardController extends Controller
 {
+        public function __construct()
+    {
+        $this->middleware('can:view standards')->only(['index' , 'show']);
+        $this->middleware('can:create standards')->only(['create', 'store']);
+        $this->middleware('can:edit standards')->only(['edit', 'update']);
+        $this->middleware('can:delete standards')->only(['destroy']);
+    }
     public function index()
     {
         $standards = QualityStandard::with(['item', 'branch'])
@@ -48,7 +55,7 @@ class QualityStandardController extends Controller
             'is_active' => 'boolean',
             'notes' => 'nullable|string',
         ], [
-         
+
             'max_defects_allowed.integer' => 'حقل الحد الأقصى للعيوب يجب أن يكون عدداً صحيحاً.',
             'acceptance_threshold.numeric' => 'حقل عتبة القبول يجب أن يكون رقماً.',
             'acceptance_threshold.min' => 'حقل عتبة القبول يجب أن يكون على الأقل 0.',
@@ -67,7 +74,7 @@ class QualityStandardController extends Controller
     public function show(QualityStandard $standard)
     {
         $standard->load(['item', 'inspections']);
-        
+
         return view('quality::standards.show', compact('standard'));
     }
 
@@ -93,8 +100,8 @@ class QualityStandardController extends Controller
             'is_active' => 'boolean',
             'notes' => 'nullable|string',
         ], [
-      
-          
+
+
             'max_defects_allowed.integer' => 'حقل الحد الأقصى للعيوب يجب أن يكون عدداً صحيحاً.',
             'acceptance_threshold.numeric' => 'حقل عتبة القبول يجب أن يكون رقماً.',
             'acceptance_threshold.min' => 'حقل عتبة القبول يجب أن يكون على الأقل 0.',

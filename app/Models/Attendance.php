@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Modules\Branches\Models\Branch;
+use App\Services\SalaryCalculationService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Attendance extends Model
 {
@@ -18,6 +20,42 @@ class Attendance extends Model
     protected static function booted()
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
+
+        // Invalidate salary calculation cache when attendance is created, updated, or deleted
+        static::created(function ($attendance) {
+            static::invalidateSalaryCache($attendance);
+        });
+
+        static::updated(function ($attendance) {
+            static::invalidateSalaryCache($attendance);
+        });
+
+        static::deleted(function ($attendance) {
+            static::invalidateSalaryCache($attendance);
+        });
+    }
+
+    /**
+     * Invalidate salary calculation cache for the employee
+     */
+    protected static function invalidateSalaryCache(Attendance $attendance): void
+    {
+        if (!$attendance->employee_id) {
+            return;
+        }
+
+        $employee = \App\Models\Employee::find($attendance->employee_id);
+        if (!$employee) {
+            return;
+        }
+
+        // Invalidate cache for the month containing this attendance date
+        $date = \Carbon\Carbon::parse($attendance->date);
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+
+        $salaryService = app(SalaryCalculationService::class);
+        $salaryService->invalidateCache($employee, $startDate, $endDate);
     }
 
     public function user()

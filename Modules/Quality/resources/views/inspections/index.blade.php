@@ -15,11 +15,14 @@
                         فحوصات الجودة
                     </h2>
                 </div>
+                @can('create inspections')
                 <div>
                     <a href="{{ route('quality.inspections.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus-circle me-2"></i>فحص جديد
                     </a>
                 </div>
+                @endcan
+
             </div>
         </div>
     </div>
@@ -37,7 +40,9 @@
                             <th>النتيجة</th>
                             <th>نسبة النجاح</th>
                             <th>التاريخ</th>
+                            @canany(['edit inspections', 'delete inspections' , 'view inspections'])
                             <th>الإجراءات</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -77,22 +82,29 @@
                                 </strong>
                             </td>
                             <td>{{ $inspection->inspection_date->format('Y-m-d') }}</td>
+                            @canany(['edit inspections', 'delete inspections' , 'view inspections'])
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('quality.inspections.show', $inspection) }}" 
+                                    @can('view inspections')
+                                    <a href="{{ route('quality.inspections.show', $inspection) }}"
                                        class="btn btn-sm btn-info" title="عرض">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('quality.inspections.edit', $inspection) }}" 
+                                    @endcan
+                                    @can('edit inspections')
+                                    <a href="{{ route('quality.inspections.edit', $inspection) }}"
                                        class="btn btn-sm btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteModal{{ $inspection->id }}" 
+                                    @endcan
+                                    @can('delete inspections')
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ $inspection->id }}"
                                             title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    @endcan
                                 </div>
 
                                 <!-- Delete Modal -->
@@ -118,6 +130,7 @@
                                     </div>
                                 </div>
                             </td>
+                            @endcanany
                         </tr>
                         @empty
                         <tr>

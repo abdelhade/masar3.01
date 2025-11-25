@@ -10,6 +10,13 @@ use Modules\Accounts\Models\AccHead;
 
 class BatchTrackingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view batches')->only(['index' , 'show']);
+        $this->middleware('can:create batches')->only(['create', 'store']);
+        $this->middleware('can:edit batches')->only(['edit', 'update']);
+        $this->middleware('can:delete batches')->only(['destroy']);
+    }
     public function index()
     {
         $batches = BatchTracking::with(['item', 'supplier', 'warehouse'])
@@ -64,7 +71,7 @@ class BatchTrackingController extends Controller
     public function show(BatchTracking $batch)
     {
         $batch->load(['item', 'supplier', 'warehouse', 'inspection']);
-        
+
         return view('quality::batches.show', compact('batch'));
     }
 

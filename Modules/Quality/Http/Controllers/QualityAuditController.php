@@ -9,6 +9,13 @@ use App\Models\User;
 
 class QualityAuditController extends Controller
 {
+       public function __construct()
+    {
+        $this->middleware('can:view audits')->only(['index' , 'show']);
+        $this->middleware('can:create audits')->only(['create', 'store']);
+        $this->middleware('can:edit audits')->only(['edit', 'update']);
+        $this->middleware('can:delete audits')->only(['destroy']);
+    }
     public function index()
     {
         $audits = QualityAudit::with(['leadAuditor'])
@@ -58,7 +65,7 @@ class QualityAuditController extends Controller
     public function show(QualityAudit $audit)
     {
         $audit->load(['leadAuditor', 'approvedBy']);
-        
+
         return view('quality::audits.show', compact('audit'));
     }
 

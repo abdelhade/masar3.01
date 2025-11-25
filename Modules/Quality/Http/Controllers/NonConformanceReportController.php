@@ -11,6 +11,13 @@ use App\Models\User;
 
 class NonConformanceReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view ncr')->only(['index' , 'show']);
+        $this->middleware('can:create ncr')->only(['create', 'store']);
+        $this->middleware('can:edit ncr')->only(['edit', 'update']);
+        $this->middleware('can:delete ncr')->only(['destroy']);
+    }
     public function index(Request $request)
     {
         $query = NonConformanceReport::with(['item', 'detectedBy', 'assignedTo'])
@@ -20,7 +27,7 @@ class NonConformanceReportController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         if ($request->filled('severity')) {
             $query->where('severity', $request->severity);
         }
@@ -39,7 +46,7 @@ class NonConformanceReportController extends Controller
         }
 
         $ncrs = $query->paginate(20);
-        
+
         // Statistics for filters
         $stats = [
             'total' => NonConformanceReport::count(),

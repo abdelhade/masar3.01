@@ -6,11 +6,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تعديل مستخدم'),
+        'title' => __('Edit User'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('المستخدمين'), 'url' => route('users.index')],
-            ['label' => __('تعديل')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Users'), 'url' => route('users.index')],
+            ['label' => __('Edit')],
         ],
     ])
 
@@ -23,18 +23,18 @@
                             <button class="nav-link active text-end" id="v-pills-home-tab" data-bs-toggle="pill"
                                 data-bs-target="#v-pills-home" type="button" role="tab">
                                 <i class="fas fa-user me-2"></i>
-                                البيانات الاساسيه
+                                {{ __('Basic Data') }}
                             </button>
                             <button class="nav-link text-end" id="v-pills-profile-tab" data-bs-toggle="pill"
                                 data-bs-target="#v-pills-profile" type="button" role="tab">
                                 <i class="fas fa-shield-alt me-2"></i>
-                                الصلاحيات
+                                {{ __('Permissions') }}
                             </button>
                             <button class="nav-link text-end" id="v-pills-selective-permissions-tab"
                                 data-bs-toggle="pill" data-bs-target="#v-pills-selective-permissions" type="button"
                                 role="tab">
                                 <i class="fas fa-shield-alt me-2"></i>
-                                الخيارات
+                                {{ __('Options') }}
                             </button>
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                                 <div class="card-header bg-white border-bottom py-3">
                                     <h6 class="m-0 fw-bold text-primary">
                                         <i class="fas fa-user-edit me-2"></i>
-                                        البيانات الأساسية
+                                        {{ __('Basic Data') }}
                                     </h6>
                                 </div>
                                 <div class="card-body">
@@ -62,20 +62,20 @@
                                         <div class="col-lg-8">
                                             <div class="row">
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">الاسم</label>
+                                                    <label class="form-label fw-semibold">{{ __('Name') }}</label>
                                                     <input type="text" name="name" class="form-control"
                                                         value="{{ old('name', $user->name) }}" required>
                                                 </div>
 
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">البريد الإلكتروني</label>
+                                                    <label class="form-label fw-semibold">{{ __('Email') }}</label>
                                                     <input type="email" name="email" class="form-control"
                                                         value="{{ old('email', $user->email) }}" required>
                                                 </div>
 
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold">كلمة المرور</label>
-                                                    <span class="text-muted">اتركها فارغة اذا كنت لا تريد التغيير</span>
+                                                    <label class="form-label fw-semibold">{{ __('Password') }}</label>
+                                                    <span class="text-muted">{{ __('Leave blank if you do not want to change') }}</span>
                                                     <div class="input-group">
                                                         <input type="password" name="password" class="form-control"
                                                             id="password">
@@ -87,7 +87,7 @@
                                                 </div>
 
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label fw-semibold"> تأكيد كلمة المرور</label>
+                                                    <label class="form-label fw-semibold"> {{ __('Confirm Password') }}</label>
                                                     <div class="input-group">
                                                         <input type="password" name="password_confirmation"
                                                             class="form-control" id="password_confirmation">
@@ -106,7 +106,7 @@
                                                 <div class="card-body">
                                                     <h6 class="fw-bold mb-3 text-success">
                                                         <i class="fas fa-code-branch me-2"></i>
-                                                        اختر الفروع
+                                                        {{ __('Select Branches') }}
                                                     </h6>
                                                     <div class="row g-2">
                                                         @foreach ($branches as $branch)
@@ -140,12 +140,12 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="m-0 fw-bold text-primary">
                                             <i class="fas fa-shield-alt me-2"></i>
-                                            إدارة الصلاحيات
+                                            {{ __('Manage Permissions') }}
                                         </h6>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="selectAll">
                                             <label class="form-check-label fw-semibold" for="selectAll">
-                                                تحديد الكل
+                                                {{ __('Select All') }}
                                             </label>
                                         </div>
                                     </div>
@@ -160,7 +160,7 @@
                                                         class="list-group-item list-group-item-action permission-category text-end {{ $loop->first ? 'active' : '' }}"
                                                         data-category="{{ Str::slug($category) }}">
                                                         <i class="fas fa-folder me-2"></i>
-                                                        {{ $category }}
+                                                        {{ __(ucfirst($category)) }}
                                                         <span
                                                             class="badge bg-primary float-start">{{ $perms->count() }}</span>
                                                     </button>
@@ -189,16 +189,16 @@
                                                                 class="table table-hover table-bordered text-center align-middle mb-0">
                                                                 <thead class="table-light">
                                                                     <tr>
-                                                                        <th class="text-start">Permission</th>
-                                                                        <th><i class="fas fa-eye text-primary"></i> View
+                                                                        <th class="text-start">{{ __('Permission') }}</th>
+                                                                        <th><i class="fas fa-eye text-primary"></i> {{ __('View') }}
                                                                         </th>
-                                                                        <th><i class="fas fa-plus text-success"></i> Create
+                                                                        <th><i class="fas fa-plus text-success"></i> {{ __('Create') }}
                                                                         </th>
-                                                                        <th><i class="fas fa-edit text-warning"></i> Edit
+                                                                        <th><i class="fas fa-edit text-warning"></i> {{ __('Edit') }}
                                                                         </th>
-                                                                        <th><i class="fas fa-trash text-danger"></i> Delete
+                                                                        <th><i class="fas fa-trash text-danger"></i> {{ __('Delete') }}
                                                                         </th>
-                                                                        <th><i class="fas fa-print text-info"></i> Print
+                                                                        <th><i class="fas fa-print text-info"></i> {{ __('Print') }}
                                                                         </th>
                                                                     </tr>
                                                                 </thead>
@@ -206,7 +206,7 @@
                                                                     @foreach ($grouped as $title => $actions)
                                                                         <tr>
                                                                             <td class="text-start fw-semibold">
-                                                                                {{ $title }}</td>
+                                                                                {{ __(ucfirst($title)) }}</td>
 
                                                                             @php
                                                                                 $actionOrder = [
@@ -252,12 +252,12 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="m-0 fw-bold text-primary">
                                             <i class="fas fa-shield-alt me-2"></i>
-                                            الخيارات
+                                            {{ __('Options') }}
                                         </h6>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="selectAllSelective">
                                             <label class="form-check-label fw-semibold" for="selectAllSelective">
-                                                تحديد الكل
+                                                {{ __('Select All') }}
                                             </label>
                                         </div>
                                     </div>
@@ -276,7 +276,7 @@
                                                     @foreach ($selectivePermissions as $category => $perms)
                                                         @foreach ($perms as $permission)
                                                             <tr>
-                                                                <td class="text-start">{{ $permission->description }}</td>
+                                                                <td class="text-start">{{ __($permission->description) }}</td>
                                                                 <td class="text-center">
                                                                     <input type="checkbox" name="permissions[]"
                                                                         class="form-check-input selective-permission-checkbox" value="{{ $permission->id }}"
@@ -301,10 +301,10 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-center gap-2">
                                 <button type="submit" class="btn btn-primary px-4">
-                                    <i class="fas fa-save me-1"></i> حفظ
+                                    <i class="fas fa-save me-1"></i> {{ __('Save') }}
                                 </button>
                                 <a href="{{ route('users.index') }}" class="btn btn-danger px-4">
-                                    <i class="fas fa-times me-1"></i> إلغاء
+                                    <i class="fas fa-times me-1"></i> {{ __('Cancel') }}
                                 </a>
                             </div>
                         </div>

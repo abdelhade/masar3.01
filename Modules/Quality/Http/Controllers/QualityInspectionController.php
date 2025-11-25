@@ -10,6 +10,13 @@ use Modules\Accounts\Models\AccHead;
 
 class QualityInspectionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view inspections')->only(['index' , 'show']);
+        $this->middleware('can:create inspections')->only(['create', 'store']);
+        $this->middleware('can:edit inspections')->only(['edit', 'update']);
+        $this->middleware('can:delete inspections')->only(['destroy']);
+    }
     public function index()
     {
         $inspections = QualityInspection::with(['item', 'inspector', 'supplier'])
@@ -23,7 +30,7 @@ class QualityInspectionController extends Controller
     {
         $items = Item::where('isdeleted', 0)->get();
         $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
-        
+
         return view('quality::inspections.create', compact('items', 'suppliers'));
     }
 
@@ -48,7 +55,7 @@ class QualityInspectionController extends Controller
         $validated['branch_id'] = auth()->user()->branches()->where('is_active', 1)->first()->id ?? 1;
         $validated['created_by'] = auth()->id();
         $validated['status'] = 'completed';
-        
+
         // إنشاء رقم فحص فريد
         $date = date('Ymd', strtotime($validated['inspection_date']));
         $timestamp = now()->format('His');
@@ -63,7 +70,7 @@ class QualityInspectionController extends Controller
     public function show(QualityInspection $inspection)
     {
         $inspection->load(['item', 'inspector', 'supplier', 'qualityStandard']);
-        
+
         return view('quality::inspections.show', compact('inspection'));
     }
 
@@ -71,7 +78,7 @@ class QualityInspectionController extends Controller
     {
         $items = Item::where('isdeleted', 0)->get();
         $suppliers = AccHead::where('code', 'like', '2101%')->where('isdeleted', 0)->get();
-        
+
         return view('quality::inspections.edit', compact('inspection', 'items', 'suppliers'));
     }
 

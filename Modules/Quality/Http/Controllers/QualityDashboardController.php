@@ -13,6 +13,12 @@ use Modules\Quality\Models\SupplierRating;
 
 class QualityDashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view quality')->only(['index']);
+
+
+    }
     public function index()
     {
         // Quality Metrics

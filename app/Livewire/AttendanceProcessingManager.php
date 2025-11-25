@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\AttendanceProcessing;
@@ -19,6 +20,10 @@ use Illuminate\Support\Facades\DB;
 
 class AttendanceProcessingManager extends Component
 {
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
+
     public string $processingType = 'single';
     public ?int $selectedEmployee = null;
     public ?int $selectedDepartment = null;
@@ -31,8 +36,6 @@ class AttendanceProcessingManager extends Component
     public bool $showResults = false;
     /** @var array<string, mixed> */
     public array $processingResults = [];
-    /** @var Collection<int, AttendanceProcessing> */
-    public ?Collection $processings = null;
     public ?AttendanceProcessing $selectedProcessing = null;
     public bool $showDetails = false;
     /** @var Collection<int, AttendanceProcessingDetail> */
@@ -49,7 +52,6 @@ class AttendanceProcessingManager extends Component
     {
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->endOfMonth()->format('Y-m-d');
-        $this->loadProcessings();
     }
 
     protected $rules = [
@@ -86,6 +88,8 @@ class AttendanceProcessingManager extends Component
         $this->showResults = false;
         $this->processingResults = [];
     }
+
+
 
     public function processAttendance(): void
     {
@@ -132,6 +136,7 @@ class AttendanceProcessingManager extends Component
                         if (isset($results['overlapping_processings'])) {
                             session()->flash('overlapping_processings', $results['overlapping_processings']);
                         }
+                        $this->isProcessing = false;
                         return;
                     }
                     break;
@@ -158,6 +163,7 @@ class AttendanceProcessingManager extends Component
                     if ($hasErrors) {
                         session()->flash('error', implode("\n\n", $errorMessages));
                         session()->flash('error_type', 'overlap');
+                        $this->isProcessing = false;
                         return;
                     }
                     break;
@@ -176,6 +182,7 @@ class AttendanceProcessingManager extends Component
                     if (isset($results['error'])) {
                         session()->flash('error', $results['error']);
                         session()->flash('error_type', 'validation');
+                        $this->isProcessing = false;
                         return;
                     }
                     
@@ -195,6 +202,7 @@ class AttendanceProcessingManager extends Component
                     if ($hasErrors) {
                         session()->flash('error', implode("\n\n", $errorMessages));
                         session()->flash('error_type', 'overlap');
+                        $this->isProcessing = false;
                         return;
                     }
                     break;
@@ -206,7 +214,7 @@ class AttendanceProcessingManager extends Component
             $this->processingResults = $results;
             $this->showResults = true;
             $this->resetSelection();
-            $this->loadProcessings();
+            $this->resetPage(); // Reset pagination to show new processing
             
             session()->flash('success', 'تم معالجة الحضور بنجاح');
             
@@ -219,18 +227,15 @@ class AttendanceProcessingManager extends Component
         }
     }
 
-    public function loadProcessings(): void
+    /**
+     * Get paginated processing records
+     * This is now a computed property that uses pagination
+     */
+    public function getProcessingsProperty()
     {
-        
-        try {
-            $this->processings = AttendanceProcessing::with(['employee', 'department'])
-                ->orderBy('created_at', 'desc')
-                ->limit(20)
-                ->get();
-            
-        } catch (\Exception $e) {
-            $this->processings = collect(); // Empty collection as fallback
-        }
+        return AttendanceProcessing::with(['employee', 'department'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
     }
 
     public function viewProcessingDetails(int $processingId): void
@@ -274,7 +279,14 @@ class AttendanceProcessingManager extends Component
                 'credit_Account_id' => $employee->account->id,
                 'op_id' => $processing->id,
             ];
+            // If total salary is negative (employee owes the company), don't create journal entry
+            // This means the employee was absent more than present, so no salary payment is due
             if ($processing->total_salary < 0) {
+                // Just update status without creating journal entry (employee owes money)
+                $processing->status = 'approved';
+                $processing->save();
+            } else {
+                // If salary is positive or zero, create journal entry for payment
                 $accountService = app(AccountService::class);
                 // create journal head and create journal detail
                 $accountService->createJournalHead($data);
@@ -284,7 +296,7 @@ class AttendanceProcessingManager extends Component
             }
             
             DB::commit();
-            $this->loadProcessings();
+            $this->resetPage(); // Refresh pagination
             session()->flash('success', __('hr.processing_approved_successfully'));
             
         } catch (\Exception $e) {
@@ -305,7 +317,7 @@ class AttendanceProcessingManager extends Component
             
             $processing->update(['status' => 'rejected']);
             
-            $this->loadProcessings();
+            $this->resetPage(); // Refresh pagination
             session()->flash('success', __('hr.processing_rejected_successfully'));
             
         } catch (\Exception $e) {
@@ -332,7 +344,7 @@ class AttendanceProcessingManager extends Component
                 $this->closeDetails();
             }
             
-            $this->loadProcessings();
+            $this->resetPage(); // Refresh pagination
             session()->flash('success', __('hr.processing_deleted_successfully'));
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -369,6 +381,7 @@ class AttendanceProcessingManager extends Component
             return view('livewire.hr-management.attendances.processing.attendance-processing-manager', [
             'employees' => $this->employees,
             'departments' => $this->departments,
+            'processings' => $this->processings,
         ]);
     }
 }
