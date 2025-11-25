@@ -379,7 +379,7 @@ new class extends Component {
         <div class="col-md-6 text-end">
             @can('create CVs')
                 <button wire:click="create" 
-                        class="btn btn-primary btn-lg shadow-sm"
+                        class="btn btn-main btn-lg shadow-sm"
                         wire:loading.attr="disabled"
                         wire:target="create">
                     <span wire:loading.remove wire:target="create">
@@ -587,7 +587,7 @@ new class extends Component {
                                         <p class="mb-3">{{ __('hr.start_by_adding_first_cv') }}</p>
                                         @can('create CVs')
                                             <button wire:click="create" 
-                                                    class="btn btn-primary"
+                                                    class="btn btn-main"
                                                     wire:loading.attr="disabled"
                                                     wire:target="create">
                                                 <span wire:loading.remove wire:target="create">

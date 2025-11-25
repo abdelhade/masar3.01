@@ -11,8 +11,9 @@
     ])
     <div class="card-header">
         {{-- @can('انشاء قيود اليوميه عمليات') --}}
-        <a href="{{ route('multi-journals.create') }}" type="button" class="btn btn-primary">{{ __('Add New') }}
+        <a href="{{ route('multi-journals.create') }}" type="button" class="btn btn-main">
             <i class="fas fa-plus me-2"></i>
+            {{ __('Add New') }}
         </a>
         {{-- @endcan --}}
     </div>

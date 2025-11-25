@@ -134,7 +134,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('create Countries')
-                        <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add Country') }}
                         </button>
@@ -243,7 +243,7 @@ new class extends Component {
                                     data-bs-dismiss="modal">
                                 {{ __('Cancel') }}
                             </button>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-main">
                                 {{ $isEdit ? __('Update') : __('Save') }}
                             </button>
                         </div>

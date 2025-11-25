@@ -13,9 +13,9 @@
     <div class="row">
         <div class="col-lg-12">
             @can('create Contacts')
-                <a href="{{ route('contacts.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    Add New
+                <a href="{{ route('contacts.create') }}" type="button" class="btn btn-main font-family-cairo fw-bold">
                     <i class="fas fa-plus me-2"></i>
+                    Add New
                 </a>
             @endcan
             <br>

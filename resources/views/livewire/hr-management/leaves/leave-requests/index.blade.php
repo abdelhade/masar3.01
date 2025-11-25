@@ -116,7 +116,7 @@
                     <!-- أزرار الإجراءات -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <a href="{{ route('leaves.requests.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+                            <a href="{{ route('leaves.requests.create') }}" class="btn btn-main font-family-cairo fw-bold">
                                 <i class="fas fa-plus"></i>
                                 طلب إجازة جديد
                             </a>

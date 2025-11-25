@@ -38,7 +38,7 @@
 
                         @can('create ' . $invoiceTitle)
                             <a href="{{ url('/invoices/create?type=' . $invoiceType . '&q=' . md5($invoiceType)) }}"
-                                class="btn btn-primary">
+                                class="btn btn-main">
                                 <i class="las la-plus me-1"></i>
                                 {{ __('Add') }} {{ $invoiceTitle }}
                             </a>
@@ -59,7 +59,10 @@
                                 value="{{ $endDate }}">
                         </div>
                         <div class="col-md-4">
-                            <button type="submit" class="btn btn-primary btn-sm">{{ __('Filter') }}</button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="las la-filter me-1"></i>
+                                {{ __('Filter') }}
+                            </button>
                         </div>
                     </form>
                 </div>

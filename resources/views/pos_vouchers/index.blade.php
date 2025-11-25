@@ -25,7 +25,7 @@
                         </h1>
                     </div>
                     <div class="col-sm-6 text-end">
-                        <a href="{{ route('pos-vouchers.create') }}" class="btn btn-primary">
+                        <a href="{{ route('pos-vouchers.create') }}" class="btn btn-main">
                             <i class="fas fa-plus me-1"></i>
                             إنشاء عملية جديدة
                         </a>

@@ -7,7 +7,10 @@
 @section('content')
     <div class="div">
         @can('إضافة تسجيل الارصده الافتتاحيه للمخازن')
-            <a href="{{ route('inventory-balance.create') }}" class="btn btn-primary">Create</a>
+            <a href="{{ route('inventory-balance.create') }}" class="btn btn-main">
+                <i class="fas fa-plus me-2"></i>
+                Create
+            </a>
         @endcan
     </div>
 @endsection

@@ -12,5 +12,5 @@
             <input type="checkbox" id="is_journal" wire:model.defer="is_journal" class="form-check-input">
             <label for="is_journal" class="form-check-label">{{ __('is_journal') }}</label>
         </div>
-        <button type="submit" class="btn btn-primary">{{ __('save_changes') }}</button>
+        <button type="submit" class="btn btn-main">{{ __('save_changes') }}</button>
     </form>

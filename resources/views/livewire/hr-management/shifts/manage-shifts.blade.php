@@ -181,7 +181,7 @@ new class extends Component {
 
     <div class="d-flex justify-content-between align-items-center mb-2">
         @can('create Shifts')
-            <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
+            <button class="btn btn-main font-family-cairo fw-bold" wire:click="create">
                 <i class="las la-plus me-2"></i> {{ __('hr.add_shift') }}
             </button>
         @endcan
@@ -403,7 +403,7 @@ new class extends Component {
                         <button type="button" class="btn btn-secondary font-family-cairo"
                             wire:click="$set('showModal', false)">{{ __('hr.cancel') }}</button>
                         <button type="submit"
-                            class="btn btn-primary font-family-cairo">{{ $isEdit ? __('hr.update') : __('hr.save') }}</button>
+                            class="btn btn-main font-family-cairo">{{ $isEdit ? __('hr.update') : __('hr.save') }}</button>
                     </div>
                 </form>
             </div>

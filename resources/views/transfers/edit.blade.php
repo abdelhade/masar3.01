@@ -168,7 +168,7 @@
                 <div class="card-footer">
                     <div class="row">
                         <div class="col">
-                            <button class="btn btn-primary" type="submit">تأكيد</button>
+                            <button class="btn btn-main" type="submit">تأكيد</button>
                         </div>
                         <div class="col">
                             <button class="btn btn-danger" type="reset">مسح</button>

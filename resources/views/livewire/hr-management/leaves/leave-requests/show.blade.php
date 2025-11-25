@@ -116,7 +116,7 @@
                                     @if ($request->status === 'draft')
                                         <button type="button" wire:click="submitRequest"
                                             wire:confirm="هل أنت متأكد من تقديم هذا الطلب؟"
-                                            class="btn btn-primary btn-block mt-2">
+                                            class="btn btn-main btn-block mt-2">
                                             <i class="fas fa-paper-plane"></i>
                                             تقديم الطلب
                                         </button>

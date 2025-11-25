@@ -127,7 +127,7 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 @can('create Jobs')
-                    <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                    <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('hr.add_job') }}
                     </button>
@@ -243,7 +243,7 @@ new class extends Component {
                             <button type="button" class="btn btn-secondary"
                                 data-bs-dismiss="modal">{{ __('hr.cancel') }}</button>
                             <button type="submit"
-                                class="btn btn-primary">{{ $isEdit ? __('hr.update') : __('hr.save') }}</button>
+                                class="btn btn-main">{{ $isEdit ? __('hr.update') : __('hr.save') }}</button>
                         </div>
                     </form>
                 </div>

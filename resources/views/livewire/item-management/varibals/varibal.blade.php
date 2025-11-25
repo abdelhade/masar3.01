@@ -7,7 +7,7 @@
         </div>
         <div class="col-md-6 text-end">
             @can('create varibals')
-                <button wire:click="create" class="btn btn-primary">
+                <button wire:click="create" class="btn btn-main">
                     <i class="fas fa-plus"></i> {{ __('Add New Varibale') }}
                 </button>
             @endcan
@@ -153,7 +153,7 @@
                         <button type="button" wire:click="resetForm" class="btn btn-secondary">
                             {{ __('Cancel') }}
                         </button>
-                        <button type="button" wire:click="save" class="btn btn-primary">
+                        <button type="button" wire:click="save" class="btn btn-main">
                             @if ($editingId)
                                 {{ __('Update') }}
                             @else

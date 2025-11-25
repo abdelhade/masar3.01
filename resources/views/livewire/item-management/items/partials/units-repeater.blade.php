@@ -12,7 +12,7 @@
                         <i class="las la-plus"></i> إنشاء وحدة جديدة
                     </button>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm font-family-cairo fw-bold"
+                <button type="button" class="btn btn-main btn-sm font-family-cairo fw-bold"
                     wire:click="addUnitRow">
                     <i class="las la-plus"></i> إضافة وحدة للصنف
                 </button>
@@ -95,14 +95,14 @@
                                     style="min-width: 150px;">
                                 @if ($creating)
                                     <button type="button"
-                                        class="btn btn-primary btn-sm font-family-cairo fw-bold"
+                                        class="btn btn-main btn-sm font-family-cairo fw-bold"
                                         wire:click="addAdditionalBarcode({{ $index }})">
                                         <i class="las la-plus"></i> باركود إضافى
                                     </button>
                                 @endif
                                 @if (!$creating)
                                     <button type="button"
-                                        class="btn btn-primary btn-sm font-family-cairo fw-bold"
+                                        class="btn btn-main btn-sm font-family-cairo fw-bold"
                                         wire:click="showBarcodes({{ $index }})">
                                         <i class="las la-plus"></i> عرض الباركود
                                     </button>

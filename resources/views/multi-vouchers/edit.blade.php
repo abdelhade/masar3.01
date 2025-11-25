@@ -198,7 +198,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg btn-block mt-3">تحديث</button>
+                    <button type="submit" class="btn btn-main btn-lg btn-block mt-3">تحديث</button>
                 </form>
             </div>
         </div>

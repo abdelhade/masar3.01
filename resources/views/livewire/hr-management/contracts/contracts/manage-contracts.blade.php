@@ -278,7 +278,7 @@ new class extends Component {
         <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
 
             @can('create Contracts')
-                <button class="btn btn-primary font-family-cairo fw-bold font-14" wire:click="create">
+                <button class="btn btn-main font-family-cairo fw-bold font-14" wire:click="create">
                     <i class="las la-plus font-14 me-2"></i>{{ __('hr.add_contract') }}
                 </button>
             @endcan
@@ -340,7 +340,7 @@ new class extends Component {
                                             <div class="btn-group" role="group">
                                                 @can('view Contracts')
                                                     <button type="button" 
-                                                            class="btn btn-primary btn-icon-square-sm font-family-cairo fw-bold"
+                                                            class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
                                                             wire:click="view({{ $contract->id }})"
                                                             title="{{ __('hr.view') }}">
                                                         <i class="las la-eye font-18"></i>
@@ -774,7 +774,7 @@ new class extends Component {
                                     wire:click="$set('showModal', false)">
                                     <i class="las la-times me-1"></i> {{ __('hr.cancel') }}
                                 </button>
-                                <button type="submit" class="btn btn-primary font-family-cairo fw-bold font-14">
+                                <button type="submit" class="btn btn-main font-family-cairo fw-bold font-14">
                                     <i class="las la-save me-1"></i> {{ $isEdit ? __('hr.update') : __('hr.save') }}
                                 </button>
                             </div>

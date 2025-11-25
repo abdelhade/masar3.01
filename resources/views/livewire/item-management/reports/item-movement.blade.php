@@ -221,7 +221,7 @@ new class extends Component {
                         'warehouseId' => $warehouseId,
                         'fromDate' => $fromDate,
                         'toDate' => $toDate
-                    ]) }}" target="_blank" class="btn btn-primary font-family-cairo fw-bold" style="text-decoration: none;">
+                    ]) }}" target="_blank" class="btn btn-outline font-family-cairo fw-bold" style="text-decoration: none;">
                         <i class="fas fa-print"></i>
                         {{ __('items.print_report') }}
                     </a>

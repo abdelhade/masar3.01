@@ -10,7 +10,8 @@
         <div class="card shadow-sm border-0">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">قائمة تأجير المعدات</h4>
-                <a href="{{ route('rentals.create') }}" class="btn btn-light">
+                <a href="{{ route('rentals.create') }}" class="btn btn-main">
+                    <i class="fas fa-plus me-2"></i>
                     إضافة تأجير جديد
                 </a>
             </div>
@@ -55,7 +56,7 @@
                                         <td>{{ $rental->details }}</td>
                                         <td>
                                             <a href="{{ route('rentals.edit', $rental->id) }}"
-                                                class="btn btn-sm btn-primary">تعديل</a>
+                                                class="btn btn-sm btn-success">تعديل</a>
                                             <form action="{{ route('rentals.destroy', $rental->id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf

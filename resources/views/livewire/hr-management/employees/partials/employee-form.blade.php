@@ -753,7 +753,7 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end">
-                                    <button type="button" class="btn btn-primary btn-lg w-100"
+                                    <button type="button" class="btn btn-main btn-lg w-100"
                                         @click="$wire.addKpi()" wire:loading.attr="disabled" 
                                         :disabled="!selectedKpiId">
                                         <span wire:loading.remove wire:target="addKpi">
@@ -1017,7 +1017,7 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end">
-                                    <button type="button" class="btn btn-primary btn-lg w-100"
+                                    <button type="button" class="btn btn-main btn-lg w-100"
                                         @click="$wire.addLeaveBalance()" wire:loading.attr="disabled" 
                                         :disabled="!selectedLeaveTypeId">
                                         <span wire:loading.remove wire:target="addLeaveBalance">

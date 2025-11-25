@@ -8,7 +8,10 @@
 @section('content')
     <div class="container">
         <h2>قائمة الشيفتات</h2>
-        <a href="{{ route('pos-shifts.create') }}" class="btn btn-primary mb-3">فتح شيفت جديد</a>
+        <a href="{{ route('pos-shifts.create') }}" class="btn btn-main mb-3">
+            <i class="fas fa-plus me-2"></i>
+            فتح شيفت جديد
+        </a>
 
         <table class="table table-bordered">
             <thead>

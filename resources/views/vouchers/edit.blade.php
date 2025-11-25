@@ -192,7 +192,7 @@
                     <div class="card-footer">
                         <div class="row">
                             <div class="col">
-                                <button class="btn btn-primary" type="submit">تحديث</button>
+                                <button class="btn btn-main" type="submit">تحديث</button>
                             </div>
                             <div class="col">
                                 <button class="btn btn-default" type="button" onclick="window.history.back()">تراجع</button>

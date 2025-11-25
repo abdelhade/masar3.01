@@ -68,7 +68,7 @@
 
                 <div class="col-md-4">
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary w-100" wire:click="applyInventoryAdjustments"
+                        <button type="button" class="btn btn-main w-100" wire:click="applyInventoryAdjustments"
                             wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="applyInventoryAdjustments"><i
                                     class="ri-refresh-line"></i> تحديث الأرصدة وتطبيق التسوية</span>

@@ -19,8 +19,9 @@
 
         <div class="card-header">
 
-            <a href="{{ route('journals.create') }}" type="button" class="btn btn-primary">{{ __('Add New') }}
+            <a href="{{ route('journals.create') }}" type="button" class="btn btn-main">
                 <i class="fas fa-plus me-2"></i>
+                {{ __('Add New') }}
             </a>
         </div>
         <div class="card-body">

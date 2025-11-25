@@ -15,7 +15,7 @@
             <div class="card-header">
                 @canany(['create cash-to-cash', 'create cash-to-bank', 'create bank-to-cash', 'create bank-to-bank','create transfers'])
                 <div class="btn-group">
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
+                    <button type="button" class="btn btn-main dropdown-toggle" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
                         {{ __('Add New') }} <i class="fas fa-plus me-2"></i>
                     </button>
                     <ul class="dropdown-menu">

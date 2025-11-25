@@ -810,7 +810,7 @@ new class extends Component {
                             type="button"
                             wire:loading.attr="disabled"
                             wire:target="create"
-                            class="btn btn-primary font-family-cairo fw-bold">
+                            class="btn btn-main font-family-cairo fw-bold">
                             <span wire:loading wire:target="create" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                             <span wire:loading.remove wire:target="create">
                                 {{ __('hr.add_employee') }}
@@ -960,7 +960,7 @@ new class extends Component {
                                     @click="closeEmployeeModal()">
                                     {{ __('hr.cancel') }}
                                 </button>
-                                <button type="button" class="btn btn-primary btn-md" @click="$wire.save()" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed">
+                                <button type="button" class="btn btn-main btn-md" @click="$wire.save()" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed">
                                     <span x-text="isEdit ? '{{ __('hr.update') }}' : '{{ __('hr.save') }}'"></span>
                                 </button>
                             </div>

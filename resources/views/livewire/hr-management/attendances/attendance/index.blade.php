@@ -797,7 +797,7 @@ new class extends Component {
                 <button class="btn btn-success font-family-cairo fw-bold" wire:click="openImportModal">
                     <i class="las la-file-excel me-2"></i> {{ __('hr.import_from_excel') }}
                 </button>
-                <button class="btn btn-primary font-family-cairo fw-bold" wire:click="create">
+                <button class="btn btn-main font-family-cairo fw-bold" wire:click="create">
                     <i class="las la-plus me-2"></i> {{ __('hr.add_attendance') }}
                 </button>
             </div>
@@ -1059,7 +1059,7 @@ new class extends Component {
                                 <button type="button" class="btn btn-secondary font-family-cairo"
                                     wire:click="$set('showCreateModal', false)">{{ __('إلغاء') }}</button>
                                 <button type="submit"
-                                    class="btn btn-primary font-family-cairo">{{ __('حفظ') }}</button>
+                                    class="btn btn-main font-family-cairo">{{ __('حفظ') }}</button>
                             </div>
                         </form>
                     </div>
@@ -1183,7 +1183,7 @@ new class extends Component {
                                 <button type="button" class="btn btn-secondary font-family-cairo"
                                     wire:click="$set('showEditModal', false)">{{ __('hr.cancel') }}</button>
                                 <button type="submit"
-                                    class="btn btn-primary font-family-cairo">{{ __('hr.save_changes') }}</button>
+                                    class="btn btn-main font-family-cairo">{{ __('hr.save_changes') }}</button>
                             </div>
                         </form>
                     </div>
@@ -1328,7 +1328,7 @@ new class extends Component {
                                 </button>
                                 
                                 @if(!$isFileRead)
-                                    <button type="submit" class="btn btn-primary font-family-cairo"
+                                    <button type="submit" class="btn btn-main font-family-cairo"
                                         wire:loading.attr="disabled"
                                         @if($isReadingFile || !$excelFile) disabled @endif>
                                         <span wire:loading.remove wire:target="importExcel">

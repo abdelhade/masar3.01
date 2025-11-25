@@ -126,7 +126,7 @@ new class extends Component {
 
             <div class="col-lg-6 mt-3">
                 @can('create KPIS')
-                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
+                    <button type="button" class="btn btn-main font-family-cairo fw-bold" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
                         <i class="fas fa-plus me-2"></i>{{ __('hr.add_new_kpi') }}
                     </button>
                 @endcan
@@ -254,7 +254,7 @@ new class extends Component {
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary font-family-cairo"
                             data-bs-dismiss="modal">{{ __('hr.cancel') }}</button>
-                        <button type="submit" class="btn btn-primary font-family-cairo">
+                        <button type="submit" class="btn btn-main font-family-cairo">
                             {{ $editing ? __('hr.update') : __('hr.save') }}
                         </button>
                     </div>

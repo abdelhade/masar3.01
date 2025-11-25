@@ -11,7 +11,7 @@
                     <input type="date" id="as_of_date" class="form-control" wire:model.lazy="asOfDate">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-primary mt-4" wire:click="generateReport">
+                    <button class="btn btn-main mt-4" wire:click="generateReport">
                         <i class="fas fa-sync-alt me-1"></i> {{ __('توليد التقرير') }}
                     </button>
                 </div>

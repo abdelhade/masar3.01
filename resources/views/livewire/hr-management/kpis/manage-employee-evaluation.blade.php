@@ -268,7 +268,7 @@ new class extends Component {
             </div>
             @can('create Employee Evaluations')
                 <div class="col-md-6">
-                    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal"
+                    <button type="button" class="btn btn-main mt-3" data-bs-toggle="modal"
                         data-bs-target="#addEvaluationModal">
                         {{ __('hr.add_new_evaluation') }}
                     </button>
@@ -489,7 +489,7 @@ new class extends Component {
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
                                     data-bs-dismiss="modal">{{ __('إغلاق') }}</button>
-                                <button type="submit" class="btn btn-primary">{{ __('حفظ') }}</button>
+                                <button type="submit" class="btn btn-main">{{ __('حفظ') }}</button>
                             </div>
                         </form>
                     </div>

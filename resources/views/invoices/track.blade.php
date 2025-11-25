@@ -37,7 +37,7 @@
             .timeline-title {
                 font-size: 36px;
                 font-weight: 700;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 margin-bottom: 15px;
@@ -46,13 +46,13 @@
 
             .invoice-badge {
                 display: inline-block;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
                 color: white;
                 padding: 8px 24px;
                 border-radius: 50px;
                 font-weight: 600;
                 font-size: 18px;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                box-shadow: 0 4px 15px rgba(52, 211, 163, 0.3);
             }
 
             .timeline {
@@ -407,7 +407,7 @@
                         <form action="{{ route('invoices.confirm', $root->id) }}" method="POST" class="confirm-btn">
                             @csrf
                             <input type="hidden" name="next_stage" value="{{ $index + 2 }}">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-main">
                                 <i class="fas fa-check-circle"></i>
                                 تأكيد وإنشاء {{ $stages[$index + 1]['name'] }}
                             </button>

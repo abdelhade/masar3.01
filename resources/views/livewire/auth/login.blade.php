@@ -80,7 +80,7 @@ new #[Layout('components.layouts.login')] class extends Component {
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Cairo', Tahoma, sans-serif;
+            font-family: 'IBM Plex Sans Arabic', 'Inter', ui-sans-serif, system-ui, sans-serif;
             overflow: hidden;
             height: 100vh;
         }
@@ -129,19 +129,19 @@ new #[Layout('components.layouts.login')] class extends Component {
             width: 90px;
             height: 90px;
             margin: 0 auto 1.25rem;
-            background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%);
+            background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 15px;
-            box-shadow: 0 8px 20px rgba(114, 114, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(52, 211, 163, 0.3);
             transition: all 0.3s ease;
         }
 
         .logo-container:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(114, 114, 255, 0.4);
+            box-shadow: 0 12px 30px rgba(52, 211, 163, 0.4);
         }
 
         .logo-container img {
@@ -189,15 +189,15 @@ new #[Layout('components.layouts.login')] class extends Component {
         }
 
         .form-control:hover {
-            border-color: #7272ff;
+            border-color: #34d3a3;
             background: #ffffff;
         }
 
         .form-control:focus {
             background: #ffffff;
-            border-color: #7272ff;
+            border-color: #34d3a3;
             outline: none;
-            box-shadow: 0 0 0 4px rgba(114, 114, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(52, 211, 163, 0.1);
         }
 
         .form-check {
@@ -211,7 +211,7 @@ new #[Layout('components.layouts.login')] class extends Component {
             width: 1.2rem;
             height: 1.2rem;
             cursor: pointer;
-            accent-color: #7272ff;
+            accent-color: #34d3a3;
         }
 
         .form-check-label {
@@ -224,7 +224,7 @@ new #[Layout('components.layouts.login')] class extends Component {
         .btn-login {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%);
+            background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -232,12 +232,13 @@ new #[Layout('components.layouts.login')] class extends Component {
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(114, 114, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(52, 211, 163, 0.3);
         }
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(114, 114, 255, 0.4);
+            box-shadow: 0 6px 25px rgba(52, 211, 163, 0.4);
+            background: linear-gradient(135deg, #2ab88d 0%, #1c8261 100%);
         }
 
         .btn-login:active {
@@ -263,7 +264,7 @@ new #[Layout('components.layouts.login')] class extends Component {
         /* العمود الأيمن - معلومات النظام */
         .info-section {
             flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #34d3a3 0%, #1aa1c4 100%);
             background-size: 200% 200%;
             animation: gradient-shift 15s ease infinite;
             display: flex;

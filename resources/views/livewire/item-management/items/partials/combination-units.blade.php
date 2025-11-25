@@ -3,7 +3,7 @@
         <div class="col-md-12 p-2">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="font-family-cairo fw-bold mb-0">وحدات التوليفة: {{ $this->getCombinationDisplayName($activeCombination) }}</h6>
-                <button type="button" class="btn btn-primary btn-sm font-family-cairo fw-bold"
+                <button type="button" class="btn btn-main btn-sm font-family-cairo fw-bold"
                     wire:click="addCombinationUnitRow('{{ $activeCombination }}')">
                     <i class="las la-plus"></i> إضافة وحدة للتوليفة
                 </button>

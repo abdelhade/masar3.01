@@ -319,7 +319,7 @@ new class extends Component {
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <button wire:click="refreshBalanceSheet" class="btn btn-primary font-family-cairo">
+                            <button wire:click="refreshBalanceSheet" class="btn btn-main font-family-cairo">
                                 <i class="fas fa-sync-alt"></i> ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©
                             </button>
                             <button wire:click="exportBalanceSheet" class="btn btn-success font-family-cairo ms-2">

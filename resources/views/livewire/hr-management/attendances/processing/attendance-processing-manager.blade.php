@@ -332,7 +332,7 @@
                                     </div> --}}
                                     <div class="action-buttons">
                                         <button type="submit"
-                                            class="btn btn-primary btn-lg px-4 py-3 rounded-pill shadow-sm"
+                                            class="btn btn-main btn-lg px-4 py-3 rounded-pill shadow-sm"
                                             wire:loading.attr="disabled" wire:target="processAttendance">
                                             <span wire:loading.remove wire:target="processAttendance">
                                                 <i class="fas fa-rocket me-2"></i>

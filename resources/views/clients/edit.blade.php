@@ -225,7 +225,7 @@
                         </div>
 
                         <div class="d-flex justify-content-start mt-4">
-                            <button type="submit" class="btn btn-primary me-2">
+                            <button type="submit" class="btn btn-main me-2">
                                 <i class="las la-save"></i> تحديث
                             </button>
 

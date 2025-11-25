@@ -181,7 +181,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">حفظ</button>
+                    <button type="submit" class="btn btn-main btn-lg btn-block">حفظ</button>
                 </form>
             </div>
         </div>

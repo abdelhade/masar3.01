@@ -18,14 +18,14 @@
         <div class="card-header">
             @can('create multi-payment')
                 @if (request('type') == 'multi_payment')
-                    <a href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}" class="btn btn-primary">
+                    <a href="{{ route('multi-vouchers.create', ['type' => 'multi_payment']) }}" class="btn btn-main">
                         إضافة سند دفع
                     </a>
                 @endif
             @endcan
             @can('create multi-receipt')
                 @if (request('type') == 'multi_receipt')
-                    <a href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}" class="btn btn-success">
+                    <a href="{{ route('multi-vouchers.create', ['type' => 'multi_receipt']) }}" class="btn btn-main">
                         إضافة سند قبض
                     </a>
                 @endif

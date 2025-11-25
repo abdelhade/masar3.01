@@ -174,7 +174,7 @@
                 </div>
 
                 <div class="d-flex justify-content-start">
-                    <button type="submit" class="btn btn-primary m-1">حفظ</button>
+                    <button type="submit" class="btn btn-main m-1">حفظ</button>
                     <button type="reset" class="btn btn-danger m-1">إلغاء</button>
                 </div>
 

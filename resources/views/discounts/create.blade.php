@@ -152,7 +152,7 @@
                             <x-branches::branch-select :branches="$branches" />
 
                             <div class="col-sm-10 mt-3">
-                                <button type="submit" class="btn btn-primary" id="submitBtn">{{ __('Confirm') }}</button>
+                                <button type="submit" class="btn btn-main" id="submitBtn">{{ __('Confirm') }}</button>
                                 <a href="{{ url()->previous() }}" class="btn btn-danger">{{ __('Cancel') }}</a>
                             </div>
                         </div>

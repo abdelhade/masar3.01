@@ -154,7 +154,7 @@
 
                         <!-- Save Buttons -->
                         <div class="d-flex justify-content-start mt-4">
-                            <button type="submit" class="btn btn-primary me-2" id="submitBtn">
+                            <button type="submit" class="btn btn-main me-2" id="submitBtn">
                                 <i class="las la-save"></i> {{ __('Save') }}
                             </button>
                             <a href="{{ route('tasks.index') }}" class="btn btn-danger">

@@ -148,7 +148,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header">
                     {{-- @can('إضافة المجموعات') --}}
-                        <button wire:click="create" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
                             {{ __('Add New') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
@@ -237,7 +237,7 @@ new class extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button type="submit" class="btn btn-primary">حفظ</button>
+                            <button type="submit" class="btn btn-main">حفظ</button>
                         </div>
                     </form>
                 </div>
@@ -269,7 +269,7 @@ new class extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button type="submit" class="btn btn-primary">حفظ</button>
+                            <button type="submit" class="btn btn-main">حفظ</button>
                         </div>
                     </form>
 

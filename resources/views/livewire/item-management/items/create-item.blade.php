@@ -1085,7 +1085,7 @@ new class extends Component {
                                 onclick="window.location.href='{{ route('items.index') }}'">
                                 {{ __('common.back') }} ( {{ __('common.cancel') }} )
                             </button>
-                            <button type="submit" class="btn btn-lg btn-primary font-family-cairo fw-bold"
+                            <button type="submit" class="btn btn-lg btn-main font-family-cairo fw-bold"
                                 wire:loading.attr="disabled" wire:target="save">{{ __('common.save') }}</button>
                         @else
                             <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"

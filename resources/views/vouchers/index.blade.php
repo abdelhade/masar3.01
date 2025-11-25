@@ -33,7 +33,7 @@
             @if($hasAnyCreatePermission)
                 @if (isset($currentTypeInfo['show_dropdown']) && $currentTypeInfo['show_dropdown'])
                     <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-main dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-plus me-2"></i>
                             إضافة سند جديد
                         </button>

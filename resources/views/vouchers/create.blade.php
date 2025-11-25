@@ -232,7 +232,7 @@
                             </div>
 
                             <div class="mt-3">
-                                <button type="submit" class="btn btn-primary btn-lg">حفظ</button>
+                                <button type="submit" class="btn btn-main btn-lg">حفظ</button>
                             </div>
                         </div>
                 </form>

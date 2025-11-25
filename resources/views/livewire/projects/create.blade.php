@@ -134,7 +134,7 @@ new class extends Component {
                         <a href="{{ route('projects.index') }}" class="btn btn-secondary">
                             <i class="las la-times"></i> إلغاء
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-main">
                             <i class="las la-save"></i> حفظ
                         </button>
                     </div>

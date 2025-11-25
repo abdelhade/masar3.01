@@ -77,7 +77,7 @@
 
                     <!-- Buttons -->
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-main">
                             <i class="fas fa-save me-1"></i>{{ __('Update') }}
                         </button>
                         <a href="{{ route('pricing-statuses.index') }}" class="btn btn-secondary">

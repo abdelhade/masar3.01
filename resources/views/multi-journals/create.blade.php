@@ -172,7 +172,7 @@
                     </div>
 
                     <div class="d-flex justify-content-start mt-4">
-                        <button type="submit" class="btn btn-primary">حفظ</button>
+                        <button type="submit" class="btn btn-main">حفظ</button>
                         <button type="reset" class="btn btn-danger">إلغاء</button>
                     </div>
 

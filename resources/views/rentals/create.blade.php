@@ -187,7 +187,7 @@
                     </div>
 
                     <div class="form-group text-center mt-4">
-                        <button type="submit" class="btn btn-success btn-lg px-5">
+                        <button type="submit" class="btn btn-main btn-lg px-5">
                             <i class="fas fa-save ml-2"></i> حفظ
                         </button>
                         <a href="{{ route('rentals.index') }}" class="btn btn-secondary btn-lg px-5 mr-2">

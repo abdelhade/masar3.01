@@ -157,7 +157,7 @@
                                         إلغاء
                                     </a>
                                     <button type="submit" 
-                                            class="btn btn-primary"
+                                            class="btn btn-main"
                                             wire:loading.attr="disabled">
                                         <span wire:loading.remove>
                                             <i class="fas fa-save"></i>

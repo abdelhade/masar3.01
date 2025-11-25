@@ -126,7 +126,7 @@ new class extends Component {
             <p class="text-muted">Ø¥Ø¯Ø§Ø±Ø© Ø£ÙˆØ§Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬ ÙˆØ§Ù„ØªØµÙ†ÙŠØ¹</p>
         </div>
         <div class="col-md-6 text-end mt-4">
-            <a href="{{ route('production-orders.create') }}" class="btn btn-primary font-family-cairo fw-bold">
+            <a href="{{ route('production-orders.create') }}" class="btn btn-main font-family-cairo fw-bold">
                 <i class="fas fa-plus"></i>
                 Ø£Ù…Ø± Ø¥Ù†ØªØ§Ø¬ Ø¬Ø¯ÙŠØ¯
             </a>

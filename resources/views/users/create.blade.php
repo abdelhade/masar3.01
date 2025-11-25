@@ -290,7 +290,7 @@
                     <div class="card shadow-sm border-0 mt-3">
                         <div class="card-body">
                             <div class="d-flex justify-content-center gap-2">
-                                <button type="submit" class="btn btn-primary px-4">
+                                <button type="submit" class="btn btn-main px-4">
                                     <i class="fas fa-save me-1"></i> حفظ
                                 </button>
                                 <a href="{{ route('users.index') }}" class="btn btn-danger px-4">

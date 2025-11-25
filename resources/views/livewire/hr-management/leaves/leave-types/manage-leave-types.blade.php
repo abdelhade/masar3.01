@@ -155,7 +155,7 @@ new class extends Component {
                     <p class="text-muted mb-0 font-family-cairo">{{ __('hr.leave_management') }}</p>
                 </div>
                 @can('create Leave Types')
-                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" wire:click="openModal">
+                    <button type="button" class="btn btn-main font-family-cairo fw-bold" wire:click="openModal">
                         <i class="fas fa-plus me-2"></i>{{ __('hr.add_leave_type') }}
                     </button>
                 @endcan
@@ -343,7 +343,7 @@ new class extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary font-family-cairo" wire:click="closeModal">{{ __('hr.cancel') }}</button>
-                            <button type="submit" class="btn btn-primary font-family-cairo" wire:loading.attr="disabled">
+                            <button type="submit" class="btn btn-main font-family-cairo" wire:loading.attr="disabled">
                                 <span wire:loading.remove>
                                     {{ $isEdit ? __('hr.update') : __('hr.save') }}
                                 </span>

@@ -22,7 +22,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary font-family-cairo fw-bold" wire:click="closeModal">إلغاء</button>
-                <button type="button" class="btn btn-primary font-family-cairo fw-bold" wire:click="saveModalData" wire:loading.attr="disabled" wire:target="saveModalData">
+                <button type="button" class="btn btn-main font-family-cairo fw-bold" wire:click="saveModalData" wire:loading.attr="disabled" wire:target="saveModalData">
                     <span wire:loading.remove wire:target="saveModalData">حفظ</span>
                     <span wire:loading wire:target="saveModalData">جاري الحفظ...</span>
                 </button>

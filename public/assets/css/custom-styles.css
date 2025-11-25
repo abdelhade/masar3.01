@@ -69,14 +69,14 @@ input, select, textarea {
 }
 
 .left-sidenav-menu .menu-label {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
     color: white !important;
     padding: 8px 12px !important;
     border-radius: 8px;
     margin: 8px 0 !important;
     font-weight: 600 !important;
     font-size: 0.75rem !important;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 8px rgba(52, 211, 163, 0.2);
 }
 
 .left-sidenav-menu .menu-label a {
@@ -100,16 +100,16 @@ input, select, textarea {
     top: 0;
     width: 3px;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
     transform: scaleY(0);
     transition: transform 0.3s ease;
 }
 
 .left-sidenav-menu li > a:hover {
-    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%) !important;
-    color: #5050d8 !important;
+    background: linear-gradient(135deg, #e6faf5 0%, #f0fdfa 100%) !important;
+    color: #34d3a3 !important;
     transform: translateX(-5px);
-    box-shadow: 0 2px 8px rgba(114, 114, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(52, 211, 163, 0.15);
 }
 
 .left-sidenav-menu li > a:hover::before {
@@ -117,7 +117,7 @@ input, select, textarea {
 }
 
 .left-sidenav-menu li > a:hover .menu-icon {
-    color: #7272ff !important;
+    color: #34d3a3 !important;
     transform: scale(1.15) rotate(5deg);
 }
 
@@ -134,9 +134,9 @@ input, select, textarea {
 
 .left-sidenav-menu li > a.active,
 .left-sidenav-menu li.mm-active > a {
-    background: linear-gradient(135deg, #7272ff 0%, #5050d8 100%) !important;
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%) !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(114, 114, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(52, 211, 163, 0.3);
     font-weight: 600;
 }
 
@@ -161,24 +161,24 @@ input, select, textarea {
 }
 
 .left-sidenav-menu li ul li > a:hover {
-    border-right-color: #7272ff;
+    border-right-color: #34d3a3;
     background: white !important;
 }
 
 .left-sidenav-menu li ul li > a.active {
-    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%) !important;
-    color: #5050d8 !important;
-    border-right-color: #7272ff;
+    background: linear-gradient(135deg, #e6faf5 0%, #f0fdfa 100%) !important;
+    color: #34d3a3 !important;
+    border-right-color: #34d3a3;
     font-weight: 600;
 }
 
 /* Home Link */
 .left-sidenav-menu li.nav-item.border-bottom {
-    border: 2px solid #e0e7ff !important;
+    border: 2px solid #e6faf5 !important;
     border-radius: 10px;
     padding: 0 !important;
     margin-bottom: 12px !important;
-    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+    background: linear-gradient(135deg, #f0fdfa 0%, #e6faf5 100%);
 }
 
 .left-sidenav-menu li.nav-item.border-bottom a {
@@ -187,8 +187,8 @@ input, select, textarea {
 }
 
 .left-sidenav-menu li.nav-item.border-bottom:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: #667eea !important;
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
+    border-color: #34d3a3 !important;
 }
 
 .left-sidenav-menu li.nav-item.border-bottom:hover a,
@@ -217,12 +217,12 @@ input, select, textarea {
 }
 
 .menu-content::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
     border-radius: 10px;
 }
 
 .menu-content::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5050d8 0%, #6b1f8f 100%);
+    background: linear-gradient(135deg, #2ab88d 0%, #1c8261 100%);
 }
 
 /* ========================================
@@ -260,7 +260,7 @@ input, select, textarea {
 
 .navbar-custom .nav-link:hover i {
     transform: scale(1.15) rotate(5deg);
-    color: #7272ff !important;
+    color: #34d3a3 !important;
 }
 
 .button-menu-mobile {
@@ -270,7 +270,7 @@ input, select, textarea {
 }
 
 .button-menu-mobile:hover {
-    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%) !important;
+    background: linear-gradient(135deg, #e6faf5 0%, #f0fdfa 100%) !important;
     transform: rotate(90deg);
 }
 
@@ -279,7 +279,7 @@ input, select, textarea {
 }
 
 .button-menu-mobile:hover i {
-    color: #7272ff !important;
+    color: #34d3a3 !important;
 }
 
 /* تحسين أزرار الـ topbar */
@@ -289,7 +289,7 @@ input, select, textarea {
 
 .topbar .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(114, 114, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(52, 211, 163, 0.2);
 }
 
 .topbar .btn:active {

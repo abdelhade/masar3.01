@@ -16,7 +16,7 @@
     <div class="row">
         <div class="col-lg-12">
             @can('create Shipping Companies')
-                <a href="{{ route('companies.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                <a href="{{ route('companies.create') }}" type="button" class="btn btn-main font-family-cairo fw-bold">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>

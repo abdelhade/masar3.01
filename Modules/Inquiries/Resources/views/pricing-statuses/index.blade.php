@@ -16,9 +16,9 @@
     <div class="row">
         <div class="col-lg-12">
             @can('create Pricing Statuses')
-                <a href="{{ route('pricing-statuses.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
-                    {{ __('Add New') }}
+                <a href="{{ route('pricing-statuses.create') }}" type="button" class="btn btn-main font-family-cairo fw-bold">
                     <i class="fas fa-plus me-2"></i>
+                    {{ __('Add New') }}
                 </a>
             @endcan
             <br>

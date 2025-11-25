@@ -6,7 +6,7 @@
         </div>
         <div class="col-md-6 text-end">
             @can('create varibalsValues')
-                <button wire:click="create" class="btn btn-primary">
+                <button wire:click="create" class="btn btn-main">
                     <i class="fas fa-plus"></i> {{ __('إضافه') }}
                 </button>
             @endcan
@@ -63,7 +63,7 @@
                         <button type="button" wire:click="cancel" class="btn btn-secondary">
                             {{ __('إلغاء') }}
                         </button>
-                        <button type="button" wire:click="save" class="btn btn-primary">
+                        <button type="button" wire:click="save" class="btn btn-main">
                             {{ $editingId ? __('تحديث') : __('حفظ') }}
                         </button>
                     </div>
@@ -125,7 +125,7 @@
                     <h5 class="text-muted">{{ __('لا توجد قيم') }}</h5>
                     <p class="text-muted">{{ __('لم يتم إضافة أي قيم لهذا المتغير بعد') }}</p>
                     @if (!$search)
-                        <button wire:click="create" class="btn btn-primary">
+                        <button wire:click="create" class="btn btn-main">
                             <i class="fas fa-plus"></i> {{ __('إضافة أول قيمة') }}
                         </button>
                     @endif

@@ -18,7 +18,7 @@
 
                             <div class="flex items-center">
                                 <button wire:click="adjustCostsByPercentage"
-                                    class="btn btn-primary px-5 py-3 text-lg font-bold"
+                                    class="btn btn-main px-5 py-3 text-lg font-bold"
                                     @if (empty($selectedProducts)) disabled @endif>
                                     <i class="fas fa-calculator me-2"></i>
                                     توزيع التكاليف حسب النسبة المئوية
@@ -456,7 +456,7 @@
                                                                             <div
                                                                                 class="d-flex justify-content-between align-items-center">
                                                                                 <button wire:click="addExpense"
-                                                                                    class="btn btn-primary btn-sm">
+                                                                                    class="btn btn-main btn-sm">
                                                                                     إضافة مصروف
                                                                                 </button>
                                                                             </div>

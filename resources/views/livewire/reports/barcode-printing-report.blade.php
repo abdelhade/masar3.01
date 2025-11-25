@@ -430,7 +430,7 @@
 
     <!-- Controls -->
     <div class="controls">
-        <button wire:click="generateBarcodes" class="btn btn-primary" wire:loading.attr="disabled">
+        <button wire:click="generateBarcodes" class="btn btn-main" wire:loading.attr="disabled">
             <span wire:loading.remove>🖨️ تأكيد وطباعة</span>
             <span wire:loading>⏳ جاري التوليد...</span>
         </button>

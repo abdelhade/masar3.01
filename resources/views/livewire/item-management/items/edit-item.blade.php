@@ -540,7 +540,7 @@ new class extends Component {
                     <button type="button" class="btn btn-secondary font-family-cairo fw-bold"
                         onclick="window.history.back()">عوده / إلغاء</button>
                     <button type="submit"
-                        class="btn btn-primary font-family-cairo fw-bold">{{ 'تحديث' }}</button>
+                        class="btn btn-main font-family-cairo fw-bold">{{ 'تحديث' }}</button>
                 </div>
             </form>
         </div>

@@ -1,72 +1,71 @@
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">Ø£Ø­Ø¯Ø« Ø§Ù„Ø­Ø³Ø§Ø¨Ø§Øª</div>
-            <div class="card-body p-0">
-                @php
-                use Modules\Accounts\Models\AccHead;
+<div class="grid-2-col mb-6 gap-4">
+    <!-- Latest Accounts Table -->
+    <div class="card hover-lift transition-base">
+        <div class="card-header border-b border-border-light p-4" style="border-left: 4px solid #34d3a3;">
+            <h3 class="text-section-title mb-0">أحدث الحسابات</h3>
+        </div>
+        <div class="container-table">
+            @php
+            use Modules\Accounts\Models\AccHead;
 
-                $lastAccounts = AccHead::with('haveParent')
-                ->orderBy('id', 'desc')
-                ->limit(5)
-                ->get();
+            $lastAccounts = AccHead::with('haveParent')
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get();
+            @endphp
 
-
-                @endphp
-
-                <table class="table table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>Ø§Ù„Ø§Ø³Ù…</th>
-                            <th>Ø§Ù„ØªÙ„ÙŠÙÙˆÙ†</th>
-                            <th>code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($lastAccounts as $acc)
-                        <tr>
-                            <td>{{ $acc->aname }} -> {{ $acc->haveParent?->aname }}</td>
-                            <td>{{ $acc->phone }}</td>
-                            <td>{{ $acc->code }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
-            </div>
+            <table class="table table-sticky">
+                <thead>
+                    <tr>
+                        <th class="text-table-header">الاسم</th>
+                        <th class="text-table-header">التليفون</th>
+                        <th class="text-table-header">كود</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($lastAccounts as $acc)
+                    <tr>
+                        <td class="text-table">{{ $acc->aname }} -> {{ $acc->haveParent?->aname }}</td>
+                        <td class="text-table">{{ $acc->phone }}</td>
+                        <td class="text-table">{{ $acc->code }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">logins</div>
-            <div class="card-body p-0">
-                @php
-                $lastLogins = \App\Models\LoginSession::with('user')
-                ->orderBy('login_at', 'desc')
-                ->take(5)
-                ->get();
-                @endphp
 
-                <table class="table table-responsive table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…</th>
-                            <th>IP</th>
-                            <th>ÙˆÙ‚Øª Ø§Ù„Ø¯Ø®ÙˆÙ„</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($lastLogins as $login)
-                        <tr>
-                            <td>{{ $login->user->name ?? 'â€”' }}</td>
-                            <td>{{ $login->ip_address }}</td>
-                            <td>{{ $login->login_at }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <!-- Latest Logins Table -->
+    <div class="card hover-lift transition-base">
+        <div class="card-header border-b border-border-light p-4" style="border-left: 4px solid #1aa1c4;">
+            <h3 class="text-section-title mb-0">آخر تسجيلات الدخول</h3>
+        </div>
+        <div class="container-table">
+            @php
+            $lastLogins = \App\Models\LoginSession::with('user')
+            ->orderBy('login_at', 'desc')
+            ->take(5)
+            ->get();
+            @endphp
 
-            </div>
+            <table class="table table-sticky">
+                <thead>
+                    <tr>
+                        <th class="text-table-header">المستخدم</th>
+                        <th class="text-table-header">IP</th>
+                        <th class="text-table-header">وقت الدخول</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($lastLogins as $login)
+                    <tr>
+                        <td class="text-table">{{ $login->user->name ?? '—' }}</td>
+                        <td class="text-table">{{ $login->ip_address }}</td>
+                        <td class="text-table">{{ $login->login_at }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

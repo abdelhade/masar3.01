@@ -15,7 +15,7 @@
             <div class="modal-body">
                 <div class="d-flex justify-content-end mb-2">
                     @if ($creating)
-                        <button type="button" class="btn btn-primary btn-sm font-family-cairo fw-bold"
+                        <button type="button" class="btn btn-main btn-sm font-family-cairo fw-bold"
                             wire:click="addBarcodeField({{ $index }})">
                             <i class="las la-plus"></i> إضافة باركود
                         </button>
@@ -45,7 +45,7 @@
                 @if ($creating)
                     <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal"
                         wire:click="cancelBarcodeUpdate({{ $index }})">إلغاء</button>
-                    <button type="button" class="btn btn-primary font-family-cairo fw-bold"
+                    <button type="button" class="btn btn-main font-family-cairo fw-bold"
                         wire:click="saveBarcodes({{ $index }})">حفظ</button>
                 @endif
             </div>

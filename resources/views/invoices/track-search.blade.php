@@ -18,7 +18,10 @@
                             placeholder="{{ __('Enter the operation number or pro_id') }}">
                     </div>
                     <div class="mt-3">
-                        <button class="btn btn-primary">{{ __('View Track') }}</button>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search me-2"></i>
+                            {{ __('View Track') }}
+                        </button>
                     </div>
                 </div>
             </div>

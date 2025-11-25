@@ -85,7 +85,7 @@
                             </div>
 
                             <div class="col-sm-10 mt-4">
-                                <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                                <button type="submit" class="btn btn-main">{{ __('Update') }}</button>
                                 <a href="{{ route('discounts.index') }}" class="btn btn-danger">{{ __('Cancel') }}</a>
                             </div>
                         </div>

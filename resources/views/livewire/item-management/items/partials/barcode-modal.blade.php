@@ -51,7 +51,7 @@
                 <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal">
                     إلغاء
                 </button>
-                <button type="button" class="btn btn-primary font-family-cairo fw-bold" 
+                <button type="button" class="btn btn-main font-family-cairo fw-bold" 
                         wire:click="saveAdditionalBarcodes">
                     <i class="las la-save me-1"></i> حفظ الباركودات
                 </button>

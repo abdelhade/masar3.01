@@ -30,8 +30,8 @@ body::before {
     right: 0;
     bottom: 0;
     background-image: 
-        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.03) 0%, transparent 50%);
+        radial-gradient(circle at 20% 50%, rgba(52, 211, 163, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(26, 161, 196, 0.03) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
 }
@@ -83,7 +83,7 @@ body::before {
 }
 
 .app-group:hover {
-    border-bottom-color: rgba(102, 126, 234, 0.2);
+    border-bottom-color: rgba(52, 211, 163, 0.2);
 }
 
 .app-group:last-child {
@@ -100,7 +100,7 @@ body::before {
     margin-bottom: 2rem;
     padding-bottom: 0.75rem;
     border-bottom: 3px solid transparent;
-    border-image: linear-gradient(90deg, #667eea 0%, #764ba2 50%, transparent 100%);
+    border-image: linear-gradient(90deg, #34d3a3 0%, #1aa1c4 50%, transparent 100%);
     border-image-slice: 1;
     position: relative;
 }
@@ -112,7 +112,7 @@ body::before {
     left: 0;
     width: 0;
     height: 3px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(90deg, #34d3a3 0%, #1aa1c4 100%);
     transition: width 0.5s ease;
 }
 
@@ -155,12 +155,12 @@ body::before {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(90deg, #34d3a3 0%, #1aa1c4 100%);
     transition: width 0.3s ease;
 }
 
 .app-group:hover .group-title {
-    color: #667eea;
+    color: #34d3a3;
 }
 
 .app-group:hover .group-title::after {
@@ -168,7 +168,7 @@ body::before {
 }
 
 .group-count {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
     color: white;
     min-width: 36px;
     height: 36px;
@@ -179,24 +179,24 @@ body::before {
     justify-content: center;
     font-size: 0.875rem;
     font-weight: 700;
-    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 3px 12px rgba(52, 211, 163, 0.4);
     transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     animation: countPulse 2s ease-in-out infinite;
 }
 
 @keyframes countPulse {
     0%, 100% {
-        box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 3px 12px rgba(52, 211, 163, 0.4);
     }
     50% {
-        box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4),
-                    0 0 0 8px rgba(102, 126, 234, 0);
+        box-shadow: 0 3px 12px rgba(52, 211, 163, 0.4),
+                    0 0 0 8px rgba(52, 211, 163, 0);
     }
 }
 
 .app-group:hover .group-count {
     transform: scale(1.2);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 6px 20px rgba(52, 211, 163, 0.6);
     animation: none;
 }
 
@@ -207,14 +207,14 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(52, 211, 163, 0.1);
     cursor: pointer;
     transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
 .group-toggle:hover {
-    background: rgba(102, 126, 234, 0.2);
+    background: rgba(52, 211, 163, 0.2);
     transform: scale(1.15);
 }
 
@@ -287,7 +287,7 @@ body::before {
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+    background: linear-gradient(45deg, #34d3a3, #1aa1c4, #34d3a3);
     border-radius: 0.875rem;
     z-index: -1;
     opacity: 0;
@@ -311,7 +311,7 @@ body::before {
     background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
     box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4), 
                 0 0 30px rgba(59, 130, 246, 0.2),
-                0 0 0 4px rgba(102, 126, 234, 0.1);
+                0 0 0 4px rgba(52, 211, 163, 0.1);
 }
 
 .app-card:active {
@@ -381,7 +381,7 @@ body::before {
 }
 
 .app-card:hover .app-name {
-    color: #667eea;
+    color: #34d3a3;
     transform: scale(1.05);
     font-weight: 700;
 }
@@ -393,32 +393,32 @@ body::before {
     position: absolute;
     top: 6px;
     left: 6px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
     color: white;
     font-size: 0.7rem;
     padding: 3px 10px;
     border-radius: 12px;
     font-weight: 700;
-    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.5);
+    box-shadow: 0 3px 10px rgba(52, 211, 163, 0.5);
     z-index: 10;
     animation: badgePulse 2s ease-in-out infinite;
 }
 
 @keyframes badgePulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.6); }
+    50% { transform: scale(1.05); box-shadow: 0 5px 15px rgba(52, 211, 163, 0.6); }
 }
 
 /* ========================================
    Header Section
    ======================================== */
 .header-section {
-    background: linear-gradient(135deg, #7990f5 0%, #4b2374 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #1aa1c4 100%);
     border-radius: 2rem;
     padding: 3rem 2rem;
     margin-bottom: 3rem;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 20px 40px rgba(52, 211, 163, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -640,7 +640,7 @@ body::before {
     right: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #7272ff;
+    color: #34d3a3;
     width: 20px;
     height: 20px;
     pointer-events: none;
@@ -652,7 +652,7 @@ body::before {
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -792,7 +792,7 @@ body::before {
    Accessibility Improvements
    ======================================== */
 .app-card:focus {
-    outline: 3px solid #667eea;
+    outline: 3px solid #34d3a3;
     outline-offset: 2px;
 }
 

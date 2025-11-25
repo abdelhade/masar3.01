@@ -113,7 +113,7 @@ new class extends Component {
         <div class="col-lg-12">
 
             {{-- @can('إضافة ' . $parentNoteName) --}}
-                <button wire:click="createNoteDetails" type="button" class="btn btn-primary font-family-cairo fw-bold m-2">
+                <button wire:click="createNoteDetails" type="button" class="btn btn-main font-family-cairo fw-bold m-2">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </button>
@@ -196,7 +196,7 @@ new class extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button type="submit" class="btn btn-primary">حفظ</button>
+                            <button type="submit" class="btn btn-main">حفظ</button>
                         </div>
                     </form>
                 </div>

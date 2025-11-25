@@ -7,10 +7,13 @@
     
     <title>{{ $title ?? 'تسجيل الدخول' }} | {{ config('app.name', 'مسار') }}</title>
 
-    <!-- Google Fonts - Cairo -->
+    <!-- Google Fonts - IBM Plex Sans Arabic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Vite CSS (includes Design System) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Custom Styles -->
     <style>

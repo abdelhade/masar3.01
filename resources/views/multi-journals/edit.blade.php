@@ -114,7 +114,7 @@
             <button type="button" id="addRow" class="btn btn-secondary btn-sm mb-3">+ صف جديد</button>
 
             <div>
-                <button type="submit" class="btn btn-primary">حفظ</button>
+                <button type="submit" class="btn btn-main">حفظ</button>
                 <a href="{{ route('multi-journals.index') }}" class="btn btn-light">إلغاء</a>
             </div>
         </form>

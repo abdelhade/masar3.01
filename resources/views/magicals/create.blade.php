@@ -51,7 +51,7 @@
                         @livewire('magicals.magical-form')
                     </div>
 
-                    <button type="submit" class="btn btn-primary">اضافة</button>
+                    <button type="submit" class="btn btn-main">اضافة</button>
                 </form>
             </div>
         </div>

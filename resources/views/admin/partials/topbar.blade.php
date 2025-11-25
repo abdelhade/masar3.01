@@ -12,17 +12,17 @@
 
             @can('view Settings Control')
                 <li>
-                    <a title="{{ __('navigation.users') }}" href="{{ route('mysettings.index') }}" class="nav-link">
-                        <i class="fas fa-cog fa-2x text-primary"></i>
+                    <a title="{{ __('navigation.users') }}" href="{{ route('mysettings.index') }}" class="nav-link transition-base" style="color: #34d3a3;">
+                        <i class="fas fa-cog fa-2x" style="color: #34d3a3;"></i>
                     </a>
                 </li>
             @endcan
             <li>
                 <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                     @csrf
-                    <button type="submit" class="btn btn-lg" title="{{ __('navigation.logout') }}"
-                        style="background: none; border: none; ">
-                        <i class="fas fa-sign-out-alt fa-2x text-primary"></i>
+                    <button type="submit" class="btn btn-lg transition-base" title="{{ __('navigation.logout') }}"
+                        style="background: none; border: none; color: #34d3a3;">
+                        <i class="fas fa-sign-out-alt fa-2x" style="color: #34d3a3;"></i>
                     </button>
                 </form>
             </li>
@@ -31,19 +31,19 @@
         <ul class="list-unstyled topbar-nav mb-0">
 
             <li>
-                <button class="nav-link button-menu-mobile">
-                    <i class="fas fa-bars fa-2x text-primary align-self-center topbar-icon"></i>
+                <button class="nav-link button-menu-mobile transition-base" style="color: #34d3a3;">
+                    <i class="fas fa-bars fa-2x align-self-center topbar-icon" style="color: #34d3a3;"></i>
                 </button>
             </li>
             <li>
-                <a title="help" href="https://www.updates.elhadeerp.com" class="nav-link" target="_blank">
-                    <i class="fas fa-book fa-2x text-primary"></i>
+                <a title="help" href="https://www.updates.elhadeerp.com" class="nav-link transition-base" target="_blank" style="color: #34d3a3;">
+                    <i class="fas fa-book fa-2x" style="color: #34d3a3;"></i>
                 </a>
             </li>
             @can('view Users')
                 <li>
-                    <a title="{{ __('navigation.users') }}" href="{{ route('users.index') }}" class="nav-link">
-                        <i class="fas fa-user fa-2x text-primary"></i>
+                    <a title="{{ __('navigation.users') }}" href="{{ route('users.index') }}" class="nav-link transition-base" style="color: #34d3a3;">
+                        <i class="fas fa-user fa-2x" style="color: #34d3a3;"></i>
                     </a>
                 </li>
             @endcan
@@ -51,16 +51,16 @@
 
           
                 <li>
-                    <a title="{{ __('navigation.reports') }}" href="{{ route('reports.index') }}" class="nav-link">
-                        <i class="fas fa-chart-pie fa-2x text-primary"></i>
+                    <a title="{{ __('navigation.reports') }}" href="{{ route('reports.index') }}" class="nav-link transition-base" style="color: #34d3a3;">
+                        <i class="fas fa-chart-pie fa-2x" style="color: #34d3a3;"></i>
                     </a>
 
                 </li>
      
 
             <li>
-                <a title="{{ __('Branches') }}" href="{{ route('branches.index') }}" class="nav-link">
-                    <i class="fas fa-store fa-2x text-primary"></i>
+                <a title="{{ __('Branches') }}" href="{{ route('branches.index') }}" class="nav-link transition-base" style="color: #34d3a3;">
+                    <i class="fas fa-store fa-2x" style="color: #34d3a3;"></i>
                 </a>
 
             </li>

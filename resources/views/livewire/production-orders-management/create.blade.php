@@ -256,7 +256,7 @@ new class extends Component {
                 <button type="button" wire:click="cancel" class="btn btn-secondary me-2 font-family-cairo fw-bold">
                     Ø¥Ù„ØºØ§Ø¡
                 </button>
-                <button type="submit" class="btn btn-primary font-family-cairo fw-bold">
+                <button type="submit" class="btn btn-main font-family-cairo fw-bold">
                     <i class="fas fa-check"></i>
                     Ø­ÙØ¸ Ø£Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬
                 </button>

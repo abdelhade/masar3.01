@@ -47,7 +47,7 @@ new class extends Component {
 <div class="p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">المشاريع</h2>
-        <a href="{{ route('projects.create') }}" class="btn btn-primary">
+        <a href="{{ route('projects.create') }}" class="btn btn-main">
             <i class="las la-plus"></i> إضافة مشروع جديد
         </a>
     </div>

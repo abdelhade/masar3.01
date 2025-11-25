@@ -232,7 +232,7 @@
                         </div>
 
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-main">
                                 <i class="fas fa-save"></i> {{ __('Save Lead') }}
                             </button>
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">
@@ -463,7 +463,7 @@
                     <div class="text-end">
                         <button type="button" class="btn btn-secondary"
                             wire:click="closeModal">{{ __('Close') }}</button>
-                        <button type="button" class="btn btn-primary"
+                        <button type="button" class="btn btn-outline"
                             onclick="window.print()">{{ __('Print Report') }}</button>
                     </div>
                 </div>

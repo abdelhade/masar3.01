@@ -415,7 +415,7 @@
                 </select>
             </div>
 
-            <button wire:click="applyBulkIncrease" class="btn btn-primary" wire:loading.attr="disabled">
+            <button wire:click="applyBulkIncrease" class="btn btn-main" wire:loading.attr="disabled">
                 <span wire:loading.remove>تطبيق الزيادة</span>
                 <span wire:loading>جاري التطبيق...</span>
             </button>

@@ -1183,7 +1183,7 @@ new class extends Component {
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary font-family-cairo fw-bold" @click="applyChanges()"
+                    <button type="button" class="btn btn-main font-family-cairo fw-bold" @click="applyChanges()"
                             wire:loading.attr="disabled" wire:target="updateVisibility">
                         <span wire:loading.remove wire:target="updateVisibility">
                             <i class="fas fa-check me-2"></i>

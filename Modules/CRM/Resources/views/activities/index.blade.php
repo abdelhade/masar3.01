@@ -17,7 +17,7 @@
         <div class="col-lg-12">
             @can('create Activities')
                 <div class="mb-4">
-                    <a href="{{ route('activities.create') }}" class="btn btn-primary">
+                    <a href="{{ route('activities.create') }}" class="btn btn-main">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('Add New Activity') }}
                     </a>

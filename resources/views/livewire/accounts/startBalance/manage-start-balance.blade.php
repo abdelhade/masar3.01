@@ -144,7 +144,7 @@ new class extends Component {
 
                     </tbody>
                 </table>
-                <button type="submit" class="btn btn-primary m-3" wire:click="$refresh"
+                <button type="submit" class="btn btn-main m-3" wire:click="$refresh"
                     wire:target="updateStartBalance" wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="updateStartBalance">
                         Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«

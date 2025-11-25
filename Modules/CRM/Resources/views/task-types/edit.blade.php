@@ -34,7 +34,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary me-2"><i class="las la-save"></i>
+                            <button type="submit" class="btn btn-main me-2"><i class="las la-save"></i>
                                 {{ __('Save') }}</button>
                             <a href="{{ route('tasks.types.index') }}" class="btn btn-danger"><i class="las la-times"></i>
                                 {{ __('Cancel') }}</a>
