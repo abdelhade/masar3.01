@@ -10,6 +10,13 @@ use App\Models\User;
 
 class CorrectiveActionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view capa')->only(['index' , 'show']);
+        $this->middleware('can:create capa')->only(['create', 'store']);
+        $this->middleware('can:edit capa')->only(['edit', 'update']);
+        $this->middleware('can:delete capa')->only(['destroy']);
+    }
     public function index()
     {
         $capas = CorrectiveAction::with(['nonConformanceReport.item', 'responsiblePerson'])
@@ -62,7 +69,7 @@ class CorrectiveActionController extends Controller
     public function show(CorrectiveAction $capa)
     {
         $capa->load(['nonConformanceReport', 'responsiblePerson', 'verifiedBy']);
-        
+
         return view('quality::capa.show', compact('capa'));
     }
 

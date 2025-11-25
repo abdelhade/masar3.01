@@ -12,6 +12,13 @@ use Carbon\Carbon;
 
 class SupplierRatingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view audits')->only(['index' , 'show']);
+        $this->middleware('can:create audits')->only(['create', 'store']);
+        $this->middleware('can:edit audits')->only(['edit', 'update']);
+        $this->middleware('can:delete audits')->only(['destroy']);
+    }
     public function index()
     {
         $ratings = SupplierRating::with(['supplier', 'ratedBy'])
@@ -74,7 +81,7 @@ class SupplierRatingController extends Controller
         $validated['critical_ncrs'] = $ncrs->where('severity', 'critical')->count();
         $validated['major_ncrs'] = $ncrs->where('severity', 'major')->count();
         $validated['minor_ncrs'] = $ncrs->where('severity', 'minor')->count();
-        
+
         // Add default values for missing fields
         $validated['total_deliveries'] = 0;
         $validated['on_time_deliveries'] = 0;
@@ -91,7 +98,7 @@ class SupplierRatingController extends Controller
     public function show(SupplierRating $supplier)
     {
         $supplier->load(['supplier', 'ratedBy', 'approvedBy']);
-        
+
         return view('quality::suppliers.show', ['rating' => $supplier]);
     }
 

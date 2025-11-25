@@ -17,12 +17,14 @@
                     </h2>
                     <p class="text-muted mb-0">إدارة ومتابعة تقارير عدم المطابقة</p>
                 </div>
+                @can('create ncr')
                 <div>
                     <a href="{{ route('quality.ncr.create') }}" class="btn btn-danger">
                         <i class="fas fa-plus-circle me-2"></i>
                         تقرير NCR جديد
                     </a>
                 </div>
+                @endcan
             </div>
         </div>
     </div>
@@ -97,7 +99,7 @@
             <form method="GET" action="{{ route('quality.ncr.index') }}" class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">بحث</label>
-                    <input type="text" name="search" class="form-control" value="{{ request('search') }}" 
+                    <input type="text" name="search" class="form-control" value="{{ request('search') }}"
                            placeholder="رقم NCR، الوصف، رقم الدفعة...">
                 </div>
                 <div class="col-md-2">
@@ -152,7 +154,9 @@
                             <th>الحالة</th>
                             <th>المكتشف</th>
                             <th>التاريخ</th>
+                            @canany(['edit ncr', 'delete ncr', 'view ncr'])
                             <th>الإجراءات</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -191,22 +195,29 @@
                             </td>
                             <td>{{ $ncr->detectedBy->name ?? '---' }}</td>
                             <td>{{ $ncr->detected_date->format('Y-m-d') }}</td>
+                            @canany(['edit ncr', 'delete ncr', 'view ncr'])
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('quality.ncr.show', $ncr) }}" 
+                                    @can('view ncr')
+                                    <a href="{{ route('quality.ncr.show', $ncr) }}"
                                        class="btn btn-sm btn-info" title="عرض">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('quality.ncr.edit', $ncr) }}" 
+                                    @endcan
+                                    @can('edit ncr')
+                                    <a href="{{ route('quality.ncr.edit', $ncr) }}"
                                        class="btn btn-sm btn-warning" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-danger" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteModal{{ $ncr->id }}" 
+                                    @endcan
+                                    @can('delete ncr')
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ $ncr->id }}"
                                             title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    @endcan
                                 </div>
 
                                 <!-- Delete Modal -->
@@ -232,6 +243,7 @@
                                     </div>
                                 </div>
                             </td>
+                            @endcanany
                         </tr>
                         @empty
                         <tr>
