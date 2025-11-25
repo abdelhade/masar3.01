@@ -1,7 +1,7 @@
 <div class="topbar">
     <!-- Navbar -->
-    <nav class="navbar-custom">
-        <ul class="list-unstyled topbar-nav float-end mb-0">
+    <nav class="navbar-custom d-flex justify-content-between align-items-center">
+        <ul class="list-unstyled topbar-nav mb-0 d-flex align-items-center">
 
             <x-notifications::notifications />
 
@@ -47,7 +47,7 @@
             </li>
         </ul><!--end topbar-nav-->
 
-        <ul class="list-unstyled topbar-nav mb-0">
+        <ul class="list-unstyled topbar-nav mb-0 d-flex align-items-center order-first">
 
             <li>
                 <button class="nav-link button-menu-mobile transition-base" style="color: #34d3a3;">
