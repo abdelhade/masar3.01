@@ -2,7 +2,7 @@
 <html lang="{{ app()->getLocale() }}" dir="ltr">
 @include('admin.partials.head')
 
-<body class="">
+<body class="{{ session('theme', '') }}">
     @include('admin.partials.sidebar')
 
     <div class="page-wrapper">

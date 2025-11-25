@@ -53,6 +53,17 @@ Route::get('/locale/{locale}', function (string $locale) {
     return back();
 })->name('locale.switch');
 
+// Theme Switcher
+Route::get('/theme/{theme?}', function (?string $theme = '') {
+    $allowedThemes = ['', 'theme-neumorphism-lite'];
+    if (! in_array($theme, $allowedThemes, true)) {
+        abort(404);
+    }
+    session(['theme' => $theme]);
+
+    return back();
+})->name('theme.switch');
+
 // Admin Dashboard
 Route::get('/admin/dashboard', function () {
     return view('admin.main-dashboard');
