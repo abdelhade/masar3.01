@@ -152,8 +152,8 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <!-- القائمة الجانبية للفئات -->
-                                        <div class="col-lg-3 col-md-4 mb-3">
+
+                                    <div class="col-lg-3 col-md-4 mb-3">
                                             <div class="list-group sticky-top" style="top: 20px;">
                                                 @foreach ($permissions as $category => $perms)
                                                     <button type="button"

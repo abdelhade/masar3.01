@@ -243,19 +243,44 @@ body::before {
     overflow: visible;
 }
 
-@media (min-width: 768px) {
+/* Mobile first - 2 columns */
+@media (max-width: 640px) {
+    .group-apps-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+}
+
+/* Small mobile - 1 column if needed */
+@media (max-width: 360px) {
+    .group-apps-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tablet portrait */
+@media (min-width: 641px) and (max-width: 768px) {
     .group-apps-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (min-width: 1024px) {
+/* Tablet landscape */
+@media (min-width: 769px) and (max-width: 1024px) {
     .group-apps-grid {
         grid-template-columns: repeat(4, 1fr);
     }
 }
 
-@media (min-width: 1280px) {
+/* Desktop */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .group-apps-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* Large desktop */
+@media (min-width: 1281px) {
     .group-apps-grid {
         grid-template-columns: repeat(6, 1fr);
     }
@@ -278,6 +303,12 @@ body::before {
     text-decoration: none;
     color: inherit;
     overflow: hidden;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .app-card::before {
@@ -676,13 +707,107 @@ body::before {
 /* ========================================
    Responsive Adjustments
    ======================================== */
+
+/* Tablet landscape */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+
+    .header-section {
+        padding: 2.5rem 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .group-apps-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Tablet portrait */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1.25rem;
+    }
+
+    .apps-grid {
+        gap: 2rem;
+    }
+
+    .app-group {
+        padding: 0 0 1.75rem 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .group-header {
+        gap: 0.875rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.625rem;
+    }
+
+    .group-icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+
+    .group-title {
+        font-size: 1.2rem;
+    }
+
+    .group-count {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .group-apps-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.875rem;
+    }
+
+    .app-card {
+        padding: 0.875rem;
+    }
+
+    .app-icon {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 0.625rem;
+    }
+
+    .app-name {
+        font-size: 0.825rem;
+    }
+
+    .header-section {
+        padding: 2rem 1.25rem;
+        margin-bottom: 2rem;
+        border-radius: 1.5rem;
+    }
+
+    .main-title {
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .user-info,
+    .logout-btn {
+        padding: 0.6rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile landscape and below */
 @media (max-width: 640px) {
     .dashboard-container {
         padding: 1rem;
     }
 
     .apps-grid {
-        gap: 2rem;
+        gap: 1.75rem;
     }
 
     .app-group {
@@ -691,9 +816,9 @@ body::before {
     }
 
     .group-header {
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         gap: 0.75rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
         padding-bottom: 0.5rem;
     }
 
@@ -706,6 +831,8 @@ body::before {
     .group-title {
         font-size: 1rem;
         letter-spacing: 0.3px;
+        flex: 1;
+        min-width: 0;
     }
 
     .group-count {
@@ -721,22 +848,29 @@ body::before {
     }
 
     .app-card {
-        padding: 0.875rem;
+        padding: 0.875rem 0.75rem;
         margin: 0;
+    }
+
+    .app-card:hover {
+        transform: translateY(-4px) scale(1.05);
     }
 
     .app-icon {
         width: 34px;
         height: 34px;
+        margin-bottom: 0.5rem;
     }
 
     .app-name {
         font-size: 0.8rem;
+        line-height: 1.3;
     }
 
     .header-section {
-        padding: 2rem 1.5rem;
-        margin-bottom: 2rem;
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 1.25rem;
     }
 
     .main-title {
@@ -766,6 +900,117 @@ body::before {
         font-size: 0.7rem;
         padding: 0.2rem 0.6rem;
         left: 0.85rem;
+    }
+
+    .user-section {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-info,
+    .logout-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .logout-btn {
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 0.75rem;
+    }
+
+    .header-section {
+        padding: 1.25rem 0.75rem;
+        border-radius: 1rem;
+    }
+
+    .title {
+        font-size: 1.25rem !important;
+    }
+
+    .group-header {
+        gap: 0.625rem;
+        margin-bottom: 1rem;
+    }
+
+    .group-icon-wrapper {
+        width: 34px;
+        height: 34px;
+    }
+
+    .group-title {
+        font-size: 0.95rem;
+    }
+
+    .group-count {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+        padding: 0 8px;
+    }
+
+    .group-apps-grid {
+        gap: 0.625rem;
+    }
+
+    .app-card {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .app-icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 0.5rem;
+    }
+
+    .app-name {
+        font-size: 0.75rem;
+    }
+
+    .new-badge {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        top: 4px;
+        left: 4px;
+    }
+
+    .user-info {
+        padding: 0.55rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .logout-btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.875rem;
+    }
+
+    .search-input {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.75rem 0.6rem 2.5rem;
+    }
+
+    .search-icon {
+        width: 16px;
+        height: 16px;
+        right: 0.75rem;
+    }
+}
+
+/* Extra small mobile */
+@media (max-width: 360px) {
+    .group-apps-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .app-card {
+        padding: 1rem;
     }
 }
 
@@ -808,6 +1053,26 @@ body::before {
 
     .header-section {
         border: 2px solid white;
+    }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+    .app-card:hover {
+        transform: none;
+    }
+
+    .app-card:active {
+        transform: scale(0.95);
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    }
+
+    .app-group:hover .group-icon-wrapper {
+        transform: scale(1.05);
+    }
+
+    .app-group:hover .group-count {
+        transform: scale(1.05);
     }
 }
 
