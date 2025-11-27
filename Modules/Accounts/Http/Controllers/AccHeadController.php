@@ -581,64 +581,61 @@ class AccHeadController extends Controller
         try {
             DB::beginTransaction();
 
+            Log::info('Updating account', ['id' => $id, 'validated' => $validated]);
+
             // تحديث البيانات الأساسية
-            $account->update([
-                'aname'               => $validated['aname'],
-                'phone'               => $validated['phone'] ?? null,
-                'address'             => $validated['address'] ?? null,
-                'e_mail'              => $validated['e_mail'] ?? null,
-                'constant'            => $validated['constant'] ?? null,
-                'is_stock'            => $validated['is_stock'] ?? 0,
-                'is_fund'             => $validated['is_fund'] ?? 0,
-                'rentable'            => $validated['rentable'] ?? 0,
-                'employees_expensses' => $validated['employees_expensses'] ?? 0,
-                'parent_id'           => $validated['parent_id'],
-                'nature'              => $validated['nature'] ?? null,
-                'kind'                => $validated['kind'] ?? null,
-                'acc_type'            => $validated['acc_type'] ?? null,
-                'is_basic'            => $validated['is_basic'] ?? 0,
-                'secret'              => $validated['secret'] ?? 0,
-                'mdtime'              => now(),
-                'info'                => $validated['info'] ?? null,
-                'zatca_name'          => $validated['zatca_name'] ?? null,
-                'vat_number'          => $validated['vat_number'] ?? null,
-                'national_id'         => $validated['national_id'] ?? null,
-                'zatca_address'       => $validated['zatca_address'] ?? null,
-                'company_type'        => $validated['company_type'] ?? null,
-                'nationality'         => $validated['nationality'] ?? null,
-                'country_id'          => $validated['country_id'] ?? null,
-                'city_id'             => $validated['city_id'] ?? null,
-                'state_id'            => $validated['state_id'] ?? null,
-                'town_id'             => $validated['town_id'] ?? null,
-                'branch_id'           => $validated['branch_id'],
-            ]);
+            $account->aname = $validated['aname'];
+            $account->phone = $validated['phone'] ?? null;
+            $account->address = $validated['address'] ?? null;
+            $account->e_mail = $validated['e_mail'] ?? null;
+            $account->constant = $validated['constant'] ?? null;
+            $account->is_stock = $validated['is_stock'] ?? 0;
+            $account->is_fund = $validated['is_fund'] ?? 0;
+            $account->rentable = $validated['rentable'] ?? 0;
+            $account->employees_expensses = $validated['employees_expensses'] ?? 0;
+            $account->parent_id = $validated['parent_id'];
+            $account->nature = $validated['nature'] ?? null;
+            $account->kind = $validated['kind'] ?? null;
+            $account->acc_type = $validated['acc_type'] ?? $account->acc_type;
+            $account->is_basic = $validated['is_basic'] ?? 0;
+            $account->secret = $validated['secret'] ?? 0;
+            $account->mdtime = now();
+            $account->info = $validated['info'] ?? null;
+            $account->zatca_name = $validated['zatca_name'] ?? null;
+            $account->vat_number = $validated['vat_number'] ?? null;
+            $account->national_id = $validated['national_id'] ?? null;
+            $account->zatca_address = $validated['zatca_address'] ?? null;
+            $account->company_type = $validated['company_type'] ?? null;
+            $account->nationality = $validated['nationality'] ?? null;
+            $account->country_id = $validated['country_id'] ?? null;
+            $account->city_id = $validated['city_id'] ?? null;
+            $account->state_id = $validated['state_id'] ?? null;
+            $account->town_id = $validated['town_id'] ?? null;
+            $account->branch_id = $validated['branch_id'];
+            $account->save();
 
-            // تم تعطيل تحديث حسابات الإهلاك مؤقتاً لحل مشكلة التحديث
-            // Depreciation accounts update is disabled temporarily
-
-            // Handle depreciation accounts for assets (create new ones if reserve = 1)
+            // Handle depreciation accounts for assets (create if reserve = 1 and not exists)
             if (($validated['reserve'] ?? 0) == 1) {
-                // Check if depreciation accounts already exist for this asset
-                $existingDepreciationAccount = AccHead::where('account_id', $account->id)
-                    ->where('acc_type', 15) // Depreciation account type
-                    ->first();
-
-                $existingExpenseAccount = AccHead::where('account_id', $account->id)
-                    ->where('acc_type', 16) // Expense account type
-                    ->first();
-
-                // Only create new depreciation accounts if they don't exist
-                if (! $existingDepreciationAccount || ! $existingExpenseAccount) {
-                    $this->createDepreciationAccounts($account, $validated['branch_id']);
+                try {
+                    // Check using parent_id relationship instead of account_id
+                    $hasDepreciationAccounts = AccHead::where('parent_id', $account->id)
+                        ->whereIn('acc_type', [15, 16])
+                        ->exists();
+                    
+                    if (!$hasDepreciationAccounts) {
+                        $this->createDepreciationAccounts($account, $validated['branch_id']);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Could not create depreciation accounts', ['error' => $e->getMessage()]);
                 }
             }
 
-            // تحديد نوع الحساب للإعادة التوجيه
-            $parentType = $this->determineAccountType($account->code);
-
             DB::commit();
+            
+            Log::info('Account updated successfully', ['id' => $id, 'aname' => $account->aname]);
 
-            // إعادة التوجيه مع معالجة خاصة للأصول
+            // Determine account type for redirect
+            $parentType = $this->determineAccountType($account->code);
             $redirectType = $parentType;
             if ($parentType === 'assets' && str_starts_with($account->code, '1202')) {
                 $redirectType = 'rentables';

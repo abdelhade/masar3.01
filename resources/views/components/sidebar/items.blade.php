@@ -36,4 +36,5 @@
         </a>
     </li>
     <livewire:item-management.varibals.varibalslinks />
-{{-- @endcan --}}
+@endcan
+

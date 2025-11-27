@@ -179,6 +179,12 @@ class DepreciationManager extends Component
         try {
             DB::beginTransaction();
 
+            \Log::info('Processing asset depreciation', [
+                'edit_mode' => $this->editMode,
+                'item_id' => $this->itemId,
+                'account_id' => $this->selectedAccount->id
+            ]);
+
             // Create or update AccountAsset record
             $assetData = [
                 'acc_head_id' => $this->selectedAccount->id,
@@ -195,25 +201,44 @@ class DepreciationManager extends Component
                 'notes' => $this->notes,
             ];
 
+            // Find or create depreciation accounts first
+            $depreciationAccounts = $this->getOrCreateDepreciationAccounts($this->selectedAccount);
+            
+            // Add depreciation account IDs to asset data
+            $assetData['depreciation_account_id'] = $depreciationAccounts['accumulated_depreciation']->id;
+            $assetData['expense_account_id'] = $depreciationAccounts['expense_depreciation']->id;
+
             if ($this->editMode && $this->itemId) {
                 // Update existing asset
                 $asset = AccountAsset::findOrFail($this->itemId);
-                $asset->update($assetData);
+                $asset->acc_head_id = $assetData['acc_head_id'];
+                $asset->asset_name = $assetData['asset_name'];
+                $asset->purchase_date = $assetData['purchase_date'];
+                $asset->purchase_cost = $assetData['purchase_cost'];
+                $asset->salvage_value = $assetData['salvage_value'];
+                $asset->useful_life_years = $assetData['useful_life_years'];
+                $asset->depreciation_method = $assetData['depreciation_method'];
+                $asset->annual_depreciation = $assetData['annual_depreciation'];
+                $asset->depreciation_start_date = $assetData['depreciation_start_date'];
+                $asset->last_depreciation_date = $assetData['last_depreciation_date'];
+                $asset->is_active = $assetData['is_active'];
+                $asset->notes = $assetData['notes'];
+                $asset->depreciation_account_id = $assetData['depreciation_account_id'];
+                $asset->expense_account_id = $assetData['expense_account_id'];
+                $asset->save();
+                
+                \Log::info('Asset updated successfully', [
+                    'asset_id' => $asset->id,
+                    'asset_name' => $asset->asset_name,
+                    'purchase_cost' => $asset->purchase_cost
+                ]);
+                
                 $message = 'تم تحديث بيانات الأصل بنجاح';
             } else {
                 // Create new asset record
                 $asset = AccountAsset::create($assetData);
                 $message = 'تم إنشاء سجل الأصل بنجاح';
             }
-
-            // Find or create depreciation accounts
-            $depreciationAccounts = $this->getOrCreateDepreciationAccounts($this->selectedAccount);
-            
-            // Update asset with depreciation account references
-            $asset->update([
-                'depreciation_account_id' => $depreciationAccounts['accumulated_depreciation']->id,
-                'expense_account_id' => $depreciationAccounts['expense_depreciation']->id,
-            ]);
             
             // لا تنشئ أي قيود محاسبية من هذه الشاشة
             $message .= ' (تم حفظ بيانات الأصل والإعدادات فقط)';
