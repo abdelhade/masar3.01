@@ -52,7 +52,7 @@ new class extends Component {
         }
 
         if (count($changed) === 0) {
-            session()->flash('error', 'Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜Â§Ã˜Â¯Ã˜Â®Ã˜Â§Ã™â€ž Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯ Ã™â€žÃ™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨Ã˜Â§Ã˜Âª');
+            session()->flash('error', 'يجب ادخال رصيد اول المدة الجديد للحسابات');
             return;
         }
 
@@ -62,12 +62,12 @@ new class extends Component {
             app(AccountService::class)->recalculateOpeningCapitalAndSyncJournal();
 
             $this->loadData();
-            session()->flash('success', 'Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­');
+            session()->flash('success', 'تم تحديث الرصيد بنجاح');
         } catch (\Throwable $e) {
             Log::error('Error updating start balance', [
                 'message' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Ã˜Â­Ã˜Â¯Ã˜Â« Ã˜Â®Ã˜Â·Ã˜Â£ Ã™â€¦Ã˜Â§ Ã˜Â£Ã˜Â«Ã™â€ Ã˜Â§Ã˜Â¡ Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â§Ã™â€žÃ˜Â±Ã˜ÂµÃ™Å Ã˜Â¯: ' . $e->getMessage());
+            session()->flash('error', 'حدث خطأ ما أثناء تحديث الرصيد: ' . $e->getMessage());
         }
     }
 
@@ -94,21 +94,21 @@ new class extends Component {
                 <style>
                     .custom-table-hover tbody tr:hover {
                         background-color: #f5e9d7 !important;
-                        /* Ã™â€žÃ™Ë†Ã™â€  Ã™â€¦Ã˜Â®Ã˜ÂªÃ™â€žÃ™Â Ã˜Â¹Ã™â€ Ã˜Â¯ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â±Ã™Ë†Ã˜Â± */
+                        /* لون مختلف عند المرور */
                     }
                 </style>
 
                 <x-table-export-actions table-id="updateStartBalance-table" filename="updateStartBalance-table"
-                    excel-label="Ã˜ÂªÃ˜ÂµÃ˜Â¯Ã™Å Ã˜Â± Excel" pdf-label="Ã˜ÂªÃ˜ÂµÃ˜Â¯Ã™Å Ã˜Â± PDF" print-label="Ã˜Â·Ã˜Â¨Ã˜Â§Ã˜Â¹Ã˜Â©" />
+                    excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
 
                 <table id="updateStartBalance-table"
                     class="table table-bordered table-sm table-striped custom-table-hover">
                     <thead class="table-light">
                         <tr class="text-center">
-                            <th style="width: 10%" class="font-family-cairo fw-bold font-14">Ã˜Â§Ã™â€žÃ™Æ’Ã™Ë†Ã˜Â¯</th>
-                            <th style="width: 20%" class="font-family-cairo fw-bold font-14">Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦</th>
-                            <th style="width: 15%" class="font-family-cairo fw-bold font-14">Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å </th>
-                            <th style="width: 15%" class="font-family-cairo fw-bold font-14">Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</th>
+                            <th style="width: 10%" class="font-family-cairo fw-bold font-14">الكود</th>
+                            <th style="width: 20%" class="font-family-cairo fw-bold font-14">الاسم</th>
+                            <th style="width: 15%" class="font-family-cairo fw-bold font-14">رصيد اول المدة الحالي</th>
+                            <th style="width: 15%" class="font-family-cairo fw-bold font-14">رصيد اول المدة الجديد</th>
                         </tr>
                     </thead>
                     <tbody id="items_table_body">
@@ -122,7 +122,7 @@ new class extends Component {
                                     <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['name'] }}
                                         - <a
                                             href="{{ route('account-movement', ['accountId' => $formAccount['id']]) }}">
-                                            <i class="las la-eye fa-lg" title="Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â­Ã˜Â±Ã™Æ’Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨"></i>
+                                            <i class="las la-eye fa-lg" title="عرض حركات الحساب"></i>
                                         </a></p>
                                 </td>
                                 <td>
@@ -135,7 +135,7 @@ new class extends Component {
                                         <input type="number" step="0.01"
                                             wire:model.blur="formAccounts.{{ $formAccount['id'] }}.new_start_balance"
                                             class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($formAccounts[$formAccount['id']]['new_start_balance'] ?? 0) < 0) text-danger @endif"
-                                            placeholder="Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯" style="padding:2px;height:30px;"
+                                            placeholder="رصيد اول المدة الجديد" style="padding:2px;height:30px;"
                                             x-on:keydown.enter.prevent>
                                     @endif
                                 </td>
@@ -147,10 +147,10 @@ new class extends Component {
                 <button type="submit" class="btn btn-main m-3" wire:click="$refresh"
                     wire:target="updateStartBalance" wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="updateStartBalance">
-                        Ã˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«
+                        تحديث
                     </span>
                     <span wire:loading wire:target="updateStartBalance">
-                        Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â«...
+                        جاري التحديث...
                     </span>
                 </button>
             </form>
@@ -171,21 +171,21 @@ new class extends Component {
                         ));
                         const idx = inputs.indexOf(e.target);
                         if (idx > -1 && idx < inputs.length - 1) {
-                            // Ã˜Â§Ã™â€ Ã˜ÂªÃ™â€šÃ™â€ž Ã™â€žÃ™â€žÃ˜Â­Ã™â€šÃ™â€ž Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â§Ã™â€žÃ™Å 
+                            // انتقل للحقل التالي
                             inputs[idx + 1].focus();
                         } else if (idx === inputs.length - 1) {
-                            // Ã˜Â¥Ã˜Â°Ã˜Â§ Ã™Æ’Ã˜Â§Ã™â€  Ã™ÂÃ™Å  Ã˜Â¢Ã˜Â®Ã˜Â± Ã˜Â­Ã™â€šÃ™â€žÃ˜Å’ Ã˜Â§Ã™â€ Ã˜ÂªÃ™â€šÃ™â€ž Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â²Ã˜Â± Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜Â­Ã™ÂÃ˜Â¸
+                            // إذا كان في آخر حقل، انتقل إلى زر التحديث أو الحفظ
                             const submitBtn = form.querySelector(
                                 'button[type="submit"], input[type="submit"]');
                             if (submitBtn) {
                                 submitBtn.focus();
-                                // Ã˜Â¹Ã™â€ Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â¶Ã˜ÂºÃ˜Â· Ã˜Â¹Ã™â€žÃ™â€° Enter Ã™â€¦Ã˜Â±Ã˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€° Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â²Ã˜Â±Ã˜Å’ Ã™â€šÃ™â€¦ Ã˜Â¨Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â­Ã˜Â¯Ã™Å Ã˜Â« Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜Â­Ã™ÂÃ˜Â¸
+                                // عند الضغط على Enter مرة أخرى على الزر قم بالتحديث أو الحفظ
                                 submitBtn.addEventListener('keydown', function handler(ev) {
                                     if (ev.key === 'Enter' || ev.keyCode === 13) {
                                         ev.preventDefault();
                                         submitBtn.click();
                                     }
-                                    // Ã˜Â¥Ã˜Â²Ã˜Â§Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â¯Ã˜Â« Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â£Ã™Ë†Ã™â€ž Ã˜Â§Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã˜Â§Ã™â€¦ Ã™â€žÃ™â€¦Ã™â€ Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂªÃ™Æ’Ã˜Â±Ã˜Â§Ã˜Â±
+                                    // إزالة الحدث بعد أول استخدام لمنع التكرار
                                     submitBtn.removeEventListener('keydown', handler);
                                 });
                             }
@@ -196,4 +196,3 @@ new class extends Component {
         });
     </script>
 @endpush
-

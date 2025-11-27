@@ -16,13 +16,13 @@ use Illuminate\Routing\Controller;
 
 class MultiJournalController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض قيود يوميه حسابات')->only(['index']);
-    //     $this->middleware('can:إضافة قيود يوميه حسابات')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل قيود يوميه حسابات')->only(['update']);
-    //     $this->middleware('can:حذف قيود يوميه حسابات')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:view multi-journals')->only(['index']);
+        $this->middleware('can:create multi-journals')->only(['create', 'store']);
+        $this->middleware('can:edit multi-journals')->only(['update']);
+        $this->middleware('can:delete multi-journals')->only(['destroy']);
+    }
 
     public function index()
     {

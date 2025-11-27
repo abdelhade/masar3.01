@@ -1,7 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @include('components.sidebar.vouchers')
+    @include('components.sidebar.journals')
 @endsection
 
 @section('content')

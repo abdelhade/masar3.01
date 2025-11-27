@@ -10,12 +10,12 @@
         'items' => [['label' => __('Home'), 'url' => route('admin.dashboard')], ['label' => __('Journals')]],
     ])
     <div class="card-header">
-        {{-- @can('انشاء قيود اليوميه عمليات') --}}
-        <a href="{{ route('multi-journals.create') }}" type="button" class="btn btn-main">
-            <i class="fas fa-plus me-2"></i>
-            {{ __('Add New') }}
-        </a>
-        {{-- @endcan --}}
+        @can('create multi-journals')
+            <a href="{{ route('multi-journals.create') }}" type="button" class="btn btn-main">
+                <i class="fas fa-plus me-2"></i>
+                {{ __('Add New') }}
+            </a>
+        @endcan
     </div>
     <div class="card-body">
         <div class="table-responsive" style="overflow-x: auto;">
@@ -37,7 +37,9 @@
                         <th class="font-family-cairo fw-bold font-14 text-center">تم الانشاء في </th>
                         <th class="font-family-cairo fw-bold font-14 text-center">ملاحظات</th>
                         <th class="font-family-cairo fw-bold font-14 text-center">تم المراجعه</th>
-                        <th class="font-family-cairo fw-bold font-14 text-center" class="text-end">العمليات</th>
+                        @canany(['edit multi-journals', 'delete multi-journals'])
+                            <th class="font-family-cairo fw-bold font-14 text-center" class="text-end">العمليات</th>
+                        @endcanany
                     </tr>
                 </thead>
                 <tbody>
@@ -63,21 +65,27 @@
                             <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->info }}</td>
                             <td class="font-family-cairo fw-bold font-14 text-center">
                                 {{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
-                            <td class="font-family-cairo fw-bold font-14 text-center" x-show="columns[16]">
-                                <button>
-                                    <a href="{{ route('multi-journals.edit', $multi) }}" class="btn btn-primary font-16"><i
-                                            class="las la-eye"></i></a>
-                                </button>
-                                <form action="{{ route('multi-journals.destroy', $multi->id) }}" method="POST"
-                                    style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-danger btn-icon-square-sm"
-                                        onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
-                                        <i class="las la-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </td>
+                            @canany(['edit multi-journals', 'delete multi-journals'])
+                                <td class="font-family-cairo fw-bold font-14 text-center" x-show="columns[16]">
+                                    @can('edit multi-journals')
+                                        <button>
+                                            <a href="{{ route('multi-journals.edit', $multi) }}" class="btn btn-primary font-16"><i
+                                                    class="las la-pen"></i></a>
+                                        </button>
+                                    @endcan
+                                    @can('delete multi-journals')
+                                        <form action="{{ route('multi-journals.destroy', $multi->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-icon-square-sm"
+                                                onclick="return confirm(' أنت متأكد انك عايز تمسح العملية و القيد المصاحب لها؟')">
+                                                <i class="las la-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </td>
+                            @endcanany
                         </tr>
                     @empty
                         <tr>

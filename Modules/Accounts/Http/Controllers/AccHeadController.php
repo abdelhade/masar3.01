@@ -39,7 +39,8 @@ class AccHeadController extends Controller
     {
         // حماية صفحة الإحصائيات
         $this->middleware('can:view basicData-statistics')->only(['basicDataStatistics']);
-
+        $this->middleware('can:view opening-balance-accounts')->only(['startBalance']);
+        $this->middleware('can:view accounts-balance-sheet')->only(['balanceSheet']);
         // ملاحظة: صلاحيات index يتم فحصها في IndexAccountRequest::authorize()
 
         // حماية صفحات التعديل والحذف حسب نوع الحساب - معطل مؤقتاً

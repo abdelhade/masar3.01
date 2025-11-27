@@ -1,10 +1,12 @@
-@can('عرض قيد يومية')
+@can('view journals-statistics')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('journal.statistics') }}">
             <i class="ti-control-record"></i>{{ __('Journal Statistics') }}
         </a>
     </li>
+@endcan
 
+@can('create journals')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('journals.create', ['type' => 'basic_journal']) }}">
             <i class="ti-control-record"></i>{{ __('navigation.daily_journal') }}
@@ -12,36 +14,36 @@
     </li>
 @endcan
 
-@can('عرض قيد يوميه متعدد')
+@can('create multi-journals')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('multi-journals.create') }}">
             <i class="ti-control-record"></i>{{ __('navigation.multi_journal') }}
         </a>
     </li>
 @endcan
-@can('عرض قيود يومية عمليات')
+@can('view journals')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('journals.index') }}">
             <i class="ti-control-record"></i>{{ __('navigation.daily_ledgers_operations') }}
         </a>
     </li>
 @endcan
-@can('عرض قيود يوميه عمليات متعدده')
+@can('view multi-journals')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('multi-journals.index') }}">
             <i class="ti-control-record"></i>{{ __('navigation.multi_daily_ledgers_operations') }}
         </a>
     </li>
 @endcan
-@can('عرض قيود يوميه حسابات')
-    <li class="nav-item">
+{{-- @can('عرض قيود يوميه حسابات') --}}
+    {{-- <li class="nav-item">
         <a class="nav-link" href="{{ route('reports.journal-summery') }}">
             <i class="ti-control-record"></i>{{ __('navigation.daily_ledgers_accounts') }}
         </a>
-    </li>
-@endcan
+    </li> --}}
+{{-- @endcan --}}
 
-@can('عرض تسجيل الارصده الافتتاحيه للمخازن')
+@can('create inventory-balance')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('inventory-balance.create') }}">
             <i class="ti-control-record"></i>{{ __('navigation.opening_inventory_balance') }}
@@ -49,23 +51,28 @@
     </li>
 @endcan
 {{-- الرصيد الافتتاحى للحسابات --}}
+@can('view opening-balance-accounts')
 <li class="nav-item">
     <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.startBalance') }}">
         <i class="ti-control-record"></i>{{ __('navigation.opening_balance_accounts') }}
     </a>
 </li>
+@endcan
+
 {{-- الرصيد الافتتاحى للحسابات --}}
 {{-- account movement --}}
-<li class="nav-item">
+{{-- <li class="nav-item">
     <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
         <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
     </a>
-</li>
+</li> --}}
 
 {{-- account movement --}}
 {{-- balance sheet --}}
+@can('view balance-sheet')
 <li class="nav-item">
     <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.balanceSheet') }}">
         <i class="ti-control-record"></i>{{ __('navigation.balance_sheet') }}
     </a>
 </li>
+@endcan

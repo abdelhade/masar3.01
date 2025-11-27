@@ -37,23 +37,23 @@ new class extends Component {
 
     public function loadBalanceSheetData()
     {
-        // Load Current Assets (Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©)
+        // Load Current Assets (الأصول المتداولة)
         $this->currentAssets = $this->getCurrentAssets();
         $this->currentAssetsTotal = collect($this->currentAssets)->sum('balance');
 
-        // Load Non-Current Assets (Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©)
+        // Load Non-Current Assets (الأصول غير المتداولة)
         $this->nonCurrentAssets = $this->getNonCurrentAssets();
         $this->nonCurrentAssetsTotal = collect($this->nonCurrentAssets)->sum('balance');
 
-        // Load Current Liabilities (Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©)
+        // Load Current Liabilities (الخصوم المتداولة)
         $this->currentLiabilities = $this->getCurrentLiabilities();
         $this->currentLiabilitiesTotal = collect($this->currentLiabilities)->sum('balance');
 
-        // Load Non-Current Liabilities (Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©)
+        // Load Non-Current Liabilities (الخصوم غير المتداولة)
         $this->nonCurrentLiabilities = $this->getNonCurrentLiabilities();
         $this->nonCurrentLiabilitiesTotal = collect($this->nonCurrentLiabilities)->sum('balance');
 
-        // Load Equity (Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©)
+        // Load Equity (حقوق الملكية)
         $this->equity = $this->getEquity();
         $this->equityTotal = collect($this->equity)->sum('balance');
 
@@ -66,7 +66,7 @@ new class extends Component {
     private function getCurrentAssets()
     {
         return AccHead::where('is_basic', 0)
-            ->where('code', 'like', '12%') // Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©
+            ->where('code', 'like', '12%') // الأصول المتداولة
             ->where('isdeleted', 0)
             ->get()
             ->map(function ($account) {
@@ -89,7 +89,7 @@ new class extends Component {
     private function getNonCurrentAssets()
     {
         return AccHead::where('is_basic', 0)
-            ->where('code', 'like', '11%') // Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ø«Ø§Ø¨ØªØ©
+            ->where('code', 'like', '11%') // الأصول الثابتة
             ->where('isdeleted', 0)
             ->get()
             ->map(function ($account) {
@@ -112,7 +112,7 @@ new class extends Component {
     private function getCurrentLiabilities()
     {
         return AccHead::where('is_basic', 0)
-            ->where('code', 'like', '21%') // Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©
+            ->where('code', 'like', '21%') // الخصوم المتداولة
             ->where('isdeleted', 0)
             ->get()
             ->map(function ($account) {
@@ -135,7 +135,7 @@ new class extends Component {
     private function getNonCurrentLiabilities()
     {
         return AccHead::where('is_basic', 0)
-            ->where('code', 'like', '22%') // Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©
+            ->where('code', 'like', '22%') // الخصوم غير المتداولة
             ->where('isdeleted', 0)
             ->get()
             ->map(function ($account) {
@@ -158,7 +158,7 @@ new class extends Component {
     private function getEquity()
     {
         return AccHead::where('is_basic', 0)
-            ->where('code', 'like', '23%') // Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©
+            ->where('code', 'like', '23%') // حقوق الملكية
             ->where('isdeleted', 0)
             ->get()
             ->map(function ($account) {
@@ -200,80 +200,80 @@ new class extends Component {
     private function getCurrentAssetCategory($code)
     {
         if (str_starts_with($code, '121')) {
-            return 'Ø§Ù„Ù†Ù‚Ø¯ ÙˆÙ…Ø§ ÙŠØ¹Ø§Ø¯Ù„Ù‡';
+            return 'النقد وما يعادله';
         }
         if (str_starts_with($code, '122')) {
-            return 'Ø§Ù„Ù…Ø¯ÙŠÙ†ÙˆÙ† ÙˆØ§Ù„ØªØ£Ù…ÙŠÙ†Ø§Øª';
+            return 'المدينون والتأمينات';
         }
         if (str_starts_with($code, '123')) {
-            return 'Ù…Ø®Ø²ÙˆÙ† Ø§Ù„Ø¨Ø¶Ø§Ø¹Ø©';
+            return 'مخزون البضاعة';
         }
         if (str_starts_with($code, '124')) {
-            return 'Ø§Ù„Ø§Ø³ØªØ«Ù…Ø§Ø±Ø§Øª Ù‚ØµÙŠØ±Ø© Ø§Ù„Ø£Ø¬Ù„';
+            return 'الاستثمارات قصيرة الأجل';
         }
         if (str_starts_with($code, '125')) {
-            return 'Ù…ØµØ±ÙˆÙØ§Øª Ù…Ø¯ÙÙˆØ¹Ø© Ù…Ù‚Ø¯Ù…Ø§Ù‹';
+            return 'مصروفات مدفوعة مقدماً';
         }
-        return 'Ø£ØµÙˆÙ„ Ù…ØªØ¯Ø§ÙˆÙ„Ø© Ø£Ø®Ø±Ù‰';
+        return 'أصول متداولة أخرى';
     }
 
     private function getNonCurrentAssetCategory($code)
     {
         if (str_starts_with($code, '111')) {
-            return 'Ø§Ù„Ù…Ù…ØªÙ„ÙƒØ§Øª ÙˆØ§Ù„Ø¢Ù„Ø§Øª ÙˆØ§Ù„Ù…Ø¹Ø¯Ø§Øª';
+            return 'الممتلكات والآلات والمعدات';
         }
         if (str_starts_with($code, '112')) {
-            return 'Ø§Ù„Ø§Ø³ØªØ«Ù…Ø§Ø±Ø§Øª Ø·ÙˆÙŠÙ„Ø© Ø§Ù„Ø£Ø¬Ù„';
+            return 'الاستثمارات طويلة الأجل';
         }
         if (str_starts_with($code, '113')) {
-            return 'Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…Ù„Ù…ÙˆØ³Ø©';
+            return 'الأصول غير الملموسة';
         }
         if (str_starts_with($code, '114')) {
-            return 'Ø§Ù„Ø¥Ù‡Ù„Ø§Ùƒ ÙˆØ§Ù„Ø§Ø³ØªÙ†Ø²Ø§Ù Ø§Ù„Ù…ØªØ±Ø§ÙƒÙ…';
+            return 'الإهلاك والاستنزاف المتراكم';
         }
-        return 'Ø£ØµÙˆÙ„ ØºÙŠØ± Ù…ØªØ¯Ø§ÙˆÙ„Ø© Ø£Ø®Ø±Ù‰';
+        return 'أصول غير متداولة أخرى';
     }
 
     private function getCurrentLiabilityCategory($code)
     {
         if (str_starts_with($code, '211')) {
-            return 'Ø§Ù„Ø¯Ø§Ø¦Ù†ÙˆÙ†';
+            return 'الدائنون';
         }
         if (str_starts_with($code, '212')) {
-            return 'Ù‚Ø±ÙˆØ¶ Ù‚ØµÙŠØ±Ø© Ø§Ù„Ø£Ø¬Ù„';
+            return 'قروض قصيرة الأجل';
         }
         if (str_starts_with($code, '213')) {
-            return 'Ø¶Ø±Ø§Ø¦Ø¨ Ù…Ø³ØªØ­Ù‚Ø©';
+            return 'ضرائب مستحقة';
         }
-        return 'Ø§Ù„ØªØ²Ø§Ù…Ø§Øª Ù‚ØµÙŠØ±Ø© Ø§Ù„Ø£Ø¬Ù„ Ø£Ø®Ø±Ù‰';
+        return 'التزامات قصيرة الأجل أخرى';
     }
 
     private function getNonCurrentLiabilityCategory($code)
     {
         if (str_starts_with($code, '221')) {
-            return 'Ù‚Ø±ÙˆØ¶ Ø·ÙˆÙŠÙ„Ø© Ø§Ù„Ø£Ø¬Ù„';
+            return 'قروض طويلة الأجل';
         }
         if (str_starts_with($code, '222')) {
-            return 'Ø§Ù„ØªØ²Ø§Ù…Ø§Øª Ø¶Ø±ÙŠØ¨ÙŠØ© Ù…Ø¤Ø¬Ù„Ø©';
+            return 'التزامات ضريبية مؤجلة';
         }
         if (str_starts_with($code, '223')) {
-            return 'Ø§Ù„ØªØ²Ø§Ù…Ø§Øª Ù…Ø¹Ø§Ø´Ø§Øª Ø§Ù„Ù…ÙˆØ¸ÙÙŠÙ†';
+            return 'التزامات معاشات الموظفين';
         }
-        return 'Ø§Ù„ØªØ²Ø§Ù…Ø§Øª Ø·ÙˆÙŠÙ„Ø© Ø§Ù„Ø£Ø¬Ù„ Ø£Ø®Ø±Ù‰';
+        return 'التزامات طويلة الأجل أخرى';
     }
 
     private function getEquityCategory($code)
     {
         if (str_starts_with($code, '231')) {
-            return 'Ø±Ø£Ø³ Ø§Ù„Ù…Ø§Ù„';
+            return 'رأس المال';
         }
         if (str_starts_with($code, '232')) {
-            return 'Ø£Ø±Ø¨Ø§Ø­ Ù…Ø­ØªØ¬Ø²Ø©';
+            return 'أرباح محتجزة';
         }
         if (str_starts_with($code, '233')) {
-            return 'Ø§Ø­ØªÙŠØ§Ø·ÙŠØ§Øª Ø£Ø®Ø±Ù‰';
+            return 'احتياطيات أخرى';
         }
-        return 'Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©';
+        return 'حقوق الملكية';
     }
 
     public function refreshBalanceSheet()
@@ -292,7 +292,7 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©</h4>
+                <h4 class="page-title font-family-cairo fw-bold">الميزانية العمومية</h4>
             </div>
         </div>
     </div>
@@ -305,14 +305,14 @@ new class extends Component {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="font-family-cairo fw-bold">Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©:</label>
+                                <label class="font-family-cairo fw-bold">اسم الشركة:</label>
                                 <input type="text" wire:model="companyName" class="form-control"
-                                    placeholder="Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©">
+                                    placeholder="أدخل اسم الشركة">
                             </div>
                         </div>
                         {{-- <div class="col-md-6">
                             <div class="form-group">
-                                <label class="font-family-cairo fw-bold">ØªØ§Ø±ÙŠØ® Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©:</label>
+                                <label class="font-family-cairo fw-bold">تاريخ الميزانية العمومية:</label>
                                 <input type="date" wire:model="balanceSheetDate" class="form-control">
                             </div>
                         </div> --}}
@@ -320,10 +320,10 @@ new class extends Component {
                     <div class="row mt-3">
                         <div class="col-12">
                             <button wire:click="refreshBalanceSheet" class="btn btn-main font-family-cairo">
-                                <i class="fas fa-sync-alt"></i> ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©
+                                <i class="fas fa-sync-alt"></i> تحديث الميزانية
                             </button>
                             <button wire:click="exportBalanceSheet" class="btn btn-success font-family-cairo ms-2">
-                                <i class="fas fa-download"></i> ØªØµØ¯ÙŠØ± Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©
+                                <i class="fas fa-download"></i> تصدير الميزانية
                             </button>
                         </div>
                     </div>
@@ -337,30 +337,30 @@ new class extends Component {
         <div class="col-9 mx-auto">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title font-family-cairo fw-bold">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ© -
-                        {{ $companyName ?: 'Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©' }}</h5>
-                    <p class="text-muted font-family-cairo">ØªØ§Ø±ÙŠØ® Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©:
+                    <h5 class="card-title font-family-cairo fw-bold">الميزانية العمومية -
+                        {{ $companyName ?: 'اسم الشركة' }}</h5>
+                    <p class="text-muted font-family-cairo">تاريخ الميزانية:
                         {{ \Carbon\Carbon::parse($balanceSheetDate)->format('Y-m-d') }}</p>
-                    <p class="text-muted font-family-cairo">(Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¨Ø§Ù„Øº Ø¨Ø§Ù„Ø¹Ù…Ù„Ø© Ø§Ù„Ù…Ø­Ù„ÙŠØ©)</p>
+                    <p class="text-muted font-family-cairo">(جميع المبالغ بالعملة المحلية)</p>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
                             <thead class="table-dark">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold text-center text-white" style="width: 60%">Ø§Ù„Ø¨Ù†Ø¯</th>
-                                    <th class="font-family-cairo fw-bold text-center text-white" style="width: 40%">Ø§Ù„Ù…Ø¨Ù„Øº</th>
+                                    <th class="font-family-cairo fw-bold text-center text-white" style="width: 60%">البند</th>
+                                    <th class="font-family-cairo fw-bold text-center text-white" style="width: 40%">المبلغ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Ø§Ù„Ø£ØµÙˆÙ„ (Assets) -->
+                                <!-- الأصول (Assets) -->
                                 <tr class="table-primary">
-                                    <td colspan="2" class="font-family-cairo fw-bold fs-5">Ø§Ù„Ø£ØµÙˆÙ„ (Assets)</td>
+                                    <td colspan="2" class="font-family-cairo fw-bold fs-5">الأصول (Assets)</td>
                                 </tr>
                                 
-                                <!-- Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
+                                <!-- الأصول المتداولة -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Current Assets)</td>
+                                    <td class="font-family-cairo fw-bold">الأصول المتداولة (Current Assets)</td>
                                     <td></td>
                                 </tr>
                                 
@@ -374,14 +374,14 @@ new class extends Component {
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="font-family-cairo fw-bold">إجمالي الأصول المتداولة</td>
                                     <td class="text-end font-family-cairo fw-bold">
                                         {{ number_format($currentAssetsTotal, 2) }}</td>
                                 </tr>
                                 
-                                <!-- Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
+                                <!-- الأصول غير المتداولة -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Non-Current Assets)</td>
+                                    <td class="font-family-cairo fw-bold">الأصول غير المتداولة (Non-Current Assets)</td>
                                     <td></td>
                                 </tr>
                                 
@@ -395,26 +395,26 @@ new class extends Component {
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="font-family-cairo fw-bold">إجمالي الأصول غير المتداولة</td>
                                     <td class="text-end font-family-cairo fw-bold">
                                         {{ number_format($nonCurrentAssetsTotal, 2) }}</td>
                                 </tr>
                                 
                                 <tr class="table-success">
-                                    <td class="font-family-cairo fw-bold fs-5">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„</td>
+                                    <td class="font-family-cairo fw-bold fs-5">إجمالي الأصول</td>
                                     <td class="text-end font-family-cairo fw-bold fs-5">
                                         {{ number_format($totalAssets, 2) }}</td>
                                 </tr>
                                 
-                                <!-- Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© -->
+                                <!-- الخصوم وحقوق الملكية -->
                                 <tr class="table-primary">
-                                    <td colspan="2" class="font-family-cairo fw-bold fs-5">Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©
+                                    <td colspan="2" class="font-family-cairo fw-bold fs-5">الخصوم وحقوق الملكية
                                         (Liabilities & Equity)</td>
                                 </tr>
                                 
-                                <!-- Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
+                                <!-- الخصوم المتداولة -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Current Liabilities)</td>
+                                    <td class="font-family-cairo fw-bold">الخصوم المتداولة (Current Liabilities)</td>
                                     <td></td>
                                 </tr>
                                 
@@ -428,14 +428,14 @@ new class extends Component {
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="font-family-cairo fw-bold">إجمالي الخصوم المتداولة</td>
                                     <td class="text-end font-family-cairo fw-bold">
                                         {{ number_format($currentLiabilitiesTotal, 2) }}</td>
                                 </tr>
                                 
-                                <!-- Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
+                                <!-- الخصوم غير المتداولة -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Non-Current Liabilities)
+                                    <td class="font-family-cairo fw-bold">الخصوم غير المتداولة (Non-Current Liabilities)
                                     </td>
                                     <td></td>
                                 </tr>
@@ -450,20 +450,20 @@ new class extends Component {
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="font-family-cairo fw-bold">إجمالي الخصوم غير المتداولة</td>
                                     <td class="text-end font-family-cairo fw-bold">
                                         {{ number_format($nonCurrentLiabilitiesTotal, 2) }}</td>
                                 </tr>
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ…</td>
+                                    <td class="font-family-cairo fw-bold">إجمالي الخصوم</td>
                                     <td class="text-end font-family-cairo fw-bold">
                                         {{ number_format($totalLiabilities, 2) }}</td>
                                 </tr>
                                 
-                                <!-- Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© -->
+                                <!-- حقوق الملكية -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© (Equity)</td>
+                                    <td class="font-family-cairo fw-bold">حقوق الملكية (Equity)</td>
                                     <td></td>
                                 </tr>
                                 
@@ -477,13 +477,13 @@ new class extends Component {
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©</td>
+                                    <td class="font-family-cairo fw-bold">إجمالي حقوق الملكية</td>
                                     <td class="text-end font-family-cairo fw-bold">{{ number_format($totalEquity, 2) }}
                                     </td>
                                 </tr>
                                 
                                 <tr class="table-success">
-                                    <td class="font-family-cairo fw-bold fs-5">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©</td>
+                                    <td class="font-family-cairo fw-bold fs-5">إجمالي الخصوم وحقوق الملكية</td>
                                     <td class="text-end font-family-cairo fw-bold fs-5">
                                         {{ number_format($totalLiabilities + $totalEquity, 2) }}</td>
                                 </tr>
@@ -497,15 +497,15 @@ new class extends Component {
                             <div
                                 class="alert {{ $totalAssets == $totalLiabilities + $totalEquity ? 'alert-success' : 'alert-danger' }}">
                                 <h6 class="font-family-cairo fw-bold">
-                                    Ù…Ø¹Ø§Ø¯Ù„Ø© Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©:
-                                    Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ ({{ number_format($totalAssets, 2) }})
-                                    {{ $totalAssets == $totalLiabilities + $totalEquity ? '=' : 'â‰ ' }}
-                                    Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… + Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©
+                                    معادلة الميزانية العمومية:
+                                    إجمالي الأصول ({{ number_format($totalAssets, 2) }})
+                                    {{ $totalAssets == $totalLiabilities + $totalEquity ? '=' : '≠' }}
+                                    إجمالي الخصوم + حقوق الملكية
                                     ({{ number_format($totalLiabilities + $totalEquity, 2) }})
                                 </h6>
                                 @if ($totalAssets != $totalLiabilities + $totalEquity)
                                     <p class="font-family-cairo text-danger">
-                                        ØªØ­Ø°ÙŠØ±: Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© ØºÙŠØ± Ù…ØªÙˆØ§Ø²Ù†Ø©. Ø§Ù„ÙØ±Ù‚:
+                                        تحذير: الميزانية غير متوازنة. الفرق:
                                         {{ number_format($totalAssets - ($totalLiabilities + $totalEquity), 2) }}
                                     </p>
                                 @endif
@@ -555,4 +555,3 @@ new class extends Component {
     }
     </style>
 </div>
-

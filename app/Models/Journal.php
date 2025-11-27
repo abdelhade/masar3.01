@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\Accounts\Models\AccHead;
 
 class Journal extends Model
 {
