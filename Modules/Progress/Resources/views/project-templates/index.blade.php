@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-lg-12">
             {{-- @can('إضافة مشروعات') --}}
-            <a href="{{ route('project.template.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+            <a href="{{ route('project.template.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('قالب جديد') }}
                 <i class="fas fa-plus me-2"></i>
             </a>

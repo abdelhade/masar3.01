@@ -15,7 +15,7 @@
 
             {{-- Add Button --}}
             @can('create Inquiries Roles')
-                <a href="{{ route('inquiries-roles.create') }}" class="btn btn-main font-family-cairo fw-bold">
+                <a href="{{ route('inquiries-roles.create') }}" class="btn btn-main font-hold fw-bold">
                     <i class="fas fa-plus me-2"></i>
                     {{ __('Add New') }}
                 </a>

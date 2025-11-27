@@ -3,15 +3,15 @@
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title font-family-cairo fw-bold" id="barcodeModalLabel">إدارة الباركودات الإضافية</h5>
+                <h5 class="modal-title font-hold fw-bold" id="barcodeModalLabel">إدارة الباركودات الإضافية</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="font-family-cairo fw-bold mb-0">الباركودات الإضافية</h6>
-                            <button type="button" class="btn btn-success btn-sm font-family-cairo fw-bold"
+                            <h6 class="font-hold fw-bold mb-0">الباركودات الإضافية</h6>
+                            <button type="button" class="btn btn-success btn-sm font-hold fw-bold"
                                 wire:click.prevent="addModalBarcode()">
                                 <i class="las la-plus me-1"></i> إضافة باركود
                             </button>
@@ -26,7 +26,7 @@
                                     <input type="text" 
                                            wire:model="modalBarcodeData.{{ $index }}"
                                            id="modalBarcodeInput.{{ $index }}"
-                                           class="form-control font-family-cairo fw-bold" 
+                                           class="form-control font-hold fw-bold" 
                                            placeholder="أدخل الباركود"
                                            maxlength="25">
                                     <button type="button" 
@@ -48,10 +48,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary font-hold fw-bold" data-bs-dismiss="modal">
                     إلغاء
                 </button>
-                <button type="button" class="btn btn-main font-family-cairo fw-bold" 
+                <button type="button" class="btn btn-main font-hold fw-bold" 
                         wire:click="saveAdditionalBarcodes">
                     <i class="las la-save me-1"></i> حفظ الباركودات
                 </button>

@@ -43,15 +43,15 @@
                             <tbody>
                                 @forelse($users as $user)
                                     <tr class="text-center">
-                                        <td class="font-family-cairo fw-bold font-14 text-center"> {{ $loop->iteration }}
+                                        <td class="font-hold fw-bold font-14 text-center"> {{ $loop->iteration }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $user->name }}</td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">{{ $user->email }}</td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                        <td class="font-hold fw-bold font-14 text-center">{{ $user->name }}</td>
+                                        <td class="font-hold fw-bold font-14 text-center">{{ $user->email }}</td>
+                                        <td class="font-hold fw-bold font-14 text-center">
                                             <span
                                                 class="badge bg-primary">{{ $user->permissions->count() }}</span>
                                         </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center">
+                                        <td class="font-hold fw-bold font-14 text-center">
                                             @foreach ($user->branches as $branch)
                                                 <span class="badge bg-info text-dark">{{ $branch->name }}</span>
                                             @endforeach

@@ -994,54 +994,54 @@ new class extends Component {
                     <div class="col-md-12 p-3">
                         <div class="row">
                             <div class="col-md-1 mb-3">
-                                <label for="code" class="form-label font-family-cairo fw-bold">{{ __('items.item_code') }}</label>
+                                <label for="code" class="form-label font-hold fw-bold">{{ __('items.item_code') }}</label>
                                 <input type="text" wire:model.live="item.code"
-                                    class="form-control font-family-cairo fw-bold" id="code"
+                                    class="form-control font-hold fw-bold" id="code"
                                     value="{{ $item['code'] }}" readonly disabled>
                                 @error('item.code')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="col-md-1 mb-3">
-                                <label for="type" class="form-label font-family-cairo fw-bold">{{ __('items.item_type') }}</label>
-                                <select wire:model="item.type" class="form-select font-family-cairo fw-bold"
+                                <label for="type" class="form-label font-hold fw-bold">{{ __('items.item_type') }}</label>
+                                <select wire:model="item.type" class="form-select font-hold fw-bold"
                                     id="type">
-                                    <option class="font-family-cairo fw-bold" value="">{{ __('common.select') }}</option>
+                                    <option class="font-hold fw-bold" value="">{{ __('common.select') }}</option>
                                     @foreach (ItemType::cases() as $type)
-                                        <option class="font-family-cairo fw-bold" value="{{ $type->value }}">
+                                        <option class="font-hold fw-bold" value="{{ $type->value }}">
                                             {{ $type->label() }}</option>
                                     @endforeach
                                 </select>
                                 @error('item.type')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="name" class="form-label font-family-cairo fw-bold">{{ __('items.item_name') }}</label>
+                                <label for="name" class="form-label font-hold fw-bold">{{ __('items.item_name') }}</label>
                                 <input type="text" wire:model="item.name"
-                                    class="form-control font-family-cairo fw-bold frst" id="item-name" x-ref="nameInput"
+                                    class="form-control font-hold fw-bold frst" id="item-name" x-ref="nameInput"
                                     @if (!$creating) disabled readonly @endif>
                                 @error('item.name')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             @foreach ($notes as $note)
                                 <div class="col-md-2 mb-3">
                                     <label for="type"
-                                        class="form-label font-family-cairo fw-bold">{{ $note->name }}</label>
+                                        class="form-label font-hold fw-bold">{{ $note->name }}</label>
                                     <div class="input-group">
-                                        <button type="button" class="btn btn-outline-success font-family-cairo fw-bold"
+                                        <button type="button" class="btn btn-outline-success font-hold fw-bold"
                                             wire:click="openModal('note_detail', {{ $note->id }})"
                                             @if (!$creating) disabled @endif title="{{ __('items.add_new') }}">
                                             <i class="las la-plus"></i>
                                         </button>
                                         <select wire:model="item.notes.{{ $note->id }}"
                                             @if (!$creating) disabled readonly @endif
-                                            class="form-select font-family-cairo fw-bold"
+                                            class="form-select font-hold fw-bold"
                                             id="note-{{ $note->id }}">
-                                            <option class="font-family-cairo fw-bold" value="">{{ __('common.select') }}</option>
+                                            <option class="font-hold fw-bold" value="">{{ __('common.select') }}</option>
                                             @foreach ($note->noteDetails as $noteDetail)
-                                                <option class="font-family-cairo fw-bold"
+                                                <option class="font-hold fw-bold"
                                                     value="{{ $noteDetail->name }}">
                                                     {{ $noteDetail->name }}
                                                 </option>
@@ -1049,23 +1049,23 @@ new class extends Component {
                                         </select>
                                     </div>
                                     @error("item.notes.{$note->id}")
-                                        <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                        <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                     @enderror
                                 </div>
                             @endforeach
                             <div class="col-md-12 mb-3">
-                                <label for="Details" class="form-label font-family-cairo fw-bold">{{ __('items.item_description') }}</label>
-                                <textarea wire:model="item.info" class="form-control font-family-cairo fw-bold" id="description" rows="2"
+                                <label for="Details" class="form-label font-hold fw-bold">{{ __('items.item_description') }}</label>
+                                <textarea wire:model="item.info" class="form-control font-hold fw-bold" id="description" rows="2"
                                     @if (!$creating) disabled readonly @endif></textarea>
                                 @error('item.details')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             {{-- check box for decision if item will have varibals --}}
                             <div class="col-md-1 mb-3">
                                 <input type="checkbox" wire:model.live="hasVaribals" class="form-check-input"
                                     id="hasVaribals">
-                                <label for="hasVaribals" class="form-label font-family-cairo fw-bold">{{ __('items.has_variations') }}</label>
+                                <label for="hasVaribals" class="form-label font-hold fw-bold">{{ __('items.has_variations') }}</label>
                             </div>
                         </div>
                         @include('livewire.item-management.items.partials.varibals-grid')
@@ -1081,20 +1081,20 @@ new class extends Component {
                 <div class="container-fluid mt-3">
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
                         @if ($creating)
-                            <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
+                            <button type="button" class="btn btn-lg btn-secondary font-hold fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
                                 {{ __('common.back') }} ( {{ __('common.cancel') }} )
                             </button>
-                            <button type="submit" class="btn btn-lg btn-main font-family-cairo fw-bold"
+                            <button type="submit" class="btn btn-lg btn-main font-hold fw-bold"
                                 wire:loading.attr="disabled" wire:target="save">{{ __('common.save') }}</button>
                         @else
-                            <button type="button" class="btn btn-lg btn-secondary font-family-cairo fw-bold"
+                            <button type="button" class="btn btn-lg btn-secondary font-hold fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
                                 {{ __('common.back') }}
                             </button>
-                            <button type="button" class="btn btn-lg btn-info font-family-cairo fw-bold"
+                            <button type="button" class="btn btn-lg btn-info font-hold fw-bold"
                                 wire:click="createNew">{{ __('common.new') }}</button>
-                            <button type="button" class="btn btn-lg btn-warning font-family-cairo fw-bold"
+                            <button type="button" class="btn btn-lg btn-warning font-hold fw-bold"
                                 wire:click="createNewFromCurrent">{{ __('items.new_from_current_item') }}</button>
                         @endif
                     </div>

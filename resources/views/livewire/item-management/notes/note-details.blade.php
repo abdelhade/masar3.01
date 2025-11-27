@@ -113,7 +113,7 @@ new class extends Component {
         <div class="col-lg-12">
 
             {{-- @can('إضافة ' . $parentNoteName) --}}
-                <button wire:click="createNoteDetails" type="button" class="btn btn-main font-family-cairo fw-bold m-2">
+                <button wire:click="createNoteDetails" type="button" class="btn btn-main font-hold fw-bold m-2">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </button>
@@ -131,18 +131,18 @@ new class extends Component {
                             <thead class="table-light align-middle">
 
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">الاسم</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">الاسم</th>
                                     @canany(['تعديل ' . $parentNoteName, 'حذف ' . $parentNoteName])
-                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                        <th class="font-hold fw-bold">العمليات</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($noteDetails as $noteDetail)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $noteDetail->name }}</td>
+                                        <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold">{{ $noteDetail->name }}</td>
 
                                         @canany(['تعديل ' . $parentNoteName, 'حذف ' . $parentNoteName])
                                             <td>
@@ -178,7 +178,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="noteDetailsModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="noteDetailsModalLabel">
                         {{ $isNoteDetailsEdit ? 'تعديل ' . ($noteDetailsName ?? '') : 'إضافة جديد الى ' . ($parentNoteName ?? '') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -186,9 +186,9 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit="saveNoteDetails" wire:ignore.self>
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">الاسم</label>
+                            <label for="name" class="form-label font-hold fw-bold">الاسم</label>
                             <input type="text"
-                                class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('name') is-invalid @enderror font-hold fw-bold"
                                 id="noteDetailsName" wire:model="noteDetailsName">
                             @error('noteDetailsName')
                                 <div class="invalid-feedback">{{ $message }}</div>

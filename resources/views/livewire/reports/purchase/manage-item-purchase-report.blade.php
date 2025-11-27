@@ -207,20 +207,20 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">ØªÙ‚Ø±ÙŠØ± Ù…Ø´ØªØ±ÙŠØ§Øª ØµÙ†Ù</h4>
+                <h4 class="page-title font-hold fw-bold">ØªÙ‚Ø±ÙŠØ± Ù…Ø´ØªØ±ÙŠØ§Øª ØµÙ†Ù</h4>
             </div>
         </div>
     </div>
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-family-cairo fw-bold">ÙÙ„Ø§ØªØ± Ø§Ù„Ø¨Ø­Ø«</h4>
+            <h4 class="font-hold fw-bold">ÙÙ„Ø§ØªØ± Ø§Ù„Ø¨Ø­Ø«</h4>
             @if ($itemId)
                 <div class="d-flex align-items-center">
-                    <span class="font-family-cairo fw-bold me-2">Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ù„ØµÙ†Ù {{ $itemName }} ÙÙ‰ Ø§Ù„Ù…Ø®Ø§Ø²Ù†
+                    <span class="font-hold fw-bold me-2">Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ Ù„Ù„ØµÙ†Ù {{ $itemName }} ÙÙ‰ Ø§Ù„Ù…Ø®Ø§Ø²Ù†
                         Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©:</span>
                     <span
-                        class="bg-soft-primary font-family-cairo fw-bold font-16">{{ number_format($this->totalQuantity) }}
+                        class="bg-soft-primary font-hold fw-bold font-16">{{ number_format($this->totalQuantity) }}
                         {{ Item::find($this->itemId)->units->first()->name }}</span>
                 </div>
             @endif
@@ -229,9 +229,9 @@ new class extends Component {
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="item" class="form-label font-family-cairo fw-bold">Ø§Ù„ØµÙ†Ù</label>
+                        <label for="item" class="form-label font-hold fw-bold">Ø§Ù„ØµÙ†Ù</label>
                         <div class="dropdown" wire:click.outside="hideDropdown">
-                            <input type="text" class="form-control font-family-cairo fw-bold"
+                            <input type="text" class="form-control font-hold fw-bold"
                                 placeholder="Ø§Ø¨Ø­Ø« Ø¹Ù† ØµÙ†Ù..." wire:model.live.debounce.300ms="searchTerm"
                                 wire:keydown.arrow-down.prevent="arrowDown" wire:keydown.arrow-up.prevent="arrowUp"
                                 wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
@@ -240,7 +240,7 @@ new class extends Component {
                                 <ul class="dropdown-menu show" style="width: 100%;">
                                     @foreach ($this->searchResults as $index => $item)
                                         <li>
-                                            <a class="font-family-cairo fw-bold dropdown-item {{ $highlightedIndex === $index ? 'active' : '' }}"
+                                            <a class="font-hold fw-bold dropdown-item {{ $highlightedIndex === $index ? 'active' : '' }}"
                                                 href="#"
                                                 wire:click.prevent="selectItem({{ $item->id }}, '{{ $item->name }}')">
                                                 {{ $item->name }}
@@ -250,7 +250,7 @@ new class extends Component {
                                 </ul>
                             @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $itemName)
                                 <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span class="dropdown-item-text font-family-cairo fw-bold text-danger">Ù„Ø§ ÙŠÙˆØ¬Ø¯
+                                    <li><span class="dropdown-item-text font-hold fw-bold text-danger">Ù„Ø§ ÙŠÙˆØ¬Ø¯
                                             Ù†ØªØ§Ø¦Ø¬ Ù„Ù‡Ø°Ø§ Ø§Ù„Ø¨Ø­Ø«</span></li>
                                 </ul>
                             @endif
@@ -259,12 +259,12 @@ new class extends Component {
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="warehouse" class="form-label font-family-cairo fw-bold">Ø§Ù„Ù…Ø®Ø²Ù†</label>
+                        <label for="warehouse" class="form-label font-hold fw-bold">Ø§Ù„Ù…Ø®Ø²Ù†</label>
                         <select wire:model.live="warehouseId" id="warehouse"
-                            class="form-select font-family-cairo fw-bold" style = "height: 50px;">
-                            <option class="font-family-cairo fw-bold" value="all">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø®Ø§Ø²Ù†</option>
+                            class="form-select font-hold fw-bold" style = "height: 50px;">
+                            <option class="font-hold fw-bold" value="all">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø®Ø§Ø²Ù†</option>
                             @foreach ($warehouses as $id => $name)
-                                <option class="font-family-cairo fw-bold" value="{{ $id }}">
+                                <option class="font-hold fw-bold" value="{{ $id }}">
                                     {{ $name }}</option>
                             @endforeach
                         </select>
@@ -272,16 +272,16 @@ new class extends Component {
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="fromDate" class="form-label font-family-cairo fw-bold">Ù…Ù† ØªØ§Ø±ÙŠØ®</label>
+                        <label for="fromDate" class="form-label font-hold fw-bold">Ù…Ù† ØªØ§Ø±ÙŠØ®</label>
                         <input type="date" wire:model.live="fromDate" id="fromDate"
-                            class="form-control font-family-cairo fw-bold">
+                            class="form-control font-hold fw-bold">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="toDate" class="form-label font-family-cairo fw-bold">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®</label>
+                        <label for="toDate" class="form-label font-hold fw-bold">Ø¥Ù„Ù‰ ØªØ§Ø±ÙŠØ®</label>
                         <input type="date" wire:model.live="toDate" id="toDate"
-                            class="form-control font-family-cairo fw-bold">
+                            class="form-control font-hold fw-bold">
                     </div>
                 </div>
             </div>
@@ -296,15 +296,15 @@ new class extends Component {
                     <table class="table table-striped table-centered mb-0">
                         <thead>
                             <tr>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
-                                <th class="font-family-cairo fw-bold">Ù…ØµØ¯Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
-                                <th class="font-family-cairo fw-bold">Ù†ÙˆØ¹ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ù…Ø®Ø²Ù†</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ÙˆØ­Ø¯Ù‡</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
-                                <th class="font-family-cairo fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø±ÙƒØ©</th>
-                                {{-- <th class="font-family-cairo fw-bold">Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡</th> --}}
+                                <th class="font-hold fw-bold">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
+                                <th class="font-hold fw-bold">Ù…ØµØ¯Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ©</th>
+                                <th class="font-hold fw-bold">Ù†ÙˆØ¹ Ø§Ù„Ø­Ø±ÙƒØ©</th>
+                                <th class="font-hold fw-bold">Ø§Ù„Ù…Ø®Ø²Ù†</th>
+                                <th class="font-hold fw-bold">Ø§Ù„ÙˆØ­Ø¯Ù‡</th>
+                                <th class="font-hold fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø±ÙƒØ©</th>
+                                <th class="font-hold fw-bold">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
+                                <th class="font-hold fw-bold">Ø§Ù„Ø±ØµÙŠØ¯ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø±ÙƒØ©</th>
+                                {{-- <th class="font-hold fw-bold">Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -332,24 +332,24 @@ new class extends Component {
                             @endphp
                             @forelse($movements as $movement)
                                 <tr>
-                                    <td class="font-family-cairo fw-bold">{{ $movement->created_at->format('Y-m-d') }}
+                                    <td class="font-hold fw-bold">{{ $movement->created_at->format('Y-m-d') }}
                                     </td>
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">
                                         {{ $movement->pro_id }}#_{{ $this->getArabicReferenceName($movement->pro_tybe) }}
                                     </td>
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">
                                         <span
-                                            class="badge {{ $movement->qty_in != 0 ? 'badge-soft-success' : 'badge-soft-danger' }} font-family-cairo fw-bold">
+                                            class="badge {{ $movement->qty_in != 0 ? 'badge-soft-success' : 'badge-soft-danger' }} font-hold fw-bold">
                                             {{ $movement->qty_in != 0 ? 'in' : 'out' }}
                                         </span>
                                     </td>
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">
                                         {{ AccHead::find($movement->detail_store)->aname ?? 'N/A' }}</td>
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">
                                         {{ Item::find($this->itemId)->units->first()->name }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $balanceBefore }}</td>
+                                    <td class="font-hold fw-bold">{{ $balanceBefore }}</td>
                                     <td
-                                        class="font-family-cairo fw-bold {{ $movement->qty_in != 0 ? 'bg-soft-success' : 'bg-soft-danger' }}">
+                                        class="font-hold fw-bold {{ $movement->qty_in != 0 ? 'bg-soft-success' : 'bg-soft-danger' }}">
                                         {{ $movement->qty_in != 0 ? $movement->qty_in : $movement->qty_out }}</td>
                                     @php
                                         if ($movement->qty_in != 0) {
@@ -358,8 +358,8 @@ new class extends Component {
                                             $balanceAfter = $balanceBefore - $movement->qty_out;
                                         }
                                     @endphp
-                                    <td class="font-family-cairo fw-bold">{{ $balanceAfter }}</td>
-                                    {{-- <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">{{ $balanceAfter }}</td>
+                                    {{-- <td class="font-hold fw-bold">
                                     <button wire:click="viewReference({{ $movement->id }})" class="btn btn-xs btn-primary">
                                         <i class="fas fa-eye"></i> Ø¹Ø±Ø¶
                                     </button>
@@ -370,7 +370,7 @@ new class extends Component {
                                 @endphp
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center font-family-cairo fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø­Ø±ÙƒØ§Øª
+                                    <td colspan="12" class="text-center font-hold fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø­Ø±ÙƒØ§Øª
                                         Ù„Ù„Ù…Ø¹Ø§ÙŠÙŠØ± Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©.</td>
                                 </tr>
                             @endforelse
@@ -389,17 +389,17 @@ new class extends Component {
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="referenceModalLabel">ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ø±Ø¬Ø¹</h5>
+                    <h5 class="modal-title font-hold fw-bold" id="referenceModalLabel">ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ø±Ø¬Ø¹</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" wire:click="closeModal"></button>
                 </div>
                 <div class="modal-body">
                     @if ($selectedMovement && $selectedMovement->reference)
-                        <h4 class="font-family-cairo fw-bold">{{ $this->getArabicReferenceName($selectedMovement->reference_type) }} #{{ $selectedMovement->reference_id }}</h4>
-                        <table class="table font-family-cairo fw-bold">
+                        <h4 class="font-hold fw-bold">{{ $this->getArabicReferenceName($selectedMovement->reference_type) }} #{{ $selectedMovement->reference_id }}</h4>
+                        <table class="table font-hold fw-bold">
                             @foreach ($selectedMovement->reference->toArray() as $key => $value)
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
-                                    <td class="font-family-cairo fw-bold">
+                                    <th class="font-hold fw-bold">{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
+                                    <td class="font-hold fw-bold">
                                         @if (is_array($value))
                                             <pre>{{ json_encode($value, JSON_PRETTY_PRINT) }}</pre>
                                         @else
@@ -410,11 +410,11 @@ new class extends Component {
                             @endforeach
                         </table>
                     @else
-                        <p class="font-family-cairo fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙØ§ØµÙŠÙ„.</p>
+                        <p class="font-hold fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙØ§ØµÙŠÙ„.</p>
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal" wire:click="closeModal">Ø¥ØºÙ„Ø§Ù‚</button>
+                    <button type="button" class="btn btn-secondary font-hold fw-bold" data-bs-dismiss="modal" wire:click="closeModal">Ø¥ØºÙ„Ø§Ù‚</button>
                 </div>
             </div>
         </div>

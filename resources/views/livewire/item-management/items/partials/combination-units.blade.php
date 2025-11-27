@@ -2,8 +2,8 @@
     <fieldset class="shadow-sm mt-2">
         <div class="col-md-12 p-2">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="font-family-cairo fw-bold mb-0">وحدات التوليفة: {{ $this->getCombinationDisplayName($activeCombination) }}</h6>
-                <button type="button" class="btn btn-main btn-sm font-family-cairo fw-bold"
+                <h6 class="font-hold fw-bold mb-0">وحدات التوليفة: {{ $this->getCombinationDisplayName($activeCombination) }}</h6>
+                <button type="button" class="btn btn-main btn-sm font-hold fw-bold"
                     wire:click="addCombinationUnitRow('{{ $activeCombination }}')">
                     <i class="las la-plus"></i> إضافة وحدة للتوليفة
                 </button>
@@ -12,26 +12,26 @@
                 <table class="table table-striped mb-0" style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th class="font-family-cairo text-center fw-bold">الوحدة</th>
-                            <th class="font-family-cairo text-center fw-bold">معامل التحويل</th>
-                            <th class="font-family-cairo text-center fw-bold">التكلفة</th>
+                            <th class="font-hold text-center fw-bold">الوحدة</th>
+                            <th class="font-hold text-center fw-bold">معامل التحويل</th>
+                            <th class="font-hold text-center fw-bold">التكلفة</th>
                             @foreach ($prices as $price)
-                                <th class="font-family-cairo fw-bold">{{ $price->name }}</th>
+                                <th class="font-hold fw-bold">{{ $price->name }}</th>
                             @endforeach
-                            <th class="font-family-cairo text-center fw-bold">باركود</th>
-                            <th class="font-family-cairo text-center fw-bold">XX</th>
+                            <th class="font-hold text-center fw-bold">باركود</th>
+                            <th class="font-hold text-center fw-bold">XX</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($this->getActiveCombinationUnitRows() as $index => $unitRow)
                             <tr wire:key="combination-{{ $activeCombination }}-unit-{{ $index }}">
-                                <td class="font-family-cairo fw-bold font-14 text-center">
+                                <td class="font-hold fw-bold font-14 text-center">
                                     <select wire:model.live="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.unit_id"
-                                        class="form-select font-family-cairo fw-bold font-14"
+                                        class="form-select font-hold fw-bold font-14"
                                         style="min-width: 100px; height: 50px;">
-                                        <option class="font-family-cairo fw-bold" value="">إختر</option>
+                                        <option class="font-hold fw-bold" value="">إختر</option>
                                         @foreach ($units as $unit)
-                                            <option class="font-family-cairo fw-bold" value="{{ $unit->id }}">
+                                            <option class="font-hold fw-bold" value="{{ $unit->id }}">
                                                 {{ $unit->name }}
                                             </option>
                                         @endforeach
@@ -41,14 +41,14 @@
                                     <input type="number" onclick="this.select()"
                                         wire:model="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.u_val"
                                         wire:keyup.debounce.300ms="updateCombinationUnitsCostAndPrices('{{ $activeCombination }}', {{ $index }})"
-                                        class="form-control font-family-cairo fw-bold" min="1"
+                                        class="form-control font-hold fw-bold" min="1"
                                         step="0.0001" style="min-width: 150px;">
                                 </td>
                                 <td>
                                     <input type="number" onclick="this.select()"
                                         wire:model="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.cost"
                                         wire:keyup.debounce.300ms="updateCombinationUnitsCost('{{ $activeCombination }}', {{ $index }})"
-                                        class="form-control font-family-cairo fw-bold" step="0.0001"
+                                        class="form-control font-hold fw-bold" step="0.0001"
                                         style="min-width: 150px;">
                                 </td>
                                 @foreach ($prices as $price)
@@ -56,7 +56,7 @@
                                         <input type="number" onclick="this.select()"
                                             wire:model="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.prices.{{ $price->id }}"
                                             wire:keyup.debounce.300ms="updateCombinationPrices('{{ $activeCombination }}', {{ $index }}, {{ $price->id }})"
-                                            class="form-control font-family-cairo fw-bold" step="0.0001"
+                                            class="form-control font-hold fw-bold" step="0.0001"
                                             style="min-width: 150px;">
                                     </td>
                                 @endforeach
@@ -71,7 +71,7 @@
                                                     <input type="text" 
                                                            onclick="this.select()"
                                                            wire:model.live="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.barcodes.0"
-                                                           class="form-control font-family-cairo fw-bold barcode-input" 
+                                                           class="form-control font-hold fw-bold barcode-input" 
                                                            maxlength="25"
                                                            placeholder="الباركود الأساسي"
                                                            style="min-width: 120px;">
@@ -89,10 +89,10 @@
                                                         wire:click="openBarcodeModal('{{ $activeCombination }}', {{ $index }})"
                                                         title="إدارة الباركودات الإضافية">
                                                     <i class="las la-barcode me-1"></i>
-                                                    <span class="font-family-cairo fw-bold">إدارة الباركودات</span>
+                                                    <span class="font-hold fw-bold">إدارة الباركودات</span>
                                                 </button>
                                             @else
-                                                <small class="text-muted font-family-cairo">
+                                                <small class="text-muted font-hold">
                                                     <i class="las la-info-circle me-1"></i>
                                                     اختر توليفة أولاً
                                                 </small>
@@ -100,7 +100,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
+                                <td class="font-hold fw-bold font-14 text-center">
                                     <button type="button"
                                         class="btn btn-danger btn-icon-square-sm float-end"
                                         wire:click="removeCombinationUnitRow('{{ $activeCombination }}', {{ $index }})">

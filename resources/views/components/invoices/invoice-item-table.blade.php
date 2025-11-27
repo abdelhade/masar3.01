@@ -20,12 +20,12 @@
                             'sub_value' => __('Value'),
                         ];
                     @endphp
-                    <th class="font-family-cairo fw-bold font-14 text-center" style="width: {{ $width }}%;">
+                    <th class="font-hold fw-bold font-14 text-center" style="width: {{ $width }}%;">
                         {{ __($columnNames[$columnKey] ?? $columnKey) }}
                     </th>
                 @endif
             @endforeach
-            <th class="font-family-cairo fw-bold font-14 text-center" style="width: 5%;">{{ __('Action') }}</th>
+            <th class="font-hold fw-bold font-14 text-center" style="width: 5%;">{{ __('Action') }}</th>
         </tr>
     </thead>
     <tbody>

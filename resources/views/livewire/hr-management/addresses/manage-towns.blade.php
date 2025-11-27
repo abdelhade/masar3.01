@@ -153,7 +153,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('create Towns')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add Town') }}
                         </button>
@@ -170,24 +170,24 @@ new class extends Component {
                         <table class="table table-striped mb-0">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Name') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('City') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Distance (km)') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('Name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('City') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('Distance (km)') }}</th>
                                     @canany(['edit Towns', 'delete Towns'])
-                                        <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($this->towns as $town)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $town->title }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $town->city->title ?? '-' }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $town->distance ? number_format($town->distance, 2) : '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $town->title }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $town->city->title ?? '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $town->distance ? number_format($town->distance, 2) : '-' }}</td>
                                         @canany(['edit Towns', 'delete Towns'])
-                                            <td class="font-family-cairo fw-bold text-center">
+                                            <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
                                                     @can('edit Towns')
                                                         <button type="button" 
@@ -213,7 +213,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit Towns', 'delete Towns']) ? '5' : '4' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('No towns found.') }}
@@ -240,7 +240,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="townModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="townModalLabel">
                         {{ $isEdit ? __('Edit Town') : __('Add Town') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -248,11 +248,11 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title" class="form-label font-family-cairo fw-bold">
+                            <label for="title" class="form-label font-hold fw-bold">
                                 {{ __('Name') }} <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('title') is-invalid @enderror font-hold fw-bold"
                                    id="title" 
                                    wire:model.blur="title" 
                                    required>
@@ -261,10 +261,10 @@ new class extends Component {
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="city_id" class="form-label font-family-cairo fw-bold">
+                            <label for="city_id" class="form-label font-hold fw-bold">
                                 {{ __('City') }} <span class="text-danger">*</span>
                             </label>
-                            <select class="form-control @error('city_id') is-invalid @enderror font-family-cairo fw-bold"
+                            <select class="form-control @error('city_id') is-invalid @enderror font-hold fw-bold"
                                     id="city_id" 
                                     wire:model.blur="city_id" 
                                     required>
@@ -278,13 +278,13 @@ new class extends Component {
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="distance" class="form-label font-family-cairo fw-bold">
+                            <label for="distance" class="form-label font-hold fw-bold">
                                 {{ __('Distance (km)') }}
                             </label>
                             <input type="number" 
                                    step="0.01" 
                                    min="0"
-                                   class="form-control @error('distance') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('distance') is-invalid @enderror font-hold fw-bold"
                                    id="distance" 
                                    wire:model.blur="distance">
                             @error('distance')

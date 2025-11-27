@@ -810,7 +810,7 @@ new class extends Component {
                             type="button"
                             wire:loading.attr="disabled"
                             wire:target="create"
-                            class="btn btn-main font-family-cairo fw-bold">
+                            class="btn btn-main font-hold fw-bold">
                             <span wire:loading wire:target="create" class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>
                             <span wire:loading.remove wire:target="create">
                                 {{ __('hr.add_employee') }}
@@ -832,30 +832,30 @@ new class extends Component {
                                 style="min-width: 1200px;">
                                 <thead class="table-light align-middle">
                                     <tr>
-                                        <th class="font-family-cairo fw-bold">#</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.name') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.email') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.phone') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.department') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.job') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.status') }}</th>
+                                        <th class="font-hold fw-bold">#</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.name') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.email') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.phone') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.department') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.job') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.status') }}</th>
                                         @canany(['edit Hr-Employees', 'delete Hr-Employees'])
-                                            <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                            <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                         @endcanany
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($this->employees as $employee)
                                         <tr>
-                                            <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ $employee->name }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ $employee->email }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ $employee->phone }}</td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
+                                            <td class="font-hold fw-bold">{{ $employee->name }}</td>
+                                            <td class="font-hold fw-bold">{{ $employee->email }}</td>
+                                            <td class="font-hold fw-bold">{{ $employee->phone }}</td>
+                                            <td class="font-hold fw-bold">
                                                 {{ optional($employee->department)->title }}</td>
-                                            <td class="font-family-cairo fw-bold">{{ optional($employee->job)->title }}
+                                            <td class="font-hold fw-bold">{{ optional($employee->job)->title }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">{{ $employee->status }}</td>
+                                            <td class="font-hold fw-bold">{{ $employee->status }}</td>
 
                                             @canany(['edit Hr-Employees', 'delete Hr-Employees'])
                                                 <td>
@@ -898,7 +898,7 @@ new class extends Component {
                                     @empty
                                         <tr>
                                             <td colspan="{{ auth()->user()->canany(['edit Hr-Employees', 'delete Hr-Employees']) ? '8' : '7' }}" 
-                                                class="text-center font-family-cairo fw-bold py-4">
+                                                class="text-center font-hold fw-bold py-4">
                                                 <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>
                                                     {{ __('hr.no_employees_found') }}
@@ -930,7 +930,7 @@ new class extends Component {
                         <div class="modal-content">
                             <!-- Modal Header -->
                             <div class="modal-header">
-                                <h5 class="modal-title font-family-cairo fw-bold">
+                                <h5 class="modal-title font-hold fw-bold">
                                     <span
                                             x-text="isEdit ? '{{ __('hr.edit_employee') }}' : '{{ __('hr.add_employee') }}'"></span>
                                 </h5>
@@ -983,7 +983,7 @@ new class extends Component {
                         <div class="modal-content">
                             <!-- Modal Header -->
                             <div class="modal-header">
-                                <h5 class="modal-title font-family-cairo fw-bold">
+                                <h5 class="modal-title font-hold fw-bold">
                                     {{ __('hr.view_employee') }}
                                 </h5>
                                 <button type="button" class="btn-close m-3" @click="closeViewEmployeeModal()"

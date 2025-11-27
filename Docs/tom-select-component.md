@@ -54,7 +54,7 @@ The Tom Select component is a highly optimized, feature-rich dropdown component 
     placeholder="اختر موظف"
     :tomOptions="[
         'plugins' => [
-            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+            'dropdown_input' => ['class' => 'font-hold fw-bold font-14'],
             'remove_button' => ['title' => 'إزالة المحدد'],
         ],
     ]"
@@ -204,7 +204,7 @@ The Tom Select component is a highly optimized, feature-rich dropdown component 
     wireModel="selectedCategory"
     :tomOptions="[
         'plugins' => [
-            'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+            'dropdown_input' => ['class' => 'font-hold fw-bold font-14'],
             'dropdown_header' => ['title' => 'البحث في الفئات'],
             'remove_button' => ['title' => 'إزالة المحدد'],
             'clear_button' => ['title' => 'مسح الكل'],
@@ -236,7 +236,7 @@ The Tom Select component is a highly optimized, feature-rich dropdown component 
 {{-- Search input with custom styling --}}
 :tomOptions="[
     'plugins' => [
-        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+        'dropdown_input' => ['class' => 'font-hold fw-bold font-14'],
     ],
 ]"
 
@@ -250,7 +250,7 @@ The Tom Select component is a highly optimized, feature-rich dropdown component 
 {{-- Multiple plugins combined --}}
 :tomOptions="[
     'plugins' => [
-        'dropdown_input' => ['class' => 'font-family-cairo'],
+        'dropdown_input' => ['class' => 'font-hold'],
         'remove_button' => ['title' => 'إزالة المحدد'],
         'clear_button' => ['title' => 'مسح الكل'],
     ],
@@ -407,7 +407,7 @@ public function handleEmployeeChange($employeeId)
     name="status"
     :options="$statuses"
     wireModel="selectedStatus"
-    class="form-control-lg border-primary font-family-cairo"
+    class="form-control-lg border-primary font-hold"
 />
 ```
 
@@ -421,7 +421,7 @@ The component automatically handles RTL layout:
     :options="$categories"
     wireModel="selectedCategory"
     dir="rtl"
-    class="font-family-cairo"
+    class="font-hold"
 />
 ```
 
@@ -558,20 +558,20 @@ If migrating from older versions:
     {{-- Single Employee Selection --}}
     <template x-if="$wire.form.processing_type === 'single'">
         <div x-init="initTomSelect()">
-            <label class="form-label font-family-cairo">{{ __('اختر الموظف') }}</label>
+            <label class="form-label font-hold">{{ __('اختر الموظف') }}</label>
             <x-tom-select
                 id="employee-single-select"
                 name="employee_id"
                 :options="collect($employees)->map(fn($employee) => ['value' => $employee->id, 'text' => $employee->name])->toArray()"
                 wireModel="form.employee_id"
                 placeholder="{{ __('اختر الموظف') }}"
-                class="form-select font-family-cairo"
+                class="form-select font-hold"
                 :allowEmptyOption="true"
                 :search="true"
                 :value="$form['employee_id'] ?? null"
                 :tomOptions="[
                     'plugins' => [
-                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                        'dropdown_input' => ['class' => 'font-hold fw-bold font-14'],
                         'remove_button' => ['title' => 'إزالة المحدد'],
                     ],
                 ]"
@@ -582,21 +582,21 @@ If migrating from older versions:
     {{-- Multiple Employee Selection --}}
     <template x-if="$wire.form.processing_type === 'multiple'">
         <div x-init="initTomSelect()">
-            <label class="form-label font-family-cairo">{{ __('اختر الموظفين') }}</label>
+            <label class="form-label font-hold">{{ __('اختر الموظفين') }}</label>
             <x-tom-select
                 id="employee-multi-select"
                 name="employee_ids"
                 :options="collect($employees)->map(fn($employee) => ['value' => $employee->id, 'text' => $employee->name])->toArray()"
                 wireModel="form.employee_ids"
                 placeholder="{{ __('اختر الموظفين') }}"
-                class="form-select font-family-cairo"
+                class="form-select font-hold"
                 :multiple="true"
                 :allowEmptyOption="false"
                 :search="true"
                 :value="$form['employee_ids'] ?? []"
                 :tomOptions="[
                     'plugins' => [
-                        'dropdown_input' => ['class' => 'font-family-cairo fw-bold font-14'],
+                        'dropdown_input' => ['class' => 'font-hold fw-bold font-14'],
                         'remove_button' => ['title' => 'إزالة المحدد'],
                     ],
                 ]"
@@ -656,7 +656,7 @@ If migrating from older versions:
     placeholder="اختر موظف"
     :tomOptions="[
         'plugins' => [
-            'dropdown_input' => ['class' => 'font-family-cairo'],
+            'dropdown_input' => ['class' => 'font-hold'],
         ],
     ]"
 />
@@ -665,7 +665,7 @@ If migrating from older versions:
 ## Best Practices
 
 1. **Always use proper Arabic placeholders and labels**
-2. **Include `font-family-cairo` class for consistency**
+2. **Include `font-hold` class for consistency**
 3. **Use array notation for Livewire form arrays**
 4. **Add `x-init="initTomSelect()"` for Alpine.js templates**
 5. **Configure plugins based on your use case**

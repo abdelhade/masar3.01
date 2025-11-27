@@ -811,13 +811,13 @@ new class extends Component {
 <div dir="rtl" style="font-family: 'Cairo', sans-serif;">
     {{-- Flash Messages --}}
     @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show font-family-cairo" role="alert">
+        <div class="alert alert-success alert-dismissible fade show font-hold" role="alert">
             <i class="las la-check-circle me-2"></i>{{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
     @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show font-family-cairo" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show font-hold" role="alert">
             <i class="las la-exclamation-circle me-2"></i>{{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -826,10 +826,10 @@ new class extends Component {
     <div class="row mb-3">
         @can('create Attendances')
             <div class="col-12 d-flex justify-content-end gap-2">
-                <button class="btn btn-success font-family-cairo fw-bold" wire:click="openImportModal">
+                <button class="btn btn-success font-hold fw-bold" wire:click="openImportModal">
                     <i class="las la-file-excel me-2"></i> {{ __('hr.import_from_excel') }}
                 </button>
-                <button class="btn btn-main font-family-cairo fw-bold" wire:click="create">
+                <button class="btn btn-main font-hold fw-bold" wire:click="create">
                     <i class="las la-plus me-2"></i> {{ __('hr.add_attendance') }}
                 </button>
             </div>
@@ -841,41 +841,41 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0 font-family-cairo fw-bold">{{ __('hr.attendance_records') }}</h5>
+                    <h5 class="mb-0 font-hold fw-bold">{{ __('hr.attendance_records') }}</h5>
                     <div class="row w-100 align-items-center">
                         <div class="col-md-2">
                             <input type="text" 
-                                   class="form-control font-family-cairo"
+                                   class="form-control font-hold"
                                    placeholder="{{ __('hr.employee_name') }}"
                                    wire:model.live.debounce.500ms="search_employee_name">
                         </div>
                         <div class="col-md-2">
                             <input type="text" 
-                                   class="form-control font-family-cairo"
+                                   class="form-control font-hold"
                                    placeholder="{{ __('hr.employee_number') }}"
                                    wire:model.live.debounce.500ms="search_employee_id">
                         </div>
                         <div class="col-md-2">
                             <input type="text" 
-                                   class="form-control font-family-cairo"
+                                   class="form-control font-hold"
                                    placeholder="{{ __('hr.fingerprint_name') }}"
                                    wire:model.live.debounce.500ms="search_fingerprint_name">
                         </div>
                         <div class="col-md-2">
                             <input type="date" 
-                                   class="form-control font-family-cairo" 
+                                   class="form-control font-hold" 
                                    wire:model.blur="date_from"
                                    placeholder="{{ __('hr.from_date') }}">
                         </div>
                         <div class="col-md-2">
                             <input type="date" 
-                                   class="form-control font-family-cairo" 
+                                   class="form-control font-hold" 
                                    wire:model.blur="date_to"
                                    placeholder="{{ __('hr.to_date') }}">
                         </div>
                         <div class="col-md-2 d-flex align-items-center mt-2 mt-md-0">
                             <button type="button" 
-                                    class="btn btn-outline-secondary font-family-cairo fw-bold w-100"
+                                    class="btn btn-outline-secondary font-hold fw-bold w-100"
                                     wire:click="clearFilters">
                                 <i class="las la-broom me-1"></i> {{ __('hr.clear_filters') }}
                             </button>
@@ -889,57 +889,57 @@ new class extends Component {
                             class="table table-striped table-hover table-bordered table-light text-center align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.number') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.employee_name') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.employee_number') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.fingerprint_name') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.type') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.date') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.time') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.location') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.project') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.status') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.notes') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.number') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.employee_name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.employee_number') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.fingerprint_name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.type') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.date') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.time') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.location') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.project') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.status') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.notes') }}</th>
                                     @canany(['edit Attendances', 'delete Attendances'])
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($attendances as $attendance)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->id }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->employee?->name ?? '-' }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->employee_id }}</td>
-                                        <td class="font-family-cairo fw-bold">
+                                        <td class="font-hold fw-bold">{{ $attendance->id }}</td>
+                                        <td class="font-hold fw-bold">{{ $attendance->employee?->name ?? '-' }}</td>
+                                        <td class="font-hold fw-bold">{{ $attendance->employee_id }}</td>
+                                        <td class="font-hold fw-bold">
                                             {{ $attendance->employee_attendance_finger_print_name }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">
+                                        <td class="font-hold fw-bold">
                                             {{ $attendance->type == 'check_in' ? __('hr.check_in') : __('hr.check_out') }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->date->format('Y-m-d') }}
+                                        <td class="font-hold fw-bold">{{ $attendance->date->format('Y-m-d') }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->time }}
+                                        <td class="font-hold fw-bold">{{ $attendance->time }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->location_address ?? '-' }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->project_code ?? '-' }}</td>
-                                        <td class="font-family-cairo fw-bold">
+                                        <td class="font-hold fw-bold">{{ $attendance->location_address ?? '-' }}</td>
+                                        <td class="font-hold fw-bold">{{ $attendance->project_code ?? '-' }}</td>
+                                        <td class="font-hold fw-bold">
                                             @if ($attendance->status == 'pending')
-                                                <span class="badge bg-warning font-family-cairo">{{ __('hr.under_review') }}</span>
+                                                <span class="badge bg-warning font-hold">{{ __('hr.under_review') }}</span>
                                             @elseif($attendance->status == 'approved')
-                                                <span class="badge bg-success font-family-cairo">{{ __('hr.approved') }}</span>
+                                                <span class="badge bg-success font-hold">{{ __('hr.approved') }}</span>
                                             @else
-                                                <span class="badge bg-danger font-family-cairo">{{ __('hr.rejected') }}</span>
+                                                <span class="badge bg-danger font-hold">{{ __('hr.rejected') }}</span>
                                             @endif
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $attendance->notes ?? '-' }}</td>
+                                        <td class="font-hold fw-bold">{{ $attendance->notes ?? '-' }}</td>
                                         @canany(['edit Attendances', 'delete Attendances'])
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 @if ($attendance->status !== 'approved')
                                                     <div class="btn-group" role="group">
                                                         @can('edit Attendances')
                                                             <button type="button" 
-                                                                    class="btn btn-sm btn-info me-1 font-family-cairo"
+                                                                    class="btn btn-sm btn-info me-1 font-hold"
                                                                     wire:click="edit({{ $attendance->id }})"
                                                                     title="{{ __('hr.edit') }}">
                                                                 {{ __('hr.edit') }}
@@ -947,7 +947,7 @@ new class extends Component {
                                                         @endcan
                                                         @can('delete Attendances')
                                                             <button type="button" 
-                                                                    class="btn btn-sm btn-danger font-family-cairo"
+                                                                    class="btn btn-sm btn-danger font-hold"
                                                                     wire:click="delete({{ $attendance->id }})"
                                                                     wire:confirm="{{ __('hr.confirm_delete_attendance') }}"
                                                                     title="{{ __('hr.delete') }}">
@@ -956,7 +956,7 @@ new class extends Component {
                                                         @endcan
                                                     </div>
                                                 @else
-                                                    <span class="text-muted font-family-cairo">{{ __('hr.cannot_edit_delete') }}</span>
+                                                    <span class="text-muted font-hold">{{ __('hr.cannot_edit_delete') }}</span>
                                                 @endif
                                             </td>
                                         @endcanany
@@ -965,7 +965,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit Attendances', 'delete Attendances']) ? '12' : '11' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('hr.no_attendance_records') }}
@@ -992,20 +992,20 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.add_attendance') }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ __('hr.add_attendance') }}</h5>
                         <button type="button" class="btn-close" wire:click="$set('showCreateModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <form wire:submit.prevent="store">
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold">{{ __('hr.employee') }} <span class="text-danger">*</span></label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
+                                <label class="form-label font-hold fw-bold">{{ __('hr.employee') }} <span class="text-danger">*</span></label>
+                                <select class="form-select font-hold fw-bold font-14"
                                     wire:model.blur="form.employee_id" required>
-                                    <option class="text-muted font-family-cairo fw-bold font-14" value="">
+                                    <option class="text-muted font-hold fw-bold font-14" value="">
                                         {{ __('hr.select_employee_option') }}
                                     </option>
                                     @foreach ($this->employees as $employee)
-                                        <option class="font-family-cairo fw-bold font-14" value="{{ $employee->id }}">
+                                        <option class="font-hold fw-bold font-14" value="{{ $employee->id }}">
                                             {{ $employee->name }}
                                         </option>
                                     @endforeach
@@ -1015,29 +1015,29 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('رقم البصمة') }}</label>
-                                <input type="text" class="form-control font-family-cairo"
+                                <label class="form-label font-hold">{{ __('رقم البصمة') }}</label>
+                                <input type="text" class="form-control font-hold"
                                     value="{{ $this->form['employee_attendance_finger_print_id'] }}" disabled>
                                 @error('form.employee_attendance_finger_print_id')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('اسم البصمة') }}</label>
-                                <input type="text" class="form-control font-family-cairo"
+                                <label class="form-label font-hold">{{ __('اسم البصمة') }}</label>
+                                <input type="text" class="form-control font-hold"
                                     value="{{ $this->form['employee_attendance_finger_print_name'] }}" disabled>
                                 @error('form.employee_attendance_finger_print_name')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('النوع') }}</label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
+                                <label class="form-label font-hold">{{ __('النوع') }}</label>
+                                <select class="form-select font-hold fw-bold font-14"
                                     wire:model.blur="form.type">
-                                    <option class="font-family-cairo fw-bold font-14" value="check_in">
+                                    <option class="font-hold fw-bold font-14" value="check_in">
                                         {{ __('دخول') }}
                                     </option>
-                                    <option class="font-family-cairo fw-bold font-14" value="check_out">
+                                    <option class="font-hold fw-bold font-14" value="check_out">
                                         {{ __('خروج') }}
                                     </option>
                                 </select>
@@ -1046,8 +1046,8 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo">{{ __('التاريخ') }}</label>
-                                <input type="date" class="form-control font-family-cairo"
+                                <label class="form-label font-hold">{{ __('التاريخ') }}</label>
+                                <input type="date" class="form-control font-hold"
                                     wire:model.blur="form.date">
                                 @error('form.date')
                                     <span class="text-danger">{{ $message }}</span>
@@ -1055,23 +1055,23 @@ new class extends Component {
                             </div>
                             <div class="mb-3">
                                 <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('الوقت') }}</label>
+                                    class="form-label font-hold fw-bold font-14">{{ __('الوقت') }}</label>
                                 <input type="time" wire:model="form.time"
                                     class="form-control
                                         @error('form.time') <span class=" text-danger">{{ $message }}</span> @enderror
                             </div>
                             <div class="mb-3">
                                 <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('الحالة') }}</label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
+                                    class="form-label font-hold fw-bold font-14">{{ __('الحالة') }}</label>
+                                <select class="form-select font-hold fw-bold font-14"
                                     wire:model.blur="form.status">
-                                    <option class="font-family-cairo fw-bold font-14" value="pending">
+                                    <option class="font-hold fw-bold font-14" value="pending">
                                         {{ __('قيد المراجعة') }}
                                     </option>
-                                    <option class="font-family-cairo fw-bold font-14" value="approved">
+                                    <option class="font-hold fw-bold font-14" value="approved">
                                         {{ __('معتمد') }}
                                     </option>
-                                    <option class="font-family-cairo fw-bold font-14" value="rejected">
+                                    <option class="font-hold fw-bold font-14" value="rejected">
                                         {{ __('مرفوض') }}
                                     </option>
                                 </select>
@@ -1081,17 +1081,17 @@ new class extends Component {
                             </div>
                             <div class="mb-3">
                                 <label
-                                    class="form-label font-family-cairo fw-bold font-14">{{ __('ملاحظات') }}</label>
-                                <textarea class="form-control font-family-cairo fw-bold font-14" wire:model.blur="form.notes"></textarea>
+                                    class="form-label font-hold fw-bold font-14">{{ __('ملاحظات') }}</label>
+                                <textarea class="form-control font-hold fw-bold font-14" wire:model.blur="form.notes"></textarea>
                                 @error('form.notes')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary font-family-cairo"
+                                <button type="button" class="btn btn-secondary font-hold"
                                     wire:click="$set('showCreateModal', false)">{{ __('إلغاء') }}</button>
                                 <button type="submit"
-                                    class="btn btn-main font-family-cairo">{{ __('حفظ') }}</button>
+                                    class="btn btn-main font-hold">{{ __('حفظ') }}</button>
                             </div>
                         </form>
                     </div>
@@ -1105,21 +1105,21 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.edit_attendance') }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ __('hr.edit_attendance') }}</h5>
                         <button type="button" class="btn-close" wire:click="$set('showEditModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <form wire:submit.prevent="update">
                             {{-- Same fields as create modal, but bound to form and update --}}
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.employee') }} <span class="text-danger">*</span></label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.employee') }} <span class="text-danger">*</span></label>
+                                <select class="form-select font-hold fw-bold font-14"
                                     wire:model.blur="form.employee_id" required>
-                                    <option class="text-muted font-family-cairo fw-bold font-14" value="">
+                                    <option class="text-muted font-hold fw-bold font-14" value="">
                                         {{ __('hr.select_employee_option') }}
                                     </option>
                                     @foreach ($this->employees as $employee)
-                                        <option class="font-family-cairo fw-bold font-14"
+                                        <option class="font-hold fw-bold font-14"
                                             value="{{ $employee->id }}">
                                             {{ $employee->name }}
                                         </option>
@@ -1130,9 +1130,9 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.fingerprint_number') }}</label>
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.fingerprint_number') }}</label>
                                 <input type="text" 
-                                       class="form-control font-family-cairo fw-bold font-14"
+                                       class="form-control font-hold fw-bold font-14"
                                        value="{{ $this->form['employee_attendance_finger_print_id'] }}" 
                                        disabled>
                                 @error('form.employee_attendance_finger_print_id')
@@ -1140,9 +1140,9 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.fingerprint_name') }}</label>
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.fingerprint_name') }}</label>
                                 <input type="text" 
-                                       class="form-control font-family-cairo fw-bold font-14"
+                                       class="form-control font-hold fw-bold font-14"
                                        value="{{ $this->form['employee_attendance_finger_print_name'] }}" 
                                        disabled>
                                 @error('form.employee_attendance_finger_print_name')
@@ -1150,13 +1150,13 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.type') }} <span class="text-danger">*</span></label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.type') }} <span class="text-danger">*</span></label>
+                                <select class="form-select font-hold fw-bold font-14"
                                     wire:model.blur="form.type" required>
-                                    <option class="font-family-cairo fw-bold font-14" value="check_in">
+                                    <option class="font-hold fw-bold font-14" value="check_in">
                                         {{ __('hr.check_in') }}
                                     </option>
-                                    <option class="font-family-cairo fw-bold font-14" value="check_out">
+                                    <option class="font-hold fw-bold font-14" value="check_out">
                                         {{ __('hr.check_out') }}
                                     </option>
                                 </select>
@@ -1165,9 +1165,9 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.date') }} <span class="text-danger">*</span></label>
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.date') }} <span class="text-danger">*</span></label>
                                 <input type="date" 
-                                       class="form-control font-family-cairo fw-bold font-14"
+                                       class="form-control font-hold fw-bold font-14"
                                        wire:model.blur="form.date" 
                                        required>
                                 @error('form.date')
@@ -1175,9 +1175,9 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.time') }} <span class="text-danger">*</span></label>
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.time') }} <span class="text-danger">*</span></label>
                                 <input type="time" 
-                                       class="form-control font-family-cairo fw-bold font-14"
+                                       class="form-control font-hold fw-bold font-14"
                                        wire:model.blur="form.time" 
                                        required>
                                 @error('form.time')
@@ -1185,16 +1185,16 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.status') }} <span class="text-danger">*</span></label>
-                                <select class="form-select font-family-cairo fw-bold font-14"
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.status') }} <span class="text-danger">*</span></label>
+                                <select class="form-select font-hold fw-bold font-14"
                                     wire:model.blur="form.status" required>
-                                    <option class="font-family-cairo fw-bold font-14" value="pending">
+                                    <option class="font-hold fw-bold font-14" value="pending">
                                         {{ __('hr.under_review') }}
                                     </option>
-                                    <option class="font-family-cairo fw-bold font-14" value="approved">
+                                    <option class="font-hold fw-bold font-14" value="approved">
                                         {{ __('hr.approved') }}
                                     </option>
-                                    <option class="font-family-cairo fw-bold font-14" value="rejected">
+                                    <option class="font-hold fw-bold font-14" value="rejected">
                                         {{ __('hr.rejected') }}
                                     </option>
                                 </select>
@@ -1203,8 +1203,8 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold font-14">{{ __('hr.notes') }}</label>
-                                <textarea class="form-control font-family-cairo fw-bold font-14" 
+                                <label class="form-label font-hold fw-bold font-14">{{ __('hr.notes') }}</label>
+                                <textarea class="form-control font-hold fw-bold font-14" 
                                           wire:model.blur="form.notes"
                                           rows="3"></textarea>
                                 @error('form.notes')
@@ -1212,10 +1212,10 @@ new class extends Component {
                                 @enderror
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary font-family-cairo"
+                                <button type="button" class="btn btn-secondary font-hold"
                                     wire:click="$set('showEditModal', false)">{{ __('hr.cancel') }}</button>
                                 <button type="submit"
-                                    class="btn btn-main font-family-cairo">{{ __('hr.save_changes') }}</button>
+                                    class="btn btn-main font-hold">{{ __('hr.save_changes') }}</button>
                             </div>
                         </form>
                     </div>
@@ -1230,17 +1230,17 @@ new class extends Component {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.confirm_delete') }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ __('hr.confirm_delete') }}</h5>
                         <button type="button" class="btn-close"
                             wire:click="$set('showDeleteModal', false)"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="font-family-cairo">{{ __('hr.confirm_delete_attendance') }}</p>
+                        <p class="font-hold">{{ __('hr.confirm_delete_attendance') }}</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary font-family-cairo"
+                        <button type="button" class="btn btn-secondary font-hold"
                             wire:click="$set('showDeleteModal', false)">{{ __('hr.cancel') }}</button>
-                        <button type="button" class="btn btn-danger font-family-cairo"
+                        <button type="button" class="btn btn-danger font-hold"
                             wire:click="delete">{{ __('hr.delete') }}</button>
                     </div>
                 </div>
@@ -1254,14 +1254,14 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.import_attendance_from_excel') }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ __('hr.import_attendance_from_excel') }}</h5>
                         <button type="button" class="btn-close"
                             wire:click="$set('showImportModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <p class="font-family-cairo mb-2 fw-bold">{{ __('hr.important_notes') }}</p>
-                            <ul class="font-family-cairo" style="font-size: 0.9rem;">
+                            <p class="font-hold mb-2 fw-bold">{{ __('hr.important_notes') }}</p>
+                            <ul class="font-hold" style="font-size: 0.9rem;">
                                 <li>{{ __('hr.excel_ac_no_column_required') }}</li>
                                 <li>{{ __('hr.excel_name_column_required') }}</li>
                                 <li>{{ __('hr.excel_time_column_required') }}</li>
@@ -1275,16 +1275,16 @@ new class extends Component {
                         </div>
                         <form wire:submit.prevent="importExcel">
                             <div class="mb-3">
-                                <label class="form-label font-family-cairo fw-bold">{{ __('hr.excel_file') }}</label>
+                                <label class="form-label font-hold fw-bold">{{ __('hr.excel_file') }}</label>
                                 <input type="file" 
-                                       class="form-control font-family-cairo" 
+                                       class="form-control font-hold" 
                                        accept=".xls,.xlsx,.csv"
                                        wire:model="excelFile"
                                        @if($isReadingFile || $isFileRead) disabled @endif>
                                 @error('excelFile')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
-                                <small class="text-muted font-family-cairo">{{ __('hr.supported_formats') }}</small>
+                                <small class="text-muted font-hold">{{ __('hr.supported_formats') }}</small>
                             </div>
 
                             {{-- Progress Section --}}
@@ -1294,7 +1294,7 @@ new class extends Component {
                                         <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
                                             <span class="visually-hidden">جاري القراءة...</span>
                                         </div>
-                                        <span class="font-family-cairo fw-bold">{{ __('hr.reading_file') }}</span>
+                                        <span class="font-hold fw-bold">{{ __('hr.reading_file') }}</span>
                                     </div>
                                     @if($importTotalRows > 0)
                                         <div class="progress mb-2" style="height: 25px;">
@@ -1304,12 +1304,12 @@ new class extends Component {
                                                  aria-valuenow="{{ $importProgress }}" 
                                                  aria-valuemin="0" 
                                                  aria-valuemax="{{ $importTotalRows }}">
-                                                <span class="font-family-cairo fw-bold text-white">
+                                                <span class="font-hold fw-bold text-white">
                                                     {{ $importProgress }} / {{ $importTotalRows }} {{ __('Rows') }}
                                                 </span>
                                             </div>
                                         </div>
-                                        <small class="text-muted font-family-cairo">
+                                        <small class="text-muted font-hold">
                                             {{ __('hr.processed') }} {{ $importProgress }} {{ __('hr.of') }} {{ $importTotalRows }} {{ __('hr.rows') }}
                                         </small>
                                     @endif
@@ -1322,23 +1322,23 @@ new class extends Component {
                                      style="background-color: {{ $importSuccessCount > 0 ? '#d4edda' : '#f8d7da' }};">
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="las la-check-circle me-2" style="font-size: 1.5rem; color: #28a745;"></i>
-                                        <span class="font-family-cairo fw-bold" style="font-size: 1.1rem;">
+                                        <span class="font-hold fw-bold" style="font-size: 1.1rem;">
                                             {{ __('hr.file_read_successfully') }}
                                         </span>
                                     </div>
                                     <div class="mt-2">
-                                        <span class="badge bg-success me-2 font-family-cairo">
+                                        <span class="badge bg-success me-2 font-hold">
                                             {{ __('hr.successful') }} {{ $importSuccessCount }}
                                         </span>
                                         @if($importFailedCount > 0)
-                                            <span class="badge bg-danger me-2 font-family-cairo">
+                                            <span class="badge bg-danger me-2 font-hold">
                                                 {{ __('hr.failed') }} {{ $importFailedCount }}
                                             </span>
                                         @endif
                                     </div>
                                     @if($importFailedCount > 0 && count($importErrors) > 0 && count($importErrors) <= 5)
                                         <div class="mt-2">
-                                            <small class="text-danger font-family-cairo">
+                                            <small class="text-danger font-hold">
                                                 <strong>{{ __('hr.errors') }}</strong><br>
                                                 @foreach(array_slice($importErrors, 0, 5) as $error)
                                                     • {{ $error }}<br>
@@ -1353,14 +1353,14 @@ new class extends Component {
                             @endif
 
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary font-family-cairo"
+                                <button type="button" class="btn btn-secondary font-hold"
                                     wire:click="resetImportState(); $set('showImportModal', false)"
                                     @if($isReadingFile) disabled @endif>
                                     {{ __('hr.cancel') }}
                                 </button>
                                 
                                 @if(!$isFileRead)
-                                    <button type="submit" class="btn btn-main font-family-cairo"
+                                    <button type="submit" class="btn btn-main font-hold"
                                         wire:loading.attr="disabled"
                                         @if($isReadingFile || !$excelFile) disabled @endif>
                                         <span wire:loading.remove wire:target="importExcel">
@@ -1372,7 +1372,7 @@ new class extends Component {
                                         </span>
                                     </button>
                                 @else
-                                    <button type="button" class="btn btn-success font-family-cairo"
+                                    <button type="button" class="btn btn-success font-hold"
                                         wire:click="confirmImport"
                                         wire:loading.attr="disabled">
                                         <span wire:loading.remove wire:target="confirmImport">

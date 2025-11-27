@@ -118,7 +118,7 @@ new class extends Component {
                 <div class="position-relative">
                     <input type="text" 
                            wire:model.live.debounce.300ms="search" 
-                           class="form-control font-family-cairo"
+                           class="form-control font-hold"
                            placeholder="{{ __('hr.search_kpis') }}">
 
                 </div>
@@ -126,7 +126,7 @@ new class extends Component {
 
             <div class="col-lg-6 mt-3">
                 @can('create KPIS')
-                    <button type="button" class="btn btn-main font-family-cairo fw-bold" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
+                    <button type="button" class="btn btn-main font-hold fw-bold" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
                         <i class="fas fa-plus me-2"></i>{{ __('hr.add_new_kpi') }}
                     </button>
                 @endcan
@@ -147,12 +147,12 @@ new class extends Component {
                             <thead class="table-light text-center align-middle">
 
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.kpi_name') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.description') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.created_at') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.kpi_name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.description') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.created_at') }}</th>
                                     @canany(['edit KPIS', 'delete KPIS'])
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
 
 
@@ -194,7 +194,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit KPIS', 'delete KPIS']) ? '5' : '4' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('hr.no_kpis_found') }}
@@ -220,18 +220,18 @@ new class extends Component {
             <div class="modal-content">
                 <form wire:submit="save">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold" id="kpiFormModalLabel">
+                        <h5 class="modal-title font-hold fw-bold" id="kpiFormModalLabel">
                             {{ $editing ? __('hr.edit_kpi') : __('hr.add_new_kpi') }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">{{ __('hr.kpi_name') }} <span
+                            <label for="name" class="form-label font-hold fw-bold">{{ __('hr.kpi_name') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text" 
                                    wire:model.blur="name"
-                                   class="form-control @error('name') is-invalid @enderror font-family-cairo" 
+                                   class="form-control @error('name') is-invalid @enderror font-hold" 
                                    id="name"
                                    required>
                             @error('name')
@@ -240,9 +240,9 @@ new class extends Component {
                         </div>
 
                         <div class="mb-3">
-                            <label for="description" class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
+                            <label for="description" class="form-label font-hold fw-bold">{{ __('hr.description') }}</label>
                             <textarea wire:model.blur="description" 
-                                      class="form-control @error('description') is-invalid @enderror font-family-cairo" 
+                                      class="form-control @error('description') is-invalid @enderror font-hold" 
                                       id="description"
                                       rows="3"></textarea>
                             @error('description')
@@ -252,9 +252,9 @@ new class extends Component {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary font-family-cairo"
+                        <button type="button" class="btn btn-secondary font-hold"
                             data-bs-dismiss="modal">{{ __('hr.cancel') }}</button>
-                        <button type="submit" class="btn btn-main font-family-cairo">
+                        <button type="submit" class="btn btn-main font-hold">
                             {{ $editing ? __('hr.update') : __('hr.save') }}
                         </button>
                     </div>

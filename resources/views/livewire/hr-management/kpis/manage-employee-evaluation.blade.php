@@ -334,7 +334,7 @@ new class extends Component {
                                     @empty
                                         <tr>
                                             <td colspan="{{ auth()->user()->canany(['edit Employee Evaluations', 'delete Employee Evaluations']) ? '8' : '7' }}"
-                                                class="text-center font-family-cairo fw-bold py-4">
+                                                class="text-center font-hold fw-bold py-4">
                                                 <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>
                                                     {{ __('hr.no_evaluations_found') }}

@@ -103,7 +103,7 @@ new class extends Component {
 
                 <div class="card-header">
                     @can('create units')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             {{ __('Add New') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
@@ -116,11 +116,11 @@ new class extends Component {
 
                                 <tr>
 
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">الكود</th>
-                                    <th class="font-family-cairo fw-bold">الاسم</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">الكود</th>
+                                    <th class="font-hold fw-bold">الاسم</th>
                                     @canany(['edit units', 'delete units'])
-                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                        <th class="font-hold fw-bold">العمليات</th>
                                     @endcanany
                                 </tr>
                             </thead>
@@ -128,9 +128,9 @@ new class extends Component {
                                 @forelse ($units as $unit)
                                     <tr>
 
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $unit->code }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $unit->name }}</td>
+                                        <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold">{{ $unit->code }}</td>
+                                        <td class="font-hold fw-bold">{{ $unit->name }}</td>
                                         @canany(['edit units', 'delete units'])
                                             <td>
                                                 @can('edit units')
@@ -174,7 +174,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="unitModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="unitModalLabel">
                         {{ $isEdit ? 'تعديل وحدة' : 'إضافة وحدة جديدة' }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -182,9 +182,9 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit="save">
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">الاسم</label>
+                            <label for="name" class="form-label font-hold fw-bold">الاسم</label>
                             <input type="text"
-                                class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('name') is-invalid @enderror font-hold fw-bold"
                                 id="name" wire:model="name">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>

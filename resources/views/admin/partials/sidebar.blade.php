@@ -43,7 +43,7 @@
 
             <li class="nav-item border-bottom pb-1 mb-2">
                 <a href="{{ route('admin.dashboard') }}"
-                    class="nav-link d-flex align-items-center gap-2 font-family-cairo fw-bold">
+                    class="nav-link d-flex align-items-center gap-2 font-hold fw-bold">
                     <i data-feather="home" style="color:#4e73df" class="menu-icon"></i>
                     {{ __('navigation.home') }}
                 </a>

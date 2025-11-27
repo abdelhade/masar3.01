@@ -126,7 +126,7 @@ new class extends Component {
             <p class="text-muted">Ø¥Ø¯Ø§Ø±Ø© Ø£ÙˆØ§Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬ ÙˆØ§Ù„ØªØµÙ†ÙŠØ¹</p>
         </div>
         <div class="col-md-6 text-end mt-4">
-            <a href="{{ route('production-orders.create') }}" class="btn btn-main font-family-cairo fw-bold">
+            <a href="{{ route('production-orders.create') }}" class="btn btn-main font-hold fw-bold">
                 <i class="fas fa-plus"></i>
                 Ø£Ù…Ø± Ø¥Ù†ØªØ§Ø¬ Ø¬Ø¯ÙŠØ¯
             </a>
@@ -181,7 +181,7 @@ new class extends Component {
         </div>
         
         <div class="col-md-1 d-flex align-items-end mb-4">
-            <button wire:click="clearFilters" class="btn btn-outline-secondary font-family-cairo fw-bold" title="Ù…Ø³Ø­ Ø§Ù„ÙÙ„Ø§ØªØ±">
+            <button wire:click="clearFilters" class="btn btn-outline-secondary font-hold fw-bold" title="Ù…Ø³Ø­ Ø§Ù„ÙÙ„Ø§ØªØ±">
                 Ù…Ø³Ø­ Ø§Ù„ÙÙ„Ø§ØªØ±
             </button>
         </div>
@@ -207,11 +207,11 @@ new class extends Component {
                         <tbody>
                             @foreach($this->productionOrders as $order)
                                 <tr>
-                                    <td class="font-family-cairo fw-bold">{{ $order->order_number }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $order->order_date->format('Y-m-d') }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $order->customer->aname ?? '-' }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ number_format($order->total_amount, 2) }} Ø±ÙŠØ§Ù„</td>
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">{{ $order->order_number }}</td>
+                                    <td class="font-hold fw-bold">{{ $order->order_date->format('Y-m-d') }}</td>
+                                    <td class="font-hold fw-bold">{{ $order->customer->aname ?? '-' }}</td>
+                                    <td class="font-hold fw-bold">{{ number_format($order->total_amount, 2) }} Ø±ÙŠØ§Ù„</td>
+                                    <td class="font-hold fw-bold">
                                         @php
                                             $statusColors = [
                                                 'pending' => 'badge bg-warning',
@@ -228,13 +228,13 @@ new class extends Component {
                                             {{ $statusLabels[$order->status] }}
                                         </span>
                                     </td>
-                                    <td class="font-family-cairo fw-bold">{{ $order->createdBy->name ?? '-' }}</td>
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">{{ $order->createdBy->name ?? '-' }}</td>
+                                    <td class="font-hold fw-bold">
                                         <div class="btn-group" role="group">
-                                            <a href="{{ route('production-orders.show', $order->id) }}" class="btn btn-sm btn-info font-family-cairo fw-bold">
+                                            <a href="{{ route('production-orders.show', $order->id) }}" class="btn btn-sm btn-info font-hold fw-bold">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('production-orders.edit', $order->id) }}" class="btn btn-sm btn-warning font-family-cairo fw-bold">
+                                            <a href="{{ route('production-orders.edit', $order->id) }}" class="btn btn-sm btn-warning font-hold fw-bold">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             @if($order->status !== 'completed')

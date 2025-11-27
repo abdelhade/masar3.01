@@ -3,7 +3,7 @@
     <!-- Navigation Tabs - Alpine.js -->
     <ul class="nav nav-tabs mb-3" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'personal' }"
                     @click="switchTab('personal')"
                     type="button">
@@ -11,7 +11,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'location' }"
                     @click="switchTab('location')"
                     type="button">
@@ -19,7 +19,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'job' }"
                     @click="switchTab('job')"
                     type="button">
@@ -27,7 +27,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'salary' }"
                     @click="switchTab('salary')"
                     type="button">
@@ -35,7 +35,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'attendance' }"
                     @click="switchTab('attendance')"
                     type="button">
@@ -43,7 +43,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'kpi' }"
                     @click="switchTab('kpi')"
                     type="button">
@@ -51,7 +51,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'Accounting' }"
                     @click="switchTab('Accounting')"
                     type="button">
@@ -59,7 +59,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link font-family-cairo fw-bold"
+            <button class="nav-link font-hold fw-bold"
                     :class="{ 'active': activeTab === 'leaveBalances' }"
                     @click="switchTab('leaveBalances')"
                     type="button">
@@ -80,7 +80,7 @@
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-user me-2"></i>{{ __('البيانات الأساسية') }}
                             </h6>
                         </div>
@@ -198,7 +198,7 @@
                 <div class="col-lg-4">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-success text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-image me-2"></i>{{ __('الصورة الشخصية') }}
                             </h6>
                         </div>
@@ -284,7 +284,7 @@
                             <div class="mb-2">
                                 <label class="form-label fw-bold text-dark">{{ __('حالة الموظف') }}
                                     <span class="text-danger">*</span></label>
-                                <select class="form-select font-family-cairo fw-bold" wire:model.defer="status">
+                                <select class="form-select font-hold fw-bold" wire:model.defer="status">
                                     <option value="مفعل">{{ __('مفعل') }}</option>
                                     <option value="معطل">{{ __('معطل') }}</option>
                                 </select>
@@ -307,7 +307,7 @@
              style="display: none;">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-info text-white py-2">
-                    <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                    <h6 class="card-title mb-0 font-hold fw-bold">
                         <i class="fas fa-map-marker-alt me-2"></i>{{ __('الموقع الجغرافي') }}
                     </h6>
                 </div>
@@ -383,7 +383,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-warning text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-briefcase me-2"></i>{{ __('الوظيفة والقسم') }}
                             </h6>
                         </div>
@@ -438,7 +438,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-secondary text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-calendar-alt me-2"></i>{{ __('تواريخ التوظيف') }}
                             </h6>
                         </div>
@@ -478,7 +478,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-success text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-money-bill-wave me-2"></i>{{ __('المرتب الأساسي') }}
                             </h6>
                         </div>
@@ -520,7 +520,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-info text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-calculator me-2"></i>{{ __('حسابات إضافية') }}
                             </h6>
                         </div>
@@ -594,7 +594,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-clock me-2"></i>{{ __('نظام الحضور') }}
                             </h6>
                         </div>
@@ -643,7 +643,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-warning text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-mobile-alt me-2"></i>{{ __('نظام الهاتف المحمول') }}
                             </h6>
                         </div>
@@ -679,7 +679,7 @@
              style="display: none;">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-primary text-white py-2">
-                    <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                    <h6 class="card-title mb-0 font-hold fw-bold">
                         <i class="fas fa-chart-line me-2"></i>{{ __('معدلات الأداء للموظف') }}
                     </h6>
                 </div>
@@ -687,7 +687,7 @@
                     <!-- إضافة معدل أداء جديد -->
                     <div class="card border-primary mb-3">
                         <div class="card-header bg-light py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold text-primary">
+                            <h6 class="card-title mb-0 font-hold fw-bold text-primary">
                                 <i class="fas fa-plus me-2"></i>{{ __('إضافة معدل أداء جديد') }}
                             </h6>
                         </div>
@@ -882,7 +882,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-money-bill-wave me-2"></i>{{ __('الحسابات') }}
                             </h6>
                         </div>
@@ -910,7 +910,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-gradient-primary text-white py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                            <h6 class="card-title mb-0 font-hold fw-bold">
                                 <i class="fas fa-money-bill-wave me-2"></i>{{ __('الأرصده') }}
                             </h6>
                         </div>
@@ -943,7 +943,7 @@
              style="display: none;">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-primary text-white py-2">
-                    <h6 class="card-title mb-0 font-family-cairo fw-bold">
+                    <h6 class="card-title mb-0 font-hold fw-bold">
                         <i class="fas fa-calendar-check me-2"></i>{{ __('رصيد الإجازات للموظف') }}
                     </h6>
                 </div>
@@ -951,7 +951,7 @@
                     <!-- إضافة رصيد إجازة جديد -->
                     <div class="card border-primary mb-3">
                         <div class="card-header bg-light py-2">
-                            <h6 class="card-title mb-0 font-family-cairo fw-bold text-primary">
+                            <h6 class="card-title mb-0 font-hold fw-bold text-primary">
                                 <i class="fas fa-plus me-2"></i>{{ __('إضافة رصيد إجازة جديد') }}
                             </h6>
                         </div>

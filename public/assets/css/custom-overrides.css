@@ -21,7 +21,7 @@ body, html, p, h1, h2, h3, h4, h5, h6, a, span, div, ul, ol, li, table, th, td, 
     direction: rtl;
 }
 
-.font-family-cairo {
+.font-hold {
     font-family: var(--arabic-font);
 }
 

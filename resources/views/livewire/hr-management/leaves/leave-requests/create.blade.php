@@ -26,7 +26,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="employee_id" class="form-label">الموظف <span class="text-danger">*</span></label>
-                                        <select wire:model.live="employee_id" id="employee_id" class="form-select @error('employee_id') is-invalid @enderror font-family-cairo fw-bold font-14">
+                                        <select wire:model.live="employee_id" id="employee_id" class="form-select @error('employee_id') is-invalid @enderror font-hold fw-bold font-14">
                                             <option value="">اختر الموظف</option>
                                             @foreach($employees as $employee)
                                                 <option value="{{ $employee->id }}">{{ $employee->name }}</option>
@@ -42,7 +42,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="leave_type_id" class="form-label">نوع الإجازة <span class="text-danger">*</span></label>
-                                        <select wire:model.live="leave_type_id" id="leave_type_id" class="form-select @error('leave_type_id') is-invalid @enderror font-family-cairo fw-bold font-14">
+                                        <select wire:model.live="leave_type_id" id="leave_type_id" class="form-select @error('leave_type_id') is-invalid @enderror font-hold fw-bold font-14">
                                             <option value="">اختر نوع الإجازة</option>
                                             @foreach($leaveTypes as $type)
                                                 <option value="{{ $type->id }}">{{ $type->name }}</option>
@@ -61,7 +61,7 @@
                                         <input type="date" 
                                                wire:model.live="start_date" 
                                                id="start_date"
-                                               class="form-control @error('start_date') is-invalid @enderror font-family-cairo fw-bold font-14">
+                                               class="form-control @error('start_date') is-invalid @enderror font-hold fw-bold font-14">
                                         @error('start_date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -75,7 +75,7 @@
                                         <input type="date" 
                                                wire:model.live="end_date" 
                                                id="end_date"
-                                               class="form-control @error('end_date') is-invalid @enderror font-family-cairo fw-bold font-14">
+                                               class="form-control @error('end_date') is-invalid @enderror font-hold fw-bold font-14">
                                         @error('end_date')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -89,7 +89,7 @@
                                         <textarea wire:model="reason" 
                                                   id="reason"
                                                   rows="3" 
-                                                  class="form-control @error('reason') is-invalid @enderror font-family-cairo fw-bold font-14"
+                                                  class="form-control @error('reason') is-invalid @enderror font-hold fw-bold font-14"
                                                   placeholder="أدخل سبب الإجازة..."></textarea>
                                         @error('reason')
                                             <div class="invalid-feedback">{{ $message }}</div>

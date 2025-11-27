@@ -148,7 +148,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header">
                     {{-- @can('إضافة المجموعات') --}}
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             {{ __('Add New') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
@@ -161,18 +161,18 @@ new class extends Component {
 
                                 <tr>
 
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">الاسم</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">الاسم</th>
                                     @canany(['حذف المجموعات', 'تعديل المجموعات'])
-                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                        <th class="font-hold fw-bold">العمليات</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($notes as $note)
                                     <tr>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $note->name }}</td>
+                                        <td class="font-hold text-center fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold text-center fw-bold">{{ $note->name }}</td>
                                         <td class="text-center">
                                             <a wire:click="edit({{ $note->id }})"><i
                                                     class="las la-pen btn btn-success font-20"></i></a>
@@ -183,8 +183,8 @@ new class extends Component {
                                                 <i class="las la-trash-alt btn btn-danger font-20"></i>
                                             </a>
                                         </td>
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $note->name }}</td>
+                                        <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold">{{ $note->name }}</td>
                                         @canany(['تعديل ' . $note->name, 'حذف ' . $note->name])
                                             <td>
                                                 @can('تعديل ' . $note->name)
@@ -219,7 +219,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="noteModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="noteModalLabel">
                         {{ $isEdit ? 'تعديل ملاحظة' : 'إضافة ملاحظة جديدة' }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -227,9 +227,9 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit="save">
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">الاسم</label>
+                            <label for="name" class="form-label font-hold fw-bold">الاسم</label>
                             <input type="text"
-                                class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('name') is-invalid @enderror font-hold fw-bold"
                                 id="name" wire:model="name">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -251,7 +251,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="noteDetailsModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="noteDetailsModalLabel">
                         {{ $isEdit ? 'تعديل تفاصيل الملاحظة' : 'إضافة تفاصيل ملاحظة جديدة' }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -259,9 +259,9 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit="saveNoteDetails" wire:ignore.self>
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">الاسم</label>
+                            <label for="name" class="form-label font-hold fw-bold">الاسم</label>
                             <input type="text"
-                                class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('name') is-invalid @enderror font-hold fw-bold"
                                 id="noteDetailsName" wire:model="noteDetailsName">
                             @error('noteDetailsName')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -277,16 +277,16 @@ new class extends Component {
                         <table class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">الاسم</th>
-                                    <th class="font-family-cairo fw-bold">العمليات</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">الاسم</th>
+                                    <th class="font-hold fw-bold">العمليات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($noteDetails as $noteDetail)
                                     <tr>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo text-center fw-bold">{{ $noteDetail->name }}</td>
+                                        <td class="font-hold text-center fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold text-center fw-bold">{{ $noteDetail->name }}</td>
                                         <td class="text-center">
                                             <a wire:click="editNoteDetails({{ $noteDetail->id }})"
                                                 class="btn btn-success btn-icon-square-sm "><i
@@ -302,7 +302,7 @@ new class extends Component {
 
                                     <tr>
                                         <td colspan="3"
-                                                    class="text-center font-family-cairo fw-bold">لا يوجد
+                                                    class="text-center font-hold fw-bold">لا يوجد
                                                     تفاصيل
                                         </td>
                                     </tr>

@@ -86,38 +86,38 @@
                         <table id="invoices-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">#</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Date') }}</th>
+                                    <th class="font-hold fw-bold font-14 text-center">#</th>
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Date') }}</th>
                                     @if (!in_array($invoiceType, [18, 19, 20, 21]))
-                                        <th class="font-family-cairo fw-bold font-14 text-center">
+                                        <th class="font-hold fw-bold font-14 text-center">
                                             {{ __('Due Date') }}</th>
                                     @endif
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Operation Name') }}
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Operation Name') }}
                                     </th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Account') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Account') }}</th>
+                                    <th class="font-hold fw-bold font-14 text-center">
                                         {{ $invoiceType == 21 ? __('Counter Store') : __('Counter Account') }}
                                     </th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Employee') }}</th>
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Financial Value') }}
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Employee') }}</th>
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Financial Value') }}
                                     </th>
                                     @if (!in_array($invoiceType, [18, 19, 20, 21]))
-                                        <th class="font-family-cairo fw-bold font-14 text-center">
+                                        <th class="font-hold fw-bold font-14 text-center">
                                             {{ in_array($invoiceType, [11, 13, 15, 17]) ? __('Paid to Supplier') : __('Paid by Customer') }}
                                         </th>
                                     @endif
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Net Operation') }}
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Net Operation') }}
                                     </th>
                                     @if (!in_array($invoiceType, [11, 13, 18, 19, 20, 21]))
-                                        <th class="font-family-cairo fw-bold font-14 text-center">
+                                        <th class="font-hold fw-bold font-14 text-center">
                                             {{ in_array($invoiceType, [11, 13, 15, 17]) ? __('Cost') : __('Profit') }}
                                         </th>
                                     @endif
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Payment Status') }}
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Payment Status') }}
                                     </th>
 
 
-                                    <th class="font-family-cairo fw-bold font-14 text-center">{{ __('Actions') }}</th>
+                                    <th class="font-hold fw-bold font-14 text-center">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>

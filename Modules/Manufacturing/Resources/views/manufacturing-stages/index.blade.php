@@ -16,7 +16,7 @@
 
             @can('create Manufacturing Stages')
                 <a href="{{ route('manufacturing.stages.create') }}" type="button"
-                    class="btn btn-primary font-family-cairo fw-bold">
+                    class="btn btn-primary font-hold fw-bold">
                     {{ __('Add New Stage') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>

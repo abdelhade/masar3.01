@@ -127,7 +127,7 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 @can('create Jobs')
-                    <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                    <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('hr.add_job') }}
                     </button>
@@ -147,11 +147,11 @@ new class extends Component {
                             <thead class="table-light align-middle">
                                 <tr>
 
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.title') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.description') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.title') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.description') }}</th>
                                     @canany(['edit Jobs', 'delete Jobs'])
-                                        <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
 
 
@@ -161,9 +161,9 @@ new class extends Component {
                                 @forelse ($this->jobs as $job)
                                     <tr>
 
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $job->title }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $job->description ?? '-' }}</td>
+                                        <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold">{{ $job->title }}</td>
+                                        <td class="font-hold fw-bold">{{ $job->description ?? '-' }}</td>
                                         @canany(['edit Jobs', 'delete Jobs'])
                                             <td>
                                                 <div class="btn-group" role="group">
@@ -190,7 +190,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit Jobs', 'delete Jobs']) ? '4' : '3' }}"
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('hr.no_jobs_found') }}
@@ -212,7 +212,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="jobModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="jobModalLabel">
                         {{ $isEdit ? __('hr.edit_job') : __('hr.add_job') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -220,10 +220,10 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title" class="form-label font-family-cairo fw-bold">{{ __('hr.title') }} <span
+                            <label for="title" class="form-label font-hold fw-bold">{{ __('hr.title') }} <span
                                     class="text-danger">*</span></label>
                             <input type="text"
-                                class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('title') is-invalid @enderror font-hold fw-bold"
                                 id="title" wire:model.blur="title" required>
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -231,9 +231,9 @@ new class extends Component {
                         </div>
                         <div class="mb-3">
                             <label for="description"
-                                class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
+                                class="form-label font-hold fw-bold">{{ __('hr.description') }}</label>
                             <input type="text"
-                                class="form-control @error('description') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('description') is-invalid @enderror font-hold fw-bold"
                                 id="description" wire:model.blur="description">
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>

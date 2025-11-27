@@ -150,7 +150,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('create States')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add State') }}
                         </button>
@@ -167,22 +167,22 @@ new class extends Component {
                         <table class="table table-striped mb-0">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Name') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Country') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('Name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('Country') }}</th>
                                     @canany(['edit States', 'delete States'])
-                                        <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($this->states as $state)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $state->title }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $state->country->title ?? '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $state->title }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $state->country->title ?? '-' }}</td>
                                         @canany(['edit States', 'delete States'])
-                                            <td class="font-family-cairo fw-bold text-center">
+                                            <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
                                                     @can('edit States')
                                                         <button type="button" 
@@ -208,7 +208,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit States', 'delete States']) ? '4' : '3' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('No states found.') }}
@@ -235,7 +235,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="stateModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="stateModalLabel">
                         {{ $isEdit ? __('Edit State') : __('Add State') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -243,11 +243,11 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title" class="form-label font-family-cairo fw-bold">
+                            <label for="title" class="form-label font-hold fw-bold">
                                 {{ __('Name') }} <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('title') is-invalid @enderror font-hold fw-bold"
                                    id="title" 
                                    wire:model.blur="title" 
                                    required>
@@ -256,10 +256,10 @@ new class extends Component {
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="country_id" class="form-label font-family-cairo fw-bold">
+                            <label for="country_id" class="form-label font-hold fw-bold">
                                 {{ __('Country') }} <span class="text-danger">*</span>
                             </label>
-                            <select class="form-control @error('country_id') is-invalid @enderror font-family-cairo fw-bold"
+                            <select class="form-control @error('country_id') is-invalid @enderror font-hold fw-bold"
                                     id="country_id" 
                                     wire:model.blur="country_id" 
                                     required>

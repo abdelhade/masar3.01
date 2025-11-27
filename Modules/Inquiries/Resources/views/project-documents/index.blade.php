@@ -17,7 +17,7 @@
         <div class="col-lg-12">
 
             @can('create Documents')
-                <a href="{{ route('inquiry.documents.create') }}" type="button" class="btn btn-main font-family-cairo fw-bold">
+                <a href="{{ route('inquiry.documents.create') }}" type="button" class="btn btn-main font-hold fw-bold">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>

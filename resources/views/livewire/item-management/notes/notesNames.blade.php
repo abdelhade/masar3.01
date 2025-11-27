@@ -21,7 +21,7 @@ new class extends Component {
 
         @can($permission)
             <li class="nav-item">
-                <a class="nav-link font-family-cairo fw-bold" href="{{ route('notes.noteDetails', $noteId) }}">
+                <a class="nav-link font-hold fw-bold" href="{{ route('notes.noteDetails', $noteId) }}">
                     <i class="ti-control-record"></i>{{ $name }}
                 </a>
             </li>

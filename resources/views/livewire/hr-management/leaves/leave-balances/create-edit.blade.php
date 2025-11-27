@@ -6,7 +6,7 @@
                     <div class="card-header">
                         <h3 class="card-title">{{ $balance ? 'تعديل رصيد الإجازة' : 'إضافة رصيد إجازة جديد' }}</h3>
                         <div class="card-tools">
-                            <a href="{{ route('leaves.balances.index') }}" class="btn btn-secondary font-family-cairo fw-bold">
+                            <a href="{{ route('leaves.balances.index') }}" class="btn btn-secondary font-hold fw-bold">
                                 <i class="fas fa-arrow-left"></i>
                                 العودة للقائمة
                             </a>
@@ -16,7 +16,7 @@
                         <form wire:submit="save">
                             <!-- رسائل الخطأ العامة -->
                             @if($errors->has('general'))
-                                <div class="alert alert-danger font-family-cairo fw-bold">
+                                <div class="alert alert-danger font-hold fw-bold">
                                     {{ $errors->first('general') }}
                                 </div>
                             @endif
@@ -26,14 +26,14 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="employee_id" class="form-label">الموظف <span class="text-danger">*</span></label>
-                                        <select wire:model="employee_id" id="employee_id" class="form-select @error('employee_id') is-invalid @enderror font-family-cairo fw-bold font-14">
+                                        <select wire:model="employee_id" id="employee_id" class="form-select @error('employee_id') is-invalid @enderror font-hold fw-bold font-14">
                                             <option value="">اختر الموظف</option>
                                             @foreach($employees as $employee)
                                                 <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('employee_id')
-                                            <div class="invalid-feedback font-family-cairo fw-bold">{{ $message }}</div>
+                                            <div class="invalid-feedback font-hold fw-bold">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
@@ -42,14 +42,14 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="leave_type_id" class="form-label">نوع الإجازة <span class="text-danger">*</span></label>
-                                        <select wire:model="leave_type_id" id="leave_type_id" class="form-select @error('leave_type_id') is-invalid @enderror font-family-cairo fw-bold font-14">
+                                        <select wire:model="leave_type_id" id="leave_type_id" class="form-select @error('leave_type_id') is-invalid @enderror font-hold fw-bold font-14">
                                             <option value="">اختر نوع الإجازة</option>
                                             @foreach($leaveTypes as $type)
                                                 <option value="{{ $type->id }}">{{ $type->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('leave_type_id')
-                                            <div class="invalid-feedback font-family-cairo fw-bold">{{ $message }}</div>
+                                            <div class="invalid-feedback font-hold fw-bold">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>

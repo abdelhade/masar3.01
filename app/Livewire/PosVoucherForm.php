@@ -188,7 +188,7 @@ new class extends Component {
             <div class="col-lg-8 col-md-7 col-12">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-primary text-white border-0 py-2">
-                        <h6 class="mb-0 font-family-cairo fw-bold">
+                        <h6 class="mb-0 font-hold fw-bold">
                             <i class="fas fa-shopping-cart me-2"></i>
                             اختيار المنتجات
                         </h6>
@@ -211,7 +211,7 @@ new class extends Component {
                                                      wire:click="addToCart({{ $item['id'] }})" 
                                                      style="cursor: pointer; font-size: 0.8rem;">
                                                     <div>
-                                                        <strong class="font-family-cairo">{{ Str::limit($item['name'], 20) }}</strong>
+                                                        <strong class="font-hold">{{ Str::limit($item['name'], 20) }}</strong>
                                                         <br>
                                                         <small class="text-muted">كود: {{ $item['code'] }}</small>
                                                     </div>
@@ -258,7 +258,7 @@ new class extends Component {
                                                 @endif
                                                 <div class="card-body p-2 text-center d-flex flex-column justify-content-between">
                                                     <div>
-                                                        <h6 class="card-title font-family-cairo fw-bold mb-1" style="font-size: 0.8rem;">
+                                                        <h6 class="card-title font-hold fw-bold mb-1" style="font-size: 0.8rem;">
                                                             {{ Str::limit($item->name, 20) }}
                                                         </h6>
                                                         <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">كود: {{ $item->code }}</small>
@@ -281,7 +281,7 @@ new class extends Component {
                             @else
                                 <div class="text-center text-muted py-4">
                                     <i class="fas fa-box fa-2x mb-2 text-muted"></i>
-                                    <p class="font-family-cairo mb-0">اختر تصنيفاً لعرض المنتجات</p>
+                                    <p class="font-hold mb-0">اختر تصنيفاً لعرض المنتجات</p>
                                 </div>
                             @endif
                         </div>
@@ -293,7 +293,7 @@ new class extends Component {
             <div class="col-lg-4 col-md-5 col-12">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-success text-white border-0 py-2">
-                        <h6 class="mb-0 font-family-cairo fw-bold">
+                        <h6 class="mb-0 font-hold fw-bold">
                             <i class="fas fa-receipt me-2"></i>
                             ملخص الطلب
                         </h6>
@@ -304,7 +304,7 @@ new class extends Component {
                             @forelse($cartItems as $index => $item)
                                 <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom bg-light rounded">
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-1 font-family-cairo fw-bold" style="font-size: 0.85rem;">{{ Str::limit($item['name'], 25) }}</h6>
+                                        <h6 class="mb-1 font-hold fw-bold" style="font-size: 0.85rem;">{{ Str::limit($item['name'], 25) }}</h6>
                                         <div class="d-flex align-items-center gap-1">
                                             <input type="number" 
                                                    wire:change="updateQuantity({{ $index }}, $event.target.value)"
@@ -325,7 +325,7 @@ new class extends Component {
                             @empty
                                 <div class="text-center text-muted py-3">
                                     <i class="fas fa-shopping-cart fa-2x mb-2"></i>
-                                    <p class="font-family-cairo mb-0">لا توجد منتجات في السلة</p>
+                                    <p class="font-hold mb-0">لا توجد منتجات في السلة</p>
                                 </div>
                             @endforelse
                         </div>
@@ -333,11 +333,11 @@ new class extends Component {
                         <!-- Totals -->
                         <div class="p-2 border-top bg-light">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="font-family-cairo" style="font-size: 0.85rem;">الضرائب:</span>
+                                <span class="font-hold" style="font-size: 0.85rem;">الضرائب:</span>
                                 <span class="fw-bold" style="font-size: 0.85rem;">LE {{ number_format($tax_value, 2) }}</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="font-family-cairo fw-bold" style="font-size: 1rem;">الإجمالي:</span>
+                                <span class="font-hold fw-bold" style="font-size: 1rem;">الإجمالي:</span>
                                 <span class="fw-bold text-primary" style="font-size: 1rem;">LE {{ number_format($total, 2) }}</span>
                             </div>
                         </div>
@@ -481,7 +481,7 @@ new class extends Component {
 }
 
 /* Font family */
-.font-family-cairo {
+.font-hold {
     font-family: 'Cairo', sans-serif;
 }
 

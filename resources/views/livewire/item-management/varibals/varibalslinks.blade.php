@@ -17,7 +17,7 @@ new class extends Component {
     @foreach ($varibals as $varibalId => $name)
         @can('view varibalsValues')
             <li class="nav-item">
-                <a class="nav-link font-family-cairo fw-bold" href="{{ route('varibalValues.index', $varibalId) }}">
+                <a class="nav-link font-hold fw-bold" href="{{ route('varibalValues.index', $varibalId) }}">
                     <i class="ti-control-record"></i>{{ $name }}
                 </a>
             </li>

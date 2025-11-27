@@ -134,7 +134,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('create Countries')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add Country') }}
                         </button>
@@ -151,20 +151,20 @@ new class extends Component {
                         <table class="table table-striped mb-0">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Name') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('Name') }}</th>
                                     @canany(['edit Countries', 'delete Countries'])
-                                        <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($this->countries as $country)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $country->title }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $country->title }}</td>
                                         @canany(['edit Countries', 'delete Countries'])
-                                            <td class="font-family-cairo fw-bold text-center">
+                                            <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
                                                     @can('edit Countries')
                                                         <button type="button" 
@@ -190,7 +190,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit Countries', 'delete Countries']) ? '3' : '2' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('No countries found.') }}
@@ -217,7 +217,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="countryModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="countryModalLabel">
                         {{ $isEdit ? __('Edit Country') : __('Add Country') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -225,11 +225,11 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title" class="form-label font-family-cairo fw-bold">
+                            <label for="title" class="form-label font-hold fw-bold">
                                 {{ __('Name') }} <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('title') is-invalid @enderror font-hold fw-bold"
                                    id="title" 
                                    wire:model.blur="title" 
                                    required>

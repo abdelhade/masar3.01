@@ -52,58 +52,58 @@ new class extends Component {
 <div class="p-6">
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title font-family-cairo fw-bold">تعديل المشروع</h3>
+            <h3 class="card-title font-hold fw-bold">تعديل المشروع</h3>
         </div>
         <div class="card-body">
             <form wire:submit="save">
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label for="name" class="form-label font-family-cairo fw-bold">اسم المشروع</label>
+                        <label for="name" class="form-label font-hold fw-bold">اسم المشروع</label>
                         <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model="name"
                             id="name" placeholder="أدخل اسم المشروع">
                         @error('name')
-                            <div class="invalid-feedback font-family-cairo">
+                            <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label for="start_date" class="form-label font-family-cairo fw-bold">تاريخ البدء</label>
+                        <label for="start_date" class="form-label font-hold fw-bold">تاريخ البدء</label>
                         <input type="date" class="form-control @error('start_date') is-invalid @enderror"
                             wire:model="start_date" id="start_date">
                         @error('start_date')
-                            <div class="invalid-feedback font-family-cairo">
+                            <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label for="end_date" class="form-label font-family-cairo fw-bold">تاريخ الانتهاء المتوقع</label>
+                        <label for="end_date" class="form-label font-hold fw-bold">تاريخ الانتهاء المتوقع</label>
                         <input type="date" class="form-control @error('end_date') is-invalid @enderror"
                             wire:model="end_date" id="end_date">
                         @error('end_date')
-                            <div class="invalid-feedback font-family-cairo">
+                            <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label for="actual_end_date" class="form-label font-family-cairo fw-bold">تاريخ الانتهاء الفعلي</label>
+                        <label for="actual_end_date" class="form-label font-hold fw-bold">تاريخ الانتهاء الفعلي</label>
                         <input type="date" class="form-control @error('actual_end_date') is-invalid @enderror"
                             wire:model="actual_end_date" id="actual_end_date">
                         @error('actual_end_date')
-                            <div class="invalid-feedback font-family-cairo">
+                            <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
 
                     <div class="col-md-2 mb-3">
-                        <label for="status" class="form-label font-family-cairo fw-bold">حالة المشروع</label>
-                        <select class="form-select font-family-cairo fw-bold @error('status') is-invalid @enderror" wire:model="status"
+                        <label for="status" class="form-label font-hold fw-bold">حالة المشروع</label>
+                        <select class="form-select font-hold fw-bold @error('status') is-invalid @enderror" wire:model="status"
                             id="status">
                             <option value="pending">قيد الانتظار</option>
                             <option value="in_progress">قيد التنفيذ</option>
@@ -111,18 +111,18 @@ new class extends Component {
                             <option value="cancelled">ملغي</option>
                         </select>
                         @error('status')
-                            <div class="invalid-feedback font-family-cairo">
+                            <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
 
                     <div class="col-md-12 mb-3">
-                        <label for="description" class="form-label font-family-cairo fw-bold">وصف المشروع</label>
+                        <label for="description" class="form-label font-hold fw-bold">وصف المشروع</label>
                         <textarea class="form-control @error('description') is-invalid @enderror" wire:model="description" id="description"
                             rows="4" placeholder="أدخل وصف المشروع"></textarea>
                         @error('description')
-                            <div class="invalid-feedback font-family-cairo">
+                            <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>
                         @enderror

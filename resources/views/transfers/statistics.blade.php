@@ -18,13 +18,13 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted font-family-cairo fw-bold mb-2">
+                                <h6 class="text-muted font-hold fw-bold mb-2">
                                     إجمالي التحويلات الكلي
                                 </h6>
-                                <h2 class="font-family-cairo fw-bold mb-0 text-primary">
+                                <h2 class="font-hold fw-bold mb-0 text-primary">
                                     {{ number_format($overallTotal->overall_value, 2) }}
                                 </h2>
-                                <small class="text-muted font-family-cairo">
+                                <small class="text-muted font-hold">
                                     {{ number_format($overallTotal->overall_count) }} تحويل
                                 </small>
                             </div>
@@ -43,13 +43,13 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="text-muted font-family-cairo fw-bold mb-2">
+                                        <h6 class="text-muted font-hold fw-bold mb-2">
                                             {{ $stats['title'] }}
                                         </h6>
-                                        <h2 class="font-family-cairo fw-bold mb-0 text-{{ $stats['color'] }}">
+                                        <h2 class="font-hold fw-bold mb-0 text-{{ $stats['color'] }}">
                                             {{ number_format($stats['value'], 2) }}
                                         </h2>
-                                        <small class="text-muted font-family-cairo">
+                                        <small class="text-muted font-hold">
                                             {{ number_format($stats['count']) }} تحويل
                                         </small>
                                     </div>

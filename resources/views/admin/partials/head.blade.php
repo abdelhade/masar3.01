@@ -31,10 +31,10 @@
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(entrypoints: ['resources/css/app.css', 'resources/js/app.js'])
     
  
-    <!-- User ID for Location Tracking -->
+
     @auth
         <meta name="user-id" content="{{ auth()->id() }}">
     @endauth

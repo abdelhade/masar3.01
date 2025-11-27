@@ -132,14 +132,14 @@ new class extends Component {
 
     <div class="d-flex justify-content-between align-items-center mb-1">
         @can('create Contract Types')
-            <button class="btn btn-main font-family-cairo fw-bold" wire:click="create">
+            <button class="btn btn-main font-hold fw-bold" wire:click="create">
                 <i class="las la-plus me-2"></i> {{ __('hr.add_contract_type') }}
             </button>
         @endcan
         <div class="mb-3">
             <input type="text" 
                    wire:model.live.debounce.300ms="search" 
-                   class="form-control font-family-cairo" 
+                   class="form-control font-hold" 
                    placeholder="{{ __('hr.search_by_name') }}">
         </div>
     </div>
@@ -154,11 +154,11 @@ new class extends Component {
                     style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th class="font-family-cairo fw-bold">#</th>
-                            <th class="font-family-cairo fw-bold">{{ __('hr.title') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('hr.description') }}</th>
+                            <th class="font-hold fw-bold">#</th>
+                            <th class="font-hold fw-bold">{{ __('hr.title') }}</th>
+                            <th class="font-hold fw-bold">{{ __('hr.description') }}</th>
                             @canany(['edit Contract Types', 'delete Contract Types'])
-                                <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                             @endcanany
                         </tr>
                     </thead>
@@ -196,7 +196,7 @@ new class extends Component {
                         @empty
                             <tr>
                                 <td colspan="{{ auth()->user()->canany(['edit Contract Types', 'delete Contract Types']) ? '4' : '3' }}" 
-                                    class="text-center font-family-cairo fw-bold py-4">
+                                    class="text-center font-hold fw-bold py-4">
                                     <div class="alert alert-info mb-0">
                                         <i class="las la-info-circle me-2"></i>
                                         {{ __('hr.no_contract_types_found') }}
@@ -218,28 +218,28 @@ new class extends Component {
             <form wire:submit.prevent="save">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ $isEdit ? __('hr.edit_contract_type') : __('hr.add_contract_type') }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ $isEdit ? __('hr.edit_contract_type') : __('hr.add_contract_type') }}</h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">{{ __('hr.title') }} <span class="text-danger">*</span></label>
-                            <input wire:model.blur="name" type="text" class="form-control font-family-cairo" id="name" required>
+                            <label for="name" class="form-label font-hold fw-bold">{{ __('hr.title') }} <span class="text-danger">*</span></label>
+                            <input wire:model.blur="name" type="text" class="form-control font-hold" id="name" required>
                             @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
-                            <textarea wire:model.blur="description" class="form-control font-family-cairo" id="description" rows="3"></textarea>
+                            <label for="description" class="form-label font-hold fw-bold">{{ __('hr.description') }}</label>
+                            <textarea wire:model.blur="description" class="form-control font-hold" id="description" rows="3"></textarea>
                             @error('description')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary font-family-cairo" wire:click="closeModal">{{ __('hr.cancel') }}</button>
-                        <button type="submit" class="btn btn-main font-family-cairo">
+                        <button type="button" class="btn btn-secondary font-hold" wire:click="closeModal">{{ __('hr.cancel') }}</button>
+                        <button type="submit" class="btn btn-main font-hold">
                             {{ $isEdit ? __('hr.update') : __('hr.save') }}
                         </button>
                     </div>

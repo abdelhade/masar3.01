@@ -130,21 +130,21 @@ new class extends Component {
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title font-family-cairo fw-bold">{{ __('reports.general_account_statement_details') }}</h3>
+                        <h3 class="card-title font-hold fw-bold">{{ __('reports.general_account_statement_details') }}</h3>
                     </div>
                     <div class="card-body">
                         <!-- Filters -->
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label for="from_date" class="form-label font-family-cairo fw-bold">{{ __('reports.from_date') }}:</label>
+                                <label for="from_date" class="form-label font-hold fw-bold">{{ __('reports.from_date') }}:</label>
                                 <input type="date" id="from_date" class="form-control" wire:model.live="fromDate">
                             </div>
                             <div class="col-md-2">
-                                <label for="to_date" class="form-label font-family-cairo fw-bold">{{ __('reports.to_date') }}:</label>
+                                <label for="to_date" class="form-label font-hold fw-bold">{{ __('reports.to_date') }}:</label>
                                 <input type="date" id="to_date" class="form-control" wire:model.live="toDate">
                             </div>
                             <div class="col-md-2">
-                                <label for="account_id" class="form-label font-family-cairo fw-bold">{{ __('reports.account') }}:</label>
+                                <label for="account_id" class="form-label font-hold fw-bold">{{ __('reports.account') }}:</label>
                                 <select id="account_id" class="form-control" wire:model.live="accountId">
                                     <option value="">{{ __('reports.all_accounts') }}</option>
                                     @foreach($accounts as $account)
@@ -153,7 +153,7 @@ new class extends Component {
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label for="operation_type" class="form-label font-family-cairo fw-bold">{{ __('reports.operation_type') }}:</label>
+                                <label for="operation_type" class="form-label font-hold fw-bold">{{ __('reports.operation_type') }}:</label>
                                 <select id="operation_type" class="form-control" wire:model.live="operationType">
                                     <option value="">{{ __('reports.all_operations') }}</option>
                                     @foreach($operationTypes as $type)
@@ -163,14 +163,14 @@ new class extends Component {
                             </div>
 
                             <div class="col-md-2">
-                                <label for="search" class="form-label font-family-cairo fw-bold">{{ __('reports.searching') }}:</label>
+                                <label for="search" class="form-label font-hold fw-bold">{{ __('reports.searching') }}:</label>
                                 <input type="text" id="search" class="form-control" wire:model.live.debounce.300ms="search" placeholder="{{ __('reports.search_in_account_or_description') }}">
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label for="per_page" class="form-label font-family-cairo fw-bold">{{ __('reports.results_per_page') }}:</label>
+                                <label for="per_page" class="form-label font-hold fw-bold">{{ __('reports.results_per_page') }}:</label>
                                 <select id="per_page" class="form-control" wire:model.live="perPage">
                                     <option value="25">25</option>
                                     <option value="50">50</option>
@@ -190,24 +190,24 @@ new class extends Component {
                             <div class="col-md-4">
                                 <div class="card bg-primary text-white">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title font-family-cairo fw-bold">{{ __('reports.total_debit') }}</h5>
-                                        <h4 class="font-family-cairo fw-bold">{{ number_format($totalDebit, 2) }}</h4>
+                                        <h5 class="card-title font-hold fw-bold">{{ __('reports.total_debit') }}</h5>
+                                        <h4 class="font-hold fw-bold">{{ number_format($totalDebit, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card bg-success text-white">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title font-family-cairo fw-bold">{{ __('reports.total_credit') }}</h5>
-                                        <h4 class="font-family-cairo fw-bold">{{ number_format($totalCredit, 2) }}</h4>
+                                        <h5 class="card-title font-hold fw-bold">{{ __('reports.total_credit') }}</h5>
+                                        <h4 class="font-hold fw-bold">{{ number_format($totalCredit, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card bg-info text-white">
                                     <div class="card-body text-center">
-                                        <h5 class="card-title font-family-cairo fw-bold">{{ __('reports.difference') }}</h5>
-                                        <h4 class="font-family-cairo fw-bold">{{ number_format($totalBalance, 2) }}</h4>
+                                        <h5 class="card-title font-hold fw-bold">{{ __('reports.difference') }}</h5>
+                                        <h4 class="font-hold fw-bold">{{ number_format($totalBalance, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -218,28 +218,28 @@ new class extends Component {
                             <table class="table table-bordered table-striped table-hover">
                                 <thead class="">
                                     <tr class="text-center">
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.date') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.operation_number') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.operation_name') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.journal_number') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.account') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.description') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.date') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.operation_number') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.operation_name') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.journal_number') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.account') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.description') }}</th>
 
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.debit') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.credit') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('reports.balance') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.debit') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.credit') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('reports.balance') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($journalDetails as $detail)
                                         <tr>
-                                            <td class="text-center font-family-cairo">
+                                            <td class="text-center font-hold">
                                                 {{ $detail->crtime ? \Carbon\Carbon::parse($detail->crtime)->format('Y-m-d') : '---' }}
                                             </td>
-                                            <td class="text-center font-family-cairo fw-bold">
+                                            <td class="text-center font-hold fw-bold">
                                                 {{ $detail->op_id ?? '---' }}
                                             </td>
-                                            <td class="text-center font-family-cairo fw-bold">
+                                            <td class="text-center font-hold fw-bold">
                                                 @if($detail->operHead && $detail->op_id)
                                                     @php
                                                         $operationType = $detail->operHead->type->ptext ?? '---';
@@ -262,31 +262,31 @@ new class extends Component {
                                                 @endif
                                             </td>
 
-                                            <td class="text-center font-family-cairo fw-bold">
+                                            <td class="text-center font-hold fw-bold">
                                                 {{ $detail->journal_id ?? '---' }}
                                             </td>
-                                            <td class="font-family-cairo">
+                                            <td class="font-hold">
                                                 <strong>{{ $detail->accHead->code ?? '---' }}</strong>
                                                 <br>
                                                 <small>{{ $detail->accHead->aname ?? '---' }}</small>
                                             </td>
-                                            <td class="font-family-cairo">
+                                            <td class="font-hold">
                                                 {{ $detail->info ?? '---' }}
                                             </td>
 
-                                            <td class="text-end font-family-cairo fw-bold @if($detail->debit > 0) text-primary @endif">
+                                            <td class="text-end font-hold fw-bold @if($detail->debit > 0) text-primary @endif">
                                                 {{ $detail->debit > 0 ? number_format($detail->debit, 2) : '---' }}
                                             </td>
-                                            <td class="text-end font-family-cairo fw-bold @if($detail->credit > 0) text-success @endif">
+                                            <td class="text-end font-hold fw-bold @if($detail->credit > 0) text-success @endif">
                                                 {{ $detail->credit > 0 ? number_format($detail->credit, 2) : '---' }}
                                             </td>
-                                            <td class="text-end font-family-cairo fw-bold @if(($detail->debit - $detail->credit) != 0) text-info @endif">
+                                            <td class="text-end font-hold fw-bold @if(($detail->debit - $detail->credit) != 0) text-info @endif">
                                                 {{ number_format($detail->debit - $detail->credit, 2) }}
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center font-family-cairo fw-bold">
+                                            <td colspan="9" class="text-center font-hold fw-bold">
                                                 {{ __('reports.no_data_to_display') }}
                                             </td>
                                         </tr>
@@ -307,15 +307,15 @@ new class extends Component {
                             <div class="row mt-3">
                                 <div class="col-12">
                                     <div class="alert alert-info">
-                                        <strong class="font-family-cairo fw-bold">{{ __('reports.report_summary') }}:</strong>
+                                        <strong class="font-hold fw-bold">{{ __('reports.report_summary') }}:</strong>
                                         <br>
-                                        <span class="font-family-cairo">{{ __('reports.operations_count') }}: {{ $journalDetails->total() }}</span>
+                                        <span class="font-hold">{{ __('reports.operations_count') }}: {{ $journalDetails->total() }}</span>
                                         <br>
-                                        <span class="font-family-cairo">{{ __('reports.total_debit') }}: {{ number_format($totalDebit, 2) }}</span>
+                                        <span class="font-hold">{{ __('reports.total_debit') }}: {{ number_format($totalDebit, 2) }}</span>
                                         <br>
-                                        <span class="font-family-cairo">{{ __('reports.total_credit') }}: {{ number_format($totalCredit, 2) }}</span>
+                                        <span class="font-hold">{{ __('reports.total_credit') }}: {{ number_format($totalCredit, 2) }}</span>
                                         <br>
-                                        <span class="font-family-cairo">{{ __('reports.difference') }}: {{ number_format($totalBalance, 2) }}</span>
+                                        <span class="font-hold">{{ __('reports.difference') }}: {{ number_format($totalBalance, 2) }}</span>
                                     </div>
                                 </div>
                             </div>

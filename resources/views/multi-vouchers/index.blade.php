@@ -38,49 +38,49 @@
                     <thead class="table-light text-center align-middle">
 
                         <tr>
-                            <th class="font-family-cairo fw-bold font-14 text-center">#</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">التاريخ</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">رقم العمليه</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">نوع العمليه</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">البيان</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">المبلغ</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">من حساب</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">الي حساب</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">الموظف</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">الموظف 2 </th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">المستخدم</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">تم الانشاء في </th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">ملاحظات</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">تم المراجعه</th>
-                            <th class="font-family-cairo fw-bold font-14 text-center">العمليات</th>
+                            <th class="font-hold fw-bold font-14 text-center">#</th>
+                            <th class="font-hold fw-bold font-14 text-center">التاريخ</th>
+                            <th class="font-hold fw-bold font-14 text-center">رقم العمليه</th>
+                            <th class="font-hold fw-bold font-14 text-center">نوع العمليه</th>
+                            <th class="font-hold fw-bold font-14 text-center">البيان</th>
+                            <th class="font-hold fw-bold font-14 text-center">المبلغ</th>
+                            <th class="font-hold fw-bold font-14 text-center">من حساب</th>
+                            <th class="font-hold fw-bold font-14 text-center">الي حساب</th>
+                            <th class="font-hold fw-bold font-14 text-center">الموظف</th>
+                            <th class="font-hold fw-bold font-14 text-center">الموظف 2 </th>
+                            <th class="font-hold fw-bold font-14 text-center">المستخدم</th>
+                            <th class="font-hold fw-bold font-14 text-center">تم الانشاء في </th>
+                            <th class="font-hold fw-bold font-14 text-center">ملاحظات</th>
+                            <th class="font-hold fw-bold font-14 text-center">تم المراجعه</th>
+                            <th class="font-hold fw-bold font-14 text-center">العمليات</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($multis as $multi)
                             <tr>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $loop->iteration }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->pro_date }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->pro_id }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->type->ptext ?? '—' }}
+                                <td class="font-hold fw-bold font-14 text-center">{{ $loop->iteration }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->pro_date }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->pro_id }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->type->ptext ?? '—' }}
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->details }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->pro_value }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->details }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->pro_value }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">
                                     {{ $accountsMap[$multi->id]['debit'] ?? ($multi->account1->aname ?? 'مذكروين') }}
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
+                                <td class="font-hold fw-bold font-14 text-center">
                                     {{ $accountsMap[$multi->id]['credit'] ?? ($multi->account2->aname ?? 'مذكروين') }}
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->emp1->aname ?? '' }}
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->emp1->aname ?? '' }}
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->emp2->aname ?? '' }}
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->emp2->aname ?? '' }}
                                 </td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $usersMap[$multi->id] ?? ($multi->user?->name ?? $multi->user) }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->created_at }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">{{ $multi->info }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center">
+                                <td class="font-hold fw-bold font-14 text-center">{{ $usersMap[$multi->id] ?? ($multi->user?->name ?? $multi->user) }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->created_at }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">{{ $multi->info }}</td>
+                                <td class="font-hold fw-bold font-14 text-center">
                                     {{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
-                                <td class="font-family-cairo fw-bold font-14 text-center" x-show="columns[16]">
+                                <td class="font-hold fw-bold font-14 text-center" x-show="columns[16]">
                                     @php
                                         $pname = $multi->type->pname ?? null;
                                         $editPerm = match($pname) {

@@ -65,11 +65,11 @@
                 <thead class="table-light text-center align-middle">
 
                     <tr>
-                        <th  class="font-family-cairo fw-bold font-14 text-center">الحساب</th>
-                        <th  class="font-family-cairo fw-bold font-14 text-center">مدين</th>
-                        <th  class="font-family-cairo fw-bold font-14 text-center">دائن</th>
-                        <th  class="font-family-cairo fw-bold font-14 text-center">ملاحظة</th>
-                        <th  class="font-family-cairo fw-bold font-14 text-center">إجراء</th>
+                        <th  class="font-hold fw-bold font-14 text-center">الحساب</th>
+                        <th  class="font-hold fw-bold font-14 text-center">مدين</th>
+                        <th  class="font-hold fw-bold font-14 text-center">دائن</th>
+                        <th  class="font-hold fw-bold font-14 text-center">ملاحظة</th>
+                        <th  class="font-hold fw-bold font-14 text-center">إجراء</th>
                     </tr>
                 </thead>
                 <tbody>

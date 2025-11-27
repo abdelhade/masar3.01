@@ -16,7 +16,7 @@
     <div class="row">
         <div class="col-lg-12">
             {{-- @can('إضافة نوع صيانة') --}}
-            <a href="{{ route('service.types.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+            <a href="{{ route('service.types.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('إضافة جديد') }}
                 <i class="fas fa-plus me-2"></i>
             </a>

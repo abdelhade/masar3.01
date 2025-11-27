@@ -120,7 +120,7 @@ new class extends Component {
             <p class="text-muted">Ø¥Ø¶Ø§ÙØ© Ø£Ù…Ø± Ø¥Ù†ØªØ§Ø¬ Ø¬Ø¯ÙŠØ¯ Ù„Ù„Ù†Ø¸Ø§Ù…</p>
         </div>
         <div class="col-md-6 text-end mt-4">
-            <a href="{{ route('production-orders.index') }}" class="btn btn-secondary font-family-cairo fw-bold">
+            <a href="{{ route('production-orders.index') }}" class="btn btn-secondary font-hold fw-bold">
                 <i class="fas fa-arrow-left"></i>
                 Ø§Ù„Ø¹ÙˆØ¯Ø©
             </a>
@@ -188,7 +188,7 @@ new class extends Component {
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Ø§Ù„Ø£ØµÙ†Ø§Ù Ø§Ù„Ù…Ø·Ù„ÙˆØ¨Ø©</h5>
-                <button type="button" wire:click="addItem" class="btn btn-sm btn-outline-primary font-family-cairo fw-bold font-14">
+                <button type="button" wire:click="addItem" class="btn btn-sm btn-outline-primary font-hold fw-bold font-14">
                     <i class="fas fa-plus"></i>
                     Ø¥Ø¶Ø§ÙØ© ØµÙ†Ù
                 </button>
@@ -253,10 +253,10 @@ new class extends Component {
         <!-- Actions -->
         <div class="row">
             <div class="col-12 d-flex justify-content-center">
-                <button type="button" wire:click="cancel" class="btn btn-secondary me-2 font-family-cairo fw-bold">
+                <button type="button" wire:click="cancel" class="btn btn-secondary me-2 font-hold fw-bold">
                     Ø¥Ù„ØºØ§Ø¡
                 </button>
-                <button type="submit" class="btn btn-main font-family-cairo fw-bold">
+                <button type="submit" class="btn btn-main font-hold fw-bold">
                     <i class="fas fa-check"></i>
                     Ø­ÙØ¸ Ø£Ù…Ø± Ø§Ù„Ø¥Ù†ØªØ§Ø¬
                 </button>

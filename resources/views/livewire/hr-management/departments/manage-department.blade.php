@@ -137,7 +137,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('create Departments')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add Department') }}
                         </button>
@@ -154,22 +154,22 @@ new class extends Component {
                         <table class="table table-striped mb-0">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Title') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Description') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('Title') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('Description') }}</th>
                                     @canany(['edit Departments', 'delete Departments'])
-                                        <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($this->departments as $department)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $department->title }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $department->description ?? '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $department->title }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $department->description ?? '-' }}</td>
                                         @canany(['edit Departments', 'delete Departments'])
-                                            <td class="font-family-cairo fw-bold text-center">
+                                            <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
                                                     @can('edit Departments')
                                                         <button type="button" 
@@ -195,7 +195,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit Departments', 'delete Departments']) ? '4' : '3' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('No departments found.') }}
@@ -222,7 +222,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="departmentModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="departmentModalLabel">
                         {{ $isEdit ? __('Edit Department') : __('Add Department') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -230,11 +230,11 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title" class="form-label font-family-cairo fw-bold">
+                            <label for="title" class="form-label font-hold fw-bold">
                                 {{ __('Title') }} <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('title') is-invalid @enderror font-hold fw-bold"
                                    id="title" 
                                    wire:model.blur="title" 
                                    required>
@@ -243,11 +243,11 @@ new class extends Component {
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label font-family-cairo fw-bold">
+                            <label for="description" class="form-label font-hold fw-bold">
                                 {{ __('Description') }}
                             </label>
                             <input type="text"
-                                   class="form-control @error('description') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('description') is-invalid @enderror font-hold fw-bold"
                                    id="description" 
                                    wire:model.blur="description">
                             @error('description')

@@ -151,11 +151,11 @@ new class extends Component {
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h2 class="mb-0 font-family-cairo fw-bold">{{ __('hr.leave_types') }}</h2>
-                    <p class="text-muted mb-0 font-family-cairo">{{ __('hr.leave_management') }}</p>
+                    <h2 class="mb-0 font-hold fw-bold">{{ __('hr.leave_types') }}</h2>
+                    <p class="text-muted mb-0 font-hold">{{ __('hr.leave_management') }}</p>
                 </div>
                 @can('create Leave Types')
-                    <button type="button" class="btn btn-main font-family-cairo fw-bold" wire:click="openModal">
+                    <button type="button" class="btn btn-main font-hold fw-bold" wire:click="openModal">
                         <i class="fas fa-plus me-2"></i>{{ __('hr.add_leave_type') }}
                     </button>
                 @endcan
@@ -171,7 +171,7 @@ new class extends Component {
                     <i class="fas fa-search"></i>
                 </span>
                 <input type="text" 
-                       class="form-control font-family-cairo" 
+                       class="form-control font-hold" 
                        placeholder="{{ __('hr.search_by_name') }}" 
                        wire:model.live.debounce.300ms="search">
             </div>
@@ -194,15 +194,15 @@ new class extends Component {
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th class="font-family-cairo fw-bold">{{ __('hr.title') }}</th>
-                                <th class="font-family-cairo fw-bold">{{ __('Code') }}</th>
-                                <th class="font-family-cairo fw-bold">{{ __('Paid') }}</th>
-                                <th class="font-family-cairo fw-bold">{{ __('Requires Approval') }}</th>
-                                <th class="font-family-cairo fw-bold">{{ __('Max Per Request') }}</th>
-                                <th class="font-family-cairo fw-bold">{{ __('Accrual Rate/Month') }}</th>
-                                <th class="font-family-cairo fw-bold">{{ __('Carry Over Limit') }}</th>
+                                <th class="font-hold fw-bold">{{ __('hr.title') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Code') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Paid') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Requires Approval') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Max Per Request') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Accrual Rate/Month') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Carry Over Limit') }}</th>
                                 @canany(['edit Leave Types', 'delete Leave Types'])
-                                    <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                 @endcanany
                             </tr>
                         </thead>
@@ -217,27 +217,27 @@ new class extends Component {
                                     </td>
                                     <td>
                                         @if($leaveType->is_paid)
-                                            <span class="badge bg-success font-family-cairo">{{ __('Yes') }}</span>
+                                            <span class="badge bg-success font-hold">{{ __('Yes') }}</span>
                                         @else
-                                            <span class="badge bg-warning font-family-cairo">{{ __('No') }}</span>
+                                            <span class="badge bg-warning font-hold">{{ __('No') }}</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($leaveType->requires_approval)
-                                            <span class="badge bg-info font-family-cairo">{{ __('Yes') }}</span>
+                                            <span class="badge bg-info font-hold">{{ __('Yes') }}</span>
                                         @else
-                                            <span class="badge bg-secondary font-family-cairo">{{ __('No') }}</span>
+                                            <span class="badge bg-secondary font-hold">{{ __('No') }}</span>
                                         @endif
                                     </td>
-                                    <td class="font-family-cairo fw-bold">{{ $leaveType->max_per_request_days }} {{ __('hr.days') }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $leaveType->accrual_rate_per_month }} {{ __('hr.days') }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $leaveType->carry_over_limit_days }} {{ __('hr.days') }}</td>
+                                    <td class="font-hold fw-bold">{{ $leaveType->max_per_request_days }} {{ __('hr.days') }}</td>
+                                    <td class="font-hold fw-bold">{{ $leaveType->accrual_rate_per_month }} {{ __('hr.days') }}</td>
+                                    <td class="font-hold fw-bold">{{ $leaveType->carry_over_limit_days }} {{ __('hr.days') }}</td>
                                     @canany(['edit Leave Types', 'delete Leave Types'])
                                         <td>
                                             <div class="btn-group" role="group">
                                                 @can('edit Leave Types')
                                                     <button type="button" 
-                                                            class="btn btn-sm btn-outline-primary font-family-cairo" 
+                                                            class="btn btn-sm btn-outline-primary font-hold" 
                                                             wire:click="edit({{ $leaveType->id }})" 
                                                             title="{{ __('hr.edit') }}">
                                                         <i class="fas fa-edit"></i>
@@ -245,7 +245,7 @@ new class extends Component {
                                                 @endcan
                                                 @can('delete Leave Types')
                                                     <button type="button" 
-                                                            class="btn btn-sm btn-outline-danger font-family-cairo" 
+                                                            class="btn btn-sm btn-outline-danger font-hold" 
                                                             wire:click="delete({{ $leaveType->id }})"
                                                             wire:confirm="{{ __('hr.confirm_delete_leave_type') }}"
                                                             title="{{ __('hr.delete') }}">
@@ -261,7 +261,7 @@ new class extends Component {
                     </table>
                 </div>
             @else
-                <div class="text-center py-5 font-family-cairo">
+                <div class="text-center py-5 font-hold">
                     <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted fw-bold">{{ __('hr.no_leave_types_found') }}</h5>
                     <p class="text-muted">{{ __('hr.add_leave_type') }}</p>
@@ -276,7 +276,7 @@ new class extends Component {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">
+                        <h5 class="modal-title font-hold fw-bold">
                             {{ $isEdit ? __('hr.edit_leave_type') : __('hr.add_leave_type') }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
@@ -342,8 +342,8 @@ new class extends Component {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary font-family-cairo" wire:click="closeModal">{{ __('hr.cancel') }}</button>
-                            <button type="submit" class="btn btn-main font-family-cairo" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-secondary font-hold" wire:click="closeModal">{{ __('hr.cancel') }}</button>
+                            <button type="submit" class="btn btn-main font-hold" wire:loading.attr="disabled">
                                 <span wire:loading.remove>
                                     {{ $isEdit ? __('hr.update') : __('hr.save') }}
                                 </span>

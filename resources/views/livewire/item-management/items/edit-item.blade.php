@@ -463,53 +463,53 @@ new class extends Component {
                     <div class="col-md-12 p-3">
                         <div class="row">
                             <div class="col-md-1 mb-3">
-                                <label for="code" class="form-label font-family-cairo fw-bold">رقم
+                                <label for="code" class="form-label font-hold fw-bold">رقم
                                     الصنف</label>
                                 <input type="text" wire:model="item.code"
-                                    class="form-control font-family-cairo fw-bold" id="code">
+                                    class="form-control font-hold fw-bold" id="code">
                                 @error('item.code')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             {{-- item type --}}
                             <div class="col-md-1 mb-3">
-                                <label for="type" class="form-label font-family-cairo fw-bold">نوع الصنف</label>
-                                <select wire:model="item.type" class="form-select font-family-cairo fw-bold"
+                                <label for="type" class="form-label font-hold fw-bold">نوع الصنف</label>
+                                <select wire:model="item.type" class="form-select font-hold fw-bold"
                                     id="type">
-                                    <option class="font-family-cairo fw-bold" value="">إختر</option>
+                                    <option class="font-hold fw-bold" value="">إختر</option>
                                     @foreach (ItemType::cases() as $type)
-                                        <option class="font-family-cairo fw-bold" value="{{ $type->value }}">
+                                        <option class="font-hold fw-bold" value="{{ $type->value }}">
                                             {{ $type->label() }}</option>
                                     @endforeach
                                 </select>
                                 @error('item.type')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="name" class="form-label font-family-cairo fw-bold">اسم
+                                <label for="name" class="form-label font-hold fw-bold">اسم
                                     الصنف</label>
                                 <input type="text" wire:model="item.name"
-                                    class="form-control font-family-cairo fw-bold" id="name" x-ref="nameInput">
+                                    class="form-control font-hold fw-bold" id="name" x-ref="nameInput">
                                 @error('item.name')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                             @foreach ($notes as $note)
                                 <div class="col-md-2 mb-3">
                                     <label for="type"
-                                        class="form-label font-family-cairo fw-bold">{{ $note->name }}</label>
+                                        class="form-label font-hold fw-bold">{{ $note->name }}</label>
                                     <div class="input-group">
-                                        <button type="button" class="btn btn-outline-success font-family-cairo fw-bold"
+                                        <button type="button" class="btn btn-outline-success font-hold fw-bold"
                                             wire:click="openModal('note_detail', {{ $note->id }})"
                                             title="إضافة جديد">
                                             <i class="las la-plus"></i>
                                         </button>
                                         <select wire:model="item.notes.{{ $note->id }}"
-                                            class="form-select font-family-cairo fw-bold" id="note-{{ $note->id }}">
-                                            <option class="font-family-cairo fw-bold" value="">إختر</option>
+                                            class="form-select font-hold fw-bold" id="note-{{ $note->id }}">
+                                            <option class="font-hold fw-bold" value="">إختر</option>
                                             @foreach ($note->noteDetails as $noteDetail)
-                                                <option class="font-family-cairo fw-bold"
+                                                <option class="font-hold fw-bold"
                                                     value="{{ $noteDetail->name }}">
                                                     {{ $noteDetail->name }}
                                                 </option>
@@ -517,7 +517,7 @@ new class extends Component {
                                         </select>
                                     </div>
                                     @error("item.notes.{$note->id}")
-                                        <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                        <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                     @enderror
                                 </div>
                             @endforeach
@@ -525,10 +525,10 @@ new class extends Component {
 
 
                             <div class="col-md-12 mb-3">
-                                <label for="Details" class="form-label font-family-cairo fw-bold">التفاصيل</label>
-                                <textarea wire:model="item.info" class="form-control font-family-cairo fw-bold" id="description" rows="2"></textarea>
+                                <label for="Details" class="form-label font-hold fw-bold">التفاصيل</label>
+                                <textarea wire:model="item.info" class="form-control font-hold fw-bold" id="description" rows="2"></textarea>
                                 @error('item.details')
-                                    <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
@@ -537,10 +537,10 @@ new class extends Component {
                 @include('livewire.item-management.items.partials.units-repeater')
 
                 <div class="mt-3">
-                    <button type="button" class="btn btn-secondary font-family-cairo fw-bold"
+                    <button type="button" class="btn btn-secondary font-hold fw-bold"
                         onclick="window.history.back()">عوده / إلغاء</button>
                     <button type="submit"
-                        class="btn btn-main font-family-cairo fw-bold">{{ 'تحديث' }}</button>
+                        class="btn btn-main font-hold fw-bold">{{ 'تحديث' }}</button>
                 </div>
             </form>
         </div>

@@ -444,13 +444,13 @@ new class extends Component {
     <div class="row">
         <div class="col-lg-12">
             @if (session()->has('success'))
-                <div class="alert alert-success font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }"
+                <div class="alert alert-success font-hold fw-bold font-12 mt-2" x-data="{ show: true }"
                     x-show="show" x-init="setTimeout(() => show = false, 3000)">
                     {{ session('success') }}
                 </div>
             @endif
             @if (session()->has('error'))
-                <div class="alert alert-danger font-family-cairo fw-bold font-12 mt-2" x-data="{ show: true }"
+                <div class="alert alert-danger font-hold fw-bold font-12 mt-2" x-data="{ show: true }"
                     x-show="show" x-init="setTimeout(() => show = false, 3000)">
                     {{ session('error') }}
                 </div>
@@ -458,7 +458,7 @@ new class extends Component {
             <div class="card">
                 {{-- card title --}}
                 <div class="text-center bg-dark text-white py-3">
-                    <h5 class="card-title font-family-cairo fw-bold font-20 text-white">
+                    <h5 class="card-title font-hold fw-bold font-20 text-white">
                         {{ __('items.items_list_with_balances') }}
                     </h5>
                 </div>
@@ -471,7 +471,7 @@ new class extends Component {
                         {{-- @if(Auth::user() && Auth::user()->hasDirectPermission('create items')) --}}
                         @can('create items')
                             <a href="{{ route('items.create') }}"
-                                class="btn btn-outline-primary btn-lg font-family-cairo fw-bold mt-4 d-flex justify-content-center align-items-center text-center"
+                                class="btn btn-outline-primary btn-lg font-hold fw-bold mt-4 d-flex justify-content-center align-items-center text-center"
                                 style="min-height: 50px;">
                                 <i class="fas fa-plus me-2"></i>
                                 <span class="w-100 text-center">{{ __('items.add_new_item') }}</span>
@@ -488,7 +488,7 @@ new class extends Component {
                             'group' => $selectedGroup,
                             'category' => $selectedCategory,
                             'priceType' => $selectedPriceType
-                        ]) }}" target="_blank" class="print-btn font-family-cairo fw-bold" style="text-decoration: none;">
+                        ]) }}" target="_blank" class="print-btn font-hold fw-bold" style="text-decoration: none;">
                                 <i class="fas fa-print"></i>
                                 {{ __('items.print_list') }}
                             </a>
@@ -497,7 +497,7 @@ new class extends Component {
 
                         {{-- Column Visibility Button --}}
                         <div class="mt-4">
-                            <button type="button" class="btn btn-outline-info btn-lg font-family-cairo fw-bold"
+                            <button type="button" class="btn btn-outline-info btn-lg font-hold fw-bold"
                                     data-bs-toggle="modal" data-bs-target="#columnVisibilityModal"
                                     style="min-height: 50px;">
                                 <i class="fas fa-columns me-2"></i>
@@ -518,7 +518,7 @@ new class extends Component {
                             {{-- Clear Filters Button --}}
                             <div class="d-flex align-items-end mt-4">
                                 <button type="button" @click="clearFilters()" style="min-height: 50px;"
-                                    class="btn btn-outline-secondary btn-lg font-family-cairo fw-bold"
+                                    class="btn btn-outline-secondary btn-lg font-hold fw-bold"
                                     wire:loading.attr="disabled" wire:target="clearFilters">
                                     <span wire:loading.remove wire:target="clearFilters">
                                     <i class="fas fa-times me-1"></i>
@@ -534,7 +534,7 @@ new class extends Component {
                             </div>
                             {{-- Search Input --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">{{ __('common.search') }}:</label>
+                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('common.search') }}:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-search" wire:loading.remove wire:target="search"></i>
@@ -543,7 +543,7 @@ new class extends Component {
                                         </div>
                                     </span>
                                     <input type="text" x-model="searchValue" @input="updateSearch()"
-                                        class="form-control font-family-cairo"
+                                        class="form-control font-hold"
                                         placeholder="{{ __('items.search_placeholder') }}"
                                         wire:loading.attr="disabled" wire:target="search">
                                 </div>
@@ -551,10 +551,10 @@ new class extends Component {
 
                             {{-- Warehouse Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">{{ __('items.warehouse') }}:</label>
+                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.warehouse') }}:</label>
                                 <div class="input-group">
                                     <select x-model="warehouseValue" @change="updateWarehouse()"
-                                        class="form-select font-family-cairo fw-bold font-14"
+                                        class="form-select font-hold fw-bold font-14"
                                         wire:loading.attr="disabled" wire:target="selectedWarehouse">
                                     <option value="">{{ __('items.all_warehouses') }}</option>
                                     @foreach ($warehouses as $warehouse)
@@ -572,10 +572,10 @@ new class extends Component {
 
                             {{-- Group Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">{{ __('items.group') }}:</label>
+                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.group') }}:</label>
                                 <div class="input-group">
                                     <select x-model="groupValue" @change="updateGroup()"
-                                        class="form-select font-family-cairo fw-bold font-14"
+                                        class="form-select font-hold fw-bold font-14"
                                         wire:loading.attr="disabled" wire:target="selectedGroup">
                                     <option value="">{{ __('items.all_groups') }}</option>
                                     @foreach ($groups as $id => $name)
@@ -593,10 +593,10 @@ new class extends Component {
 
                             {{-- Category Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-family-cairo fw-bold font-12 mb-1">{{ __('items.category') }}:</label>
+                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.category') }}:</label>
                                 <div class="input-group">
                                     <select x-model="categoryValue" @change="updateCategory()"
-                                        class="form-select font-family-cairo fw-bold font-14"
+                                        class="form-select font-hold fw-bold font-14"
                                         wire:loading.attr="disabled" wire:target="selectedCategory">
                                     <option value="">{{ __('items.all_categories') }}</option>
                                     @foreach ($categories as $id => $name)
@@ -622,9 +622,9 @@ new class extends Component {
                     {{-- Pagination Control --}}
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center gap-2">
-                            <label class="form-label font-family-cairo fw-bold mb-0">{{ __('items.display') }}:</label>
+                            <label class="form-label font-hold fw-bold mb-0">{{ __('items.display') }}:</label>
                             <div class="input-group" style="width: auto;">
-                                <select wire:model.live="perPage" class="form-select form-select-sm font-family-cairo fw-bold"
+                                <select wire:model.live="perPage" class="form-select form-select-sm font-hold fw-bold"
                                     wire:loading.attr="disabled" wire:target="perPage">
                                 <option value="25">25</option>
                                 <option value="50">50</option>
@@ -638,9 +638,9 @@ new class extends Component {
                                     </div>
                                 </span>
                             </div>
-                            <span class="font-family-cairo fw-bold">{{ __('items.record') }}</span>
+                            <span class="font-hold fw-bold">{{ __('items.record') }}</span>
                         </div>
-                        <div class="font-family-cairo fw-bold text-muted">
+                        <div class="font-hold fw-bold text-muted">
                             <i class="fas fa-list me-1"></i>
                             {{ __('items.total_results') }}: <span class="text-primary">{{ $this->items->total() }}</span>
                         </div>
@@ -658,7 +658,7 @@ new class extends Component {
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform translate-y-2">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="font-family-cairo fw-bold">
+                                <div class="font-hold fw-bold">
                                     <i class="fas fa-filter me-2"></i>
                                     {{ __('items.active_filters') }}:
                                     @if ($search)
@@ -715,47 +715,47 @@ new class extends Component {
                             </style>
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo text-center fw-bold">#</th>
+                                    <th class="font-hold text-center fw-bold">#</th>
                                     @if($visibleColumns['code'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('common.code') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('common.code') }}</th>
                                     @endif
                                     @if($visibleColumns['name'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('common.name') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('common.name') }}</th>
                                     @endif
                                     @if($visibleColumns['units'])
-                                        <th class="font-family-cairo text-center fw-bold" style="min-width: 130px;">{{ __('items.units') }}</th>
+                                        <th class="font-hold text-center fw-bold" style="min-width: 130px;">{{ __('items.units') }}</th>
                                     @endif
                                     @if($visibleColumns['quantity'])
-                                        <th class="font-family-cairo text-center fw-bold" style="min-width: 100px;">{{ __('common.quantity') }}</th>
+                                        <th class="font-hold text-center fw-bold" style="min-width: 100px;">{{ __('common.quantity') }}</th>
                                     @endif
                                     @if($visibleColumns['average_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('items.average_cost') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('items.average_cost') }}</th>
                                     @endif
                                     @if($visibleColumns['quantity_average_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('items.quantity_average_cost') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('items.quantity_average_cost') }}</th>
                                     @endif
                                     @if($visibleColumns['last_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('items.last_cost') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('items.last_cost') }}</th>
                                     @endif
                                     @if($visibleColumns['quantity_cost'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('items.quantity_cost') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('items.quantity_cost') }}</th>
                                     @endif
                                     @foreach ($this->priceTypes as $priceId => $priceName)
                                         @if(isset($visiblePrices[$priceId]) && $visiblePrices[$priceId])
-                                            <th class="font-family-cairo text-center fw-bold">{{ $priceName }}</th>
+                                            <th class="font-hold text-center fw-bold">{{ $priceName }}</th>
                                         @endif
                                     @endforeach
                                     @if($visibleColumns['barcode'])
-                                        <th class="font-family-cairo text-center fw-bold">{{ __('items.item_barcode') }}</th>
+                                        <th class="font-hold text-center fw-bold">{{ __('items.item_barcode') }}</th>
                                     @endif
                                     @foreach ($this->noteTypes as $noteId => $noteName)
                                         @if(isset($visibleNotes[$noteId]) && $visibleNotes[$noteId])
-                                            <th class="font-family-cairo text-center fw-bold">{{ $noteName }}</th>
+                                            <th class="font-hold text-center fw-bold">{{ $noteName }}</th>
                                         @endif
                                     @endforeach
                                     @canany(['edit items', 'delete items'])
                                         @if($visibleColumns['actions'])
-                                            <th class="font-family-cairo fw-bold">{{ __('common.actions') }}</th>
+                                            <th class="font-hold fw-bold">{{ __('common.actions') }}</th>
                                         @endif
                                     @endcanany
                                 </tr>
@@ -776,14 +776,14 @@ new class extends Component {
                                              x-transition:leave="transition ease-in duration-150"
                                              x-transition:leave-start="opacity-100 transform scale-100"
                                              x-transition:leave-end="opacity-0 transform scale-95">
-                                            <td class="font-family-cairo text-center fw-bold">{{ $loop->iteration }}</td>
+                                            <td class="font-hold text-center fw-bold">{{ $loop->iteration }}</td>
 
                                             @if($visibleColumns['code'])
-                                                <td class="font-family-cairo text-center fw-bold" x-text="itemData.code"></td>
+                                                <td class="font-hold text-center fw-bold" x-text="itemData.code"></td>
                                             @endif
 
                                             @if($visibleColumns['name'])
-                                                <td class="font-family-cairo text-center fw-bold">
+                                                <td class="font-hold text-center fw-bold">
                                                     <span x-text="itemData.name"></span>
                                                     <a href="{{ route('item-movement', ['itemId' => $item->id]) }}">
                                                         <i class="las la-eye fa-lg text-primary" title="{{ __('items.view_item_movements') }}"></i>
@@ -792,10 +792,10 @@ new class extends Component {
                                             @endif
 
                                             @if($visibleColumns['units'])
-                                                <td class="font-family-cairo text-center fw-bold">
+                                                <td class="font-hold text-center fw-bold">
                                                      <template x-if="Object.keys(itemData.units).length > 0">
                                                          <div>
-                                                            <select class="form-select font-family-cairo fw-bold font-14"
+                                                            <select class="form-select font-hold fw-bold font-14"
                                                                  x-model="selectedUnitId"
                                                                 style="min-width: 105px;">
                                                                  <template x-for="[unitId, unit] in Object.entries(itemData.units)" :key="unitId">
@@ -805,7 +805,7 @@ new class extends Component {
                                                         </div>
                                                      </template>
                                                     <template x-if="Object.keys(itemData.units).length === 0">
-                                                        <span class="font-family-cairo fw-bold font-14">{{ __('items.no_units_found') }}</span>
+                                                        <span class="font-hold fw-bold font-14">{{ __('items.no_units_found') }}</span>
                                                     </template>
                                                 </td>
                                             @endif
@@ -820,13 +820,13 @@ new class extends Component {
                                             @endif
 
                                             @if($visibleColumns['average_cost'])
-                                                <td class="font-family-cairo text-center fw-bold">
+                                                <td class="font-hold text-center fw-bold">
                                                     <span x-text="formatCurrency(unitAverageCost)"></span>
                                                 </td>
                                             @endif
 
                                             @if($visibleColumns['quantity_average_cost'])
-                                                <td class="font-family-cairo text-center fw-bold">
+                                                <td class="font-hold text-center fw-bold">
                                                     <span x-text="formatCurrency(quantityAverageCost)"></span>
                                                 </td>
                                             @endif
@@ -846,16 +846,16 @@ new class extends Component {
                                             {{-- Prices --}}
                                             @foreach ($this->priceTypes as $priceTypeId => $priceTypeName)
                                                 @if(isset($visiblePrices[$priceTypeId]) && $visiblePrices[$priceTypeId])
-                                                    <td class="font-family-cairo text-center fw-bold">
+                                                    <td class="font-hold text-center fw-bold">
                                                         <span x-text="getPriceForType({{ $priceTypeId }})"></span>
                                                     </td>
                                                 @endif
                                             @endforeach
 
                                             @if($visibleColumns['barcode'])
-                                                <td class="font-family-cairo fw-bold text-center">
+                                                <td class="font-hold fw-bold text-center">
                                                     <template x-if="currentBarcodes.length > 0">
-                                                        <select class="form-select font-family-cairo fw-bold font-14"
+                                                        <select class="form-select font-hold fw-bold font-14"
                                                             style="min-width: 100px;">
                                                             <template x-for="barcode in currentBarcodes" :key="barcode.id">
                                                                 <option :value="barcode.barcode" x-text="barcode.barcode"></option>
@@ -863,7 +863,7 @@ new class extends Component {
                                                         </select>
                                                     </template>
                                                     <template x-if="currentBarcodes.length === 0">
-                                                        <span class="font-family-cairo fw-bold font-14">{{ __('common.no_data_found') }}</span>
+                                                        <span class="font-hold fw-bold font-14">{{ __('common.no_data_found') }}</span>
                                                     </template>
                                                 </td>
                                             @endif
@@ -871,7 +871,7 @@ new class extends Component {
                                             {{-- Notes --}}
                                             @foreach ($this->noteTypes as $noteTypeId => $noteTypeName)
                                                 @if(isset($visibleNotes[$noteTypeId]) && $visibleNotes[$noteTypeId])
-                                                    <td class="font-family-cairo fw-bold text-center">
+                                                    <td class="font-hold fw-bold text-center">
                                                         <span x-text="itemData.notes[{{ $noteTypeId }}] || ''"></span>
                                                     </td>
                                                 @endif
@@ -904,7 +904,7 @@ new class extends Component {
                                     @endphp
                                     <tr>
                                         <td colspan="{{ $colspan }}"
-                                            class="text-center font-family-cairo fw-bold">{{ __('common.no_records_found') }}
+                                            class="text-center font-hold fw-bold">{{ __('common.no_records_found') }}
                                         </td>
                                     </tr>
                                 @endforelse
@@ -918,7 +918,7 @@ new class extends Component {
                         <div class="col-md-12">
                             <div class="card border-primary">
                                 <div class="card-header bg-primary text-white">
-                                    <h6 class="font-family-cairo fw-bold mb-0 text-white">
+                                    <h6 class="font-hold fw-bold mb-0 text-white">
                                         <i class="fas fa-calculator me-2"></i>
                                         {{ __('items.warehouse_valuation') }}
                                     </h6>
@@ -926,9 +926,9 @@ new class extends Component {
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-2">
-                                            <label class="form-label font-family-cairo fw-bold">{{ __('items.select_price_type') }}:</label>
+                                            <label class="form-label font-hold fw-bold">{{ __('items.select_price_type') }}:</label>
                                             <select wire:model.live="selectedPriceType"
-                                                class="form-select font-family-cairo fw-bold font-14">
+                                                class="form-select font-hold fw-bold font-14">
                                                 <option value="">{{ __('items.select_price_type') }}</option>
                                                 <option value="cost">{{ __('items.cost') }}</option>
                                                 <option value="average_cost">{{ __('items.average_cost') }}</option>
@@ -938,8 +938,8 @@ new class extends Component {
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label font-family-cairo fw-bold">{{ __('items.selected_warehouse') }}:</label>
-                                            <div class="form-control-plaintext font-family-cairo fw-bold">
+                                            <label class="form-label font-hold fw-bold">{{ __('items.selected_warehouse') }}:</label>
+                                            <div class="form-control-plaintext font-hold fw-bold">
                                                 @if ($selectedWarehouse)
                                                     @php
                                                         $warehouse = $warehouses->firstWhere('id', $selectedWarehouse);
@@ -952,19 +952,19 @@ new class extends Component {
                                         </div>
                                         @if ($selectedPriceType)
                                             <div class="col-md-3">
-                                                <h6 class="font-family-cairo fw-bold text-primary mb-1"
+                                                <h6 class="font-hold fw-bold text-primary mb-1"
                                                     style="font-size: 0.95rem;">{{ __('items.total_quantity') }}</h6>
-                                                <h4 class="font-family-cairo fw-bold text-success mb-0"
+                                                <h4 class="font-hold fw-bold text-success mb-0"
                                                     style="font-size: 1.2rem;">{{ $this->totalQuantity }}</h4>
                                             </div>
                                             <div class="col-md-3">
-                                                <h6 class="font-family-cairo fw-bold text-primary">{{ __('items.total_value') }}</h6>
-                                                <h4 class="font-family-cairo fw-bold text-success">
+                                                <h6 class="font-hold fw-bold text-primary">{{ __('items.total_value') }}</h6>
+                                                <h4 class="font-hold fw-bold text-success">
                                                     {{ formatCurrency($this->totalAmount) }}</h4>
                                             </div>
                                             <div class="col-md-2">
-                                                <h6 class="font-family-cairo fw-bold text-primary">{{ __('items.items_count') }}</h6>
-                                                <h4 class="font-family-cairo fw-bold text-success">
+                                                <h6 class="font-hold fw-bold text-primary">{{ __('items.items_count') }}</h6>
+                                                <h4 class="font-hold fw-bold text-success">
                                                     {{ $this->totalItems }}</h4>
                                             </div>
                                         @endif
@@ -980,7 +980,7 @@ new class extends Component {
 
                     {{-- Pagination Links --}}
                     <div class="mt-4 d-flex justify-content-center">
-                        <div class="font-family-cairo">
+                        <div class="font-hold">
                         {{ $this->items->links() }}
                         </div>
                     </div>
@@ -1001,7 +1001,7 @@ new class extends Component {
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="columnVisibilityModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="columnVisibilityModalLabel">
                         <i class="fas fa-columns me-2"></i>
                         {{ __('items.column_display_options') }}
                     </h5>
@@ -1012,11 +1012,11 @@ new class extends Component {
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex gap-2 justify-content-center">
-                                <button type="button" @click="showAllColumns()" class="btn btn-success btn-sm font-family-cairo fw-bold">
+                                <button type="button" @click="showAllColumns()" class="btn btn-success btn-sm font-hold fw-bold">
                                     <i class="fas fa-eye me-1"></i>
                                     {{ __('items.show_all') }}
                                 </button>
-                                <button type="button" @click="hideAllColumns()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
+                                <button type="button" @click="hideAllColumns()" class="btn btn-secondary btn-sm font-hold fw-bold">
                                     <i class="fas fa-eye-slash me-1"></i>
                                     {{ __('items.hide_all') }}
                                 </button>
@@ -1027,68 +1027,68 @@ new class extends Component {
                     {{-- Columns Section --}}
                     <div class="row">
                         <div class="col-md-6">
-                            <h6 class="font-family-cairo fw-bold text-primary mb-3">
+                            <h6 class="font-hold fw-bold text-primary mb-3">
                                 <i class="fas fa-list me-2"></i>
                                 {{ __('items.basic_columns') }}:
                             </h6>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.code">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('common.code') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.name">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('common.name') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.units">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.units') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.quantity">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('common.quantity') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.barcode">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.item_barcode') }}
                                 </label>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <h6 class="font-family-cairo fw-bold text-primary mb-3">
+                            <h6 class="font-hold fw-bold text-primary mb-3">
                                 <i class="fas fa-dollar-sign me-2"></i>
                                 {{ __('items.cost_and_price_columns') }}:
                             </h6>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.average_cost">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.average_cost') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.quantity_average_cost">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.quantity_average_cost') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.last_cost">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.last_cost') }}
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" x-model="columns.quantity_cost">
-                                <label class="form-check-label font-family-cairo fw-bold">
+                                <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.quantity_cost') }}
                                 </label>
                             </div>
@@ -1100,16 +1100,16 @@ new class extends Component {
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12 mb-3">
-                                <h6 class="font-family-cairo fw-bold text-info mb-3">
+                                <h6 class="font-hold fw-bold text-info mb-3">
                                     <i class="fas fa-tags me-2"></i>
                                     {{ __('items.sale_prices') }}:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" @click="showAllPrices()" class="btn btn-info btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="showAllPrices()" class="btn btn-info btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye me-1"></i>
                                         {{ __('items.show_all_prices') }}
                                     </button>
-                                    <button type="button" @click="hideAllPrices()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="hideAllPrices()" class="btn btn-secondary btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
                                         {{ __('items.hide_all_prices') }}
                                     </button>
@@ -1120,7 +1120,7 @@ new class extends Component {
                                 @foreach ($this->priceTypes as $priceId => $priceName)
                                     <div class="form-check mb-2">
                                         <input class="form-check-input" type="checkbox" x-model="prices['{{ $priceId }}']">
-                                        <label class="form-check-label font-family-cairo fw-bold">
+                                        <label class="form-check-label font-hold fw-bold">
                                             {{ $priceName }}
                                         </label>
                                     </div>
@@ -1134,13 +1134,13 @@ new class extends Component {
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12">
-                                <h6 class="font-family-cairo fw-bold text-warning mb-3">
+                                <h6 class="font-hold fw-bold text-warning mb-3">
                                     <i class="fas fa-cogs me-2"></i>
                                     {{ __('common.actions') }}:
                                 </h6>
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" x-model="columns.actions">
-                                    <label class="form-check-label font-family-cairo fw-bold">
+                                    <label class="form-check-label font-hold fw-bold">
                                         {{ __('items.actions_edit_delete') }}
                                     </label>
                                 </div>
@@ -1153,16 +1153,16 @@ new class extends Component {
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12 mb-3">
-                                <h6 class="font-family-cairo fw-bold text-success mb-3">
+                                <h6 class="font-hold fw-bold text-success mb-3">
                                     <i class="fas fa-sticky-note me-2"></i>
                                     {{ __('items.notes') }}:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" @click="showAllNotes()" class="btn btn-success btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="showAllNotes()" class="btn btn-success btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye me-1"></i>
                                         {{ __('items.show_all_notes') }}
                                     </button>
-                                    <button type="button" @click="hideAllNotes()" class="btn btn-secondary btn-sm font-family-cairo fw-bold">
+                                    <button type="button" @click="hideAllNotes()" class="btn btn-secondary btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
                                         {{ __('items.hide_all_notes') }}
                                     </button>
@@ -1173,7 +1173,7 @@ new class extends Component {
                                 @foreach ($this->noteTypes as $noteId => $noteName)
                                     <div class="form-check mb-2">
                                         <input class="form-check-input" type="checkbox" x-model="notes['{{ $noteId }}']">
-                                        <label class="form-check-label font-family-cairo fw-bold">
+                                        <label class="form-check-label font-hold fw-bold">
                                             {{ $noteName }}
                                         </label>
                                     </div>
@@ -1183,7 +1183,7 @@ new class extends Component {
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-main font-family-cairo fw-bold" @click="applyChanges()"
+                    <button type="button" class="btn btn-main font-hold fw-bold" @click="applyChanges()"
                             wire:loading.attr="disabled" wire:target="updateVisibility">
                         <span wire:loading.remove wire:target="updateVisibility">
                             <i class="fas fa-check me-2"></i>
@@ -1196,7 +1196,7 @@ new class extends Component {
                             {{ __('common.processing') }}
                         </span>
                     </button>
-                    <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary font-hold fw-bold" data-bs-dismiss="modal">
                         {{ __('common.close') }}
                     </button>
                 </div>

@@ -15,7 +15,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1 class="font-family-cairo fw-bold">
+                        <h1 class="font-hold fw-bold">
                             <i class="fas fa-cash-register me-2"></i>
                             نقاط البيع - إنشاء عملية جديدة
                         </h1>
@@ -644,6 +644,6 @@
 
 @push('styles')
 <style>
-    .font-family-cairo {
+    .font-hold {
         font-family: 'Cairo', sans-serif;
     }

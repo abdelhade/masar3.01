@@ -99,8 +99,8 @@
         </section>
 
         {{-- الأكشنات (إضافة + بحث) --}}
-        <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
-            <div class="flex-shrink-0">
+        <div class="row">
+            <div class="flex-shrink-0 col-md-8">
                 @if ($type == 'current-partners')
                     <p class="p-3 rounded-lg" style="background: linear-gradient(135deg, #34d3a3 0%, #239d77 100%); color: white;">
                         يتم اضافة حساب مع اضافة شريك جديد
@@ -119,24 +119,31 @@
                 @endif
             </div>
 
-            <div class="flex-1 max-w-md">
+            <div class="col-md-4">
                 <form method="GET" action="{{ route('accounts.index') }}" class="flex gap-2">
+                    <div class="row">
+                        <div class="col-8">
                     @if ($type)
                         <input type="hidden" name="type" value="{{ $type }}">
                     @endif
-
-                    <input class="input flex-1" type="text" name="search" value="{{ request('search') }}"
+                    
+                    <input class="input form-control" type="text" name="search" value="{{ request('search') }}"
                         placeholder="بحث بالكود | اسم الحساب | ID" autocomplete="off">
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="las la-search"></i>
+                        </div>
+                        <div class="col-3">
+                    <button type="submit" class="btn btn-lg btn-main col-2">
+                        <i class="las la-search text-lg"></i>
                     </button>
-
+                    </div>
+                    <div class="col-2"> 
+                       
                     @if (request('search'))
-                        <a href="{{ route('accounts.index', ['type' => $type]) }}" class="btn btn-outline">
+                        <a href="{{ route('accounts.index', ['type' => $type]) }}" class="btn btn-outline col-2">
                             <i class="las la-times"></i>
                         </a>
                     @endif
+                    </div>
+                    </div>
                 </form>
             </div>
         </div>

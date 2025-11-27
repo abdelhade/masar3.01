@@ -278,12 +278,12 @@ new class extends Component {
         <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
 
             @can('create Contracts')
-                <button class="btn btn-main font-family-cairo fw-bold font-14" wire:click="create">
+                <button class="btn btn-main font-hold fw-bold font-14" wire:click="create">
                     <i class="las la-plus font-14 me-2"></i>{{ __('hr.add_contract') }}
                 </button>
             @endcan
             <input type="text" 
-                   class="form-control w-25 font-family-cairo" 
+                   class="form-control w-25 font-hold" 
                    placeholder="{{ __('hr.search_by_title') }}"
                    wire:model.live.debounce.300ms="search">
         </div>
@@ -307,40 +307,40 @@ new class extends Component {
                     <table id="contracts-table" class="table table-striped mb-0" style="min-width: 1200px;">
                         <thead class="table-light text-center align-middle">
                             <tr>
-                                <th class="font-family-cairo fw-bold font-14">#</th>
-                                <th class="font-family-cairo fw-bold font-14">{{ __('Contract Name') }}</th>
-                                <th class="font-family-cairo fw-bold font-14">{{ __('Employee') }}</th>
-                                <th class="font-family-cairo fw-bold font-14">{{ __('Contract Type') }}</th>
-                                <th class="font-family-cairo fw-bold font-14">{{ __('Start Date') }}</th>
-                                <th class="font-family-cairo fw-bold font-14">{{ __('End Date') }}</th>
+                                <th class="font-hold fw-bold font-14">#</th>
+                                <th class="font-hold fw-bold font-14">{{ __('Contract Name') }}</th>
+                                <th class="font-hold fw-bold font-14">{{ __('Employee') }}</th>
+                                <th class="font-hold fw-bold font-14">{{ __('Contract Type') }}</th>
+                                <th class="font-hold fw-bold font-14">{{ __('Start Date') }}</th>
+                                <th class="font-hold fw-bold font-14">{{ __('End Date') }}</th>
 
                                 @canany(['edit Contracts', 'delete Contracts', 'view Contracts'])
-                                    <th class="font-family-cairo fw-bold font-14">{{ __('hr.actions') }}</th>
+                                    <th class="font-hold fw-bold font-14">{{ __('hr.actions') }}</th>
                                 @endcanany
                             </tr>
                         </thead>
                         <tbody class="table-light text-center align-middle">
                             @forelse ($contracts as $contract)
                                 <tr>
-                                    <td class="font-family-cairo fw-bold font-14">{{ $loop->iteration }}</td>
-                                    <td class="font-family-cairo fw-bold font-14">{{ $contract->name }}</td>
-                                    <td class="font-family-cairo fw-bold font-14">{{ $contract->employee?->name }}
+                                    <td class="font-hold fw-bold font-14">{{ $loop->iteration }}</td>
+                                    <td class="font-hold fw-bold font-14">{{ $contract->name }}</td>
+                                    <td class="font-hold fw-bold font-14">{{ $contract->employee?->name }}
                                     </td>
-                                    <td class="font-family-cairo fw-bold font-14">
+                                    <td class="font-hold fw-bold font-14">
                                         {{ $contract->contract_type?->name }}
                                     </td>
-                                    <td class="font-family-cairo fw-bold font-14">
+                                    <td class="font-hold fw-bold font-14">
                                         {{ $contract->contract_start_date }}
                                     </td>
-                                    <td class="font-family-cairo fw-bold font-14">
+                                    <td class="font-hold fw-bold font-14">
                                         {{ $contract->contract_end_date }}
                                     </td>
                                     @canany(['edit Contracts', 'delete Contracts', 'view Contracts'])
-                                        <td class="font-family-cairo fw-bold font-14">
+                                        <td class="font-hold fw-bold font-14">
                                             <div class="btn-group" role="group">
                                                 @can('view Contracts')
                                                     <button type="button" 
-                                                            class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
+                                                            class="btn btn-success btn-icon-square-sm font-hold fw-bold"
                                                             wire:click="view({{ $contract->id }})"
                                                             title="{{ __('hr.view') }}">
                                                         <i class="las la-eye font-18"></i>
@@ -348,7 +348,7 @@ new class extends Component {
                                                 @endcan
                                                 @can('edit Contracts')
                                                     <button type="button" 
-                                                            class="btn btn-success btn-icon-square-sm font-family-cairo fw-bold"
+                                                            class="btn btn-success btn-icon-square-sm font-hold fw-bold"
                                                             wire:click="edit({{ $contract->id }})"
                                                             title="{{ __('hr.edit') }}">
                                                         <i class="las la-edit font-18"></i>
@@ -356,7 +356,7 @@ new class extends Component {
                                                 @endcan
                                                 @can('delete Contracts')
                                                     <button type="button" 
-                                                            class="btn btn-danger btn-icon-square-sm font-family-cairo fw-bold"
+                                                            class="btn btn-danger btn-icon-square-sm font-hold fw-bold"
                                                             wire:click="delete({{ $contract->id }})"
                                                             wire:confirm="{{ __('hr.confirm_delete_contract') }}"
                                                             title="{{ __('hr.delete') }}">
@@ -370,7 +370,7 @@ new class extends Component {
                             @empty
                                 <tr>
                                     <td colspan="{{ auth()->user()->canany(['edit Contracts', 'delete Contracts', 'view Contracts']) ? '7' : '6' }}" 
-                                        class="text-center font-family-cairo fw-bold py-4">
+                                        class="text-center font-hold fw-bold py-4">
                                         <div class="alert alert-info mb-0">
                                             <i class="las la-info-circle me-2"></i>
                                             {{ __('hr.no_contracts_found') }}
@@ -393,7 +393,7 @@ new class extends Component {
             <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ $isEdit ? __('hr.edit_contract') : __('hr.add_contract') }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ $isEdit ? __('hr.edit_contract') : __('hr.add_contract') }}</h5>
                         <button type="button" class="btn-close p-4" wire:click="$set('showModal', false)"></button>
                     </div>
                     <div class="modal-body">
@@ -403,7 +403,7 @@ new class extends Component {
                                     <!-- Basic Info Section -->
                                     <div class="card mb-4">
                                         <div class="card-header bg-light">
-                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-info-circle"></i>
+                                            <h5 class="mb-0 font-hold fw-bold"><i class="las la-info-circle"></i>
                                                 {{ __('hr.basic_information') }}</h5>
                                         </div>
                                         <div class="card-body">
@@ -411,7 +411,7 @@ new class extends Component {
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Contract Name') }}</label>
                                                     <input type="text"
-                                                        class="form-control font-family-cairo fw-bold font-18"
+                                                        class="form-control font-hold fw-bold font-18"
                                                         wire:model.blur="name" required>
                                                     @error('name')
                                                         <span class="text-danger">
@@ -424,9 +424,9 @@ new class extends Component {
                                                 </div>
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Contract Type') }}</label>
-                                                    <select class="form-select font-family-cairo fw-bold font-18"
+                                                    <select class="form-select font-hold fw-bold font-18"
                                                         wire:model.blur="contract_type_id" required style="height: 50px;">
-                                                        <option class="font-family-cairo fw-bold" value="">
+                                                        <option class="font-hold fw-bold" value="">
                                                             {{ __('hr.select_option') }}</option>
                                                         @foreach ($this->contractTypes as $type)
                                                             <option value="{{ $type->id }}">{{ $type->name }}
@@ -439,13 +439,13 @@ new class extends Component {
                                                 </div>
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Employee') }}</label>
-                                                    <select class="form-select font-family-cairo fw-bold font-18"
+                                                    <select class="form-select font-hold fw-bold font-18"
                                                         wire:model.blur="employee_id" required style="height: 50px;">
-                                                        <option class="font-family-cairo fw-bold font-14"
+                                                        <option class="font-hold fw-bold font-14"
                                                             value="">
                                                             {{ __('hr.select_option') }}</option>
                                                         @foreach ($this->employees as $employee)
-                                                            <option class="font-family-cairo fw-bold font-14"
+                                                            <option class="font-hold fw-bold font-14"
                                                                 value="{{ $employee->id }}">{{ $employee->name }}
                                                             </option>
                                                         @endforeach
@@ -460,13 +460,13 @@ new class extends Component {
                                                 </div>
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Job') }}</label>
-                                                    <select class="form-select font-family-cairo fw-bold font-18"
+                                                    <select class="form-select font-hold fw-bold font-18"
                                                         wire:model.blur="job_id" required style="height: 50px;">
-                                                        <option class="font-family-cairo fw-bold font-14"
+                                                        <option class="font-hold fw-bold font-14"
                                                             value="">
                                                             {{ __('hr.select_option') }}</option>
                                                         @foreach ($this->jobs as $job)
-                                                            <option class="font-family-cairo fw-bold font-14"
+                                                            <option class="font-hold fw-bold font-14"
                                                                 value="{{ $job->id }}">{{ $job->title }}
                                                             </option>
                                                         @endforeach
@@ -479,7 +479,7 @@ new class extends Component {
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('Start Date') }}</label>
                                                     <input type="date"
-                                                        class="form-control font-family-cairo fw-bold font-18"
+                                                        class="form-control font-hold fw-bold font-18"
                                                         wire:model.blur="contract_start_date" required>
 
                                                     @error('contract_start_date')
@@ -489,7 +489,7 @@ new class extends Component {
                                                 <div class="col-md-6 col-lg-4 mb-3">
                                                     <label class="form-label">{{ __('End Date') }}</label>
                                                     <input type="date"
-                                                        class="form-control font-family-cairo fw-bold font-18"
+                                                        class="form-control font-hold fw-bold font-18"
                                                         wire:model.blur="contract_end_date" required>
 
                                                     @error('contract_end_date')
@@ -503,14 +503,14 @@ new class extends Component {
                                     <!-- Work Hours & Details Section -->
                                     <div class="card mb-4">
                                         <div class="card-header bg-light">
-                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-clock"></i>
+                                            <h5 class="mb-0 font-hold fw-bold"><i class="las la-clock"></i>
                                                 {{ __('hr.work_hours_details') }}
                                             </h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6 col-lg-3 mb-3">
-                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.fixed_work_hours') }}</label>
+                                                    <label class="form-label font-hold fw-bold">{{ __('hr.fixed_work_hours') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-clock"></i></span>
@@ -524,7 +524,7 @@ new class extends Component {
                                                 </div>
                                                 <div class="col-md-6 col-lg-3 mb-3">
                                                     <label
-                                                        class="form-label font-family-cairo fw-bold">{{ __('hr.additional_work_hours') }}</label>
+                                                        class="form-label font-hold fw-bold">{{ __('hr.additional_work_hours') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-business-time"></i></span>
@@ -537,7 +537,7 @@ new class extends Component {
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 col-lg-3 mb-3">
-                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.monthly_holidays') }}</label>
+                                                    <label class="form-label font-hold fw-bold">{{ __('hr.monthly_holidays') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-calendar"></i></span>
@@ -550,7 +550,7 @@ new class extends Component {
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 col-lg-3 mb-3">
-                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.monthly_sick_days') }}</label>
+                                                    <label class="form-label font-hold fw-bold">{{ __('hr.monthly_sick_days') }}</label>
                                                     <div class="input-group">
 
                                                         <span class="input-group-text"><i
@@ -563,7 +563,7 @@ new class extends Component {
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.description') }}</label>
+                                                    <label class="form-label font-hold fw-bold">{{ __('hr.description') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-info-circle"></i></span>
@@ -575,7 +575,7 @@ new class extends Component {
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label font-family-cairo fw-bold">{{ __('hr.job_description') }}</label>
+                                                    <label class="form-label font-hold fw-bold">{{ __('hr.job_description') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="las la-briefcase"></i></span>
@@ -594,11 +594,11 @@ new class extends Component {
                                     <div class="card mb-4">
                                         <div
                                             class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-list-ul"></i>
+                                            <h5 class="mb-0 font-hold fw-bold"><i class="las la-list-ul"></i>
                                                 {{ __('hr.contract_points') }}
                                             </h5>
                                             <button type="button"
-                                                class="btn btn-md btn-primary font-family-cairo fw-bold"
+                                                class="btn btn-md btn-primary font-hold fw-bold"
                                                 wire:click="addContractPointInput">
                                                 <i class="las la-plus font-18 me-1"></i> {{ __('hr.add_point') }}
                                             </button>
@@ -609,16 +609,16 @@ new class extends Component {
                                                     <thead class="table-light text-center align-middle">
 
                                                         <tr>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="10%">
                                                                 {{ __('Sequence') }}</th>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="25%">
                                                                 {{ __('Point Name') }}</th>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="55%">
                                                                 {{ __('Information') }}</th>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="10%">
                                                                 {{ __('Actions') }}</th>
                                                         </tr>
@@ -683,11 +683,11 @@ new class extends Component {
                                     <div class="card mb-4">
                                         <div
                                             class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-money-bill"></i>
+                                            <h5 class="mb-0 font-hold fw-bold"><i class="las la-money-bill"></i>
                                                 {{ __('hr.salary_points') }}
                                             </h5>
                                             <button type="button"
-                                                class="btn btn-md btn-primary font-family-cairo fw-bold"
+                                                class="btn btn-md btn-primary font-hold fw-bold"
                                                 wire:click="addSalaryPointInput">
                                                 <i class="las la-plus font-18 me-1"></i> {{ __('hr.add_point') }}
                                             </button>
@@ -697,16 +697,16 @@ new class extends Component {
                                                 <table class="table table-striped mb-0" style="min-width: 1200px;">
                                                     <thead class="table-light text-center align-middle">
                                                         <tr>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="10%">
                                                                 {{ __('Sequence') }}</th>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="25%">
                                                                 {{ __('Point Name') }}</th>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="55%">
                                                                 {{ __('Information') }}</th>
-                                                            <th class="font-family-cairo fw-bold font-14 text-center"
+                                                            <th class="font-hold fw-bold font-14 text-center"
                                                                 width="10%">
                                                                 {{ __('Actions') }}</th>
 
@@ -770,11 +770,11 @@ new class extends Component {
                                 </div>
                             </div>
                             <div class="modal-footer d-flex justify-content-center">
-                                <button type="button" class="btn btn-secondary font-family-cairo fw-bold font-14"
+                                <button type="button" class="btn btn-secondary font-hold fw-bold font-14"
                                     wire:click="$set('showModal', false)">
                                     <i class="las la-times me-1"></i> {{ __('hr.cancel') }}
                                 </button>
-                                <button type="submit" class="btn btn-main font-family-cairo fw-bold font-14">
+                                <button type="submit" class="btn btn-main font-hold fw-bold font-14">
                                     <i class="las la-save me-1"></i> {{ $isEdit ? __('hr.update') : __('hr.save') }}
                                 </button>
                             </div>
@@ -790,7 +790,7 @@ new class extends Component {
             <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title font-family-cairo fw-bold">{{ __('hr.view_contract') }}: {{ $viewContract?->name }}</h5>
+                        <h5 class="modal-title font-hold fw-bold">{{ __('hr.view_contract') }}: {{ $viewContract?->name }}</h5>
                         <button type="button" class="btn-close p-4"
                             wire:click="$set('showViewModal', false)"></button>
                     </div>
@@ -800,7 +800,7 @@ new class extends Component {
                                 {{-- Basic Info --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-info-circle"></i>
+                                        <h5 class="mb-0 font-hold fw-bold"><i class="las la-info-circle"></i>
                                             {{ __('hr.basic_information') }}</h5>
                                     </div>
                                     <div class="card-body">
@@ -823,7 +823,7 @@ new class extends Component {
                                 {{-- Work Hours --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-clock"></i>
+                                        <h5 class="mb-0 font-hold fw-bold"><i class="las la-clock"></i>
                                             {{ __('hr.work_hours_details') }}</h5>
                                     </div>
                                     <div class="card-body">
@@ -851,11 +851,11 @@ new class extends Component {
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <div class="mb-2">
-                                                    <span class="fw-bold font-family-cairo"><i
+                                                    <span class="fw-bold font-hold"><i
                                                             class="las la-briefcase text-primary"></i>
                                                         {{ __('hr.job_description') }}:</span>
                                                 </div>
-                                                <div class="border rounded p-2 bg-light font-family-cairo">
+                                                <div class="border rounded p-2 bg-light font-hold">
                                                     {{ $viewContract->job_description ?: __('hr.no_job_description_provided') }}
                                                 </div>
                                             </div>
@@ -866,7 +866,7 @@ new class extends Component {
                                 {{-- Contract Points --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-list-ul"></i>
+                                        <h5 class="mb-0 font-hold fw-bold"><i class="las la-list-ul"></i>
                                             {{ __('hr.contract_points') }}</h5>
                                     </div>
                                     <div class="card-body">
@@ -874,28 +874,28 @@ new class extends Component {
                                             <table class="table table-striped mb-0" style="min-width: 1200px;">
                                                 <thead class="table-light text-center align-middle">
                                                     <tr>
-                                                        <th width="10%" class="font-family-cairo fw-bold font-14">
+                                                        <th width="10%" class="font-hold fw-bold font-14">
                                                             {{ __('Sequence') }}</th>
-                                                        <th width="30%" class="font-family-cairo fw-bold font-14">
+                                                        <th width="30%" class="font-hold fw-bold font-14">
                                                             {{ __('Point Name') }}</th>
-                                                        <th width="60%" class="font-family-cairo fw-bold font-14">
+                                                        <th width="60%" class="font-hold fw-bold font-14">
                                                             {{ __('Information') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @forelse ($viewContract->contract_points as $point)
                                                         <tr>
-                                                            <td class="text-center font-family-cairo fw-bold font-14">
+                                                            <td class="text-center font-hold fw-bold font-14">
                                                                 {{ $point->sequence }}</td>
-                                                            <td class="font-family-cairo fw-bold font-14">
+                                                            <td class="font-hold fw-bold font-14">
                                                                 {{ $point->name }}</td>
-                                                            <td class="font-family-cairo fw-bold font-14">
+                                                            <td class="font-hold fw-bold font-14">
                                                                 {{ $point->information ?: __('hr.no_information_provided') }}
                                                             </td>
                                                         </tr>
                                                     @empty
                                                         <tr>
-                                                            <td colspan="3" class="text-center font-family-cairo fw-bold py-4">
+                                                            <td colspan="3" class="text-center font-hold fw-bold py-4">
                                                                 <div class="alert alert-info mb-0">
                                                                     <i class="las la-info-circle me-2"></i>
                                                                     {{ __('hr.no_contract_points_found') }}
@@ -912,7 +912,7 @@ new class extends Component {
                                 {{-- Salary Points --}}
                                 <div class="card mb-4">
                                     <div class="card-header bg-light">
-                                        <h5 class="mb-0 font-family-cairo fw-bold"><i class="las la-money-bill"></i>
+                                        <h5 class="mb-0 font-hold fw-bold"><i class="las la-money-bill"></i>
                                             {{ __('hr.salary_points') }}</h5>
                                     </div>
                                     <div class="card-body">
@@ -920,28 +920,28 @@ new class extends Component {
                                             <table class="table table-striped mb-0" style="min-width: 1200px;">
                                                 <thead class="table-light text-center align-middle">
                                                     <tr>
-                                                        <th width="10%" class="font-family-cairo fw-bold font-14">
+                                                        <th width="10%" class="font-hold fw-bold font-14">
                                                             {{ __('Sequence') }}</th>
-                                                        <th width="30%" class="font-family-cairo fw-bold font-14">
+                                                        <th width="30%" class="font-hold fw-bold font-14">
                                                             {{ __('Point Name') }}</th>
-                                                        <th width="60%" class="font-family-cairo fw-bold font-14">
+                                                        <th width="60%" class="font-hold fw-bold font-14">
                                                             {{ __('Information') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @forelse ($viewContract->salary_points as $point)
                                                         <tr>
-                                                            <td class="text-center font-family-cairo fw-bold font-14">
+                                                            <td class="text-center font-hold fw-bold font-14">
                                                                 {{ $point->sequence }}</td>
-                                                            <td class="font-family-cairo fw-bold font-14">
+                                                            <td class="font-hold fw-bold font-14">
                                                                 {{ $point->name }}</td>
-                                                            <td class="font-family-cairo fw-bold font-14">
+                                                            <td class="font-hold fw-bold font-14">
                                                                 {{ $point->information ?: __('hr.no_information_provided') }}
                                                             </td>
                                                         </tr>
                                                     @empty
                                                         <tr>
-                                                            <td colspan="3" class="text-center font-family-cairo fw-bold py-4">
+                                                            <td colspan="3" class="text-center font-hold fw-bold py-4">
                                                                 <div class="alert alert-info mb-0">
                                                                     <i class="las la-info-circle me-2"></i>
                                                                     {{ __('hr.no_salary_points_found') }}
@@ -959,7 +959,7 @@ new class extends Component {
                     </div>
 
                     <div class="modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn btn-secondary font-family-cairo fw-bold font-14"
+                        <button type="button" class="btn btn-secondary font-hold fw-bold font-14"
                             wire:click="$set('showViewModal', false)">
                             <i class="las la-times me-1"></i> {{ __('hr.close') }}
                         </button>

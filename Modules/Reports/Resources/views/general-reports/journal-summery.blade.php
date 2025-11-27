@@ -69,23 +69,23 @@
                                     data-accname="{{ $detail->accHead->aname ?? '' }}"
                                     data-debit="{{ (float) $detail->debit }}" data-credit="{{ (float) $detail->credit }}">
                                     @if ($j == 0)
-                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                        <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $i + 1 }}</td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                        <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $head->journal_id }}</td>
                                     @endif
 
-                                    <td class="font-family-cairo fw-bold font-14 text-center">{{ $detail->debit }}</td>
-                                    <td class="font-family-cairo fw-bold font-14 text-center">{{ $detail->credit }}</td>
-                                    <td class="font-family-cairo fw-bold font-14 text-center">
+                                    <td class="font-hold fw-bold font-14 text-center">{{ $detail->debit }}</td>
+                                    <td class="font-hold fw-bold font-14 text-center">{{ $detail->credit }}</td>
+                                    <td class="font-hold fw-bold font-14 text-center">
                                         {{ $detail->accHead->aname ?? '-' }}</td>
                                     @if ($j == 0)
-                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                        <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $head->details }}</td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                        <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $head->oper?->type?->ptext ?? '-' }}
                                         </td>
-                                        <td class="font-family-cairo fw-bold font-14 text-center"
+                                        <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $head->date }}</td>
                                     @endif
                                 </tr>

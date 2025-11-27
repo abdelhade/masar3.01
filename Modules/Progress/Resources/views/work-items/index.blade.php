@@ -18,7 +18,7 @@
 
             {{-- زرار الإضافة --}}
             {{-- @can('project-types-create') --}}
-            <a href="{{ route('work.items.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+            <a href="{{ route('work.items.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('general.new_work_item') }}
                 <i class="fas fa-plus me-2"></i>
             </a>

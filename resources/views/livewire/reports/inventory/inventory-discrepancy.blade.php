@@ -1,7 +1,7 @@
 <div>
     {{-- Flash Messages --}}
     @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show font-family-cairo" role="alert" 
+        <div class="alert alert-success alert-dismissible fade show font-hold" role="alert" 
              x-data="{ show: true }" 
              x-show="show"
              x-init="setTimeout(() => show = false, 5000)">
@@ -12,7 +12,7 @@
     @endif
     
     @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show font-family-cairo" role="alert"
+        <div class="alert alert-danger alert-dismissible fade show font-hold" role="alert"
              x-data="{ show: true }" 
              x-show="show"
              x-init="setTimeout(() => show = false, 5000)">
@@ -23,7 +23,7 @@
     @endif
     
     @if (session()->has('info'))
-        <div class="alert alert-info alert-dismissible fade show font-family-cairo" role="alert"
+        <div class="alert alert-info alert-dismissible fade show font-hold" role="alert"
              x-data="{ show: true }" 
              x-show="show"
              x-init="setTimeout(() => show = false, 5000)">

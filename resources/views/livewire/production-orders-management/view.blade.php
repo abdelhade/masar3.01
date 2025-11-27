@@ -74,16 +74,16 @@ new class extends Component {
             <p class="text-muted">رقم الأمر: {{ $this->productionOrder->order_number }}</p>
         </div>
         <div class="col-md-6 text-end mt-4">
-            <a href="{{ route('production-orders.index') }}" class="btn btn-secondary me-2 font-family-cairo fw-bold">
+            <a href="{{ route('production-orders.index') }}" class="btn btn-secondary me-2 font-hold fw-bold">
                 <i class="fas fa-arrow-left"></i>
                 العودة
             </a>
             @if($this->productionOrder->status !== 'completed')
-                <a href="{{ route('production-orders.edit', $this->productionOrder->id) }}" class="btn btn-warning me-2 font-family-cairo fw-bold">
+                <a href="{{ route('production-orders.edit', $this->productionOrder->id) }}" class="btn btn-warning me-2 font-hold fw-bold">
                     <i class="fas fa-edit"></i>
                     تعديل
                 </a>
-                <button wire:click="confirmDelete" class="btn btn-danger font-family-cairo fw-bold">
+                <button wire:click="confirmDelete" class="btn btn-danger font-hold fw-bold">
                      <i class="fas fa-trash"></i>
                      حذف
                  </button>
@@ -237,10 +237,10 @@ new class extends Component {
                         <tbody>
                             @foreach($this->productionOrder->items as $item)
                                 <tr>
-                                    <td class="font-family-cairo fw-bold">{{ $item->name }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $item->code }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ number_format($item->pivot->quantity, 2) }}</td>
-                                    <td class="font-family-cairo fw-bold">{{ $item->pivot->note ?? '-' }}</td>
+                                    <td class="font-hold fw-bold">{{ $item->name }}</td>
+                                    <td class="font-hold fw-bold">{{ $item->code }}</td>
+                                    <td class="font-hold fw-bold">{{ number_format($item->pivot->quantity, 2) }}</td>
+                                    <td class="font-hold fw-bold">{{ $item->pivot->note ?? '-' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -264,17 +264,17 @@ new class extends Component {
             </div>
             <div class="card-body">
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success font-family-cairo fw-bold">
+                    <button class="btn btn-success font-hold fw-bold">
                         <i class="fas fa-check"></i>
                         إكمال الأمر
                     </button>
                     
-                    <button class="btn btn-danger font-family-cairo fw-bold">
+                    <button class="btn btn-danger font-hold fw-bold">
                         <i class="fas fa-times"></i>
                         إلغاء الأمر
                     </button>
                     
-                    <button class="btn btn-info font-family-cairo fw-bold">
+                    <button class="btn btn-info font-hold fw-bold">
                         <i class="fas fa-file-alt"></i>
                         إنشاء فاتورة إنتاج
                     </button>

@@ -170,7 +170,7 @@
 {{-- CVs --}}
 @can('view CVs')
 <li class="nav-item">
-    <a class="nav-link font-family-cairo fw-bold" href="{{ route('cvs.index') }}">
+    <a class="nav-link font-hold fw-bold" href="{{ route('cvs.index') }}">
             <i class="ti-control-record"></i>{{ __('navigation.cv_management') }}
         </a>
     </li>

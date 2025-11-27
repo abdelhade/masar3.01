@@ -15,7 +15,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1 class="font-family-cairo fw-bold">
+                        <h1 class="font-hold fw-bold">
                             <i class="fas fa-edit me-2"></i>
                             تعديل عملية نقاط البيع
                         </h1>
@@ -73,7 +73,7 @@
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header bg-primary text-white">
-                                    <h4 class="mb-0 font-family-cairo fw-bold">
+                                    <h4 class="mb-0 font-hold fw-bold">
                                         <i class="fas fa-cash-register me-2"></i>
                                         تفاصيل عملية نقاط البيع
                                     </h4>
@@ -82,28 +82,28 @@
                                     <!-- Voucher Header -->
                                     <div class="row mb-3">
                                         <div class="col-md-3">
-                                            <label class="form-label font-family-cairo fw-bold">رقم العملية</label>
-                                            <input type="text" class="form-control font-family-cairo" value="{{ $posVoucher->pro_id }}" readonly>
+                                            <label class="form-label font-hold fw-bold">رقم العملية</label>
+                                            <input type="text" class="form-control font-hold" value="{{ $posVoucher->pro_id }}" readonly>
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label font-family-cairo fw-bold">التاريخ</label>
-                                            <input type="date" name="pro_date" value="{{ $posVoucher->pro_date }}" class="form-control font-family-cairo" required>
+                                            <label class="form-label font-hold fw-bold">التاريخ</label>
+                                            <input type="date" name="pro_date" value="{{ $posVoucher->pro_date }}" class="form-control font-hold" required>
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label font-family-cairo fw-bold">الرقم الدفتري</label>
-                                            <input type="text" name="pro_serial" value="{{ $posVoucher->pro_serial }}" class="form-control font-family-cairo" placeholder="الرقم الدفتري">
+                                            <label class="form-label font-hold fw-bold">الرقم الدفتري</label>
+                                            <input type="text" name="pro_serial" value="{{ $posVoucher->pro_serial }}" class="form-control font-hold" placeholder="الرقم الدفتري">
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label font-family-cairo fw-bold">رقم الإيصال</label>
-                                            <input type="text" name="pro_num" value="{{ $posVoucher->pro_num }}" class="form-control font-family-cairo" placeholder="رقم الإيصال">
+                                            <label class="form-label font-hold fw-bold">رقم الإيصال</label>
+                                            <input type="text" name="pro_num" value="{{ $posVoucher->pro_num }}" class="form-control font-hold" placeholder="رقم الإيصال">
                                         </div>
                                     </div>
 
                                     <!-- Accounts -->
                                     <div class="row mb-3">
                                         <div class="col-md-4">
-                                            <label class="form-label font-family-cairo fw-bold">العميل</label>
-                                            <select name="acc1" class="form-select font-family-cairo" required>
+                                            <label class="form-label font-hold fw-bold">العميل</label>
+                                            <select name="acc1" class="form-select font-hold" required>
                                                 <option value="">اختر العميل</option>
                                                 @foreach($customerAccounts as $account)
                                                     <option value="{{ $account->id }}" {{ $posVoucher->acc1 == $account->id ? 'selected' : '' }}>
@@ -113,8 +113,8 @@
                                             </select>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label font-family-cairo fw-bold">الصندوق</label>
-                                            <select name="acc2" class="form-select font-family-cairo" required>
+                                            <label class="form-label font-hold fw-bold">الصندوق</label>
+                                            <select name="acc2" class="form-select font-hold" required>
                                                 <option value="">اختر الصندوق</option>
                                                 @foreach($cashAccounts as $account)
                                                     <option value="{{ $account->id }}" {{ $posVoucher->acc2 == $account->id ? 'selected' : '' }}>
@@ -124,8 +124,8 @@
                                             </select>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label font-family-cairo fw-bold">الموظف</label>
-                                            <select name="emp_id" class="form-select font-family-cairo" required>
+                                            <label class="form-label font-hold fw-bold">الموظف</label>
+                                            <select name="emp_id" class="form-select font-hold" required>
                                                 <option value="">اختر الموظف</option>
                                                 @foreach($employeeAccounts as $account)
                                                     <option value="{{ $account->id }}" {{ $posVoucher->emp_id == $account->id ? 'selected' : '' }}>
@@ -141,12 +141,12 @@
                                         <table class="table table-bordered table-hover" id="itemsTable">
                                             <thead class="table-dark">
                                                 <tr>
-                                                    <th class="font-family-cairo fw-bold">المنتج</th>
-                                                    <th class="font-family-cairo fw-bold">الوحدة</th>
-                                                    <th class="font-family-cairo fw-bold">الكمية</th>
-                                                    <th class="font-family-cairo fw-bold">السعر</th>
-                                                    <th class="font-family-cairo fw-bold">الإجمالي</th>
-                                                    <th class="font-family-cairo fw-bold">إجراءات</th>
+                                                    <th class="font-hold fw-bold">المنتج</th>
+                                                    <th class="font-hold fw-bold">الوحدة</th>
+                                                    <th class="font-hold fw-bold">الكمية</th>
+                                                    <th class="font-hold fw-bold">السعر</th>
+                                                    <th class="font-hold fw-bold">الإجمالي</th>
+                                                    <th class="font-hold fw-bold">إجراءات</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -204,11 +204,11 @@
                                         <div class="col-md-6 offset-md-6">
                                             <table class="table table-borderless">
                                                 <tr>
-                                                    <td class="font-family-cairo fw-bold">المجموع الفرعي:</td>
+                                                    <td class="font-hold fw-bold">المجموع الفرعي:</td>
                                                     <td class="text-end" id="subtotal">{{ number_format($posVoucher->pro_value, 2) }}</td>
                                                 </tr>
                                                 <tr class="table-primary">
-                                                    <td class="font-family-cairo fw-bold h5">الإجمالي:</td>
+                                                    <td class="font-hold fw-bold h5">الإجمالي:</td>
                                                     <td class="text-end h5 font-weight-bold" id="total">{{ number_format($posVoucher->pro_value, 2) }}</td>
                                                 </tr>
                                             </table>
@@ -233,7 +233,7 @@
                         <div class="col-md-4">
                             <div class="card">
                                 <div class="card-header bg-success text-white">
-                                    <h5 class="mb-0 font-family-cairo fw-bold">
+                                    <h5 class="mb-0 font-hold fw-bold">
                                         <i class="fas fa-tags me-2"></i>
                                         التصنيفات والمنتجات
                                     </h5>
@@ -241,14 +241,14 @@
                                 <div class="card-body">
                                     <!-- Categories -->
                                     <div class="mb-4">
-                                        <h6 class="font-family-cairo fw-bold mb-3">التصنيفات</h6>
+                                        <h6 class="font-hold fw-bold mb-3">التصنيفات</h6>
                                         <div class="list-group" id="categoriesList">
                                             @foreach($notes as $note)
                                                 <div class="list-group-item list-group-item-action cursor-pointer" 
                                                      data-note-id="{{ $note->id }}"
                                                      style="cursor: pointer;">
                                                     <div class="d-flex justify-content-between align-items-center">
-                                                        <span class="font-family-cairo fw-bold">{{ $note->name }}</span>
+                                                        <span class="font-hold fw-bold">{{ $note->name }}</span>
                                                         <i class="fas fa-chevron-right"></i>
                                                     </div>
                                                 </div>
@@ -258,7 +258,7 @@
                                                         <div class="list-group-item list-group-item-action cursor-pointer note-detail-item" 
                                                              data-note-detail-id="{{ $noteDetail->id }}"
                                                              style="cursor: pointer;">
-                                                            <span class="font-family-cairo">{{ $noteDetail->name }}</span>
+                                                            <span class="font-hold">{{ $noteDetail->name }}</span>
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -268,7 +268,7 @@
 
                                     <!-- Items Grid -->
                                     <div id="itemsGrid" style="display: none;">
-                                        <h6 class="font-family-cairo fw-bold mb-3">المنتجات</h6>
+                                        <h6 class="font-hold fw-bold mb-3">المنتجات</h6>
                                         <div class="row" id="itemsContainer">
                                             <!-- Items will be loaded here -->
                                         </div>
@@ -285,7 +285,7 @@
 
 @push('styles')
 <style>
-    .font-family-cairo {
+    .font-hold {
         font-family: 'Cairo', sans-serif;
     }
     
@@ -382,7 +382,7 @@
                              data-item-code="${item.code}"
                              style="cursor: pointer;">
                             <div class="card-body p-2 text-center">
-                                <h6 class="card-title font-family-cairo fw-bold mb-1" style="font-size: 0.9rem;">
+                                <h6 class="card-title font-hold fw-bold mb-1" style="font-size: 0.9rem;">
                                     ${item.name}
                                 </h6>
                                 <small class="text-muted d-block mb-1">كود: ${item.code}</small>

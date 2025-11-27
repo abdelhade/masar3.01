@@ -6,7 +6,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="font-family-cairo fw-bold text-white" id="addBarcodeModalLabel">
+                <h5 class="font-hold fw-bold text-white" id="addBarcodeModalLabel">
                     إضافة وتعديل الباركود
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
@@ -15,7 +15,7 @@
             <div class="modal-body">
                 <div class="d-flex justify-content-end mb-2">
                     @if ($creating)
-                        <button type="button" class="btn btn-main btn-sm font-family-cairo fw-bold"
+                        <button type="button" class="btn btn-main btn-sm font-hold fw-bold"
                             wire:click="addBarcodeField({{ $index }})">
                             <i class="las la-plus"></i> إضافة باركود
                         </button>
@@ -25,7 +25,7 @@
                 @foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode)
                     <div class="d-flex align-items-center mb-2" wire:key="{{ $index }}-barcode-{{ $barcodeIndex }}">
                         <input type="text" @if (!$creating) disabled readonly @endif
-                            class="form-control font-family-cairo fw-bold"
+                            class="form-control font-hold fw-bold"
                             wire:model.live="unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}"
                             id="unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}"
                             placeholder="أدخل الباركود">
@@ -37,15 +37,15 @@
                         @endif
                     </div>
                     @error("unitRows.{{ $index }}.barcodes.{{ $barcodeIndex }}")
-                        <span class="text-danger font-family-cairo fw-bold">{{ $message }}</span>
+                        <span class="text-danger font-hold fw-bold">{{ $message }}</span>
                     @enderror
                 @endforeach
             </div>
             <div class="modal-footer">
                 @if ($creating)
-                    <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal"
+                    <button type="button" class="btn btn-secondary font-hold fw-bold" data-bs-dismiss="modal"
                         wire:click="cancelBarcodeUpdate({{ $index }})">إلغاء</button>
-                    <button type="button" class="btn btn-main font-family-cairo fw-bold"
+                    <button type="button" class="btn btn-main font-hold fw-bold"
                         wire:click="saveBarcodes({{ $index }})">حفظ</button>
                 @endif
             </div>

@@ -19,7 +19,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1 class="font-family-cairo fw-bold">
+                        <h1 class="font-hold fw-bold">
                             <i class="fas fa-cash-register me-2"></i>
                             نقاط البيع
                         </h1>
@@ -54,7 +54,7 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title font-family-cairo fw-bold">
+                        <h3 class="card-title font-hold fw-bold">
                             <i class="fas fa-list me-2"></i>
                             قائمة عمليات نقاط البيع
                         </h3>
@@ -64,17 +64,17 @@
                             <table class="table table-striped table-hover">
                                 <thead class="">
                                     <tr>
-                                        <th class="font-family-cairo fw-bold">م</th>
-                                        <th class="font-family-cairo fw-bold">التاريخ</th>
-                                        <th class="font-family-cairo fw-bold">رقم العملية</th>
-                                        <th class="font-family-cairo fw-bold">الرقم الدفتري</th>
-                                        <th class="font-family-cairo fw-bold">رقم الإيصال</th>
-                                        <th class="font-family-cairo fw-bold">العميل</th>
-                                        <th class="font-family-cairo fw-bold">الصندوق</th>
-                                        <th class="font-family-cairo fw-bold">الموظف</th>
-                                        <th class="font-family-cairo fw-bold">المبلغ</th>
-                                        <th class="font-family-cairo fw-bold">البيان</th>
-                                        <th class="font-family-cairo fw-bold">إجراءات</th>
+                                        <th class="font-hold fw-bold">م</th>
+                                        <th class="font-hold fw-bold">التاريخ</th>
+                                        <th class="font-hold fw-bold">رقم العملية</th>
+                                        <th class="font-hold fw-bold">الرقم الدفتري</th>
+                                        <th class="font-hold fw-bold">رقم الإيصال</th>
+                                        <th class="font-hold fw-bold">العميل</th>
+                                        <th class="font-hold fw-bold">الصندوق</th>
+                                        <th class="font-hold fw-bold">الموظف</th>
+                                        <th class="font-hold fw-bold">المبلغ</th>
+                                        <th class="font-hold fw-bold">البيان</th>
+                                        <th class="font-hold fw-bold">إجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -115,7 +115,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="11" class="text-center text-muted font-family-cairo">
+                                            <td colspan="11" class="text-center text-muted font-hold">
                                                 <i class="fas fa-inbox fa-3x mb-3"></i>
                                                 <br>
                                                 لا توجد عمليات نقاط بيع
@@ -136,7 +136,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="deleteModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="deleteModalLabel">
                         <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                         تأكيد الحذف
                     </h5>
@@ -144,18 +144,18 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body font-family-cairo">
+                <div class="modal-body font-hold">
                     هل أنت متأكد من حذف هذه العملية؟ لا يمكن التراجع عن هذا الإجراء.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary font-family-cairo" data-dismiss="modal">
+                    <button type="button" class="btn btn-secondary font-hold" data-dismiss="modal">
                         <i class="fas fa-times me-1"></i>
                         إلغاء
                     </button>
                     <form id="deleteForm" method="POST" style="display: inline;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger font-family-cairo">
+                        <button type="submit" class="btn btn-danger font-hold">
                             <i class="fas fa-trash me-1"></i>
                             حذف
                         </button>
@@ -168,7 +168,7 @@
 
 @push('styles')
 <style>
-    .font-family-cairo {
+    .font-hold {
         font-family: 'Cairo', sans-serif;
     }
     

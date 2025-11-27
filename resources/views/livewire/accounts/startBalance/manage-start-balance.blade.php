@@ -105,21 +105,21 @@ new class extends Component {
                     class="table table-bordered table-sm table-striped custom-table-hover">
                     <thead class="table-light">
                         <tr class="text-center">
-                            <th style="width: 10%" class="font-family-cairo fw-bold font-14">Ã˜Â§Ã™â€žÃ™Æ’Ã™Ë†Ã˜Â¯</th>
-                            <th style="width: 20%" class="font-family-cairo fw-bold font-14">Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦</th>
-                            <th style="width: 15%" class="font-family-cairo fw-bold font-14">Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å </th>
-                            <th style="width: 15%" class="font-family-cairo fw-bold font-14">Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</th>
+                            <th style="width: 10%" class="font-hold fw-bold font-14">Ã˜Â§Ã™â€žÃ™Æ’Ã™Ë†Ã˜Â¯</th>
+                            <th style="width: 20%" class="font-hold fw-bold font-14">Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â³Ã™â€¦</th>
+                            <th style="width: 15%" class="font-hold fw-bold font-14">Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â§Ã™â€žÃ™Å </th>
+                            <th style="width: 15%" class="font-hold fw-bold font-14">Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯</th>
                         </tr>
                     </thead>
                     <tbody id="items_table_body">
                         @foreach ($formAccounts as $formAccount)
                             <tr data-item-id="{{ $formAccount['id'] }}">
                                 <td>
-                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['code'] }}
+                                    <p class="font-hold fw-bold font-16 text-center">{{ $formAccount['code'] }}
                                     </p>
                                 </td>
                                 <td>
-                                    <p class="font-family-cairo fw-bold font-16 text-center">{{ $formAccount['name'] }}
+                                    <p class="font-hold fw-bold font-16 text-center">{{ $formAccount['name'] }}
                                         - <a
                                             href="{{ route('account-movement', ['accountId' => $formAccount['id']]) }}">
                                             <i class="las la-eye fa-lg" title="Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â­Ã˜Â±Ã™Æ’Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨"></i>
@@ -127,14 +127,14 @@ new class extends Component {
                                 </td>
                                 <td>
                                     <p
-                                        class="font-family-cairo fw-bold font-16 text-center @if ($formAccount['current_start_balance'] < 0) text-danger @endif">
+                                        class="font-hold fw-bold font-16 text-center @if ($formAccount['current_start_balance'] < 0) text-danger @endif">
                                         {{ number_format($formAccount['current_start_balance'] ?? 0, 2) }}</p>
                                 </td>
                                 <td>
                                     @if (!Str::startsWith($formAccount['code'], '3101') && !Str::startsWith($formAccount['code'], '1104'))
                                         <input type="number" step="0.01"
                                             wire:model.blur="formAccounts.{{ $formAccount['id'] }}.new_start_balance"
-                                            class="form-control form-control-sm new-balance-input font-family-cairo fw-bold font-16 @if (($formAccounts[$formAccount['id']]['new_start_balance'] ?? 0) < 0) text-danger @endif"
+                                            class="form-control form-control-sm new-balance-input font-hold fw-bold font-16 @if (($formAccounts[$formAccount['id']]['new_start_balance'] ?? 0) < 0) text-danger @endif"
                                             placeholder="Ã˜Â±Ã˜ÂµÃ™Å Ã˜Â¯ Ã˜Â§Ã™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¯Ã™â€¡ Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â¯Ã™Å Ã˜Â¯" style="padding:2px;height:30px;"
                                             x-on:keydown.enter.prevent>
                                     @endif

@@ -207,7 +207,7 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">{{ __('items.item_movement_report') }}</h4>
+                <h4 class="page-title font-hold fw-bold">{{ __('items.item_movement_report') }}</h4>
             </div>
         </div>
     </div>
@@ -221,7 +221,7 @@ new class extends Component {
                         'warehouseId' => $warehouseId,
                         'fromDate' => $fromDate,
                         'toDate' => $toDate
-                    ]) }}" target="_blank" class="btn btn-outline font-family-cairo fw-bold" style="text-decoration: none;">
+                    ]) }}" target="_blank" class="btn btn-outline font-hold fw-bold" style="text-decoration: none;">
                         <i class="fas fa-print"></i>
                         {{ __('items.print_report') }}
                     </a>
@@ -232,12 +232,12 @@ new class extends Component {
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-family-cairo fw-bold">{{ __('items.search_filters') }}</h4>
+            <h4 class="font-hold fw-bold">{{ __('items.search_filters') }}</h4>
             @if ($itemId)
                 <div class="d-flex align-items-center">
-                    <span class="font-family-cairo fw-bold me-2">{{ __('items.current_balance_for_item', ['item' => $itemName]) }}:</span>
+                    <span class="font-hold fw-bold me-2">{{ __('items.current_balance_for_item', ['item' => $itemName]) }}:</span>
                     <span
-                        class="bg-soft-primary font-family-cairo fw-bold font-16">{{ number_format($this->totalQuantity) }}
+                        class="bg-soft-primary font-hold fw-bold font-16">{{ number_format($this->totalQuantity) }}
                         {{ Item::find($this->itemId)->units->first()->name }}</span>
                 </div>
             @endif
@@ -246,9 +246,9 @@ new class extends Component {
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="item" class="form-label font-family-cairo fw-bold">{{ __('items.item') }}</label>
+                        <label for="item" class="form-label font-hold fw-bold">{{ __('items.item') }}</label>
                         <div class="dropdown" wire:click.outside="hideDropdown">
-                            <input type="text" class="form-control font-family-cairo fw-bold"
+                            <input type="text" class="form-control font-hold fw-bold"
                                 placeholder="{{ __('items.search_for_item') }}" wire:model.live.debounce.300ms="searchTerm"
                                 wire:keydown.arrow-down.prevent="arrowDown" wire:keydown.arrow-up.prevent="arrowUp"
                                 wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
@@ -257,7 +257,7 @@ new class extends Component {
                                 <ul class="dropdown-menu show" style="width: 100%;">
                                     @foreach ($this->searchResults as $index => $item)
                                         <li>
-                                            <a class="font-family-cairo fw-bold dropdown-item {{ $highlightedIndex === $index ? 'active' : '' }}"
+                                            <a class="font-hold fw-bold dropdown-item {{ $highlightedIndex === $index ? 'active' : '' }}"
                                                 href="#"
                                                 wire:click.prevent="selectItem({{ $item->id }}, '{{ $item->name }}')">
                                                 {{ $item->name }}
@@ -267,7 +267,7 @@ new class extends Component {
                                 </ul>
                             @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $itemName)
                                 <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span class="dropdown-item-text font-family-cairo fw-bold text-danger">{{ __('items.no_results_for_search') }}</span></li>
+                                    <li><span class="dropdown-item-text font-hold fw-bold text-danger">{{ __('items.no_results_for_search') }}</span></li>
                                 </ul>
                             @endif
                         </div>
@@ -275,12 +275,12 @@ new class extends Component {
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="warehouse" class="form-label font-family-cairo fw-bold">{{ __('items.warehouse') }}</label>
+                        <label for="warehouse" class="form-label font-hold fw-bold">{{ __('items.warehouse') }}</label>
                         <select wire:model.live="warehouseId" id="warehouse"
-                            class="form-select font-family-cairo fw-bold" style = "height: 50px;">
-                            <option class="font-family-cairo fw-bold" value="all">{{ __('items.all_warehouses') }}</option>
+                            class="form-select font-hold fw-bold" style = "height: 50px;">
+                            <option class="font-hold fw-bold" value="all">{{ __('items.all_warehouses') }}</option>
                             @foreach ($warehouses as $id => $name)
-                                <option class="font-family-cairo fw-bold" value="{{ $id }}">
+                                <option class="font-hold fw-bold" value="{{ $id }}">
                                     {{ $name }}</option>
                             @endforeach
                         </select>
@@ -288,16 +288,16 @@ new class extends Component {
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="fromDate" class="form-label font-family-cairo fw-bold">{{ __('items.from_date') }}</label>
+                        <label for="fromDate" class="form-label font-hold fw-bold">{{ __('items.from_date') }}</label>
                         <input type="date" wire:model.live="fromDate" id="fromDate"
-                            class="form-control font-family-cairo fw-bold">
+                            class="form-control font-hold fw-bold">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="toDate" class="form-label font-family-cairo fw-bold">{{ __('items.to_date') }}</label>
+                        <label for="toDate" class="form-label font-hold fw-bold">{{ __('items.to_date') }}</label>
                         <input type="date" wire:model.live="toDate" id="toDate"
-                            class="form-control font-family-cairo fw-bold">
+                            class="form-control font-hold fw-bold">
                     </div>
                 </div>
             </div>
@@ -350,8 +350,8 @@ new class extends Component {
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body d-flex align-items-center justify-content-between">
                         <div>
-                            <p class="text-muted mb-1 font-family-cairo">{{ __('items.in') }} {{ __('items.movement_type') }}</p>
-                            <h3 class="mb-0 font-family-cairo fw-bold text-success">{{ number_format($incomingMovements->count()) }}</h3>
+                            <p class="text-muted mb-1 font-hold">{{ __('items.in') }} {{ __('items.movement_type') }}</p>
+                            <h3 class="mb-0 font-hold fw-bold text-success">{{ number_format($incomingMovements->count()) }}</h3>
                         </div>
                         <span class="avatar-sm rounded-circle bg-soft-success d-inline-flex align-items-center justify-content-center">
                             <i class="fas fa-arrow-down text-success"></i>
@@ -363,8 +363,8 @@ new class extends Component {
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body d-flex align-items-center justify-content-between">
                         <div>
-                            <p class="text-muted mb-1 font-family-cairo">{{ __('items.out') }} {{ __('items.movement_type') }}</p>
-                            <h3 class="mb-0 font-family-cairo fw-bold text-danger">{{ number_format($outgoingMovements->count()) }}</h3>
+                            <p class="text-muted mb-1 font-hold">{{ __('items.out') }} {{ __('items.movement_type') }}</p>
+                            <h3 class="mb-0 font-hold fw-bold text-danger">{{ number_format($outgoingMovements->count()) }}</h3>
                         </div>
                         <span class="avatar-sm rounded-circle bg-soft-danger d-inline-flex align-items-center justify-content-center">
                             <i class="fas fa-arrow-up text-danger"></i>
@@ -379,12 +379,12 @@ new class extends Component {
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-soft-success border-0 d-flex align-items-center justify-content-between">
                         <div>
-                            <h5 class="mb-0 font-family-cairo fw-bold text-success">
+                            <h5 class="mb-0 font-hold fw-bold text-success">
                                 <i class="fas fa-arrow-down me-2"></i>{{ __('items.in') }} - {{ __('items.movement_type') }}
                             </h5>
-                            <small class="text-muted font-family-cairo">{{ __('items.stock_received_details') }}</small>
+                            <small class="text-muted font-hold">{{ __('items.stock_received_details') }}</small>
                         </div>
-                        <span class="badge bg-success-subtle text-success font-family-cairo fw-bold">
+                        <span class="badge bg-success-subtle text-success font-hold fw-bold">
                             {{ number_format($incomingMovements->sum('qty_in')) }} {{ $defaultUnitName }}
                         </span>
                     </div>
@@ -393,43 +393,43 @@ new class extends Component {
                             <table class="table mb-0 table-centered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="font-family-cairo fw-bold">{{ __('common.date') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.operation_source') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.warehouse') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.unit') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('common.quantity') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.balance_after_movement') }}</th>
-                                        <th class="font-family-cairo fw-bold text-center">{{ __('common.actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('common.date') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.operation_source') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.warehouse') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.unit') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('common.quantity') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.balance_after_movement') }}</th>
+                                        <th class="font-hold fw-bold text-center">{{ __('common.actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($incomingMovements as $movement)
                                         <tr>
-                                            <td class="font-family-cairo fw-bold">{{ $movement->created_at->format('Y-m-d') }}</td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">{{ $movement->created_at->format('Y-m-d') }}</td>
+                                            <td class="font-hold fw-bold">
                                                 {{ $movement->pro_id }}#_{{ $this->getArabicReferenceName($movement->pro_tybe) }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 {{ AccHead::find($movement->detail_store)->aname ?? 'N/A' }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 {{ optional(App\Models\Unit::find($movement->unit_id))->name ?? $defaultUnitName }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold text-success">
+                                            <td class="font-hold fw-bold text-success">
                                                 {{ $movement->fat_quantity ?? $movement->qty_in }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 {{ number_format($movementBalances[$movement->id]['after'] ?? 0) }}
                                             </td>
                                             <td class="text-center">
-                                                <a href="{{ route('invoice.view', $movement->pro_id) }}" class="btn btn-soft-success btn-sm font-family-cairo fw-bold" target="_blank">
+                                                <a href="{{ route('invoice.view', $movement->pro_id) }}" class="btn btn-soft-success btn-sm font-hold fw-bold" target="_blank">
                                                     <i class="fas fa-eye me-1"></i>{{ __('common.view') }}
                                                 </a>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center font-family-cairo fw-bold text-muted">
+                                            <td colspan="7" class="text-center font-hold fw-bold text-muted">
                                                 {{ __('items.no_movements_for_criteria') }}
                                             </td>
                                         </tr>
@@ -445,12 +445,12 @@ new class extends Component {
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-soft-danger border-0 d-flex align-items-center justify-content-between">
                         <div>
-                            <h5 class="mb-0 font-family-cairo fw-bold text-danger">
+                            <h5 class="mb-0 font-hold fw-bold text-danger">
                                 <i class="fas fa-arrow-up me-2"></i>{{ __('items.out') }} - {{ __('items.movement_type') }}
                             </h5>
-                            <small class="text-muted font-family-cairo">{{ __('items.stock_issued_details') }}</small>
+                            <small class="text-muted font-hold">{{ __('items.stock_issued_details') }}</small>
                         </div>
-                        <span class="badge bg-danger-subtle text-danger font-family-cairo fw-bold">
+                        <span class="badge bg-danger-subtle text-danger font-hold fw-bold">
                             {{ number_format($outgoingMovements->sum('qty_out')) }} {{ $defaultUnitName }}
                         </span>
                     </div>
@@ -459,43 +459,43 @@ new class extends Component {
                             <table class="table mb-0 table-centered align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="font-family-cairo fw-bold">{{ __('common.date') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.operation_source') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.warehouse') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.unit') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('common.quantity') }}</th>
-                                        <th class="font-family-cairo fw-bold">{{ __('items.balance_after_movement') }}</th>
-                                        <th class="font-family-cairo fw-bold text-center">{{ __('common.actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('common.date') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.operation_source') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.warehouse') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.unit') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('common.quantity') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('items.balance_after_movement') }}</th>
+                                        <th class="font-hold fw-bold text-center">{{ __('common.actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($outgoingMovements as $movement)
                                         <tr>
-                                            <td class="font-family-cairo fw-bold">{{ $movement->created_at->format('Y-m-d') }}</td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">{{ $movement->created_at->format('Y-m-d') }}</td>
+                                            <td class="font-hold fw-bold">
                                                 {{ $movement->pro_id }}#_{{ $this->getArabicReferenceName($movement->pro_tybe) }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 {{ AccHead::find($movement->detail_store)->aname ?? 'N/A' }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 {{ optional(App\Models\Unit::find($movement->unit_id))->name ?? $defaultUnitName }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold text-danger">
+                                            <td class="font-hold fw-bold text-danger">
                                                 {{ $movement->fat_quantity ?? $movement->qty_out }}
                                             </td>
-                                            <td class="font-family-cairo fw-bold">
+                                            <td class="font-hold fw-bold">
                                                 {{ number_format($movementBalances[$movement->id]['after'] ?? 0) }}
                                             </td>
                                             <td class="text-center">
-                                                <a href="{{ route('invoice.view', $movement->pro_id) }}" class="btn btn-soft-danger btn-sm font-family-cairo fw-bold" target="_blank">
+                                                <a href="{{ route('invoice.view', $movement->pro_id) }}" class="btn btn-soft-danger btn-sm font-hold fw-bold" target="_blank">
                                                     <i class="fas fa-eye me-1"></i>{{ __('common.view') }}
                                                 </a>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center font-family-cairo fw-bold text-muted">
+                                            <td colspan="7" class="text-center font-hold fw-bold text-muted">
                                                 {{ __('items.no_movements_for_criteria') }}
                                             </td>
                                         </tr>
@@ -518,17 +518,17 @@ new class extends Component {
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="referenceModalLabel">ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ø±Ø¬Ø¹</h5>
+                    <h5 class="modal-title font-hold fw-bold" id="referenceModalLabel">ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ø±Ø¬Ø¹</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" wire:click="closeModal"></button>
                 </div>
                 <div class="modal-body">
                     @if ($selectedMovement && $selectedMovement->reference)
-                        <h4 class="font-family-cairo fw-bold">{{ $this->getArabicReferenceName($selectedMovement->reference_type) }} #{{ $selectedMovement->reference_id }}</h4>
-                        <table class="table font-family-cairo fw-bold">
+                        <h4 class="font-hold fw-bold">{{ $this->getArabicReferenceName($selectedMovement->reference_type) }} #{{ $selectedMovement->reference_id }}</h4>
+                        <table class="table font-hold fw-bold">
                             @foreach ($selectedMovement->reference->toArray() as $key => $value)
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
-                                    <td class="font-family-cairo fw-bold">
+                                    <th class="font-hold fw-bold">{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
+                                    <td class="font-hold fw-bold">
                                         @if (is_array($value))
                                             <pre>{{ json_encode($value, JSON_PRETTY_PRINT) }}</pre>
                                         @else
@@ -539,11 +539,11 @@ new class extends Component {
                             @endforeach
                         </table>
                     @else
-                        <p class="font-family-cairo fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙØ§ØµÙŠÙ„.</p>
+                        <p class="font-hold fw-bold">Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙØ§ØµÙŠÙ„.</p>
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary font-family-cairo fw-bold" data-bs-dismiss="modal" wire:click="closeModal">Ø¥ØºÙ„Ø§Ù‚</button>
+                    <button type="button" class="btn btn-secondary font-hold fw-bold" data-bs-dismiss="modal" wire:click="closeModal">Ø¥ØºÙ„Ø§Ù‚</button>
                 </div>
             </div>
         </div>

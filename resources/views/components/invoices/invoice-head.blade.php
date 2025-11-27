@@ -138,7 +138,7 @@
             <div class="col-lg-2" wire:key="acc2-{{ $branch_id }}">
                 <label class="form-label" style="font-size: 1em;">{{ $acc2Role }}</label>
                 <select wire:model.live="acc2_id"
-                    class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('acc2_id') is-invalid @enderror"
+                    class="form-control form-control-sm font-hold fw-bold font-14 @error('acc2_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                     @cannot('edit ' . $titles[$type]) disabled @endcannot
                     <option value="">{{ __('Select ') }} {{ $acc2Role }}</option>
@@ -156,7 +156,7 @@
             <div class="col-lg-2" wire:key="emp-{{ $branch_id }}">
                 <label for="emp_id" class="form-label" style="font-size: 1em;">{{ __('Employee') }}</label>
                 <select wire:model="emp_id"
-                    class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('emp_id') is-invalid @enderror"
+                    class="form-control form-control-sm font-hold fw-bold font-14 @error('emp_id') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                     @cannot('edit ' . $titles[$type]) disabled @endcannot
                     <option value="">{{ __('Select Employee') }}</option>
@@ -174,7 +174,7 @@
                 <div class="col-lg-2" wire:key="delivery-{{ $branch_id }}">
                     <label for="delivery_id" class="form-label" style="font-size: 1em;">{{ __('Delegate') }}</label>
                     <select wire:model="delivery_id"
-                        class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('delivery_id') is-invalid @enderror"
+                        class="form-control form-control-sm font-hold fw-bold font-14 @error('delivery_id') is-invalid @enderror"
                         style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                         @cannot('edit ' . __($titles[$type])) disabled @endcannot>
                         <option value="">{{ __('Select Delegate') }}</option>
@@ -193,7 +193,7 @@
             <div class="col-lg-1">
                 <label for="pro_date" class="form-label" style="font-size: 1em;">{{ __('Date') }}</label>
                 <input type="date" wire:model="pro_date"
-                    class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('pro_date') is-invalid @enderror"
+                    class="form-control form-control-sm font-hold fw-bold font-14 @error('pro_date') is-invalid @enderror"
                     style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                     @if (setting('invoice_prevent_date_edit') ||
                             !auth()->user()->can('edit ' . $titles[$type])) readonly @endif
@@ -209,7 +209,7 @@
                         <label for="accural_date" class="form-label"
                             style="font-size: 1em;">{{ __('Due Date') }}</label>
                         <input type="date" wire:model="accural_date"
-                            class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('accural_date') is-invalid @enderror"
+                            class="form-control form-control-sm font-hold fw-bold font-14 @error('accural_date') is-invalid @enderror"
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                             @cannot('edit ' . $titles[$type]) readonly @endcannot
                         @error('accural_date')
@@ -223,7 +223,7 @@
             <div class="col-lg-1">
                 <label for="pro_id" class="form-label" style="font-size: 1em;">{{ __('Invoice Number') }}</label>
                 <input type="number" wire:model="pro_id"
-                    class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('pro_id') is-invalid @enderror"
+                    class="form-control form-control-sm font-hold fw-bold font-14 @error('pro_id') is-invalid @enderror"
                     readonly style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
                 @error('pro_id')
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
@@ -235,7 +235,7 @@
                 <div class="col-lg-1">
                     <label for="serial_number" class="form-label" style="font-size: 1em;">{{ __('S.N') }}</label>
                     <input type="text" wire:model="serial_number"
-                        class="form-control form-control-sm font-family-cairo fw-bold font-14 @error('serial_number') is-invalid @enderror"
+                        class="form-control form-control-sm font-hold fw-bold font-14 @error('serial_number') is-invalid @enderror"
                         style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                         @cannot('edit ' . $titles[$type]) readonly @endcannot
                     @error('serial_number')
@@ -256,7 +256,7 @@
             new TomSelect(select, {
                 plugins: {
                     dropdown_input: {
-                        class: 'font-family-cairo fw-bold font-14'
+                        class: 'font-hold fw-bold font-14'
                     },
                     remove_button: {
                         title: "{{ __('Remove Selected') }}"

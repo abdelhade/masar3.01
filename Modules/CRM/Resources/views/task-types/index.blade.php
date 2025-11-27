@@ -16,7 +16,7 @@
     <div class="row">
         <div class="col-lg-12">
             @can('create Task Types')
-                <a href="{{ route('tasks.types.create') }}" class="btn btn-main font-family-cairo fw-bold">
+                <a href="{{ route('tasks.types.create') }}" class="btn btn-main font-hold fw-bold">
                     {{ __('Add New') }} <i class="fas fa-plus me-2"></i>
                 </a>
             @endcan

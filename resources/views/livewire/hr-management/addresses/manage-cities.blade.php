@@ -150,7 +150,7 @@ new class extends Component {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     @can('create Cities')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             <i class="fas fa-plus me-2"></i>
                             {{ __('Add City') }}
                         </button>
@@ -167,22 +167,22 @@ new class extends Component {
                         <table class="table table-striped mb-0">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('Name') }}</th>
-                                    <th class="font-family-cairo fw-bold">{{ __('State') }}</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">{{ __('Name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('State') }}</th>
                                     @canany(['edit Cities', 'delete Cities'])
-                                        <th class="font-family-cairo fw-bold">{{ __('Actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($this->cities as $city)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $city->title }}</td>
-                                        <td class="font-family-cairo fw-bold text-center">{{ $city->state->title ?? '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $city->title }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $city->state->title ?? '-' }}</td>
                                         @canany(['edit Cities', 'delete Cities'])
-                                            <td class="font-family-cairo fw-bold text-center">
+                                            <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
                                                     @can('edit Cities')
                                                         <button type="button" 
@@ -208,7 +208,7 @@ new class extends Component {
                                 @empty
                                     <tr>
                                         <td colspan="{{ auth()->user()->canany(['edit Cities', 'delete Cities']) ? '4' : '3' }}" 
-                                            class="text-center font-family-cairo fw-bold py-4">
+                                            class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
                                                 {{ __('No cities found.') }}
@@ -235,7 +235,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="cityModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="cityModalLabel">
                         {{ $isEdit ? __('Edit City') : __('Add City') }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -243,11 +243,11 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit.prevent="save">
                         <div class="mb-3">
-                            <label for="title" class="form-label font-family-cairo fw-bold">
+                            <label for="title" class="form-label font-hold fw-bold">
                                 {{ __('Name') }} <span class="text-danger">*</span>
                             </label>
                             <input type="text"
-                                   class="form-control @error('title') is-invalid @enderror font-family-cairo fw-bold"
+                                   class="form-control @error('title') is-invalid @enderror font-hold fw-bold"
                                    id="title" 
                                    wire:model.blur="title" 
                                    required>
@@ -256,10 +256,10 @@ new class extends Component {
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="state_id" class="form-label font-family-cairo fw-bold">
+                            <label for="state_id" class="form-label font-hold fw-bold">
                                 {{ __('State') }} <span class="text-danger">*</span>
                             </label>
-                            <select class="form-control @error('state_id') is-invalid @enderror font-family-cairo fw-bold"
+                            <select class="form-control @error('state_id') is-invalid @enderror font-hold fw-bold"
                                     id="state_id" 
                                     wire:model.blur="state_id" 
                                     required>

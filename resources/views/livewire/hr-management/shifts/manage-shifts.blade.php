@@ -181,13 +181,13 @@ new class extends Component {
 
     <div class="d-flex justify-content-between align-items-center mb-2">
         @can('create Shifts')
-            <button class="btn btn-main font-family-cairo fw-bold" wire:click="create">
+            <button class="btn btn-main font-hold fw-bold" wire:click="create">
                 <i class="las la-plus me-2"></i> {{ __('hr.add_shift') }}
             </button>
         @endcan
         <div class="mb-3 col-md-4">
             <input type="text" 
-                   class="form-control font-family-cairo" 
+                   class="form-control font-hold" 
                    placeholder="{{ __('hr.search_by_title') }}" 
                    wire:model.live.debounce.300ms="search">
         </div>
@@ -205,45 +205,45 @@ new class extends Component {
                 <table id="shifts-table" class="table text-center table-striped mb-0 overflow-x-auto">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th class="font-family-cairo fw-bold">{{ __('Name') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Start Time') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Beginning Check In') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Ending Check In') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Allowed Late Minutes') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('End Time') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Beginning Check Out') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Ending Check Out') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Allowed Early Leave Minutes') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Shift Type') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Days') }}</th>
-                            <th class="font-family-cairo fw-bold">{{ __('Notes') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Name') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Start Time') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Beginning Check In') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Ending Check In') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Allowed Late Minutes') }}</th>
+                            <th class="font-hold fw-bold">{{ __('End Time') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Beginning Check Out') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Ending Check Out') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Allowed Early Leave Minutes') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Shift Type') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Days') }}</th>
+                            <th class="font-hold fw-bold">{{ __('Notes') }}</th>
                             @canany(['edit Shifts', 'delete Shifts'])
-                                <th class="font-family-cairo fw-bold">{{ __('hr.actions') }}</th>
+                                <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                             @endcanany
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->shifts as $shift)
                             <tr>
-                                <td class="font-family-cairo fw-bold">{{ $shift->name }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->start_time }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->beginning_check_in ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->ending_check_in ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->allowed_late_minutes ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->end_time }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->beginning_check_out ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->ending_check_out ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->allowed_early_leave_minutes ?? '-' }}</td>
-                                <td class="font-family-cairo fw-bold">
+                                <td class="font-hold fw-bold">{{ $shift->name }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->start_time }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->beginning_check_in ?? '-' }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->ending_check_in ?? '-' }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->allowed_late_minutes ?? '-' }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->end_time }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->beginning_check_out ?? '-' }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->ending_check_out ?? '-' }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->allowed_early_leave_minutes ?? '-' }}</td>
+                                <td class="font-hold fw-bold">
                                     {{ $shiftTypes[$shift->shift_type] ?? $shift->shift_type }}</td>
-                                <td class="font-family-cairo fw-bold">
+                                <td class="font-hold fw-bold">
                                     @foreach (json_decode($shift->days, true) as $day)
                                         <span class="badge bg-info">{{ $weekDays[$day] ?? $day }}</span>
                                     @endforeach
                                 </td>
-                                <td class="font-family-cairo fw-bold">{{ $shift->notes }}</td>
+                                <td class="font-hold fw-bold">{{ $shift->notes }}</td>
                                 @canany(['edit Shifts', 'delete Shifts'])
-                                    <td class="font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">
                                         <div class="btn-group" role="group">
                                             @can('edit Shifts')
                                                 <button type="button" 
@@ -271,7 +271,7 @@ new class extends Component {
                         @empty
                             <tr>
                                 <td colspan="{{ auth()->user()->canany(['edit Shifts', 'delete Shifts']) ? '13' : '12' }}" 
-                                    class="text-center font-family-cairo fw-bold py-4">
+                                    class="text-center font-hold fw-bold py-4">
                                     <div class="alert alert-info mb-0">
                                         <i class="las la-info-circle me-2"></i>
                                         {{ __('hr.no_shifts_found') }}
@@ -292,14 +292,14 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold">{{ $isEdit ? __('hr.edit_shift') : __('hr.add_shift') }}</h5>
+                    <h5 class="modal-title font-hold fw-bold">{{ $isEdit ? __('hr.edit_shift') : __('hr.add_shift') }}</h5>
                     <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                 </div>
                 <form wire:submit.prevent="save">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label font-family-cairo fw-bold">{{ __('hr.shift_name') }} <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control font-family-cairo" wire:model.blur="name" required>
+                            <label class="form-label font-hold fw-bold">{{ __('hr.shift_name') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control font-hold" wire:model.blur="name" required>
                             @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -400,10 +400,10 @@ new class extends Component {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary font-family-cairo"
+                        <button type="button" class="btn btn-secondary font-hold"
                             wire:click="$set('showModal', false)">{{ __('hr.cancel') }}</button>
                         <button type="submit"
-                            class="btn btn-main font-family-cairo">{{ $isEdit ? __('hr.update') : __('hr.save') }}</button>
+                            class="btn btn-main font-hold">{{ $isEdit ? __('hr.update') : __('hr.save') }}</button>
                     </div>
                 </form>
             </div>

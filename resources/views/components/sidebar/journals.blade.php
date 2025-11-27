@@ -50,14 +50,14 @@
 @endcan
 {{-- الرصيد الافتتاحى للحسابات --}}
 <li class="nav-item">
-    <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.startBalance') }}">
+    <a class="nav-link font-hold fw-bold" href="{{ route('accounts.startBalance') }}">
         <i class="ti-control-record"></i>{{ __('navigation.opening_balance_accounts') }}
     </a>
 </li>
 {{-- الرصيد الافتتاحى للحسابات --}}
 {{-- account movement --}}
 <li class="nav-item">
-    <a class="nav-link font-family-cairo fw-bold" href="{{ route('account-movement') }}">
+    <a class="nav-link font-hold fw-bold" href="{{ route('account-movement') }}">
         <i class="ti-control-record"></i>{{ __('navigation.account_movement_report') }}
     </a>
 </li>
@@ -65,7 +65,7 @@
 {{-- account movement --}}
 {{-- balance sheet --}}
 <li class="nav-item">
-    <a class="nav-link font-family-cairo fw-bold" href="{{ route('accounts.balanceSheet') }}">
+    <a class="nav-link font-hold fw-bold" href="{{ route('accounts.balanceSheet') }}">
         <i class="ti-control-record"></i>{{ __('navigation.balance_sheet') }}
     </a>
 </li>

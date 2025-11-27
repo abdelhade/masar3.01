@@ -6,7 +6,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-primary text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-user me-2"></i>{{ __('بيانات شخصية') }}
                         </h6>
                     </div>
@@ -86,7 +86,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-info text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-map-marker-alt me-2"></i>{{ __('بيانات الموقع') }}
                         </h6>
                     </div>
@@ -210,7 +210,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-warning text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-briefcase me-2"></i>{{ __('بيانات الوظيفة') }}
                         </h6>
                     </div>
@@ -265,7 +265,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-success text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-money-bill-wave me-2"></i>{{ __('بيانات المرتبات والحضور') }}
                         </h6>
                     </div>
@@ -336,7 +336,7 @@
             <div class="col-12 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-gradient-primary text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-calculator me-2"></i>{{ __('حسابات الموظف') }}
                         </h6>
                     </div>
@@ -363,7 +363,7 @@
             <div class="col-12 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-gradient-primary text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-chart-line me-2"></i>{{ __('معدلات الأداء') }}
                         </h6>
                     </div>
@@ -426,7 +426,7 @@
             <div class="col-12 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-gradient-primary text-white py-2">
-                        <h6 class="card-title mb-0 fw-bold font-family-cairo">
+                        <h6 class="card-title mb-0 fw-bold font-hold">
                             <i class="fas fa-calendar-check me-2"></i>{{ __('رصيد الإجازات') }}
                         </h6>
                     </div>

@@ -31,11 +31,11 @@
 
 
                     <div class="card-footer text-end">
-                        <button type="submit" class="btn btn-primary font-family-cairo fw-bold">
+                        <button type="submit" class="btn btn-primary font-hold fw-bold">
                             <i class="fas fa-save me-1"></i> {{ __('Save Changes') }}
                         </button>
                         <a href="{{ route('invoice-templates.index') }}"
-                            class="btn btn-secondary font-family-cairo fw-bold">
+                            class="btn btn-secondary font-hold fw-bold">
                             <i class="fas fa-times me-1"></i> {{ __('Cancel') }}
                         </a>
                     </div>

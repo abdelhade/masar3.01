@@ -17,7 +17,7 @@
     <div class="row">
         <div class="col-lg-12">
             <a href="{{ route('periodic.maintenances.create') }}" type="button"
-                class="btn btn-primary font-family-cairo fw-bold">
+                class="btn btn-primary font-hold fw-bold">
                 {{ __('إضافة جدول صيانة دوري') }}
                 <i class="fas fa-plus me-2"></i>
             </a>

@@ -13,7 +13,7 @@
     <div class="row">
         <div class="col-lg-12">
             @can('create Leases')
-                <a href="{{ route('rentals.leases.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+                <a href="{{ route('rentals.leases.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                     {{ __('Add New Lease') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>

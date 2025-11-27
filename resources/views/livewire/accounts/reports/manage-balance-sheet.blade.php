@@ -292,7 +292,7 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©</h4>
+                <h4 class="page-title font-hold fw-bold">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©</h4>
             </div>
         </div>
     </div>
@@ -305,24 +305,24 @@ new class extends Component {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="font-family-cairo fw-bold">Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©:</label>
+                                <label class="font-hold fw-bold">Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©:</label>
                                 <input type="text" wire:model="companyName" class="form-control"
                                     placeholder="Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©">
                             </div>
                         </div>
                         {{-- <div class="col-md-6">
                             <div class="form-group">
-                                <label class="font-family-cairo fw-bold">ØªØ§Ø±ÙŠØ® Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©:</label>
+                                <label class="font-hold fw-bold">ØªØ§Ø±ÙŠØ® Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©:</label>
                                 <input type="date" wire:model="balanceSheetDate" class="form-control">
                             </div>
                         </div> --}}
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <button wire:click="refreshBalanceSheet" class="btn btn-main font-family-cairo">
+                            <button wire:click="refreshBalanceSheet" class="btn btn-main font-hold">
                                 <i class="fas fa-sync-alt"></i> ØªØ­Ø¯ÙŠØ« Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©
                             </button>
-                            <button wire:click="exportBalanceSheet" class="btn btn-success font-family-cairo ms-2">
+                            <button wire:click="exportBalanceSheet" class="btn btn-success font-hold ms-2">
                                 <i class="fas fa-download"></i> ØªØµØ¯ÙŠØ± Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©
                             </button>
                         </div>
@@ -337,154 +337,154 @@ new class extends Component {
         <div class="col-9 mx-auto">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title font-family-cairo fw-bold">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ© -
+                    <h5 class="card-title font-hold fw-bold">Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ© -
                         {{ $companyName ?: 'Ø§Ø³Ù… Ø§Ù„Ø´Ø±ÙƒØ©' }}</h5>
-                    <p class="text-muted font-family-cairo">ØªØ§Ø±ÙŠØ® Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©:
+                    <p class="text-muted font-hold">ØªØ§Ø±ÙŠØ® Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ©:
                         {{ \Carbon\Carbon::parse($balanceSheetDate)->format('Y-m-d') }}</p>
-                    <p class="text-muted font-family-cairo">(Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¨Ø§Ù„Øº Ø¨Ø§Ù„Ø¹Ù…Ù„Ø© Ø§Ù„Ù…Ø­Ù„ÙŠØ©)</p>
+                    <p class="text-muted font-hold">(Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø¨Ø§Ù„Øº Ø¨Ø§Ù„Ø¹Ù…Ù„Ø© Ø§Ù„Ù…Ø­Ù„ÙŠØ©)</p>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
                             <thead class="table-dark">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold text-center text-white" style="width: 60%">Ø§Ù„Ø¨Ù†Ø¯</th>
-                                    <th class="font-family-cairo fw-bold text-center text-white" style="width: 40%">Ø§Ù„Ù…Ø¨Ù„Øº</th>
+                                    <th class="font-hold fw-bold text-center text-white" style="width: 60%">Ø§Ù„Ø¨Ù†Ø¯</th>
+                                    <th class="font-hold fw-bold text-center text-white" style="width: 40%">Ø§Ù„Ù…Ø¨Ù„Øº</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- Ø§Ù„Ø£ØµÙˆÙ„ (Assets) -->
                                 <tr class="table-primary">
-                                    <td colspan="2" class="font-family-cairo fw-bold fs-5">Ø§Ù„Ø£ØµÙˆÙ„ (Assets)</td>
+                                    <td colspan="2" class="font-hold fw-bold fs-5">Ø§Ù„Ø£ØµÙˆÙ„ (Assets)</td>
                                 </tr>
                                 
                                 <!-- Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Current Assets)</td>
+                                    <td class="font-hold fw-bold">Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Current Assets)</td>
                                     <td></td>
                                 </tr>
                                 
                                 @foreach ($currentAssets as $asset)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold" style="padding-right: 30px;">{{ $asset['name'] }}
+                                        <td class="font-hold fw-bold" style="padding-right: 30px;">{{ $asset['name'] }}
                                         </td>
-                                        <td class="text-end font-family-cairo fw-bold">{{ number_format($asset['balance'], 2) }}
+                                        <td class="text-end font-hold fw-bold">{{ number_format($asset['balance'], 2) }}
                                         </td>
                                     </tr>
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
-                                    <td class="text-end font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="text-end font-hold fw-bold">
                                         {{ number_format($currentAssetsTotal, 2) }}</td>
                                 </tr>
                                 
                                 <!-- Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Non-Current Assets)</td>
+                                    <td class="font-hold fw-bold">Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Non-Current Assets)</td>
                                     <td></td>
                                 </tr>
                                 
                                 @foreach ($nonCurrentAssets as $asset)
                                     <tr>
-                                        <td class="font-family-cairo" style="padding-right: 30px;">{{ $asset['name'] }}
+                                        <td class="font-hold" style="padding-right: 30px;">{{ $asset['name'] }}
                                         </td>
-                                        <td class="text-end font-family-cairo">{{ number_format($asset['balance'], 2) }}
+                                        <td class="text-end font-hold">{{ number_format($asset['balance'], 2) }}
                                         </td>
                                     </tr>
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
-                                    <td class="text-end font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="text-end font-hold fw-bold">
                                         {{ number_format($nonCurrentAssetsTotal, 2) }}</td>
                                 </tr>
                                 
                                 <tr class="table-success">
-                                    <td class="font-family-cairo fw-bold fs-5">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„</td>
-                                    <td class="text-end font-family-cairo fw-bold fs-5">
+                                    <td class="font-hold fw-bold fs-5">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„</td>
+                                    <td class="text-end font-hold fw-bold fs-5">
                                         {{ number_format($totalAssets, 2) }}</td>
                                 </tr>
                                 
                                 <!-- Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© -->
                                 <tr class="table-primary">
-                                    <td colspan="2" class="font-family-cairo fw-bold fs-5">Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©
+                                    <td colspan="2" class="font-hold fw-bold fs-5">Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©
                                         (Liabilities & Equity)</td>
                                 </tr>
                                 
                                 <!-- Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Current Liabilities)</td>
+                                    <td class="font-hold fw-bold">Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Current Liabilities)</td>
                                     <td></td>
                                 </tr>
                                 
                                 @foreach ($currentLiabilities as $liability)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold" style="padding-right: 30px;">
+                                        <td class="font-hold fw-bold" style="padding-right: 30px;">
                                             {{ $liability['name'] }}</td>
-                                        <td class="text-end font-family-cairo fw-bold">
+                                        <td class="text-end font-hold fw-bold">
                                             {{ number_format($liability['balance'], 2) }}</td>
                                     </tr>
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
-                                    <td class="text-end font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="text-end font-hold fw-bold">
                                         {{ number_format($currentLiabilitiesTotal, 2) }}</td>
                                 </tr>
                                 
                                 <!-- Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Non-Current Liabilities)
+                                    <td class="font-hold fw-bold">Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø© (Non-Current Liabilities)
                                     </td>
                                     <td></td>
                                 </tr>
                                 
                                 @foreach ($nonCurrentLiabilities as $liability)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold" style="padding-right: 30px;">
+                                        <td class="font-hold fw-bold" style="padding-right: 30px;">
                                             {{ $liability['name'] }}</td>
-                                        <td class="text-end font-family-cairo fw-bold">
+                                        <td class="text-end font-hold fw-bold">
                                             {{ number_format($liability['balance'], 2) }}</td>
                                     </tr>
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
-                                    <td class="text-end font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… ØºÙŠØ± Ø§Ù„Ù…ØªØ¯Ø§ÙˆÙ„Ø©</td>
+                                    <td class="text-end font-hold fw-bold">
                                         {{ number_format($nonCurrentLiabilitiesTotal, 2) }}</td>
                                 </tr>
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ…</td>
-                                    <td class="text-end font-family-cairo fw-bold">
+                                    <td class="font-hold fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ…</td>
+                                    <td class="text-end font-hold fw-bold">
                                         {{ number_format($totalLiabilities, 2) }}</td>
                                 </tr>
                                 
                                 <!-- Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© -->
                                 <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© (Equity)</td>
+                                    <td class="font-hold fw-bold">Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ© (Equity)</td>
                                     <td></td>
                                 </tr>
                                 
                                 @foreach ($equity as $equityItem)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold" style="padding-right: 30px;">
+                                        <td class="font-hold fw-bold" style="padding-right: 30px;">
                                             {{ $equityItem['name'] }}</td>
-                                        <td class="text-end font-family-cairo fw-bold">
+                                        <td class="text-end font-hold fw-bold">
                                             {{ number_format($equityItem['balance'], 2) }}</td>
                                     </tr>
                                 @endforeach
                                 
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©</td>
-                                    <td class="text-end font-family-cairo fw-bold">{{ number_format($totalEquity, 2) }}
+                                    <td class="font-hold fw-bold">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©</td>
+                                    <td class="text-end font-hold fw-bold">{{ number_format($totalEquity, 2) }}
                                     </td>
                                 </tr>
                                 
                                 <tr class="table-success">
-                                    <td class="font-family-cairo fw-bold fs-5">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©</td>
-                                    <td class="text-end font-family-cairo fw-bold fs-5">
+                                    <td class="font-hold fw-bold fs-5">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø®ØµÙˆÙ… ÙˆØ­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙŠØ©</td>
+                                    <td class="text-end font-hold fw-bold fs-5">
                                         {{ number_format($totalLiabilities + $totalEquity, 2) }}</td>
                                 </tr>
                             </tbody>
@@ -496,7 +496,7 @@ new class extends Component {
                         <div class="col-12">
                             <div
                                 class="alert {{ $totalAssets == $totalLiabilities + $totalEquity ? 'alert-success' : 'alert-danger' }}">
-                                <h6 class="font-family-cairo fw-bold">
+                                <h6 class="font-hold fw-bold">
                                     Ù…Ø¹Ø§Ø¯Ù„Ø© Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© Ø§Ù„Ø¹Ù…ÙˆÙ…ÙŠØ©:
                                     Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£ØµÙˆÙ„ ({{ number_format($totalAssets, 2) }})
                                     {{ $totalAssets == $totalLiabilities + $totalEquity ? '=' : 'â‰ ' }}
@@ -504,7 +504,7 @@ new class extends Component {
                                     ({{ number_format($totalLiabilities + $totalEquity, 2) }})
                                 </h6>
                                 @if ($totalAssets != $totalLiabilities + $totalEquity)
-                                    <p class="font-family-cairo text-danger">
+                                    <p class="font-hold text-danger">
                                         ØªØ­Ø°ÙŠØ±: Ø§Ù„Ù…ÙŠØ²Ø§Ù†ÙŠØ© ØºÙŠØ± Ù…ØªÙˆØ§Ø²Ù†Ø©. Ø§Ù„ÙØ±Ù‚:
                                         {{ number_format($totalAssets - ($totalLiabilities + $totalEquity), 2) }}
                                     </p>
@@ -518,7 +518,7 @@ new class extends Component {
     </div>
 
     <style>
-    .font-family-cairo {
+    .font-hold {
         font-family: 'Cairo', sans-serif;
     }
 

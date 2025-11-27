@@ -18,7 +18,7 @@
 
             {{-- زرار الإضافة --}}
             {{-- @can('project-types-create') --}}
-            <a href="{{ route('project.types.create') }}" type="button" class="btn btn-primary font-family-cairo fw-bold">
+            <a href="{{ route('project.types.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('general.add_project_type') }}
                 <i class="fas fa-plus me-2"></i>
             </a>

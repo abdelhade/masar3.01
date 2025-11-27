@@ -90,7 +90,7 @@ new class extends Component {
         @endif
         <div class="col-lg-12">
                   @can(abilities: 'create prices')
-                        <button wire:click="create" type="button" class="btn btn-main font-family-cairo fw-bold">
+                        <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             {{ __('Add New') }}
                             <i class="fas fa-plus me-2"></i>
                         </button>
@@ -104,10 +104,10 @@ new class extends Component {
                         <table class="table table-striped mb-0 text-center" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th class="font-family-cairo fw-bold">#</th>
-                                    <th class="font-family-cairo fw-bold">الاسم</th>
+                                    <th class="font-hold fw-bold">#</th>
+                                    <th class="font-hold fw-bold">الاسم</th>
                                     @canany(['edit prices', 'delete prices'])
-                                        <th class="font-family-cairo fw-bold">العمليات</th>
+                                        <th class="font-hold fw-bold">العمليات</th>
                                     @endcanany
 
                                 </tr>
@@ -115,8 +115,8 @@ new class extends Component {
                             <tbody>
                                 @forelse ($prices as $price)
                                     <tr>
-                                        <td class="font-family-cairo fw-bold">{{ $loop->iteration }}</td>
-                                        <td class="font-family-cairo fw-bold">{{ $price->name }}</td>
+                                        <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
+                                        <td class="font-hold fw-bold">{{ $price->name }}</td>
                                         @canany(['edit prices', 'delete prices'])
                                             <td>
                                                 @can('edit prices')
@@ -158,7 +158,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title font-family-cairo fw-bold" id="priceModalLabel">
+                    <h5 class="modal-title font-hold fw-bold" id="priceModalLabel">
                         {{ $isEdit ? 'تعديل سعر' : 'إضافة سعر جديد' }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -166,9 +166,9 @@ new class extends Component {
                 <div class="modal-body">
                     <form wire:submit="save">
                         <div class="mb-3">
-                            <label for="name" class="form-label font-family-cairo fw-bold">الاسم</label>
+                            <label for="name" class="form-label font-hold fw-bold">الاسم</label>
                             <input type="text"
-                                class="form-control @error('name') is-invalid @enderror font-family-cairo fw-bold"
+                                class="form-control @error('name') is-invalid @enderror font-hold fw-bold"
                                 id="name" wire:model="name">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
