@@ -1,8 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Modules\Accounts\Http\Controllers\AccountsController;
+declare(strict_types=1);
 
+use Illuminate\Support\Facades\Route;
+
+// API routes for Accounts module
+// Note: API endpoints can be added here when needed
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('accounts', AccountsController::class)->names('accounts');
+    // API routes will be added here as needed
 });

@@ -1130,7 +1130,7 @@ new class extends Component {
                     @endif
 
                     {{-- Actions Section --}}
-                    @canany(['ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø£ØµÙ†Ø§Ù', 'Ø­Ø°Ù Ø§Ù„Ø£ØµÙ†Ø§Ù'])
+                    @canany(['edit Categories', 'delete Categories'])
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12">
