@@ -163,7 +163,7 @@
                                                         class="list-group-item list-group-item-action permission-category text-end {{ $loop->first ? 'active' : '' }}"
                                                         data-category="{{ Str::slug($categoryName) }}">
                                                         <i class="fas fa-folder me-2"></i>
-                                                        {{ ucfirst($categoryName) }}
+                                                        {{ __(ucfirst($categoryName)) }}
                                                         <span
                                                             class="badge bg-primary float-start">{{ $perms->count() }}</span>
                                                     </button>
@@ -212,7 +212,7 @@
                                                                     @foreach ($grouped as $title => $actions)
                                                                         <tr>
                                                                             <td class="text-start fw-semibold">
-                                                                                {{ ucfirst($title) }}</td>
+                                                                                {{ __(ucfirst($title)) }}</td>
 
                                                                             @php
                                                                                 $actionOrder = [
