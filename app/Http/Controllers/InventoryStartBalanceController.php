@@ -46,7 +46,7 @@ class InventoryStartBalanceController extends Controller
         $page = request()->get('page', 1);
 
         $itemList = Item::with('units')
-            ->select('id', 'name')
+            ->select('id', 'name', 'code')
             ->paginate(20)
             ->through(function ($item) use ($storeId) {
                 $item->opening_balance = $this->calculateItemOpeningBalance($item->id, $storeId);

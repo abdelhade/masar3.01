@@ -1,6 +1,5 @@
 @extends('admin.dashboard')
 
-
 @section('sidebar')
     @if (in_array($invoiceType, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')
@@ -10,16 +9,16 @@
         @include('components.sidebar.inventory-invoices')
     @endif
 @endsection
+
 @section('content')
     @include('components.breadcrumb', [
         'title' => $invoiceTitle,
         'items' => [
             ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
-            ['label' => $currentSection],
-            ['label' => $invoiceTitle],
+            ['label' => __($currentSection)],
+            ['label' => __($invoiceTitle)],
         ],
     ])
-
 
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -28,19 +27,18 @@
         </div>
     @endif
 
-
     <div class="row mb-4">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title mb-0">{{ $invoiceTitle }}</h5>
+                        <h5 class="card-title mb-0">{{ __($invoiceTitle) }}</h5>
 
                         @can('create ' . $invoiceTitle)
                             <a href="{{ url('/invoices/create?type=' . $invoiceType . '&q=' . md5($invoiceType)) }}"
                                 class="btn btn-main">
                                 <i class="las la-plus me-1"></i>
-                                {{ __('Add') }} {{ $invoiceTitle }}
+                                {{ __('Add') }} {{ __($invoiceTitle) }}
                             </a>
                         @endcan
                     </div>
@@ -70,17 +68,14 @@
         </div>
     </div>
 
-
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
 
-
                     <x-table-export-actions table-id="invoices-table" filename="{{ Str::slug($invoiceTitle) }}"
                         excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
                         print-label="{{ __('Print') }}" />
-
 
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table id="invoices-table" class="table table-striped mb-0" style="min-width: 1200px;">
@@ -204,13 +199,14 @@
                                                 @if ($invoice->pro_type == 25)
                                                     <button type="button" class="btn btn-info btn-icon-square-sm"
                                                         title="{{ __('Manufacturing Details') }}"
-                                                        onclick='Livewire.dispatch("openManufacturingModal", { items: {{ json_encode($invoice->operationItems->map(fn($item) => ["id" => $item->item_id, "name" => $item->item->name ?? "Unknown", "qty" => $item->qty_in ?? $item->qty])->values()) }} })'>
+                                                        onclick='Livewire.dispatch("openManufacturingModal", { items: {{ json_encode($invoice->operationItems->map(fn($item) => ['id' => $item->item_id, 'name' => $item->item->name ?? 'Unknown', 'qty' => $item->qty_in ?? $item->qty])->values()) }} })'>
                                                         <i class="fas fa-industry"></i>
                                                     </button>
                                                 @endif
 
                                                 @can('delete ' . $titles[$invoice->pro_type])
-                                                    <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST"
+                                                    <form action="{{ route('invoices.destroy', $invoice->id) }}"
+                                                        method="POST"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete this invoice?') }}');">
                                                         @csrf
                                                         @method('DELETE')
@@ -229,7 +225,7 @@
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
-                                                {{ __('No') }} {{ $invoiceTitle }}
+                                                {{ __('No') }} {{ __($invoiceTitle) }}
                                                 {{ __('found for this date range') }}
                                             </div>
                                         </td>
