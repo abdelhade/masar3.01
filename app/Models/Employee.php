@@ -2,18 +2,19 @@
 
 namespace App\Models;
 
-use Modules\Branches\Models\Branch;
-use Modules\Accounts\Models\AccHead;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Accounts\Models\AccHead;
+use Modules\Branches\Models\Branch;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Employee extends Model implements HasMedia
 {
     use InteractsWithMedia;
+
     protected $table = 'employees';
 
     protected $casts = [
@@ -67,15 +68,17 @@ class Employee extends Model implements HasMedia
     {
         if (empty($value)) {
             $this->attributes['marital_status'] = null;
+
             return;
         }
-        
+
         // If value is already in Arabic (from database enum), keep it
         if (in_array($value, self::$maritalStatusMap)) {
             $this->attributes['marital_status'] = $value;
+
             return;
         }
-        
+
         // Convert English to Arabic
         if (isset(self::$maritalStatusMap[$value])) {
             $this->attributes['marital_status'] = self::$maritalStatusMap[$value];
@@ -88,15 +91,17 @@ class Employee extends Model implements HasMedia
     {
         if (empty($value)) {
             $this->attributes['education'] = null;
+
             return;
         }
-        
+
         // If value is already in Arabic (from database enum), keep it
         if (in_array($value, self::$educationMap)) {
             $this->attributes['education'] = $value;
+
             return;
         }
-        
+
         // Convert English to Arabic
         if (isset(self::$educationMap[$value])) {
             $this->attributes['education'] = self::$educationMap[$value];
@@ -109,15 +114,17 @@ class Employee extends Model implements HasMedia
     {
         if (empty($value)) {
             $this->attributes['status'] = 'مفعل'; // Default
+
             return;
         }
-        
+
         // If value is already in Arabic (from database enum), keep it
         if (in_array($value, self::$statusMap)) {
             $this->attributes['status'] = $value;
+
             return;
         }
-        
+
         // Convert English to Arabic
         if (isset(self::$statusMap[$value])) {
             $this->attributes['status'] = self::$statusMap[$value];
@@ -131,21 +138,23 @@ class Employee extends Model implements HasMedia
     // Marital status and education forms use English, so convert to English
     public function getMaritalStatusAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
         // Convert Arabic (from DB) to English (form expects English)
         $reverseMap = self::getMaritalStatusReverseMap();
+
         return $reverseMap[$value] ?? $value;
     }
 
     public function getEducationAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
         // Convert Arabic (from DB) to English (form expects English)
         $reverseMap = self::getEducationReverseMap();
+
         return $reverseMap[$value] ?? $value;
     }
 
@@ -154,25 +163,27 @@ class Employee extends Model implements HasMedia
         // Return Arabic value directly (form expects Arabic)
         return $value ?: 'مفعل'; // Default to Arabic
     }
-    
+
     // Helper methods to get English values when needed
     public function getMaritalStatusEnglishAttribute(): ?string
     {
         $value = $this->attributes['marital_status'] ?? null;
-        if (!$value) {
+        if (! $value) {
             return null;
         }
         $reverseMap = self::getMaritalStatusReverseMap();
+
         return $reverseMap[$value] ?? $value;
     }
 
     public function getEducationEnglishAttribute(): ?string
     {
         $value = $this->attributes['education'] ?? null;
-        if (!$value) {
+        if (! $value) {
             return null;
         }
         $reverseMap = self::getEducationReverseMap();
+
         return $reverseMap[$value] ?? $value;
     }
 
@@ -180,6 +191,7 @@ class Employee extends Model implements HasMedia
     {
         $value = $this->attributes['status'] ?? 'مفعل';
         $reverseMap = self::getStatusReverseMap();
+
         return $reverseMap[$value] ?? 'active';
     }
 
@@ -351,6 +363,7 @@ class Employee extends Model implements HasMedia
     {
         // Check raw database value directly (bypass accessor)
         $rawStatus = $this->attributes['status'] ?? null;
+
         return $rawStatus === 'مفعل' || $rawStatus === 'active';
     }
 
@@ -358,6 +371,7 @@ class Employee extends Model implements HasMedia
     {
         // Check raw database value directly (bypass accessor)
         $rawStatus = $this->attributes['status'] ?? null;
+
         return $rawStatus === 'معطل' || $rawStatus === 'inactive';
     }
 
@@ -389,13 +403,13 @@ class Employee extends Model implements HasMedia
     {
         return $this->morphOne(AccHead::class, 'accountable');
     }
-    
+
     // Accessors for finger print data
     public function getFingerPrintIdAttribute($value)
     {
         return $value ?: $this->id;
     }
-    
+
     public function getFingerPrintNameAttribute($value)
     {
         return $value ?: $this->name;
@@ -406,7 +420,7 @@ class Employee extends Model implements HasMedia
         return $this->belongsToMany(Kpi::class, 'employee_kpis', 'employee_id', 'kpi_id')->withPivot('weight_percentage');
     }
 
-       /**
+    /**
      * Get the employee's image URL or fallback to placeholder
      * Works correctly in both local (Laragon) and production environments
      * Automatically detects and handles production symlink issues
@@ -414,28 +428,27 @@ class Employee extends Model implements HasMedia
     public function getImageUrlAttribute(): ?string
     {
         $media = $this->getFirstMedia('employee_images');
-        
+
         // If no media exists, return the fallback URL
-        if (!$media) {
+        if (! $media) {
             return asset('assets/images/avatar-placeholder.svg');
         }
-        
+
         // Get the standard URL from Spatie
         $url = $media->getUrl();
-        
 
-         // For production environments, check if symlink is working
+        // For production environments, check if symlink is working
         if (
-            !str_contains(config('app.url'), 'localhost') &&
-            !str_contains(config('app.url'), '127.0.0.1') &&
-            !str_contains(config('app.url'), 'http://massar1.02.test:81') &&
-            !str_contains(config('app.url'), 'https://massar1.02.test') &&
-            !str_contains(config('app.url'), 'https://massar1.02.test:8000')
+            ! str_contains(config('app.url'), 'localhost') &&
+            ! str_contains(config('app.url'), '127.0.0.1') &&
+            ! str_contains(config('app.url'), 'http://massar1.02.test:81') &&
+            ! str_contains(config('app.url'), 'https://massar1.02.test') &&
+            ! str_contains(config('app.url'), 'https://massar1.02.test:8000')
         ) {
             $baseUrl = config('app.url');
-            $url = $baseUrl . '/storage/app/public/' . $media->id . '/' . $media->file_name;
+            $url = $baseUrl.'/storage/app/public/'.$media->id.'/'.$media->file_name;
         }
-        
+
         return $url;
     }
 }

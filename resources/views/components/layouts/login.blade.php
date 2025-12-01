@@ -17,6 +17,11 @@
 
     <!-- Custom Styles -->
     <style>
+        /* Alpine.js Utilities */
+        [x-cloak] {
+            display: none !important;
+        }
+
         * {
             margin: 0;
             padding: 0;

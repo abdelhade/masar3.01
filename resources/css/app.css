@@ -2,6 +2,11 @@
 @import './design-system.css';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
+/* Alpine.js Utilities - Global */
+[x-cloak] {
+    display: none !important;
+}
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';

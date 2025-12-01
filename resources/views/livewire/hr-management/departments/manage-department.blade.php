@@ -6,16 +6,23 @@ use Livewire\Volt\Component;
 use App\Models\Department;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
+use App\Models\Employee;
+use Illuminate\Database\Eloquent\Collection;
 
 new class extends Component {
     use WithPagination;
 
     public string $title = '';
+    public ?int $parent_id = null;
+    public ?int $director_id = null;
+    public ?int $deputy_director_id = null;
     public ?string $description = null;
     public ?int $departmentId = null;
     public bool $showModal = false;
+    public bool $showHierarchyModal = false;
     public bool $isEdit = false;
     public string $search = '';
+    public Collection $employees;
 
     /**
      * Get validation rules for department form.
@@ -26,6 +33,9 @@ new class extends Component {
     {
         return [
             'title' => 'required|string|min:2|max:255|unique:departments,title,' . $this->departmentId,
+            'parent_id' => 'nullable|exists:departments,id',
+            'director_id' => 'nullable|exists:employees,id',
+            'deputy_director_id' => 'nullable|exists:employees,id',
             'description' => 'nullable|string|max:255',
         ];
     }
@@ -36,6 +46,22 @@ new class extends Component {
     public function mount(): void
     {
         // Component initialized
+        
+    }
+
+    /**
+     * Get employees list.
+     *
+     * @param int|null $departmentId
+     * @return Collection<int, Employee>
+     */ 
+    #[Computed]
+    public function employees($departmentId = null)
+    {
+        return Employee::query()
+            ->when($departmentId, fn($query) => $query->where('department_id', $departmentId))
+            ->orderByDesc('id')
+            ->get();
     }
 
     /**
@@ -49,7 +75,7 @@ new class extends Component {
     /**
      * Get filtered departments list.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Department>
+     * @return Collection<int, Department>
      */
     #[Computed]
     public function departments()
@@ -60,16 +86,68 @@ new class extends Component {
             ->get();
     }
 
+    // /**
+    //  * Get employees list.
+    //  *
+    //  * @return Collection<int, Employee>
+    //  */
+    // #[Computed]
+    // public function employees($departmentId = null)
+    // {
+    //     return Employee::query()
+    //         ->when($departmentId, fn($query) => $query->where('department_id', $departmentId))
+    //         ->orderByDesc('id')
+    //         ->get();
+    // }   
+
+    /**
+     * Get department with hierarchy for view.
+     *
+     * @return Department|null
+     */
+    #[Computed]
+    public function departmentForHierarchy()
+    {
+        if (!$this->departmentId) {
+            return null;
+        }
+
+        return Department::with(['parent', 'childrenRecursive'])
+            ->find($this->departmentId);
+    }
+
     /**
      * Open create modal and reset form.
      */
     public function create(): void
     {
         $this->resetValidation();
-        $this->reset(['title', 'description', 'departmentId']);
+        $this->reset(['title', 'description', 'departmentId', 'parent_id']);
         $this->isEdit = false;
         $this->showModal = true;
         $this->dispatch('showModal');
+    }
+
+    /**
+     * Open view hierarchy modal and load department data.
+     *
+     * @param int $id
+     */
+    public function viewHierarchy(int $id): void
+    {
+        $this->departmentId = $id;
+        $this->showHierarchyModal = true;
+        $this->dispatch('showHierarchyModal', departmentId: $id);
+    }
+
+    /**
+     * Close hierarchy modal.
+     */
+    public function closeHierarchyModal(): void
+    {
+        $this->showHierarchyModal = false;
+        $this->departmentId = null;
+        $this->dispatch('closeHierarchyModal');
     }
 
     /**
@@ -83,6 +161,9 @@ new class extends Component {
         $department = Department::findOrFail($id);
         $this->departmentId = $department->id;
         $this->title = $department->title;
+        $this->parent_id = $department->parent_id;
+        $this->director_id = $department->director_id;
+        $this->deputy_director_id = $department->deputy_director_id;
         $this->description = $department->description;
         $this->isEdit = true;
         $this->showModal = true;
@@ -106,7 +187,7 @@ new class extends Component {
 
         $this->showModal = false;
         $this->dispatch('closeModal');
-        $this->reset(['title', 'description', 'departmentId', 'isEdit']);
+        $this->reset(['title', 'description', 'departmentId', 'isEdit', 'parent_id', 'director_id', 'deputy_director_id']);
     }
 
     /**
@@ -156,6 +237,9 @@ new class extends Component {
                                 <tr>
                                     <th class="font-hold fw-bold">#</th>
                                     <th class="font-hold fw-bold">{{ __('Title') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('Parent') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('Director') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('Deputy Director') }}</th>
                                     <th class="font-hold fw-bold">{{ __('Description') }}</th>
                                     @canany(['edit Departments', 'delete Departments'])
                                         <th class="font-hold fw-bold">{{ __('Actions') }}</th>
@@ -167,10 +251,19 @@ new class extends Component {
                                     <tr>
                                         <td class="font-hold fw-bold text-center">{{ $loop->iteration }}</td>
                                         <td class="font-hold fw-bold text-center">{{ $department->title }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $department->parent ? $department->parent->title : '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $department->director ? $department->director->name : '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">{{ $department->deputyDirector ? $department->deputyDirector->name : '-' }}</td>
                                         <td class="font-hold fw-bold text-center">{{ $department->description ?? '-' }}</td>
                                         @canany(['edit Departments', 'delete Departments'])
                                             <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
+                                                    <button type="button" 
+                                                            wire:click="viewHierarchy({{ $department->id }})"
+                                                            class="btn btn-warning btn-sm"
+                                                            title="{{ __('View Hierarchy') }}">
+                                                        <i class="las la-sitemap"></i>
+                                                    </button>
                                                     @can('edit Departments')
                                                         <button type="button" 
                                                                 wire:click="edit({{ $department->id }})"
@@ -243,6 +336,52 @@ new class extends Component {
                             @enderror
                         </div>
                         <div class="mb-3">
+                            <label for="parent_id" class="form-label font-hold fw-bold">
+                                {{ __('Parent') }}
+                            </label>
+                            <select class="form-control @error('parent_id') is-invalid @enderror font-hold fw-bold" id="parent_id" wire:model.blur="parent_id">
+                                <option value="">{{ __('Select Parent') }}</option>
+                                @foreach ($this->departments as $department)
+                                    <option value="{{ $department->id }}">{{ $department->title }}</option>
+                                @endforeach
+                            </select>
+                            @error('parent_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_id" class="form-label font-hold fw-bold">
+                                {{ __('Director') }}
+                            </label>
+                            <select class="form-control @error('director_id') is-invalid @enderror font-hold fw-bold" id="director_id" wire:model.blur="director_id">
+                                <option value="">{{ __('Select Director') }}</option>
+                                @forelse ($this->employees($departmentId) as $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name }} - {{ $employee->job->title }}</option>
+                                @empty
+                                    <option value="">{{ __('No employees found in this department.') }}</option>
+                                @endforelse
+                            </select>
+                            @error('director_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="deputy_director_id" class="form-label font-hold fw-bold">
+                                {{ __('Deputy Director') }}
+                            </label>
+                            <select class="form-control @error('deputy_director_id') is-invalid @enderror font-hold fw-bold" id="deputy_director_id" wire:model.blur="deputy_director_id">
+                                <option value="">{{ __('Select Deputy Director') }}</option>
+                                @forelse ($this->employees($departmentId) as $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name }} - {{ $employee->job->title }}</option>
+                                @empty
+                                    <option value="">{{ __('No employees found in this department.') }}</option>
+                                @endforelse
+                            </select>
+                            @error('deputy_director_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
                             <label for="description" class="form-label font-hold fw-bold">
                                 {{ __('Description') }}
                             </label>
@@ -270,30 +409,84 @@ new class extends Component {
         </div>
     </div>
 
+    <!-- Modal (View for hierarchy) -->
+    <div class="modal fade" 
+         wire:ignore.self 
+         id="hierarchyModal" 
+         tabindex="-1" 
+         aria-labelledby="hierarchyModalLabel" 
+         aria-hidden="true" 
+         data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-hold fw-bold" id="hierarchyModalLabel">
+                        {{ __('Hierarchy') }}
+                        {{ $this->departmentId ? Department::find($this->departmentId)->title : 'No department selected' }}
+                    </h5>
+                    <button type="button" class="btn-close" wire:click="closeHierarchyModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="hierarchyTree">
+                        @if ($this->departmentForHierarchy)
+                            @include('hr-management.departments.partials.hierarchy-tree', ['department' => $this->departmentForHierarchy])
+                        @else
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                {{ __('No department selected') }}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="closeHierarchyModal">
+                        {{ __('Close') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         document.addEventListener('livewire:initialized', () => {
-            let modalInstance = null;
+            let modalInstances = {
+                departmentModal: null,
+                hierarchyModal: null,
+            };
             const modalElement = document.getElementById('departmentModal');
-
-            if (!modalElement) {
-                return;
-            }
+            const hierarchyModalElement = document.getElementById('hierarchyModal');
+            Livewire.on('showHierarchyModal', (departmentId) => {
+                if (hierarchyModalElement) {
+                    if (!modalInstances.hierarchyModal) {
+                        modalInstances.hierarchyModal = new bootstrap.Modal(hierarchyModalElement);
+                    }
+                    modalInstances.hierarchyModal.show();
+                }
+            });
+            Livewire.on('closeHierarchyModal', () => {
+                if (hierarchyModalElement && modalInstances.hierarchyModal) {
+                    modalInstances.hierarchyModal.hide();
+                }
+            });
 
             Livewire.on('showModal', () => {
-                if (!modalInstance) {
-                    modalInstance = new bootstrap.Modal(modalElement);
+                if (!modalInstances.departmentModal) {
+                    modalInstances.departmentModal = new bootstrap.Modal(modalElement);
                 }
-                modalInstance.show();
+                modalInstances.departmentModal.show();
             });
 
             Livewire.on('closeModal', () => {
-                if (modalInstance) {
-                    modalInstance.hide();
+                if (modalInstances.departmentModal) {
+                    modalInstances.departmentModal.hide();
                 }
             });
 
             modalElement.addEventListener('hidden.bs.modal', () => {
-                modalInstance = null;
+                modalInstances.departmentModal = null;
+                @this.call('$refresh');
+            });
+            hierarchyModalElement.addEventListener('hidden.bs.modal', () => {
+                modalInstances.hierarchyModal = null;
                 @this.call('$refresh');
             });
         });

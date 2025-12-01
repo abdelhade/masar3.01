@@ -475,34 +475,38 @@ return [
     'delete' => 'Supprimer',
     'view' => 'Voir',
     'please_correct_errors' => 'Veuillez corriger les erreurs suivantes:',
-    
+
     // Export and Print
     'export_excel' => 'Exporter vers Excel',
     'export_pdf' => 'Exporter vers PDF',
     'print' => 'Imprimer',
-    
+
     // KPI Weight Messages
     'total_weight_100' => 'Excellent! Le pourcentage est complet. Vous pouvez maintenant enregistrer les données.',
     'total_weight_greater_100' => 'Le total actuel :total% est supérieur à 100%. Veuillez réduire les poids.',
     'total_weight_less_100' => 'Le total actuel :total% est inférieur à 100%. Veuillez compléter les poids.',
-    
+
     // KPI Messages
     'kpi_added_successfully' => 'KPI ajouté avec succès.',
     'kpi_already_added' => 'Ce KPI est déjà ajouté.',
     'kpi_removed_successfully' => 'KPI supprimé avec succès.',
     'kpi_required' => 'Veuillez sélectionner un KPI.',
-    
+
     // Image Messages
     'image_selected_successfully' => 'Image sélectionnée avec succès',
     'image_deleted_successfully' => 'Image supprimée',
-    
+
     // Leave Balance Messages
     'leave_balance_added_successfully' => 'Solde de congé ajouté avec succès.',
     'leave_type_already_added' => 'Ce type de congé est déjà enregistré pour cet employé pour l\'année spécifiée.',
     'leave_type_required' => 'Veuillez sélectionner un type de congé.',
     'leave_balance_removed_successfully' => 'Solde de congé supprimé avec succès.',
-    
+
     // Validation Messages
     'marital_status_invalid' => 'Le statut matrimonial est invalide. Doit être: célibataire, marié, divorcé ou veuf/veuve.',
     'education_invalid' => 'Le niveau d\'éducation est invalide. Doit être: diplôme, licence, master ou doctorat.',
+
+    // Authorization and Security
+    'unauthorized_action' => 'Vous n\'avez pas la permission d\'effectuer cette action.',
+    'rate_limit_exceeded' => 'Limite de taux dépassée. Veuillez réessayer après :seconds secondes (:minutes minutes).',
 ];

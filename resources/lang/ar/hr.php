@@ -24,35 +24,35 @@ return [
     'employee_deleted_successfully' => 'تم حذف الموظف بنجاح',
     'confirm_delete_employee' => 'هل أنت متأكد أنك تريد حذف هذا الموظف؟ لا يمكن التراجع عن هذا الإجراء',
     'no_employees_found' => 'لا توجد موظفين',
-    'email'=>'البريد الإلكتروني',
-    'phone'=>'رقم الهاتف',
-    'department'=>'القسم',
-    'job'=>'الوظيفة',
-    'name'=>'الاسم',
-    'shift'=>'الوردية',
-    'kpi'=>'مؤشر الأداء',
-    'contract'=>'العقد',
-    'attendance'=>'الحضور والانصراف',
-    'leave'=>'الإجازة',
-    'salary'=>'الراتب',
-    'finger_print_id'=>'رقم البصمة',
-    'finger_print_name'=>'اسم البصمة',
-    'salary_type'=>'نوع الراتب',
-    'national_id'=>'رقم الهوية',
-    'marital_status'=>'الحالة الاجتماعية',
-    'education_level'=>'مستوى التعليم',
-    'information'=>'المعلومات',
-    'status'=>'الحالة',
-    'created_successfully'=>'تم إنشاء بنجاح',
-    'updated_successfully'=>'تم تحديث بنجاح',
-    'deleted_successfully'=>'تم حذف بنجاح',
-    'confirm_delete'=>'هل أنت متأكد أنك تريد حذف هذا؟ لا يمكن التراجع عن هذا الإجراء',
-    'no_employees_found'=>'لا توجد موظفين',
-    'employee_deleted_successfully'=>'تم حذف الموظف بنجاح',
-    'employee_updated_successfully'=>'تم تحديث الموظف بنجاح',
-    'employee_created_successfully'=>'تم إنشاء الموظف بنجاح',
-    'confirm_delete_employee'=>'هل أنت متأكد أنك تريد حذف هذا الموظف؟ لا يمكن التراجع عن هذا الإجراء',
-    'no_employees_found'=>'لا توجد موظفين',
+    'email' => 'البريد الإلكتروني',
+    'phone' => 'رقم الهاتف',
+    'department' => 'القسم',
+    'job' => 'الوظيفة',
+    'name' => 'الاسم',
+    'shift' => 'الوردية',
+    'kpi' => 'مؤشر الأداء',
+    'contract' => 'العقد',
+    'attendance' => 'الحضور والانصراف',
+    'leave' => 'الإجازة',
+    'salary' => 'الراتب',
+    'finger_print_id' => 'رقم البصمة',
+    'finger_print_name' => 'اسم البصمة',
+    'salary_type' => 'نوع الراتب',
+    'national_id' => 'رقم الهوية',
+    'marital_status' => 'الحالة الاجتماعية',
+    'education_level' => 'مستوى التعليم',
+    'information' => 'المعلومات',
+    'status' => 'الحالة',
+    'created_successfully' => 'تم إنشاء بنجاح',
+    'updated_successfully' => 'تم تحديث بنجاح',
+    'deleted_successfully' => 'تم حذف بنجاح',
+    'confirm_delete' => 'هل أنت متأكد أنك تريد حذف هذا؟ لا يمكن التراجع عن هذا الإجراء',
+    'no_employees_found' => 'لا توجد موظفين',
+    'employee_deleted_successfully' => 'تم حذف الموظف بنجاح',
+    'employee_updated_successfully' => 'تم تحديث الموظف بنجاح',
+    'employee_created_successfully' => 'تم إنشاء الموظف بنجاح',
+    'confirm_delete_employee' => 'هل أنت متأكد أنك تريد حذف هذا الموظف؟ لا يمكن التراجع عن هذا الإجراء',
+    'no_employees_found' => 'لا توجد موظفين',
 
     // الإدارات والأقسام
     'departments' => 'الإدارات والأقسام',
@@ -649,33 +649,33 @@ return [
     'no_job_description_provided' => 'لم يتم تقديم وصف الوظيفة',
     'job_description' => 'وصف الوظيفة',
     'please_correct_errors' => 'يرجى تصحيح الأخطاء التالية:',
-    
+
     // Export and Print
     'export_excel' => 'تصدير Excel',
     'export_pdf' => 'تصدير PDF',
     'print' => 'طباعة',
-    
+
     // KPI Weight Messages
     'total_weight_100' => 'ممتاز! تم اكتمال النسبة بنجاح. يمكنك الآن حفظ البيانات.',
     'total_weight_greater_100' => 'المجموع الحالي :total% أكبر من 100%. يرجى تقليل الأوزان.',
     'total_weight_less_100' => 'المجموع الحالي :total% أقل من 100%. يرجى إكمال الأوزان.',
-    
+
     // KPI Messages
     'kpi_added_successfully' => 'تم إضافة معدل الأداء بنجاح.',
     'kpi_already_added' => 'هذا معدل الأداء مضاف بالفعل.',
     'kpi_removed_successfully' => 'تم حذف معدل الأداء بنجاح.',
     'kpi_required' => 'يرجى اختيار معدل الأداء.',
-    
+
     // Image Messages
     'image_selected_successfully' => 'تم اختيار الصورة بنجاح',
     'image_deleted_successfully' => 'تم حذف الصورة',
-    
+
     // Leave Balance Messages
     'leave_balance_added_successfully' => 'تم إضافة رصيد الإجازة بنجاح.',
     'leave_type_already_added' => 'هذا النوع من الإجازة مسجل بالفعل لهذا الموظف للسنة المحددة.',
     'leave_type_required' => 'يرجى اختيار نوع الإجازة.',
     'leave_balance_removed_successfully' => 'تم حذف رصيد الإجازة بنجاح.',
-    
+
     // Validation Messages
     'marital_status_invalid' => 'الحالة الاجتماعية غير صحيحة. يجب أن تكون: أعزب، متزوج، مطلق، أو أرمل.',
     'education_invalid' => 'المستوى التعليمي غير صحيح. يجب أن يكون: دبلوم، بكالوريوس، ماجستير، أو دكتوراه.',
@@ -725,7 +725,7 @@ return [
     'add_employee_title' => 'إضافة موظف',
     'view_employee_details' => 'عرض تفاصيل الموظف',
     'search_by_name' => 'البحث بالاسم',
-    
+
     // Additional Validation Messages
     'name_string' => 'الاسم يجب أن يكون نصاً.',
     'email_email' => 'البريد الإلكتروني يجب أن يكون بريداً إلكترونياً صحيحاً.',
@@ -767,7 +767,7 @@ return [
     'leave_balances_carried_over_days_min' => 'الأيام المحولة يجب أن تكون 0 أو أكثر.',
     'leave_balances_notes_string' => 'الملاحظات يجب أن تكون نصاً.',
     'selected_leave_type_id_exists' => 'نوع الإجازة المحدد غير موجود.',
-    
+
     // Excel Import Instructions
     'excel_ac_no_column_required' => 'يجب أن يحتوي ملف Excel على عمود "AC-No." (مطلوب) يمثل رقم البصمة',
     'excel_name_column_required' => 'يجب أن يحتوي ملف Excel على عمود "Name" (مطلوب) يمثل اسم البصمة',
@@ -778,4 +778,16 @@ return [
     'date_time_required_processing' => 'التاريخ والوقت مطلوبان لأن المعالجة والرواتب تعتمد عليهما',
     'employee_not_found_skipped' => 'إذا لم يتم العثور على الموظف أو كانت البيانات غير صحيحة، سيتم تخطي السجل',
     'duplicate_records_skipped' => 'السجلات المكررة (نفس الموظف والتاريخ والوقت) سيتم تخطيها',
-]; 
+
+    // Authorization and Security
+    'unauthorized_action' => 'ليس لديك صلاحية لتنفيذ هذا الإجراء.',
+    'rate_limit_exceeded' => 'تم تجاوز الحد المسموح. يرجى المحاولة مرة أخرى بعد :seconds ثانية (:minutes دقيقة).',
+
+    // UI Labels
+    'validation_errors' => 'أخطاء التحقق من البيانات',
+    'employee_form' => 'نموذج الموظف',
+    'saving' => 'جاري الحفظ...',
+    'loading' => 'جاري التحميل...',
+    'please_wait' => 'يرجى الانتظار...',
+    'cancelling' => 'جاري الإلغاء...',
+];

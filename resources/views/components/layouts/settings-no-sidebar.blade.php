@@ -6,6 +6,11 @@
     <title>{{ $title ?? __('Settings') }}</title>
     <link href="https://fonts.googleapis.com/css?family=Cairo&display=swap" rel="stylesheet">
     <style>
+        /* Alpine.js Utilities */
+        [x-cloak] {
+            display: none !important;
+        }
+
         body {
             font-family: 'Cairo', sans-serif;
         }

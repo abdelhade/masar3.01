@@ -49,8 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
- <!-- App js -->
- <script src="{{ asset('assets/js/app.js') }}"></script>
+ <!-- App js (Legacy - only if not using Vite) -->
+ {{-- Note: Vite assets (including app.js) are loaded in head.blade.php via @vite --}}
+ {{-- This legacy app.js is kept for backward compatibility but should not conflict with Vite --}}
+ {{-- <script src="{{ asset('assets/js/app.js') }}"></script> --}}
 
 <script>
     // تحسينات الـ Sidebar
@@ -254,6 +256,24 @@ document.addEventListener('DOMContentLoaded', function() {
  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
  <!-- Livewire Scripts -->
+ {{-- Livewire scripts must be loaded after Vite assets (which include Alpine.js) --}}
+ {{-- Vite assets are loaded in head.blade.php via @vite directive --}}
  @livewireScripts
 
+ {{-- Stack for additional scripts from components --}}
  @stack('scripts')
+
+ {{-- Ensure Alpine.js is ready before any component scripts --}}
+ <script>
+     document.addEventListener('DOMContentLoaded', function() {
+         // Wait for Alpine.js to be ready
+         if (typeof window.Alpine !== 'undefined') {
+             // Alpine.js is loaded, ensure employeeManager is registered
+             if (window.Alpine && !window.Alpine.data('employeeManager')) {
+                 console.warn('Alpine.js employeeManager component not found. Make sure Vite assets are loaded.');
+             }
+         } else {
+             console.warn('Alpine.js is not loaded. Make sure Vite assets are loaded in head.');
+         }
+     });
+ </script>

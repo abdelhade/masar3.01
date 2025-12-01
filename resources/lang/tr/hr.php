@@ -475,34 +475,38 @@ return [
     'delete' => 'Sil',
     'view' => 'Görüntüle',
     'please_correct_errors' => 'Lütfen aşağıdaki hataları düzeltin:',
-    
+
     // Export and Print
     'export_excel' => 'Excel\'e Aktar',
     'export_pdf' => 'PDF\'ye Aktar',
     'print' => 'Yazdır',
-    
+
     // KPI Weight Messages
     'total_weight_100' => 'Mükemmel! Yüzde tamamlandı. Artık verileri kaydedebilirsiniz.',
     'total_weight_greater_100' => 'Mevcut toplam :total% 100%\'den büyük. Lütfen ağırlıkları azaltın.',
     'total_weight_less_100' => 'Mevcut toplam :total% 100%\'den az. Lütfen ağırlıkları tamamlayın.',
-    
+
     // KPI Messages
     'kpi_added_successfully' => 'KPI başarıyla eklendi.',
     'kpi_already_added' => 'Bu KPI zaten eklenmiş.',
     'kpi_removed_successfully' => 'KPI başarıyla kaldırıldı.',
     'kpi_required' => 'Lütfen bir KPI seçin.',
-    
+
     // Image Messages
     'image_selected_successfully' => 'Resim başarıyla seçildi',
     'image_deleted_successfully' => 'Resim silindi',
-    
+
     // Leave Balance Messages
     'leave_balance_added_successfully' => 'İzin bakiyesi başarıyla eklendi.',
     'leave_type_already_added' => 'Bu izin türü, bu çalışan için belirtilen yıl için zaten kayıtlı.',
     'leave_type_required' => 'Lütfen bir izin türü seçin.',
     'leave_balance_removed_successfully' => 'İzin bakiyesi başarıyla kaldırıldı.',
-    
+
     // Validation Messages
     'marital_status_invalid' => 'Medeni durum geçersiz. Şunlardan biri olmalı: bekar, evli, boşanmış veya dul.',
     'education_invalid' => 'Eğitim seviyesi geçersiz. Şunlardan biri olmalı: diploma, lisans, yüksek lisans veya doktora.',
+
+    // Authorization and Security
+    'unauthorized_action' => 'Bu işlemi gerçekleştirme yetkiniz yok.',
+    'rate_limit_exceeded' => 'Hız sınırı aşıldı. Lütfen :seconds saniye (:minutes dakika) sonra tekrar deneyin.',
 ];

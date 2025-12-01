@@ -17,6 +17,13 @@
     <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/app.min.css') }}" rel="stylesheet">
 
+    <!-- Alpine.js Utilities -->
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
     @livewireStyles
     @stack('styles')
 </head>

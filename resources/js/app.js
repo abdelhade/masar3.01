@@ -1,17 +1,8 @@
 /**
  * Alpine.js - Modern JavaScript framework for reactive UI
  */
-import Alpine from 'alpinejs';
-import employeeManager from './components/employee-manager';
+// import Alpine from 'alpinejs';
 
-// ✅ Register as reusable Alpine component
-document.addEventListener('alpine:init', () => {
-    Alpine.data('employeeManager', employeeManager)
-})
-
-// Start Alpine
-window.Alpine = Alpine;
-Alpine.start();
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

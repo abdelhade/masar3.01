@@ -2,6 +2,24 @@
 trigger: always_on
 ---
 
+/**
+ * MASSAR CURSOR RULES :: DESCRIPTION
+ *
+ * This file defines the strict conventions and rules for using the Cursor tool
+ * within the massar1.02 ecosystem (Laravel 12 & Livewire 3, Modular Monolith, Volt-first).
+ *
+ * - All new UI components must use Livewire Volt (class-based, inside Blade).
+ * - All backend code should live in the appropriate `Modules/{Module}/` directory unless generic.
+ * - All PHP files MUST use: declare(strict_types=1);
+ * - All user-facing text MUST be localized—never hardcode strings. Always use Laravel's __("module.key") convention.
+ * - Use Bootstrap 5 classes for UI, and Line Awesome/FontAwesome for icons.
+ * - Modals must be Bootstrap modals, controlled via Alpine/Livewire events.
+ * - Whenever possible, reuse code and check `app/Helpers` or module-specific helpers before creating new logic.
+ * - JavaScript should be minimal: use Alpine via @script and x-data.
+ *
+ * These rules are always-on, and STRICT. See [massar.mdc] and [agent/massar.md] for details and examples.
+ */
+
 # ANTIGRAVITY RULES :: MASSAR 1.02 PROJECT
 
 ## [1.0] IDENTITY & CORE PHILOSOPHY
