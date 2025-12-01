@@ -127,12 +127,13 @@
                                     @foreach ($products as $index => $product)
                                         <tr>
                                             <td class="text-center">{{ $loop->iteration }}</td>
-                                            <td>{{ $product['name'] }}</td>
+                                            <td><strong>{{ $product['name'] }}</strong></td>
                                             <td class="text-center">{{ number_format($product['quantity'], 2) }}</td>
                                             <td class="text-end">{{ number_format($product['unit_cost'], 2) }}
                                                 {{ __('EGP') }}</td>
                                             <td class="text-center">
-                                                {{ number_format($product['cost_percentage'], 2) }}%</td>
+                                                <span class="badge bg-info">{{ number_format($product['cost_percentage'], 2) }}%</span>
+                                            </td>
                                             <td class="text-end">
                                                 <strong
                                                     class="text-success">{{ number_format($product['total_cost'], 2) }}
@@ -143,7 +144,10 @@
                                 </tbody>
                                 <tfoot class="table-light">
                                     <tr>
-                                        <td colspan="5" class="text-end"><strong>{{ __('Total') }}:</strong></td>
+                                        <td colspan="4" class="text-end"><strong>{{ __('Total') }}:</strong></td>
+                                        <td class="text-center">
+                                            <strong class="badge bg-primary">{{ number_format(collect($products)->sum('cost_percentage'), 2) }}%</strong>
+                                        </td>
                                         <td class="text-end">
                                             <strong
                                                 class="text-success fs-5">{{ number_format($totals['products'], 2) }}
@@ -311,6 +315,22 @@
                             </td>
                         </tr>
                         <tr class="border-top">
+                            <td class="text-muted"><strong>{{ __('Raw Materials Cost') }}:</strong></td>
+                            <td class="text-end">
+                                <strong class="text-info">{{ number_format($totals['raw_materials'], 2) }}
+                                    {{ __('EGP') }}</strong>
+                            </td>
+                        </tr>
+                        @if (count($expenses) > 0)
+                        <tr>
+                            <td class="text-muted"><strong>{{ __('Additional Expenses') }}:</strong></td>
+                            <td class="text-end">
+                                <strong class="text-warning">{{ number_format($totals['expenses'], 2) }}
+                                    {{ __('EGP') }}</strong>
+                            </td>
+                        </tr>
+                        @endif
+                        <tr class="border-top">
                             <td class="text-muted"><strong>{{ __('Total Manufacturing Cost') }}:</strong></td>
                             <td class="text-end">
                                 <strong class="text-danger fs-5">{{ number_format($totals['manufacturing_cost'], 2) }}
@@ -322,6 +342,12 @@
                             <td class="text-end">
                                 <strong class="text-success fs-5">{{ number_format($totals['products'], 2) }}
                                     {{ __('EGP') }}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><strong>{{ __('Total Cost Percentage Distribution') }}:</strong></td>
+                            <td class="text-end">
+                                <strong class="badge bg-primary fs-6">{{ number_format(collect($products)->sum('cost_percentage'), 2) }}%</strong>
                             </td>
                         </tr>
                         <tr class="border-top bg-light">

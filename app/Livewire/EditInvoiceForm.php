@@ -2,71 +2,103 @@
 
 namespace App\Livewire;
 
-use Carbon\Carbon;
-use Livewire\Component;
 use App\Enums\InvoiceStatus;
-use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
+use App\Models\Barcode;
+use App\Models\Item;
+use App\Models\JournalDetail;
+use App\Models\OperationItems;
+use App\Models\OperHead;
+use App\Models\Price;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 use Modules\Accounts\Models\AccHead;
-use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Invoices\Models\InvoiceTemplate;
-use App\Models\{OperHead, OperationItems, Price, Item, Barcode};
+use RealRashid\SweetAlert\Facades\Alert;
 
 class EditInvoiceForm extends Component
 {
     public $operationId;
+
     public $operation;
 
     public $type;
+
     public $acc1_id;
+
     public $acc2_id;
+
     public $emp_id;
+
     public $pro_date;
+
     public $accural_date;
+
     public $pro_id;
+
     public $serial_number;
 
     public $deliverys = [];
+
     public $delivery_id = null;
 
     public $barcodeTerm = '';
+
     public $barcodeSearchResults;
+
     public $selectedBarcodeResultIndex = -1;
+
     public bool $addedFromBarcode = false;
+
     public $searchedTerm = '';
 
     public $isCreateNewItemSelected = false;
 
     public $currentBalance = 0;
+
     public $balanceAfterInvoice = 0;
+
     public $showBalance = false;
 
     public $branch_id;
+
     public $branches;
 
     public $showConvertModal = false;
+
     public $selectedConvertType = null;
+
     public $convertFromTypes = [];
+
     public $originalInvoiceId = null;
 
     public $priceTypes = [];
+
     public $selectedPriceType = 1;
+
     public $selectedUnit = [];
 
     public $searchTerm = '';
+
     public $searchResults;
+
     public $selectedResultIndex = -1;
 
     public int $quantityClickCount = 0;
+
     public $lastQuantityFieldIndex = null;
 
     public $acc1List = [];
+
     public $acc2List = [];
+
     public $employees = [];
+
     public $acc1Role;
+
     public $acc2Role;
+
     public $cashAccounts;
 
     public $selectedRowIndex = -1;
@@ -77,19 +109,29 @@ class EditInvoiceForm extends Component
     public $invoiceItems = [];
 
     public $currentRowIndex = null;
+
     public $focusField = null;
 
     public $cash_box_id = '';
+
     public $received_from_client = 0;
+
     public $subtotal = 0;
+
     public $discount_percentage = 0;
+
     public $discount_value = 0;
+
     public $additional_percentage = 0;
+
     public $additional_value = 0;
+
     public $total_after_additional = 0;
+
     public $notes = '';
 
     public $currentSelectedItem = null;
+
     public $selectedItemData = [
         'name' => '',
         'code' => '',
@@ -102,7 +144,7 @@ class EditInvoiceForm extends Component
         'category' => '',
         'description' => '',
         'average_cost' => '',
-        'last_purchase_price' => 0
+        'last_purchase_price' => 0,
     ];
 
     public $oldUnitId = null;
@@ -118,8 +160,6 @@ class EditInvoiceForm extends Component
         }
     }
 
-
-
     public $titles = [
         10 => 'فاتوره مبيعات',
         11 => 'فاتورة مشتريات',
@@ -134,18 +174,20 @@ class EditInvoiceForm extends Component
         20 => 'امر اضافة',
         21 => 'تحويل من مخزن لمخزن',
         22 => 'امر حجز',
-        25 => 'طلب احتياج',
     ];
 
     public $is_disabled = false; // Direct edit mode enabled by default
 
     // Template properties
     public $availableTemplates;
+
     public $selectedTemplateId = null;
+
     public $currentTemplate = null;
 
     // Status properties for sale orders (type 14)
     public $statues = [];
+
     public $status = null;
 
     public function mount($operationId)
@@ -176,7 +218,7 @@ class EditInvoiceForm extends Component
         $this->notes = $this->operation->info ?? '';
         $this->received_from_client = $this->operation->paid_from_client ?? 0;
 
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $this->items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
 
         $this->cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
@@ -184,11 +226,11 @@ class EditInvoiceForm extends Component
             ->select('id', 'aname')
             ->get();
 
-        $clientsAccounts   = $this->getAccountsByCode('1103%');
+        $clientsAccounts = $this->getAccountsByCode('1103%');
         $suppliersAccounts = $this->getAccountsByCode('2101%');
-        $stores            = $this->getAccountsByCode('1104%');
-        $employees         = $this->getAccountsByCode('2102%');
-        $wasted         = $this->getAccountsByCode('55%');
+        $stores = $this->getAccountsByCode('1104%');
+        $employees = $this->getAccountsByCode('2102%');
+        $wasted = $this->getAccountsByCode('55%');
         $accounts = $this->getAccountsByCode('%');
         $map = [
             10 => ['acc1' => 'clientsAccounts', 'acc1_role' => 'مدين', 'acc2_role' => 'دائن'],
@@ -259,12 +301,12 @@ class EditInvoiceForm extends Component
     {
         $this->currentTemplate = InvoiceTemplate::find($templateId);
 
-        if (!$this->currentTemplate) {
+        if (! $this->currentTemplate) {
             $this->currentTemplate = InvoiceTemplate::getDefaultForType($this->type);
         }
 
         $this->dispatch('template-changed', [
-            'template' => $this->currentTemplate->toArray()
+            'template' => $this->currentTemplate->toArray(),
         ]);
     }
 
@@ -273,7 +315,7 @@ class EditInvoiceForm extends Component
      */
     public function shouldShowColumn(string $columnKey): bool
     {
-        if (!$this->currentTemplate) {
+        if (! $this->currentTemplate) {
             return true; // إذا لم يكن هناك نموذج، أظهر كل الأعمدة
         }
 
@@ -285,7 +327,7 @@ class EditInvoiceForm extends Component
      */
     public function getVisibleColumns(): array
     {
-        if (!$this->currentTemplate) {
+        if (! $this->currentTemplate) {
             return [];
         }
 
@@ -349,12 +391,12 @@ class EditInvoiceForm extends Component
         $this->invoiceItems = [];
         foreach ($this->operation->operationItems as $operationItem) {
             $item = $operationItem->item;
-            if (!$item) {
+            if (! $item) {
                 continue;
             }
 
             $availableUnits = $item->units->map(
-                fn($unit) => (object)[
+                fn ($unit) => (object) [
                     'id' => $unit->id,
                     'name' => $unit->name,
                 ]
@@ -391,21 +433,6 @@ class EditInvoiceForm extends Component
         }
     }
 
-    // public function openConvertModal()
-    // {
-    //     if ($this->is_disabled) {
-    //         Alert::toast('يجب تفعيل التعديل أولاً', 'error');
-    //         return;
-    //     }
-    //     $this->showConvertModal = true;
-    //     $this->convertFromTypes = $this->getCompatibleConversionTypes();
-    //     if (empty($this->convertFromTypes)) {
-    //         Alert::toast('لا توجد أنواع فواتير متوافقة للتحويل إليها', 'error');
-    //         $this->showConvertModal = false;
-    //         return;
-    //     }
-    // }
-
     public function getCompatibleConversionTypes()
     {
         $conversionRules = [
@@ -424,9 +451,11 @@ class EditInvoiceForm extends Component
             22 => [10, 14, 16],
         ];
         $allowedTypes = $conversionRules[$this->type] ?? array_keys($this->titles);
-        $allowedTypes = array_filter($allowedTypes, fn($type) => $type !== $this->type);
+        $allowedTypes = array_filter($allowedTypes, fn ($type) => $type !== $this->type);
+
         return array_intersect_key($this->titles, array_flip($allowedTypes));
     }
+
     public function closeConvertModal()
     {
         $this->showConvertModal = false;
@@ -436,11 +465,12 @@ class EditInvoiceForm extends Component
 
     public function getConversionConfirmationMessage()
     {
-        if (!$this->selectedConvertType) {
+        if (! $this->selectedConvertType) {
             return '';
         }
         $fromType = $this->titles[$this->type] ?? 'غير محدد';
         $toType = $this->titles[$this->selectedConvertType] ?? 'غير محدد';
+
         return "هل أنت متأكد من تحويل الفاتورة من \"$fromType\" إلى \"$toType\"؟";
     }
 
@@ -451,8 +481,9 @@ class EditInvoiceForm extends Component
 
     public function convertInvoice()
     {
-        if (!$this->selectedConvertType) {
+        if (! $this->selectedConvertType) {
             Alert::toast('يرجى اختيار نوع الفاتورة المراد التحويل إليها', 'error');
+
             return;
         }
         $oldType = $this->type;
@@ -462,7 +493,7 @@ class EditInvoiceForm extends Component
         $this->updatePricesForNewType();
         $this->calculateTotals();
         $this->closeConvertModal();
-        Alert::toast('تم تحويل الفاتورة بنجاح من ' . $this->titles[$oldType] . ' إلى ' . $this->titles[$this->type], 'success');
+        Alert::toast('تم تحويل الفاتورة بنجاح من '.$this->titles[$oldType].' إلى '.$this->titles[$this->type], 'success');
     }
 
     // Direct edit mode - no need for enableEditing method
@@ -511,12 +542,12 @@ class EditInvoiceForm extends Component
         if (empty($barcode)) {
             return;
         }
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])
             ->whereHas('barcodes', function ($query) use ($barcode) {
                 $query->where('barcode', $barcode);
             })
             ->first();
-        if (!$item) {
+        if (! $item) {
             return $this->dispatch('prompt-create-item-from-barcode', barcode: $barcode);
         }
         $this->addedFromBarcode = true;
@@ -526,6 +557,7 @@ class EditInvoiceForm extends Component
             $this->recalculateSubValues();
             $this->calculateTotals();
             $this->barcodeTerm = '';
+
             return;
         }
         $this->addItemFromSearch($item->id);
@@ -546,7 +578,7 @@ class EditInvoiceForm extends Component
 
     public function handleQuantityEnter($index)
     {
-        if (!isset($this->invoiceItems[$index])) {
+        if (! isset($this->invoiceItems[$index])) {
             return;
         }
         $this->quantityClickCount++;
@@ -587,9 +619,10 @@ class EditInvoiceForm extends Component
             'price' => $price,
             'average_cost' => $item->average_cost ?? 0,
             'last_purchase_price' => $lastPurchasePrice,
-            'description' => $item->description ?? ''
+            'description' => $item->description ?? '',
         ];
     }
+
     public function removeRow($index)
     {
         unset($this->invoiceItems[$index]);
@@ -601,12 +634,12 @@ class EditInvoiceForm extends Component
     public function updatedSearchTerm($value)
     {
         $this->selectedResultIndex = -1;
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $this->items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
         $this->searchResults = strlen($value) < 1
             ? collect()
             : Item::with(['units', 'prices'])
-            ->where('name', 'like', "%{$value}%")
-            ->take(5)->get();
+                ->where('name', 'like', "%{$value}%")
+                ->take(5)->get();
     }
 
     public function updatedBarcodeTerm($value)
@@ -614,8 +647,8 @@ class EditInvoiceForm extends Component
         $this->barcodeSearchResults = strlen($value) < 1
             ? collect()
             : Item::with(['units', 'prices'])
-            ->where('code', 'like', "%{$value}%")
-            ->take(5)->get();
+                ->where('code', 'like', "%{$value}%")
+                ->take(5)->get();
     }
 
     // public function addItemByBarcode()
@@ -642,8 +675,10 @@ class EditInvoiceForm extends Component
 
     public function addItemFromSearch($itemId)
     {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
-        if (! $item) return;
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
+        if (! $item) {
+            return;
+        }
 
         $existingItemIndex = null;
         foreach ($this->invoiceItems as $index => $invoiceItem) {
@@ -674,6 +709,7 @@ class EditInvoiceForm extends Component
             $newRowIndex = count($this->invoiceItems) - 1;
             $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
             $this->dispatch('focus-quantity', ['index' => $newRowIndex]);
+
             return;
         }
 
@@ -749,13 +785,17 @@ class EditInvoiceForm extends Component
 
     public function updateUnits($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
         $itemId = $this->invoiceItems[$index]['item_id'];
         $item = $this->items->firstWhere('id', $itemId);
-        if (! $item) return;
+        if (! $item) {
+            return;
+        }
         $vm = new ItemViewModel(null, $item, $selectedUnitId = null);
         $opts = $vm->getUnitOptions();
-        $unitsCollection = collect($opts)->map(fn($entry) => (object)[
+        $unitsCollection = collect($opts)->map(fn ($entry) => (object) [
             'id' => $entry['value'],
             'name' => $entry['label'],
         ]);
@@ -771,20 +811,26 @@ class EditInvoiceForm extends Component
 
     public function updateQuantityForUnit($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
         $oldUnitId = $this->oldUnitId;
 
-        if (!$itemId || !$unitId || !$oldUnitId || $unitId == $oldUnitId) return;
+        if (! $itemId || ! $unitId || ! $oldUnitId || $unitId == $oldUnitId) {
+            return;
+        }
 
         $item = $this->items->firstWhere('id', $itemId);
         // ✅ إذا لم يتم العثور على الصنف في القائمة المحملة، قم بجلبه من قاعدة البيانات
-        if (!$item) {
+        if (! $item) {
             $item = Item::with(['units'])->find($itemId);
         }
-        if (!$item) return;
+        if (! $item) {
+            return;
+        }
 
         $oldUnit = $item->units->where('id', $oldUnitId)->first();
         $newUnit = $item->units->where('id', $unitId)->first();
@@ -793,12 +839,14 @@ class EditInvoiceForm extends Component
             $oldUVal = $oldUnit->pivot->u_val ?? 1;
             $newUVal = $newUnit->pivot->u_val ?? 1;
 
-            if ($newUVal == 0) return; // Avoid division by zero
+            if ($newUVal == 0) {
+                return;
+            } // Avoid division by zero
 
             // Calculate conversion factor: old / new
             $conversionFactor = $oldUVal / $newUVal;
 
-            $currentQty = (float)($this->invoiceItems[$index]['quantity'] ?? 0);
+            $currentQty = (float) ($this->invoiceItems[$index]['quantity'] ?? 0);
             $newQty = $currentQty * $conversionFactor;
 
             $this->invoiceItems[$index]['quantity'] = round($newQty, 4);
@@ -807,18 +855,24 @@ class EditInvoiceForm extends Component
 
     public function updatePriceForUnit($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
-        if (!$itemId || !$unitId) return;
+        if (! $itemId || ! $unitId) {
+            return;
+        }
         $item = $this->items->firstWhere('id', $itemId);
 
         // ✅ إذا لم يتم العثور على الصنف في القائمة المحملة، قم بجلبه من قاعدة البيانات
-        if (!$item) {
+        if (! $item) {
             $item = Item::with(['units', 'prices'])->find($itemId);
         }
 
-        if (!$item) return;
+        if (! $item) {
+            return;
+        }
         $currentPrice = (float) ($this->invoiceItems[$index]['price'] ?? 0);
         $price = $this->calculateItemPrice($item, $unitId, $this->selectedPriceType, $currentPrice, $this->oldUnitId);
 
@@ -833,7 +887,9 @@ class EditInvoiceForm extends Component
     public function updatedInvoiceItems($value, $key)
     {
         $parts = explode('.', $key);
-        if (count($parts) < 2) return;
+        if (count($parts) < 2) {
+            return;
+        }
         $rowIndex = (int) $parts[0];
         $field = $parts[1];
         if ($field === 'quantity') {
@@ -897,7 +953,9 @@ class EditInvoiceForm extends Component
 
     public function calculateQuantityFromSubValue($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
         $item = $this->invoiceItems[$index];
         $subValue = (float) $item['sub_value'];
         $price = (float) $item['price'];
@@ -906,6 +964,7 @@ class EditInvoiceForm extends Component
             $this->invoiceItems[$index]['sub_value'] = 0;
             $this->invoiceItems[$index]['quantity'] = 0;
             $this->calculateTotals();
+
             return;
         }
         $newQuantity = ($subValue + $discount) / $price;
@@ -933,6 +992,7 @@ class EditInvoiceForm extends Component
         $this->additional_value = ($this->subtotal * $additionalPercentage) / 100;
         $this->total_after_additional = round($this->subtotal - $this->discount_value + $this->additional_value, 2);
     }
+
     public function createNewItem($name, $barcode = null)
     {
         $existingItem = Item::where('name', $name)->first();
@@ -943,6 +1003,7 @@ class EditInvoiceForm extends Component
             $existingBarcode = Barcode::where('barcode', $barcode)->exists();
             if ($existingBarcode) {
                 $this->dispatch('alert', ['type' => 'error', 'message' => 'هذا الباركود مستخدم بالفعل لصنف آخر.']);
+
                 return;
             }
         }
@@ -954,7 +1015,7 @@ class EditInvoiceForm extends Component
         if ($barcode) {
             $newItem->barcodes()->create([
                 'barcode' => $barcode,
-                'unit_id' => 1
+                'unit_id' => 1,
             ]);
         }
         $this->updateSelectedItemData($newItem, 1, 0);
@@ -1035,8 +1096,9 @@ class EditInvoiceForm extends Component
     public function checkSearchResults()
     {
         $searchTerm = trim($this->searchTerm);
-        if (!empty($searchTerm) && $this->searchResults->isEmpty()) {
+        if (! empty($searchTerm) && $this->searchResults->isEmpty()) {
             $this->searchedTerm = $searchTerm;
+
             return $this->dispatch('item-not-found', ['term' => $searchTerm, 'type' => 'search']);
         }
     }
@@ -1044,22 +1106,23 @@ class EditInvoiceForm extends Component
     public function updateForm()
     {
         // تحقق من وجود العملية
-        if (!$this->operation || !$this->operationId) {
+        if (! $this->operation || ! $this->operationId) {
             $this->dispatch('alert', [
                 'type' => 'error',
-                'message' => 'لا توجد فاتورة لتحريرها.'
+                'message' => 'لا توجد فاتورة لتحريرها.',
             ]);
+
             return false;
         }
 
         // استدعاء خدمة الحفظ مع تمرير العلم isEdit = true
-        $service = new \App\Services\SaveInvoiceService();
+        $service = new \App\Services\SaveInvoiceService;
         $result = $service->saveInvoice($this, true); // true يعني أن العملية تعديل
 
         if ($result) {
             $this->dispatch('alert', [
                 'type' => 'success',
-                'message' => 'تم تحديث الفاتورة بنجاح.'
+                'message' => 'تم تحديث الفاتورة بنجاح.',
             ]);
 
             // إعادة تحميل البيانات المحدثة
@@ -1106,10 +1169,9 @@ class EditInvoiceForm extends Component
 
         $this->dispatch('alert', [
             'type' => 'info',
-            'message' => 'تم إلغاء التعديلات وإرجاع البيانات الأصلية.'
+            'message' => 'تم إلغاء التعديلات وإرجاع البيانات الأصلية.',
         ]);
     }
-
 
     public function saveAndPrint()
     {
@@ -1127,12 +1189,12 @@ class EditInvoiceForm extends Component
 
     private function updateAccountsForNewType()
     {
-        $clientsAccounts   = $this->getAccountsByCode('122%');
+        $clientsAccounts = $this->getAccountsByCode('122%');
         $suppliersAccounts = $this->getAccountsByCode('211%');
-        $stores            = $this->getAccountsByCode('123%');
-        $employees         = $this->getAccountsByCode('213%');
-        $wasted            = $this->getAccountsByCode('44001%');
-        $accounts          = $this->getAccountsByCode('%');
+        $stores = $this->getAccountsByCode('123%');
+        $employees = $this->getAccountsByCode('213%');
+        $wasted = $this->getAccountsByCode('44001%');
+        $accounts = $this->getAccountsByCode('%');
         $map = [
             10 => ['acc1' => 'clientsAccounts', 'acc1_role' => 'مدين', 'acc2_role' => 'دائن'],
             11 => ['acc1' => 'suppliersAccounts', 'acc1_role' => 'دائن', 'acc2_role' => 'مدين'],

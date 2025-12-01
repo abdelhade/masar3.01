@@ -272,6 +272,7 @@ class ManufacturingInvoiceService
                     'item_price' => $basePrice,
                     'cost_price' => $basePrice,
                     'detail_value' => $product['total_cost'],
+                    'additional' => $product['cost_percentage'] ?? 0,
                     'is_stock' => $isTemplate ? 0 : 1,
                     'branch_id' => $component->branch_id,
                 ]);
@@ -300,6 +301,20 @@ class ManufacturingInvoiceService
                     // تحديث سعر الشراء المتوسط
                     $item->update([
                         'average_cost' => $newAverage,
+                    ]);
+                }
+            }
+
+            // Save additional expenses
+            if (! $isTemplate) {
+                foreach ($component->additionalExpenses as $expense) {
+                    Expense::create([
+                        'title' => $component->description ?: 'فاتورة تصنيع',
+                        'pro_type' => 59,
+                        'op_id' => $operation->id,
+                        'amount' => $expense['amount'],
+                        'account_id' => $expense['account_id'],
+                        'description' => 'مصروف إضافي: '.($expense['description'] ?? 'غير محدد').' - فاتورة: '.$component->pro_id,
                     ]);
                 }
             }
@@ -558,6 +573,7 @@ class ManufacturingInvoiceService
                     'item_price' => $basePrice,
                     'cost_price' => $basePrice,
                     'detail_value' => $product['total_cost'],
+                    'additional' => $product['cost_percentage'] ?? 0,
                     'is_stock' => 1,
                     'branch_id' => $component->branch_id,
                 ]);

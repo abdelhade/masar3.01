@@ -26,6 +26,6 @@
             </div>
         </div>
 
-        @livewire('edit-manufacturing-invoice', ['invoiceId' => $id])
+        @livewire('manufacturing::edit-manufacturing-invoice', ['invoiceId' => $id])
     </div>
 @endsection
