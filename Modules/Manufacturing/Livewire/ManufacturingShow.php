@@ -2,15 +2,20 @@
 
 namespace Modules\Manufacturing\Livewire;
 
+use App\Models\Expense;
+use App\Models\OperHead;
 use Livewire\Component;
-use App\Models\{OperHead, OperationItems, Expense};
 
 class ManufacturingShow extends Component
 {
     public $invoice;
+
     public $products = [];
+
     public $rawMaterials = [];
+
     public $expenses = [];
+
     public $totals = [];
 
     public function mount($id)
@@ -27,42 +32,57 @@ class ManufacturingShow extends Component
             'store',
             'branch',
             'operationItems.item',
-            'operationItems.unit'
+            'operationItems.unit',
         ])->findOrFail($id);
 
-        // تحميل المنتجات
-        $this->products = $this->invoice->operationItems()
-            ->whereNotNull('item_id')
-            ->whereNull('unit_id')
-            // ->where('fat_tax', '!=', 999)
-            ->where('detail_store', $this->invoice->acc1)
-            ->with('item')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'name' => $item->item->name ?? '-',
-                    'quantity' => $item->qty_in ?? 0,
-                    'unit_cost' => $item->cost_price ?? 0,
-                    'cost_percentage' => $item->additional ?? 0,
-                    'total_cost' => ($item->qty_in ?? 0) * ($item->cost_price ?? 0),
-                ];
-            });
-
-        // تحميل المواد الخام
-        $this->rawMaterials = $this->invoice->operationItems()
-            ->whereNotNull('item_id')
-            ->whereNotNull('unit_id')
+        // تحميل جميع العناصر وفصلها
+        $allItems = $this->invoice->operationItems()
             ->with(['item', 'unit'])
-            ->get()
-            ->map(function ($item) {
-                return [
+            ->get();
+
+        $this->products = collect();
+        $this->rawMaterials = collect();
+
+        foreach ($allItems as $item) {
+            $qtyIn = (float) ($item->qty_in ?? 0);
+            $qtyOut = (float) ($item->qty_out ?? 0);
+            $isProduct = false;
+
+            // نفس المنطق المستخدم في التعديل
+            if ($qtyIn > 0 && $qtyOut == 0) {
+                $isProduct = true;
+            } elseif ($qtyOut > 0 && $qtyIn == 0) {
+                $isProduct = false;
+            } elseif ($item->detail_store == $this->invoice->acc2) {
+                // Fallback: check if store matches product account
+                // If accounts are same, check for additional cost percentage
+                if ($this->invoice->acc1 == $this->invoice->acc2) {
+                    if (($item->additional ?? 0) > 0) {
+                        $isProduct = true;
+                    }
+                } else {
+                    $isProduct = true;
+                }
+            }
+
+            if ($isProduct) {
+                $this->products->push([
                     'name' => $item->item->name ?? '-',
-                    'quantity' => $item->qty_out ?? 0,
-                    'unit_name' => $item->unit->name ?? '-',
-                    'unit_cost' => $item->cost_price ?? 0,
+                    'quantity' => $item->fat_quantity ?? $item->qty_in ?? 0,
+                    'unit_cost' => $item->fat_price ?? $item->cost_price ?? 0,
+                    'cost_percentage' => $item->additional ?? 0,
                     'total_cost' => $item->detail_value ?? 0,
-                ];
-            });
+                ]);
+            } else {
+                $this->rawMaterials->push([
+                    'name' => $item->item->name ?? '-',
+                    'quantity' => $item->fat_quantity ?? $item->qty_out ?? 0,
+                    'unit_name' => $item->unit->name ?? '-',
+                    'unit_cost' => $item->fat_price ?? $item->cost_price ?? 0,
+                    'total_cost' => $item->detail_value ?? 0,
+                ]);
+            }
+        }
 
         // تحميل المصروفات
         $this->expenses = Expense::where('op_id', $this->invoice->id)
