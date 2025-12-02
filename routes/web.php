@@ -13,6 +13,9 @@ use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\EmployeeAuthController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeesJobController;
+use App\Http\Controllers\CovenantController;
+use App\Http\Controllers\ErrandController;
+use App\Http\Controllers\WorkPermissionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryStartBalanceController;
 use App\Http\Controllers\InvoiceController;
@@ -132,6 +135,13 @@ Route::middleware(['auth'])->group(function () {
             return view('hr-management.leaves.leave-types.manage-leave-types');
         })->name('leaves.types.manage')->middleware('can:view Leave Types');
     });
+
+    // 📁 Covenants
+    Route::resource('covenants', CovenantController::class)->names('covenants')->only('index');
+    // 📁 Errands
+    Route::resource('errands', ErrandController::class)->names('errands')->only('index');
+    // 📁 Work Permissions
+    Route::resource('work-permissions', WorkPermissionController::class)->names('work-permissions')->only('index');
     // ############################################################################################################
     // 📁 Projects
     Route::get('projects/statistics', [ProjectController::class, 'statistics'])->name('projects.statistics');

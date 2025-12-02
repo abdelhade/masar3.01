@@ -42,6 +42,10 @@ class HRPermissionsSeeder extends Seeder
                 'Leave Categories',
                 'Leaves',
                 'Holidays',
+                'Covenants',
+                'Errands',
+                'Work Permissions',
+                'CVs',
             ],
         ];
 

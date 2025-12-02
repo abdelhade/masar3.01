@@ -25,6 +25,23 @@ class Employee extends Model implements HasMedia
     ];
 
     protected $guarded = ['id'];
+    // عهد عمل
+    public function covenants(): HasMany
+    {
+        return $this->hasMany(Covenant::class, 'employee_id');
+    }
+
+    //ماموريات العمل
+    public function errands(): HasMany
+    {
+        return $this->hasMany(Errand::class, 'employee_id');
+    }
+
+    // أذونات العمل
+    public function workPermissions(): HasMany
+    {
+        return $this->hasMany(WorkPermission::class, 'employee_id');
+    }
 
     // Mapping arrays for marital_status, education, and status
     // English to Arabic mapping (for form input -> database)

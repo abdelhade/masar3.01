@@ -14,6 +14,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('employees', function (Blueprint $table) {
+            // update the existing enum value of salary_type to add the new values
+            $table->enum('salary_type', ['ساعات عمل فقط', 'ساعات عمل و إضافي يومى', 'ساعات عمل و إضافي للمده', 'حضور فقط', 'إنتاج فقط', 'ثابت + ساعات عمل مرن'])->change();
+            $table->unsignedInteger('allowed_permission_days')->default(0);
+            $table->unsignedInteger('allowed_late_days')->default(0);
+            $table->unsignedInteger('allowed_absent_days')->default(0);
+            $table->boolean('is_errand_allowed')->default(false);
+            $table->unsignedInteger('allowed_errand_days')->default(0);
             // Composite index for branch_id and name for faster search queries
             // This helps with BranchScope filtering and name searches
             if (! $this->indexExists('employees', 'employees_branch_id_name_index')) {
@@ -33,6 +40,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn(['allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days']);
+            $table->enum('salary_type', ['ساعات عمل فقط', 'ساعات عمل و إضافي يومى', 'ساعات عمل و إضافي للمده', 'حضور فقط', 'إنتاج فقط'])->change();
             $table->dropIndex('employees_branch_id_name_index');
             $table->dropIndex('employees_status_index');
         });
