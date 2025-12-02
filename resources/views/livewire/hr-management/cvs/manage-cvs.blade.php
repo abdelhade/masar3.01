@@ -377,7 +377,7 @@ new class extends Component {
             </div>
         </div>
         <div class="col-md-6 text-end">
-            {{-- @can('create CVs') --}}
+            @can('create CVs')
                 <button wire:click="create" 
                         class="btn btn-main btn-lg shadow-sm"
                         wire:loading.attr="disabled"
@@ -389,7 +389,7 @@ new class extends Component {
                         <i class="mdi mdi-loading mdi-spin me-2"></i> {{ __('hr.opening') }}...
                     </span>
                 </button>
-            {{-- @endcan --}}
+            @endcan
         </div>
     </div>
 
@@ -455,9 +455,9 @@ new class extends Component {
                             <th class="border-0 fw-semibold">{{ __('hr.personal_info') }}</th>
                             <th class="border-0 fw-semibold">{{ __('hr.cv_file') }}</th>
                             <th class="border-0 fw-semibold">{{ __('hr.created_at') }}</th>
-                            {{-- @canany(['view CVs', 'edit CVs', 'delete CVs']) --}}
+                            @canany(['view CVs', 'edit CVs', 'delete CVs'])
                                 <th class="border-0 fw-semibold text-center">{{ __('hr.actions') }}</th>
-                            {{-- @endcanany --}}
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -528,10 +528,10 @@ new class extends Component {
                                     @endif
                                 </td>
                                 <td>{{ $cv->created_at->format('M d, Y') }}</td>
-                                {{-- @canany(['view CVs', 'edit CVs', 'delete CVs']) --}}
+                                @canany(['view CVs', 'edit CVs', 'delete CVs'])
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
-                                            {{-- @can('view CVs') --}}
+                                            @can('view CVs')
                                                 <button wire:click="view({{ $cv->id }})" 
                                                         class="btn btn-sm btn-outline-info" 
                                                         title="{{ __('hr.view') }}"
@@ -544,8 +544,8 @@ new class extends Component {
                                                         <i class="mdi mdi-loading mdi-spin"></i>
                                                     </span>
                                                 </button>
-                                            {{-- @endcan --}}
-                                            {{-- @can('edit CVs') --}}
+                                            @endcan
+                                            @can('edit CVs')
                                                 <button wire:click="edit({{ $cv->id }})" 
                                                         class="btn btn-sm btn-outline-warning" 
                                                         title="{{ __('hr.edit') }}"
@@ -558,8 +558,8 @@ new class extends Component {
                                                         <i class="mdi mdi-loading mdi-spin"></i>
                                                     </span>
                                                 </button>
-                                            {{-- @endcan --}}
-                                            {{-- @can('delete CVs') --}}
+                                            @endcan
+                                            @can('delete CVs')
                                                 <button wire:click="delete({{ $cv->id }})" 
                                                         wire:confirm="{{ __('hr.confirm_delete_cv') }}"
                                                         class="btn btn-sm btn-outline-danger" 
@@ -573,21 +573,19 @@ new class extends Component {
                                                         <i class="mdi mdi-loading mdi-spin"></i>
                                                     </span>
                                                 </button>
-                                            {{-- @endcan --}}
+                                            @endcan
                                         </div>
                                     </td>
-                                {{-- @endcanany --}}
+                                @endcanany
                             </tr>
                         @empty
                             <tr>
-                                <td 
-                                  {{-- colspan="{{ auth()->user()->canany(['view CVs', 'edit CVs', 'delete CVs']) ? 7 : 6 }}" class="text-center py-5" --}}
-                                >
+                                <td colspan="{{ auth()->user()->canany(['view CVs', 'edit CVs', 'delete CVs']) ? 7 : 6 }}" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="mdi mdi-file-document-outline text-muted" style="font-size: 4rem;"></i>
                                         <h5 class="mt-3 mb-2">{{ __('hr.no_cvs_found') }}</h5>
                                         <p class="mb-3">{{ __('hr.start_by_adding_first_cv') }}</p>
-                                        {{-- @can('create CVs') --}}
+                                        @can('create CVs')
                                             <button wire:click="create" 
                                                     class="btn btn-main"
                                                     wire:loading.attr="disabled"
@@ -599,7 +597,7 @@ new class extends Component {
                                                     <i class="mdi mdi-loading mdi-spin me-2"></i> {{ __('hr.opening') }}...
                                                 </span>
                                             </button>
-                                        {{-- @endcan --}}
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

@@ -28,6 +28,7 @@ new class extends Component {
             'job:id,title',
             'department:id,title',
             'shift:id,name,start_time,end_time',
+            'lineManager:id,name',
             'media'
         ])->findOrFail($this->employeeId);
     }

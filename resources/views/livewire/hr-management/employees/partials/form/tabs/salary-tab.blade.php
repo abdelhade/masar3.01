@@ -36,6 +36,7 @@
                                 <option value="ساعات عمل و إضافي للمده">{{ __('ساعات عمل و إضافي للمده') }}</option>
                                 <option value="حضور فقط">{{ __('حضور فقط') }}</option>
                                 <option value="إنتاج فقط">{{ __('إنتاج فقط') }}</option>
+                                <option value="ثابت + ساعات عمل مرن">{{ __('ثابت + ساعات عمل مرن') }}</option>
                             </select>
                             @error('salary_type')
                                 <div class="text-danger small mt-1">

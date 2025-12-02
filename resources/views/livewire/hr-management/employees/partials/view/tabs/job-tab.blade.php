@@ -9,7 +9,7 @@
             <div class="card border-0 shadow-sm animate-on-scroll">
                 <div class="card-header bg-warning text-white py-2">
                     <h6 class="card-title mb-0 fw-bold font-hold">
-                        <i class="fas fa-briefcase me-2"></i>{{ __('بيانات الوظيفة') }}
+                        <i class="fas fa-briefcase me-2"></i>{{ __('بيانات الوظيفة والراتب') }}
                     </h6>
                 </div>
                 <div class="card-body">
@@ -66,6 +66,24 @@
                                 <p class="form-control-plaintext mb-0 fs-5">
                                     {{ $viewEmployee->date_of_fire ? $viewEmployee->date_of_fire->format('Y-m-d') : __('غير محدد') }}
                                 </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-user-tie me-1 text-warning"></i>{{ __('المدير المباشر') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">
+                                    {{ $viewEmployee->lineManager?->name ?? __('غير محدد') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-layer-group me-1 text-warning"></i>{{ __('المستوى الوظيفي') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">{{ e($viewEmployee->job_level ?? __('غير محدد')) }}</p>
                             </div>
                         </div>
                     </div>

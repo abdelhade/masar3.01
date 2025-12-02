@@ -14,6 +14,43 @@
                 </div>
                 <div class="card-body py-3">
                     <div class="row g-3">
+                         <!-- Department -->
+                         <div class="row gx-4 g-1">
+                            <div class="col-6">
+                                <label class="form-label fw-bold text-dark">{{ __('القسم') }}</label>
+                                <select class="form-select" wire:model.blur="department_id">
+                                    <option value="">{{ __('اختر القسم') }}</option>
+                                    @foreach ($departments as $department)
+                                        <option value="{{ $department->id }}">{{ $department->title }}</option>
+                                    @endforeach
+                                </select>
+                                @error('department_id')
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold text-dark">{{ __('مدير القسم') }}</label>
+                                <input type="text" class="form-control" value="{{ $departments?->find($department_id)?->director?->name }}" disabled readonly>
+                            </div>
+                        </div>
+                        {{-- Line Manager --}}
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-dark">{{ __('المدير المباشر') }}</label>
+                            <select class="form-select" wire:model.defer="line_manager_id">
+                                <option value="">{{ __('اختر المدير المباشر') }}</option>
+                                    @foreach ($this->lineManagers as $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('line_manager_id')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <!-- Job -->
                         <div class="col-12">
                             <label class="form-label fw-bold text-dark">{{ __('الوظيفة') }}</label>
                             <select class="form-select" wire:model.defer="job_id">
@@ -28,20 +65,7 @@
                                 </div>
                             @enderror
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-dark">{{ __('القسم') }}</label>
-                            <select class="form-select" wire:model.defer="department_id">
-                                <option value="">{{ __('اختر القسم') }}</option>
-                                @foreach ($departments as $department)
-                                    <option value="{{ $department->id }}">{{ $department->title }}</option>
-                                @endforeach
-                            </select>
-                            @error('department_id')
-                                <div class="text-danger small mt-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
-                                </div>
-                            @enderror
-                        </div>
+                        <!-- Job Level -->
                         <div class="col-12">
                             <label class="form-label fw-bold text-dark">{{ __('المستوى الوظيفي') }}</label>
                             <select class="form-select" wire:model.defer="job_level">

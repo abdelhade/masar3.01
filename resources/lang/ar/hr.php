@@ -848,6 +848,14 @@ return [
 
     // أذونات الإنصراف
     'work_permissions' => 'أذونات الإنصراف',
+    'allowed_permission_days_title'=> 'عدد أيام إذون الإنصراف المسموح به',
+    'allowed_late_days'=> 'عدد أيام التأخير',
+    'allowed_late_days_title'=> 'عدد أيام التأخير المسموح به',
+    'allowed_absent_days'=> 'عدد أيام الغياب',
+    'allowed_absent_days_title'=> 'عدد أيام الغياب المسموح به',
+    'is_errand_allowed'=> 'المأموريات مسموح به؟',
+    'allowed_errand_days'=> 'عدد المأموريات',
+    'allowed_errand_days_title'=> 'عدد المأموريات المسموح به',
     'work_permissions_management' => 'إدارة أذونات الإنصراف',
     'manage_work_permissions' => 'إدارة أذونات الانصراف',
     'add_new_work_permission' => 'إضافة إذن إنصراف جديد',
