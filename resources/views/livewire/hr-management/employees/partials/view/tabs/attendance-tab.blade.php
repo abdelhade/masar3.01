@@ -9,7 +9,7 @@
             <div class="card border-0 shadow-sm animate-on-scroll">
                 <div class="card-header bg-success text-white py-2">
                     <h6 class="card-title mb-0 fw-bold font-hold">
-                        <i class="fas fa-clock me-2"></i>{{ __('بيانات المرتبات والحضور') }}
+                        <i class="fas fa-clock me-2"></i>{{ __('بيانات الحضور') }}
                     </h6>
                 </div>
                 <div class="card-body">
@@ -93,6 +93,60 @@
                                 </label>
                                 <p class="form-control-plaintext mb-0 fs-5">
                                     {{ $viewEmployee->late_day_calculation ? $viewEmployee->late_day_calculation . ' يوم' : __('غير محدد') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-calendar-check me-1 text-info"></i>{{ __('hr.allowed_permission_days_title') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">
+                                    {{ $viewEmployee->allowed_permission_days ?? 0 }} {{ __('يوم') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-clock me-1 text-warning"></i>{{ __('hr.allowed_late_days_title') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">
+                                    {{ $viewEmployee->allowed_late_days ?? 0 }} {{ __('يوم') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-calendar-times me-1 text-danger"></i>{{ __('hr.allowed_absent_days_title') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">
+                                    {{ $viewEmployee->allowed_absent_days ?? 0 }} {{ __('يوم') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-check-circle me-1 text-success"></i>{{ __('hr.is_errand_allowed') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0">
+                                    @if($viewEmployee->is_errand_allowed)
+                                        <span class="badge bg-success fs-6">{{ __('نعم') }}</span>
+                                    @else
+                                        <span class="badge bg-secondary fs-6">{{ __('لا') }}</span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-briefcase me-1 text-primary"></i>{{ __('hr.allowed_errand_days_title') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">
+                                    {{ $viewEmployee->allowed_errand_days ?? 0 }} {{ __('يوم') }}
                                 </p>
                             </div>
                         </div>

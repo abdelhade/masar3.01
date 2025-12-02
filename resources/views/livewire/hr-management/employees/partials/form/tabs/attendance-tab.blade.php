@@ -13,8 +13,9 @@
                     </h6>
                 </div>
                 <div class="card-body py-3">
-                    <div class="row g-3">
-                        <div class="col-12">
+                    <div class="row gx-4 mb-3">
+                        {{-- Shift --}}
+                        <div class="col-4">
                             <label class="form-label fw-bold text-dark">{{ __('الشيفت') }}</label>
                             <select class="form-select fw-bold" wire:model.defer="shift_id">
                                 <option value="">{{ __('اختر الشيفت') }}</option>
@@ -30,7 +31,8 @@
                                 </div>
                             @enderror
                         </div>
-                        <div class="col-12">
+                        {{-- Finger Print --}}
+                        <div class="col-4">
                             <label class="form-label fw-bold text-dark">{{ __('رقم البصمة') }}</label>
                             <input type="number" class="form-control" wire:model.defer="finger_print_id"
                                 placeholder="{{ __('أدخل رقم البصمة') }}" min="0">
@@ -40,7 +42,8 @@
                                 </div>
                             @enderror
                         </div>
-                        <div class="col-12">
+                        {{-- Finger Print Name --}}
+                        <div class="col-4">
                             <label class="form-label fw-bold text-dark">{{ __('الاسم في البصمة') }}</label>
                             <input type="text" class="form-control" wire:model.defer="finger_print_name"
                                 placeholder="{{ __('أدخل الاسم في البصمة') }}">
@@ -51,9 +54,62 @@
                             @enderror
                         </div>
                     </div>
+                    {{-- Allowed allowed_permission_days, allowed_late_days, allowed_absent_days, allowed_errand_days, is_errand_allowed --}}
+                    <div class="row gx-4 mb-3">
+                        <div class="col-2">
+                            <label class="form-label fw-bold text-dark">{{ __('hr.work_permissions') }}</label>
+                            <input type="number" class="form-control" wire:model.defer="allowed_permission_days"
+                                placeholder="0" min="0" title="{{ __('hr.allowed_permission_days_title') }}">
+                            @error('allowed_permission_days')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label fw-bold text-dark">{{ __('hr.allowed_late_days') }}</label>
+                            <input type="number" class="form-control" wire:model.defer="allowed_late_days"
+                                placeholder="0" min="0" title="{{ __('hr.allowed_late_days_title') }}">
+                            @error('allowed_late_days')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label fw-bold text-dark">{{ __('hr.allowed_absent_days') }}</label>
+                            <input type="number" class="form-control" wire:model.defer="allowed_absent_days"
+                                placeholder="0" min="0" title="{{ __('hr.allowed_absent_days_title') }}">
+                            @error('allowed_absent_days')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label fw-bold text-dark">{{ __('hr.is_errand_allowed') }}</label>
+                            <input type="checkbox" class="form-check-input" wire:model.defer="is_errand_allowed">
+                            @error('is_errand_allowed')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label fw-bold text-dark">{{ __('hr.allowed_errand_days') }}</label>
+                            <input type="number" class="form-control" wire:model.defer="allowed_errand_days"
+                                placeholder="0" min="0" title="{{ __('hr.allowed_errand_days_title') }}">
+                            @error('allowed_errand_days')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                    </div>    
                 </div>
             </div>
         </div>
+        {{-- Mobile Password --}}
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-warning text-white py-2">

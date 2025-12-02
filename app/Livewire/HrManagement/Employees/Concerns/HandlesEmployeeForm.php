@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Modules\Accounts\Models\AccHead;
 use Modules\Accounts\Services\AccountService;
+use Livewire\Attributes\Computed;
 
 trait HandlesEmployeeForm
 {
@@ -92,6 +93,8 @@ trait HandlesEmployeeForm
 
     public $department_id;
 
+    public $line_manager_id;
+
     public $date_of_hire;
 
     public $date_of_fire;
@@ -117,6 +120,16 @@ trait HandlesEmployeeForm
     public $late_hour_calculation;
 
     public $late_day_calculation;
+
+    public $allowed_permission_days;
+
+    public $allowed_late_days;
+
+    public $allowed_absent_days;
+
+    public $allowed_errand_days;
+
+    public $is_errand_allowed;
 
     // KPI fields
     public $kpi_ids = [];
@@ -186,7 +199,10 @@ trait HandlesEmployeeForm
 
         // Cache for 2 hours (moderately updated - HR data)
         $this->departments = $cache->remember('departments_list', 7200, function () {
-            return Department::select('id', 'title')->orderBy('title')->get();
+            return Department::with('director')
+                ->select('id', 'title')
+                ->orderBy('title')
+                ->get();
         });
 
         $this->jobs = $cache->remember('jobs_list', 7200, function () {
@@ -208,6 +224,12 @@ trait HandlesEmployeeForm
         });
 
         $this->currentImageUrl = null;
+    }
+
+    #[Computed]
+    public function lineManagers()
+    {
+        return Employee::where('department_id', $this->department_id)->where('id', '!=', $this->employeeId)->get();
     }
 
     /**
@@ -249,6 +271,7 @@ trait HandlesEmployeeForm
             'city',
             'state',
             'town',
+            'lineManager',
         ])->findOrFail($id);
 
         $this->employeeId = $employee->id;
@@ -257,7 +280,7 @@ trait HandlesEmployeeForm
         $this->currentImageUrl = $employee->image_url;
 
         // Load basic employee fields
-        foreach (['name', 'email', 'phone', 'image', 'gender', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation'] as $field) {
+        foreach (['name', 'email', 'phone', 'image', 'gender', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'line_manager_id', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days', 'is_errand_allowed',] as $field) {
             $this->$field = $employee->$field;
         }
 
@@ -452,7 +475,7 @@ trait HandlesEmployeeForm
 
     public function resetEmployeeFields(): void
     {
-        foreach (['employeeId', 'name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'password', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'selected_kpi_id', 'salary_basic_account_id', 'opening_balance'] as $field) {
+        foreach (['employeeId', 'name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'line_manager_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'password', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days', 'is_errand_allowed', 'selected_kpi_id', 'salary_basic_account_id', 'opening_balance'] as $field) {
             $this->$field = null;
         }
 

@@ -22,6 +22,7 @@ class Employee extends Model implements HasMedia
         'date_of_hire' => 'date',
         'date_of_fire' => 'date',
         'password' => 'hashed',
+        'is_errand_allowed' => 'boolean',
     ];
 
     protected $guarded = ['id'];
@@ -467,5 +468,10 @@ class Employee extends Model implements HasMedia
         }
 
         return $url;
+    }
+
+    public function lineManager(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'line_manager_id');
     }
 }
