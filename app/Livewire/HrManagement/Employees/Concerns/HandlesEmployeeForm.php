@@ -16,6 +16,8 @@ use App\Models\LeaveType;
 use App\Models\Shift;
 use App\Models\State;
 use App\Models\Town;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -301,7 +303,9 @@ trait HandlesEmployeeForm
     {
         // Authorization check
         $permission = $this->isEdit ? 'edit Hr-Employees' : 'create Hr-Employees';
-        abort_unless(auth()->user()->can($permission), 403, __('hr.unauthorized_action'));
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_unless($user?->can($permission) ?? false, 403, __('hr.unauthorized_action'));
 
         // Rate limiting check
         $this->ensureIsNotRateLimited('save');
@@ -437,7 +441,7 @@ trait HandlesEmployeeForm
         } catch (\Throwable $th) {
             session()->flash('error', __('hr.error_occurred'));
             Log::error('Employee save error', [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'employee_id' => $this->employeeId,
                 'is_edit' => $this->isEdit,
                 'error' => $th->getMessage(),
@@ -521,7 +525,9 @@ trait HandlesEmployeeForm
     public function addKpi(): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('edit Hr-Employees'), 403, __('hr.unauthorized_action'));
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
 
         if ($this->selected_kpi_id) {
             if (! is_array($this->kpi_ids)) {
@@ -560,7 +566,9 @@ trait HandlesEmployeeForm
     public function removeKpi($kpiId): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('edit Hr-Employees'), 403, __('hr.unauthorized_action'));
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
 
         if (! is_array($this->kpi_ids)) {
             $this->kpi_ids = [];
@@ -583,7 +591,9 @@ trait HandlesEmployeeForm
     public function addLeaveBalance(): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('edit Hr-Employees'), 403, __('hr.unauthorized_action'));
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
 
         if ($this->selected_leave_type_id) {
             if (! is_array($this->leave_balances)) {
@@ -652,7 +662,9 @@ trait HandlesEmployeeForm
     public function removeLeaveBalance($balanceKey): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('edit Hr-Employees'), 403, __('hr.unauthorized_action'));
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
 
         if (! is_array($this->leave_balances)) {
             $this->leave_balances = [];
@@ -785,7 +797,7 @@ trait HandlesEmployeeForm
      */
     protected function throttleKey(string $action): string
     {
-        return Str::transliterate(Str::lower(auth()->id().'|'.$action.'|'.request()->ip()));
+        return Str::transliterate(Str::lower((Auth::id() ?? 0).'|'.$action.'|'.request()->ip()));
     }
 
     /**

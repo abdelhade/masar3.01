@@ -204,7 +204,9 @@ return [
     'leave_types' => 'أنواع الإجازات',
     'cvs' => 'السير الذاتية',
     'cv_management' => 'السير الذاتية',
-
+    'covenants' => 'عهد عمل',
+    'errands' => 'مأموريات العمل',
+    'work_permissions' => 'أذن انصراف',
     // الإعدادات
     'settings' => 'الإعدادات',
     'barcode_print_settings' => 'إعدادات الطابعة',

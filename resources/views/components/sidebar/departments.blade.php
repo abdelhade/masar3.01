@@ -168,10 +168,35 @@
     </li>
 @endcanany
 {{-- CVs --}}
-@can('view CVs')
+{{-- @can('view CVs') --}}
 <li class="nav-item">
     <a class="nav-link font-hold fw-bold" href="{{ route('cvs.index') }}">
             <i class="ti-control-record"></i>{{ __('navigation.cv_management') }}
         </a>
     </li>
-@endcan
+{{-- @endcan --}}
+
+{{-- @can('view Covenants') --}}
+    <li class="nav-item">
+        <a class="nav-link"
+         href="{{ route('covenants.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.covenants') }}
+        </a>
+    </li>
+{{-- @endcan --}}
+{{-- @can('view Errands') --}}
+    <li class="nav-item">
+        <a class="nav-link"
+         href="{{ route('errands.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.errands') }}
+        </a>
+    </li>
+{{-- @endcan --}}
+{{-- @can('view Work Permissions') --}}
+    <li class="nav-item">
+        <a class="nav-link" 
+        href="{{ route('work-permissions.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.work_permissions') }}
+        </a>
+    </li>
+{{-- @endcan --}}

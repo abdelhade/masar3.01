@@ -195,7 +195,9 @@ return [
     'leave_types' => 'Leave Types',
     'cvs' => 'CVs',
     'cv_management' => 'CV Management',
-
+    'covenants' => 'Covenants',
+    'errands' => 'Errands',
+    'work_permissions' => 'Work Permissions',
     // Settings
     'settings' => 'Settings',
     'barcode_print_settings' => 'Barcode Print Settings',
