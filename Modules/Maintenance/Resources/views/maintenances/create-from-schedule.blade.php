@@ -101,16 +101,16 @@
                                 <select name="status" id="status"
                                     class="form-control @error('status') is-invalid @enderror" required>
                                     <option value="">{{ __('Choose Status') }}</option>
-                                    <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>
+                                    <option value="1" {{ old('status') == '0' ? 'selected' : '' }}>
                                         {{ __('Pending') }}
                                     </option>
-                                    <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>
+                                    <option value="2" {{ old('status') == '1' ? 'selected' : '' }}>
                                         {{ __('In Progress') }}
                                     </option>
-                                    <option value="2" {{ old('status') == '2' ? 'selected' : '' }}>
+                                    <option value="3" {{ old('status') == '2' ? 'selected' : '' }}>
                                         {{ __('Completed') }}
                                     </option>
-                                    <option value="3" {{ old('status') == '3' ? 'selected' : '' }}>
+                                    <option value="4" {{ old('status') == '3' ? 'selected' : '' }}>
                                         {{ __('Cancelled') }}
                                     </option>
                                 </select>
@@ -142,6 +142,14 @@
                                     value="{{ old('accural_date', $schedule->next_maintenance_date->format('Y-m-d')) }}"
                                     required>
                                 @error('accural_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            {{-- Branch --}}
+                            <div class="col-md-6 mb-3">
+                                <x-branches::branch-select :branches="$branches" />
+
+                                @error('branch_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

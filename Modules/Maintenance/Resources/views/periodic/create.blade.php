@@ -24,6 +24,7 @@
                 <div class="card-body">
                     <form action="{{ route('periodic.maintenances.store') }}" method="POST">
                         @csrf
+
                         <div class="row">
                             {{-- Client Name --}}
                             <div class="col-md-6 mb-3">
@@ -41,11 +42,11 @@
                             {{-- Client Phone --}}
                             <div class="col-md-6 mb-3">
                                 <label for="client_phone" class="form-label">
-                                    {{ __('Client Phone') }}
+                                    {{ __('Client Phone') }} <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" name="client_phone" id="client_phone"
                                     class="form-control @error('client_phone') is-invalid @enderror"
-                                    value="{{ old('client_phone') }}">
+                                    value="{{ old('client_phone') }}" required>
                                 @error('client_phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -101,15 +102,83 @@
                                 @enderror
                             </div>
 
-                            {{-- Frequency Days --}}
+                            {{-- Branch --}}
                             <div class="col-md-6 mb-3">
-                                <label for="frequency_days" class="form-label">
-                                    {{ __('Frequency (Days)') }} <span class="text-danger">*</span>
+                                <x-branches::branch-select :branches="$branches" />
+
+                                @error('branch_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            {{-- Frequency Type --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="frequency_type" class="form-label">
+                                    {{ __('Frequency Type') }} <span class="text-danger">*</span>
                                 </label>
-                                <input type="number" name="frequency_days" id="frequency_days"
-                                    class="form-control @error('frequency_days') is-invalid @enderror"
-                                    value="{{ old('frequency_days') }}" required min="1">
-                                @error('frequency_days')
+                                <select name="frequency_type" id="frequency_type"
+                                    class="form-control @error('frequency_type') is-invalid @enderror" required>
+                                    <option value="">{{ __('Choose Frequency Type') }}</option>
+                                    <option value="daily" {{ old('frequency_type') == 'daily' ? 'selected' : '' }}>يومي
+                                    </option>
+                                    <option value="weekly" {{ old('frequency_type') == 'weekly' ? 'selected' : '' }}>أسبوعي
+                                    </option>
+                                    <option value="monthly" {{ old('frequency_type') == 'monthly' ? 'selected' : '' }}>شهري
+                                    </option>
+                                    <option value="quarterly" {{ old('frequency_type') == 'quarterly' ? 'selected' : '' }}>
+                                        ربع سنوي</option>
+                                    <option value="semi_annual"
+                                        {{ old('frequency_type') == 'semi_annual' ? 'selected' : '' }}>نصف سنوي</option>
+                                    <option value="annual" {{ old('frequency_type') == 'annual' ? 'selected' : '' }}>سنوي
+                                    </option>
+                                    <option value="custom_days"
+                                        {{ old('frequency_type') == 'custom_days' ? 'selected' : '' }}>عدد أيام مخصص
+                                    </option>
+                                </select>
+                                @error('frequency_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Frequency Value (Days) for custom_days --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="frequency_value" class="form-label">
+                                    {{ __('Frequency Value (Days)') }}
+                                </label>
+                                <input type="number" name="frequency_value" id="frequency_value"
+                                    class="form-control @error('frequency_value') is-invalid @enderror"
+                                    value="{{ old('frequency_value') }}" min="1">
+                                @error('frequency_value')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            {{-- Start Date --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">
+                                    {{ __('Start Date') }} <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="start_date" id="start_date"
+                                    class="form-control @error('start_date') is-invalid @enderror"
+                                    value="{{ old('start_date', now()->format('Y-m-d')) }}" required>
+                                @error('start_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Next Maintenance Date --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="next_maintenance_date" class="form-label">
+                                    {{ __('Next Maintenance Date') }} <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="next_maintenance_date" id="next_maintenance_date"
+                                    class="form-control @error('next_maintenance_date') is-invalid @enderror"
+                                    value="{{ old('next_maintenance_date') }}" required>
+                                @error('next_maintenance_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -129,15 +198,16 @@
                                 @enderror
                             </div>
 
-                            {{-- Next Maintenance Date --}}
+                            {{-- Notification Days Before --}}
                             <div class="col-md-6 mb-3">
-                                <label for="next_maintenance_date" class="form-label">
-                                    {{ __('Next Maintenance Date') }} <span class="text-danger">*</span>
+                                <label for="notification_days_before" class="form-label">
+                                    {{ __('Notification Days Before') }} <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" name="next_maintenance_date" id="next_maintenance_date"
-                                    class="form-control @error('next_maintenance_date') is-invalid @enderror"
-                                    value="{{ old('next_maintenance_date') }}" required>
-                                @error('next_maintenance_date')
+                                <input type="number" name="notification_days_before" id="notification_days_before"
+                                    class="form-control @error('notification_days_before') is-invalid @enderror"
+                                    value="{{ old('notification_days_before', 7) }}" min="1" max="365"
+                                    required>
+                                @error('notification_days_before')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -164,6 +234,9 @@
                                         {{ __('Is Active') }}
                                     </label>
                                 </div>
+                                @error('is_active')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 

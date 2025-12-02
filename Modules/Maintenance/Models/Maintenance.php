@@ -10,18 +10,7 @@ use Modules\Maintenance\Enums\MaintenanceStatus;
 
 class Maintenance extends Model
 {
-    protected $fillable = [
-        'client_name',
-        'client_phone',
-        'item_name',
-        'item_number',
-        'service_type_id',
-        'status',
-        'date',
-        'accural_date',
-        'branch_id',
-        'periodic_schedule_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $casts = [
         'status' => MaintenanceStatus::class,

@@ -11,7 +11,6 @@ class ServiceType extends Model
         'name',
         'description',
         'branch_id',
-
     ];
 
     protected static function booted()

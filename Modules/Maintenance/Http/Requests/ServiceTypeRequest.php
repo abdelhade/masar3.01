@@ -13,23 +13,24 @@ class ServiceTypeRequest extends FormRequest
 
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
         return [
             'name' => 'required|string|max:255|unique:service_types,name,' . $this->id,
             'description' => 'nullable|string',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'اسم نوع الصيانة مطلوب.',
-            'name.string' => 'اسم نوع الصيانة يجب أن يكون نصًا.',
-            'name.max' => 'اسم نوع الصيانة لا يجب أن يزيد عن 255 حرفًا.',
-            'name.unique' => 'اسم نوع الصيانة مسجل بالفعل.',
-            'description.string' => 'الوصف يجب أن يكون نصًا.',
-            'branch_id.required' => 'الفرع مطلوب.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
+            'name.required' => __('service_type.name.required'),
+            'name.string' => __('service_type.name.string'),
+            'name.max' => __('service_type.name.max'),
+            'name.unique' => __('service_type.name.unique'),
+            'description.string' => __('service_type.description.string'),
+            'branch_id.required' => __('service_type.branch_id.required'),
+            'branch_id.exists' => __('service_type.branch_id.exists'),
         ];
     }
 }

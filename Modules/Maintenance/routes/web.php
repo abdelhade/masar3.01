@@ -25,4 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{periodicMaintenance}/toggle', [PeriodicMaintenanceController::class, 'toggleActive'])->name('toggle');
         Route::get('/{schedule}/create-maintenance', [PeriodicMaintenanceController::class, 'createMaintenanceFromSchedule'])->name('create-maintenance');
     });
+
+    Route::middleware(['auth', 'permission:edit Periodic Maintenance'])->group(function () {
+        Route::post('periodic-maintenances/{periodicMaintenance}/toggle-active', [\Modules\Maintenance\Http\Controllers\PeriodicMaintenanceController::class, 'toggleActive'])
+            ->name('periodic.maintenances.toggleActive');
+    });
 });

@@ -30,25 +30,26 @@ class MaintenanceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'client_name.string' => 'اسم العميل يجب أن يكون نصًا.',
-            'client_name.max' => 'اسم العميل لا يجب أن يزيد عن 255 حرفًا.',
+            'client_name.string' => __('validation.client_name.string'),
+            'client_name.max' => __('validation.client_name.max'),
 
-            'client_phone.string' => 'رقم الهاتف يجب أن يكون نصًا.',
-            'client_phone.max' => 'رقم الهاتف لا يجب أن يزيد عن 20 رقمًا.',
+            'client_phone.string' => __('validation.client_phone.string'),
+            'client_phone.max' => __('validation.client_phone.max'),
 
-            'item_name.string' => 'اسم البند يجب أن يكون نصًا.',
-            'item_name.max' => 'اسم البند لا يجب أن يزيد عن 255 حرفًا.',
+            'item_name.string' => __('validation.item_name.string'),
+            'item_name.max' => __('validation.item_name.max'),
 
-            'item_number.string' => 'رقم البند يجب أن يكون نصًا.',
-            'item_number.max' => 'رقم البند لا يجب أن يزيد عن 50 حرفًا.',
+            'item_number.string' => __('validation.item_number.string'),
+            'item_number.max' => __('validation.item_number.max'),
 
-            'service_type_id.required' => 'نوع الصيانة مطلوب.',
-            'service_type_id.exists' => 'نوع الصيانة غير موجود في النظام.',
+            'service_type_id.required' => __('validation.service_type_id.required'),
+            'service_type_id.exists' => __('validation.service_type_id.exists'),
 
-            'status.required' => 'الحالة مطلوبة.',
-            'status.integer' => 'الحالة يجب أن تكون رقم صحيح.',
-            'branch_id.required' => 'الفرع مطلوب.',
-            'branch_id.exists' => 'الفرع المختار غير صحيح.',
+            'status.required' => __('validation.status.required'),
+            'status.integer' => __('validation.status.integer'),
+
+            'branch_id.required' => __('validation.branch_id.required'),
+            'branch_id.exists' => __('validation.branch_id.exists'),
         ];
     }
 }

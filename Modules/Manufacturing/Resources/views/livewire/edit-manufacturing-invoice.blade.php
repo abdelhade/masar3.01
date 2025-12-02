@@ -48,11 +48,11 @@
                                         <i class="fas fa-save"></i>
                                         <span>{{ __('Update Invoice') }}</span>
                                     </button>
-                                    <button wire:click="cancelEdit"
+                                    <a href="{{ route('manufacturing.index') }}"
                                         class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
                                         <i class="fas fa-times"></i>
                                         <span>{{ __('Cancel') }}</span>
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>

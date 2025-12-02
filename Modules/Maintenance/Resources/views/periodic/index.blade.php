@@ -91,18 +91,20 @@
                                                         <i class="las la-edit"></i>
                                                     </a>
 
-                                                    <form action="{{ route('periodic.maintenances.toggleActive', $schedule->id) }}"
+                                                    {{-- Toggle Active - الاسم الصحيح والـ method الصحيح --}}
+                                                    <form action="{{ route('periodic.maintenances.toggle', $schedule->id) }}"
                                                         method="POST" style="display:inline-block;">
                                                         @csrf
-                                                        @method('PUT')
+                                                        @method('PATCH')
                                                         <button type="submit" class="btn btn-warning btn-icon-square-sm"
                                                             title="{{ __('Toggle Status') }}">
                                                             <i class="las la-toggle-{{ $schedule->is_active ? 'on' : 'off' }}"></i>
                                                         </button>
                                                     </form>
 
+                                                    {{-- Create Maintenance - الاسم الصحيح --}}
                                                     <a class="btn btn-info btn-icon-square-sm"
-                                                        href="{{ route('periodic.maintenances.createMaintenance', $schedule->id) }}"
+                                                        href="{{ route('periodic.maintenances.create-maintenance', $schedule->id) }}"
                                                         title="{{ __('Create From Schedule') }}">
                                                         <i class="las la-plus"></i>
                                                     </a>

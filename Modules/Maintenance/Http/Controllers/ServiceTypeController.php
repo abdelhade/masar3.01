@@ -25,7 +25,8 @@ class ServiceTypeController extends Controller
 
     public function create()
     {
-        return view('maintenance::service-types.create');
+        $branches = userBranches();
+        return view('maintenance::service-types.create', compact('branches'));
     }
 
     public function store(ServiceTypeRequest $request)
@@ -46,13 +47,13 @@ class ServiceTypeController extends Controller
         return view('maintenance::service-types.edit', compact('type'));
     }
 
-    public function update(ServiceTypeRequest $request, ServiceType $type)
+    public function update(ServiceTypeRequest $request, ServiceType $service_type)
     {
         try {
-            $type->update($request->validated());
+            $service_type->update($request->validated());
             Alert::toast(__('Item updated successfully'), 'success');
             return redirect()->route('service.types.index');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             Alert::toast(__('An error occurred'), 'error');
             return redirect()->back();
         }

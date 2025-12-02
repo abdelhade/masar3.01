@@ -88,19 +88,24 @@ class ManufacturingShow extends Component
         }
 
         // تحميل المصروفات
-        $this->expenses = Expense::where('op_id', $this->invoice->id)
-            ->with('account')
-            ->get()
-            ->map(function ($expense) {
-                $description = str_replace('مصروف إضافي: ', '', $expense->description);
-                $description = preg_replace('/ - فاتورة:.*$/', '', $description);
+        $expensesData = Expense::where('op_id', $this->invoice->id)->get();
 
-                return [
-                    'description' => trim($description),
-                    'account_name' => $expense->account->aname ?? '-',
-                    'amount' => $expense->amount ?? 0,
-                ];
-            });
+        // Get account IDs to load accounts
+        $accountIds = $expensesData->pluck('account_id')->filter()->unique();
+        $accounts = \Modules\Accounts\Models\AccHead::whereIn('id', $accountIds)
+            ->pluck('aname', 'id')
+            ->toArray();
+
+        $this->expenses = $expensesData->map(function ($expense) use ($accounts) {
+            $description = str_replace('مصروف إضافي: ', '', $expense->description);
+            $description = preg_replace('/ - فاتورة:.*$/', '', $description);
+
+            return [
+                'description' => trim($description),
+                'account_name' => $accounts[$expense->account_id] ?? '-',
+                'amount' => $expense->amount ?? 0,
+            ];
+        });
 
         // حساب الإجماليات
         $this->calculateTotals();

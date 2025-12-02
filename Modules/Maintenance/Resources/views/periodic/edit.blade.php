@@ -25,6 +25,7 @@
                     <form action="{{ route('periodic.maintenances.update', $periodicMaintenance->id) }}" method="POST">
                         @csrf
                         @method('PUT')
+
                         <div class="row">
                             {{-- Client Name --}}
                             <div class="col-md-6 mb-3">
@@ -42,11 +43,11 @@
                             {{-- Client Phone --}}
                             <div class="col-md-6 mb-3">
                                 <label for="client_phone" class="form-label">
-                                    {{ __('Client Phone') }}
+                                    {{ __('Client Phone') }} <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" name="client_phone" id="client_phone"
                                     class="form-control @error('client_phone') is-invalid @enderror"
-                                    value="{{ old('client_phone', $periodicMaintenance->client_phone) }}">
+                                    value="{{ old('client_phone', $periodicMaintenance->client_phone) }}" required>
                                 @error('client_phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -102,45 +103,103 @@
                                 @enderror
                             </div>
 
-                            {{-- Frequency Days --}}
+                            {{-- Branch --}}
                             <div class="col-md-6 mb-3">
-                                <label for="frequency_days" class="form-label">
-                                    {{ __('Frequency (Days)') }} <span class="text-danger">*</span>
+                                <label for="branch_id" class="form-label">
+                                    {{ __('Branch') }}
                                 </label>
-                                <input type="number" name="frequency_days" id="frequency_days"
-                                    class="form-control @error('frequency_days') is-invalid @enderror"
-                                    value="{{ old('frequency_days', $periodicMaintenance->frequency_days) }}" required
-                                    min="1">
-                                @error('frequency_days')
+                                <select name="branch_id" id="branch_id"
+                                    class="form-control @error('branch_id') is-invalid @enderror">
+                                    <option value="">{{ __('Choose Branch') }}</option>
+                                    @foreach (userBranches() as $branch)
+                                        <option value="{{ $branch->id }}"
+                                            {{ old('branch_id', $periodicMaintenance->branch_id) == $branch->id ? 'selected' : '' }}>
+                                            {{ $branch->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('branch_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
                         <div class="row">
-                            {{-- Last Maintenance Date --}}
+                            {{-- Frequency Type --}}
                             <div class="col-md-6 mb-3">
-                                <label for="last_maintenance_date" class="form-label">
-                                    {{ __('Last Maintenance Date') }}
+                                <label for="frequency_type" class="form-label">
+                                    {{ __('Frequency Type') }} <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" name="last_maintenance_date" id="last_maintenance_date"
-                                    class="form-control @error('last_maintenance_date') is-invalid @enderror"
-                                    value="{{ old('last_maintenance_date', $periodicMaintenance->last_maintenance_date?->format('Y-m-d')) }}">
-                                @error('last_maintenance_date')
+                                <select name="frequency_type" id="frequency_type"
+                                    class="form-control @error('frequency_type') is-invalid @enderror" required>
+                                    <option value="">{{ __('Choose Frequency Type') }}</option>
+                                    <option value="daily"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'daily' ? 'selected' : '' }}>
+                                        يومي</option>
+                                    <option value="weekly"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'weekly' ? 'selected' : '' }}>
+                                        أسبوعي</option>
+                                    <option value="monthly"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'monthly' ? 'selected' : '' }}>
+                                        شهري</option>
+                                    <option value="quarterly"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'quarterly' ? 'selected' : '' }}>
+                                        ربع سنوي</option>
+                                    <option value="semi_annual"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'semi_annual' ? 'selected' : '' }}>
+                                        نصف سنوي</option>
+                                    <option value="annual"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'annual' ? 'selected' : '' }}>
+                                        سنوي</option>
+                                    <option value="custom_days"
+                                        {{ old('frequency_type', $periodicMaintenance->frequency_type) == 'custom_days' ? 'selected' : '' }}>
+                                        عدد أيام مخصص</option>
+                                </select>
+                                @error('frequency_type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            {{-- Next Maintenance Date --}}
+                            {{-- Frequency Value (Days) for custom_days --}}
                             <div class="col-md-6 mb-3">
-                                <label for="next_maintenance_date" class="form-label">
-                                    {{ __('Next Maintenance Date') }} <span class="text-danger">*</span>
+                                <label for="frequency_value" class="form-label">
+                                    {{ __('Frequency Value (Days)') }}
                                 </label>
-                                <input type="date" name="next_maintenance_date" id="next_maintenance_date"
-                                    class="form-control @error('next_maintenance_date') is-invalid @enderror"
-                                    value="{{ old('next_maintenance_date', $periodicMaintenance->next_maintenance_date?->format('Y-m-d')) }}"
+                                <input type="number" name="frequency_value" id="frequency_value"
+                                    class="form-control @error('frequency_value') is-invalid @enderror"
+                                    value="{{ old('frequency_value', $periodicMaintenance->frequency_value) }}"
+                                    min="1">
+                                @error('frequency_value')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            {{-- Start Date --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">
+                                    {{ __('Start Date') }} <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="start_date" id="start_date"
+                                    class="form-control @error('start_date') is-invalid @enderror"
+                                    value="{{ old('start_date', $periodicMaintenance->start_date?->format('Y-m-d')) }}"
                                     required>
-                                @error('next_maintenance_date')
+                                @error('start_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Notification Days Before --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="notification_days_before" class="form-label">
+                                    {{ __('Notification Days Before') }} <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" name="notification_days_before" id="notification_days_before"
+                                    class="form-control @error('notification_days_before') is-invalid @enderror"
+                                    value="{{ old('notification_days_before', $periodicMaintenance->notification_days_before) }}"
+                                    min="1" max="365" required>
+                                @error('notification_days_before')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
