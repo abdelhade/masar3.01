@@ -21,6 +21,8 @@ class CRMPermissionsSeeder extends Seeder
                 'Client Contacts',
                 'Task Types',
                 'Tasks',
+                'Tickets',
+                'Returns',
                 'CRM Statistics',
             ],
         ];

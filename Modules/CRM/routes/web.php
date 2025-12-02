@@ -12,9 +12,11 @@ use Modules\CRM\Http\Controllers\{
     // ClientController,
     LeadController,
     LeadStatusController,
+    ReturnController,
     StatisticsController,
     TaskController,
-    TaskTypeController
+    TaskTypeController,
+    TicketController
 };
 use Modules\CRM\Livewire\LeadsBoard;
 
@@ -35,6 +37,14 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
     Route::post('/leads/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
+
+    Route::resource('tickets', TicketController::class)->names('tickets');
+    Route::post('/tickets/{ticket}/comment', [TicketController::class, 'addComment'])->name('tickets.addComment');
+    Route::post('/tickets/update-status', [TicketController::class, 'updateStatus'])->name('tickets.updateStatus');
+
+    Route::resource('returns', ReturnController::class)->names('returns');
+    Route::post('/returns/{return}/approve', [ReturnController::class, 'approve'])->name('returns.approve');
+    Route::post('/returns/{return}/reject', [ReturnController::class, 'reject'])->name('returns.reject');
 
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
 });

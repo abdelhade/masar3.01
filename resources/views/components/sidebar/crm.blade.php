@@ -62,6 +62,22 @@
     </li>
 @endcan
 
+@can('view Tickets')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('tickets.index') }}">
+            <i class="ti-control-record"></i>{{ __('Tickets') }}
+        </a>
+    </li>
+@endcan
+
+@can('view Returns')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('returns.index') }}">
+            <i class="ti-control-record"></i>{{ __('Returns') }}
+        </a>
+    </li>
+@endcan
+
 @can('view Task Types')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('tasks.types.index') }}">
