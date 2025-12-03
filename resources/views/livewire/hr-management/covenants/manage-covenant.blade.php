@@ -34,11 +34,15 @@ new class extends Component {
     // UI state
     public string $search = '';
     public ?int $filter_employee_id = null;
+    public ?string $filter_assignment_status = null; // 'assigned' or 'unassigned'
     public bool $showModal = false;
     public bool $showViewModal = false;
+    public bool $showAssignModal = false;
     public ?int $editingCovenantId = null;
     public ?int $viewCovenantId = null;
     public ?int $deleteId = null;
+    public ?int $assignCovenantId = null;
+    public ?int $assign_employee_id = null;
     public bool $showDeleteModal = false;
     public ?string $currentImageUrl = null;
     public array $employeesList = [];
@@ -63,8 +67,16 @@ new class extends Component {
     public function resetForm(): void
     {
         $this->reset([
-            'name', 'description', 'image', 'employee_id',
+            'name', 'description', 'image',
             'editingCovenantId', 'currentImageUrl'
+        ]);
+        $this->resetValidation();
+    }
+
+    public function resetAssignForm(): void
+    {
+        $this->reset([
+            'assignCovenantId', 'assign_employee_id'
         ]);
         $this->resetValidation();
     }
@@ -75,6 +87,11 @@ new class extends Component {
     }
 
     public function updatingFilterEmployeeId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterAssignmentStatus(): void
     {
         $this->resetPage();
     }
@@ -108,7 +125,6 @@ new class extends Component {
         $covenant = Covenant::create([
             'name' => $this->name,
             'description' => $this->description,
-            'employee_id' => $this->employee_id,
         ]);
 
         // Handle file upload
@@ -131,7 +147,6 @@ new class extends Component {
         $this->editingCovenantId = $id;
         $this->name = $covenant->name;
         $this->description = $covenant->description ?? '';
-        $this->employee_id = $covenant->employee_id;
         $this->currentImageUrl = $covenant->image_url;
         $this->showModal = true;
     }
@@ -151,7 +166,6 @@ new class extends Component {
         $covenant->update([
             'name' => $this->name,
             'description' => $this->description,
-            'employee_id' => $this->employee_id,
         ]);
 
         // Handle file upload
@@ -220,7 +234,57 @@ new class extends Component {
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter_employee_id']);
+        $this->reset(['search', 'filter_employee_id', 'filter_assignment_status']);
+    }
+
+    public function assignCovenant(int $id): void
+    {
+        $this->checkPermission('edit Covenants');
+        $covenant = Covenant::findOrFail($id);
+        $this->assignCovenantId = $id;
+        // Set to 0 if null (for unassignment option), otherwise use employee_id
+        $this->assign_employee_id = $covenant->employee_id ?? 0;
+        $this->showAssignModal = true;
+    }
+
+    public function saveAssign(): void
+    {
+        $this->checkPermission('edit Covenants');
+        
+        if (!$this->assignCovenantId) {
+            session()->flash('error', __('hr.covenant_not_found'));
+            return;
+        }
+
+        // Handle unassignment (value 0) or assignment
+        if ($this->assign_employee_id == 0) {
+            // Unassign covenant
+            $covenant = Covenant::findOrFail($this->assignCovenantId);
+            $covenant->update([
+                'employee_id' => null,
+            ]);
+            $this->resetAssignForm();
+            $this->showAssignModal = false;
+            session()->flash('message', __('hr.covenant_unassigned_successfully'));
+            return;
+        }
+
+        // Validate and assign to employee
+        $this->validate([
+            'assign_employee_id' => 'required|exists:employees,id',
+        ], [
+            'assign_employee_id.required' => __('hr.employee_required'),
+            'assign_employee_id.exists' => __('hr.employee_not_found'),
+        ]);
+
+        $covenant = Covenant::findOrFail($this->assignCovenantId);
+        $covenant->update([
+            'employee_id' => $this->assign_employee_id,
+        ]);
+
+        $this->resetAssignForm();
+        $this->showAssignModal = false;
+        session()->flash('message', __('hr.covenant_assigned_successfully'));
     }
 
     #[Computed]
@@ -239,6 +303,12 @@ new class extends Component {
             })
             ->when($this->filter_employee_id, function ($query) {
                 $query->where('employee_id', $this->filter_employee_id);
+            })
+            ->when($this->filter_assignment_status === 'assigned', function ($query) {
+                $query->whereNotNull('employee_id');
+            })
+            ->when($this->filter_assignment_status === 'unassigned', function ($query) {
+                $query->whereNull('employee_id');
             })
             ->latest()
             ->paginate(10);
@@ -296,7 +366,7 @@ new class extends Component {
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="position-relative">
                         <i class="las la-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input wire:model.live.debounce.300ms="search" type="text" class="form-control ps-5" placeholder="{{ __('hr.search_covenants') }}">
@@ -310,7 +380,14 @@ new class extends Component {
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
+                    <select wire:model.live.debounce.500ms="filter_assignment_status" class="form-select">
+                        <option value="">{{ __('hr.all_covenants') }}</option>
+                        <option value="assigned">{{ __('hr.assigned_covenants') }}</option>
+                        <option value="unassigned">{{ __('hr.unassigned_covenants') }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <button wire:click="clearFilters" class="btn btn-outline-secondary w-100">
                         <i class="las la-filter me-1"></i> {{ __('hr.clear') }}
                     </button>
@@ -427,6 +504,21 @@ new class extends Component {
                                                     </span>
                                                 </button>
                                             @endcan
+                                            @can('edit Covenants')
+                                                <button wire:click="assignCovenant({{ $covenant->id }})" 
+                                                        class="btn btn-sm btn-outline-success" 
+                                                        title="{{ __('hr.assign_covenant') }}"
+                                                        wire:key="assign-btn-{{ $covenant->id }}"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="assignCovenant({{ $covenant->id }})">
+                                                    <span wire:loading.remove wire:target="assignCovenant({{ $covenant->id }})">
+                                                        <i class="las la-user-check"></i>
+                                                    </span>
+                                                    <span wire:loading wire:target="assignCovenant({{ $covenant->id }})">
+                                                        <i class="las la-spinner la-spin"></i>
+                                                    </span>
+                                                </button>
+                                            @endcan
                                             @can('delete Covenants')
                                                 <button wire:click="delete({{ $covenant->id }})" 
                                                         class="btn btn-sm btn-outline-danger" 
@@ -538,21 +630,6 @@ new class extends Component {
                                       wire:model.blur="description" 
                                       rows="3"></textarea>
                             @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="employee_id" class="form-label">{{ __('hr.employee') }}</label>
-                            <select class="form-select @error('employee_id') is-invalid @enderror" 
-                                    id="employee_id" 
-                                    wire:model.blur="employee_id">
-                                <option value="">{{ __('hr.select_employee') }}</option>
-                                @foreach($employeesList ?? [] as $employee)
-                                    <option value="{{ $employee['id'] }}">{{ $employee['name'] }}</option>
-                                @endforeach
-                            </select>
-                            @error('employee_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -849,6 +926,80 @@ new class extends Component {
                             <i class="las la-spinner la-spin me-1"></i> {{ __('hr.deleting') }}...
                         </span>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Covenant Modal - Alpine.js -->
+    <div x-data="{ show: @entangle('showAssignModal') }" 
+         x-show="show"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         style="display: none;">
+        <!-- Backdrop -->
+        <div class="fixed inset-0" style="background-color: rgba(0, 0, 0, 0.5);"
+             @click="show = false"></div>
+        
+        <!-- Modal -->
+        <div class="d-flex align-items-center justify-content-center" style="min-height: 100vh; padding: 1rem;">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full relative z-10"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-95"
+                 @click.stop>
+                <div class="modal-header border-bottom p-3">
+                    <h5 class="modal-title mb-0">
+                        <i class="las la-user-check me-2"></i>{{ __('hr.assign_covenant') }}
+                    </h5>
+                    <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form wire:submit.prevent="saveAssign">
+                        <div class="mb-3">
+                            <label for="assign_employee_id" class="form-label">
+                                {{ __('hr.select_employee') }}
+                            </label>
+                            <select class="form-select @error('assign_employee_id') is-invalid @enderror" 
+                                    id="assign_employee_id" 
+                                    wire:model.blur="assign_employee_id">
+                                <option value="0">{{ __('hr.not_assigned') }}</option>
+                                @foreach($employeesList ?? [] as $employee)
+                                    <option value="{{ $employee['id'] }}">{{ $employee['name'] }}</option>
+                                @endforeach
+                            </select>
+                            @error('assign_employee_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted d-block mt-2">
+                                <i class="las la-info-circle me-1"></i>
+                                {{ __('hr.assign_covenant_hint') }}
+                            </small>
+                        </div>
+
+                        <div class="modal-footer border-top p-3">
+                            <button type="button" class="btn btn-secondary" @click="show = false" wire:loading.attr="disabled" wire:target="saveAssign">
+                                {{ __('hr.cancel') }}
+                            </button>
+                            <button type="submit" class="btn btn-success" wire:loading.attr="disabled" wire:target="saveAssign">
+                                <span wire:loading.remove wire:target="saveAssign">
+                                    <i class="las la-check me-1"></i> {{ __('hr.assign') }}
+                                </span>
+                                <span wire:loading wire:target="saveAssign">
+                                    <i class="las la-spinner la-spin me-1"></i> {{ __('hr.assigning') }}...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

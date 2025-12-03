@@ -73,6 +73,15 @@ new class extends Component {
     {
         return Employee::with('account.haveParent')->findOrFail($this->employeeId);
     }
+
+    /**
+     * Load other details including covenants (only when other details tab is active)
+     */
+    #[Computed]
+    public function employeeWithOtherDetails()
+    {
+        return Employee::with('covenants')->findOrFail($this->employeeId);
+    }
 }; ?>
 
 <div style="font-family: 'Cairo', sans-serif; direction: rtl;" x-data="{ 

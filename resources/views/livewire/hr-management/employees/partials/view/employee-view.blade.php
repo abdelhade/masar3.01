@@ -107,6 +107,14 @@
                     <i class="fas fa-calendar-check me-2"></i>{{ __('رصيد الإجازات') }}
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link font-hold fw-bold"
+                        :class="{ 'active': activeViewTab === 'otherDetails' }"
+                        @click="switchViewTab('otherDetails')"
+                        type="button">
+                    <i class="fas fa-info-circle me-2"></i>{{ __('تفاصيل أخرى') }}
+                </button>
+            </li>
         </ul>
 
         {{-- Tab Content with Lazy Loading --}}
@@ -199,6 +207,23 @@
                             $leaveEmployee = method_exists($this, 'employeeWithLeaveBalances') ? $this->employeeWithLeaveBalances : $viewEmployee;
                         @endphp
                         @include('livewire.hr-management.employees.partials.view.tabs.leave-balances-tab', ['viewEmployee' => $leaveEmployee ?? $viewEmployee])
+                    </div>
+                </template>
+            </div>
+
+            {{-- Other Details Tab (lazy loaded) --}}
+            <div x-show="activeViewTab === 'otherDetails'"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-data="{ loaded: loadedTabs.has('otherDetails') }"
+                 x-init="if (!loaded) { loadedTabs.add('otherDetails'); loaded = true; }">
+                <template x-if="loaded">
+                    <div>
+                        @php
+                            $otherDetailsEmployee = method_exists($this, 'employeeWithOtherDetails') ? $this->employeeWithOtherDetails : $viewEmployee;
+                        @endphp
+                        @include('livewire.hr-management.employees.partials.view.tabs.other-details-tab', ['viewEmployee' => $otherDetailsEmployee ?? $viewEmployee])
                     </div>
                 </template>
             </div>

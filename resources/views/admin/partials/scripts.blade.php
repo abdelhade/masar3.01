@@ -24,6 +24,25 @@ document.addEventListener('DOMContentLoaded', function() {
  <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
  <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
  <script src="{{ asset('assets/js/metismenu.min.js') }}"></script>
+ <script>
+     // تفعيل MetisMenu للقوائم المتداخلة
+     (function() {
+         function initMetisMenu() {
+             if (typeof jQuery !== 'undefined' && typeof jQuery.fn.metisMenu !== 'undefined') {
+                 jQuery('.metismenu').metisMenu();
+             } else {
+                 // إعادة المحاولة بعد 100ms إذا لم تكن المكتبات جاهزة
+                 setTimeout(initMetisMenu, 100);
+             }
+         }
+         
+         if (document.readyState === 'loading') {
+             document.addEventListener('DOMContentLoaded', initMetisMenu);
+         } else {
+             initMetisMenu();
+         }
+     })();
+ </script>
  <script src="{{ asset('assets/js/waves.js') }}"></script>
  <script src="{{ asset('assets/js/feather.min.js') }}"></script>
  <script src="{{ asset('assets/js/simplebar.min.js') }}"></script>
