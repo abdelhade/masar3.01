@@ -99,6 +99,16 @@
                         <div class="col-md-6 col-lg-4">
                             <div class="info-item">
                                 <label class="form-label fw-bold text-muted small mb-1">
+                                    <i class="fas fa-money-bill-wave me-1 text-primary"></i>{{ __('hr.flexible_hourly_wage') }}
+                                </label>
+                                <p class="form-control-plaintext mb-0 fs-5">
+                                    {{ $viewEmployee->flexible_hourly_wage ? number_format($viewEmployee->flexible_hourly_wage, 2) . ' ر.س / ساعة' : __('غير محدد') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="info-item">
+                                <label class="form-label fw-bold text-muted small mb-1">
                                     <i class="fas fa-calendar-check me-1 text-info"></i>{{ __('hr.allowed_permission_days_title') }}
                                 </label>
                                 <p class="form-control-plaintext mb-0 fs-5">

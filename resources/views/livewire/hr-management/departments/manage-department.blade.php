@@ -2,26 +2,40 @@
 
 declare(strict_types=1);
 
-use Livewire\Volt\Component;
 use App\Models\Department;
-use Livewire\WithPagination;
-use Livewire\Attributes\Computed;
 use App\Models\Employee;
+use App\Models\HRSetting;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Computed;
+use Livewire\Volt\Component;
+use Livewire\WithPagination;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
 
     public string $title = '';
+
     public ?int $parent_id = null;
+
     public ?int $director_id = null;
+
     public ?int $deputy_director_id = null;
+
     public ?string $description = null;
+
+    public ?float $max_leave_percentage = null;
+
     public ?int $departmentId = null;
+
     public bool $showModal = false;
+
     public bool $showHierarchyModal = false;
+
     public bool $isEdit = false;
+
     public string $search = '';
+
     public Collection $employees;
 
     /**
@@ -32,11 +46,12 @@ new class extends Component {
     public function rules(): array
     {
         return [
-            'title' => 'required|string|min:2|max:255|unique:departments,title,' . $this->departmentId,
+            'title' => 'required|string|min:2|max:255|unique:departments,title,'.$this->departmentId,
             'parent_id' => 'nullable|exists:departments,id',
             'director_id' => 'nullable|exists:employees,id',
             'deputy_director_id' => 'nullable|exists:employees,id',
             'description' => 'nullable|string|max:255',
+            'max_leave_percentage' => 'nullable|numeric|min:0|max:100',
         ];
     }
 
@@ -46,20 +61,20 @@ new class extends Component {
     public function mount(): void
     {
         // Component initialized
-        
+
     }
 
     /**
      * Get employees list.
      *
-     * @param int|null $departmentId
+     * @param  int|null  $departmentId
      * @return Collection<int, Employee>
-     */ 
+     */
     #[Computed]
     public function employees($departmentId = null)
     {
         return Employee::query()
-            ->when($departmentId, fn($query) => $query->where('department_id', $departmentId))
+            ->when($departmentId, fn ($query) => $query->where('department_id', $departmentId))
             ->orderByDesc('id')
             ->get();
     }
@@ -81,7 +96,7 @@ new class extends Component {
     public function departments()
     {
         return Department::query()
-            ->when($this->search, fn($query) => $query->where('title', 'like', "%{$this->search}%"))
+            ->when($this->search, fn ($query) => $query->where('title', 'like', "%{$this->search}%"))
             ->orderByDesc('id')
             ->get();
     }
@@ -98,7 +113,7 @@ new class extends Component {
     //         ->when($departmentId, fn($query) => $query->where('department_id', $departmentId))
     //         ->orderByDesc('id')
     //         ->get();
-    // }   
+    // }
 
     /**
      * Get department with hierarchy for view.
@@ -108,7 +123,7 @@ new class extends Component {
     #[Computed]
     public function departmentForHierarchy()
     {
-        if (!$this->departmentId) {
+        if (! $this->departmentId) {
             return null;
         }
 
@@ -122,7 +137,7 @@ new class extends Component {
     public function create(): void
     {
         $this->resetValidation();
-        $this->reset(['title', 'description', 'departmentId', 'parent_id']);
+        $this->reset(['title', 'description', 'departmentId', 'parent_id', 'director_id', 'deputy_director_id', 'max_leave_percentage']);
         $this->isEdit = false;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -130,8 +145,6 @@ new class extends Component {
 
     /**
      * Open view hierarchy modal and load department data.
-     *
-     * @param int $id
      */
     public function viewHierarchy(int $id): void
     {
@@ -152,8 +165,6 @@ new class extends Component {
 
     /**
      * Open edit modal and load department data.
-     *
-     * @param int $id
      */
     public function edit(int $id): void
     {
@@ -165,6 +176,7 @@ new class extends Component {
         $this->director_id = $department->director_id;
         $this->deputy_director_id = $department->deputy_director_id;
         $this->description = $department->description;
+        $this->max_leave_percentage = $department->max_leave_percentage;
         $this->isEdit = true;
         $this->showModal = true;
         $this->dispatch('showModal');
@@ -177,6 +189,28 @@ new class extends Component {
     {
         $validated = $this->validate();
 
+        // التحقق من نسبة القسم إذا كانت محددة
+        if (! is_null($this->max_leave_percentage) && $this->max_leave_percentage > 0) {
+            // 1. التحقق من وجود نسبة عامة للشركة
+            $companyMaxPercentage = HRSetting::getCompanyMaxLeavePercentage();
+
+            if (is_null($companyMaxPercentage)) {
+                $this->addError('max_leave_percentage', __('hr.department_percentage_requires_company_percentage'));
+
+                return;
+            }
+
+            // 2. التحقق من أن نسبة القسم لا تتجاوز نسبة الشركة
+            if ($this->max_leave_percentage > $companyMaxPercentage) {
+                $this->addError('max_leave_percentage', __('hr.department_percentage_exceeds_company', [
+                    'department_percentage' => number_format($this->max_leave_percentage, 2),
+                    'company_percentage' => number_format($companyMaxPercentage, 2),
+                ]));
+
+                return;
+            }
+        }
+
         if ($this->isEdit) {
             Department::findOrFail($this->departmentId)->update($validated);
             session()->flash('success', __('Department updated successfully.'));
@@ -187,13 +221,11 @@ new class extends Component {
 
         $this->showModal = false;
         $this->dispatch('closeModal');
-        $this->reset(['title', 'description', 'departmentId', 'isEdit', 'parent_id', 'director_id', 'deputy_director_id']);
+        $this->reset(['title', 'description', 'departmentId', 'isEdit', 'parent_id', 'director_id', 'deputy_director_id', 'max_leave_percentage']);
     }
 
     /**
      * Delete department.
-     *
-     * @param int $id
      */
     public function delete(int $id): void
     {
@@ -220,14 +252,14 @@ new class extends Component {
                     @can('create Departments')
                         <button wire:click="create" type="button" class="btn btn-main font-hold fw-bold">
                             <i class="fas fa-plus me-2"></i>
-                            {{ __('Add Department') }}
+                            {{ __('hr.add_new_department') }}
                         </button>
                     @endcan
                     <input type="text" 
                            wire:model.live.debounce.300ms="search" 
                            class="form-control w-auto" 
                            style="min-width: 200px;" 
-                           placeholder="{{ __('Search by title...') }}">
+                           placeholder="{{ __('hr.search_by_title') }}">
                 </div>
 
                 <div class="card-body">
@@ -236,13 +268,14 @@ new class extends Component {
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th class="font-hold fw-bold">#</th>
-                                    <th class="font-hold fw-bold">{{ __('Title') }}</th>
-                                    <th class="font-hold fw-bold">{{ __('Parent') }}</th>
-                                    <th class="font-hold fw-bold">{{ __('Director') }}</th>
-                                    <th class="font-hold fw-bold">{{ __('Deputy Director') }}</th>
-                                    <th class="font-hold fw-bold">{{ __('Description') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.department_name') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.parent') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.director') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.deputy_director') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.description') }}</th>
+                                    <th class="font-hold fw-bold">{{ __('hr.max_leave_percentage') }}</th>
                                     @canany(['edit Departments', 'delete Departments'])
-                                        <th class="font-hold fw-bold">{{ __('Actions') }}</th>
+                                        <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
                                 </tr>
                             </thead>
@@ -255,20 +288,27 @@ new class extends Component {
                                         <td class="font-hold fw-bold text-center">{{ $department->director ? $department->director->name : '-' }}</td>
                                         <td class="font-hold fw-bold text-center">{{ $department->deputyDirector ? $department->deputyDirector->name : '-' }}</td>
                                         <td class="font-hold fw-bold text-center">{{ $department->description ?? '-' }}</td>
+                                        <td class="font-hold fw-bold text-center">
+                                            @if($department->max_leave_percentage)
+                                                <span class="badge bg-primary">{{ number_format($department->max_leave_percentage, 2) }}%</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         @canany(['edit Departments', 'delete Departments'])
                                             <td class="font-hold fw-bold text-center">
                                                 <div class="btn-group" role="group">
                                                     <button type="button" 
                                                             wire:click="viewHierarchy({{ $department->id }})"
                                                             class="btn btn-warning btn-sm"
-                                                            title="{{ __('View Hierarchy') }}">
+                                                            title="{{ __('hr.view_hierarchy') }}">
                                                         <i class="las la-sitemap"></i>
                                                     </button>
                                                     @can('edit Departments')
                                                         <button type="button" 
                                                                 wire:click="edit({{ $department->id }})"
                                                                 class="btn btn-success btn-sm"
-                                                                title="{{ __('Edit') }}">
+                                                                title="{{ __('hr.edit') }}">
                                                             <i class="las la-edit"></i>
                                                         </button>
                                                     @endcan
@@ -391,6 +431,33 @@ new class extends Component {
                                    wire:model.blur="description">
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="max_leave_percentage" class="form-label font-hold fw-bold">
+                                {{ __('hr.max_leave_percentage') }} (%)
+                            </label>
+                            <input type="number"
+                                   step="0.01"
+                                   min="0"
+                                   max="100"
+                                   class="form-control @error('max_leave_percentage') is-invalid @enderror font-hold fw-bold"
+                                   id="max_leave_percentage" 
+                                   wire:model.blur="max_leave_percentage"
+                                   placeholder="{{ __('hr.max_leave_percentage_placeholder') }}">
+                            <small class="form-text text-muted font-hold">
+                                {{ __('hr.max_leave_percentage_help') }}
+                                @php
+                                    $companyPercentage = \App\Models\HRSetting::getCompanyMaxLeavePercentage();
+                                @endphp
+                                @if($companyPercentage)
+                                    <br><strong class="text-info">{{ __('hr.company_percentage_info', ['percentage' => number_format($companyPercentage, 2)]) }}</strong>
+                                @else
+                                    <br><strong class="text-danger">{{ __('hr.company_percentage_not_set_warning') }}</strong>
+                                @endif
+                            </small>
+                            @error('max_leave_percentage')
+                                <div class="invalid-feedback font-hold fw-bold">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="modal-footer">

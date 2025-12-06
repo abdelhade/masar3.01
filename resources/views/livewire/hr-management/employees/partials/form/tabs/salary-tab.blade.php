@@ -109,6 +109,19 @@
                                 </div>
                             @enderror
                         </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-dark">{{ __('hr.flexible_hourly_wage') }}</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control"
+                                    wire:model.defer="flexible_hourly_wage" placeholder="0.00" step="0.5">
+                                <span class="input-group-text">ر.س / ساعة</span>
+                            </div>
+                            @error('flexible_hourly_wage')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>

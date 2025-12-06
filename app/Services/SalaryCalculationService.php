@@ -5,13 +5,13 @@ namespace App\Services;
 use App\Models\Attendance;
 use App\Models\AttendanceProcessing;
 use App\Models\Employee;
+use App\Models\Errand;
 use App\Models\LeaveRequest;
+use App\Models\WorkPermission;
 use App\Services\SalaryCalculation\SalaryStrategyFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class SalaryCalculationService
 {
@@ -21,9 +21,9 @@ class SalaryCalculationService
      * This method processes attendance records, calculates working hours, overtime, and deductions,
      * then calculates the salary based on the employee's salary type. Results are cached to improve performance.
      *
-     * @param Employee $employee The employee to calculate salary for
-     * @param Carbon $startDate Start date of the calculation period (inclusive)
-     * @param Carbon $endDate End date of the calculation period (inclusive)
+     * @param  Employee  $employee  The employee to calculate salary for
+     * @param  Carbon  $startDate  Start date of the calculation period (inclusive)
+     * @param  Carbon  $endDate  End date of the calculation period (inclusive)
      * @return array{
      *     summary: array{
      *         total_days: int,
@@ -98,15 +98,15 @@ class SalaryCalculationService
 
         // Generate cache key based on employee and period
         $cacheKey = $this->getCacheKey($employee, $startDate, $endDate);
-        
+
         // Try to get from cache first (TTL: 1 hour)
         return Cache::remember($cacheKey, 3600, function () use ($employee, $startDate, $endDate) {
             // Get attendance records for the period
             $attendances = $this->getAttendanceRecords($employee, $startDate, $endDate);
-            
+
             // Process attendance and calculate hours
             $processedData = $this->processAttendanceData($employee, $attendances, $startDate, $endDate);
-            
+
             // Calculate salary based on type
             $salaryData = $this->calculateSalaryByType($employee, $processedData);
 
@@ -120,7 +120,7 @@ class SalaryCalculationService
 
     /**
      * Generate cache key for salary calculation
-     * 
+     *
      * Cache key format: employee_salary_{employee_id}_{startDate}_{endDate}
      * This allows easy invalidation by period
      */
@@ -138,9 +138,9 @@ class SalaryCalculationService
      * Invalidate cache for employee salary calculations
      * Should be called when attendance records are created, updated, or deleted
      *
-     * @param Employee $employee The employee whose cache should be invalidated
-     * @param Carbon|null $startDate Optional start date for specific period invalidation
-     * @param Carbon|null $endDate Optional end date for specific period invalidation
+     * @param  Employee  $employee  The employee whose cache should be invalidated
+     * @param  Carbon|null  $startDate  Optional start date for specific period invalidation
+     * @param  Carbon|null  $endDate  Optional end date for specific period invalidation
      */
     public function invalidateCache(Employee $employee, ?Carbon $startDate = null, ?Carbon $endDate = null): void
     {
@@ -157,10 +157,10 @@ class SalaryCalculationService
             $currentMonthEnd = $now->copy()->endOfMonth();
             $previousMonthStart = $now->copy()->subMonth()->startOfMonth();
             $previousMonthEnd = $now->copy()->subMonth()->endOfMonth();
-            
+
             Cache::forget($this->getCacheKey($employee, $currentMonthStart, $currentMonthEnd));
             Cache::forget($this->getCacheKey($employee, $previousMonthStart, $previousMonthEnd));
-            
+
             // Also invalidate for the month containing the attendance date if provided
             // This is handled in the Attendance model's booted method
         }
@@ -350,6 +350,94 @@ class SalaryCalculationService
     }
 
     /**
+     * Check if employee has an approved work permission for a specific date
+     */
+    private function hasApprovedWorkPermission(Employee $employee, Carbon $date): ?WorkPermission
+    {
+        return WorkPermission::where('employee_id', $employee->id)
+            ->where('status', 'approved')
+            ->whereDate('date', $date->format('Y-m-d'))
+            ->first();
+    }
+
+    /**
+     * Check if employee has an approved errand for a specific date
+     */
+    private function hasApprovedErrand(Employee $employee, Carbon $date): ?Errand
+    {
+        $dateStr = $date->format('Y-m-d');
+
+        return Errand::where('employee_id', $employee->id)
+            ->whereNotNull('approved_at')
+            ->whereDate('start_date', '<=', $dateStr)
+            ->whereDate('end_date', '>=', $dateStr)
+            ->first();
+    }
+
+    /**
+     * Check if employee has exceeded allowed permission days in the period
+     */
+    private function hasExceededPermissionDays(Employee $employee, Carbon $startDate, Carbon $endDate): bool
+    {
+        $allowedPermissionDays = $employee->allowed_permission_days ?? 0;
+        if ($allowedPermissionDays <= 0) {
+            return false;
+        }
+
+        $permissionsCount = WorkPermission::where('employee_id', $employee->id)
+            ->where('status', 'approved')
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->count();
+
+        return $permissionsCount > $allowedPermissionDays;
+    }
+
+    /**
+     * Check if employee has exceeded allowed errand days in the period
+     */
+    private function hasExceededErrandDays(Employee $employee, Carbon $startDate, Carbon $endDate): bool
+    {
+        if (! $employee->is_errand_allowed) {
+            return false;
+        }
+
+        $allowedErrandDays = $employee->allowed_errand_days ?? 0;
+        if ($allowedErrandDays <= 0) {
+            return false;
+        }
+
+        $errands = Errand::where('employee_id', $employee->id)
+            ->whereNotNull('approved_at')
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                    ->orWhereBetween('end_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
+                        $q->where('start_date', '<=', $startDate->format('Y-m-d'))
+                            ->where('end_date', '>=', $endDate->format('Y-m-d'));
+                    });
+            })
+            ->get();
+
+        $errandDays = 0;
+        foreach ($errands as $errand) {
+            $errandStart = Carbon::parse($errand->start_date);
+            $errandEnd = Carbon::parse($errand->end_date);
+            $periodStart = $startDate->copy();
+            $periodEnd = $endDate->copy();
+
+            // Calculate overlapping days
+            $overlapStart = $errandStart->gt($periodStart) ? $errandStart : $periodStart;
+            $overlapEnd = $errandEnd->lt($periodEnd) ? $errandEnd : $periodEnd;
+
+            if ($overlapStart->lte($overlapEnd)) {
+                $errandDays += $overlapStart->diffInDays($overlapEnd) + 1;
+            }
+        }
+
+        return $errandDays > $allowedErrandDays;
+    }
+
+    /**
      * Process attendance for a single day
      */
     private function processDayAttendance(Employee $employee, Collection $attendances, Carbon $date, string $dayType, Carbon $startDate, Carbon $endDate): array
@@ -455,6 +543,46 @@ class SalaryCalculationService
             ];
         }
 
+        // Check for approved work permission (after checking leaves)
+        $workPermission = $this->hasApprovedWorkPermission($employee, $date);
+        if ($workPermission && ! $this->hasExceededPermissionDays($employee, $startDate, $endDate)) {
+            // If employee has permission and hasn't exceeded limit, count as full day
+            if (! $validCheckIn && $checkOuts->isEmpty()) {
+                return [
+                    'date' => $date->format('Y-m-d'),
+                    'status' => 'permission',
+                    'day_type' => $dayType,
+                    'expected_hours' => $expectedHours,
+                    'actual_hours' => $expectedHours,
+                    'overtime_minutes' => 0,
+                    'late_minutes' => 0,
+                    'check_in_time' => null,
+                    'check_out_time' => null,
+                    'notes' => 'إذن انصراف معتمد',
+                ];
+            }
+        }
+
+        // Check for approved errand (after checking leaves and permissions)
+        $errand = $this->hasApprovedErrand($employee, $date);
+        if ($errand && $employee->is_errand_allowed && ! $this->hasExceededErrandDays($employee, $startDate, $endDate)) {
+            // If employee has errand and hasn't exceeded limit, count as full day
+            if (! $validCheckIn && $checkOuts->isEmpty()) {
+                return [
+                    'date' => $date->format('Y-m-d'),
+                    'status' => 'errand',
+                    'day_type' => $dayType,
+                    'expected_hours' => $expectedHours,
+                    'actual_hours' => $expectedHours,
+                    'overtime_minutes' => 0,
+                    'late_minutes' => 0,
+                    'check_in_time' => null,
+                    'check_out_time' => null,
+                    'notes' => 'مأمورية معتمدة: '.($errand->title ?? ''),
+                ];
+            }
+        }
+
         // Handle holiday
         if ($dayType == 'holiday' && ! $validCheckIn && $checkOuts->isEmpty()) {
             return [
@@ -477,19 +605,19 @@ class SalaryCalculationService
         if (! $validCheckIn && $checkIns->isNotEmpty() && $checkOuts->isNotEmpty() && $dayType == 'working_day') {
             $firstCheckIn = $checkIns->first();
             $lastCheckOut = $this->getAnyCheckOut($checkOuts);
-            
+
             // Calculate late minutes (difference between actual check-in and shift start time)
             $lateMinutes = 0;
             if ($shift && $shift->start_time) {
                 $checkInTime = Carbon::parse($date->format('Y-m-d').' '.$firstCheckIn->time);
                 $shiftStart = Carbon::parse($date->format('Y-m-d').' '.$shift->start_time);
-                
+
                 if ($checkInTime->gt($shiftStart)) {
                     // Calculate late time in total minutes
                     $lateMinutes = $shiftStart->diffInMinutes($checkInTime);
                 }
             }
-            
+
             return [
                 'date' => $date->format('Y-m-d'),
                 'status' => 'half_day',
@@ -584,7 +712,7 @@ class SalaryCalculationService
                     // Actually, let's pass the original time to calculateLateHours just in case, but re-parse it or use validCheckIn->time.
                     // Ah, I overwrote $checkInTime.
                     // Let's re-parse for late hours or just use the logic that early check-in = 0 late hours.
-                    
+
                     $lateMinutes = $this->calculateLateMinutes($shift, Carbon::parse($date->format('Y-m-d').' '.$validCheckIn->time));
 
                     return [
@@ -777,6 +905,7 @@ class SalaryCalculationService
         if ($checkInTime->gt($shiftStart)) {
             return $shiftStart->diffInMinutes($checkInTime);
         }
+
         return 0;
     }
 
@@ -793,6 +922,7 @@ class SalaryCalculationService
         if ($checkOutTime->gt($shiftEnd)) {
             return $shiftEnd->diffInMinutes($checkOutTime);
         }
+
         return 0;
     }
 
@@ -890,7 +1020,7 @@ class SalaryCalculationService
             $totalMinutes = $endingCheckOut->diffInMinutes($checkOutTime);
             $hours = floor($totalMinutes / 60);
             $minutes = $totalMinutes % 60;
-            
+
             return $hours + ($minutes / 100);
         }
 
@@ -915,7 +1045,7 @@ class SalaryCalculationService
             $totalMinutes = $endTime->diffInMinutes($checkOutTime);
             $hours = floor($totalMinutes / 60);
             $minutes = $totalMinutes % 60;
-            
+
             return $hours + ($minutes / 100);
         }
 
@@ -972,6 +1102,7 @@ class SalaryCalculationService
                 $totalMinutes = $shiftStart->diffInMinutes($checkInTime);
                 $hours = floor($totalMinutes / 60);
                 $minutes = $totalMinutes % 60;
+
                 return $hours + ($minutes / 100);
             }
 
@@ -998,6 +1129,7 @@ class SalaryCalculationService
             $totalMinutes = $shiftStart->diffInMinutes($checkInTime);
             $hours = floor($totalMinutes / 60);
             $minutes = $totalMinutes % 60;
+
             return $hours + ($minutes / 100);
         }
 
@@ -1012,7 +1144,7 @@ class SalaryCalculationService
     {
         $summary = $processedData['summary'];
         $strategy = SalaryStrategyFactory::create($employee);
-        
+
         return $strategy->calculate($employee, $summary);
     }
 
@@ -1027,19 +1159,19 @@ class SalaryCalculationService
         $dailyRate = $employee->salary / $currentMonthDays;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
         $overtimeSalary = ($summary['overtime_minutes'] / 60) * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
-        
+
         // Calculate Overtime Days Salary
         // Overtime days (e.g. holidays/weekends) should be paid based on daily rate * day multiplier
         $overtimeDaysSalary = ($summary['overtime_days'] ?? 0) * $dailyRate * ($employee->additional_day_calculation ?? 1.5);
-        
+
         // Calculate deductions
         // Unpaid leave: full day deduction for each unpaid leave day
         $unpaidLeaveDeduction = ($summary['unpaid_leave_days'] ?? 0) * $dailyRate;
-        
+
         // Absent days: deduction based on late_day_calculation (e.g., if late_day_calculation = 2, 1 absent day = 2 days deduction)
         $lateDayCalculation = $employee->late_day_calculation ?? 1.0;
         $absentDaysDeduction = ($summary['absent_days'] ?? 0) * $lateDayCalculation * $dailyRate;
-        
+
         $totalDeductions = $unpaidLeaveDeduction + $absentDaysDeduction;
 
         return [
@@ -1066,7 +1198,7 @@ class SalaryCalculationService
         $dailyRate = $employee->salary / $currentMonthDays;
         $basicSalary = $summary['actual_hours'] * $hourlyRate;
         $overtimeSalary = ($summary['overtime_minutes'] / 60) * $hourlyRate * ($employee->additional_hour_calculation ?? 1.5);
-        
+
         // Calculate Overtime Days Salary
         $overtimeDaysSalary = ($summary['overtime_days'] ?? 0) * $dailyRate * ($employee->additional_day_calculation ?? 1.5);
 
@@ -1075,15 +1207,15 @@ class SalaryCalculationService
         $lateHourCalculation = $employee->late_hour_calculation ?? 1.0;
         $lateHoursDeduction = ($summary['late_minutes'] / 60) * $lateHourCalculation;
         $lateDeductionAmount = $lateHoursDeduction * $hourlyRate;
-        
+
         // Calculate deductions for unpaid leave and absent days
         // Unpaid leave: full day deduction for each unpaid leave day
         $unpaidLeaveDeduction = ($summary['unpaid_leave_days'] ?? 0) * $dailyRate;
-        
+
         // Absent days: deduction based on late_day_calculation (e.g., if late_day_calculation = 2, 1 absent day = 2 days deduction)
         $lateDayCalculation = $employee->late_day_calculation ?? 1.0;
         $absentDaysDeduction = ($summary['absent_days'] ?? 0) * $lateDayCalculation * $dailyRate;
-        
+
         $totalDeductions = $lateDeductionAmount + $unpaidLeaveDeduction + $absentDaysDeduction;
 
         return [
@@ -1116,24 +1248,24 @@ class SalaryCalculationService
         // FIX: Use additional_hour_calculation for HOURS, not day calculation
         $periodOvertimeRate = $employee->additional_hour_calculation ?? 1.5;
         $overtimeSalary = ($summary['overtime_minutes'] / 60) * $hourlyRate * $periodOvertimeRate;
-        
+
         // Calculate Overtime Days Salary
         $overtimeDaysSalary = ($summary['overtime_days'] ?? 0) * $dailyRate * ($employee->additional_day_calculation ?? 1.5);
-        
+
         // Calculate late hours deduction
         // late_hour_calculation: how many hours each late hour is counted as (e.g., 0.5 means 1 late hour = 0.5 hours deduction)
         $lateHourCalculation = $employee->late_hour_calculation ?? 1.0;
         $lateHoursDeduction = ($summary['late_minutes'] / 60) * $lateHourCalculation;
         $lateDeductionAmount = $lateHoursDeduction * $hourlyRate;
-        
+
         // Calculate deductions for unpaid leave and absent days
         // Unpaid leave: full day deduction for each unpaid leave day
         $unpaidLeaveDeduction = ($summary['unpaid_leave_days'] ?? 0) * $dailyRate;
-        
+
         // Absent days: deduction based on late_day_calculation (e.g., if late_day_calculation = 2, 1 absent day = 2 days deduction)
         $lateDayCalculation = $employee->late_day_calculation ?? 1.0;
         $absentDaysDeduction = ($summary['absent_days'] ?? 0) * $lateDayCalculation * $dailyRate;
-        
+
         $totalDeductions = $lateDeductionAmount + $unpaidLeaveDeduction + $absentDaysDeduction;
 
         return [
@@ -1158,15 +1290,15 @@ class SalaryCalculationService
         $currentMonthDays = now()->daysInMonth;
         $dailyRate = $employee->salary / $currentMonthDays;
         $attendanceSalary = $summary['present_days'] * $dailyRate;
-        
+
         // Calculate deductions for unpaid leave and absent days
         // Unpaid leave: full day deduction for each unpaid leave day
         $unpaidLeaveDeduction = ($summary['unpaid_leave_days'] ?? 0) * $dailyRate;
-        
+
         // Absent days: deduction based on late_day_calculation (e.g., if late_day_calculation = 2, 1 absent day = 2 days deduction)
         $lateDayCalculation = $employee->late_day_calculation ?? 1.0;
         $absentDaysDeduction = ($summary['absent_days'] ?? 0) * $lateDayCalculation * $dailyRate;
-        
+
         $totalDeductions = $unpaidLeaveDeduction + $absentDaysDeduction;
 
         return [
@@ -1209,23 +1341,23 @@ class SalaryCalculationService
             ->limit($limit)
             ->get();
     }
-    
+
     /**
      * Convert hours.minutes format to total minutes
      * Example: 1.35 (1h 35m) => 95 minutes
      */
     private function hoursMinutesToMinutes(float $value): int
     {
-        if (!$value || $value == 0) {
+        if (! $value || $value == 0) {
             return 0;
         }
-        
+
         $hours = floor($value);
         $minutes = round(($value - $hours) * 100);
-        
+
         return ($hours * 60) + $minutes;
     }
-    
+
     /**
      * Convert total minutes to hours.minutes format
      * Example: 95 minutes => 1.35 (1h 35m)
@@ -1235,10 +1367,10 @@ class SalaryCalculationService
         if ($totalMinutes == 0) {
             return 0;
         }
-        
+
         $hours = floor($totalMinutes / 60);
         $minutes = $totalMinutes % 60;
-        
+
         return $hours + ($minutes / 100);
     }
 }

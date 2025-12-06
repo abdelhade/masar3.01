@@ -313,7 +313,6 @@ return [
     'processing_not_found' => 'İşlem bulunamadı',
     'error_deleting_processing' => 'İşlem silinirken bir hata oluştu: :error',
     'opening_balance_days' => 'Açılış Bakiyesi (Gün)',
-    'accrued_days' => 'Biriken Günler',
     'used_days' => 'Kullanılan Günler',
     'remaining_balance' => 'Kalan Bakiye',
     'available_balance' => 'Mevcut Bakiye',

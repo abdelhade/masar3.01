@@ -27,7 +27,7 @@
     @if (count($ancestors) > 0)
         <div class="mb-4">
             <h6 class="fw-bold text-info mb-3">
-                <i class="fas fa-arrow-up me-2"></i>{{ __('Parents') }}
+                <i class="fas fa-arrow-up me-2"></i>{{ __('hr.parents') }}
             </h6>
             <div class="ps-3" style="border-right: 2px dashed #0dcaf0;">
                 @foreach ($ancestors as $ancestor)
@@ -46,7 +46,7 @@
     {{-- Display current department --}}
     <div class="mb-4">
         <h6 class="fw-bold text-primary mb-3">
-            <i class="fas fa-building me-2"></i>{{ __('Current Department') }}
+            <i class="fas fa-building me-2"></i>{{ __('hr.current_department') }}
         </h6>
         <div class="card border-primary shadow-sm">
             <div class="card-body">
@@ -54,9 +54,9 @@
                     <i class="fas fa-sitemap me-2"></i>{{ $department->title }}
                 </h5>
                 @if ($department->description)
-                    <p class="card-text text-muted mb-0">{{ __('Description') }}: {{ $department->description }}</p>
-                    <p class="card-text text-muted mb-0">{{ __('Director') }}: {{ $department->director ? $department->director->name : '-' }}</p>
-                    <p class="card-text text-muted mb-0">{{ __('Deputy Director') }}: {{ $department->deputyDirector ? $department->deputyDirector->name : '-' }}</p>
+                    <p class="card-text text-muted mb-0">{{ __('hr.description') }}: {{ $department->description }}</p>
+                    <p class="card-text text-muted mb-0">{{ __('hr.director') }}: {{ $department->director ? $department->director->name : '-' }}</p>
+                    <p class="card-text text-muted mb-0">{{ __('hr.deputy_director') }}: {{ $department->deputyDirector ? $department->deputyDirector->name : '-' }}</p>
                 @endif
             </div>
         </div>
@@ -66,7 +66,7 @@
     @if ($department->children->count() > 0)
         <div class="mb-4">
             <h6 class="fw-bold text-success mb-3">
-                <i class="fas fa-arrow-down me-2"></i>{{ __('Children Departments') }}
+                <i class="fas fa-arrow-down me-2"></i>{{ __('hr.children_departments') }}
             </h6>
             <div class="ps-3">
                 @foreach ($department->children as $child)
@@ -77,7 +77,7 @@
     @else
         <div class="alert alert-info text-center">
             <i class="fas fa-info-circle me-2"></i>
-            {{ __('No child departments') }}
+            {{ __('hr.no_child_departments') }}
         </div>
     @endif
 </div>

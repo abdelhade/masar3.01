@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Carbon\Carbon;
@@ -32,6 +34,8 @@ class LeaveRequest extends Model
         'approved_at' => 'datetime',
         'overlaps_attendance' => 'boolean',
     ];
+
+    public ?string $approval_error = null;
 
     public function employee(): BelongsTo
     {
@@ -109,7 +113,68 @@ class LeaveRequest extends Model
 
     public function canBeApproved(): bool
     {
-        return $this->isSubmitted() && ! $this->overlaps_attendance;
+        $this->approval_error = null;
+
+        if (! $this->isSubmitted() || $this->overlaps_attendance) {
+            $this->approval_error = 'لا يمكن الموافقة على هذا الطلب: يجب أن يكون الطلب مقدماً ولا يتداخل مع الحضور.';
+
+            return false;
+        }
+
+        $service = app(\App\LeaveBalanceService::class);
+        $year = $this->start_date->year;
+        $month = $this->start_date->month;
+        $departmentId = $this->employee->department_id;
+
+        // 1. التحقق من النسبة المئوية (الشرط الأول والأهم)
+        $hasPercentageLimit = $service->checkLeavePercentageLimit(
+            $this->employee_id,
+            $this->start_date->format('Y-m-d'),
+            $this->end_date->format('Y-m-d'),
+            $departmentId
+        );
+
+        if (! $hasPercentageLimit) {
+            // التحقق من سبب الفشل (عدم وجود نسبة محددة أم تجاوز النسبة)
+            $department = $this->employee->department;
+            $hasDepartmentPercentage = $department && ! is_null($department->max_leave_percentage);
+            $hasCompanyPercentage = ! is_null(HRSetting::getCompanyMaxLeavePercentage());
+
+            if (! $hasDepartmentPercentage && ! $hasCompanyPercentage) {
+                $this->approval_error = 'لا يمكن الموافقة على هذا الطلب: لا توجد نسبة مئوية محددة للقسم في جدول الأقسام أو للشركة في إعدادات الموارد البشرية.';
+            } else {
+                $this->approval_error = 'لا يمكن الموافقة على هذا الطلب: تجاوز الحد الأقصى لنسبة الموظفين في الإجازة للشركة/القسم.';
+            }
+
+            return false;
+        }
+
+        // 2. التحقق من الرصيد لجميع أنواع الإجازات (مدفوعة وغير مدفوعة)
+        if (! $service->hasSufficientBalance(
+            $this->employee_id,
+            $this->leave_type_id,
+            $year,
+            $this->duration_days
+        )) {
+            $this->approval_error = 'لا يمكن الموافقة على هذا الطلب: الرصيد غير كافٍ.';
+
+            return false;
+        }
+
+        // 3. التحقق من الحد الشهري لجميع أنواع الإجازات (مدفوعة وغير مدفوعة)
+        if (! $service->checkMonthlyLimit(
+            $this->employee_id,
+            $this->leave_type_id,
+            $year,
+            $month,
+            $this->duration_days
+        )) {
+            $this->approval_error = 'لا يمكن الموافقة على هذا الطلب: تجاوز الحد الأقصى الشهري لهذا النوع من الإجازات.';
+
+            return false;
+        }
+
+        return true;
     }
 
     public function canBeRejected(): bool

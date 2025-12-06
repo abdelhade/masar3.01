@@ -77,26 +77,10 @@
                                         <input type="number" 
                                                wire:model="opening_balance_days" 
                                                id="opening_balance_days"
-                                               step="0.5" 
+                                               step="1" 
                                                min="0" 
                                                class="form-control @error('opening_balance_days') is-invalid @enderror">
                                         @error('opening_balance_days')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <!-- الأيام المتراكمة -->
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="accrued_days" class="form-label">الأيام المتراكمة <span class="text-danger">*</span></label>
-                                        <input type="number" 
-                                               wire:model="accrued_days" 
-                                               id="accrued_days"
-                                               step="0.5" 
-                                               min="0" 
-                                               class="form-control @error('accrued_days') is-invalid @enderror">
-                                        @error('accrued_days')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -109,7 +93,7 @@
                                         <input type="number" 
                                                wire:model="used_days" 
                                                id="used_days"
-                                               step="0.5" 
+                                               step="1" 
                                                min="0" 
                                                class="form-control @error('used_days') is-invalid @enderror">
                                         @error('used_days')
@@ -125,7 +109,7 @@
                                         <input type="number" 
                                                wire:model="pending_days" 
                                                id="pending_days"
-                                               step="0.5" 
+                                               step="1" 
                                                min="0" 
                                                class="form-control @error('pending_days') is-invalid @enderror">
                                         @error('pending_days')
@@ -134,18 +118,21 @@
                                     </div>
                                 </div>
 
-                                <!-- الأيام المحولة -->
+                                <!-- الحد الأقصى الشهري -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="carried_over_days" class="form-label">الأيام المحولة <span class="text-danger">*</span></label>
+                                        <label for="max_monthly_days" class="form-label">الحد الأقصى الشهري (أيام) <span class="text-danger">*</span></label>
                                         <input type="number" 
-                                               wire:model="carried_over_days" 
-                                               id="carried_over_days"
-                                               step="0.5" 
+                                               wire:model="max_monthly_days" 
+                                               id="max_monthly_days"
+                                               step="1" 
                                                min="0" 
-                                               class="form-control @error('carried_over_days') is-invalid @enderror">
-                                        @error('carried_over_days')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                               required
+                                               class="form-control @error('max_monthly_days') is-invalid @enderror"
+                                               placeholder="مثال: 5.0">
+                                        <small class="form-text text-muted">الحد الأقصى لعدد أيام الإجازة المسموح بها شهرياً لهذا النوع من الإجازات</small>
+                                        @error('max_monthly_days')
+                                            <div class="invalid-feedback font-hold fw-bold">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
@@ -185,7 +172,7 @@
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="border-end">
-                                                        <h3 class="text-success">{{ number_format($this->opening_balance_days + $this->accrued_days + $this->carried_over_days, 1) }}</h3>
+                                                        <h3 class="text-success">{{ number_format($this->opening_balance_days, 1) }}</h3>
                                                         <p class="text-muted mb-0">إجمالي الرصيد</p>
                                                     </div>
                                                 </div>

@@ -533,6 +533,152 @@
                             </table>
                         </div>
                     </div>
+                    {{-- Deductions, Rewards, and Advances Section --}}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="mb-3">الخصومات والمكافآت والسلف</h6>
+                            
+                            {{-- Deductions --}}
+                            @if(!empty($deductionsRewardsSummary) && isset($deductionsRewardsSummary['deductions']) && $deductionsRewardsSummary['deductions'] && $deductionsRewardsSummary['deductions']->count() > 0)
+                            <div class="card mb-3">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">الخصومات</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>التاريخ</th>
+                                                    <th>السبب</th>
+                                                    <th>المبلغ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($deductionsRewardsSummary['deductions'] as $deduction)
+                                                <tr>
+                                                    <td>{{ $deduction->date->format('Y-m-d') }}</td>
+                                                    <td>{{ $deduction->reason }}</td>
+                                                    <td>{{ number_format($deduction->amount, 2) }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="2">إجمالي الخصومات</th>
+                                                    <th>{{ number_format($deductionsRewardsSummary['total_deductions'], 2) }}</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Rewards --}}
+                            @if(!empty($deductionsRewardsSummary) && isset($deductionsRewardsSummary['rewards']) && $deductionsRewardsSummary['rewards'] && $deductionsRewardsSummary['rewards']->count() > 0)
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">المكافآت</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>التاريخ</th>
+                                                    <th>السبب</th>
+                                                    <th>المبلغ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($deductionsRewardsSummary['rewards'] as $reward)
+                                                <tr>
+                                                    <td>{{ $reward->date->format('Y-m-d') }}</td>
+                                                    <td>{{ $reward->reason }}</td>
+                                                    <td>{{ number_format($reward->amount, 2) }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="2">إجمالي المكافآت</th>
+                                                    <th>{{ number_format($deductionsRewardsSummary['total_rewards'], 2) }}</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Advances --}}
+                            @if($advancesSummary && $advancesSummary->count() > 0)
+                            <div class="card mb-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">السلف</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>التاريخ</th>
+                                                    <th>السبب</th>
+                                                    <th>المبلغ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($advancesSummary as $advance)
+                                                <tr>
+                                                    <td>{{ $advance->date->format('Y-m-d') }}</td>
+                                                    <td>{{ $advance->reason }}</td>
+                                                    <td>{{ number_format($advance->amount, 2) }}</td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="2">إجمالي السلف</th>
+                                                    <th>{{ number_format($advancesSummary->sum('amount'), 2) }}</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Final Balance Summary --}}
+                            @if(!empty($finalBalance))
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">صافي الراتب النهائي</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>الراتب من البصمات:</strong> {{ number_format($finalBalance['attendance_salary'] ?? 0, 2) }}</p>
+                                            <p><strong>الراتب المرن:</strong> {{ number_format($finalBalance['flexible_salary'] ?? 0, 2) }}</p>
+                                            <p><strong>إجمالي الراتب:</strong> {{ number_format($finalBalance['total_salary'] ?? 0, 2) }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>المكافآت:</strong> +{{ number_format($finalBalance['rewards'] ?? 0, 2) }}</p>
+                                            <p><strong>الخصومات:</strong> -{{ number_format($finalBalance['deductions'] ?? 0, 2) }}</p>
+                                            <p><strong>السلف:</strong> -{{ number_format($finalBalance['advances'] ?? 0, 2) }}</p>
+                                        </div>
+                                        <div class="col-12 mt-3">
+                                            <div class="alert alert-info">
+                                                <h6 class="mb-0">صافي الراتب النهائي: <strong>{{ number_format($finalBalance['net_balance'] ?? 0, 2) }}</strong></h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
                     <div class="modal-footer justify-content-center d-flex">
                         <button type="button" class="btn btn-secondary" wire:click="closeDetails">إغلاق</button>
                     </div>

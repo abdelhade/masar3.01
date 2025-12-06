@@ -7,15 +7,14 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractTypeController;
 use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\CovenantController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\EmployeeAuthController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeesJobController;
-use App\Http\Controllers\CovenantController;
 use App\Http\Controllers\ErrandController;
-use App\Http\Controllers\WorkPermissionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryStartBalanceController;
 use App\Http\Controllers\InvoiceController;
@@ -42,6 +41,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VaribalController;
 use App\Http\Controllers\VaribalValueController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\WorkPermissionController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -134,6 +134,23 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/leave-types', function () {
             return view('hr-management.leaves.leave-types.manage-leave-types');
         })->name('leaves.types.manage')->middleware('can:view Leave Types');
+    });
+
+    // 📁 HR Settings
+    Route::prefix('hr/settings')->middleware(['auth'])->group(function () {
+        Route::get('/', function () {
+            return view('hr-management.hr-settings.index');
+        })->name('hr.settings.index')->middleware('can:view HR Settings');
+        Route::get('/edit', function () {
+            $setting = \App\Models\HRSetting::getCompanyDefault();
+            if (! $setting) {
+                $setting = \App\Models\HRSetting::create([
+                    'company_max_leave_percentage' => 7.00,
+                ]);
+            }
+
+            return view('hr-management.hr-settings.create-edit', ['settingId' => $setting->id]);
+        })->name('hr.settings.edit')->middleware('can:edit HR Settings');
     });
 
     // 📁 Covenants

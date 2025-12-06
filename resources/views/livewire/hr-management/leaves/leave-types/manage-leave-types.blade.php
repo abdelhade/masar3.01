@@ -16,8 +16,6 @@ new class extends Component {
     public bool $is_paid = false;
     public bool $requires_approval = false;
     public int $max_per_request_days = 0;
-    public float $accrual_rate_per_month = 0.0;
-    public int $carry_over_limit_days = 0;
     public bool $showModal = false;
     public bool $isEdit = false;
     public string $search = '';
@@ -31,8 +29,6 @@ new class extends Component {
             'is_paid' => 'required|boolean',
             'requires_approval' => 'required|boolean',
             'max_per_request_days' => 'required|integer|min:0',
-            'accrual_rate_per_month' => 'required|numeric|min:0',
-            'carry_over_limit_days' => 'required|integer|min:0',
         ];
     }
 
@@ -78,8 +74,6 @@ new class extends Component {
         $this->is_paid = false;
         $this->requires_approval = false;
         $this->max_per_request_days = 0;
-        $this->accrual_rate_per_month = 0;
-        $this->carry_over_limit_days = 0;
         $this->leaveTypeId = null;
         $this->resetErrorBag();
     }
@@ -98,8 +92,6 @@ new class extends Component {
         $this->is_paid = (bool) $leaveType->is_paid;
         $this->requires_approval = (bool) $leaveType->requires_approval;
         $this->max_per_request_days = (int) $leaveType->max_per_request_days;
-        $this->accrual_rate_per_month = (float) $leaveType->accrual_rate_per_month;
-        $this->carry_over_limit_days = (int) $leaveType->carry_over_limit_days;
         $this->isEdit = true;
         $this->showModal = true;
     }
@@ -117,8 +109,6 @@ new class extends Component {
             'is_paid' => $this->is_paid,
             'requires_approval' => $this->requires_approval,
             'max_per_request_days' => $this->max_per_request_days,
-            'accrual_rate_per_month' => $this->accrual_rate_per_month,
-            'carry_over_limit_days' => $this->carry_over_limit_days,
         ];
 
         if ($this->isEdit) {
@@ -199,8 +189,6 @@ new class extends Component {
                                 <th class="font-hold fw-bold">{{ __('Paid') }}</th>
                                 <th class="font-hold fw-bold">{{ __('Requires Approval') }}</th>
                                 <th class="font-hold fw-bold">{{ __('Max Per Request') }}</th>
-                                <th class="font-hold fw-bold">{{ __('Accrual Rate/Month') }}</th>
-                                <th class="font-hold fw-bold">{{ __('Carry Over Limit') }}</th>
                                 @canany(['edit Leave Types', 'delete Leave Types'])
                                     <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                 @endcanany
@@ -230,8 +218,6 @@ new class extends Component {
                                         @endif
                                     </td>
                                     <td class="font-hold fw-bold">{{ $leaveType->max_per_request_days }} {{ __('hr.days') }}</td>
-                                    <td class="font-hold fw-bold">{{ $leaveType->accrual_rate_per_month }} {{ __('hr.days') }}</td>
-                                    <td class="font-hold fw-bold">{{ $leaveType->carry_over_limit_days }} {{ __('hr.days') }}</td>
                                     @canany(['edit Leave Types', 'delete Leave Types'])
                                         <td>
                                             <div class="btn-group" role="group">
@@ -304,21 +290,6 @@ new class extends Component {
                                     <input type="number" class="form-control @error('max_per_request_days') is-invalid @enderror" 
                                            id="max_per_request_days" wire:model.blur="max_per_request_days" min="0">
                                     @error('max_per_request_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="accrual_rate_per_month" class="form-label">معدل التراكم/شهر (أيام) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" class="form-control @error('accrual_rate_per_month') is-invalid @enderror" 
-                                           id="accrual_rate_per_month" wire:model.blur="accrual_rate_per_month" min="0">
-                                    @error('accrual_rate_per_month') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="carry_over_limit_days" class="form-label">حد التحويل (أيام) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('carry_over_limit_days') is-invalid @enderror" 
-                                           id="carry_over_limit_days" wire:model.blur="carry_over_limit_days" min="0">
-                                    @error('carry_over_limit_days') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
 

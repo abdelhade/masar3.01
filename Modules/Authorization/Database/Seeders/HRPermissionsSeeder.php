@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Authorization\Database\Seeders;
 
-
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
@@ -46,6 +45,21 @@ class HRPermissionsSeeder extends Seeder
                 'Errands',
                 'Work Permissions',
                 'CVs',
+                'HR Settings',
+                'Flexible Salary Processing',
+                'Flexible Salary Approvals',
+                'Flexible Salary Rejections',
+                'Flexible Salary Components',
+                // السلف والخصومات والمكافآت
+                'Employee Advances',
+                'Employee Deductions',
+                'Employee Rewards',
+                'Employee Advance Approvals',
+                'Employee Deduction Approvals',
+                'Employee Reward Approvals',
+                'Employee Advance Rejections',
+                'Employee Deduction Rejections',
+                'Employee Reward Rejections',
             ],
         ];
 
@@ -61,7 +75,7 @@ class HRPermissionsSeeder extends Seeder
                         ['name' => $fullName, 'guard_name' => 'web'],
                         ['category' => $category]
                     );
-                    
+
                     // تحديث الفئة إذا كانت موجودة بالفعل
                     if ($permission->category !== $category) {
                         $permission->update(['category' => $category]);
@@ -75,7 +89,7 @@ class HRPermissionsSeeder extends Seeder
         foreach ($oldKpisPermissions as $oldPerm) {
             $newName = str_replace(' KPIS', ' KPIs', $oldPerm->name);
             $existingPerm = Permission::where('name', $newName)->where('guard_name', 'web')->first();
-            
+
             if ($existingPerm) {
                 // إذا كانت الصلاحية الجديدة موجودة، احذف القديمة
                 $oldPerm->delete();

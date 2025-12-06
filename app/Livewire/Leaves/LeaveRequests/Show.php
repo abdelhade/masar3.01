@@ -48,22 +48,27 @@ class Show extends Component
         $this->authorize('approve', $this->request);
 
         if (! $this->request->canBeApproved()) {
-            session()->flash('error', 'لا يمكن الموافقة على هذا الطلب.');
+            $errorMessage = $this->request->approval_error ?? 'لا يمكن الموافقة على هذا الطلب.';
+            session()->flash('error', $errorMessage);
 
             return;
         }
 
-        $this->request->update([
-            'status' => 'approved',
-            'approver_id' => Auth::id(),
-            'approved_at' => now(),
-        ]);
+        try {
+            $this->request->update([
+                'status' => 'approved',
+                'approver_id' => Auth::id(),
+                'approved_at' => now(),
+            ]);
 
-        // إطلاق الحدث
-        event(new LeaveRequestApproved($this->request));
+            // إطلاق الحدث
+            event(new LeaveRequestApproved($this->request));
 
-        session()->flash('message', 'تم الموافقة على الطلب بنجاح.');
-        $this->redirect(route('leaves.requests.index'));
+            session()->flash('message', 'تم الموافقة على الطلب بنجاح.');
+            $this->redirect(route('leaves.requests.index'));
+        } catch (\Exception $e) {
+            session()->flash('error', 'حدث خطأ أثناء الموافقة على الطلب: '.$e->getMessage());
+        }
     }
 
     public function rejectRequest(): void

@@ -189,9 +189,13 @@ return [
     'attendances' => 'Attendance Records',
     'attendance_records' => 'Attendance Records',
     'attendance_processing' => 'Attendance Processing',
+    'flexible_salary_processing' => 'Flexible Salary Processing',
+    'employee_advances' => 'Employee Advances',
+    'employee_deductions_rewards' => 'Deductions & Rewards',
     'leave_management' => 'Leave Management',
     'leave_balances' => 'Leave Balances',
     'leave_requests' => 'Leave Requests',
+    'hr_settings' => 'HR Settings',
     'leave_types' => 'Leave Types',
     'cvs' => 'CVs',
     'cv_management' => 'CV Management',
@@ -258,4 +262,4 @@ return [
     'daily_progress' => 'Daily Progress',
     'work_items' => 'Work Items',
     'project_template' => 'Project Template',
-]; 
+];

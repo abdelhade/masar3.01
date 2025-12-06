@@ -22,10 +22,9 @@
                                         <th class="text-center fw-bold">{{ __('نوع الإجازة') }}</th>
                                         <th class="text-center fw-bold">{{ __('السنة') }}</th>
                                         <th class="text-center fw-bold">{{ __('الرصيد الافتتاحي') }}</th>
-                                        <th class="text-center fw-bold">{{ __('المتراكمة') }}</th>
                                         <th class="text-center fw-bold">{{ __('المستخدمة') }}</th>
                                         <th class="text-center fw-bold">{{ __('المعلقة') }}</th>
-                                        <th class="text-center fw-bold">{{ __('المحولة') }}</th>
+                                        <th class="text-center fw-bold">{{ __('الحد الشهري الأقصى') }}</th>
                                         <th class="text-center fw-bold">{{ __('المتبقي') }}</th>
                                         <th class="text-center fw-bold">{{ __('ملاحظات') }}</th>
                                     </tr>
@@ -33,9 +32,7 @@
                                 <tbody>
                                     @foreach ($viewEmployee->leaveBalances as $balance)
                                         @php
-                                            $remainingDays = $balance->opening_balance_days + 
-                                                           $balance->accrued_days + 
-                                                           $balance->carried_over_days - 
+                                            $remainingDays = $balance->opening_balance_days - 
                                                            $balance->used_days - 
                                                            $balance->pending_days;
                                         @endphp
@@ -49,10 +46,15 @@
                                                 <span class="badge bg-info">{{ $balance->year }}</span>
                                             </td>
                                             <td class="align-middle text-center">{{ number_format($balance->opening_balance_days, 1) }}</td>
-                                            <td class="align-middle text-center text-success">{{ number_format($balance->accrued_days, 1) }}</td>
                                             <td class="align-middle text-center text-danger">{{ number_format($balance->used_days, 1) }}</td>
                                             <td class="align-middle text-center text-warning">{{ number_format($balance->pending_days, 1) }}</td>
-                                            <td class="align-middle text-center text-info">{{ number_format($balance->carried_over_days, 1) }}</td>
+                                            <td class="align-middle text-center">
+                                                @if($balance->max_monthly_days)
+                                                    <span class="badge bg-info fs-6">{{ number_format($balance->max_monthly_days, 1) }}</span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                             <td class="align-middle text-center">
                                                 <span class="badge fw-bold {{ $remainingDays >= 0 ? 'bg-success' : 'bg-danger' }} fs-6">
                                                     {{ number_format($remainingDays, 1) }}

@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
-use App\Livewire\AttendanceProcessingManager;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +17,27 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/attendance/processing', 'hr-management.attendances.processing.manage-processing')
         ->name('attendance.processing');
     
+    // Flexible Salary Processing Routes
+    Route::prefix('attendances/flexible-salary')->name('flexible-salary.processing.')->group(function () {
+        Route::view('/', 'hr-management.attendances.flexible-salary-processing.index')
+            ->name('index');
+        Route::view('/create', 'hr-management.attendances.flexible-salary-processing.create')
+            ->name('create');
+        Route::get('/{processing}/edit', function ($processing) {
+            return view('hr-management.attendances.flexible-salary-processing.edit', [
+                'processing' => \App\Models\FlexibleSalaryProcessing::with('employee')->findOrFail($processing),
+            ]);
+        })->name('edit');
+    });
+
+    // Employee Advances Routes
+    Route::view('/employee-advances', 'hr-management.employee-advances.index')
+        ->name('employee-advances.index');
+
+    // Employee Deductions & Rewards Routes
+    Route::view('/employee-deductions-rewards', 'hr-management.employee-deductions-rewards.index')
+        ->name('employee-deductions-rewards.index');
+
     // Regular Attendance Routes  
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('attendance.index');

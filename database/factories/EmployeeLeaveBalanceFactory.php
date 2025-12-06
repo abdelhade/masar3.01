@@ -18,10 +18,8 @@ class EmployeeLeaveBalanceFactory extends Factory
             'leave_type_id' => LeaveType::factory(),
             'year' => $this->faker->numberBetween(2023, 2025),
             'opening_balance_days' => $this->faker->randomFloat(2, 0, 30),
-            'accrued_days' => $this->faker->randomFloat(2, 0, 20),
             'used_days' => $this->faker->randomFloat(2, 0, 15),
             'pending_days' => $this->faker->randomFloat(2, 0, 5),
-            'carried_over_days' => $this->faker->randomFloat(2, 0, 10),
             'notes' => $this->faker->optional()->sentence(),
         ];
     }

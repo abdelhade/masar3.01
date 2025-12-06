@@ -56,7 +56,7 @@ new class extends Component {
             // Clear rate limiter on success
             RateLimiter::clear($this->throttleKey('delete'));
 
-            session()->flash('success', __('hr.employee_deleted'));
+            session()->flash('success', __('hr.employee_deleted_successfully'));
         } catch (\Throwable $th) {
             Log::error('Employee delete error', [
                 'user_id' => auth()->id(),

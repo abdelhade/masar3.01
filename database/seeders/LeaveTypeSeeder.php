@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\LeaveType;
+use Illuminate\Database\Seeder;
 
 class LeaveTypeSeeder extends Seeder
 {
@@ -19,8 +19,6 @@ class LeaveTypeSeeder extends Seeder
                 'is_paid' => true,
                 'requires_approval' => true,
                 'max_per_request_days' => 30,
-                'accrual_rate_per_month' => 2.5,
-                'carry_over_limit_days' => 10,
             ],
             [
                 'name' => 'إجازة مرضية',
@@ -28,8 +26,6 @@ class LeaveTypeSeeder extends Seeder
                 'is_paid' => true,
                 'requires_approval' => true,
                 'max_per_request_days' => 15,
-                'accrual_rate_per_month' => 1.25,
-                'carry_over_limit_days' => 5,
             ],
             [
                 'name' => 'إجازة عارضة',
@@ -37,8 +33,6 @@ class LeaveTypeSeeder extends Seeder
                 'is_paid' => false,
                 'requires_approval' => true,
                 'max_per_request_days' => 3,
-                'accrual_rate_per_month' => 0.5,
-                'carry_over_limit_days' => 2,
             ],
             [
                 'name' => 'إجازة أمومة',
@@ -46,8 +40,6 @@ class LeaveTypeSeeder extends Seeder
                 'is_paid' => true,
                 'requires_approval' => false,
                 'max_per_request_days' => 90,
-                'accrual_rate_per_month' => 0,
-                'carry_over_limit_days' => 0,
             ],
             [
                 'name' => 'إجازة أبوة',
@@ -55,8 +47,6 @@ class LeaveTypeSeeder extends Seeder
                 'is_paid' => true,
                 'requires_approval' => false,
                 'max_per_request_days' => 7,
-                'accrual_rate_per_month' => 0,
-                'carry_over_limit_days' => 0,
             ],
         ];
 
