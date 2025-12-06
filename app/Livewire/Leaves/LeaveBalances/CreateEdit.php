@@ -36,16 +36,13 @@ class CreateEdit extends Component
     public float $opening_balance_days = 0;
 
     #[Rule('required|numeric|min:0')]
-    public float $accrued_days = 0;
-
-    #[Rule('required|numeric|min:0')]
     public float $used_days = 0;
 
     #[Rule('required|numeric|min:0')]
     public float $pending_days = 0;
 
     #[Rule('required|numeric|min:0')]
-    public float $carried_over_days = 0;
+    public float $max_monthly_days = 0;
 
     #[Rule('nullable|string')]
     public string $notes = '';
@@ -70,19 +67,16 @@ class CreateEdit extends Component
             $this->leave_type_id = $this->balance->leave_type_id;
             $this->year = $this->balance->year;
             $this->opening_balance_days = $this->balance->opening_balance_days;
-            $this->accrued_days = $this->balance->accrued_days;
             $this->used_days = $this->balance->used_days;
             $this->pending_days = $this->balance->pending_days;
-            $this->carried_over_days = $this->balance->carried_over_days;
+            $this->max_monthly_days = $this->balance->max_monthly_days ?? 0;
             $this->notes = $this->balance->notes;
         }
     }
 
     public function getRemainingDaysProperty(): float
     {
-        return $this->opening_balance_days +
-               $this->accrued_days +
-               $this->carried_over_days -
+        return $this->opening_balance_days -
                $this->used_days -
                $this->pending_days;
     }
@@ -90,6 +84,16 @@ class CreateEdit extends Component
     public function save(): void
     {
         $this->validate();
+
+        // التحقق من أن الحد الشهري لا يتجاوز الرصيد الافتتاحي
+        if ($this->max_monthly_days > $this->opening_balance_days) {
+            $this->addError('max_monthly_days', __('hr.max_monthly_days_exceeds_opening_balance', [
+                'max_monthly' => number_format($this->max_monthly_days, 1),
+                'opening_balance' => number_format($this->opening_balance_days, 1),
+            ]));
+
+            return;
+        }
 
         // Check for duplicate balance
         $existingBalance = EmployeeLeaveBalance::where([
@@ -109,10 +113,9 @@ class CreateEdit extends Component
             'leave_type_id' => $this->leave_type_id,
             'year' => $this->year,
             'opening_balance_days' => $this->opening_balance_days,
-            'accrued_days' => $this->accrued_days,
             'used_days' => $this->used_days,
             'pending_days' => $this->pending_days,
-            'carried_over_days' => $this->carried_over_days,
+            'max_monthly_days' => $this->max_monthly_days,
             'notes' => $this->notes,
         ];
 

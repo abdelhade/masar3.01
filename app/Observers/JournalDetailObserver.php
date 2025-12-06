@@ -2,9 +2,9 @@
 
 namespace App\Observers;
 
-use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use Illuminate\Support\Facades\Log;
+use Modules\Accounts\Models\AccHead;
 
 class JournalDetailObserver
 {
@@ -30,7 +30,7 @@ class JournalDetailObserver
     {
         try {
             $accHead = AccHead::find($accountId);
-            if (!$accHead) {
+            if (! $accHead) {
                 return;
             }
 
@@ -41,22 +41,27 @@ class JournalDetailObserver
                 $this->updateParentAccountBalance($accountId);
             }
 
+            // إعادة جلب الحساب من قاعدة البيانات للحصول على الرصيد المحدث
+            $accHead->refresh();
+
             // مهم: اطلع للأب وخليه يعمل نفس الحساب بعد ما تخلص
             if ($accHead->parent_id) {
                 $this->updateAccountBalanceRecursive($accHead->parent_id);
             }
         } catch (\Throwable $e) {
-            Log::error('Failed to update account balance recursively: ' . $e->getMessage());
+            Log::error('Failed to update account balance recursively: '.$e->getMessage(), [
+                'account_id' => $accountId,
+                'exception' => $e,
+            ]);
         }
     }
-
 
     /**
      * Check if account is a leaf account (has no children)
      */
     protected function isLeafAccount($accountId)
     {
-        return !AccHead::where('parent_id', $accountId)->exists();
+        return ! AccHead::where('parent_id', $accountId)->exists();
     }
 
     /**
@@ -91,7 +96,9 @@ class JournalDetailObserver
                 $this->updateParentAccountBalance($child->id);
             }
 
-            $total += $child->balance;
+            // إعادة جلب الابن من قاعدة البيانات للحصول على الرصيد المحدث
+            $child->refresh();
+            $total += (float) ($child->balance ?? 0);
         }
 
         $accHead = AccHead::find($accountId);
@@ -100,7 +107,6 @@ class JournalDetailObserver
             $accHead->save();
         }
     }
-
 
     /**
      * Alternative recursive method that updates entire account tree
@@ -118,7 +124,7 @@ class JournalDetailObserver
                 $this->updateAllParentAccounts();
             }
         } catch (\Throwable $e) {
-            Log::error('Failed to update entire account tree: ' . $e->getMessage());
+            Log::error('Failed to update entire account tree: '.$e->getMessage());
         }
     }
 

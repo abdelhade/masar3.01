@@ -13,6 +13,10 @@ class Department extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'max_leave_percentage' => 'decimal:2',
+    ];
+
     protected static function booted()
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);

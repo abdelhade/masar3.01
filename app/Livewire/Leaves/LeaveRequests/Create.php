@@ -156,6 +156,48 @@ class Create extends Component
             }
         }
 
+        // Check for monthly limit
+        if ($this->selectedEmployeeBalance) {
+            $year = now()->year;
+            $month = (int) Carbon::parse($this->start_date)->format('m');
+            if (! $service->checkMonthlyLimit(
+                (int) $this->employee_id,
+                (int) $this->leave_type_id,
+                $year,
+                $month,
+                $this->calculated_days
+            )) {
+                $this->addError('general', 'تجاوز الحد الأقصى الشهري للإجازات.');
+
+                return;
+            }
+        }
+
+        // Check for leave percentage limit
+        $employee = Employee::findOrFail($this->employee_id);
+        $departmentId = $employee->department_id ?? null;
+        $hasPercentageLimit = $service->checkLeavePercentageLimit(
+            (int) $this->employee_id,
+            $this->start_date,
+            $this->end_date,
+            $departmentId
+        );
+
+        if (! $hasPercentageLimit) {
+            // التحقق من سبب الفشل (عدم وجود نسبة محددة أم تجاوز النسبة)
+            $department = $employee->department;
+            $hasDepartmentPercentage = $department && ! is_null($department->max_leave_percentage);
+            $hasCompanyPercentage = ! is_null(\App\Models\HRSetting::getCompanyMaxLeavePercentage());
+
+            if (! $hasDepartmentPercentage && ! $hasCompanyPercentage) {
+                $this->addError('general', __('hr.no_leave_percentage_set'));
+            } else {
+                $this->addError('general', __('hr.leave_percentage_exceeded'));
+            }
+
+            return;
+        }
+
         $data = [
             'employee_id' => $this->employee_id,
             'leave_type_id' => $this->leave_type_id,

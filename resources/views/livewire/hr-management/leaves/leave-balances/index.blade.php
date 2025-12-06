@@ -121,10 +121,9 @@
                                     <th class="text-white font-hold fw-bold font-14">نوع الإجازة</th>
                                     <th class="text-white font-hold fw-bold font-14">السنة</th>
                                     <th class="text-white font-hold fw-bold font-14">الرصيد الافتتاحي</th>
-                                    <th class="text-white font-hold fw-bold font-14">المتراكم</th>
                                     <th class="text-white font-hold fw-bold font-14">المستخدم</th>
                                     <th class="text-white font-hold fw-bold font-14">المعلق</th>
-                                    <th class="text-white font-hold fw-bold font-14">المحول</th>
+                                    <th class="text-white font-hold fw-bold font-14">الحد الشهري الأقصى</th>
                                     <th class="text-white font-hold fw-bold font-14">المتبقي</th>
                                     <th class="text-white font-hold fw-bold font-14">الإجراءات</th>
                                 </tr>
@@ -136,10 +135,15 @@
                                         <td class="font-hold fw-bold font-14">{{ $balance->leaveType->name }}</td>
                                         <td class="font-hold fw-bold font-14">{{ $balance->year }}</td>
                                         <td class="font-hold fw-bold font-14">{{ number_format($balance->opening_balance_days, 1) }}</td>
-                                        <td class="font-hold fw-bold font-14">{{ number_format($balance->accrued_days, 1) }}</td>
                                         <td class="font-hold fw-bold font-14">{{ number_format($balance->used_days, 1) }}</td>
                                         <td class="font-hold fw-bold font-14">{{ number_format($balance->pending_days, 1) }}</td>
-                                        <td class="font-hold fw-bold font-14">{{ number_format($balance->carried_over_days, 1) }}</td>
+                                        <td class="font-hold fw-bold font-14">
+                                            @if($balance->max_monthly_days)
+                                                <span class="badge bg-info fs-6">{{ number_format($balance->max_monthly_days, 1) }}</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span
                                                 class="badge font-hold fw-bold font-14 {{ $balance->remaining_days > 0 ? 'bg-success' : 'bg-danger' }}">
@@ -162,7 +166,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center">لا توجد بيانات لعرضها</td>
+                                        <td colspan="9" class="text-center">لا توجد بيانات لعرضها</td>
                                     </tr>
                                 @endforelse
                             </tbody>

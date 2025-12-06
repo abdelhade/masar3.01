@@ -191,16 +191,84 @@ class Edit extends Component
 
         // Check for sufficient balance (if leave type is paid)
         if ($this->selectedEmployeeBalance && $this->selectedEmployeeBalance->leaveType->is_paid) {
-            // Calculate required balance (difference between new and old duration)
             $originalDays = $this->request->duration_days;
             $newDays = $this->calculated_days;
             $additionalDaysNeeded = $newDays - $originalDays;
 
-            if ($additionalDaysNeeded > 0 && ! $this->selectedEmployeeBalance->hasSufficientBalance($additionalDaysNeeded)) {
-                $this->addError('general', __('hr.insufficient_balance_for_edit'));
+            // إذا كان الطلب معتمد، يجب التحقق من الرصيد الكامل
+            if ($this->request->isApproved()) {
+                // للطلبات المعتمدة، نحتاج للتحقق من الرصيد الكامل (بعد إزالة pending_days)
+                $availableBalance = $this->selectedEmployeeBalance->remaining_days + $this->selectedEmployeeBalance->pending_days;
+                if ($newDays > $availableBalance) {
+                    $this->addError('general', __('hr.insufficient_balance_for_edit'));
+
+                    return;
+                }
+            } elseif ($this->request->isSubmitted()) {
+                // للطلبات المقدمة، pending_days محجوزة بالفعل
+                // نحتاج فقط للتحقق من الأيام الإضافية
+                if ($additionalDaysNeeded > 0) {
+                    // الرصيد المتبقي بعد إزالة pending_days الحالية
+                    $availableAfterCurrentPending = $this->selectedEmployeeBalance->remaining_days + $this->selectedEmployeeBalance->pending_days;
+                    // الرصيد المطلوب بعد إزالة pending_days القديمة وإضافة الجديدة
+                    $requiredBalance = $availableAfterCurrentPending - $originalDays + $newDays;
+
+                    if ($newDays > $availableAfterCurrentPending) {
+                        $this->addError('general', __('hr.insufficient_balance_for_edit'));
+
+                        return;
+                    }
+                }
+            } else {
+                // للطلبات في حالة draft، نحتاج للتحقق من الرصيد الكامل
+                if (! $this->selectedEmployeeBalance->hasSufficientBalance($newDays)) {
+                    $this->addError('general', __('hr.insufficient_balance_for_edit'));
+
+                    return;
+                }
+            }
+        }
+
+        // Check for monthly limit
+        if ($this->selectedEmployeeBalance) {
+            $year = (int) Carbon::parse($this->start_date)->format('Y');
+            $month = (int) Carbon::parse($this->start_date)->format('m');
+            if (! $service->checkMonthlyLimit(
+                (int) $this->employee_id,
+                (int) $this->leave_type_id,
+                $year,
+                $month,
+                $this->calculated_days
+            )) {
+                $this->addError('general', 'تجاوز الحد الأقصى الشهري للإجازات.');
 
                 return;
             }
+        }
+
+        // Check for leave percentage limit
+        $employee = Employee::findOrFail($this->employee_id);
+        $departmentId = $employee->department_id ?? null;
+        $hasPercentageLimit = $service->checkLeavePercentageLimit(
+            (int) $this->employee_id,
+            $this->start_date,
+            $this->end_date,
+            $departmentId
+        );
+
+        if (! $hasPercentageLimit) {
+            // التحقق من سبب الفشل (عدم وجود نسبة محددة أم تجاوز النسبة)
+            $department = $employee->department;
+            $hasDepartmentPercentage = $department && ! is_null($department->max_leave_percentage);
+            $hasCompanyPercentage = ! is_null(\App\Models\HRSetting::getCompanyMaxLeavePercentage());
+
+            if (! $hasDepartmentPercentage && ! $hasCompanyPercentage) {
+                $this->addError('general', __('hr.no_leave_percentage_set'));
+            } else {
+                $this->addError('general', __('hr.leave_percentage_exceeded'));
+            }
+
+            return;
         }
 
         $data = [

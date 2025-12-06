@@ -198,9 +198,13 @@ return [
     'attendances' => 'البصمات',
     'attendance_records' => 'البصمات',
     'attendance_processing' => 'معالجة الحضور والانصراف',
+    'flexible_salary_processing' => 'معالجة الراتب المرن',
+    'employee_advances' => 'سلف الموظفين',
+    'employee_deductions_rewards' => 'الخصومات والمكافآت',
     'leave_management' => 'إدارة الإجازات',
     'leave_balances' => 'رصيد الإجازات',
     'leave_requests' => 'طلبات الإجازة',
+    'hr_settings' => 'إعدادات الموارد البشرية',
     'leave_types' => 'أنواع الإجازات',
     'cvs' => 'السير الذاتية',
     'cv_management' => 'السير الذاتية',
@@ -267,7 +271,7 @@ return [
     'daily_progress' => 'التقدم اليومي',
     'work_items' => 'عناصر العمل',
     'project_template' => 'قالب المشروع',
-    
+
     // إدارة الشيكات
     'checks_management' => 'إدارة الشيكات',
     'checks' => 'الشيكات',
@@ -280,4 +284,4 @@ return [
     'check_portfolios' => 'حافظات الأوراق المالية',
     'incoming_check_portfolio' => 'حافظة أوراق القبض',
     'outgoing_check_portfolio' => 'حافظة أوراق الدفع',
-]; 
+];

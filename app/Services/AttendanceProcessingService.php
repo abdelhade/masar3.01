@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
+use App\Exceptions\AttendanceProcessingException;
+use App\Jobs\ProcessAttendanceJob;
+use App\Jobs\ProcessSingleEmployeeJob;
 use App\Models\Attendance;
 use App\Models\AttendanceProcessing;
 use App\Models\AttendanceProcessingDetail;
 use App\Models\Department;
 use App\Models\Employee;
-use App\Exceptions\AttendanceProcessingException;
-use App\Jobs\ProcessAttendanceJob;
-use App\Jobs\ProcessSingleEmployeeJob;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +56,7 @@ class AttendanceProcessingService
                 // Overlap condition: start1 <= end2 && start2 <= end1
                 // Converted to: period_start <= endDate AND period_end >= startDate
                 $q->where('period_start', '<=', $endDate->format('Y-m-d'))
-                  ->where('period_end', '>=', $startDate->format('Y-m-d'));
+                    ->where('period_end', '>=', $startDate->format('Y-m-d'));
             });
 
         if ($processingType) {
@@ -117,12 +117,12 @@ class AttendanceProcessingService
      * Process employee attendance data without transaction management
      * This method contains the core processing logic and can be called from within a transaction
      *
-     * @param Employee $employee The employee to process attendance for
-     * @param Carbon $startDate Start date of the processing period
-     * @param Carbon $endDate End date of the processing period
-     * @param string $processingType Type of processing: 'single', 'multiple', or 'department'
-     * @param int|null $departmentId Department ID (required for 'department' type)
-     * @param string|null $notes Optional notes for the processing
+     * @param  Employee  $employee  The employee to process attendance for
+     * @param  Carbon  $startDate  Start date of the processing period
+     * @param  Carbon  $endDate  End date of the processing period
+     * @param  string  $processingType  Type of processing: 'single', 'multiple', or 'department'
+     * @param  int|null  $departmentId  Department ID (required for 'department' type)
+     * @param  string|null  $notes  Optional notes for the processing
      * @return array{
      *     processing_id?: int,
      *     employee?: Employee,
@@ -192,6 +192,10 @@ class AttendanceProcessingService
         // Save processing details
         $this->saveProcessingDetails($processing, $processedData, $employee);
 
+        // Calculate monthly deductions (but don't create journal entries yet)
+        $deductionService = app(\App\Services\EmployeeDeductionRewardService::class);
+        $deductionService->calculateMonthlyDeductions($employee, $startDate, $endDate, $processing->id);
+
         return [
             'processing_id' => $processing->id,
             'employee' => $employee,
@@ -202,15 +206,25 @@ class AttendanceProcessingService
     }
 
     /**
+     * Apply deductions and rewards for an attendance processing
+     * This is called when processing is approved
+     */
+    public function applyDeductionsAndRewards(int $attendanceProcessingId): void
+    {
+        $deductionService = app(\App\Services\EmployeeDeductionRewardService::class);
+        $deductionService->applyDeductionsAndRewards($attendanceProcessingId);
+    }
+
+    /**
      * Process attendance for a single employee
      *
      * This method processes attendance records for a single employee within a specified date range,
      * calculates working hours, overtime, and salary, then saves the results to the database.
      *
-     * @param Employee $employee The employee to process attendance for
-     * @param Carbon $startDate Start date of the processing period (inclusive)
-     * @param Carbon $endDate End date of the processing period (inclusive)
-     * @param string|null $notes Optional notes to attach to the processing record
+     * @param  Employee  $employee  The employee to process attendance for
+     * @param  Carbon  $startDate  Start date of the processing period (inclusive)
+     * @param  Carbon  $endDate  End date of the processing period (inclusive)
+     * @param  string|null  $notes  Optional notes to attach to the processing record
      * @return array{
      *     processing_id?: int,
      *     employee?: Employee,
@@ -237,6 +251,7 @@ class AttendanceProcessingService
      *     existing_processing_ids?: array<int>,
      *     overlapping_processings?: array<int, array>
      * }
+     *
      * @throws \Exception If database transaction fails
      */
     public function processSingleEmployee(Employee $employee, Carbon $startDate, Carbon $endDate, ?string $notes = null): array
@@ -248,13 +263,16 @@ class AttendanceProcessingService
 
             if (isset($result['error'])) {
                 DB::rollBack();
+
                 return $result;
             }
 
             DB::commit();
+
             return $result;
         } catch (AttendanceProcessingException $e) {
             DB::rollBack();
+
             return [
                 'error' => $e->getMessage(),
             ];
@@ -281,11 +299,12 @@ class AttendanceProcessingService
      * Each employee is processed independently, and errors for one employee
      * do not prevent processing of other employees.
      *
-     * @param array<int> $employeeIds Array of employee IDs to process
-     * @param Carbon $startDate Start date of the processing period (inclusive)
-     * @param Carbon $endDate End date of the processing period (inclusive)
-     * @param string|null $notes Optional notes to attach to processing records
+     * @param  array<int>  $employeeIds  Array of employee IDs to process
+     * @param  Carbon  $startDate  Start date of the processing period (inclusive)
+     * @param  Carbon  $endDate  End date of the processing period (inclusive)
+     * @param  string|null  $notes  Optional notes to attach to processing records
      * @return array<int, array> Array of results, one for each employee
+     *
      * @throws \Exception If database transaction fails
      */
     public function processMultipleEmployees(array $employeeIds, Carbon $startDate, Carbon $endDate, ?string $notes = null): array
@@ -311,7 +330,7 @@ class AttendanceProcessingService
                         'error' => $e->getMessage(),
                     ]);
                     $results[] = [
-                        'error' => "❌ خطأ في معالجة الموظف (كود: {$employeeId}): " . $e->getMessage(),
+                        'error' => "❌ خطأ في معالجة الموظف (كود: {$employeeId}): ".$e->getMessage(),
                     ];
                     // Continue processing other employees
                 }
@@ -344,10 +363,10 @@ class AttendanceProcessingService
      * Processes attendance for all active employees in a department within a specified date range.
      * Returns a summary of all employees' processing results along with department-level totals.
      *
-     * @param Department $department The department to process
-     * @param Carbon $startDate Start date of the processing period (inclusive)
-     * @param Carbon $endDate End date of the processing period (inclusive)
-     * @param string|null $notes Optional notes to attach to processing records
+     * @param  Department  $department  The department to process
+     * @param  Carbon  $startDate  Start date of the processing period (inclusive)
+     * @param  Carbon  $endDate  End date of the processing period (inclusive)
+     * @param  string|null  $notes  Optional notes to attach to processing records
      * @return array{
      *     department?: Department,
      *     department_summary?: array{
@@ -364,6 +383,7 @@ class AttendanceProcessingService
      *     results?: array<int, array>,
      *     error?: string
      * }
+     *
      * @throws \Exception If database transaction fails
      */
     public function processDepartment(Department $department, Carbon $startDate, Carbon $endDate, ?string $notes = null): array
@@ -374,10 +394,11 @@ class AttendanceProcessingService
             $results = [];
             // Only get active employees
             $employees = $department->employees()->where('status', 'مفعل')->get();
-            
+
             // Check if department has any active employees
             if ($employees->isEmpty()) {
                 DB::rollBack();
+
                 return [
                     'error' => "❌ القسم '{$department->title}' لا يحتوي على موظفين مفعلين.",
                     'department' => $department,
@@ -385,7 +406,7 @@ class AttendanceProcessingService
                     'results' => [],
                 ];
             }
-            
+
             // Check if there are any attendance records for the period
             $hasAnyAttendance = false;
             foreach ($employees as $employee) {
@@ -397,9 +418,10 @@ class AttendanceProcessingService
                     break;
                 }
             }
-            
-            if (!$hasAnyAttendance) {
+
+            if (! $hasAnyAttendance) {
                 DB::rollBack();
+
                 return [
                     'error' => "❌ لا توجد بصمات للموظفين في القسم '{$department->title}' للفترة من {$startDate->format('Y-m-d')} إلى {$endDate->format('Y-m-d')}.",
                     'department' => $department,
@@ -407,7 +429,7 @@ class AttendanceProcessingService
                     'results' => [],
                 ];
             }
-            
+
             $departmentSummary = [
                 'total_days' => 0,
                 'working_days' => 0,
@@ -419,7 +441,7 @@ class AttendanceProcessingService
                 'overtime_work_minutes' => 0,
                 'total_salary' => 0,
             ];
-            
+
             $successfulProcessings = 0;
 
             foreach ($employees as $employee) {
@@ -428,13 +450,14 @@ class AttendanceProcessingService
 
                     if (isset($result['error'])) {
                         $results[] = $result;
+
                         continue;
                     }
 
                     // Accumulate department summary from successful processing
                     $summary = $result['summary'];
                     $salaryData = $result['salary_data'];
-                    
+
                     $departmentSummary['total_days'] = $summary['total_days'];
                     $departmentSummary['working_days'] += $summary['working_days'];
                     $departmentSummary['actual_work_days'] += $summary['present_days'];
@@ -460,7 +483,7 @@ class AttendanceProcessingService
                         'error' => $e->getMessage(),
                     ]);
                     $results[] = [
-                        'error' => "❌ خطأ في معالجة الموظف {$employee->name} (كود: {$employee->id}): " . $e->getMessage(),
+                        'error' => "❌ خطأ في معالجة الموظف {$employee->name} (كود: {$employee->id}): ".$e->getMessage(),
                         'employee' => $employee,
                     ];
                     // Continue processing other employees
@@ -471,10 +494,10 @@ class AttendanceProcessingService
             if ($successfulProcessings === 0) {
                 DB::rollBack();
                 $errorMessages = array_filter(array_column($results, 'error'));
-                $errorMessage = !empty($errorMessages) 
+                $errorMessage = ! empty($errorMessages)
                     ? implode("\n\n", $errorMessages)
                     : "❌ لم يتم معالجة أي موظف في القسم '{$department->title}' للفترة المحددة.";
-                
+
                 return [
                     'error' => $errorMessage,
                     'department' => $department,
@@ -499,6 +522,7 @@ class AttendanceProcessingService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [
                 'department' => $department,
                 'department_summary' => [],
@@ -569,28 +593,28 @@ class AttendanceProcessingService
                     // We calculate the daily rate * multiplier
                     $dailyRate = $processedData['salary_data']['daily_rate'] ?? 0;
                     $dailySalary = $dailyRate * ($employee->additional_day_calculation ?? 1.5);
-                    
+
                     // If there are specific overtime hours ON TOP of the day (unlikely for "overtime day" which is usually a holiday),
-                    // we might need to decide if we add them. 
+                    // we might need to decide if we add them.
                     // Usually "Overtime Day" means the whole day is overtime.
                     // But if the system separates "actual hours" and "overtime hours" for that day:
                     // Let's assume the "Overtime Day" pay covers the "Actual Hours".
                     // Any "Overtime Hours" (hours beyond the shift) should probably be paid extra?
                     // For now, let's stick to the user request: "Calculate the overtime day based on the employee's table".
                     // So we use the Day Multiplier on the Daily Rate.
-                    
+
                     // However, we should also check if we need to add overtime hours pay if they exist separately.
-                    // But typically, if I work on Friday, I get paid 1.5 days. 
+                    // But typically, if I work on Friday, I get paid 1.5 days.
                     // So $dailySalary = DailyRate * 1.5.
-                    
-                    // What if I work MORE than 8 hours on Friday? 
+
+                    // What if I work MORE than 8 hours on Friday?
                     // The current logic in SalaryCalculationService separates hours.
                     // But for "Overtime Day", the `actual_hours` might be 0 in some logic? No, it should be > 0.
-                    
+
                     // Let's look at how we calculated total salary in the plan.
                     // We said: $overtimeDaysSalary = $summary['overtime_days'] * $dailyRate * $multiplier.
                     // So here, for this specific day, we should set $dailySalary to that amount.
-                    
+
                 } else {
                     // Normal working day
                     $dailySalary = ($dayData['actual_hours'] * $hourlyRate) +
@@ -735,21 +759,20 @@ class AttendanceProcessingService
      * Process department attendance asynchronously using Queue
      * This is useful for large departments to avoid timeout
      *
-     * @param Department $department The department to process
-     * @param Carbon $startDate Start date of the processing period
-     * @param Carbon $endDate End date of the processing period
-     * @param string|null $notes Optional notes
+     * @param  Department  $department  The department to process
+     * @param  Carbon  $startDate  Start date of the processing period
+     * @param  Carbon  $endDate  End date of the processing period
+     * @param  string|null  $notes  Optional notes
      * @return string Job ID for tracking
      */
     /**
      * Process department attendance asynchronously using Queue
      * This is useful for large departments to avoid timeout
      *
-     * @param Department $department The department to process
-     * @param Carbon $startDate Start date of the processing period
-     * @param Carbon $endDate End date of the processing period
-     * @param string|null $notes Optional notes
-     * @return void
+     * @param  Department  $department  The department to process
+     * @param  Carbon  $startDate  Start date of the processing period
+     * @param  Carbon  $endDate  End date of the processing period
+     * @param  string|null  $notes  Optional notes
      */
     public function processDepartmentAsync(Department $department, Carbon $startDate, Carbon $endDate, ?string $notes = null): void
     {
@@ -765,11 +788,10 @@ class AttendanceProcessingService
      * Process single employee attendance asynchronously using Queue
      * This is useful when processing might take long time
      *
-     * @param Employee $employee The employee to process
-     * @param Carbon $startDate Start date of the processing period
-     * @param Carbon $endDate End date of the processing period
-     * @param string|null $notes Optional notes
-     * @return void
+     * @param  Employee  $employee  The employee to process
+     * @param  Carbon  $startDate  Start date of the processing period
+     * @param  Carbon  $endDate  End date of the processing period
+     * @param  string|null  $notes  Optional notes
      */
     public function processSingleEmployeeAsync(Employee $employee, Carbon $startDate, Carbon $endDate, ?string $notes = null): void
     {

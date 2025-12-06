@@ -27,8 +27,6 @@ class LeaveTypeFactory extends Factory
             'is_paid' => $this->faker->boolean(80),
             'requires_approval' => $this->faker->boolean(90),
             'max_per_request_days' => $this->faker->randomElement([7, 14, 30, 60, 90, 120]),
-            'accrual_rate_per_month' => $this->faker->optional(0.7)->randomFloat(2, 0.5, 3.0),
-            'carry_over_limit_days' => $this->faker->optional(0.6)->numberBetween(5, 30),
         ];
     }
 }

@@ -19,12 +19,32 @@ class UpdateLeaveBalanceOnSubmitted
         $request = $event->leaveRequest;
         $year = $request->start_date->year;
 
-        // حجز الأيام المعلقة في رصيد الموظف
-        $this->leaveBalanceService->reservePending(
-            $request->employee_id,
-            $request->leave_type_id,
-            $year,
-            $request->duration_days
-        );
+        try {
+            // حجز الأيام المعلقة في رصيد الموظف
+            $reserved = $this->leaveBalanceService->reservePending(
+                $request->employee_id,
+                $request->leave_type_id,
+                $year,
+                $request->duration_days
+            );
+
+            if (! $reserved) {
+                \Log::warning('Failed to reserve pending leave days', [
+                    'leave_request_id' => $request->id,
+                    'employee_id' => $request->employee_id,
+                    'leave_type_id' => $request->leave_type_id,
+                    'duration_days' => $request->duration_days,
+                    'year' => $year,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error reserving pending leave days', [
+                'leave_request_id' => $request->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
     }
 }

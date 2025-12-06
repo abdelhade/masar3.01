@@ -313,7 +313,6 @@ return [
     'processing_not_found' => 'Traitement non trouvé',
     'error_deleting_processing' => 'Une erreur s\'est produite lors de la suppression du traitement: :error',
     'opening_balance_days' => 'Solde d\'ouverture (Jours)',
-    'accrued_days' => 'Jours accumulés',
     'used_days' => 'Jours utilisés',
     'remaining_balance' => 'Solde restant',
     'available_balance' => 'Solde disponible',

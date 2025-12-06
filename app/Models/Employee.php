@@ -26,13 +26,14 @@ class Employee extends Model implements HasMedia
     ];
 
     protected $guarded = ['id'];
+
     // عهد عمل
     public function covenants(): HasMany
     {
         return $this->hasMany(Covenant::class, 'employee_id');
     }
 
-    //ماموريات العمل
+    // ماموريات العمل
     public function errands(): HasMany
     {
         return $this->hasMany(Errand::class, 'employee_id');
@@ -42,6 +43,24 @@ class Employee extends Model implements HasMedia
     public function workPermissions(): HasMany
     {
         return $this->hasMany(WorkPermission::class, 'employee_id');
+    }
+
+    // الخصومات والمكافآت
+    public function deductionsRewards(): HasMany
+    {
+        return $this->hasMany(EmployeeDeductionReward::class, 'employee_id');
+    }
+
+    // السلف
+    public function advances(): HasMany
+    {
+        return $this->hasMany(EmployeeAdvance::class, 'employee_id');
+    }
+
+    // معالجات الراتب المرن
+    public function flexibleSalaryProcessings(): HasMany
+    {
+        return $this->hasMany(FlexibleSalaryProcessing::class, 'employee_id');
     }
 
     // Mapping arrays for marital_status, education, and status

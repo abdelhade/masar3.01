@@ -57,6 +57,7 @@ class StoreEmployeeRequest extends FormRequest
             'additional_day_calculation' => ['nullable', 'numeric'],
             'late_hour_calculation' => ['nullable', 'numeric'],
             'late_day_calculation' => ['nullable', 'numeric'],
+            'flexible_hourly_wage' => ['nullable', 'numeric'],
             'allowed_permission_days' => ['nullable', 'integer', 'min:0'],
             'allowed_late_days' => ['nullable', 'integer', 'min:0'],
             'allowed_absent_days' => ['nullable', 'integer', 'min:0'],
@@ -74,10 +75,9 @@ class StoreEmployeeRequest extends FormRequest
             'leave_balances.*.leave_type_id' => ['required', 'exists:leave_types,id'],
             'leave_balances.*.year' => ['required', 'integer', 'min:2020', 'max:2030'],
             'leave_balances.*.opening_balance_days' => ['nullable', 'numeric', 'min:0'],
-            'leave_balances.*.accrued_days' => ['nullable', 'numeric', 'min:0'],
             'leave_balances.*.used_days' => ['nullable', 'numeric', 'min:0'],
             'leave_balances.*.pending_days' => ['nullable', 'numeric', 'min:0'],
-            'leave_balances.*.carried_over_days' => ['nullable', 'numeric', 'min:0'],
+            'leave_balances.*.max_monthly_days' => ['required', 'numeric', 'min:0'],
             'leave_balances.*.notes' => ['nullable', 'string'],
             'selected_leave_type_id' => ['nullable', 'exists:leave_types,id'],
         ];
@@ -124,6 +124,7 @@ class StoreEmployeeRequest extends FormRequest
             'additional_day_calculation' => 'nullable|numeric',
             'late_hour_calculation' => 'nullable|numeric',
             'late_day_calculation' => 'nullable|numeric',
+            'flexible_hourly_wage' => 'nullable|numeric',
             'allowed_permission_days' => 'nullable|integer|min:0',
             'allowed_late_days' => 'nullable|integer|min:0',
             'allowed_absent_days' => 'nullable|integer|min:0',
@@ -141,10 +142,9 @@ class StoreEmployeeRequest extends FormRequest
             'leave_balances.*.leave_type_id' => 'required|exists:leave_types,id',
             'leave_balances.*.year' => 'required|integer|min:2020|max:2030',
             'leave_balances.*.opening_balance_days' => 'nullable|numeric|min:0',
-            'leave_balances.*.accrued_days' => 'nullable|numeric|min:0',
             'leave_balances.*.used_days' => 'nullable|numeric|min:0',
             'leave_balances.*.pending_days' => 'nullable|numeric|min:0',
-            'leave_balances.*.carried_over_days' => 'nullable|numeric|min:0',
+            'leave_balances.*.max_monthly_days' => 'required|numeric|min:0',
             'leave_balances.*.notes' => 'nullable|string',
             'selected_leave_type_id' => 'nullable|exists:leave_types,id',
         ];
@@ -249,6 +249,7 @@ class StoreEmployeeRequest extends FormRequest
             'additional_day_calculation.numeric' => __('hr.additional_day_calculation_numeric'),
             'late_hour_calculation.numeric' => __('hr.late_hour_calculation_numeric'),
             'late_day_calculation.numeric' => __('hr.late_day_calculation_numeric'),
+            'flexible_hourly_wage.numeric' => __('hr.flexible_hourly_wage_numeric'),
 
             // Attendance permissions validation
             'allowed_permission_days.integer' => __('hr.allowed_permission_days_integer'),
@@ -285,15 +286,40 @@ class StoreEmployeeRequest extends FormRequest
             'leave_balances.*.year.max' => __('hr.leave_balances_year_max'),
             'leave_balances.*.opening_balance_days.numeric' => __('hr.leave_balances_opening_balance_days_numeric'),
             'leave_balances.*.opening_balance_days.min' => __('hr.leave_balances_opening_balance_days_min'),
-            'leave_balances.*.accrued_days.numeric' => __('hr.leave_balances_accrued_days_numeric'),
-            'leave_balances.*.accrued_days.min' => __('hr.leave_balances_accrued_days_min'),
             'leave_balances.*.used_days.numeric' => __('hr.leave_balances_used_days_numeric'),
             'leave_balances.*.used_days.min' => __('hr.leave_balances_used_days_min'),
             'leave_balances.*.pending_days.numeric' => __('hr.leave_balances_pending_days_numeric'),
             'leave_balances.*.pending_days.min' => __('hr.leave_balances_pending_days_min'),
-            'leave_balances.*.carried_over_days.numeric' => __('hr.leave_balances_carried_over_days_numeric'),
+            'leave_balances.*.max_monthly_days.required' => __('hr.leave_balances_max_monthly_days_required'),
+            'leave_balances.*.max_monthly_days.numeric' => __('hr.leave_balances_max_monthly_days_numeric'),
+            'leave_balances.*.max_monthly_days.min' => __('hr.leave_balances_max_monthly_days_min'),
             'leave_balances.*.notes.string' => __('hr.leave_balances_notes_string'),
             'selected_leave_type_id.exists' => __('hr.selected_leave_type_id_exists'),
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $leaveBalances = $this->input('leave_balances', []);
+
+            foreach ($leaveBalances as $index => $balance) {
+                $openingBalance = (float) ($balance['opening_balance_days'] ?? 0);
+                $maxMonthly = (float) ($balance['max_monthly_days'] ?? 0);
+
+                if ($maxMonthly > $openingBalance) {
+                    $validator->errors()->add(
+                        "leave_balances.{$index}.max_monthly_days",
+                        __('hr.max_monthly_days_exceeds_opening_balance', [
+                            'max_monthly' => number_format($maxMonthly, 1),
+                            'opening_balance' => number_format($openingBalance, 1),
+                        ])
+                    );
+                }
+            }
+        });
     }
 }

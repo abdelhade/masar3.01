@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('is_errand_allowed')->default(false);
             $table->unsignedInteger('allowed_errand_days')->default(0);
             $table->foreignId('line_manager_id')->nullable()->constrained('employees')->onDelete('set null');
+            $table->decimal('flexible_hourly_wage', 10, 2)->default(0);
             // Composite index for branch_id and name for faster search queries
             // This helps with BranchScope filtering and name searches
             if (! $this->indexExists('employees', 'employees_branch_id_name_index')) {
@@ -41,7 +42,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('employees', function (Blueprint $table) {
-            $table->dropColumn(['allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'is_errand_allowed', 'allowed_errand_days', 'line_manager_id']);
+            $table->dropColumn(['allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'is_errand_allowed', 'allowed_errand_days', 'line_manager_id', 'flexible_hourly_wage']);
             $table->enum('salary_type', ['ساعات عمل فقط', 'ساعات عمل و إضافي يومى', 'ساعات عمل و إضافي للمده', 'حضور فقط', 'إنتاج فقط'])->change();
             $table->dropIndex('employees_branch_id_name_index');
             $table->dropIndex('employees_status_index');

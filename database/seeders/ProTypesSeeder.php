@@ -86,11 +86,21 @@ class ProTypesSeeder extends Seeder
             ['id' => 72, 'pname' => 'check_transfer', 'ptext' => 'صرف ورقة دفع', 'ptype' => 'ورقة دفع'],
 
             ['id' => 73, 'pname' => 'auto_depreciation', 'ptext' => 'اهلاك تلقائي', 'ptype' => 'أصل'],
-            ['id' => 74, 'pname' => 'Salary entitlement', 'ptext' => 'إستحقاق رواتب', 'ptype'=> 'رواتب'],
-            ['id' => 75, 'pname' => 'POS Transaction', 'ptext' => 'فاتوره كاشير', 'ptype'=> 'نقاط البيع'],
+            ['id' => 74, 'pname' => 'Salary entitlement', 'ptext' => 'إستحقاق رواتب', 'ptype' => 'رواتب'],
+            ['id' => 75, 'pname' => 'employee_deduction', 'ptext' => 'خصومات وجزاءات الموظفين', 'ptype' => 'موارد بشرية'],
+            ['id' => 76, 'pname' => 'employee_reward', 'ptext' => 'مكافآت وحوافز الموظفين', 'ptype' => 'موارد بشرية'],
+            ['id' => 77, 'pname' => 'flexible_salary', 'ptext' => 'راتب مرن (ثابت + ساعات)', 'ptype' => 'موارد بشرية'],
+            ['id' => 78, 'pname' => 'employee_advance', 'ptext' => 'سلف الموظفين', 'ptype' => 'موارد بشرية'],
+            ['id' => 79, 'pname' => 'advance_deduction', 'ptext' => 'استقطاع سلف من الراتب', 'ptype' => 'موارد بشرية'],
 
         ];
 
-        DB::table('pro_types')->insert($operations);
+        // Use updateOrInsert to handle existing records
+        foreach ($operations as $operation) {
+            DB::table('pro_types')->updateOrInsert(
+                ['id' => $operation['id']],
+                $operation
+            );
+        }
     }
 }

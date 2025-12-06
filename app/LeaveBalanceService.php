@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
+use App\Models\Employee;
 use App\Models\EmployeeLeaveBalance;
+use App\Models\HRSetting;
 use App\Models\LeaveRequest;
-use App\Models\LeaveType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -49,11 +52,41 @@ class LeaveBalanceService
     /**
      * استهلاك أيام معتمدة من رصيد الموظف
      */
-    public function consumeApproved(int $employeeId, int $leaveTypeId, int $year, float $days): void
+    public function consumeApproved(int $employeeId, int $leaveTypeId, int $year, float $days, ?int $month = null): void
     {
-        DB::transaction(function () use ($employeeId, $leaveTypeId, $year, $days) {
+        DB::transaction(function () use ($employeeId, $leaveTypeId, $year, $days, $month) {
             $balance = $this->getOrCreateBalance($employeeId, $leaveTypeId, $year);
+
+            // التحقق من أن pending_days كافية
+            if ($balance->pending_days < $days) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Insufficient pending days for employee %d. Required: %s, Available: %s',
+                        $employeeId,
+                        $days,
+                        $balance->pending_days
+                    )
+                );
+            }
+
+            // التحقق من الرصيد المتبقي (بعد إزالة pending_days)
+            $availableAfterRelease = $balance->remaining_days + $balance->pending_days;
+            if ($availableAfterRelease < $days) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Insufficient balance to consume for employee %d. Required: %s, Available: %s',
+                        $employeeId,
+                        $days,
+                        $availableAfterRelease
+                    )
+                );
+            }
+
             $balance->consumeApproved($days);
+
+            // تحديث monthly_used_days (استخدام الشهر المحدد أو الشهر الحالي)
+            $targetMonth = $month ?? Carbon::now()->month;
+            $balance->addMonthlyUsedDays($targetMonth, $days);
             $balance->save();
         });
     }
@@ -93,55 +126,11 @@ class LeaveBalanceService
             ],
             [
                 'opening_balance_days' => 0,
-                'accrued_days' => 0,
                 'used_days' => 0,
                 'pending_days' => 0,
-                'carried_over_days' => 0,
+                'monthly_used_days' => [],
             ]
         );
-    }
-
-    /**
-     * حساب التراكم الشهري للإجازات
-     */
-    public function calculateMonthlyAccrual(int $employeeId, int $leaveTypeId, int $year, int $month): float
-    {
-        $leaveType = LeaveType::findOrFail($leaveTypeId);
-
-        if (! $leaveType->hasAccrualPolicy()) {
-            return 0;
-        }
-
-        return $leaveType->accrual_rate_per_month;
-    }
-
-    /**
-     * تطبيق التراكم الشهري
-     */
-    public function applyMonthlyAccrual(int $employeeId, int $leaveTypeId, int $year, int $month): void
-    {
-        $accruedDays = $this->calculateMonthlyAccrual($employeeId, $leaveTypeId, $year, $month);
-
-        if ($accruedDays > 0) {
-            $balance = $this->getOrCreateBalance($employeeId, $leaveTypeId, $year);
-            $balance->addAccruedDays($accruedDays);
-            $balance->save();
-        }
-    }
-
-    /**
-     * نقل الرصيد المتبقي للعام الجديد
-     */
-    public function carryOverToNextYear(int $employeeId, int $leaveTypeId, int $currentYear): void
-    {
-        $currentBalance = $this->getOrCreateBalance($employeeId, $leaveTypeId, $currentYear);
-        $carryOverDays = $currentBalance->carryOverToNextYear();
-
-        if ($carryOverDays > 0) {
-            $nextYearBalance = $this->getOrCreateBalance($employeeId, $leaveTypeId, $currentYear + 1);
-            $nextYearBalance->opening_balance_days = $carryOverDays;
-            $nextYearBalance->save();
-        }
     }
 
     /**
@@ -202,5 +191,114 @@ class LeaveBalanceService
         }
 
         return $workingDays;
+    }
+
+    /**
+     * حساب عدد الموظفين في الإجازة في فترة معينة
+     */
+    public function getEmployeesOnLeaveCount(string $startDate, string $endDate, ?int $departmentId = null): int
+    {
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+
+        // الحصول على جميع الموظفين في الإجازة في أي يوم خلال الفترة
+        $query = LeaveRequest::where('status', 'approved')
+            ->where(function ($q) use ($start, $end) {
+                $q->whereBetween('start_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+                    ->orWhereBetween('end_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+                    ->orWhere(function ($subQ) use ($start, $end) {
+                        $subQ->where('start_date', '<=', $start->format('Y-m-d'))
+                            ->where('end_date', '>=', $end->format('Y-m-d'));
+                    });
+            })
+            ->whereHas('employee', function ($q) use ($departmentId) {
+                if ($departmentId !== null) {
+                    $q->where('department_id', $departmentId);
+                }
+                // فقط الموظفين النشطين
+                $q->where('status', 'مفعل');
+            });
+
+        // الحصول على عدد الموظفين الفريدين (لأن موظف واحد قد يكون له أكثر من إجازة)
+        return $query->distinct()->count('employee_id');
+    }
+
+    /**
+     * التحقق من النسبة المئوية للإجازات
+     */
+    public function checkLeavePercentageLimit(int $employeeId, string $startDate, string $endDate, ?int $departmentId = null): bool
+    {
+        // الحصول على عدد الموظفين في الإجازة
+        $employeesOnLeave = $this->getEmployeesOnLeaveCount($startDate, $endDate, $departmentId);
+
+        // الحصول على إجمالي عدد الموظفين
+        $totalEmployeesQuery = Employee::where('status', 'مفعل');
+        if ($departmentId !== null) {
+            $totalEmployeesQuery->where('department_id', $departmentId);
+        }
+        $totalEmployees = $totalEmployeesQuery->count();
+
+        if ($totalEmployees === 0) {
+            return true; // لا يوجد موظفين، لا حاجة للتحقق
+        }
+
+        // الحصول على النسبة المئوية القصوى
+        // الأولوية: 1. departments.max_leave_percentage, 2. hr_settings.company_max_leave_percentage
+        $maxPercentage = null;
+
+        if ($departmentId !== null) {
+            $department = \App\Models\Department::find($departmentId);
+            if ($department && ! is_null($department->max_leave_percentage)) {
+                $maxPercentage = (float) $department->max_leave_percentage;
+            }
+        }
+
+        // إذا لم توجد نسبة للقسم، استخدم إعدادات الشركة
+        if ($maxPercentage === null) {
+            $maxPercentage = HRSetting::getCompanyMaxLeavePercentage();
+        }
+
+        // إذا لم توجد أي نسبة محددة، رفض الموافقة مع رسالة خطأ
+        if ($maxPercentage === null) {
+            return false;
+        }
+
+        // حساب النسبة المئوية الحالية
+        $currentPercentage = ($employeesOnLeave / $totalEmployees) * 100;
+
+        // التحقق من أن النسبة الحالية + 1 (الموظف الجديد) لا تتجاوز الحد
+        // نحسب النسبة بعد إضافة الموظف الحالي
+        $newEmployeesOnLeave = $employeesOnLeave;
+
+        // التحقق من أن الموظف الحالي ليس في الإجازة بالفعل في هذه الفترة
+        $employeeAlreadyOnLeave = LeaveRequest::where('employee_id', $employeeId)
+            ->where('status', 'approved')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('start_date', [$startDate, $endDate])
+                    ->orWhereBetween('end_date', [$startDate, $endDate])
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        $subQ->where('start_date', '<=', $startDate)
+                            ->where('end_date', '>=', $endDate);
+                    });
+            })
+            ->exists();
+
+        if (! $employeeAlreadyOnLeave) {
+            $newEmployeesOnLeave++;
+        }
+
+        $newPercentage = ($newEmployeesOnLeave / $totalEmployees) * 100;
+
+        return $newPercentage <= $maxPercentage;
+    }
+
+    /**
+     * التحقق من الحد الشهري
+     */
+    public function checkMonthlyLimit(int $employeeId, int $leaveTypeId, int $year, int $month, float $days): bool
+    {
+        $balance = $this->getOrCreateBalance($employeeId, $leaveTypeId, $year);
+
+        return ! $balance->hasExceededMonthlyLimit($month, $days);
     }
 }

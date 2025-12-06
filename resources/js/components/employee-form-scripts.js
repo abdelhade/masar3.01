@@ -480,12 +480,51 @@
              */
             calculateRemainingDays(balance) {
                 const opening = parseFloat(balance.opening_balance_days) || 0;
-                const accrued = parseFloat(balance.accrued_days) || 0;
-                const carried = parseFloat(balance.carried_over_days) || 0;
                 const used = parseFloat(balance.used_days) || 0;
                 const pending = parseFloat(balance.pending_days) || 0;
-                const remaining = opening + accrued + carried - used - pending;
+                const remaining = opening - used - pending;
                 return remaining.toFixed(1);
+            },
+
+            /**
+             * Check if max monthly days exceeds opening balance
+             */
+            exceedsMonthlyLimit(balance) {
+                if (!balance) {
+                    return false;
+                }
+                
+                // Get raw values
+                const maxMonthlyRaw = balance.max_monthly_days;
+                const openingRaw = balance.opening_balance_days;
+                
+                // Convert to numbers, handling null, undefined, empty strings
+                let maxMonthly = 0;
+                let opening = 0;
+                
+                if (maxMonthlyRaw !== null && maxMonthlyRaw !== undefined && maxMonthlyRaw !== '') {
+                    maxMonthly = parseFloat(maxMonthlyRaw);
+                    if (isNaN(maxMonthly)) {
+                        maxMonthly = 0;
+                    }
+                }
+                
+                if (openingRaw !== null && openingRaw !== undefined && openingRaw !== '') {
+                    opening = parseFloat(openingRaw);
+                    if (isNaN(opening)) {
+                        opening = 0;
+                    }
+                }
+                
+                // Only show error if:
+                // 1. opening balance is greater than 0 (has a valid limit)
+                // 2. max monthly is greater than opening balance
+                // 3. Both values are valid numbers
+                if (opening > 0 && maxMonthly > opening) {
+                    return true;
+                }
+                
+                return false;
             },
 
             /**

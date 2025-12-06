@@ -353,7 +353,7 @@ new class extends Component {
                 <div class="col-md-1">
                     <button wire:click="clearFilters" class="btn btn-outline-secondary w-100">
                         
-                        <i class="las la-filter">{{ __('hr.clear_filters') }}</i>
+                        <i class="las la-filter me-1"></i>{{ __('hr.clear') }}
                     </button>
                 </div>
             </div>

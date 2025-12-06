@@ -20,6 +20,7 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+
     protected string $paginationTheme = 'bootstrap';
 
     public string $search = '';
@@ -115,23 +116,29 @@ class Index extends Component
         $this->authorize('approve', $request);
 
         if (! $request->canBeApproved()) {
-            session()->flash('error', 'لا يمكن الموافقة على هذا الطلب.');
-            $this->dispatch('show-message', message: 'لا يمكن الموافقة على هذا الطلب.', type: 'error');
+            $errorMessage = $request->approval_error ?? 'لا يمكن الموافقة على هذا الطلب.';
+            session()->flash('error', $errorMessage);
+            $this->dispatch('show-message', message: $errorMessage, type: 'error');
 
             return;
         }
 
-        $request->update([
-            'status' => 'approved',
-            'approver_id' => Auth::id(),
-            'approved_at' => now(),
-        ]);
+        try {
+            $request->update([
+                'status' => 'approved',
+                'approver_id' => Auth::id(),
+                'approved_at' => now(),
+            ]);
 
-        // إطلاق الحدث
-        event(new LeaveRequestApproved($request));
+            // إطلاق الحدث
+            event(new LeaveRequestApproved($request));
 
-        session()->flash('message', 'تم الموافقة على الطلب بنجاح.');
-        $this->dispatch('show-message', message: 'تم الموافقة على الطلب بنجاح.', type: 'success');
+            session()->flash('message', 'تم الموافقة على الطلب بنجاح.');
+            $this->dispatch('show-message', message: 'تم الموافقة على الطلب بنجاح.', type: 'success');
+        } catch (\Exception $e) {
+            session()->flash('error', 'حدث خطأ أثناء الموافقة على الطلب: '.$e->getMessage());
+            $this->dispatch('show-message', message: 'حدث خطأ أثناء الموافقة على الطلب.', type: 'error');
+        }
     }
 
     public function rejectRequest(LeaveRequest $request): void

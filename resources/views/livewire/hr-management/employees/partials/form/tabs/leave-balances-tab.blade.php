@@ -124,10 +124,9 @@
                                         <i class="fas fa-calendar me-2"></i>{{ __('السنة') }} <span class="text-danger">*</span>
                                     </th>
                                     <th class="text-center fw-bold">{{ __('الرصيد الافتتاحي') }}</th>
-                                    <th class="text-center fw-bold">{{ __('المتراكمة') }}</th>
                                     <th class="text-center fw-bold">{{ __('المستخدمة') }}</th>
                                     <th class="text-center fw-bold">{{ __('المعلقة') }}</th>
-                                    <th class="text-center fw-bold">{{ __('المحولة') }}</th>
+                                    <th class="text-center fw-bold">{{ __('الحد الشهري الأقصى') }} <span class="text-danger">*</span></th>
                                     <th class="text-center fw-bold">{{ __('المتبقي') }}</th>
                                     <th class="text-center fw-bold">{{ __('ملاحظات') }}</th>
                                     <th class="text-center fw-bold">{{ __('إجراءات') }}</th>
@@ -158,13 +157,6 @@
                                         </td>
                                         <td class="align-middle">
                                             <input type="number" class="form-control form-control-sm text-center"
-                                                :value="leaveBalances[balanceKey].accrued_days || ''"
-                                                @input="leaveBalances[balanceKey].accrued_days = parseFloat($event.target.value) || 0"
-                                                @keydown.enter.prevent
-                                                step="1" min="0" placeholder="0">
-                                        </td>
-                                        <td class="align-middle">
-                                            <input type="number" class="form-control form-control-sm text-center"
                                                 :value="leaveBalances[balanceKey].used_days || ''"
                                                 @input="leaveBalances[balanceKey].used_days = parseFloat($event.target.value) || 0"
                                                 @keydown.enter.prevent
@@ -178,11 +170,17 @@
                                                 step="1" min="0" placeholder="0">
                                         </td>
                                         <td class="align-middle">
-                                            <input type="number" class="form-control form-control-sm text-center"
-                                                :value="leaveBalances[balanceKey].carried_over_days || ''"
-                                                @input="leaveBalances[balanceKey].carried_over_days = parseFloat($event.target.value) || 0"
+                                            <input type="number" class="form-control form-control-sm text-center @error('leave_balances.*.max_monthly_days') is-invalid @enderror"
+                                                :value="leaveBalances[balanceKey].max_monthly_days || ''"
+                                                @input="leaveBalances[balanceKey].max_monthly_days = parseFloat($event.target.value) || 0"
                                                 @keydown.enter.prevent
-                                                step="1" min="0" placeholder="0">
+                                                step="0.5" min="0" 
+                                                placeholder="0">
+                                            @error('leave_balances.*.max_monthly_days')
+                                                <small class="text-danger d-block mt-1">
+                                                    {{ $message }}
+                                                </small>
+                                            @enderror
                                         </td>
                                         <td class="align-middle text-center">
                                             <span class="badge px-3 py-2 fw-bold"

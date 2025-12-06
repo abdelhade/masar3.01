@@ -24,9 +24,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Modules\Accounts\Models\AccHead;
 use Modules\Accounts\Services\AccountService;
-use Livewire\Attributes\Computed;
 
 trait HandlesEmployeeForm
 {
@@ -120,6 +120,8 @@ trait HandlesEmployeeForm
     public $late_hour_calculation;
 
     public $late_day_calculation;
+
+    public $flexible_hourly_wage;
 
     public $allowed_permission_days;
 
@@ -280,7 +282,7 @@ trait HandlesEmployeeForm
         $this->currentImageUrl = $employee->image_url;
 
         // Load basic employee fields
-        foreach (['name', 'email', 'phone', 'image', 'gender', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'line_manager_id', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days', 'is_errand_allowed',] as $field) {
+        foreach (['name', 'email', 'phone', 'image', 'gender', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'line_manager_id', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'flexible_hourly_wage', 'allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days', 'is_errand_allowed'] as $field) {
             $this->$field = $employee->$field;
         }
 
@@ -311,10 +313,9 @@ trait HandlesEmployeeForm
                 'leave_type_id' => $balance->leave_type_id,
                 'year' => $balance->year,
                 'opening_balance_days' => $balance->opening_balance_days,
-                'accrued_days' => $balance->accrued_days,
                 'used_days' => $balance->used_days,
                 'pending_days' => $balance->pending_days,
-                'carried_over_days' => $balance->carried_over_days,
+                'max_monthly_days' => $balance->max_monthly_days ?? 0,
                 'notes' => $balance->notes,
             ];
         }
@@ -368,6 +369,30 @@ trait HandlesEmployeeForm
             }
         }
 
+        // Custom validation for leave balances - max_monthly_days must not exceed opening_balance_days
+        if (is_array($this->leave_balances) && ! empty($this->leave_balances)) {
+            foreach ($this->leave_balances as $index => $balanceData) {
+                if (! isset($balanceData['leave_type_id']) || ! isset($balanceData['year'])) {
+                    continue;
+                }
+
+                $openingBalance = (float) ($balanceData['opening_balance_days'] ?? 0);
+                $maxMonthly = (float) ($balanceData['max_monthly_days'] ?? 0);
+
+                if ($openingBalance > 0 && $maxMonthly > $openingBalance) {
+                    $this->addError("leave_balances.{$index}.max_monthly_days", __('hr.max_monthly_days_exceeds_opening_balance', [
+                        'max_monthly' => number_format($maxMonthly, 1),
+                        'opening_balance' => number_format($openingBalance, 1),
+                    ]));
+                }
+            }
+
+            // If there are validation errors, stop here
+            if ($this->getErrorBag()->hasAny(['leave_balances.*.max_monthly_days'])) {
+                return;
+            }
+        }
+
         try {
             $imageFile = null;
             $employee = null;
@@ -412,7 +437,7 @@ trait HandlesEmployeeForm
 
                     // Sync the employee Account
                     $this->syncEmployeeAccount($employee);
-                    session()->flash('success', __('hr.employee_updated'));
+                    session()->flash('success', __('hr.employee_updated_successfully'));
                 } else {
                     $employee = Employee::create($validated);
 
@@ -431,7 +456,7 @@ trait HandlesEmployeeForm
                     // Create employee account for new employee
                     $this->syncEmployeeAccount($employee);
 
-                    session()->flash('success', __('hr.employee_created'));
+                    session()->flash('success', __('hr.employee_created_successfully'));
                 }
 
                 $this->dispatch('employee-saved');
@@ -475,7 +500,7 @@ trait HandlesEmployeeForm
 
     public function resetEmployeeFields(): void
     {
-        foreach (['employeeId', 'name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'line_manager_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'password', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days', 'is_errand_allowed', 'selected_kpi_id', 'salary_basic_account_id', 'opening_balance'] as $field) {
+        foreach (['employeeId', 'name', 'email', 'phone', 'image', 'gender', 'date_of_birth', 'nationalId', 'marital_status', 'education', 'information', 'status', 'country_id', 'city_id', 'state_id', 'town_id', 'job_id', 'department_id', 'line_manager_id', 'date_of_hire', 'date_of_fire', 'job_level', 'salary', 'finger_print_id', 'finger_print_name', 'salary_type', 'shift_id', 'password', 'additional_hour_calculation', 'additional_day_calculation', 'late_hour_calculation', 'late_day_calculation', 'flexible_hourly_wage', 'allowed_permission_days', 'allowed_late_days', 'allowed_absent_days', 'allowed_errand_days', 'is_errand_allowed', 'selected_kpi_id', 'salary_basic_account_id', 'opening_balance'] as $field) {
             $this->$field = null;
         }
 
@@ -658,10 +683,9 @@ trait HandlesEmployeeForm
                 'leave_type_id' => $this->selected_leave_type_id,
                 'year' => $currentYear,
                 'opening_balance_days' => 0,
-                'accrued_days' => 0,
                 'used_days' => 0,
                 'pending_days' => 0,
-                'carried_over_days' => 0,
+                'max_monthly_days' => 0,
                 'notes' => '',
             ];
 
@@ -722,18 +746,19 @@ trait HandlesEmployeeForm
         $toUpdate = [];
         $toCreate = [];
 
-        foreach ($this->leave_balances as $balanceData) {
+        foreach ($this->leave_balances as $index => $balanceData) {
             if (! isset($balanceData['leave_type_id']) || ! isset($balanceData['year'])) {
                 continue;
             }
 
             $key = $balanceData['leave_type_id'].'_'.$balanceData['year'];
+
+            // Note: Validation is done in save() method before calling this function
             $data = [
-                'opening_balance_days' => $balanceData['opening_balance_days'] ?? 0,
-                'accrued_days' => $balanceData['accrued_days'] ?? 0,
-                'used_days' => $balanceData['used_days'] ?? 0,
-                'pending_days' => $balanceData['pending_days'] ?? 0,
-                'carried_over_days' => $balanceData['carried_over_days'] ?? 0,
+                'opening_balance_days' => (float) ($balanceData['opening_balance_days'] ?? 0),
+                'used_days' => (float) ($balanceData['used_days'] ?? 0),
+                'pending_days' => (float) ($balanceData['pending_days'] ?? 0),
+                'max_monthly_days' => (float) ($balanceData['max_monthly_days'] ?? 0),
                 'notes' => $balanceData['notes'] ?? null,
             ];
 
@@ -898,5 +923,95 @@ trait HandlesEmployeeForm
             app(AccountService::class)->setStartBalances([$employee->account->id => $this->opening_balance]);
             app(AccountService::class)->recalculateOpeningCapitalAndSyncJournal();
         }
+
+        // Create sub-accounts (advance, deductions, rewards)
+        $this->createEmployeeSubAccounts($employee);
+    }
+
+    /**
+     * Create sub-accounts for employee (advance, deductions, rewards)
+     */
+    private function createEmployeeSubAccounts(Employee $employee): void
+    {
+        // 1. حساب السلف (تحت 110601)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '110601',
+            'سلف '.$employee->name,
+            'advance'
+        );
+
+        // 2. حساب الجزاءات والخصومات (تحت 210402 - جزاءات وخصومات الموظفين)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '210402',
+            'جزاءات وخصومات '.$employee->name,
+            'deductions'
+        );
+
+        // 3. حساب المكافآت والحوافز (تحت 5303 - المكافآت والحوافز)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '5303',
+            'مكافآت وحوافز '.$employee->name,
+            'rewards'
+        );
+    }
+
+    /**
+     * Create or update a sub-account for employee
+     */
+    private function createOrUpdateSubAccount(Employee $employee, string $parentCode, string $accountName, string $accountType): void
+    {
+        $parentAccount = AccHead::where('code', $parentCode)->first();
+
+        if (! $parentAccount) {
+            Log::warning("Parent account with code {$parentCode} not found for employee {$employee->id}");
+
+            return;
+        }
+
+        // Check if account already exists for this employee
+        $existingAccount = AccHead::where('accountable_type', Employee::class)
+            ->where('accountable_id', $employee->id)
+            ->where('aname', $accountName)
+            ->where('parent_id', $parentAccount->id)
+            ->first();
+
+        if ($existingAccount) {
+            // Update existing account
+            $existingAccount->update([
+                'aname' => $accountName,
+                'mdtime' => now(),
+            ]);
+
+            return;
+        }
+
+        // Generate code for new account
+        $lastChild = $parentAccount->haveChildrens()->orderByDesc('code')->first();
+        $lastChildCode = $lastChild ? (int) $lastChild->code : (int) $parentAccount->code;
+        $newCode = $lastChildCode + 1;
+
+        // Create new account
+        AccHead::create([
+            'code' => (string) $newCode,
+            'aname' => $accountName,
+            'parent_id' => $parentAccount->id,
+            'acc_type' => 5,
+            'accountable_type' => Employee::class,
+            'accountable_id' => $employee->id,
+            'is_basic' => 0,
+            'deletable' => 0,
+            'editable' => 1,
+            'is_stock' => 0,
+            'is_fund' => 0,
+            'start_balance' => 0,
+            'credit' => 0,
+            'debit' => 0,
+            'balance' => 0,
+            'crtime' => now(),
+            'mdtime' => now(),
+        ]);
     }
 }
