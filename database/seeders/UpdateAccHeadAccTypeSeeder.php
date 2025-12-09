@@ -20,7 +20,7 @@ class UpdateAccHeadAccTypeSeeder extends Seeder
             '2104' => 'creditors',
             '1106' => 'debtors',
             '31'   => 'partners',
-            '32'   => 'current-partners',
+            '2108'   => 'current-partners',
             '12'   => 'assets',
             '2102' => 'employees',
             '1104' => 'warhouses',

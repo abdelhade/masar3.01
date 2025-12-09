@@ -3,7 +3,41 @@
     <div class="invoice-container">
         <div class="content-wrapper">
             <section class="content">
-                <form wire:submit="updateForm">
+                <form wire:submit="updateForm"
+                    x-data="invoiceCalculations({
+                        invoiceItems: @js($invoiceItems),
+                        discountPercentage: @js($discount_percentage ?? 0),
+                        additionalPercentage: @js($additional_percentage ?? 0),
+                        receivedFromClient: @js($received_from_client ?? 0),
+                        dimensionsUnit: @js($dimensionsUnit ?? 'cm'),
+                        enableDimensionsCalculation: @js($enableDimensionsCalculation ?? false),
+                        invoiceType: @js($type ?? 10)
+                    })"
+                    x-init="
+                        // تحديث invoiceItems من Livewire عند التغيير
+                        $watch('invoiceItems', () => {
+                            if (typeof $wire !== 'undefined') {
+                                invoiceItems = $wire.invoiceItems;
+                                syncToLivewire();
+                            }
+                        });
+                        $watch('discountPercentage', () => syncToLivewire());
+                        $watch('additionalPercentage', () => syncToLivewire());
+                        $watch('receivedFromClient', () => syncToLivewire());
+                        
+                        // الاستماع لتحديثات Livewire
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.hook('morph.updated', ({ component }) => {
+                                if (component?.__instance?.__livewire) {
+                                    const wire = component.__instance.__livewire;
+                                    invoiceItems = wire.invoiceItems || invoiceItems;
+                                    discountPercentage = parseFloat(wire.discount_percentage) || 0;
+                                    additionalPercentage = parseFloat(wire.additional_percentage) || 0;
+                                    receivedFromClient = parseFloat(wire.received_from_client) || 0;
+                                }
+                            });
+                        }
+                    ">
 
                     @include('components.invoices.invoice-head')
 
@@ -144,6 +178,121 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
+            // Alpine.js Component للحسابات (نفس المستخدم في create)
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('invoiceCalculations', (initialData) => ({
+                    invoiceItems: initialData.invoiceItems || [],
+                    discountPercentage: parseFloat(initialData.discountPercentage) || 0,
+                    additionalPercentage: parseFloat(initialData.additionalPercentage) || 0,
+                    receivedFromClient: parseFloat(initialData.receivedFromClient) || 0,
+                    dimensionsUnit: initialData.dimensionsUnit || 'cm',
+                    enableDimensionsCalculation: initialData.enableDimensionsCalculation || false,
+                    invoiceType: initialData.invoiceType || 10,
+
+                    calculateSubValue(item) {
+                        const qty = parseFloat(item.quantity) || 0;
+                        const price = parseFloat(item.price) || 0;
+                        const discount = parseFloat(item.discount) || 0;
+                        const result = (qty * price) - discount;
+                        return Math.round(result * 100) / 100; // دقة أفضل للتقريب
+                    },
+
+                    calculateQuantityFromDimensions(item) {
+                        if (!this.enableDimensionsCalculation) return item.quantity;
+                        
+                        const length = parseFloat(item.length) || 0;
+                        const width = parseFloat(item.width) || 0;
+                        const height = parseFloat(item.height) || 0;
+                        const density = parseFloat(item.density) || 1;
+                        
+                        if (length > 0 && width > 0 && height > 0) {
+                            let quantity = length * width * height * density;
+                            
+                            if (this.dimensionsUnit === 'cm') {
+                                quantity = quantity / 1000000;
+                            }
+                            
+                            return Math.round(quantity * 1000) / 1000;
+                        }
+                        return item.quantity || 0;
+                    },
+
+                    calculateQuantityFromSubValue(item) {
+                        const subValue = parseFloat(item.sub_value) || 0;
+                        const discount = parseFloat(item.discount) || 0;
+                        const price = parseFloat(item.price) || 0;
+                        
+                        if (price <= 0) return 0;
+                        
+                        return Math.round(((subValue + discount) / price) * 1000) / 1000;
+                    },
+
+                    get subtotal() {
+                        const sum = this.invoiceItems.reduce((total, item) => {
+                            return total + this.calculateSubValue(item);
+                        }, 0);
+                        return Math.round(sum * 100) / 100;
+                    },
+
+                    get discountValue() {
+                        const percentage = parseFloat(this.discountPercentage) || 0;
+                        const result = (this.subtotal * percentage) / 100;
+                        return Math.round(result * 100) / 100;
+                    },
+
+                    get additionalValue() {
+                        const percentage = parseFloat(this.additionalPercentage) || 0;
+                        const result = (this.subtotal * percentage) / 100;
+                        return Math.round(result * 100) / 100;
+                    },
+
+                    get totalAfterAdditional() {
+                        const result = this.subtotal - this.discountValue + this.additionalValue;
+                        return Math.round(result * 100) / 100;
+                    },
+
+                    get remaining() {
+                        const total = this.totalAfterAdditional;
+                        const received = parseFloat(this.receivedFromClient) || 0;
+                        return Math.max(total - received, 0);
+                    },
+
+                    syncToLivewire() {
+                        if (typeof $wire === 'undefined') return;
+                        
+                        // تحديث القيم المحسوبة في Livewire (استخدام defer لتقليل الطلبات)
+                        $wire.set('subtotal', this.subtotal).defer;
+                        $wire.set('discount_value', this.discountValue).defer;
+                        $wire.set('additional_value', this.additionalValue).defer;
+                        $wire.set('total_after_additional', this.totalAfterAdditional).defer;
+                        
+                        // تحديث القيم الفرعية لكل صنف
+                        this.invoiceItems.forEach((item, index) => {
+                            const subValue = this.calculateSubValue(item);
+                            if (item.sub_value !== subValue) {
+                                $wire.set(`invoiceItems.${index}.sub_value`, subValue).defer;
+                            }
+                        });
+                    },
+
+                    updateFromLivewire(livewireData) {
+                        if (livewireData.invoiceItems) {
+                            this.invoiceItems = livewireData.invoiceItems;
+                        }
+                        if (livewireData.discount_percentage !== undefined) {
+                            this.discountPercentage = parseFloat(livewireData.discount_percentage) || 0;
+                        }
+                        if (livewireData.additional_percentage !== undefined) {
+                            this.additionalPercentage = parseFloat(livewireData.additional_percentage) || 0;
+                        }
+                        if (livewireData.received_from_client !== undefined) {
+                            this.receivedFromClient = parseFloat(livewireData.received_from_client) || 0;
+                        }
+                    },
+
+                }));
+            });
+
             // إضافة Alpine.js directive للتحكم في التركيز
             $(document).ready(function() {
                 $(document).on('keydown', function(e) {

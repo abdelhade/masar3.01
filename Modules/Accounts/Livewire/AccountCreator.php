@@ -2,33 +2,48 @@
 
 namespace Modules\Accounts\Livewire;
 
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Modules\Accounts\Models\AccHead;
-use Illuminate\Support\Facades\DB;
 
 class AccountCreator extends Component
 {
     public $accountType; // نوع الحساب (client, supplier, etc.)
+
     public $accountCode; // الكود الأساسي (1103, 2101, etc.)
+
     public $buttonText = 'إضافة حساب'; // نص الزر
+
     public $buttonClass = 'btn btn-sm btn-outline-primary'; // كلاس الزر
 
     // بيانات الحساب الجديد
     public $code = '';
+
     public $aname = '';
+
     public $phone = '';
+
     public $address = '';
+
     public $zatca_name = '';
+
     public $vat_number = '';
+
     public $national_id = '';
+
     public $zatca_address = '';
+
     public $company_type = '';
+
     public $nationality = '';
+
     public $parent_id = '';
 
     // قوائم البيانات
     public $parentAccounts;
+
     public $branches;
+
     public $branch_id = '';
 
     // حالة المودال
@@ -110,7 +125,7 @@ class AccountCreator extends Component
     {
         $this->parentAccounts = DB::table('acc_head')
             ->where('is_basic', '1')
-            ->where('code', 'like', $this->accountCode . '%')
+            ->where('code', 'like', $this->accountCode.'%')
             ->orderBy('code')
             ->get();
 
@@ -125,16 +140,16 @@ class AccountCreator extends Component
         $parent = $this->accountCode;
 
         $lastAccount = DB::table('acc_head')
-            ->where('code', 'like', $parent . '%')
+            ->where('code', 'like', $parent.'%')
             ->orderByDesc('id')
             ->first();
 
         if ($lastAccount) {
             $suffix = str_replace($parent, '', $lastAccount->code);
             $next = str_pad(((int) $suffix + 1), 3, '0', STR_PAD_LEFT);
-            $this->code = $parent . $next;
+            $this->code = $parent.$next;
         } else {
-            $this->code = $parent . "001";
+            $this->code = $parent.'001';
         }
     }
 
@@ -182,6 +197,11 @@ class AccountCreator extends Component
                 'mdtime' => now(),
             ]);
 
+            // إذا كان الحساب شريك، ننشئ جاري شريك تلقائياً
+            if ($this->accountType === 'partner') {
+                $this->createCurrentPartnerAccount($newAccount);
+            }
+
             $this->closeModal();
 
             // إرسال الحساب الجديد للكومبونت الأب
@@ -189,14 +209,14 @@ class AccountCreator extends Component
                 'account' => [
                     'id' => $newAccount->id,
                     'aname' => $newAccount->aname,
-                    'code' => $newAccount->code
+                    'code' => $newAccount->code,
                 ],
-                'type' => $this->accountType
+                'type' => $this->accountType,
             ]);
 
             session()->flash('success', 'تم إنشاء الحساب بنجاح');
         } catch (\Exception $e) {
-            session()->flash('error', 'حدث خطأ أثناء إنشاء الحساب: ' . $e->getMessage());
+            session()->flash('error', 'حدث خطأ أثناء إنشاء الحساب: '.$e->getMessage());
         }
     }
 
@@ -212,6 +232,65 @@ class AccountCreator extends Component
         $this->company_type = '';
         $this->nationality = '';
     }
+
+    /**
+     * إنشاء حساب جاري الشريك تلقائياً عند إنشاء حساب شريك
+     */
+    private function createCurrentPartnerAccount(AccHead $partnerAccount): void
+    {
+        // جلب الحساب الأساسي (كود 21081 - جاري الشركاء)
+        $parentAccount = DB::table('acc_head')
+            ->where('code', '21081')
+            ->where('is_basic', 1)
+            ->first();
+
+        if (! $parentAccount) {
+            return;
+        }
+
+        // توليد كود جديد لجاري الشريك (21081xx)
+        $lastAccount = DB::table('acc_head')
+            ->where('code', 'like', '21081%')
+            ->where('code', '!=', '21081')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($lastAccount) {
+            $suffix = str_replace('21081', '', $lastAccount->code);
+            $next = str_pad(((int) $suffix + 1), 2, '0', STR_PAD_LEFT);
+            $newCode = '21081'.$next;
+        } else {
+            $newCode = '2108101';
+        }
+
+        // إنشاء حساب جاري الشريك
+        AccHead::create([
+            'code' => $newCode,
+            'aname' => 'جاري الشريك - '.$partnerAccount->aname,
+            'phone' => $partnerAccount->phone,
+            'address' => $partnerAccount->address,
+            'parent_id' => $parentAccount->id,
+            'branch_id' => $partnerAccount->branch_id,
+            'acc_type' => '12',
+            'zatca_name' => $partnerAccount->zatca_name,
+            'vat_number' => $partnerAccount->vat_number,
+            'national_id' => $partnerAccount->national_id,
+            'zatca_address' => $partnerAccount->zatca_address,
+            'company_type' => $partnerAccount->company_type,
+            'nationality' => $partnerAccount->nationality,
+            'is_basic' => 0,
+            'deletable' => 1,
+            'editable' => 1,
+            'start_balance' => 0,
+            'credit' => 0,
+            'debit' => 0,
+            'balance' => 0,
+            'isdeleted' => 0,
+            'crtime' => now(),
+            'mdtime' => now(),
+        ]);
+    }
+
     public function render()
     {
         return view('accounts::livewire.account-creator');

@@ -2,7 +2,71 @@
     @section('formAction', 'create')
     <div class="content-wrapper">
         <section class="content">
-            <form wire:submit="saveForm">
+            <form wire:submit="saveForm"
+                x-data="invoiceCalculations({
+                    invoiceItems: @js($invoiceItems),
+                    discountPercentage: @js($discount_percentage ?? 0),
+                    additionalPercentage: @js($additional_percentage ?? 0),
+                    receivedFromClient: @js($received_from_client ?? 0),
+                    dimensionsUnit: @js($dimensionsUnit ?? 'cm'),
+                    enableDimensionsCalculation: @js($enableDimensionsCalculation ?? false),
+                    invoiceType: @js($type ?? 10)
+                })"
+                x-init="
+                    // تحديث invoiceItems من Livewire عند التغيير
+                    $watch('invoiceItems', () => {
+                        if (typeof $wire !== 'undefined') {
+                            const wireItems = $wire.invoiceItems || [];
+                            if (Array.isArray(wireItems) && wireItems.length > 0) {
+                                invoiceItems = wireItems;
+                            }
+                            syncToLivewire();
+                        }
+                    });
+                    $watch('discountPercentage', () => syncToLivewire());
+                    $watch('additionalPercentage', () => syncToLivewire());
+                    $watch('receivedFromClient', () => syncToLivewire());
+                    
+                    // تحديث أولي من Livewire
+                    if (typeof $wire !== 'undefined') {
+                        const wire = $wire;
+                        if (wire.invoiceItems && Array.isArray(wire.invoiceItems)) {
+                            invoiceItems = wire.invoiceItems;
+                        }
+                        if (wire.discount_percentage !== undefined) {
+                            discountPercentage = parseFloat(wire.discount_percentage) || 0;
+                        }
+                        if (wire.additional_percentage !== undefined) {
+                            additionalPercentage = parseFloat(wire.additional_percentage) || 0;
+                        }
+                        if (wire.received_from_client !== undefined) {
+                            receivedFromClient = parseFloat(wire.received_from_client) || 0;
+                        }
+                        syncToLivewire();
+                    }
+                    
+                    // الاستماع لتحديثات Livewire
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.hook('morph.updated', ({ component }) => {
+                            if (component?.__instance?.__livewire) {
+                                const wire = component.__instance.__livewire;
+                                if (wire.invoiceItems && Array.isArray(wire.invoiceItems)) {
+                                    invoiceItems = wire.invoiceItems;
+                                }
+                                if (wire.discount_percentage !== undefined) {
+                                    discountPercentage = parseFloat(wire.discount_percentage) || 0;
+                                }
+                                if (wire.additional_percentage !== undefined) {
+                                    additionalPercentage = parseFloat(wire.additional_percentage) || 0;
+                                }
+                                if (wire.received_from_client !== undefined) {
+                                    receivedFromClient = parseFloat(wire.received_from_client) || 0;
+                                }
+                                syncToLivewire();
+                            }
+                        });
+                    }
+                ">
 
 
                 @include('components.invoices.invoice-head')
@@ -130,6 +194,185 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Alpine.js Component للحسابات - جميع الحسابات client-side
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('invoiceCalculations', (initialData) => ({
+                invoiceItems: initialData.invoiceItems || [],
+                discountPercentage: parseFloat(initialData.discountPercentage) || 0,
+                additionalPercentage: parseFloat(initialData.additionalPercentage) || 0,
+                receivedFromClient: parseFloat(initialData.receivedFromClient) || 0,
+                dimensionsUnit: initialData.dimensionsUnit || 'cm',
+                enableDimensionsCalculation: initialData.enableDimensionsCalculation || false,
+                invoiceType: initialData.invoiceType || 10,
+
+                // حساب القيمة الفرعية لكل صف
+                calculateSubValue(item) {
+                    if (!item || typeof item !== 'object') return 0;
+                    const qty = parseFloat(item.quantity) || 0;
+                    const price = parseFloat(item.price) || 0;
+                    const discount = parseFloat(item.discount) || 0;
+                    if (isNaN(qty) || isNaN(price) || isNaN(discount)) return 0;
+                    const result = (qty * price) - discount;
+                    const rounded = Math.round(result * 100) / 100;
+                    return isNaN(rounded) ? 0 : rounded;
+                },
+
+                // حساب الكمية من الأبعاد
+                calculateQuantityFromDimensions(item) {
+                    if (!this.enableDimensionsCalculation) {
+                        const qty = parseFloat(item.quantity) || 0;
+                        return isNaN(qty) ? 0 : qty;
+                    }
+                    
+                    const length = parseFloat(item.length) || 0;
+                    const width = parseFloat(item.width) || 0;
+                    const height = parseFloat(item.height) || 0;
+                    const density = parseFloat(item.density) || 1;
+                    
+                    if (length > 0 && width > 0 && height > 0) {
+                        let quantity = length * width * height * density;
+                        
+                        // تحويل من سم³ إلى م³
+                        if (this.dimensionsUnit === 'cm') {
+                            quantity = quantity / 1000000;
+                        }
+                        
+                        const rounded = Math.round(quantity * 1000) / 1000;
+                        return isNaN(rounded) ? 0 : rounded;
+                    }
+                    const qty = parseFloat(item.quantity) || 0;
+                    return isNaN(qty) ? 0 : qty;
+                },
+
+                // حساب الكمية من القيمة الفرعية
+                calculateQuantityFromSubValue(item) {
+                    const subValue = parseFloat(item.sub_value) || 0;
+                    const discount = parseFloat(item.discount) || 0;
+                    const price = parseFloat(item.price) || 0;
+                    
+                    if (price <= 0 || isNaN(price)) return 0;
+                    
+                    const result = (subValue + discount) / price;
+                    const rounded = Math.round(result * 1000) / 1000;
+                    return isNaN(rounded) ? 0 : rounded;
+                },
+
+                // المجموع الفرعي
+                get subtotal() {
+                    // تحديث invoiceItems من Livewire دائماً لضمان أحدث البيانات
+                    if (typeof $wire !== 'undefined' && $wire.invoiceItems && Array.isArray($wire.invoiceItems)) {
+                        if ($wire.invoiceItems.length > 0) {
+                            this.invoiceItems = $wire.invoiceItems;
+                        }
+                    }
+                    
+                    if (!Array.isArray(this.invoiceItems) || this.invoiceItems.length === 0) return 0;
+                    
+                    const sum = this.invoiceItems.reduce((total, item) => {
+                        if (!item || typeof item !== 'object') return total;
+                        const value = this.calculateSubValue(item);
+                        return (isNaN(total) ? 0 : total) + (isNaN(value) ? 0 : value);
+                    }, 0);
+                    
+                    const result = Math.round(sum * 100) / 100;
+                    return isNaN(result) || result < 0 ? 0 : result;
+                },
+
+                // قيمة الخصم
+                get discountValue() {
+                    const percentage = parseFloat(this.discountPercentage) || 0;
+                    const subtotal = parseFloat(this.subtotal) || 0;
+                    if (isNaN(percentage) || isNaN(subtotal)) return 0;
+                    const result = Math.round((subtotal * percentage) / 100 * 100) / 100;
+                    return isNaN(result) ? 0 : result;
+                },
+
+                // قيمة الإضافة
+                get additionalValue() {
+                    const percentage = parseFloat(this.additionalPercentage) || 0;
+                    const subtotal = parseFloat(this.subtotal) || 0;
+                    if (isNaN(percentage) || isNaN(subtotal)) return 0;
+                    const result = Math.round((subtotal * percentage) / 100 * 100) / 100;
+                    return isNaN(result) ? 0 : result;
+                },
+
+                // الإجمالي النهائي
+                get totalAfterAdditional() {
+                    const subtotal = parseFloat(this.subtotal) || 0;
+                    const discountValue = parseFloat(this.discountValue) || 0;
+                    const additionalValue = parseFloat(this.additionalValue) || 0;
+                    if (isNaN(subtotal) || isNaN(discountValue) || isNaN(additionalValue)) return 0;
+                    const result = Math.round((subtotal - discountValue + additionalValue) * 100) / 100;
+                    return isNaN(result) ? 0 : result;
+                },
+
+                // الباقي على العميل
+                get remaining() {
+                    const total = parseFloat(this.totalAfterAdditional) || 0;
+                    const received = parseFloat(this.receivedFromClient) || 0;
+                    if (isNaN(total) || isNaN(received)) return 0;
+                    const result = Math.max(total - received, 0);
+                    return isNaN(result) ? 0 : result;
+                },
+
+                // مزامنة البيانات مع Livewire - يتم استدعاؤها تلقائياً عند keyup
+                syncToLivewire() {
+                    if (typeof $wire === 'undefined') return;
+                    
+                    // تحديث invoiceItems من Livewire أولاً لضمان أحدث البيانات
+                    if ($wire.invoiceItems && Array.isArray($wire.invoiceItems) && $wire.invoiceItems.length > 0) {
+                        this.invoiceItems = $wire.invoiceItems;
+                    }
+                    
+                    // إعادة حساب جميع القيم في Alpine.js أولاً
+                    const subtotal = this.subtotal;
+                    const discountValue = this.discountValue;
+                    const additionalValue = this.additionalValue;
+                    const totalAfterAdditional = this.totalAfterAdditional;
+                    const remaining = this.remaining;
+                    
+                    // التأكد من أن جميع القيم ليست NaN قبل الإرسال
+                    const safeSubtotal = isNaN(subtotal) ? 0 : subtotal;
+                    const safeDiscountValue = isNaN(discountValue) ? 0 : discountValue;
+                    const safeAdditionalValue = isNaN(additionalValue) ? 0 : additionalValue;
+                    const safeTotalAfterAdditional = isNaN(totalAfterAdditional) ? 0 : totalAfterAdditional;
+                    
+                    // تحديث القيم المحسوبة في Livewire فوراً بدون defer
+                    $wire.set('subtotal', safeSubtotal);
+                    $wire.set('discount_value', safeDiscountValue);
+                    $wire.set('additional_value', safeAdditionalValue);
+                    $wire.set('total_after_additional', safeTotalAfterAdditional);
+                    
+                    // تحديث القيم الفرعية لكل صنف
+                    if (Array.isArray(this.invoiceItems) && this.invoiceItems.length > 0) {
+                        this.invoiceItems.forEach((item, index) => {
+                            if (item && typeof item === 'object') {
+                                const subValue = this.calculateSubValue(item);
+                                const safeValue = isNaN(subValue) ? 0 : subValue;
+                                $wire.set(`invoiceItems.${index}.sub_value`, safeValue);
+                            }
+                        });
+                    }
+                },
+
+                // تحديث القيم عند تحديث البيانات من Livewire
+                updateFromLivewire(livewireData) {
+                    if (livewireData.invoiceItems) {
+                        this.invoiceItems = livewireData.invoiceItems;
+                    }
+                    if (livewireData.discount_percentage !== undefined) {
+                        this.discountPercentage = parseFloat(livewireData.discount_percentage) || 0;
+                    }
+                    if (livewireData.additional_percentage !== undefined) {
+                        this.additionalPercentage = parseFloat(livewireData.additional_percentage) || 0;
+                    }
+                    if (livewireData.received_from_client !== undefined) {
+                        this.receivedFromClient = parseFloat(livewireData.received_from_client) || 0;
+                    }
+                }
+            }));
+        });
+
         // إضافة Alpine.js directive للتحكم في التركيز
         $(document).ready(function() {
             $(document).on('keydown', function(e) {

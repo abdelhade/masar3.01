@@ -404,15 +404,14 @@ new class extends Component {
         $this->dispatch('close-modal', 'add-barcode-modal.' . $unitRowIndex);
     }
 
+    /**
+     * Validate base unit conversion factor (must be 1)
+     * Calculations are now handled client-side via JavaScript
+     */
     public function updateUnitsCostAndPrices($index)
     {
-        if ($index != 0 && isset($this->unitRows[$index]['u_val']) && $this->unitRows[$index]['u_val'] != null) {
-            $this->unitRows[$index]['cost'] = $this->unitRows[$index]['u_val'] * $this->unitRows[0]['cost'];
-            foreach ($this->prices as $price) {
-                $basePrice = $this->unitRows[0]['prices'][$price->id] ?? 0;
-                $this->unitRows[$index]['prices'][$price->id] = $this->unitRows[$index]['u_val'] * $basePrice;
-            }
-        } elseif ($index == 0 && isset($this->unitRows[$index]['u_val'])) {
+        // Only validate base unit (index 0) - calculations moved to client-side
+        if ($index == 0 && isset($this->unitRows[$index]['u_val'])) {
             $this->validate([
                 'unitRows.0.u_val' => [
                     'required',
@@ -429,17 +428,13 @@ new class extends Component {
         }
     }
 
+    /**
+     * Validation only - calculations moved to client-side
+     */
     public function updateUnitsCost($index)
     {
-        // if $index == 0 update the cost of other units
-        if ($index == 0 && isset($this->unitRows[$index]['cost']) && $this->unitRows[$index]['cost'] != null) {
-            foreach ($this->unitRows as $unitRowIndex => $unitRow) {
-                if ($unitRowIndex != $index) {
-                    $baseCost = $this->unitRows[0]['cost'] ?? 0;
-                    $this->unitRows[$unitRowIndex]['cost'] = $unitRow['u_val'] * $baseCost;
-                }
-            }
-        }
+        // Calculations are now handled client-side via JavaScript
+        // This function kept for backward compatibility but does nothing
     }
 
     public function showBarcodes($index)
@@ -786,19 +781,14 @@ new class extends Component {
         $this->combinationUnitRows[$combinationKey][] = $newUnitRow;
     }
 
+    /**
+     * Validate base unit conversion factor for combinations (must be 1)
+     * Calculations are now handled client-side via JavaScript
+     */
     public function updateCombinationUnitsCostAndPrices($combinationKey, $index)
     {
-        if (!isset($this->combinationUnitRows[$combinationKey][$index])) {
-            return;
-        }
-
-        if ($index != 0 && isset($this->combinationUnitRows[$combinationKey][$index]['u_val']) && $this->combinationUnitRows[$combinationKey][$index]['u_val'] != null) {
-            $this->combinationUnitRows[$combinationKey][$index]['cost'] = $this->combinationUnitRows[$combinationKey][$index]['u_val'] * $this->combinationUnitRows[$combinationKey][0]['cost'];
-            foreach ($this->prices as $price) {
-                $basePrice = $this->combinationUnitRows[$combinationKey][0]['prices'][$price->id] ?? 0;
-                $this->combinationUnitRows[$combinationKey][$index]['prices'][$price->id] = $this->combinationUnitRows[$combinationKey][$index]['u_val'] * $basePrice;
-            }
-        } elseif ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['u_val'])) {
+        // Only validate base unit (index 0) - calculations moved to client-side
+        if ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['u_val'])) {
             $this->validate([
                 'combinationUnitRows.' . $combinationKey . '.0.u_val' => [
                     'required',
@@ -815,36 +805,22 @@ new class extends Component {
         }
     }
 
+    /**
+     * Validation only - calculations moved to client-side
+     */
     public function updateCombinationUnitsCost($combinationKey, $index)
     {
-        if (!isset($this->combinationUnitRows[$combinationKey][$index])) {
-            return;
-        }
-
-        if ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['cost']) && $this->combinationUnitRows[$combinationKey][$index]['cost'] != null) {
-            foreach ($this->combinationUnitRows[$combinationKey] as $unitRowIndex => $unitRow) {
-                if ($unitRowIndex != $index) {
-                    $baseCost = $this->combinationUnitRows[$combinationKey][0]['cost'] ?? 0;
-                    $this->combinationUnitRows[$combinationKey][$unitRowIndex]['cost'] = $unitRow['u_val'] * $baseCost;
-                }
-            }
-        }
+        // Calculations are now handled client-side via JavaScript
+        // This function kept for backward compatibility but does nothing
     }
 
+    /**
+     * Validation only - calculations moved to client-side
+     */
     public function updateCombinationPrices($combinationKey, $index, $priceId)
     {
-        if (!isset($this->combinationUnitRows[$combinationKey][$index])) {
-            return;
-        }
-
-        if ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['prices'][$priceId])) {
-            $basePrice = $this->combinationUnitRows[$combinationKey][0]['prices'][$priceId] ?? 0;
-            foreach ($this->combinationUnitRows[$combinationKey] as $unitRowIndex => $unitRow) {
-                if ($unitRowIndex != $index) {
-                    $this->combinationUnitRows[$combinationKey][$unitRowIndex]['prices'][$priceId] = $unitRow['u_val'] * $basePrice;
-                }
-            }
-        }
+        // Calculations are now handled client-side via JavaScript
+        // This function kept for backward compatibility but does nothing
     }
 
     public function addCombinationBarcode($combinationKey, $unitRowIndex)

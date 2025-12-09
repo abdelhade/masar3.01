@@ -40,14 +40,14 @@
                                 <td class="text-center">
                                     <input type="number" onclick="this.select()"
                                         wire:model="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.u_val"
-                                        wire:keyup.debounce.300ms="updateCombinationUnitsCostAndPrices('{{ $activeCombination }}', {{ $index }})"
+                                        onkeyup="window.updateCombinationUnitsCostAndPrices('{{ $activeCombination }}', {{ $index }})"
                                         class="form-control font-hold fw-bold" min="1"
                                         step="0.0001" style="min-width: 150px;">
                                 </td>
                                 <td>
                                     <input type="number" onclick="this.select()"
                                         wire:model="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.cost"
-                                        wire:keyup.debounce.300ms="updateCombinationUnitsCost('{{ $activeCombination }}', {{ $index }})"
+                                        onkeyup="window.updateCombinationUnitsCost('{{ $activeCombination }}', {{ $index }})"
                                         class="form-control font-hold fw-bold" step="0.0001"
                                         style="min-width: 150px;">
                                 </td>
@@ -55,7 +55,7 @@
                                     <td class="text-center">
                                         <input type="number" onclick="this.select()"
                                             wire:model="combinationUnitRows.{{ $activeCombination }}.{{ $index }}.prices.{{ $price->id }}"
-                                            wire:keyup.debounce.300ms="updateCombinationPrices('{{ $activeCombination }}', {{ $index }}, {{ $price->id }})"
+                                            onkeyup="window.updateCombinationPrices('{{ $activeCombination }}', {{ $index }}, {{ $price->id }})"
                                             class="form-control font-hold fw-bold" step="0.0001"
                                             style="min-width: 150px;">
                                     </td>

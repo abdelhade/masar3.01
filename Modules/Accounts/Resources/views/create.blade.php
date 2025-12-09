@@ -239,8 +239,8 @@
                                             $default_secret = 0;
                                             // funds/banks -> is_fund
                                             $default_is_fund = in_array($parent, ['1101', '1102']) ? 1 : 0;
-                                            // rentable default (keep original condition if used elsewhere)
-                                            $default_rentable = ($parent == '112') ? 1 : 0;
+                                            // rentable default for rentables (1202)
+                                            $default_rentable = ($parent == '1202') ? 1 : 0;
                                         @endphp
 
                                         <input type="hidden" name="is_stock" value="{{ $default_is_stock }}">
@@ -273,7 +273,7 @@
                                         @endif
 
                                     </div>
-                                    @if ($parent == '12')
+                                    @if ($parent == '12' || $parent == '1202')
                                         <div class="alert alert-warning"
                                             style="font-family: 'Cairo', sans-serif; direction: rtl;">
                                             {{ __('سيتم اضافة حساب مجمع اهلاك و حساب مصروف اهلاك للأصل') }}

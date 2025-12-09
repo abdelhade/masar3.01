@@ -57,7 +57,7 @@
                                 <input type="number" onclick="this.select()"
                                     @if (!$creating) disabled readonly @endif
                                     wire:model="unitRows.{{ $index }}.u_val"
-                                    wire:keyup.debounce.300ms="updateUnitsCostAndPrices({{ $index }})"
+                                    onkeyup="window.updateUnitsCostAndPrices({{ $index }})"
                                     class="form-control font-hold fw-bold" min="1"
                                     step="0.0001" style="min-width: 150px;">
                                 @error("unitRows.{$index}.u_val")
@@ -68,7 +68,7 @@
                                 <input type="number" onclick="this.select()"
                                     @if (!$creating) disabled readonly @endif
                                     wire:model="unitRows.{{ $index }}.cost"
-                                    wire:keyup.debounce.300ms="updateUnitsCost({{ $index }})"
+                                    onkeyup="window.updateUnitsCost({{ $index }})"
                                     class="form-control font-hold fw-bold" step="0.0001"
                                     style="min-width: 150px;">
                                 @error("unitRows.{$index}.cost")

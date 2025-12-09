@@ -1,13 +1,20 @@
-<title>Massar | Dashboard</title>
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<meta name="user-id" content="{{ auth()->id() }}">
+<!DOCTYPE html>
+<html lang="{{ app()->getLocale() }}" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Massar | Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user-id" content="{{ auth()->id() }}">
 
-<link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/dashboard-main.css') }}">
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('assets/css/dashboard-main.css') }}">
 
-<!-- Lucide Icons CDN -->
-<script src="{{ asset('assets/js/lucide.js') }}"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="{{ asset('assets/js/lucide.js') }}"></script>
+</head>
+<body class="theme-neumorphism-lite">
 
 <style>
     .header-section {
@@ -117,10 +124,8 @@
         <div class="header-top-row">
             <h1 class="title text-white text-page-title">Massar ERP</h1>
             <div class="user-section">
-                <div class="user-info">
-                    <i data-lucide="user" class="user-icon"></i>
-                    <span class="user-name">{{ auth()->user()->name ?? 'المستخدم' }}</span>
-                </div>
+                <i data-lucide="user" class="user-icon"></i>
+                <span class="user-name">{{ auth()->user()->name ?? 'المستخدم' }}</span>
                 <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="display: inline;">
                     @csrf
                     <button type="submit" class="logout-btn" title="تسجيل الخروج">
@@ -181,18 +186,10 @@
                         <i data-lucide="settings" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
                     </div>
                     <h2 class="group-title">الإعدادات الأساسية</h2>
-                    <div class="group-count">5</div>
+                    <div class="group-count">4</div>
                 </div>
 
                 <div class="group-apps-grid">
-                    {{-- الرئيسيه --}}
-                    <a href="{{ route('home') }}" class="app-card">
-                        <div class="app-icon" style="background-color: white;">
-                            <i data-lucide="home" style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
-                        </div>
-                        <p class="app-name">الرئيسيه</p>
-                    </a>
-
                     {{-- البيانات الاساسيه --}}
                     @canany([
                         'view Clients',
@@ -757,6 +754,59 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchCount = document.getElementById('searchCount');
+        const appCards = document.querySelectorAll('.app-card');
+        const appGroups = document.querySelectorAll('.app-group');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+                let visibleGroups = 0;
+
+                // Search in app cards
+                appCards.forEach(function(card) {
+                    const appName = card.querySelector('.app-name');
+                    if (appName) {
+                        const text = appName.textContent.toLowerCase();
+                        if (text.includes(searchTerm) || searchTerm === '') {
+                            card.style.display = '';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Hide/show groups based on visible cards
+                appGroups.forEach(function(group) {
+                    const groupCards = group.querySelectorAll('.app-card');
+                    const visibleCards = Array.from(groupCards).filter(function(card) {
+                        return card.style.display !== 'none';
+                    });
+
+                    if (visibleCards.length > 0 || searchTerm === '') {
+                        group.style.display = '';
+                        if (visibleCards.length > 0) {
+                            visibleGroups++;
+                        }
+                    } else {
+                        group.style.display = 'none';
+                    }
+                });
+
+                // Update search count
+                if (searchTerm !== '') {
+                    searchCount.textContent = visibleCount + ' نتيجة';
+                    searchCount.style.display = 'block';
+                } else {
+                    searchCount.style.display = 'none';
+                }
+            });
+        }
     });
 
     // Reinitialize icons if Lucide loads after DOM
@@ -766,3 +816,5 @@
         }
     });
 </script>
+</body>
+</html>

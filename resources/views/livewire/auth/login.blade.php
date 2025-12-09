@@ -71,7 +71,7 @@ new #[Layout('components.layouts.login')] class extends Component {
 
 @push('styles')
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 @endpush
 

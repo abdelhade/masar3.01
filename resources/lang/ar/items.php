@@ -424,4 +424,16 @@ return [
     'of' => 'من',
     'print_will_be_landscape' => 'سيتم الطباعة بالعرض (Landscape)',
     'print_will_be_portrait' => 'سيتم الطباعة بالطول (Portrait)',
+
+    // Varibals Management
+    'varibals_management' => 'إدارة المتغيرات',
+    'manage_your_varibals' => 'إدارة المتغيرات الخاصة بك',
+    'add_new_varibale' => 'إضافة متغير جديد',
+    'search_varibals' => 'البحث في المتغيرات...',
+    'no_varibals_found' => 'لم يتم العثور على متغيرات',
+    'edit_varibal' => 'تعديل متغير',
+    'create_new_varibal' => 'إنشاء متغير جديد',
+    'enter_varibal_name' => 'أدخل اسم المتغير',
+    'enter_varibal_description' => 'أدخل وصف المتغير (اختياري)',
+    'confirm_delete_varibal' => 'هل أنت متأكد من حذف هذا المتغير؟ لا يمكن التراجع عن هذا الإجراء',
 ]; 

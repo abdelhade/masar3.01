@@ -74,3 +74,51 @@ body, html, p, h1, h2, h3, h4, h5, h6, a, span, div, ul, ol, li, table, th, td, 
     font-weight: var(--arabic-font-weight) !important;
     font-size: var(--arabic-font-size) !important;
 }
+
+/* استثناء المودال من أنماط :root */
+.modal,
+.modal *,
+.modal-content,
+.modal-content *,
+.modal-body,
+.modal-body *,
+.modal-header,
+.modal-header *,
+.modal-footer,
+.modal-footer *,
+.modal-dialog,
+.modal-dialog * {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    direction: inherit !important;
+}
+
+/* استثناء عناصر النص داخل المودال */
+.modal p,
+.modal h1,
+.modal h2,
+.modal h3,
+.modal h4,
+.modal h5,
+.modal h6,
+.modal a,
+.modal span,
+.modal div,
+.modal ul,
+.modal ol,
+.modal li,
+.modal table,
+.modal th,
+.modal td,
+.modal input,
+.modal textarea,
+.modal button,
+.modal label,
+.modal select,
+.modal option {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    direction: inherit !important;
+}

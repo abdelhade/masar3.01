@@ -953,6 +953,7 @@ class EditInvoiceForm extends Component
 
     public function calculateQuantityFromSubValue($index)
     {
+        // ✅ الحساب في Alpine.js - هنا للتحقق فقط
         if (! isset($this->invoiceItems[$index])) {
             return;
         }
@@ -974,10 +975,11 @@ class EditInvoiceForm extends Component
 
     public function recalculateSubValues()
     {
+        // ✅ تبسيط: فقط للتحقق - الحسابات الفعلية في Alpine.js
         foreach ($this->invoiceItems as $index => $item) {
-            $qty = (float) $item['quantity'];
-            $price = (float) $item['price'];
-            $discount = (float) $item['discount'];
+            $qty = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['price'] ?? 0);
+            $discount = (float) ($item['discount'] ?? 0);
             $sub = ($qty * $price) - $discount;
             $this->invoiceItems[$index]['sub_value'] = round($sub, 2);
         }
@@ -985,6 +987,7 @@ class EditInvoiceForm extends Component
 
     public function calculateTotals()
     {
+        // ✅ تبسيط: فقط للتحقق والتحسين - الحسابات الفعلية في Alpine.js
         $this->subtotal = collect($this->invoiceItems)->sum('sub_value');
         $discountPercentage = (float) ($this->discount_percentage ?? 0);
         $additionalPercentage = (float) ($this->additional_percentage ?? 0);
@@ -1026,6 +1029,7 @@ class EditInvoiceForm extends Component
 
     public function updatedDiscountPercentage()
     {
+        // ✅ الحساب في Alpine.js - هنا للتحقق فقط
         $discountPercentage = (float) ($this->discount_percentage ?? 0);
         $this->discount_value = ($this->subtotal * $discountPercentage) / 100;
         $this->calculateTotals();
@@ -1034,6 +1038,7 @@ class EditInvoiceForm extends Component
 
     public function updatedDiscountValue()
     {
+        // ✅ الحساب في Alpine.js - هنا للتحقق فقط
         if ($this->discount_value >= 0 && $this->subtotal > 0) {
             $this->discount_percentage = ($this->discount_value * 100) / $this->subtotal;
             $this->calculateTotals();
@@ -1043,6 +1048,7 @@ class EditInvoiceForm extends Component
 
     public function updatedAdditionalPercentage()
     {
+        // ✅ الحساب في Alpine.js - هنا للتحقق فقط
         $additionalPercentage = (float) ($this->additional_percentage ?? 0);
         $this->additional_value = ($this->subtotal * $additionalPercentage) / 100;
         $this->calculateTotals();
@@ -1051,6 +1057,7 @@ class EditInvoiceForm extends Component
 
     public function updatedAdditionalValue()
     {
+        // ✅ الحساب في Alpine.js - هنا للتحقق فقط
         $afterDiscount = $this->subtotal - $this->discount_value;
         if ($this->additional_value >= 0 && $afterDiscount > 0) {
             $this->additional_percentage = ($this->additional_value * 100) / $afterDiscount;

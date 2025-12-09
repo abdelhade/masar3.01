@@ -351,4 +351,16 @@ return [
     'of' => 'of',
     'print_will_be_landscape' => 'Print will be in Landscape mode',
     'print_will_be_portrait' => 'Print will be in Portrait mode',
+
+    // Varibals Management
+    'varibals_management' => 'Varibals Management',
+    'manage_your_varibals' => 'Manage your varibals',
+    'add_new_varibale' => 'Add New Varibale',
+    'search_varibals' => 'Search varibals...',
+    'no_varibals_found' => 'No varibals found',
+    'edit_varibal' => 'Edit Varibal',
+    'create_new_varibal' => 'Create New Varibal',
+    'enter_varibal_name' => 'Enter varibal name',
+    'enter_varibal_description' => 'Enter varibal description (optional)',
+    'confirm_delete_varibal' => 'Are you sure you want to delete this varibal? This action cannot be undone',
 ]; 

@@ -174,8 +174,16 @@
                             <label for="received_from_client"
                                 style="font-size: 1em;">{{ __('Amount Received from Customer') }}</label>
                         @endif
-                        <input type="number" step="0.01" wire:model="received_from_client"
-                            wire:change="calculateTotals" class="form-control form-control-sm scnd"
+                        <input type="number" step="0.01" 
+                            x-model.number="$root.receivedFromClient"
+                            x-on:keyup="
+                                $root.receivedFromClient = parseFloat($event.target.value) || 0;
+                                $root.receivedFromClient = isNaN($root.receivedFromClient) ? 0 : $root.receivedFromClient;
+                                $wire.set('received_from_client', $root.receivedFromClient);
+                                $root.syncToLivewire();
+                            "
+                            wire:model.blur="received_from_client"
+                            class="form-control form-control-sm scnd"
                             style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0">
                     </div>
 
@@ -198,7 +206,8 @@
                     {{-- إضافة الإجمالي الفرعي لا ينطبق على التحويلات --}}
                     <div class="row mb-2">
                         <div class="col-3 text-right font-weight-bold">{{ __('Subtotal:') }}</div>
-                        <div class="col-3 text-left text-primary">
+                        <div class="col-3 text-left text-primary font-weight-bold" 
+                            x-text="$root.subtotal !== undefined && !isNaN($root.subtotal) ? new Intl.NumberFormat().format(parseFloat($root.subtotal) || 0) : '0'">
                             {{ number_format($subtotal) }}
                         </div>
                     </div>
@@ -211,11 +220,25 @@
                         </div>
                         <div class="col-3">
                             <div class="input-group">
-                                <input type="number" step="0.01" wire:model="discount_percentage"
-                                    wire:change="calculateTotals" class="form-control form-control-sm"
+                                <input type="number" step="0.01" 
+                                    x-model.number="$root.discountPercentage"
+                                    x-on:keyup="
+                                        $root.discountPercentage = parseFloat($event.target.value) || 0;
+                                        $root.discountPercentage = isNaN($root.discountPercentage) ? 0 : $root.discountPercentage;
+                                        // إعادة حساب discount value تلقائياً
+                                        const subtotal = parseFloat($root.subtotal) || 0;
+                                        $root.discountValue = Math.round((subtotal * $root.discountPercentage) / 100 * 100) / 100;
+                                        $root.discountValue = isNaN($root.discountValue) ? 0 : $root.discountValue;
+                                        // تحديث Livewire
+                                        $wire.set('discount_percentage', $root.discountPercentage);
+                                        $wire.set('discount_value', $root.discountValue);
+                                        $root.syncToLivewire();
+                                    "
+                                    wire:model.blur="discount_percentage"
+                                    class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                     max="100">
-               <div class="input-group-append">
+                                <div class="input-group-append">
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>
@@ -229,8 +252,25 @@
 
 
                                 <div class="col-3">
-                            <input type="number" step="0.01" wire:model="discount_value"
-                                wire:change="calculateTotals" class="form-control form-control-sm"
+                            <input type="number" step="0.01" 
+                                :value="$root.discountValue"
+                                x-on:keyup="
+                                    const value = parseFloat($event.target.value) || 0;
+                                    const safeValue = isNaN(value) ? 0 : value;
+                                    $root.discountValue = safeValue;
+                                    const subtotal = parseFloat($root.subtotal) || 0;
+                                    if (!isNaN(subtotal) && subtotal > 0) {
+                                        // إعادة حساب discount percentage تلقائياً
+                                        $root.discountPercentage = (safeValue * 100) / subtotal;
+                                        $root.discountPercentage = isNaN($root.discountPercentage) ? 0 : $root.discountPercentage;
+                                        // تحديث Livewire
+                                        $wire.set('discount_value', safeValue);
+                                        $wire.set('discount_percentage', $root.discountPercentage);
+                                    }
+                                    $root.syncToLivewire();
+                                "
+                                wire:model.blur="discount_value"
+                                class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                 id="discount_value">
                                 </div>
@@ -248,8 +288,22 @@
 
                                 <div class="col-3">
                                     <div class="input-group">
-                                        <input type="number" step="0.01" wire:model="additional_percentage"
-                                            wire:change="calculateTotals" class="form-control form-control-sm"
+                                        <input type="number" step="0.01" 
+                                            x-model.number="$root.additionalPercentage"
+                                            x-on:keyup="
+                                                $root.additionalPercentage = parseFloat($event.target.value) || 0;
+                                                $root.additionalPercentage = isNaN($root.additionalPercentage) ? 0 : $root.additionalPercentage;
+                                                // إعادة حساب additional value تلقائياً
+                                                const subtotal = parseFloat($root.subtotal) || 0;
+                                                $root.additionalValue = Math.round((subtotal * $root.additionalPercentage) / 100 * 100) / 100;
+                                                $root.additionalValue = isNaN($root.additionalValue) ? 0 : $root.additionalValue;
+                                                // تحديث Livewire
+                                                $wire.set('additional_percentage', $root.additionalPercentage);
+                                                $wire.set('additional_value', $root.additionalValue);
+                                                $root.syncToLivewire();
+                                            "
+                                            wire:model.blur="additional_percentage"
+                                            class="form-control form-control-sm"
                                             style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                             max="100">
                                         <div class="input-group-append">
@@ -266,10 +320,29 @@
 
 
                                 <div class="col-3">
-                                    <input type="number" step="0.01" wire:model="additional_value"
-                                        wire:change="calculateTotals" class="form-control form-control-sm"
-                                        style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                        id="additional_value">
+                                        <input type="number" step="0.01" 
+                                            :value="$root.additionalValue"
+                                        x-on:keyup="
+                                            const value = parseFloat($event.target.value) || 0;
+                                            const safeValue = isNaN(value) ? 0 : value;
+                                            $root.additionalValue = safeValue;
+                                            const subtotal = parseFloat($root.subtotal) || 0;
+                                            const discountValue = parseFloat($root.discountValue) || 0;
+                                            const afterDiscount = subtotal - discountValue;
+                                            if (!isNaN(afterDiscount) && afterDiscount > 0) {
+                                                // إعادة حساب additional percentage تلقائياً
+                                                $root.additionalPercentage = (safeValue * 100) / afterDiscount;
+                                                $root.additionalPercentage = isNaN($root.additionalPercentage) ? 0 : $root.additionalPercentage;
+                                                // تحديث Livewire
+                                                $wire.set('additional_value', safeValue);
+                                                $wire.set('additional_percentage', $root.additionalPercentage);
+                                            }
+                                            $root.syncToLivewire();
+                                        "
+                                            wire:model.blur="additional_value"
+                                            class="form-control form-control-sm"
+                                            style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
+                                            id="additional_value">
                                 </div>
                             </div>
                 @endif
@@ -279,8 +352,25 @@
                     {{-- إضافة الإجمالي النهائي لا ينطبق على التحويلات --}}
                     <div class="row mb-2">
                         <div class="col-3 text-right font-weight-bold">{{ __('Final Total:') }}</div>
-                        <div class="col-3 text-left font-weight-bold fs-5 main-num">
-                            {{ number_format($total_after_additional) }}
+                        <div class="col-3 text-left">
+                            <input type="number" step="0.01" 
+                                :value="$root.totalAfterAdditional"
+                                x-on:keyup="
+                                    const value = parseFloat($event.target.value) || 0;
+                                    const safeValue = isNaN(value) ? 0 : value;
+                                    $root.totalAfterAdditional = safeValue;
+                                    // إعادة حساب remaining تلقائياً
+                                    const received = parseFloat($root.receivedFromClient) || 0;
+                                    $root.remaining = Math.max(safeValue - received, 0);
+                                    $root.remaining = isNaN($root.remaining) ? 0 : $root.remaining;
+                                    // تحديث Livewire
+                                    $wire.set('total_after_additional', safeValue);
+                                    $root.syncToLivewire();
+                                "
+                                wire:model.blur="total_after_additional"
+                                class="form-control form-control-sm font-weight-bold fs-5 main-num"
+                                style="font-size: 1.1em; height: 2.5em; padding: 2px 6px; font-weight: bold;" min="0"
+                                id="total_after_additional_input">
                         </div>
                     </div>
                 @endif {{-- إضافة الإجمالي النهائي لا ينطبق على التحويلات --}}
@@ -288,8 +378,24 @@
                     @if ($type != 21)
                         {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
                         <div class="col-3 text-right font-weight-bold">{{ __('Paid by Customer:') }}</div>
-                        <div class="col-3 text-left font-weight-bold fs-5">
-                            {{ number_format($received_from_client) }}
+                        <div class="col-3 text-left">
+                            <input type="number" step="0.01" 
+                                :value="$root.receivedFromClient"
+                                x-on:keyup="
+                                    $root.receivedFromClient = parseFloat($event.target.value) || 0;
+                                    $root.receivedFromClient = isNaN($root.receivedFromClient) ? 0 : $root.receivedFromClient;
+                                    // إعادة حساب remaining تلقائياً
+                                    const total = parseFloat($root.totalAfterAdditional) || 0;
+                                    $root.remaining = Math.max(total - $root.receivedFromClient, 0);
+                                    $root.remaining = isNaN($root.remaining) ? 0 : $root.remaining;
+                                    // تحديث Livewire
+                                    $wire.set('received_from_client', $root.receivedFromClient);
+                                    $root.syncToLivewire();
+                                "
+                                wire:model.blur="received_from_client"
+                                class="form-control form-control-sm font-weight-bold fs-5"
+                                style="font-size: 1.1em; height: 2.5em; padding: 2px 6px; font-weight: bold;" min="0"
+                                id="received_from_client_input">
                         </div>
                     @endif {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
                     <div class="col-3 text-left">
@@ -342,11 +448,25 @@
                     {{-- إضافة الباقي لا ينطبق على التحويلات --}}
                     <div class="row">
                         <div class="col-3 text-right font-weight-bold">{{ __('Remaining:') }}</div>
-                        <div class="col-3 text-left font-weight-bold text-danger">
-                            @php
-                                $remaining = $total_after_additional - $received_from_client;
-                            @endphp
-                            {{ number_format(max($remaining, 0)) }}
+                        <div class="col-3 text-left">
+                            <input type="number" step="0.01" 
+                                :value="$root.remaining"
+                                x-on:keyup="
+                                    const value = parseFloat($event.target.value) || 0;
+                                    const safeValue = isNaN(value) ? 0 : value;
+                                    $root.remaining = safeValue;
+                                    // إعادة حساب receivedFromClient تلقائياً
+                                    const total = parseFloat($root.totalAfterAdditional) || 0;
+                                    $root.receivedFromClient = Math.max(0, total - safeValue);
+                                    $root.receivedFromClient = isNaN($root.receivedFromClient) ? 0 : $root.receivedFromClient;
+                                    // تحديث Livewire
+                                    $wire.set('received_from_client', $root.receivedFromClient);
+                                    $root.syncToLivewire();
+                                "
+                                wire:model.blur="received_from_client"
+                                class="form-control form-control-sm font-weight-bold text-danger"
+                                style="font-size: 1.1em; height: 2.5em; padding: 2px 6px; font-weight: bold; color: #dc3545;" min="0"
+                                id="remaining_input">
                         </div>
                     </div>
                 @endif {{-- إضافة الباقي لا ينطبق على التحويلات --}}

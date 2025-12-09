@@ -35,7 +35,71 @@
                     <table class="table mb-0" style="background: transparent;">
                         <tbody>
                             @forelse ($invoiceItems as $index => $row)
-                                <tr wire:key="invoice-row-{{ $index }}">
+                                @php
+                                    $allowEditValue = ($this->settings['allow_edit_invoice_value'] ?? '0') == '1';
+                                @endphp
+                                <tr wire:key="invoice-row-{{ $index }}"
+                                    x-data="{
+                                        itemIndex: {{ $index }},
+                                        quantity: @js($row['quantity'] ?? 0),
+                                        price: @js($row['price'] ?? 0),
+                                        discount: @js($row['discount'] ?? 0),
+                                        length: @js($row['length'] ?? null),
+                                        width: @js($row['width'] ?? null),
+                                        height: @js($row['height'] ?? null),
+                                        density: @js($row['density'] ?? 1),
+                                        allowEditValue: @js($allowEditValue),
+                                        lastSubValue: @js($row['sub_value'] ?? 0),
+                                        get subValue() {
+                                            const qty = parseFloat(this.quantity) || 0;
+                                            const prc = parseFloat(this.price) || 0;
+                                            const disc = parseFloat(this.discount) || 0;
+                                            
+                                            // التحقق من NaN قبل الحساب
+                                            if (isNaN(qty) || isNaN(prc) || isNaN(disc)) {
+                                                const safeValue = 0;
+                                                if (Math.abs(safeValue - this.lastSubValue) > 0.01) {
+                                                    this.lastSubValue = safeValue;
+                                                    $wire.set(`invoiceItems.${this.itemIndex}.sub_value`, safeValue);
+                                                }
+                                                return safeValue;
+                                            }
+                                            
+                                            const calculated = Math.round((qty * prc - disc) * 100) / 100;
+                                            const safeCalculated = isNaN(calculated) ? 0 : calculated;
+                                            
+                                            // تحديث القيمة في Livewire فقط إذا تغيرت القيمة بشكل ملحوظ
+                                            // (الحساب التلقائي دائماً مسموح، حتى لو لم يكن التعديل اليدوي مسموحاً)
+                                            if (Math.abs(safeCalculated - this.lastSubValue) > 0.01) {
+                                                this.lastSubValue = safeCalculated;
+                                                // تحديث مباشر - Livewire سيتحقق تلقائياً أن هذه قيمة محسوبة وليست تعديل يدوي
+                                                $wire.set(`invoiceItems.${this.itemIndex}.sub_value`, safeCalculated);
+                                            }
+                                            
+                                            return safeCalculated;
+                                        }
+                                    }"
+                                    x-init="
+                                        // تحديث القيمة الفرعية عند تغيير الكمية/السعر/الخصم
+                                        $watch('quantity', () => { 
+                                            subValue; 
+                                            if (typeof $root !== 'undefined' && $root.syncToLivewire) {
+                                                $root.syncToLivewire();
+                                            }
+                                        });
+                                        $watch('price', () => { 
+                                            subValue; 
+                                            if (typeof $root !== 'undefined' && $root.syncToLivewire) {
+                                                $root.syncToLivewire();
+                                            }
+                                        });
+                                        $watch('discount', () => { 
+                                            subValue; 
+                                            if (typeof $root !== 'undefined' && $root.syncToLivewire) {
+                                                $root.syncToLivewire();
+                                            }
+                                        });
+                                    ">
                                     {{-- اسم الصنف --}}
                                     @if ($this->shouldShowColumn('item_name'))
                                         <td style="width: 18%; font-size: 1.2em;">
@@ -82,6 +146,21 @@
                                     @if ($this->shouldShowColumn('quantity'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.001" min="0"
+                                                x-model.number="quantity"
+                                                x-on:keyup="
+                                                    quantity = parseFloat($event.target.value) || 0;
+                                                    quantity = isNaN(quantity) ? 0 : quantity;
+                                                    // تحديث sub_value تلقائياً
+                                                    const prc = parseFloat(price) || 0;
+                                                    const disc = parseFloat(discount) || 0;
+                                                    const subVal = Math.round((quantity * prc - disc) * 100) / 100;
+                                                    const safeSubVal = isNaN(subVal) ? 0 : subVal;
+                                                    // تحديث Livewire
+                                                    $wire.set('invoiceItems.{{ $index }}.quantity', quantity);
+                                                    $wire.set('invoiceItems.{{ $index }}.sub_value', safeSubVal);
+                                                    // تحديث جميع الحسابات في footer
+                                                    $root.syncToLivewire();
+                                                "
                                                 wire:model.blur="invoiceItems.{{ $index }}.quantity"
                                                 id="quantity_{{ $index }}" placeholder="{{ __('Quantity') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -203,6 +282,23 @@
                                     @if ($this->shouldShowColumn('length'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
+                                                x-model.number="length"
+                                                x-on:keyup="
+                                                    length = parseFloat($event.target.value) || 0;
+                                                    length = isNaN(length) ? 0 : length;
+                                                    if (length > 0 && width > 0 && height > 0 && !isNaN(width) && !isNaN(height) && !isNaN(density)) {
+                                                        let qty = length * width * height * density;
+                                                        @if ($dimensionsUnit === 'cm')
+                                                            qty = qty / 1000000;
+                                                        @endif
+                                                        qty = Math.round(qty * 1000) / 1000;
+                                                        qty = isNaN(qty) ? 0 : qty;
+                                                        quantity = qty;
+                                                        $wire.set('invoiceItems.{{ $index }}.length', length);
+                                                        $wire.set('invoiceItems.{{ $index }}.quantity', qty);
+                                                        $root.syncToLivewire();
+                                                    }
+                                                "
                                                 wire:model.blur="invoiceItems.{{ $index }}.length"
                                                 placeholder="{{ __('Length') }} ({{ $dimensionsUnit }})"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -215,6 +311,23 @@
                                     @if ($this->shouldShowColumn('width'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
+                                                x-model.number="width"
+                                                x-on:keyup="
+                                                    width = parseFloat($event.target.value) || 0;
+                                                    width = isNaN(width) ? 0 : width;
+                                                    if (length > 0 && width > 0 && height > 0 && !isNaN(length) && !isNaN(height) && !isNaN(density)) {
+                                                        let qty = length * width * height * density;
+                                                        @if ($dimensionsUnit === 'cm')
+                                                            qty = qty / 1000000;
+                                                        @endif
+                                                        qty = Math.round(qty * 1000) / 1000;
+                                                        qty = isNaN(qty) ? 0 : qty;
+                                                        quantity = qty;
+                                                        $wire.set('invoiceItems.{{ $index }}.width', width);
+                                                        $wire.set('invoiceItems.{{ $index }}.quantity', qty);
+                                                        $root.syncToLivewire();
+                                                    }
+                                                "
                                                 wire:model.blur="invoiceItems.{{ $index }}.width"
                                                 placeholder="{{ __('Width') }} ({{ $dimensionsUnit }})"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -227,6 +340,23 @@
                                     @if ($this->shouldShowColumn('height'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
+                                                x-model.number="height"
+                                                x-on:keyup="
+                                                    height = parseFloat($event.target.value) || 0;
+                                                    height = isNaN(height) ? 0 : height;
+                                                    if (length > 0 && width > 0 && height > 0 && !isNaN(length) && !isNaN(width) && !isNaN(density)) {
+                                                        let qty = length * width * height * density;
+                                                        @if ($dimensionsUnit === 'cm')
+                                                            qty = qty / 1000000;
+                                                        @endif
+                                                        qty = Math.round(qty * 1000) / 1000;
+                                                        qty = isNaN(qty) ? 0 : qty;
+                                                        quantity = qty;
+                                                        $wire.set('invoiceItems.{{ $index }}.height', height);
+                                                        $wire.set('invoiceItems.{{ $index }}.quantity', qty);
+                                                        $root.syncToLivewire();
+                                                    }
+                                                "
                                                 wire:model.blur="invoiceItems.{{ $index }}.height"
                                                 placeholder="{{ __('Height') }} ({{ $dimensionsUnit }})"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -239,6 +369,23 @@
                                     @if ($this->shouldShowColumn('density'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0.01"
+                                                x-model.number="density"
+                                                x-on:keyup="
+                                                    density = parseFloat($event.target.value) || 1;
+                                                    density = isNaN(density) ? 1 : density;
+                                                    if (length > 0 && width > 0 && height > 0 && !isNaN(length) && !isNaN(width) && !isNaN(height)) {
+                                                        let qty = length * width * height * density;
+                                                        @if ($dimensionsUnit === 'cm')
+                                                            qty = qty / 1000000;
+                                                        @endif
+                                                        qty = Math.round(qty * 1000) / 1000;
+                                                        qty = isNaN(qty) ? 0 : qty;
+                                                        quantity = qty;
+                                                        $wire.set('invoiceItems.{{ $index }}.density', density);
+                                                        $wire.set('invoiceItems.{{ $index }}.quantity', qty);
+                                                        $root.syncToLivewire();
+                                                    }
+                                                "
                                                 wire:model.blur="invoiceItems.{{ $index }}.density"
                                                 placeholder="{{ __('Density') }}" value="{{ $row['density'] ?? 1 }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -252,7 +399,22 @@
                                     @if ($this->shouldShowColumn('price'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number"
-                                                wire:model.live.debounce.300ms="invoiceItems.{{ $index }}.price"
+                                                x-model.number="price"
+                                                x-on:keyup="
+                                                    price = parseFloat($event.target.value) || 0;
+                                                    price = isNaN(price) ? 0 : price;
+                                                    // تحديث sub_value تلقائياً
+                                                    const qty = parseFloat(quantity) || 0;
+                                                    const disc = parseFloat(discount) || 0;
+                                                    const subVal = Math.round((qty * price - disc) * 100) / 100;
+                                                    const safeSubVal = isNaN(subVal) ? 0 : subVal;
+                                                    // تحديث Livewire
+                                                    $wire.set('invoiceItems.{{ $index }}.price', price);
+                                                    $wire.set('invoiceItems.{{ $index }}.sub_value', safeSubVal);
+                                                    // تحديث جميع الحسابات في footer
+                                                    $root.syncToLivewire();
+                                                "
+                                                wire:model.blur="invoiceItems.{{ $index }}.price"
                                                 class="form-control text-center" step="1"
                                                 @if (!auth()->user()->can('allow_price_change')) readonly @endif />
 
@@ -264,7 +426,22 @@
                                     @if ($this->shouldShowColumn('discount'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number"
-                                                wire:model.live="invoiceItems.{{ $index }}.discount"
+                                                x-model.number="discount"
+                                                x-on:keyup="
+                                                    discount = parseFloat($event.target.value) || 0;
+                                                    discount = isNaN(discount) ? 0 : discount;
+                                                    // تحديث sub_value تلقائياً
+                                                    const qty = parseFloat(quantity) || 0;
+                                                    const prc = parseFloat(price) || 0;
+                                                    const subVal = Math.round((qty * prc - discount) * 100) / 100;
+                                                    const safeSubVal = isNaN(subVal) ? 0 : subVal;
+                                                    // تحديث Livewire
+                                                    $wire.set('invoiceItems.{{ $index }}.discount', discount);
+                                                    $wire.set('invoiceItems.{{ $index }}.sub_value', safeSubVal);
+                                                    // تحديث جميع الحسابات في footer
+                                                    $root.syncToLivewire();
+                                                "
+                                                wire:model.blur="invoiceItems.{{ $index }}.discount"
                                                 class="form-control text-center" step="0.01"
                                                 @if (!auth()->user()->can('allow_discount_change')) readonly @endif />
                                         </td>
@@ -274,11 +451,34 @@
                                     {{-- القيمة الفرعية --}}
                                     @if ($this->shouldShowColumn('sub_value'))
                                         <td style="width: 15%; font-size: 1.2em;">
-                                            <input type="number" step="0.01" min="0"
-                                                wire:model.blur="invoiceItems.{{ $index }}.sub_value"
-                                                id="sub_value_{{ $index }}" placeholder="{{ __('Value') }}"
-                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                class="form-control">
+                                            @php
+                                                $allowEditValue = ($this->settings['allow_edit_invoice_value'] ?? '0') == '1';
+                                            @endphp
+                                            @if ($allowEditValue)
+                                                {{-- ✅ مسموح بالتعديل: حقل قابل للتعديل --}}
+                                                <input type="number" step="0.01" min="0"
+                                                    :value="subValue"
+                                                    x-on:keyup="
+                                                        const value = parseFloat($event.target.value) || 0;
+                                                        const safeValue = isNaN(value) ? 0 : value;
+                                                        $wire.set('invoiceItems.{{ $index }}.sub_value', safeValue);
+                                                        $root.syncToLivewire();
+                                                    "
+                                                    wire:model.blur="invoiceItems.{{ $index }}.sub_value"
+                                                    id="sub_value_{{ $index }}" placeholder="{{ __('Value') }}"
+                                                    style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
+                                                    class="form-control">
+                                            @else
+                                                {{-- ❌ غير مسموح بالتعديل: حقل للقراءة فقط --}}
+                                                <input type="number" step="0.01" min="0"
+                                                    :value="subValue"
+                                                    readonly
+                                                    id="sub_value_{{ $index }}" 
+                                                    placeholder="{{ __('Value') }}"
+                                                    style="font-size: 0.85em; height: 2em; padding: 1px 4px; background-color: #f8f9fa; cursor: not-allowed;"
+                                                    class="form-control"
+                                                    title="{{ __('غير مسموح بتعديل قيمة الفاتورة مباشرة.') }}">
+                                            @endif
                                         </td>
                                     @endif
 

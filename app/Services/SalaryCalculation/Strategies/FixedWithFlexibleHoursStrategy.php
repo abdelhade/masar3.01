@@ -19,12 +19,12 @@ class FixedWithFlexibleHoursStrategy implements SalaryCalculationStrategy
     public function calculate(Employee $employee, array $summary): array
     {
         // Fixed salary (monthly)
-        $fixedSalary = $employee->salary;
+        $fixedSalary = (float) ($employee->salary ?? 0);
 
         // Flexible hours and hourly wage
         // These should come from FlexibleSalaryProcessing, not from attendance
-        $hoursWorked = $summary['flexible_hours'] ?? 0;
-        $hourlyWage = $employee->flexible_hourly_wage ?? 0;
+        $hoursWorked = (float) ($summary['flexible_hours'] ?? 0);
+        $hourlyWage = (float) ($employee->flexible_hourly_wage ?? 0);
 
         // Calculate flexible salary component
         $flexibleSalary = $hoursWorked * $hourlyWage;

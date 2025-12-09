@@ -223,7 +223,7 @@
                                         </small>
                                     </div>
                                 </div>
-                                @if ($parent == '12')
+                                @if ($parent == '12' || $parent == '1202')
                                     <div class="alert alert-warning" style="font-family: 'Cairo', sans-serif; direction: rtl;">
                                         {{ __('سيتم اضافة حساب مجمع اهلاك و حساب مصروف اهلاك للأصل') }}
                                     </div>

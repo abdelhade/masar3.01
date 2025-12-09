@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './design-system.css';
+@import './themes/neumorphism-lite.css';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
 /* Alpine.js Utilities - Global */

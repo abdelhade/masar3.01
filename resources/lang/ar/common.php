@@ -52,9 +52,10 @@ return [
     'saved_successfully' => 'تم الحفظ بنجاح',
 
     // رسائل التأكيد
-    'confirm_delete' => 'هل أنت متأكد من الحذف؟',
+    'confirm_delete' => 'تأكيد الحذف',
     'confirm_action' => 'هل أنت متأكد من هذا الإجراء؟',
     'action_cannot_undone' => 'لا يمكن التراجع عن هذا الإجراء',
+    'created_at' => 'تاريخ الإنشاء',
 
     // رسائل الحالة
     'no_data_found' => 'لا توجد بيانات',

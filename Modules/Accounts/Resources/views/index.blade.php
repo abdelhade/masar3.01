@@ -251,7 +251,9 @@
                                 <td colspan="7" class="text-center p-4">
                                     <div class="alert alert-info py-3 mb-0" style="background: #e6f2ff; border-left: 4px solid #1a8eff; color: #0075e6;">
                                         <i class="las la-info-circle me-2"></i>
-                                        @if (request('search'))
+                                        @if (!$type)
+                                            يرجى اختيار نوع الحسابات من القائمة الجانبية
+                                        @elseif (request('search'))
                                             لا توجد نتائج للبحث عن "{{ request('search') }}"
                                         @else
                                             لا توجد بيانات

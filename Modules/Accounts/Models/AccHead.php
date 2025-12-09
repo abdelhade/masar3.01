@@ -202,6 +202,11 @@ class AccHead extends Model
             return $query;
         }
 
+        // حالة خاصة لـ current-partners: البحث مباشرة عن acc_type = 12
+        if ($type === 'current-partners') {
+            return $query->where('acc_type', 12);
+        }
+
         return $query->whereHas('accountType', function ($q) use ($type) {
             $q->where('name', $type);
         });

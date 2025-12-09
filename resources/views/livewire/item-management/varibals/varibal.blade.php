@@ -2,13 +2,13 @@
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <h4 class="mb-0">{{ __('Varibals Management') }}</h4>
-            <p class="text-muted mb-0">{{ __('Manage your varibals') }}</p>
+            <h4 class="mb-0">{{ __('items.varibals_management') }}</h4>
+            <p class="text-muted mb-0">{{ __('items.manage_your_varibals') }}</p>
         </div>
         <div class="col-md-6 text-end">
             @can('create varibals')
                 <button wire:click="create" class="btn btn-main">
-                    <i class="fas fa-plus"></i> {{ __('Add New Varibale') }}
+                    <i class="fas fa-plus"></i> {{ __('items.add_new_varibale') }}
                 </button>
             @endcan
 
@@ -23,7 +23,7 @@
                     <i class="fas fa-search"></i>
                 </span>
                 <input type="text" wire:model.live.debounce.300ms="search" class="form-control"
-                    placeholder="{{ __('Search varibals...') }}">
+                    placeholder="{{ __('items.search_varibals') }}">
             </div>
         </div>
     </div>
@@ -43,9 +43,9 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Description') }}</th>
-                            <th>{{ __('Created At') }}</th>
+                            <th>{{ __('common.name') }}</th>
+                            <th>{{ __('common.description') }}</th>
+                            <th>{{ __('common.created_at') }}</th>
                             @canany(['edit varibals', 'delete varibals'])
                                 <th class="text-center">{{ __('Actions') }}</th>
                             @endcanany
@@ -91,7 +91,7 @@
                                 <td colspan="4" class="text-center py-4">
                                     <div class="text-muted">
                                         <i class="fas fa-inbox fa-2x mb-2"></i>
-                                        <p>{{ __('No varibals found') }}</p>
+                                        <p>{{ __('items.no_varibals_found') }}</p>
                                     </div>
                                 </td>
                             </tr>
@@ -117,9 +117,9 @@
                     <div class="modal-header">
                         <h5 class="modal-title">
                             @if ($editingId)
-                                {{ __('Edit Varibal') }}
+                                {{ __('items.edit_varibal') }}
                             @else
-                                {{ __('Create New Varibal') }}
+                                {{ __('items.create_new_varibal') }}
                             @endif
                         </h5>
                         <button type="button" wire:click="resetForm" class="btn-close"></button>
@@ -128,20 +128,20 @@
                         <form wire:submit.prevent="save">
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label for="name" class="form-label">{{ __('Name') }} <span
+                                    <label for="name" class="form-label">{{ __('common.name') }} <span
                                             class="text-danger">*</span></label>
                                     <input type="text" wire:model="name"
                                         class="form-control @error('name') is-invalid @enderror" id="name"
-                                        placeholder="{{ __('Enter varibal name') }}">
+                                        placeholder="{{ __('items.enter_varibal_name') }}">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 <div class="col-md-12 mb-3">
-                                    <label for="description" class="form-label">{{ __('Description') }}</label>
+                                    <label for="description" class="form-label">{{ __('common.description') }}</label>
                                     <textarea wire:model="description" class="form-control @error('description') is-invalid @enderror" id="description"
-                                        rows="3" placeholder="{{ __('Enter varibal description (optional)') }}"></textarea>
+                                        rows="3" placeholder="{{ __('items.enter_varibal_description') }}"></textarea>
                                     @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -151,13 +151,13 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" wire:click="resetForm" class="btn btn-secondary">
-                            {{ __('Cancel') }}
+                            {{ __('common.cancel') }}
                         </button>
                         <button type="button" wire:click="save" class="btn btn-main">
                             @if ($editingId)
-                                {{ __('Update') }}
+                                {{ __('common.update') }}
                             @else
-                                {{ __('Create') }}
+                                {{ __('common.create') }}
                             @endif
                         </button>
                     </div>
@@ -172,18 +172,18 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Confirm Delete') }}</h5>
+                        <h5 class="modal-title">{{ __('common.confirm_delete') }}</h5>
                         <button type="button" wire:click="deleteId = null" class="btn-close"></button>
                     </div>
                     <div class="modal-body">
-                        <p>{{ __('Are you sure you want to delete this varibal? This action cannot be undone.') }}</p>
+                        <p>{{ __('items.confirm_delete_varibal') }}</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" wire:click="deleteId = null" class="btn btn-secondary">
-                            {{ __('Cancel') }}
+                            {{ __('common.cancel') }}
                         </button>
                         <button type="button" wire:click="delete" class="btn btn-danger">
-                            {{ __('Delete') }}
+                            {{ __('common.delete') }}
                         </button>
                     </div>
                 </div>

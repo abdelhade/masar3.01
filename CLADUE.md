@@ -48,7 +48,4 @@ Follow these rules STRICTLY:
    give the permission to the default user 
 
 
-
-
-
 Reply “READY” when you understand

@@ -52,9 +52,10 @@ return [
     'saved_successfully' => 'Saved successfully',
 
     // Confirmation Messages
-    'confirm_delete' => 'Are you sure you want to delete?',
+    'confirm_delete' => 'Confirm Delete',
     'confirm_action' => 'Are you sure about this action?',
     'action_cannot_undone' => 'This action cannot be undone',
+    'created_at' => 'Created At',
 
     // Status Messages
     'no_data_found' => 'No data found',
