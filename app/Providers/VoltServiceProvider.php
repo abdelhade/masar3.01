@@ -31,7 +31,11 @@ class VoltServiceProvider extends ServiceProvider
         // Mount Livewire Volt paths from all enabled modules
         $modules = Module::allEnabled();
         foreach ($modules as $module) {
+            // Try both Resources (capital) and resources (lowercase) for compatibility
             $livewirePath = module_path($module->getName(), 'Resources/views/livewire');
+            if (!is_dir($livewirePath)) {
+                $livewirePath = module_path($module->getName(), 'resources/views/livewire');
+            }
             if (is_dir($livewirePath)) {
                 $paths[] = $livewirePath;
             }
