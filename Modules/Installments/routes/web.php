@@ -16,7 +16,7 @@ Route::middleware(['auth', 'web'])->group(function () {
         ->name('installments.plans.show')
         ->middleware('can:view Installment Plans');
 
-    Route::get('/installments/payments/overdue', [InstallmentController::class, 'overdue'])
+    Route::get('/installments/payments/overdue', [InstallmentController::class, 'overduePayments'])
         ->name('installments.payments.overdue')
         ->middleware('can:view Overdue Installments');
 });

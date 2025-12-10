@@ -41,7 +41,7 @@
                                 @forelse ($installmentPlans as $plan)
                                     <tr class="text-center">
                                         <td> {{ $plan->id }} </td>
-                                        <td>{{ $plan->client->name ?? 'N/A' }}</td>
+                                        <td>{{ $plan->client->cname ?? 'N/A' }}</td>
                                         <td>{{ number_format($plan->total_amount, 2) }}</td>
                                         <td>{{ $plan->number_of_installments }}</td>
                                         <td>{{ $plan->start_date->format('Y-m-d') }}</td>
