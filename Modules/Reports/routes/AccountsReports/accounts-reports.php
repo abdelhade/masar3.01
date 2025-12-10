@@ -18,6 +18,9 @@ Route::middleware(['auth'])->group(function () {
     // ميزان الحسابات
     Route::get('reports/general-account-balances', [AccountsReportController::class, 'generalAccountBalances'])->name('reports.general-account-balances');
 
+    // مقارنة أرصدة الحسابات مع القيود اليومية
+    Route::get('reports/compare-account-balances', [AccountsReportController::class, 'compareAccountBalances'])->name('reports.compare-account-balances');
+
     // Account Movement Report
     Route::get('account-movement/{accountId?}', [AccHeadController::class, 'accountMovementReport'])->name('account-movement');
     

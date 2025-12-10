@@ -8,6 +8,7 @@
     $buttonClasses = 'collapse-toggle me-2';
     $parentIdentifier = isset($parentId) ? (string) $parentId : '';
     $balanceValue = (float) ($account->totalWithChildren ?? $account->balance ?? 0);
+    $section = $section ?? null;
 @endphp
 
 <tr class="{{ $rowClasses }} {{ $account->is_basic == 1 ? 'fw-bold' : '' }}"
@@ -15,7 +16,8 @@
     data-account-id="{{ $account->id }}"
     data-parent-id="{{ $parentIdentifier }}"
     data-has-children="{{ $hasChildren ? 1 : 0 }}"
-    data-balance="{{ $balanceValue }}">
+    data-balance="{{ $balanceValue }}"
+    @if($section) data-section="{{ $section }}" @endif>
     <td class="align-middle">
         @if($hasChildren)
             <button type="button"
@@ -35,7 +37,7 @@
         </span>
     </td>
     <td class="text-end align-middle {{ $account->is_basic == 1 ? 'fw-bold' : '' }}">
-        {{ number_format($account->balance ?? 0, 2) }}
+        {{ number_format($account->totalWithChildren ?? $account->balance ?? 0, 2) }}
     </td>
 </tr>
 
@@ -45,6 +47,7 @@
             'account' => $child,
             'level' => $level + 1,
             'parentId' => $account->id,
+            'section' => $section ?? null,
         ])
     @endforeach
 @endif

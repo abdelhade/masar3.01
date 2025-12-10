@@ -57,6 +57,18 @@
     .table input, .table select {
         min-width: 100px;
     }
+
+    /* Remove overflow from table-responsive */
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    /* Tom Select dropdown z-index */
+    .ts-dropdown,
+    .tom-select-dropdown,
+    .ts-dropdown-content {
+        z-index: 99999 !important;
+    }
 </style>
 
 <div class="">
@@ -94,20 +106,20 @@
 
                     <div class="col-md-3">
                         <label>الموظف</label>
-                        <select name="emp_id" class="form-control" required>
+                        <select name="emp_id" class="form-control js-tom-select" required>
                             <option value="">اختر موظف</option>
                             @foreach ($employees as $emp)
-                                <option value="{{ $emp->id }}">{{ $emp->code }} - {{ $emp->aname }}</option>
+                                <option value="{{ $emp->id }}" {{ isset($default_employee_id) && $emp->id == $default_employee_id ? 'selected' : '' }}>{{ $emp->code }} - {{ $emp->aname }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-3">
                         <label>مركز التكلفة</label>
-                        <select name="cost_center" class="form-control" required>
+                        <select name="cost_center" class="form-control js-tom-select" required>
                             <option value="">اختر مركز تكلفة</option>
                             @foreach ($cost_centers as $cost)
-                                <option value="{{ $cost->id }}">{{ $cost->cname }}</option>
+                                <option value="{{ $cost->id }}" {{ isset($default_cost_center_id) && $cost->id == $default_cost_center_id ? 'selected' : '' }}>{{ $cost->cname }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -138,7 +150,7 @@
                                 </td>
                                 <td></td>
                                 <td>
-                                    <select name="acc1" class="form-control" required>
+                                    <select name="acc1" class="form-control js-tom-select" required>
                                         <option value="">اختر حساب</option>
                                         @foreach ($accounts as $acc)
                                             <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->aname }}</option>
@@ -153,7 +165,7 @@
                                     <input type="number" name="credit" class="form-control credit" id="credit" value="0.00" step="0.01">
                                 </td>
                                 <td>
-                                    <select name="acc2" class="form-control" required>
+                                    <select name="acc2" class="form-control js-tom-select" required>
                                         <option value="">اختر حساب</option>
                                         @foreach ($accounts as $acc)
                                             <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->aname }}</option>
@@ -184,6 +196,59 @@
 </div>
 
 <script>
+    // Initialize Tom Select for all searchable selects
+    (function(){
+        function initSelect(elem){
+            if (window.TomSelect && !elem.tomselect) {
+                const tomSelect = new TomSelect(elem, {
+                    create: false,
+                    searchField: ['text'],
+                    sortField: {field: 'text', direction: 'asc'},
+                    dropdownInput: true,
+                    plugins: { remove_button: {title: 'إزالة'} },
+                    placeholder: elem.getAttribute('placeholder') || 'ابحث...'
+                });
+                
+                // Set z-index for dropdown
+                tomSelect.on('dropdown_open', function() {
+                    const dropdown = elem.parentElement.querySelector('.ts-dropdown');
+                    if (dropdown) {
+                        dropdown.style.zIndex = '99999';
+                    }
+                });
+            }
+        }
+        function initAll(){
+            document.querySelectorAll('select.js-tom-select').forEach(initSelect);
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initAll);
+        } else {
+            initAll();
+        }
+    })();
+
+    // Select all text on focus for all text inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const textInputs = document.querySelectorAll('input[type="text"]');
+        textInputs.forEach(function(input) {
+            input.addEventListener('focus', function() {
+                this.select();
+            });
+        });
+
+        // Auto-sync debit to credit on keyup
+        const debitInput = document.getElementById('debit');
+        const creditInput = document.getElementById('credit');
+        
+        if (debitInput && creditInput) {
+            debitInput.addEventListener('keyup', function() {
+                creditInput.value = this.value;
+            });
+        }
+    });
+
+    // Form validation
     document.getElementById("myForm").addEventListener("submit", function(e) {
         const debit = +document.getElementById("debit").value;
         const credit = +document.getElementById("credit").value;

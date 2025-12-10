@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Modules\Accounts\Models\AccHead;
-use App\Models\ProType;
-use App\Models\OperationItems;
 use App\Enums\OperationTypeEnum;
-use Modules\Branches\Models\Branch;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Accounts\Models\AccHead;
+use Modules\Branches\Models\Branch;
 
 class OperHead extends Model
 {
@@ -73,6 +71,7 @@ class OperHead extends Model
     {
         return $this->belongsTo(CostCenter::class, 'cost_center');
     }
+
     public function operationItems()
     {
         return $this->hasMany(OperationItems::class, 'pro_id', 'id');
@@ -109,6 +108,7 @@ class OperHead extends Model
     public function getEditRoute(): string
     {
         $operationType = $this->getOperationTypeEnum();
+
         return $operationType?->getEditRoute() ?? 'journals.edit';
     }
 
@@ -126,6 +126,7 @@ class OperHead extends Model
     public function getViewRoute(): string
     {
         $operationType = $this->getOperationTypeEnum();
+
         return $operationType?->getViewRoute() ?? $this->getEditRoute();
     }
 
@@ -143,6 +144,7 @@ class OperHead extends Model
     public function isInvoice(): bool
     {
         $operationType = $this->getOperationTypeEnum();
+
         return $operationType?->isInvoice() ?? false;
     }
 
@@ -152,6 +154,7 @@ class OperHead extends Model
     public function isVoucher(): bool
     {
         $operationType = $this->getOperationTypeEnum();
+
         return $operationType?->isVoucher() ?? false;
     }
 
@@ -161,6 +164,7 @@ class OperHead extends Model
     public function isJournal(): bool
     {
         $operationType = $this->getOperationTypeEnum();
+
         return $operationType?->isJournal() ?? false;
     }
 
@@ -170,8 +174,32 @@ class OperHead extends Model
     public function isTransfer(): bool
     {
         $operationType = $this->getOperationTypeEnum();
+
         return $operationType?->isTransfer() ?? false;
     }
+
+    /**
+     * Get the translated text for the operation type
+     */
+    public function getOperationTypeText(): string
+    {
+        $operationType = $this->getOperationTypeEnum();
+
+        if ($operationType === null) {
+            return __('reports.unspecified');
+        }
+
+        return match ($operationType) {
+            OperationTypeEnum::SALES_INVOICE => __('reports.sales_invoice'),
+            OperationTypeEnum::PURCHASE_INVOICE => __('reports.purchase_invoice'),
+            OperationTypeEnum::SALES_RETURN => __('reports.sales_return'),
+            OperationTypeEnum::PURCHASE_RETURN => __('reports.purchase_return'),
+            OperationTypeEnum::DAILY_ENTRY => __('reports.journal_entry'),
+            OperationTypeEnum::MULTI_ENTRY => __('reports.account_journal_entry'),
+            default => $operationType->getArabicName(),
+        };
+    }
+
     public function productionOrder(): BelongsTo
     {
         return $this->belongsTo(ProductionOrder::class, 'production_order_id');

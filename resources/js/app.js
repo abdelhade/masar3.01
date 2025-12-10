@@ -109,3 +109,64 @@ import './echo';
         bind();
     }
 })();
+
+// Sidebar Toggle Functionality
+(function initSidebarToggle() {
+    function initLeftMenuCollapse() {
+        // Left menu collapse - works with both jQuery and vanilla JS
+        const menuButtons = document.querySelectorAll('.button-menu-mobile');
+        
+        menuButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                document.body.classList.toggle('enlarge-menu');
+            });
+        });
+    }
+
+    function initEnlarge() {
+        // Auto-enlarge menu on small screens
+        if (window.innerWidth < 1300) {
+            document.body.classList.add('enlarge-menu', 'enlarge-menu-all');
+        } else {
+            document.body.classList.remove('enlarge-menu', 'enlarge-menu-all');
+        }
+    }
+
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initLeftMenuCollapse();
+            initEnlarge();
+        });
+    } else {
+        initLeftMenuCollapse();
+        initEnlarge();
+    }
+
+    // Re-initialize on window resize
+    window.addEventListener('resize', function() {
+        initEnlarge();
+    });
+
+    // Also support jQuery if available (for backward compatibility)
+    if (typeof jQuery !== 'undefined') {
+        jQuery(document).ready(function($) {
+            $('.button-menu-mobile').on('click', function(event) {
+                event.preventDefault();
+                $('body').toggleClass('enlarge-menu');
+            });
+
+            function initEnlargeJQ() {
+                if ($(window).width() < 1300) {
+                    $('body').addClass('enlarge-menu enlarge-menu-all');
+                } else {
+                    $('body').removeClass('enlarge-menu enlarge-menu-all');
+                }
+            }
+
+            initEnlargeJQ();
+            $(window).on('resize', initEnlargeJQ);
+        });
+    }
+})();
