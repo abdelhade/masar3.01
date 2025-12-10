@@ -138,77 +138,7 @@ class ManufacturingInvoice extends Component
             ->toArray();
     }
 
-    public function handleKeyDownProduct()
-    {
-        if ($this->productSearchResults && $this->productSearchResults->count() > 0) {
-            $this->productSelectedResultIndex = min(
-                $this->productSelectedResultIndex + 1,
-                $this->productSearchResults->count() - 1
-            );
-        }
-    }
-
-    public function handleKeyUpProduct()
-    {
-        if ($this->productSearchResults && $this->productSearchResults->count() > 0) {
-            $this->productSelectedResultIndex = max(
-                $this->productSelectedResultIndex - 1,
-                0
-            );
-        }
-    }
-
-    public function handleEnterProduct()
-    {
-        if (
-            $this->productSearchResults &&
-            $this->productSearchResults->count() > 0 &&
-            $this->productSelectedResultIndex >= 0
-        ) {
-            $selectedItem = $this->productSearchResults->skip($this->productSelectedResultIndex)->first();
-            if ($selectedItem) {
-                $this->addProductFromSearch($selectedItem->id);
-                $lastIndex = count($this->selectedProducts) - 1;
-                $this->dispatch('focusProductQuantity', index: $lastIndex);
-            }
-        }
-    }
-
-    public function handleKeyDownRawMaterial()
-    {
-        if ($this->rawMaterialSearchResults && $this->rawMaterialSearchResults->count() > 0) {
-            $this->rawMaterialSelectedResultIndex = min(
-                $this->rawMaterialSelectedResultIndex + 1,
-                $this->rawMaterialSearchResults->count() - 1
-            );
-        }
-    }
-
-    public function handleKeyUpRawMaterial()
-    {
-        if ($this->rawMaterialSearchResults && $this->rawMaterialSearchResults->count() > 0) {
-            $this->rawMaterialSelectedResultIndex = max(
-                $this->rawMaterialSelectedResultIndex - 1,
-                0
-            );
-        }
-    }
-
-    public function handleEnterRawMaterial()
-    {
-        if (
-            $this->rawMaterialSearchResults &&
-            $this->rawMaterialSearchResults->count() > 0 &&
-            $this->rawMaterialSelectedResultIndex >= 0
-        ) {
-            $selectedItem = $this->rawMaterialSearchResults->skip($this->rawMaterialSelectedResultIndex)->first();
-            if ($selectedItem) {
-                $this->addRawMaterialFromSearch($selectedItem->id);
-                $lastIndex = count($this->selectedRawMaterials) - 1;
-                $this->dispatch('focusRawMaterialQuantity', index: $lastIndex);
-            }
-        }
-    }
+    // تم نقل جميع methods التنقل بالأسهم إلى Alpine.js للسرعة
 
     public function loadProductsAndMaterials()
     {
@@ -221,32 +151,35 @@ class ManufacturingInvoice extends Component
         $this->productSelectedResultIndex = -1;
         $this->productSearchResults = collect();
 
-        if (empty(trim($value))) {
+        if (empty(trim($value)) || strlen(trim($value)) < 2) {
             return;
         }
 
-        // تنظيف مصطلح البحث
         $searchTerm = trim($value);
 
-        // البحث عن الأصناف التي تطابق الباركود أولاً (أسرع)
-        $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', 'like', '%' . $searchTerm . '%')
-            ->where('isdeleted', 0)
-            ->limit(10)
-            ->pluck('item_id')
-            ->unique()
-            ->toArray();
+        // استخدام cache للنتائج المتكررة
+        $cacheKey = 'product_search_' . md5($searchTerm);
 
-        // الكويري للبحث عن المنتجات - تحديد 10 نتائج فقط
-        $this->productSearchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
-            ->select('id', 'name', 'average_cost')
-            ->where(function($query) use ($searchTerm, $itemIdsFromBarcode) {
-                $query->where('name', 'like', '%' . $searchTerm . '%');
-                if (!empty($itemIdsFromBarcode)) {
-                    $query->orWhereIn('id', $itemIdsFromBarcode);
-                }
-            })
-            ->limit(10)
-            ->get();
+        $this->productSearchResults = cache()->remember($cacheKey, 60, function() use ($searchTerm) {
+            // البحث المحسّن بدون joins غير ضرورية
+            $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', $searchTerm)
+                ->orWhere('barcode', 'like', $searchTerm . '%')
+                ->where('isdeleted', 0)
+                ->limit(5)
+                ->pluck('item_id')
+                ->toArray();
+
+            return Item::select('id', 'name', 'average_cost')
+                ->where(function($query) use ($searchTerm, $itemIdsFromBarcode) {
+                    $query->where('name', 'like', $searchTerm . '%')
+                          ->orWhere('name', 'like', '% ' . $searchTerm . '%');
+                    if (!empty($itemIdsFromBarcode)) {
+                        $query->orWhereIn('id', $itemIdsFromBarcode);
+                    }
+                })
+                ->limit(10)
+                ->get();
+        });
     }
 
     public function updatedRawMaterialSearchTerm($value)
@@ -254,34 +187,34 @@ class ManufacturingInvoice extends Component
         $this->rawMaterialSelectedResultIndex = -1;
         $this->rawMaterialSearchResults = collect();
 
-        if (empty(trim($value))) {
+        if (empty(trim($value)) || strlen(trim($value)) < 2) {
             return;
         }
 
-        // تنظيف مصطلح البحث
         $searchTerm = trim($value);
 
-        // البحث عن الأصناف التي تطابق الباركود أولاً (أسرع)
-        $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', 'like', '%' . $searchTerm . '%')
-            ->where('isdeleted', 0)
-            ->limit(10)
-            ->pluck('item_id')
-            ->unique()
-            ->toArray();
+        // استخدام cache للنتائج المتكررة
+        $cacheKey = 'raw_material_search_' . md5($searchTerm);
 
-        // الكويري للبحث عن المواد الخام - تحديد 10 نتائج فقط
-        $this->rawMaterialSearchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val')])
-            ->select('id', 'name', 'average_cost')
-            ->where(function($query) use ($searchTerm, $itemIdsFromBarcode) {
-                $query->where('name', 'like', '%' . $searchTerm . '%');
-                if (!empty($itemIdsFromBarcode)) {
-                    $query->orWhereIn('id', $itemIdsFromBarcode);
-                }
-            })
-            ->limit(10)
-            ->get();
+        $this->rawMaterialSearchResults = cache()->remember($cacheKey, 60, function() use ($searchTerm) {
+            $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', $searchTerm)
+                ->orWhere('barcode', 'like', $searchTerm . '%')
+                ->where('isdeleted', 0)
+                ->limit(5)
+                ->pluck('item_id')
+                ->toArray();
 
-        $this->calculateTotals();
+            return Item::select('id', 'name', 'average_cost')
+                ->where(function($query) use ($searchTerm, $itemIdsFromBarcode) {
+                    $query->where('name', 'like', $searchTerm . '%')
+                          ->orWhere('name', 'like', '% ' . $searchTerm . '%');
+                    if (!empty($itemIdsFromBarcode)) {
+                        $query->orWhereIn('id', $itemIdsFromBarcode);
+                    }
+                })
+                ->limit(10)
+                ->get();
+        });
     }
 
     public function addProductFromSearch($itemId)
@@ -299,18 +232,14 @@ class ManufacturingInvoice extends Component
         }
         if ($existingProductIndex !== null) {
             $this->selectedProducts[$existingProductIndex]['quantity']++;
-
-            // تصحيح: التأكد من استخدام average_cost الموجود بالفعل لحساب الإجمالي
-            $averageCost = $this->selectedProducts[$existingProductIndex]['average_cost'] ?? 0;
-            $this->selectedProducts[$existingProductIndex]['total_cost'] =
-                round($this->selectedProducts[$existingProductIndex]['quantity'] * $averageCost, 2);
+            // لا نحسب التكلفة تلقائياً - فقط عند توزيع التكاليف
 
             $this->productSearchTerm = '';
             $this->productSearchResults = collect();
             $this->productSelectedResultIndex = -1;
 
+            $this->distributePercentagesEqually();
             $this->calculateTotals();
-            $this->updatePercentages();
 
             $this->dispatch('focusProductQuantity', $existingProductIndex);
             return;
@@ -319,24 +248,22 @@ class ManufacturingInvoice extends Component
         $price = $item->prices->first()->pivot->price ?? 0;
         $averageCost = $item->average_cost ?? 0;
 
-        $initialTotalCost = round(1 * $averageCost, 2);
-
         $this->selectedProducts[] = [
             'id' => uniqid(),
             'product_id' => $item->id,
             'name' => $item->name,
             'quantity' => 1,
-            'unit_cost' => round($price, 2),
-            'total_cost' => $initialTotalCost, // ✅ تصحيح: استخدام الإجمالي المحسوب من متوسط التكلفة
-            'average_cost' => $averageCost, // ✅ إضافة: إضافة متوسط التكلفة للمنتج الجديد
+            'unit_cost' => $averageCost, // سعر التكلفة الأخير
+            'total_cost' => $averageCost, // إجمالي بناءً على السعر
+            'average_cost' => $averageCost, // سعر التكلفة الأخير
             'cost_percentage' => 0,
             'user_modified_percentage' => false
         ];
         $this->productSearchTerm = '';
         $this->productSearchResults = collect();
         $this->productSelectedResultIndex = -1;
+        $this->distributePercentagesEqually();
         $this->calculateTotals();
-        $this->updatePercentages();
 
         $this->dispatch('focusProductQuantity', count($this->selectedProducts) - 1);
     }
@@ -345,51 +272,17 @@ class ManufacturingInvoice extends Component
     {
         unset($this->selectedProducts[$index]);
         $this->selectedProducts = array_values($this->selectedProducts);
+        $this->distributePercentagesEqually(); // تحديث النسب المئوية بعد الحذف
         $this->calculateTotals();
-        $this->updatePercentages(); // تحديث النسب المئوية بعد الحذف
     }
 
-    public function updateProductTotal($index)
-    {
-        if (isset($this->selectedProducts[$index])) {
-            $quantity = (float)($this->selectedProducts[$index]['quantity'] ?? 0);
-            $unitCost = (float)($this->selectedProducts[$index]['average_cost'] ?? 0);
+    // تم نقل هذه الدالة إلى client-side باستخدام Alpine.js
+    // public function updateProductTotal($index) - MOVED TO CLIENT-SIDE
 
-            $total = $quantity * $unitCost;
-            $this->selectedProducts[$index]['total_cost'] = round($total, 2);
-        }
-    }
+    // تم نقل معظم هذه العمليات إلى client-side باستخدام Alpine.js
+    // public function updatedSelectedProducts - MOSTLY MOVED TO CLIENT-SIDE
 
-    public function updatedSelectedProducts($value, $key)
-    {
-        $parts = explode('.', $key);
-        if (count($parts) === 3) {
-            $index = $parts[1];
-            $field = $parts[2];
 
-            if ($field === 'quantity' || $field === 'unit_cost') {
-                $this->updateProductTotal($index);
-            } elseif ($field === 'cost_percentage') {
-                // وضع علامة أن المستخدم عدل النسبة يدوياً
-                $this->selectedProducts[$index]['user_modified_percentage'] = true;
-            }
-        }
-    }
-
-    private function updatePercentages()
-    {
-        $count = count($this->selectedProducts);
-        if ($count === 0) return;
-
-        // حساب النسبة لكل منتج (100 / عدد المنتجات)
-        $percentage = 100 / $count;
-        $percentage = round($percentage, 2); // تقريب لمنزلتين
-
-        // تطبيق النسبة على جميع المنتجات
-        foreach ($this->selectedProducts as $index => $product) {
-            $this->selectedProducts[$index]['cost_percentage'] = $percentage;
-        }
-    }
 
     public function addRawMaterialFromSearch($itemId)
     {
@@ -493,144 +386,31 @@ class ManufacturingInvoice extends Component
     //     }
     // }
 
-    public function adjustCostsByPercentage()
-    {
-        if (empty($this->selectedProducts)) {
-            return;
-        }
+    // تم نقل هذه الدالة إلى client-side باستخدام Alpine.js للسرعة
+    // public function adjustCostsByPercentage() - MOVED TO CLIENT-SIDE
 
-        // حساب مجموع النسب المئوية
-        $totalPercentage = 0;
-        foreach ($this->selectedProducts as $product) {
-            $totalPercentage += (float)($product['cost_percentage'] ?? 0);
-        }
 
-        // التحقق من أن المجموع يساوي 100% (مع هامش خطأ 0.1% بسبب التقريب)
-        $isSumValid = abs($totalPercentage - 100) < 0.1;
 
-        if (!$isSumValid) {
-            // تحضير رسالة الخطأ
-            $message = 'مجموع نسب التكلفة يجب أن يساوي 100%!';
+    // تم نقل هذه الدالة إلى client-side باستخدام Alpine.js
+    // private function updateRawMaterialTotal($index) - MOVED TO CLIENT-SIDE
 
-            if ($totalPercentage > 100) {
-                $message = 'مجموع النسب يتجاوز 100%! يرجى التعديل.';
-            } elseif ($totalPercentage < 100) {
-                $message = 'مجموع النسب أقل من 100%! يرجى التعديل.';
-            }
-
-            $this->dispatch('show-alert', title: 'خطأ !', text: $message, icon: 'error');
-            return; // إيقاف العملية
-        }
-
-        // ... بقية كود التوزيع كما هو ...
-        $totalManufacturingCost = $this->totalRawMaterialsCost + $this->totalAdditionalExpenses;
-
-        foreach ($this->selectedProducts as $index => $product) {
-            $percentage = (float)($product['cost_percentage'] ?? 0);
-            $quantity = (float)($product['quantity'] ?? 1);
-
-            if ($quantity > 0 && $percentage >= 0) {
-                $allocatedCost = ($totalManufacturingCost * $percentage) / 100;
-                $newAverageCost = $allocatedCost / $quantity;
-
-                $this->selectedProducts[$index]['average_cost'] = round($newAverageCost, 2);
-                $this->selectedProducts[$index]['unit_cost'] = round($newAverageCost, 2);
-                $this->selectedProducts[$index]['total_cost'] = round($quantity * $newAverageCost, 2);
-                $this->selectedProducts[$index]['user_modified_percentage'] = true;
-            }
-        }
-
-        $this->calculateTotals();
-
-        $this->dispatch('show-alert', title: 'تم !', text: 'تم توزيع التكاليف بنجاح حسب النسب المحددة.', icon: 'success');
-
-        // $this->dispatch('show-alert', [
-        //     'type' => 'success',
-        //     'message' => 'تم توزيع التكاليف بنجاح حسب النسب المحددة'
-        // ]);
-    }
-
-    public function updatedSelectedRawMaterials($value, $key)
-    {
-        $parts = explode('.', $key);
-        if (count($parts) !== 2) {
-            return;
-        }
-        $index = $parts[0];
-        $field = $parts[1];
-        if (!isset($this->selectedRawMaterials[$index])) {
-            return;
-        }
-
-        if ($field === 'unit_id') {
-            $unitId = $value;
-            $unit = collect($this->selectedRawMaterials[$index]['unitsList'])
-                ->firstWhere('id', $unitId);
-            if ($unit) {
-                // ✅ تحديث unit_cost و available_quantity عند تغيير الوحدة
-                $this->selectedRawMaterials[$index]['unit_cost'] = round($unit['cost'] ?? 0, 2);
-                $this->selectedRawMaterials[$index]['available_quantity'] = $unit['available_qty'] ?? 0;
-
-                // ✅ حساب التكلفة الجديدة بناءً على معامل التحويل وال cost الأساسي
-                $baseCost = $this->selectedRawMaterials[$index]['base_cost'] ?? 0;
-                $conversionFactor = $unit['available_qty'] ?? 1; // u_val هو معامل التحويل
-                
-                $newAverageCost = $baseCost * $conversionFactor;
-                $this->selectedRawMaterials[$index]['average_cost'] = $newAverageCost;
-                $this->selectedRawMaterials[$index]['unit_cost'] = round($newAverageCost, 2);
-
-                // ✅ إعادة حساب التكلفة الإجمالية فوراً
-                $this->updateRawMaterialTotal($index);
-            }
-        }
-
-        if ($field === 'quantity') {
-            // ✅ تحديث الكمية وإعادة حساب التكلفة الإجمالية
-            $quantity = (float)$value;
-            if ($quantity < 0) {
-                $quantity = 0;
-            }
-            $this->selectedRawMaterials[$index]['quantity'] = $quantity;
-            // ✅ إعادة حساب التكلفة الإجمالية بناءً على الكمية الجديدة
-            $this->updateRawMaterialTotal($index);
-        }
-
-        if ($field === 'average_cost') {
-            $averageCost = (float)$value;
-            $this->selectedRawMaterials[$index]['average_cost'] = $averageCost;
-            $this->updateRawMaterialTotal($index);
-        }
-
-        // ✅ إعادة حساب الإجماليات في النهاية
-        $this->calculateTotals();
-    }
-
-    private function updateRawMaterialTotal($index)
-    {
-        $totalRowCost = $this->selectedRawMaterials[$index]['average_cost'] * $this->selectedRawMaterials[$index]['quantity'];
-        $this->selectedRawMaterials[$index]['total_cost'] = $totalRowCost;
-    }
-
+    // تم تحسين هذه الدالة - تستدعى فقط عند الحفظ أو التحديثات المهمة
     public function calculateTotals()
     {
-        // حساب إجمالي تكلفة المنتجات
+        // حساب سريع للإجماليات فقط عند الحاجة
         $this->totalProductsCost = collect($this->selectedProducts)
-            ->sum(fn($item) => is_numeric($item['total_cost']) ? (float)$item['total_cost'] : 0);
+            ->sum(fn($item) => (float)($item['total_cost'] ?? 0));
 
-        // ✅ حساب إجمالي تكلفة المواد الخام من total_cost المحسوبة
         $this->totalRawMaterialsCost = collect($this->selectedRawMaterials)
-            ->sum(fn($item) => is_numeric($item['total_cost']) ? (float)$item['total_cost'] : 0);
+            ->sum(fn($item) => (float)($item['total_cost'] ?? 0));
 
-        // حساب إجمالي المصروفات الإضافية
         $this->totalAdditionalExpenses = collect($this->additionalExpenses)
-            ->sum(fn($item) => is_numeric($item['amount']) ? (float)$item['amount'] : 0);
+            ->sum(fn($item) => (float)($item['amount'] ?? 0));
 
-        // حساب إجمالي تكلفة التصنيع
         $this->totalManufacturingCost = $this->totalRawMaterialsCost + $this->totalAdditionalExpenses;
 
-        // حساب تكلفة الوحدة لكل منتج
         $totalProductQuantity = collect($this->selectedProducts)
-            ->sum(fn($item) => is_numeric($item['quantity']) ? (float)$item['quantity'] : 0);
+            ->sum(fn($item) => (float)($item['quantity'] ?? 0));
 
         $this->unitCostPerProduct = $totalProductQuantity > 0 ?
             $this->totalManufacturingCost / $totalProductQuantity : 0;
@@ -660,7 +440,6 @@ class ManufacturingInvoice extends Component
             return is_numeric($expense['amount']) ? $expense['amount'] : 0;
         });
         $this->totalManufacturingCost = $this->totalRawMaterialsCost + $totalExpenses;
-        $this->updatePercentages();
     }
 
     public function openSaveTemplateModal()
@@ -712,32 +491,8 @@ class ManufacturingInvoice extends Component
         }
     }
 
-    public function applyQuantityMultiplier()
-    {
-        if ($this->quantityMultiplier <= 0) {
-            $this->dispatch('error', title: 'خطأ !', text: 'يجب أن يكون المضاعف أكبر من صفر.', icon: 'error');
-        }
-
-        // مضاعفة كميات المواد الخام
-        foreach ($this->selectedRawMaterials as $index => $material) {
-            $this->selectedRawMaterials[$index]['quantity'] = $material['quantity'] * $this->quantityMultiplier;
-            $this->updateRawMaterialTotal($index);
-        }
-
-        // مضاعفة كميات المنتجات
-        foreach ($this->selectedProducts as $index => $product) {
-            $this->selectedProducts[$index]['quantity'] = $product['quantity'] * $this->quantityMultiplier;
-            $this->updateProductTotal($index);
-        }
-
-        if (!empty($this->templateExpectedTime)) {
-            $timeParts = $this->templateExpectedTime * $this->quantityMultiplier;
-            $this->templateExpectedTime = $timeParts;
-        }
-
-        $this->calculateTotals();
-        $this->dispatch('success', title: 'تم !', text: 'تم مضاعفة الكميات بنجاح.', icon: 'success');
-    }
+    // تم نقل هذه الدالة إلى client-side باستخدام Alpine.js للسرعة
+    // public function applyQuantityMultiplier() - MOVED TO CLIENT-SIDE
 
     public function loadTemplate()
     {
@@ -798,6 +553,8 @@ class ManufacturingInvoice extends Component
             if ($template->acc2) $this->rawAccount = $template->acc2;
             if ($template->acc1) $this->productAccount = $template->acc1;
 
+            // توزيع النسب تلقائياً إذا لم تكن محددة
+            $this->distributePercentagesEqually();
             $this->calculateTotals();
             $this->closeLoadTemplateModal();
 
@@ -838,7 +595,7 @@ class ManufacturingInvoice extends Component
                 // Set the selected template and load it
                 $this->selectedTemplate = $template->id;
                 $this->loadTemplate();
-                
+
                 // Dispatch success message
                 $this->dispatch('success-swal', [
                     'title' => 'تم تحميل النموذج!',
@@ -1088,7 +845,7 @@ class ManufacturingInvoice extends Component
                 'fat_price' => $this->totalProductsCost,
                 'item_price' => $product['average_cost'],
                 'fat_quantity' => $product['quantity'],
-                'cost_price' => $product['unit_cost'],
+                'cost_price' => $product['unit_cost'] ?? $product['average_cost'] ?? 0,
                 'total_cost' => $product['total_cost'],
             ]);
         }
@@ -1107,7 +864,7 @@ class ManufacturingInvoice extends Component
                 'item_price' => $raw['average_cost'],
                 'fat_price' => $this->totalRawMaterialsCost,
                 'fat_quantity' => $raw['quantity'],
-                'cost_price' => $raw['unit_cost'],
+                'cost_price' => $raw['unit_cost'] ?? $raw['average_cost'] ?? 0,
                 'total_cost' => $raw['total_cost'],
             ]);
         }
@@ -1131,10 +888,229 @@ class ManufacturingInvoice extends Component
         session()->flash('message', 'تم حفظ النموذج بنجاح!');
     }
 
+    // Method للـ sync من Alpine.js
+    public function syncFromAlpine($products, $rawMaterials, $expenses, $totals)
+    {
+        $this->selectedProducts = $products;
+        $this->selectedRawMaterials = $rawMaterials;
+        $this->additionalExpenses = $expenses;
+
+        // تحديث الإجماليات
+        $this->totalProductsCost = $totals['totalProductsCost'] ?? 0;
+        $this->totalRawMaterialsCost = $totals['totalRawMaterialsCost'] ?? 0;
+        $this->totalAdditionalExpenses = $totals['totalExpenses'] ?? 0;
+        $this->totalManufacturingCost = $totals['totalManufacturingCost'] ?? 0;
+    }
+
+    // توزيع النسب بالتساوي تلقائياً - فقط إذا لم تكن محددة
+    public function distributePercentagesEqually()
+    {
+        $count = count($this->selectedProducts);
+        if ($count === 0) return;
+
+        // تحقق من وجود نسب محددة مسبقاً
+        $hasExistingPercentages = false;
+        foreach ($this->selectedProducts as $product) {
+            if (($product['cost_percentage'] ?? 0) > 0) {
+                $hasExistingPercentages = true;
+                break;
+            }
+        }
+
+        // إذا كانت هناك نسب محددة، لا تعيد توزيعها
+        if ($hasExistingPercentages) return;
+
+        $percentage = round(100 / $count, 2);
+        $remainder = round(100 - ($percentage * $count), 2);
+
+        foreach ($this->selectedProducts as $index => &$product) {
+            $product['cost_percentage'] = $percentage;
+            // إضافة الباقي للمنتج الأول
+            if ($index === 0 && $remainder != 0) {
+                $product['cost_percentage'] = round($percentage + $remainder, 2);
+            }
+        }
+    }
+
+    // توزيع التكاليف حسب النسب المئوية
+    public function distributeCostsByPercentage()
+    {
+        if (count($this->selectedProducts) === 0) {
+            $this->dispatch('error-swal', [
+                'title' => 'خطأ!',
+                'text' => 'لا توجد منتجات لتوزيع التكلفة عليها',
+                'icon' => 'error'
+            ]);
+            return;
+        }
+
+        // إجمالي التكاليف (مواد خام + مصاريف)
+        $totalCost = $this->totalManufacturingCost;
+
+        foreach ($this->selectedProducts as $index => &$product) {
+            $percentage = (float)($product['cost_percentage'] ?? 0);
+            $quantity = (float)($product['quantity'] ?? 1);
+
+            if ($percentage > 0 && $quantity > 0) {
+                // حساب التكلفة المخصصة لهذا المنتج
+                $allocatedCost = ($totalCost * $percentage) / 100;
+
+                // حساب تكلفة الوحدة
+                $unitCost = $allocatedCost / $quantity;
+
+                $product['average_cost'] = round($unitCost, 2);
+                $product['unit_cost'] = round($unitCost, 2);
+                $product['total_cost'] = round($allocatedCost, 2);
+            }
+        }
+
+        $this->calculateTotals();
+        $this->dispatch('success-swal', [
+            'title' => 'تم!',
+            'text' => 'تم توزيع التكاليف بنجاح',
+            'icon' => 'success'
+        ]);
+    }
+
+    // Method لتحديث المواد الخام عند تغيير القيم
+    public function updatedSelectedRawMaterials($value, $key)
+    {
+        $parts = explode('.', $key);
+        if (count($parts) !== 2) return;
+
+        $index = (int)$parts[0];
+        $field = $parts[1];
+
+        if (!isset($this->selectedRawMaterials[$index])) return;
+
+        if ($field === 'quantity' || $field === 'average_cost') {
+            $this->updateRawMaterialTotal($index);
+            $this->calculateTotals();
+        }
+    }
+
+    // Method لتحديث المنتجات عند تغيير القيم
+    public function updatedSelectedProducts($value, $key)
+    {
+        $parts = explode('.', $key);
+        if (count($parts) !== 2) return;
+
+        $index = (int)$parts[0];
+        $field = $parts[1];
+
+        if (!isset($this->selectedProducts[$index])) return;
+
+        // فقط حساب الإجماليات بدون تغيير التكاليف
+        if ($field === 'quantity') {
+            $this->calculateTotals();
+        }
+    }
+
+    // Method لحساب إجمالي المنتج - فقط عند توزيع التكاليف
+    private function updateProductTotal($index)
+    {
+        if (!isset($this->selectedProducts[$index])) return;
+
+        $product = &$this->selectedProducts[$index];
+        $quantity = (float)($product['quantity'] ?? 0);
+        $averageCost = (float)($product['average_cost'] ?? 0);
+
+        // فقط عند توزيع التكاليف يتم حساب الإجمالي
+        if ($averageCost > 0) {
+            $product['total_cost'] = round($quantity * $averageCost, 2);
+        }
+    }
+
+    // Method لتحديث المصروفات
+    public function updatedAdditionalExpenses($value, $key)
+    {
+        $parts = explode('.', $key);
+        if (count($parts) !== 2) return;
+
+        $index = (int)$parts[0];
+        $field = $parts[1];
+
+        if ($field === 'amount') {
+            $this->calculateTotals();
+        }
+    }
+
+    // Method مطلوبة لحساب إجمالي المواد الخام
+    private function updateRawMaterialTotal($index)
+    {
+        if (!isset($this->selectedRawMaterials[$index])) return;
+
+        $material = &$this->selectedRawMaterials[$index];
+        $quantity = (float)($material['quantity'] ?? 0);
+        $averageCost = (float)($material['average_cost'] ?? 0);
+
+        $material['total_cost'] = round($quantity * $averageCost, 2);
+    }
+
+    // البحث السريع للمنتجات
+    public function searchProducts($term)
+    {
+        try {
+            if (strlen(trim($term)) < 1) return [];
+
+            $searchTerm = trim($term);
+
+            $results = Item::select('id', 'name', 'average_cost', 'code')
+                ->where(function($query) use ($searchTerm) {
+                    $query->where('name', 'like', '%' . $searchTerm . '%')
+                          ->orWhere('code', 'like', '%' . $searchTerm . '%');
+                })
+                ->limit(10)
+                ->get();
+
+            return $results->toArray();
+        } catch (\Exception $e) {
+            \Log::error('Product search error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    // البحث السريع للمواد الخام
+    public function searchRawMaterials($term)
+    {
+        try {
+            if (strlen(trim($term)) < 1) return [];
+
+            $searchTerm = trim($term);
+
+            $results = Item::select('id', 'name', 'average_cost', 'code')
+                ->where(function($query) use ($searchTerm) {
+                    $query->where('name', 'like', '%' . $searchTerm . '%')
+                          ->orWhere('code', 'like', '%' . $searchTerm . '%');
+                })
+                ->limit(10)
+                ->get();
+
+            return $results->toArray();
+        } catch (\Exception $e) {
+            \Log::error('Raw material search error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     public function saveInvoice()
     {
         $service = new ManufacturingInvoiceService();
         return $service->saveManufacturingInvoice($this);
+    }
+
+    // Method مطلوبة لـ Alpine.js
+    public function toJSON()
+    {
+        return json_encode([
+            'selectedProducts' => $this->selectedProducts,
+            'selectedRawMaterials' => $this->selectedRawMaterials,
+            'additionalExpenses' => $this->additionalExpenses,
+            'totalRawMaterialsCost' => $this->totalRawMaterialsCost,
+            'totalProductsCost' => $this->totalProductsCost,
+            'totalAdditionalExpenses' => $this->totalAdditionalExpenses,
+            'totalManufacturingCost' => $this->totalManufacturingCost,
+        ]);
     }
     public function render()
     {

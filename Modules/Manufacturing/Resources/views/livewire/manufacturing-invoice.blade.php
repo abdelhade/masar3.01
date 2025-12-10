@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" x-data="manufacturingCalculator()" x-init="initFromLivewire()">
     @if ($currentStep === 1)
         <div class="row">
             <div class="col-12">
@@ -37,13 +37,13 @@
                                 @endif
 
                                 <div class="d-flex flex-wrap gap-2">
-                                    <button wire:click="adjustCostsByPercentage"
+                                    <button wire:click="distributeCostsByPercentage"
                                         class="btn btn-primary btn-sm d-flex align-items-center gap-1"
-                                        @if (empty($selectedProducts)) disabled @endif>
+                                        @if(count($selectedProducts) === 0) disabled @endif>
                                         <i class="fas fa-percentage"></i>
                                         <span>{{ __('Distribute Costs by Percentage') }}</span>
                                     </button>
-                                    <button wire:click="saveInvoice"
+                                    <button @click="syncForSave(); $wire.saveInvoice()"
                                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
                                         <i class="fas fa-save"></i>
                                         <span>{{ __('Save Invoice') }}</span>
@@ -52,17 +52,14 @@
                             </div>
                         </div>
 
-                        @if (!empty($selectedProducts))
-                            <div class="alert alert-info mt-3 mb-0 d-flex align-items-center gap-2 py-2">
-                                <i class="fas fa-info-circle"></i>
-                                <span class="small">
-                                    {{ __('Total raw materials and expenses will be distributed') }}
-                                    ({{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
-                                    {{ __('EGP') }})
-                                    {{ __('on products based on specified percentages') }}
-                                </span>
-                            </div>
-                        @endif
+                        <div x-show="products.length > 0" class="alert alert-info mt-3 mb-0 d-flex align-items-center gap-2 py-2">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="small">
+                                {{ __('Total raw materials and expenses will be distributed') }}
+                                (<span x-text="formatCurrency(totalExpenses)"></span>)
+                                {{ __('on products based on specified percentages') }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -88,7 +85,7 @@
                                         class="form-control form-control-sm" min="0.1" step="0.1" value="1">
                                 </div>
                                 <div class="col-md-3">
-                                    <button wire:click="applyQuantityMultiplier" class="btn btn-info btn-sm w-100">
+                                    <button @click="applyQuantityMultiplier($wire.quantityMultiplier)" class="btn btn-info btn-sm w-100">
                                         <i class="fas fa-calculator me-1"></i>{{ __('Apply') }}
                                     </button>
                                 </div>
@@ -312,30 +309,33 @@
                         <div class="mb-9 card" style="max-height: 200px; overflow-y: auto; overflow-x: hidden;">
                             <!-- حقل البحث للمنتجات المصنعة -->
                             <div class="row">
-                                <div class="col-lg-3 mb-0" style="position: relative; z-index: 999;">
-                                    <input type="text" wire:model.live="productSearchTerm" id="product_search"
+                                <div class="col-lg-3 mb-0" style="position: relative; z-index: 999;" x-data="productSearch()">
+                                    <input type="text" x-model="searchTerm" id="product_search"
                                         class="form-control form-control-sm frst"
                                         placeholder="{{ __('Search for product...') }}" autocomplete="off"
-                                        style="font-size: 1em;" wire:keydown.arrow-down="handleKeyDownProduct"
-                                        wire:keydown.arrow-up="handleKeyUpProduct"
-                                        wire:keydown.enter.prevent="handleEnterProduct" />
-                                    @if (strlen($productSearchTerm) > 0 && $productSearchResults->count())
-                                        <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                                            @foreach ($productSearchResults as $index => $item)
-                                                <li class="list-group-item list-group-item-action
-                                             @if ($productSelectedResultIndex === $index) active @endif"
-                                                    wire:click="addProductFromSearch({{ $item->id }})">
-                                                    {{ $item->name }}
+                                        style="font-size: 1em;"
+                                        @keydown.arrow-down.prevent="handleKeyDown()"
+                                        @keydown.arrow-up.prevent="handleKeyUp()"
+                                        @keydown.enter.prevent="handleEnter()" />
+
+                                    <div x-show="results.length > 0" class="position-absolute w-100" style="z-index: 999;">
+                                        <ul class="list-group">
+                                            <template x-for="(item, index) in results" :key="item.id">
+                                                <li class="list-group-item list-group-item-action"
+                                                    :class="{ 'active': selectedIndex === index }"
+                                                    @click="selectItem(item)"
+                                                    x-text="item.name">
                                                 </li>
-                                            @endforeach
+                                            </template>
                                         </ul>
-                                    @elseif(strlen($productSearchTerm) > 0)
-                                        <div class="mt-2" style="position: absolute; z-index: 1000; width: 100%;">
-                                            <div class="list-group-item text-danger">
-                                                {{ __('No results for') }} "{{ $productSearchTerm }}"
-                                            </div>
+                                    </div>
+
+                                    <div x-show="showNoResults"
+                                         class="mt-2 position-absolute w-100" style="z-index: 1000;">
+                                        <div class="list-group-item text-danger">
+                                            {{ __('No results for') }} "<span x-text="searchTerm"></span>"
                                         </div>
-                                    @endif
+                                    </div>
                                 </div>
 
                                 <div class="col-lg-2">
@@ -384,8 +384,8 @@
                                                         <td>
                                                             <input type="number"
                                                                 id="product_quantity_{{ $index }}"
-                                                                wire:model.lazy="selectedProducts.{{ $index }}.quantity"
-                                                                wire:blur="updateProductTotal({{ $index }}, 'quantity')"
+                                                                x-model.number="products[{{ $index }}].quantity"
+                                                                @input="updateProductTotal({{ $index }})"
                                                                 min="0.01" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
@@ -395,28 +395,19 @@
                                                         <td>
                                                             <input type="number"
                                                                 id="product_unit_cost_{{ $index }}"
-                                                                wire:model.lazy="selectedProducts.{{ $index }}.average_cost"
+                                                                x-model.number="products[{{ $index }}].average_cost"
+                                                                @input="updateProductTotal({{ $index }})"
                                                                 min="0" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
                                                                 placeholder="{{ __('Unit Cost') }}"
                                                                 title="{{ __('Average purchase price will be updated') }}">
-
-                                                            @if (isset($product['old_unit_cost']) && $product['unit_cost'] != $product['old_unit_cost'])
-                                                                <small class="text-warning d-block">
-                                                                    <i class="fas fa-exclamation-triangle"></i>
-                                                                    {{ __('Average will be updated from') }}
-                                                                    {{ number_format($product['old_unit_cost'], 2) }}
-                                                                    {{ __('to') }}
-                                                                    {{ number_format($product['unit_cost'], 2) }}
-                                                                </small>
-                                                            @endif
                                                         </td>
 
                                                         <td>
                                                             <input type="number"
                                                                 id="product_cost_percentage_{{ $index }}"
-                                                                wire:model.lazy="selectedProducts.{{ $index }}.cost_percentage"
+                                                                x-model.number="products[{{ $index }}].cost_percentage"
                                                                 min="0" max="100" step="0.01"
                                                                 class="form-control form-control-sm"
                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
@@ -424,7 +415,7 @@
                                                         </td>
                                                         <td>
                                                             <input type="text"
-                                                                value="{{ number_format($product['total_cost'] ?? 0, 2) }} {{ __('EGP') }}"
+                                                                x-bind:value="formatCurrency(products[{{ $index }}].total_cost || 0)"
                                                                 class="form-control form-control-sm bg-opacity-10 fw-bold text-green-600"
                                                                 readonly
                                                                 style="padding:2px;height:30px;font-size: 0.9em;">
@@ -498,40 +489,36 @@
                                                                     style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
                                                                     <!-- حقل البحث للمواد الخام -->
                                                                     <div class="row p-3">
-                                                                        <div class="col-lg-3 mb-2"
-                                                                            style="position: relative;">
+                                                                        <div class="col-lg-3 mb-2" style="position: relative;" x-data="rawMaterialSearch()">
                                                                             <input type="text"
-                                                                                wire:model.live="rawMaterialSearchTerm"
+                                                                                x-model="searchTerm"
                                                                                 id="raw_material_search"
                                                                                 class="form-control form-control-sm frst"
                                                                                 placeholder="{{ __('Search for raw material...') }}"
                                                                                 autocomplete="off"
                                                                                 style="font-size: 1em;"
-                                                                                wire:keydown.arrow-down="handleKeyDownRawMaterial"
-                                                                                wire:keydown.arrow-up="handleKeyUpRawMaterial"
-                                                                                wire:keydown.enter.prevent="handleEnterRawMaterial" />
+                                                                                @keydown.arrow-down.prevent="handleKeyDown()"
+                                                                                @keydown.arrow-up.prevent="handleKeyUp()"
+                                                                                @keydown.enter.prevent="handleEnter()" />
 
-                                                                            @if (strlen($rawMaterialSearchTerm) > 0 && !is_null($rawMaterialSearchResults) && $rawMaterialSearchResults->count())
-                                                                                <ul class="list-group position-absolute w-100"
-                                                                                    style="z-index: 999;">
-                                                                                    @foreach ($rawMaterialSearchResults as $index => $item)
-                                                                                        <li class="list-group-item list-group-item-action
-                                                                        @if ($rawMaterialSelectedResultIndex === $index) active @endif"
-                                                                                            wire:click="addRawMaterialFromSearch({{ $item->id }})">
-                                                                                            {{ $item->name }}
+                                                                            <div x-show="results.length > 0" class="position-absolute w-100" style="z-index: 999;">
+                                                                                <ul class="list-group">
+                                                                                    <template x-for="(item, index) in results" :key="item.id">
+                                                                                        <li class="list-group-item list-group-item-action"
+                                                                                            :class="{ 'active': selectedIndex === index }"
+                                                                                            @click="selectItem(item)"
+                                                                                            x-text="item.name">
                                                                                         </li>
-                                                                                    @endforeach
+                                                                                    </template>
                                                                                 </ul>
-                                                                            @elseif (strlen($rawMaterialSearchTerm) > 0)
-                                                                                <div class="mt-2"
-                                                                                    style="position: absolute; z-index: 1000; width: 100%;">
-                                                                                    <div
-                                                                                        class="list-group-item text-danger">
-                                                                                        {{ __('No results for') }}
-                                                                                        "{{ $rawMaterialSearchTerm }}"
-                                                                                    </div>
+                                                                            </div>
+
+                                                                            <div x-show="showNoResults"
+                                                                                 class="mt-2 position-absolute w-100" style="z-index: 1000;">
+                                                                                <div class="list-group-item text-danger">
+                                                                                    {{ __('No results for') }} "<span x-text="searchTerm"></span>"
                                                                                 </div>
-                                                                            @endif
+                                                                            </div>
                                                                         </div>
 
                                                                         <div class="col-lg-2 mb-2">
@@ -604,7 +591,8 @@
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <select
-                                                                                                        wire:model.live="selectedRawMaterials.{{ $index }}.unit_id"
+                                                                                                        x-model="rawMaterials[{{ $index }}].unit_id"
+                                                                                                        @change="updateRawMaterialUnit({{ $index }}); updateRawMaterialTotal({{ $index }})"
                                                                                                         class="form-control form-control-sm unit-select"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
                                                                                                         data-item-id="{{ $material['id'] ?? '' }}">
@@ -622,7 +610,8 @@
                                                                                                     <input
                                                                                                         type="number"
                                                                                                         id="raw_quantity_{{ $index }}"
-                                                                                                        wire:model.live.debounce.300="selectedRawMaterials.{{ $index }}.quantity"
+                                                                                                        x-model.number="rawMaterials[{{ $index }}].quantity"
+                                                                                                        @input="updateRawMaterialTotal({{ $index }})"
                                                                                                         min="0.01"
                                                                                                         step="0.01"
                                                                                                         class="form-control form-control-sm"
@@ -633,7 +622,8 @@
                                                                                                     <input
                                                                                                         type="number"
                                                                                                         id="raw_unit_cost_{{ $index }}"
-                                                                                                        wire:model.live.debounce.300="selectedRawMaterials.{{ $index }}.average_cost"
+                                                                                                        x-model.number="rawMaterials[{{ $index }}].average_cost"
+                                                                                                        @input="updateRawMaterialTotal({{ $index }})"
                                                                                                         min="0"
                                                                                                         step="0.01"
                                                                                                         class="form-control form-control-sm cost-input"
@@ -643,7 +633,7 @@
                                                                                                 <td>
                                                                                                     <input
                                                                                                         type="text"
-                                                                                                        value="{{ number_format($material['total_cost'] ?? 0, 2) }} {{ __('EGP') }}"
+                                                                                                        x-bind:value="formatCurrency(rawMaterials[{{ $index }}].total_cost || 0)"
                                                                                                         class="form-control form-control-sm  bg-opacity-10  fw-bold"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
                                                                                                         readonly>
@@ -723,25 +713,17 @@
                                                                                                             <td>
                                                                                                                 <input
                                                                                                                     type="number"
-                                                                                                                    wire:model.live.debounce.300="additionalExpenses.{{ $index }}.amount"
+                                                                                                                    x-model.number="expenses[{{ $index }}].amount"
+                                                                                                                    @input="updateTotals()"
                                                                                                                     min="0"
                                                                                                                     step="0.01"
                                                                                                                     placeholder="0.00"
-                                                                                                                    class="form-control form-control-sm @error('additionalExpenses.' . $index . '.amount') is-invalid @enderror"
+                                                                                                                    class="form-control form-control-sm"
                                                                                                                     style="padding:2px;height:30px;">
-                                                                                                                @error('additionalExpenses.'
-                                                                                                                    . $index
-                                                                                                                    .
-                                                                                                                    '.amount')
-                                                                                                                    <div class="invalid-feedback"
-                                                                                                                        style="font-size: 0.8em;">
-                                                                                                                        {{ $message }}
-                                                                                                                    </div>
-                                                                                                                @enderror
                                                                                                             </td>
                                                                                                             <td>
                                                                                                                 <select
-                                                                                                                    wire:model="additionalExpenses.{{ $index }}.account_id"
+                                                                                                                    x-model="expenses[{{ $index }}].account_id"
                                                                                                                     class="form-control form-control-sm"
                                                                                                                     style="padding:2px;height:30px;">
                                                                                                                     @foreach ($expenseAccountList as $keyExpense => $valueExpense)
@@ -755,19 +737,10 @@
                                                                                                             <td>
                                                                                                                 <input
                                                                                                                     type="text"
-                                                                                                                    wire:model="additionalExpenses.{{ $index }}.description"
+                                                                                                                    x-model="expenses[{{ $index }}].description"
                                                                                                                     placeholder="{{ __('Expense Description') }}"
-                                                                                                                    class="form-control form-control-sm @error('additionalExpenses.' . $index . '.description') is-invalid @enderror"
+                                                                                                                    class="form-control form-control-sm"
                                                                                                                     style="padding:2px;height:30px;">
-                                                                                                                @error('additionalExpenses.'
-                                                                                                                    . $index
-                                                                                                                    .
-                                                                                                                    '.description')
-                                                                                                                    <div class="invalid-feedback"
-                                                                                                                        style="font-size: 0.8em;">
-                                                                                                                        {{ $message }}
-                                                                                                                    </div>
-                                                                                                                @enderror
                                                                                                             </td>
                                                                                                             <td
                                                                                                                 class="text-center">
@@ -794,9 +767,8 @@
                                                                                                     {{ __('Total Additional Expenses') }}
                                                                                                 </h6>
                                                                                                 <p
-                                                                                                    class="fs-5 text-success">
-                                                                                                    {{ number_format(collect($additionalExpenses)->map(fn($item) => (float) $item['amount'])->sum()) }}
-                                                                                                    {{ __('EGP') }}
+                                                                                                    class="fs-5 text-success"
+                                                                                                    x-text="formatCurrency(totalExpenses)">
                                                                                                 </p>
                                                                                             </div>
                                                                                         </div>
@@ -828,7 +800,7 @@
                                     <input type="text"
                                         class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalRawMaterialsCost) }} {{ __('EGP') }}"
+                                        value="{{ number_format($totalRawMaterialsCost, 2) }} ج.م"
                                         readonly>
                                 </div>
 
@@ -837,7 +809,7 @@
                                     <input type="text"
                                         class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value=" {{ number_format(collect($additionalExpenses)->sum(fn($item) => (float) $item['amount'])) }} {{ __('EGP') }}"
+                                        value="{{ number_format($totalAdditionalExpenses, 2) }} ج.م"
                                         readonly>
                                 </div>
 
@@ -846,7 +818,7 @@
                                     <input type="text"
                                         class="form-control form-control-sm text-success fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalManufacturingCost) }} {{ __('EGP') }}"
+                                        value="{{ number_format($totalManufacturingCost, 2) }} ج.م"
                                         readonly>
                                 </div>
                             </div>
@@ -863,7 +835,7 @@
                                     <input type="text"
                                         class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
                                         style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalProductsCost) }} {{ __('EGP') }}"
+                                        value="{{ number_format($totalProductsCost, 2) }} ج.م"
                                         readonly>
                                 </div>
 
@@ -890,6 +862,7 @@
 </div>
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('modules/manufacturing/js/manufacturing-calculator.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function setupKeyboardNavigation() {
