@@ -44,7 +44,12 @@ class JournalController extends Controller
             ->get();
 
         $cost_centers = \App\Models\CostCenter::get();
-        return view('journals.create', compact('accounts', 'employees', 'cost_centers'));
+        
+        // القيم الافتراضية
+        $default_employee_id = $employees->first()?->id;
+        $default_cost_center_id = $cost_centers->first()?->id;
+        
+        return view('journals.create', compact('accounts', 'employees', 'cost_centers', 'default_employee_id', 'default_cost_center_id'));
     }
 
 

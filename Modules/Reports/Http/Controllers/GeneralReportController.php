@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Models\User;
-use App\Models\OperHead;
 use App\Http\Controllers\Controller;
 use App\Models\JournalHead;
-use Modules\Accounts\Models\AccHead;
+use App\Models\OperHead;
 use App\Models\ProType;
-use App\Models\JournalDetail;
-use App\Models\CostCenter;
+use App\Models\User;
 use Modules\Reports\Services\ReportCalculationTrait;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 
 class GeneralReportController extends Controller
 {
@@ -65,12 +60,12 @@ class GeneralReportController extends Controller
         return view('reports::general-reports.overall', compact('opers', 'users', 'types'));
     }
 
-     // اليومية العامة
-     public function journalSummery()
-     {
+    // اليومية العامة
+    public function journalSummery()
+    {
         $journalHeads = JournalHead::with(['dets' => function ($query) {
             $query->orderBy('debit', 'desc');
-        }])->get();
+        }])->orderBy('journal_id', 'desc')->orderBy('date', 'desc')->get();
 
         // جلب أنواع العمليات من قاعدة البيانات
         $operationTypes = ProType::where('isdeleted', 0)

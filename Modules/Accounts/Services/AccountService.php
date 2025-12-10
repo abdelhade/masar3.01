@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Accounts\Services;
 
-use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Modules\Accounts\Models\AccHead;
 use Modules\Settings\Models\PublicSetting;
 
 class AccountService
@@ -33,8 +33,16 @@ class AccountService
             foreach ($accounts as $account) {
                 $newStart = (float) ($accountIdToStartBalance[$account->id] ?? $account->start_balance);
 
-                // Skip capital account 3101 and warehouses 1104%
-                if ($account->code === '3101' || str_starts_with($account->code, '1104')) {
+                // Skip accounts that cannot be edited:
+                // 3101 (capital), 1104% (warehouses), 2107 (customer points),
+                // 110301 (cash customer), 110501 (receivables portfolio), 210301 (payables portfolio), 210101 (cash supplier)
+                if ($account->code === '3101'
+                    || str_starts_with($account->code, '1104')
+                    || $account->code === '2107'
+                    || $account->code === '110301'
+                    || $account->code === '110501'
+                    || $account->code === '210301'
+                    || $account->code === '210101') {
                     continue;
                 }
 
@@ -140,8 +148,8 @@ class AccountService
             ->where('is_basic', 0)
             ->where(function ($q): void {
                 $q->orWhere('code', 'like', '1%')
-                  ->orWhere('code', 'like', '2%')
-                  ->orWhere('code', 'like', '3%');
+                    ->orWhere('code', 'like', '2%')
+                    ->orWhere('code', 'like', '3%');
             });
 
         // Exclude capital 3101
@@ -149,7 +157,7 @@ class AccountService
 
         // Exclude prefixes (e.g., 1104)
         foreach ($excludedPrefixes as $prefix) {
-            $query->where('code', 'not like', $prefix . '%');
+            $query->where('code', 'not like', $prefix.'%');
         }
 
         // Sum positive (debit) and negative (credit) balances as stored
@@ -157,112 +165,196 @@ class AccountService
     }
 
     /**
+     * Get the date for opening balance journal.
+     * Priority: start_date from settings -> first date of current year -> first date in oper_head
+     */
+    private function getOpeningBalanceDate(): string
+    {
+        // Try start_date from settings
+        $startDate = PublicSetting::query()->where('key', 'start_date')->value('value');
+        if ($startDate) {
+            return \Carbon\Carbon::parse($startDate)->toDateString();
+        }
+
+        // Try first date of current year
+        $firstOfYear = \Carbon\Carbon::now()->startOfYear()->toDateString();
+
+        // Try first date in oper_head
+        $firstOperDate = OperHead::query()
+            ->whereNotNull('pro_date')
+            ->orderBy('pro_date', 'asc')
+            ->value('pro_date');
+
+        if ($firstOperDate) {
+            return \Carbon\Carbon::parse($firstOperDate)->toDateString();
+        }
+
+        // Fallback to first of year
+        return $firstOfYear;
+    }
+
+    /**
      * Build/update opening journal (pro_type=61) from current accounts start balances.
-     * - Creates/updates OperHead & JournalHead
-     * - Upserts JournalDetails per account (skip 3101 & 1104%)
-     * - Writes capital line to balance the journal using provided computed values.
+     * - Updates existing OperHead & JournalHead if exists, otherwise creates new (like multi-journal)
+     * - Saves JournalDetails with debit first, then credit
+     * - Balance difference goes to capital account (3101) for balancing
      */
     private function syncOpeningJournalFromStartBalances(float $sumOpening, float $capitalStartBalance, int $capitalAccountId): void
     {
-        $startDate = (string) PublicSetting::query()->where('key', 'start_date')->value('value');
+        $proDate = $this->getOpeningBalanceDate();
         $userId = Auth::id();
 
-        $oper = OperHead::query()->updateOrCreate(
-            ['pro_type' => 61],
-            [
-                'is_journal' => 1,
-                'journal_type' => 1,
-                'info' => 'تسجيل الارصده الافتتاحيه للحسابات',
-                'pro_date' => $startDate,
-                'user' => $userId,
-            ]
-        );
+        // Check if operation exists (pro_type 61)
+        $existingOper = OperHead::query()->where('pro_type', 61)->first();
 
-        $journalId = (int) (JournalHead::query()
-            ->where('pro_type', 61)
-            ->where('op_id', $oper->id)
-            ->value('journal_id') ?? ((int) JournalHead::query()->max('journal_id') + 1));
-
-        // Gather all accounts with non-zero start_balance excluding 3101 & 1104%
+        // Gather all accounts with non-zero start_balance excluding 3101 & 1104% and other excluded accounts
         $accounts = AccHead::query()
             ->where('is_basic', 0)
             ->where(function ($q): void {
                 $q->orWhere('code', 'like', '1%')
-                  ->orWhere('code', 'like', '2%')
-                  ->orWhere('code', 'like', '3%');
+                    ->orWhere('code', 'like', '2%')
+                    ->orWhere('code', 'like', '3%');
             })
             ->where('code', '!=', '3101')
             ->where('code', 'not like', '1104%')
+            ->where('code', '!=', '2107')
+            ->where('code', '!=', '110301')
+            ->where('code', '!=', '110501')
+            ->where('code', '!=', '210301')
+            ->where('code', '!=', '210101')
+            ->orderBy('code')
             ->get(['id', 'start_balance']);
 
+        // Calculate totals
         $totalDebit = 0.0;
         $totalCredit = 0.0;
 
-        // Pre-compute header total from account balances (handles all-debit or all-credit cases)
-        $headerDebit = (float) $accounts->sum(function ($a) { return max(0.0, (float) $a->start_balance); });
-        $headerCredit = (float) $accounts->sum(function ($a) { return max(0.0, -1.0 * (float) $a->start_balance); });
-        $headerTotal = max($headerDebit, $headerCredit);
-
-        JournalHead::query()->updateOrCreate(
-            ['journal_id' => $journalId, 'pro_type' => 61],
-            [
-                'op_id' => $oper->id,
-                'total' => $headerTotal,
-                'date' => $startDate,
-                'op2' => $oper->id,
-                'user' => $userId,
-            ]
-        );
+        // Collect debit and credit entries separately (debit first, then credit)
+        $debitEntries = [];
+        $creditEntries = [];
 
         foreach ($accounts as $acc) {
             $balance = (float) $acc->start_balance;
             if ($balance > 0) {
                 $totalDebit += $balance;
-                JournalDetail::query()->updateOrCreate(
-                    ['journal_id' => $journalId, 'account_id' => $acc->id, 'op_id' => $oper->id],
-                    ['debit' => $balance, 'credit' => 0.0, 'type' => 1]
-                );
+                $debitEntries[] = [
+                    'account_id' => $acc->id,
+                    'debit' => $balance,
+                    'credit' => 0.0,
+                    'type' => 0, // type 0 for debit
+                ];
             } elseif ($balance < 0) {
                 $totalCredit += -$balance;
-                JournalDetail::query()->updateOrCreate(
-                    ['journal_id' => $journalId, 'account_id' => $acc->id, 'op_id' => $oper->id],
-                    ['debit' => 0.0, 'credit' => -$balance, 'type' => 1]
-                );
-            } else {
-                // zero -> ensure no lingering detail
-                JournalDetail::query()
-                    ->where('journal_id', $journalId)
-                    ->where('account_id', $acc->id)
-                    ->where('op_id', $oper->id)
-                    ->delete();
+                $creditEntries[] = [
+                    'account_id' => $acc->id,
+                    'debit' => 0.0,
+                    'credit' => -$balance,
+                    'type' => 1, // type 1 for credit
+                ];
             }
         }
 
-        // Capital line to balance journal based on computed opening capital component (sumOpening)
-        if ($sumOpening > 0) {
-            JournalDetail::query()->updateOrCreate(
-                ['journal_id' => $journalId, 'account_id' => $capitalAccountId, 'op_id' => $oper->id],
-                ['debit' => 0.0, 'credit' => $sumOpening, 'type' => 1]
-            );
-        } elseif ($sumOpening < 0) {
-            JournalDetail::query()->updateOrCreate(
-                ['journal_id' => $journalId, 'account_id' => $capitalAccountId, 'op_id' => $oper->id],
-                ['debit' => -$sumOpening, 'credit' => 0.0, 'type' => 1]
-            );
-        } else {
-            JournalDetail::query()
-                ->where('journal_id', $journalId)
-                ->where('op_id', $oper->id)
-                ->where('account_id', $capitalAccountId)
-                ->delete();
-            // Remove header if empty
-            if (!JournalDetail::query()->where('journal_id', $journalId)->exists()) {
-                JournalHead::query()->where('journal_id', $journalId)->delete();
+        // Calculate difference for capital account
+        $difference = $totalDebit - $totalCredit;
+
+        // If operation exists, delete old journal details
+        if ($existingOper) {
+            $oldJournal = JournalHead::query()->where('op_id', $existingOper->id)->first();
+            if ($oldJournal) {
+                JournalDetail::query()->where('journal_id', $oldJournal->journal_id)->delete();
+                JournalHead::query()->where('journal_id', $oldJournal->journal_id)->delete();
             }
+        }
+
+        // Determine pro_id for pro_type 61
+        if ($existingOper) {
+            $newProId = $existingOper->pro_id;
+        } else {
+            $lastProId = OperHead::query()->where('pro_type', 61)->max('pro_id');
+            $newProId = $lastProId ? $lastProId + 1 : 1;
+        }
+
+        // Update or create OperHead (like multi-journal)
+        $oper = OperHead::query()->updateOrCreate(
+            ['pro_type' => 61],
+            [
+                'pro_id' => $newProId,
+                'is_journal' => 1,
+                'journal_type' => 1,
+                'info' => 'تسجيل الارصده الافتتاحيه للحسابات',
+                'pro_date' => $proDate,
+                'pro_value' => $totalDebit,
+                'user' => $userId,
+            ]
+        );
+
+        // Create new journal_id (always create new journal_id for update)
+        $lastJournalId = JournalHead::query()->max('journal_id');
+        $newJournalId = $lastJournalId ? $lastJournalId + 1 : 1;
+
+        // Create JournalHead (like multi-journal)
+        JournalHead::query()->create([
+            'journal_id' => $newJournalId,
+            'total' => $totalDebit,
+            'date' => $proDate,
+            'op_id' => $oper->id,
+            'pro_type' => 61,
+            'user' => $userId,
+        ]);
+
+        // Save debit entries first
+        foreach ($debitEntries as $entry) {
+            JournalDetail::query()->create([
+                'journal_id' => $newJournalId,
+                'account_id' => $entry['account_id'],
+                'debit' => $entry['debit'],
+                'credit' => $entry['credit'],
+                'type' => $entry['type'],
+                'op_id' => $oper->id,
+                'isdeleted' => 0,
+            ]);
+        }
+
+        // Save credit entries
+        foreach ($creditEntries as $entry) {
+            JournalDetail::query()->create([
+                'journal_id' => $newJournalId,
+                'account_id' => $entry['account_id'],
+                'debit' => $entry['debit'],
+                'credit' => $entry['credit'],
+                'type' => $entry['type'],
+                'op_id' => $oper->id,
+                'isdeleted' => 0,
+            ]);
+        }
+
+        // Add capital account entry to balance the journal
+        if ($difference > 0) {
+            // Debit difference (capital account is credit)
+            JournalDetail::query()->create([
+                'journal_id' => $newJournalId,
+                'account_id' => $capitalAccountId,
+                'debit' => 0.0,
+                'credit' => $difference,
+                'type' => 1,
+                'op_id' => $oper->id,
+                'isdeleted' => 0,
+            ]);
+        } elseif ($difference < 0) {
+            // Credit difference (capital account is debit)
+            JournalDetail::query()->create([
+                'journal_id' => $newJournalId,
+                'account_id' => $capitalAccountId,
+                'debit' => -$difference,
+                'credit' => 0.0,
+                'type' => 0,
+                'op_id' => $oper->id,
+                'isdeleted' => 0,
+            ]);
         }
     }
 
-    // create journal head 
+    // create journal head
     public function createJournalHead($data)
     {
         $journalHead = JournalHead::create([
@@ -274,11 +366,11 @@ class AccountService
             'user' => Auth::id(),
             'branch' => Auth::user()->branch_id,
         ]);
-        $this->createJournalDetail($data,$journalHead->id);
+        $this->createJournalDetail($data, $journalHead->id);
     }
 
     // create journal detail
-    private function createJournalDetail($data,$journalHeadId)
+    private function createJournalDetail($data, $journalHeadId)
     {
         // debit account
         JournalDetail::create([
@@ -298,9 +390,9 @@ class AccountService
         ]);
 
         // update the debit account balance and all the parents balances by the data total
-        $this->updateAccountBalanceRecursive($data['debit_Account_id'],$data['total']   );
+        $this->updateAccountBalanceRecursive($data['debit_Account_id'], $data['total']);
         // update the credit account balance and all the parents balances
-        $this->updateAccountBalanceRecursive($data['credit_Account_id'],-$data['total']);
+        $this->updateAccountBalanceRecursive($data['credit_Account_id'], -$data['total']);
     }
 
     /**
@@ -310,7 +402,7 @@ class AccountService
     {
         try {
             $accHead = AccHead::find($accountId);
-            if (!$accHead) {
+            if (! $accHead) {
                 return;
             }
 
@@ -324,14 +416,11 @@ class AccountService
                 $this->updateAccountBalanceRecursive($accHead->parent_id, $total);
             }
         } catch (\Throwable $e) {
-            Log::error('Failed to update account balance recursively: ' . $e->getMessage(), [
+            Log::error('Failed to update account balance recursively: '.$e->getMessage(), [
                 'account_id' => $accountId,
                 'total' => $total,
-                'exception' => $e
+                'exception' => $e,
             ]);
         }
     }
 }
-
-
-

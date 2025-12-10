@@ -21,6 +21,9 @@
                     <button class="btn btn-outline-secondary" onclick="collapseAll()" title="طي الكل">
                         <i class="fas fa-minus-circle me-1"></i>{{ __('طي الكل') }}
                     </button>
+                    <button class="btn btn-outline-info" onclick="compareBalances()" title="مقارنة الأرصدة" id="compareBtn">
+                        <i class="fas fa-balance-scale me-1"></i>{{ __('مقارنة الأرصدة') }}
+                    </button>
                     <button class="btn btn-outline-dark" onclick="window.print()" title="طباعة">
                         <i class="fas fa-print me-1"></i>{{ __('طباعة') }}
                     </button>
@@ -44,15 +47,15 @@
                                             <th class="text-end py-2">{{ __('المبلغ') }}</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="assets-tbody">
                                         @foreach($assets as $asset)
-                                            @include('reports::accounts-reports.partials.account-row-recursive', ['account' => $asset, 'level' => 0])
+                                            @include('reports::accounts-reports.partials.account-row-recursive', ['account' => $asset, 'level' => 0, 'section' => 'assets'])
                                         @endforeach
                                     </tbody>
                                     <tfoot class="table-primary">
                                         <tr class="fw-bold">
                                             <th class="py-3">{{ __('إجمالي الأصول') }}</th>
-                                            <th class="text-end py-3">{{ number_format($totalAssets, 2) }}</th>
+                                            <th class="text-end py-3" id="total-assets-display">{{ number_format($totalAssets, 2) }}</th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -76,15 +79,15 @@
                                             <th class="text-end py-2">{{ __('المبلغ') }}</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="liabilities-equity-tbody">
                                         {{-- الخصوم --}}
                                         @foreach($liabilities as $liability)
-                                            @include('reports::accounts-reports.partials.account-row-recursive', ['account' => $liability, 'level' => 0])
+                                            @include('reports::accounts-reports.partials.account-row-recursive', ['account' => $liability, 'level' => 0, 'section' => 'liabilities'])
                                         @endforeach
                                         
                                         {{-- حقوق الملكية --}}
                                         @foreach($equity as $eq)
-                                            @include('reports::accounts-reports.partials.account-row-recursive', ['account' => $eq, 'level' => 0])
+                                            @include('reports::accounts-reports.partials.account-row-recursive', ['account' => $eq, 'level' => 0, 'section' => 'equity'])
                                         @endforeach
                                         
                                         {{-- صافي الربح/الخسارة --}}
@@ -98,7 +101,7 @@
                                     <tfoot class="table-success">
                                         <tr class="fw-bold">
                                             <th class="py-3">{{ __('إجمالي الخصوم وحقوق الملكية') }}</th>
-                                            <th class="text-end py-3">{{ number_format($totalLiabilitiesEquity, 2) }}</th>
+                                            <th class="text-end py-3" id="total-liabilities-equity-display">{{ number_format($totalLiabilitiesEquity, 2) }}</th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -148,7 +151,7 @@
                         <div class="card-body text-center">
                             <i class="fas fa-chart-bar fs-3 text-primary mb-2"></i>
                             <h6 class="text-muted mb-1">{{ __('إجمالي الأصول') }}</h6>
-                            <h4 class="text-primary mb-0">{{ number_format($totalAssets, 2) }}</h4>
+                            <h4 class="text-primary mb-0" id="total-assets-summary">{{ number_format($totalAssets, 2) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -157,7 +160,7 @@
                         <div class="card-body text-center">
                             <i class="fas fa-file-invoice-dollar fs-3 text-danger mb-2"></i>
                             <h6 class="text-muted mb-1">{{ __('إجمالي الخصوم') }}</h6>
-                            <h4 class="text-danger mb-0">{{ number_format($totalLiabilities, 2) }}</h4>
+                            <h4 class="text-danger mb-0" id="total-liabilities-summary">{{ number_format($totalLiabilities, 2) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -166,7 +169,7 @@
                         <div class="card-body text-center">
                             <i class="fas fa-user-shield fs-3 text-warning mb-2"></i>
                             <h6 class="text-muted mb-1">{{ __('حقوق الملكية') }}</h6>
-                            <h4 class="text-warning mb-0">{{ number_format($totalEquity, 2) }}</h4>
+                            <h4 class="text-warning mb-0" id="total-equity-summary">{{ number_format($totalEquity, 2) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -184,137 +187,71 @@
     </div>
 </div>
 
-<style>
-    /* التنسيق الشجري للحسابات */
-    .level-0 { 
-        font-weight: 600; 
-        background-color: #f8f9fa;
-        border-left: 4px solid #0d6efd;
-    }
-    .level-1 { 
-        background-color: #ffffff;
-    }
-    .level-2 { 
-        font-size: 0.95em;
-        background-color: #fafafa;
-    }
-    .level-3 { 
-        font-size: 0.9em;
-        color: #666;
-        background-color: #f5f5f5;
-    }
-    .level-4 { 
-        font-size: 0.85em;
-        color: #777;
-        font-style: italic;
-    }
+<!-- Modal لمقارنة الأرصدة -->
+<div class="modal fade" id="compareBalancesModal" tabindex="-1" aria-labelledby="compareBalancesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="compareBalancesModalLabel">
+                    <i class="fas fa-balance-scale me-2"></i>{{ __('مقارنة أرصدة الحسابات مع القيود اليومية') }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="compareLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">{{ __('جاري التحميل...') }}</span>
+                    </div>
+                    <p class="mt-3">{{ __('جاري مقارنة الأرصدة...') }}</p>
+                </div>
+                <div id="compareResults" style="display: none;">
+                    <div class="alert alert-info mb-3">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <strong>{{ __('إجمالي الحسابات:') }}</strong>
+                                <span id="totalAccounts" class="badge bg-primary ms-2">0</span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>{{ __('حسابات بها فرق:') }}</strong>
+                                <span id="accountsWithDifference" class="badge bg-warning ms-2">0</span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>{{ __('إجمالي الفرق:') }}</strong>
+                                <span id="totalDifference" class="badge bg-danger ms-2">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>{{ __('كود الحساب') }}</th>
+                                    <th>{{ __('اسم الحساب') }}</th>
+                                    <th class="text-end">{{ __('رصيد الحساب') }}</th>
+                                    <th class="text-end">{{ __('رصيد القيود') }}</th>
+                                    <th class="text-end">{{ __('الفرق') }}</th>
+                                    <th class="text-center">{{ __('الحالة') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compareTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="compareError" style="display: none;">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('إغلاق') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    .account-row[data-level="0"] td:first-child {
-        padding-inline-start: 0 !important;
-        padding-left: 0 !important;
-    }
-
-    .account-row[data-level="1"] td:first-child {
-        padding-inline-start: 30px !important;
-        padding-left: 30px !important;
-    }
-
-    .account-row[data-level="2"] td:first-child {
-        padding-inline-start: 50px !important;
-        padding-left: 50px !important;
-    }
-
-    .account-row[data-level="3"] td:first-child {
-        padding-inline-start: 70px !important;
-        padding-left: 70px !important;
-    }
-
-    .account-row[data-level="4"] td:first-child {
-        padding-inline-start: 90px !important;
-        padding-left: 90px !important;
-    }
-    
-    /* تحسين المظهر العام */
-    .table tbody tr:hover {
-        background-color: #f0f8ff !important;
-        transition: all 0.2s;
-    }
-    
-    .sticky-top {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-    
-    /* للطباعة */
-    @media print {
-        body * {
-            visibility: hidden !important;
-        }
-        #balance-sheet-report,
-        #balance-sheet-report * {
-            visibility: visible !important;
-        }
-        #balance-sheet-report {
-            position: absolute;
-            inset: 0;
-            margin: 0 !important;
-            width: 100%;
-        }
-        .btn,
-        .sidebar,
-        .topbar {
-            display: none !important;
-        }
-        .card {
-            border: none !important;
-            box-shadow: none !important;
-        }
-    }
-    
-    /* أيقونة الطي/الفتح */
-    .collapse-toggle {
-        width: 28px;
-        height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border-radius: 6px;
-        border: 1px solid #ced4da;
-        background-color: #f8f9fa;
-        color: #0d6efd;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-    }
-
-    .collapse-toggle .toggle-icon {
-        font-size: 1rem;
-    }
-
-    .collapse-toggle.collapsed {
-        color: #0d6efd;
-        background-color: #f8f9fa;
-    }
-
-    .collapse-toggle:not(.collapsed) {
-        color: #fff;
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-
-    .collapse-toggle:hover {
-        color: #fff;
-        background-color: #0b5ed7;
-        border-color: #0b5ed7;
-    }
-
-    .placeholder-toggle {
-        width: 28px;
-        height: 28px;
-        display: inline-block;
-    }
-</style>
 
 <script>
     function updateToggleIcon(button, expanded) {
@@ -369,6 +306,11 @@
             button.setAttribute('aria-expanded', 'false');
             hideBranch(accountId);
         }
+        
+        // تحديث إجمالي الأصول بعد تغيير حالة الطي/الفتح
+        calculateTotalAssets();
+        // تحديث إجمالي الخصوم وحقوق الملكية بعد تغيير حالة الطي/الفتح
+        calculateTotalLiabilitiesEquity();
     }
 
     function collapseAll() {
@@ -382,6 +324,11 @@
             updateToggleIcon(button, false);
             button.setAttribute('aria-expanded', 'false');
         });
+        
+        // تحديث إجمالي الأصول بعد طي الكل
+        calculateTotalAssets();
+        // تحديث إجمالي الخصوم وحقوق الملكية بعد طي الكل
+        calculateTotalLiabilitiesEquity();
     }
 
     function expandAll() {
@@ -393,6 +340,312 @@
             updateToggleIcon(button, true);
             button.setAttribute('aria-expanded', 'true');
         });
+        
+        // تحديث إجمالي الأصول بعد فتح الكل
+        calculateTotalAssets();
+        // تحديث إجمالي الخصوم وحقوق الملكية بعد فتح الكل
+        calculateTotalLiabilitiesEquity();
     }
+
+    function compareBalances() {
+        const modal = new bootstrap.Modal(document.getElementById('compareBalancesModal'));
+        modal.show();
+        
+        const loadingDiv = document.getElementById('compareLoading');
+        const resultsDiv = document.getElementById('compareResults');
+        const errorDiv = document.getElementById('compareError');
+        const compareBtn = document.getElementById('compareBtn');
+        
+        // إظهار التحميل وإخفاء النتائج والأخطاء
+        loadingDiv.style.display = 'block';
+        resultsDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+        compareBtn.disabled = true;
+        
+        const asOfDate = '{{ $asOfDate }}';
+        
+        fetch(`{{ route('reports.compare-account-balances') }}?as_of_date=${asOfDate}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingDiv.style.display = 'none';
+            compareBtn.disabled = false;
+            
+            if (data.success) {
+                // تحديث الإحصائيات
+                document.getElementById('totalAccounts').textContent = data.total_accounts;
+                document.getElementById('accountsWithDifference').textContent = data.accounts_with_difference;
+                document.getElementById('totalDifference').textContent = parseFloat(data.total_difference).toFixed(2);
+                
+                // ملء الجدول
+                const tbody = document.getElementById('compareTableBody');
+                tbody.innerHTML = '';
+                
+                if (data.comparisons.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">{{ __('لا توجد حسابات للمقارنة') }}</td></tr>';
+                } else {
+                    data.comparisons.forEach(comparison => {
+                        const row = document.createElement('tr');
+                        row.className = comparison.has_difference ? 'table-warning' : '';
+                        
+                        const statusBadge = comparison.has_difference 
+                            ? '<span class="badge bg-danger">{{ __('يوجد فرق') }}</span>'
+                            : '<span class="badge bg-success">{{ __('متطابق') }}</span>';
+                        
+                        row.innerHTML = `
+                            <td>${comparison.code}</td>
+                            <td>${comparison.name}</td>
+                            <td class="text-end">${parseFloat(comparison.account_balance).toFixed(2)}</td>
+                            <td class="text-end">${parseFloat(comparison.journal_balance).toFixed(2)}</td>
+                            <td class="text-end ${Math.abs(comparison.difference) > 0.01 ? 'text-danger fw-bold' : 'text-success'}">
+                                ${parseFloat(comparison.difference).toFixed(2)}
+                            </td>
+                            <td class="text-center">${statusBadge}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+                
+                resultsDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'block';
+                document.getElementById('errorMessage').textContent = data.message || '{{ __('حدث خطأ أثناء المقارنة') }}';
+            }
+        })
+        .catch(error => {
+            loadingDiv.style.display = 'none';
+            compareBtn.disabled = false;
+            errorDiv.style.display = 'block';
+            document.getElementById('errorMessage').textContent = '{{ __('حدث خطأ أثناء الاتصال بالخادم') }}';
+            console.error('Error:', error);
+        });
+    }
+
+    /**
+     * حساب إجمالي الأصول من الصفوف المرئية فقط (Client Side)
+     */
+    function calculateTotalAssets() {
+        let total = 0;
+        
+        // جلب جميع صفوف الأصول المرئية فقط
+        const assetsRows = document.querySelectorAll('#assets-tbody tr.account-row[data-section="assets"]:not(.d-none)');
+        
+        assetsRows.forEach(row => {
+            const hasChildren = row.dataset.hasChildren === '1';
+            const accountId = row.dataset.accountId;
+            
+            // إذا كان الحساب له أطفال، تحقق إذا كانت الحسابات الفرعية ظاهرة أم مخفية
+            if (hasChildren) {
+                // تحقق إذا كانت الحسابات الفرعية مخفية
+                const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
+                // إذا كانت الحسابات الفرعية مخفية، استخدم رصيد الحساب الرئيسي (totalWithChildren)
+                // إذا كانت ظاهرة، تجاهل الحساب الرئيسي لأننا سنحسب الحسابات الفرعية
+                if (childrenRows.length === 0) {
+                    const balance = parseFloat(row.dataset.balance) || 0;
+                    total += balance;
+                }
+            } else {
+                // الحساب ليس له أطفال (leaf account)، احسبه مباشرة
+                const balance = parseFloat(row.dataset.balance) || 0;
+                total += balance;
+            }
+        });
+        
+        // تحديث الإجمالي في tfoot
+        const totalAssetsDisplay = document.getElementById('total-assets-display');
+        if (totalAssetsDisplay) {
+            totalAssetsDisplay.textContent = total.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // تحديث الإجمالي في ملخص الإحصائيات
+        const totalAssetsSummary = document.getElementById('total-assets-summary');
+        if (totalAssetsSummary) {
+            totalAssetsSummary.textContent = total.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // تحديث نتيجة التوازن
+        calculateTotalLiabilitiesEquity();
+    }
+
+    /**
+     * حساب إجمالي الخصوم وحقوق الملكية من الصفوف المرئية فقط (Client Side)
+     */
+    function calculateTotalLiabilitiesEquity() {
+        // حساب إجمالي الخصوم من الصفوف المرئية
+        const liabilitiesRows = document.querySelectorAll('#liabilities-equity-tbody tr.account-row[data-section="liabilities"]:not(.d-none)');
+        let totalLiabilities = 0;
+        
+        liabilitiesRows.forEach(row => {
+            const hasChildren = row.dataset.hasChildren === '1';
+            const accountId = row.dataset.accountId;
+            
+            // إذا كان الحساب له أطفال، تحقق إذا كانت الحسابات الفرعية ظاهرة أم مخفية
+            if (hasChildren) {
+                // تحقق إذا كانت الحسابات الفرعية مخفية
+                const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
+                // إذا كانت الحسابات الفرعية مخفية، استخدم رصيد الحساب الرئيسي (totalWithChildren)
+                // إذا كانت ظاهرة، تجاهل الحساب الرئيسي لأننا سنحسب الحسابات الفرعية
+                if (childrenRows.length === 0) {
+                    const balance = parseFloat(row.dataset.balance) || 0;
+                    totalLiabilities += balance;
+                }
+            } else {
+                // الحساب ليس له أطفال (leaf account)، احسبه مباشرة
+                const balance = parseFloat(row.dataset.balance) || 0;
+                totalLiabilities += balance;
+            }
+        });
+        
+        // تحديث إجمالي الخصوم في ملخص الإحصائيات
+        const totalLiabilitiesSummary = document.getElementById('total-liabilities-summary');
+        if (totalLiabilitiesSummary) {
+            totalLiabilitiesSummary.textContent = totalLiabilities.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // حساب إجمالي حقوق الملكية من الصفوف المرئية
+        const equityRows = document.querySelectorAll('#liabilities-equity-tbody tr.account-row[data-section="equity"]:not(.d-none)');
+        let totalEquity = 0;
+        
+        equityRows.forEach(row => {
+            const hasChildren = row.dataset.hasChildren === '1';
+            const accountId = row.dataset.accountId;
+            
+            // إذا كان الحساب له أطفال، تحقق إذا كانت الحسابات الفرعية ظاهرة أم مخفية
+            if (hasChildren) {
+                // تحقق إذا كانت الحسابات الفرعية مخفية
+                const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
+                // إذا كانت الحسابات الفرعية مخفية، استخدم رصيد الحساب الرئيسي (totalWithChildren)
+                // إذا كانت ظاهرة، تجاهل الحساب الرئيسي لأننا سنحسب الحسابات الفرعية
+                if (childrenRows.length === 0) {
+                    const balance = parseFloat(row.dataset.balance) || 0;
+                    totalEquity += balance;
+                }
+            } else {
+                // الحساب ليس له أطفال (leaf account)، احسبه مباشرة
+                const balance = parseFloat(row.dataset.balance) || 0;
+                totalEquity += balance;
+            }
+        });
+        
+        // تحديث إجمالي حقوق الملكية في ملخص الإحصائيات
+        const totalEquitySummary = document.getElementById('total-equity-summary');
+        if (totalEquitySummary) {
+            totalEquitySummary.textContent = totalEquity.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // صافي الربح/الخسارة (من الخادم - لا يتغير)
+        const netProfitRow = document.querySelector('#liabilities-equity-tbody tr.table-info');
+        let netProfit = 0;
+        if (netProfitRow) {
+            const netProfitText = netProfitRow.querySelector('th.text-end').textContent.trim();
+            // إزالة الفواصل والمسافات والتعامل مع القيم السالبة
+            const cleanedText = netProfitText.replace(/,/g, '').replace(/\s/g, '');
+            netProfit = parseFloat(cleanedText) || 0;
+        }
+        
+        // حساب إجمالي الخصوم وحقوق الملكية
+        const totalLiabilitiesEquity = totalLiabilities + totalEquity + netProfit;
+        
+        // تحديث الإجمالي في tfoot
+        const totalLiabilitiesEquityDisplay = document.getElementById('total-liabilities-equity-display');
+        if (totalLiabilitiesEquityDisplay) {
+            totalLiabilitiesEquityDisplay.textContent = totalLiabilitiesEquity.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // تحديث نتيجة التوازن
+        updateBalanceResult(totalLiabilitiesEquity);
+    }
+
+    /**
+     * تحديث نتيجة التوازن في الميزانية
+     */
+    function updateBalanceResult(totalLiabilitiesEquity) {
+        // حساب إجمالي الأصول من الصفوف المرئية (نفس منطق calculateTotalAssets)
+        const assetsRows = document.querySelectorAll('#assets-tbody tr.account-row[data-section="assets"]:not(.d-none)');
+        let totalAssets = 0;
+        
+        assetsRows.forEach(row => {
+            const hasChildren = row.dataset.hasChildren === '1';
+            const accountId = row.dataset.accountId;
+            
+            if (hasChildren) {
+                const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
+                if (childrenRows.length === 0) {
+                    const balance = parseFloat(row.dataset.balance) || 0;
+                    totalAssets += balance;
+                }
+            } else {
+                const balance = parseFloat(row.dataset.balance) || 0;
+                totalAssets += balance;
+            }
+        });
+        
+        const difference = Math.abs(totalAssets - totalLiabilitiesEquity);
+        const isBalanced = difference < 0.01;
+        
+        // تحديث رسالة التوازن (إذا كان هناك عنصر للنتيجة)
+        const resultAlert = document.querySelector('#balance-sheet-report .alert.alert-success, #balance-sheet-report .alert.alert-warning');
+        if (resultAlert) {
+            if (isBalanced) {
+                resultAlert.className = 'alert alert-success shadow-sm border-0';
+                resultAlert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="fs-3 me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ __('النتيجة:') }}</h5>
+                            <p class="mb-0"><strong>{{ __('الميزانية متوازنة') }}</strong> ✓</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultAlert.className = 'alert alert-warning shadow-sm border-0';
+                resultAlert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="fs-3 me-3">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ __('النتيجة:') }}</h5>
+                            <p class="mb-0">
+                                <strong>{{ __('الميزانية غير متوازنة') }}</strong> - 
+                                {{ __('الفرق:') }} <span class="badge bg-warning">${difference.toLocaleString('en-US', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}</span>
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // حساب الإجماليات عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateTotalAssets();
+        calculateTotalLiabilitiesEquity();
+    });
 </script>
 @endsection
