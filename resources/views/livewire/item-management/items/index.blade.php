@@ -420,26 +420,6 @@ new class extends Component {
         include_once app_path('Helpers/FormatHelper.php');
     @endphp
 
-    <style>
-        .print-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .print-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-    </style>
 
     <div class="row">
         <div class="col-lg-12">
@@ -471,25 +451,25 @@ new class extends Component {
                         {{-- @if(Auth::user() && Auth::user()->hasDirectPermission('create items')) --}}
                         @can('create items')
                             <a href="{{ route('items.create') }}"
-                                class="btn btn-outline-primary btn-lg font-hold fw-bold mt-4 d-flex justify-content-center align-items-center text-center"
+                                class="btn btn-main btn-lg font-hold fw-bold mt-4"
                                 style="min-height: 50px;">
                                 <i class="fas fa-plus me-2"></i>
-                                <span class="w-100 text-center">{{ __('items.add_new_item') }}</span>
+                                {{ __('items.add_new_item') }}
                             </a>
                         @endcan
                         {{-- @endif --}}
 
                         {{-- Print Button --}}
                         @can('print items')
-                        <div class = "mt-4">
-                        <a href="{{ route('items.print', [
-                            'search' => $search,
-                            'warehouse' => $selectedWarehouse,
-                            'group' => $selectedGroup,
-                            'category' => $selectedCategory,
-                            'priceType' => $selectedPriceType
-                        ]) }}" target="_blank" class="print-btn font-hold fw-bold" style="text-decoration: none;">
-                                <i class="fas fa-print"></i>
+                        <div class="mt-4">
+                            <a href="{{ route('items.print', [
+                                'search' => $search,
+                                'warehouse' => $selectedWarehouse,
+                                'group' => $selectedGroup,
+                                'category' => $selectedCategory,
+                                'priceType' => $selectedPriceType
+                            ]) }}" target="_blank" class="btn btn-main btn-lg font-hold fw-bold">
+                                <i class="fas fa-print me-2"></i>
                                 {{ __('items.print_list') }}
                             </a>
                         </div>
@@ -497,9 +477,8 @@ new class extends Component {
 
                         {{-- Column Visibility Button --}}
                         <div class="mt-4">
-                            <button type="button" class="btn btn-outline-info btn-lg font-hold fw-bold"
-                                    data-bs-toggle="modal" data-bs-target="#columnVisibilityModal"
-                                    style="min-height: 50px;">
+                            <button type="button" class="btn btn-main btn-lg font-hold fw-bold"
+                                    data-bs-toggle="modal" data-bs-target="#columnVisibilityModal">
                                 <i class="fas fa-columns me-2"></i>
                                 {{ __('items.display_options') }}
                             </button>
@@ -518,7 +497,7 @@ new class extends Component {
                             {{-- Clear Filters Button --}}
                             <div class="d-flex align-items-end mt-4">
                                 <button type="button" @click="clearFilters()" style="min-height: 50px;"
-                                    class="btn btn-outline-secondary btn-lg font-hold fw-bold"
+                                    class="btn btn-outline-info btn-lg font-hold fw-bold"
                                     wire:loading.attr="disabled" wire:target="clearFilters">
                                     <span wire:loading.remove wire:target="clearFilters">
                                     <i class="fas fa-times me-1"></i>
@@ -688,10 +667,9 @@ new class extends Component {
                         <table class="table table-striped mb-0 table-hover"
                             style="direction: rtl; font-family: 'Cairo', sans-serif;">
                             <style>
-                                /* ØªØ®ØµÙŠØµ Ù„ÙˆÙ† Ø§Ù„Ù‡ÙˆÙØ± Ù„Ù„ØµÙÙˆÙ */
+                                /* Hover color for table rows - matching btn-main gradient */
                                 .table-hover tbody tr:hover {
-                                    background-color: #ffc107 !important;
-                                    /* Ù„ÙˆÙ† warning */
+                                    background: linear-gradient(135deg, rgba(52, 211, 163, 0.15) 0%, rgba(26, 161, 196, 0.15) 100%) !important;
                                 }
 
                                 /* Fixed header styles */
@@ -916,8 +894,8 @@ new class extends Component {
                     {{-- Price Selector and Totals Section --}}
                     <div class="row mt-4">
                         <div class="col-md-12">
-                            <div class="card border-primary">
-                                <div class="card-header bg-primary text-white">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
                                     <h6 class="font-hold fw-bold mb-0 text-white">
                                         <i class="fas fa-calculator me-2"></i>
                                         {{ __('items.warehouse_valuation') }}

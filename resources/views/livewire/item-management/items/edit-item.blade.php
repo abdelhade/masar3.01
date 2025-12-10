@@ -172,7 +172,11 @@ new class extends Component {
 
     private function updateItem()
     {
-        $this->itemModel->update($this->item);
+        // Exclude average_cost from update - it should only be modified through purchase invoices
+        $itemData = $this->item;
+        unset($itemData['average_cost']);
+        
+        $this->itemModel->update($itemData);
         Log::info('Item updated', ['item_id' => $this->itemModel->id]);
     }
 

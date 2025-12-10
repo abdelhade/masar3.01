@@ -180,6 +180,7 @@ new class extends Component {
                 // Save single item
             $itemModel = Item::create($this->item);
             $this->attachUnits($itemModel);
+            $this->setAverageCostFromBaseUnit($itemModel);
             $this->createBarcodes($itemModel);
             $this->attachPrices($itemModel);
             $this->attachNotes($itemModel);
@@ -224,6 +225,7 @@ new class extends Component {
             // Attach units, barcodes, prices, and notes for this combination
             if (isset($this->combinationUnitRows[$combinationKey])) {
                 $this->attachCombinationUnits($itemModel, $combinationKey);
+                $this->setAverageCostFromBaseUnit($itemModel);
                 $this->createCombinationBarcodes($itemModel, $combinationKey);
                 $this->attachCombinationPrices($itemModel, $combinationKey);
             }
@@ -307,6 +309,26 @@ new class extends Component {
             ];
         }
         $itemModel->units()->attach($unitsSync);
+    }
+
+    /**
+     * Set average_cost from base unit cost (u_val = 1) - only on creation
+     */
+    private function setAverageCostFromBaseUnit($itemModel): void
+    {
+        // Reload item with units to get the pivot data
+        $itemModel->refresh();
+        $itemModel->load('units');
+        
+        // Find the base unit (u_val = 1)
+        $baseUnit = $itemModel->units->first(function ($unit) {
+            return isset($unit->pivot) && $unit->pivot->u_val == 1;
+        });
+        
+        if ($baseUnit && isset($baseUnit->pivot->cost)) {
+            // Set average_cost to the cost of the base unit
+            $itemModel->update(['average_cost' => $baseUnit->pivot->cost]);
+        }
     }
 
     private function createBarcodes($itemModel)
