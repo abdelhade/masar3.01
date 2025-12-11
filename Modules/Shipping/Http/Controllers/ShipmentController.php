@@ -24,6 +24,12 @@ class ShipmentController extends Controller
         return view('shipping::shipments.index', compact('shipments'));
     }
 
+    public function show(Shipment $shipment)
+    {
+        $shipment->load(['statusHistory.changedBy', 'shippingCompany']);
+        return view('shipping::shipments.show', compact('shipment'));
+    }
+
     public function create()
     {
         $branches = userBranches();

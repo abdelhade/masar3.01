@@ -14,7 +14,38 @@ class ShippingStatisticsController extends Controller
     public function index()
     {
         $stats = $this->getDashboardStatistics();
-        return view('shipping::dashboard.index', compact('stats'));
+        $widgetStats = $this->getWidgetStats();
+        $topDrivers = $this->getTopDrivers();
+        $recentShipments = $this->getRecentShipments();
+        
+        return view('shipping::dashboard.index', compact('stats', 'widgetStats', 'topDrivers', 'recentShipments'));
+    }
+
+    private function getWidgetStats(): array
+    {
+        return [
+            'total' => Shipment::count(),
+            'in_transit' => Shipment::whereIn('status', ['in_transit', 'out_for_delivery'])->count(),
+            'delivered' => Shipment::where('status', 'delivered')->count(),
+            'pending' => Shipment::where('status', 'pending')->count(),
+        ];
+    }
+
+    private function getTopDrivers()
+    {
+        return Driver::where('rating', '>', 0)
+            ->orderBy('rating', 'desc')
+            ->orderBy('completed_deliveries', 'desc')
+            ->limit(5)
+            ->get();
+    }
+
+    private function getRecentShipments()
+    {
+        return Shipment::with('shippingCompany')
+            ->latest()
+            ->limit(5)
+            ->get();
     }
 
     private function getDashboardStatistics(): array

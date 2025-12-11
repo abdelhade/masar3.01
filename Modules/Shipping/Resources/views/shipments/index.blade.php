@@ -37,6 +37,8 @@
                                     <th>{{ __('Customer Name') }}</th>
                                     <th>{{ __('Address') }}</th>
                                     <th>{{ __('Weight') }}</th>
+                                    <th>{{ __('Cost') }}</th>
+                                    <th>{{ __('Priority') }}</th>
                                     <th>{{ __('Status') }}</th>
                                     @canany(['edit Shipments', 'delete Shipments'])
                                         <th>{{ __('Actions') }}</th>
@@ -52,17 +54,45 @@
                                         <td>{{ $shipment->customer_name }}</td>
                                         <td>{{ $shipment->customer_address }}</td>
                                         <td>{{ $shipment->weight }} {{ __('kg') }}</td>
+                                        <td>{{ number_format($shipment->total_cost, 2) }}</td>
+                                        <td>
+                                            @if($shipment->priority == 'express')
+                                                <span class="badge bg-danger">{{ __('Express') }}</span>
+                                            @elseif($shipment->priority == 'urgent')
+                                                <span class="badge bg-warning">{{ __('Urgent') }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ __('Normal') }}</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             @if ($shipment->status == 'pending')
                                                 <span class="badge bg-warning">{{ __('Pending') }}</span>
+                                            @elseif ($shipment->status == 'processing')
+                                                <span class="badge bg-info">{{ __('Processing') }}</span>
                                             @elseif ($shipment->status == 'in_transit')
                                                 <span class="badge bg-primary">{{ __('In Transit') }}</span>
-                                            @else
+                                            @elseif ($shipment->status == 'out_for_delivery')
+                                                <span class="badge bg-primary">{{ __('Out for Delivery') }}</span>
+                                            @elseif ($shipment->status == 'delivered')
                                                 <span class="badge bg-success">{{ __('Delivered') }}</span>
+                                            @elseif ($shipment->status == 'returned')
+                                                <span class="badge bg-danger">{{ __('Returned') }}</span>
+                                            @else
+                                                <span class="badge bg-dark">{{ __('Cancelled') }}</span>
                                             @endif
                                         </td>
                                         @canany(['edit Shipments', 'delete Shipments'])
                                             <td>
+                                                <a class="btn btn-primary btn-icon-square-sm" 
+                                                    href="{{ route('shipments.show', $shipment->id) }}" 
+                                                    title="{{ __('View Details') }}">
+                                                    <i class="las la-eye"></i>
+                                                </a>
+                                                <a class="btn btn-info btn-icon-square-sm" 
+                                                    href="{{ route('shipments.tracking') }}?tracking_number={{ $shipment->tracking_number }}" 
+                                                    title="{{ __('Track') }}">
+                                                    <i class="las la-search-location"></i>
+                                                </a>
                                                 @can('edit Shipments')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('shipments.edit', $shipment) }}">
@@ -86,7 +116,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center">
+                                        <td colspan="10" class="text-center">
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>

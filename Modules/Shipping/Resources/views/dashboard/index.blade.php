@@ -13,6 +13,9 @@
             </div>
         </div>
 
+        <!-- Widget Stats -->
+        @include('shipping::components.stats-widget', ['stats' => $widgetStats, 'topDrivers' => $topDrivers, 'recentShipments' => $recentShipments])
+
         <!-- Quick Stats Cards -->
         <div class="row g-4 mb-4">
             <div class="col-xl-3 col-md-6">

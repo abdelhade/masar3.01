@@ -6,7 +6,10 @@ use Modules\Shipping\Http\Controllers\{
     ShipmentController,
     DriverController,
     OrderController,
-    ShippingStatisticsController
+    ShippingStatisticsController,
+    ShippingZoneController,
+    DriverRatingController,
+    ShipmentTrackingController
 };
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -14,7 +17,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('shipments', ShipmentController::class)->names('shipments');
     Route::resource('drivers', DriverController::class)->names('drivers');
     Route::resource('orders', OrderController::class)->names('orders');
+    Route::resource('shipping/zones', ShippingZoneController::class)->names('shipping.zones');
 
     Route::get('dashboard/statistics', [ShippingStatisticsController::class, 'index'])
         ->name('shipping.dashboard.statistics');
+    
+    Route::get('orders/{order}/rate-driver', [DriverRatingController::class, 'create'])
+        ->name('orders.rate-driver');
+    Route::post('orders/{order}/rate-driver', [DriverRatingController::class, 'store'])
+        ->name('orders.rate-driver.store');
+    
+    Route::get('tracking', [ShipmentTrackingController::class, 'track'])
+        ->name('shipments.tracking');
 });
+
+Route::get('track/{trackingNumber}', [ShipmentTrackingController::class, 'show'])
+    ->name('shipments.track.show');

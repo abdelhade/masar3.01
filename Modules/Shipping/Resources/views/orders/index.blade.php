@@ -37,6 +37,7 @@
                                     <th>{{ __('Shipment Number') }}</th>
                                     <th>{{ __('Customer Name') }}</th>
                                     <th>{{ __('Address') }}</th>
+                                    <th>{{ __('Scheduled Date') }}</th>
                                     <th>{{ __('Delivery Status') }}</th>
                                     @canany(['edit Orders', 'delete Orders'])
                                         <th>{{ __('Actions') }}</th>
@@ -53,6 +54,16 @@
                                         <td>{{ $order->customer_name }}</td>
                                         <td>{{ $order->customer_address }}</td>
                                         <td>
+                                            @if($order->scheduled_date)
+                                                {{ $order->scheduled_date->format('Y-m-d') }}
+                                                @if($order->scheduled_time_from)
+                                                    <br><small>{{ $order->scheduled_time_from }} - {{ $order->scheduled_time_to }}</small>
+                                                @endif
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
                                             @if ($order->delivery_status == 'pending')
                                                 <span class="badge bg-warning">{{ __('Pending') }}</span>
                                             @elseif ($order->delivery_status == 'assigned')
@@ -65,6 +76,13 @@
                                         </td>
                                         @canany(['edit Orders', 'delete Orders'])
                                             <td>
+                                                @if($order->delivery_status == 'delivered' && !$order->rating)
+                                                    <a class="btn btn-warning btn-icon-square-sm"
+                                                        href="{{ route('orders.rate-driver', $order->id) }}"
+                                                        title="{{ __('Rate Driver') }}">
+                                                        <i class="las la-star"></i>
+                                                    </a>
+                                                @endif
                                                 @can('edit Orders')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('orders.edit', $order) }}">
@@ -88,7 +106,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center">
+                                        <td colspan="9" class="text-center">
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>

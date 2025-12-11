@@ -35,6 +35,9 @@
                                     <th>{{ __('Name') }}</th>
                                     <th>{{ __('Phone Number') }}</th>
                                     <th>{{ __('Vehicle Type') }}</th>
+                                    <th>{{ __('Rating') }}</th>
+                                    <th>{{ __('Deliveries') }}</th>
+                                    <th>{{ __('Success Rate') }}</th>
                                     <th>{{ __('Status') }}</th>
                                     @canany(['edit Drivers', 'delete Drivers'])
                                         <th>{{ __('Actions') }}</th>
@@ -48,6 +51,29 @@
                                         <td>{{ $driver->name }}</td>
                                         <td>{{ $driver->phone }}</td>
                                         <td>{{ $driver->vehicle_type }}</td>
+                                        <td>
+                                            @if($driver->rating > 0)
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-star"></i> {{ number_format($driver->rating, 1) }}
+                                                </span>
+                                                <small>({{ $driver->total_ratings }})</small>
+                                            @else
+                                                <span class="text-muted">{{ __('No ratings') }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ $driver->completed_deliveries }}</span> / 
+                                            <span class="badge bg-danger">{{ $driver->failed_deliveries }}</span>
+                                        </td>
+                                        <td>
+                                            @if($driver->success_rate > 0)
+                                                <span class="badge bg-{{ $driver->success_rate >= 80 ? 'success' : ($driver->success_rate >= 50 ? 'warning' : 'danger') }}">
+                                                    {{ $driver->success_rate }}%
+                                                </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             @if ($driver->is_available)
                                                 <span class="badge bg-primary">{{ __('Available') }}</span>
@@ -80,7 +106,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">
+                                        <td colspan="9" class="text-center">
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
                                                 <i class="las la-info-circle me-2"></i>
