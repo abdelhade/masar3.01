@@ -1,8 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
 
-
-use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\MultiVoucher;
@@ -12,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Modules\Accounts\Models\AccHead;
 
 class MultiVoucherController extends Controller
 {
@@ -60,7 +60,7 @@ class MultiVoucherController extends Controller
         // ✅ حماية تعديل السندات المتعددة (Edit)
         $this->middleware(function ($request, $next) {
             $voucherId = $request->route('multivoucher');
-            $voucher   = OperHead::find($voucherId);
+            $voucher = OperHead::find($voucherId);
 
             if ($voucher) {
                 // تحديد نوع السند المتعدد من الـ pro_type
@@ -84,7 +84,7 @@ class MultiVoucherController extends Controller
         // ✅ حماية حذف السندات المتعددة (Delete)
         $this->middleware(function ($request, $next) {
             $voucherId = $request->route('multivoucher');
-            $voucher   = OperHead::find($voucherId);
+            $voucher = OperHead::find($voucherId);
 
             if ($voucher) {
                 // تحديد نوع السند المتعدد من الـ pro_type
@@ -150,11 +150,11 @@ class MultiVoucherController extends Controller
 
         // Prepare display strings for debit and credit accounts and user names to avoid per-row queries in the view
         $accountsMap = [];
-        $usersMap    = [];
+        $usersMap = [];
         foreach ($multis as $multi) {
-            $debitNames  = [];
+            $debitNames = [];
             $creditNames = [];
-            $dets        = $multi->journalHead?->dets ?? collect();
+            $dets = $multi->journalHead?->dets ?? collect();
             foreach ($dets as $det) {
                 $accName = $det->accHead?->aname ?? null;
                 if (! $accName) {
@@ -170,11 +170,11 @@ class MultiVoucherController extends Controller
                 }
 
             }
-            $debitNames  = array_values(array_unique(array_filter($debitNames)));
+            $debitNames = array_values(array_unique(array_filter($debitNames)));
             $creditNames = array_values(array_unique(array_filter($creditNames)));
 
             $accountsMap[$multi->id] = [
-                'debit'  => ! empty($debitNames) ? implode(', ', $debitNames) : ($multi->account1?->aname ?? 'مذكروين'),
+                'debit' => ! empty($debitNames) ? implode(', ', $debitNames) : ($multi->account1?->aname ?? 'مذكروين'),
                 'credit' => ! empty($creditNames) ? implode(', ', $creditNames) : ($multi->account2?->aname ?? 'مذكروين'),
             ];
 
@@ -187,7 +187,7 @@ class MultiVoucherController extends Controller
     public function create(Request $request)
     {
         $branches = userBranches();
-        $type     = $request->type;
+        $type = $request->type;
 
         // التحقق النهائي من الصلاحية
         $permissionMap = [
@@ -200,7 +200,7 @@ class MultiVoucherController extends Controller
         }
 
         $pro_type = ProType::where('pname', $type)->first()?->id;
-        $ptext    = ProType::where('pname', $type)->first()?->ptext;
+        $ptext = ProType::where('pname', $type)->first()?->ptext;
         // dd($type, $pro_type, $ptext);
 
         $employees = AccHead::where('isdeleted', 0)
@@ -209,16 +209,24 @@ class MultiVoucherController extends Controller
             ->get();
 
         $lastProId = OperHead::where('pro_type', $type)->max('pro_id') ?? 0;
-        $newProId  = $lastProId + 1;
+        $newProId = $lastProId + 1;
 
         [$accounts1, $accounts2] = $this->getAccountsByType($pro_type);
-        // dd([$accounts1, $accounts2]);
-        return view('multi-vouchers.create', compact('accounts1', 'accounts2', 'pro_type', 'ptext', 'employees', 'newProId', 'branches'));
+
+        // جلب البيانات المنسوخة من session إن وجدت
+        $duplicateData = session('duplicate_data', null);
+
+        // حذف البيانات من session بعد استخدامها
+        if ($duplicateData) {
+            session()->forget('duplicate_data');
+        }
+
+        return view('multi-vouchers.create', compact('accounts1', 'accounts2', 'pro_type', 'ptext', 'employees', 'newProId', 'branches', 'duplicateData'));
     }
 
     private function getAccountsByType($type)
     {
-        $query = fn() => AccHead::where('isdeleted', 0)->where('is_basic', 0);
+        $query = fn () => AccHead::where('isdeleted', 0)->where('is_basic', 0);
 
         switch ($type) {
             case 32:
@@ -316,7 +324,7 @@ class MultiVoucherController extends Controller
     public function store(Request $request)
     {
         // / التحقق من الصلاحية قبل الحفظ
-        $type          = $request->type;
+        $type = $request->type;
         $permissionMap = [
             'multi_payment' => 'create multi-payment',
             'multi_receipt' => 'create multi-receipt',
@@ -326,16 +334,16 @@ class MultiVoucherController extends Controller
             abort(403, 'غير مصرح لك بإنشاء هذا النوع من السندات المتعددة');
         }
         $request->validate([
-            'pro_date'    => 'required|date',
-            'details'     => 'string|max:255',
-            'sub_value'   => 'required|array|min:1',
+            'pro_date' => 'required|date',
+            'details' => 'string|max:255',
+            'sub_value' => 'required|array|min:1',
             'sub_value.*' => 'nullable|numeric|min:0',
-            'note.*'      => 'nullable|string|max:255',
-            'acc1'        => 'nullable|array',
-            'acc1.*'      => 'nullable|exists:acc_head,id',
-            'acc2'        => 'nullable|array',
-            'acc2.*'      => 'nullable|exists:acc_head,id',
-            'branch_id'   => 'required|exists:branches,id',
+            'note.*' => 'nullable|string|max:255',
+            'acc1' => 'nullable|array',
+            'acc1.*' => 'nullable|exists:acc_head,id',
+            'acc2' => 'nullable|array',
+            'acc2.*' => 'nullable|exists:acc_head,id',
+            'branch_id' => 'required|exists:branches,id',
         ]);
 
         try {
@@ -345,44 +353,44 @@ class MultiVoucherController extends Controller
 
             // تحديد رقم العملية الجديد
             $lastProId = OperHead::where('pro_type', $pro_type)->max('pro_id') ?? 0;
-            $newProId  = $lastProId + 1;
+            $newProId = $lastProId + 1;
 
             // حساب القيمة الكلية
             $pro_value = collect($request->sub_value)
-                ->filter(fn($v) => floatval($v) > 0)
+                ->filter(fn ($v) => floatval($v) > 0)
                 ->sum();
 
             // إنشاء رأس العملية
             $operHead = OperHead::create([
-                'pro_id'      => $newProId,
-                'pro_date'    => $request->pro_date,
-                'pro_type'    => $pro_type,
-                'pro_value'   => $pro_value,
-                'details'     => $request->details ?? null,
-                'pro_serial'  => $request->pro_serial ?? null,
-                'pro_num'     => $request->pro_num ?? null,
-                'branch'      => 1,
-                'is_finance'  => 1,
-                'is_journal'  => 1,
-                'emp_id'      => $request->emp_id,
+                'pro_id' => $newProId,
+                'pro_date' => $request->pro_date,
+                'pro_type' => $pro_type,
+                'pro_value' => $pro_value,
+                'details' => $request->details ?? null,
+                'pro_serial' => $request->pro_serial ?? null,
+                'pro_num' => $request->pro_num ?? null,
+                'branch' => 1,
+                'is_finance' => 1,
+                'is_journal' => 1,
+                'emp_id' => $request->emp_id,
                 'cost_center' => $request->cost_center ?? null,
-                'user'        => Auth::id(),
-                'branch_id'   => $request->branch_id,
+                'user' => Auth::id(),
+                'branch_id' => $request->branch_id,
             ]);
 
             // إنشاء رأس القيد
             $lastJournalId = JournalHead::max('journal_id') ?? 0;
-            $newJournalId  = $lastJournalId + 1;
+            $newJournalId = $lastJournalId + 1;
 
             $journalHead = JournalHead::create([
                 'journal_id' => $newJournalId,
-                'total'      => $pro_value,
-                'date'       => $request->pro_date,
-                'op_id'      => $operHead->id,
-                'pro_type'   => $pro_type,
-                'details'    => $request->details,
-                'user'       => Auth::id(),
-                'branch_id'  => $request->branch_id,
+                'total' => $pro_value,
+                'date' => $request->pro_date,
+                'op_id' => $operHead->id,
+                'pro_type' => $pro_type,
+                'details' => $request->details,
+                'user' => Auth::id(),
+                'branch_id' => $request->branch_id,
             ]);
 
             // القوائم الخاصة بأنواع العمليات
@@ -390,14 +398,14 @@ class MultiVoucherController extends Controller
             $account2_types = ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54'];
 
             // الحساب الرئيسي
-            $mainAcc     = null;
+            $mainAcc = null;
             $mainIsDebit = null;
 
             if (in_array($pro_type, $account1_types)) {
-                $mainAcc     = $request->acc1[0] ?? null;
+                $mainAcc = $request->acc1[0] ?? null;
                 $mainIsDebit = true;
             } elseif (in_array($pro_type, $account2_types)) {
-                $mainAcc     = $request->acc2[0] ?? null;
+                $mainAcc = $request->acc2[0] ?? null;
                 $mainIsDebit = false;
             }
 
@@ -405,13 +413,13 @@ class MultiVoucherController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalHead->journal_id,
                     'account_id' => $mainAcc,
-                    'debit'      => $mainIsDebit ? $pro_value : 0,
-                    'credit'     => $mainIsDebit ? 0 : $pro_value,
-                    'op_id'      => $operHead->id,
-                    'type'       => $mainIsDebit ? 0 : 1,
-                    'info'       => null,
-                    'isdeleted'  => 0,
-                    'branch_id'  => $request->branch_id,
+                    'debit' => $mainIsDebit ? $pro_value : 0,
+                    'credit' => $mainIsDebit ? 0 : $pro_value,
+                    'op_id' => $operHead->id,
+                    'type' => $mainIsDebit ? 0 : 1,
+                    'info' => null,
+                    'isdeleted' => 0,
+                    'branch_id' => $request->branch_id,
                 ]);
             }
 
@@ -423,20 +431,20 @@ class MultiVoucherController extends Controller
                 }
 
                 $acc_id = null;
-                $debit  = 0;
+                $debit = 0;
                 $credit = 0;
-                $type   = null;
+                $type = null;
 
                 if (in_array($pro_type, $account1_types)) {
                     $acc_id = $request->acc2[$index] ?? null;
-                    $debit  = 0;
+                    $debit = 0;
                     $credit = $value;
-                    $type   = 1;
+                    $type = 1;
                 } elseif (in_array($pro_type, $account2_types)) {
                     $acc_id = $request->acc1[$index] ?? null;
-                    $debit  = $value;
+                    $debit = $value;
                     $credit = 0;
-                    $type   = 0;
+                    $type = 0;
                 }
 
                 if (! $acc_id) {
@@ -446,13 +454,13 @@ class MultiVoucherController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalHead->journal_id,
                     'account_id' => $acc_id,
-                    'debit'      => $debit,
-                    'credit'     => $credit,
-                    'op_id'      => $operHead->id,
-                    'type'       => $type,
-                    'info'       => $request->note[$index] ?? null,
-                    'isdeleted'  => 0,
-                    'branch_id'  => $request->branch_id,
+                    'debit' => $debit,
+                    'credit' => $credit,
+                    'op_id' => $operHead->id,
+                    'type' => $type,
+                    'info' => $request->note[$index] ?? null,
+                    'isdeleted' => 0,
+                    'branch_id' => $request->branch_id,
                 ]);
             }
 
@@ -460,13 +468,14 @@ class MultiVoucherController extends Controller
 
             // Determine the ProType name and redirect to vouchers.index with that type
             $pname = \App\Models\ProType::find($pro_type)?->pname;
-            $type  = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
+            $type = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
 
             return redirect()->route('vouchers.index', ['type' => $type])
                 ->with('success', 'تم حفظ القيد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'حدث خطأ أثناء حفظ البيانات: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'حدث خطأ أثناء حفظ البيانات: '.$e->getMessage()]);
         }
     }
 
@@ -476,7 +485,7 @@ class MultiVoucherController extends Controller
         // eager load the correct relations (JournalHead -> dets -> accHead)
         $operHead = OperHead::with(['journalHead.dets.accHead', 'employee'])
             ->findOrFail($id);
-        $pname         = \App\Models\ProType::find($operHead->pro_type)?->pname;
+        $pname = \App\Models\ProType::find($operHead->pro_type)?->pname;
         $permissionMap = [
             'multi_payment' => 'edit multi-payment',
             'multi_receipt' => 'edit multi-receipt',
@@ -488,7 +497,7 @@ class MultiVoucherController extends Controller
         }
         // جلب بيانات نوع العملية
         $pro_type = $operHead->pro_type;
-        $ptext    = ProType::where('id', $pro_type)->first()?->ptext;
+        $ptext = ProType::where('id', $pro_type)->first()?->ptext;
 
         if (! $ptext) {
             abort(404, 'نوع العملية غير موجود');
@@ -510,7 +519,7 @@ class MultiVoucherController extends Controller
         // تحميل تفاصيل اليومية
         $journalDetails = $operHead->journalHead?->dets ?? [];
 
-        $mainEntry  = null;
+        $mainEntry = null;
         $subEntries = [];
 
         foreach ($journalDetails as $detail) {
@@ -524,6 +533,8 @@ class MultiVoucherController extends Controller
             }
         }
 
+        $branches = userBranches();
+
         return view('multi-vouchers.edit', compact(
             'operHead',
             'accounts1',
@@ -532,7 +543,8 @@ class MultiVoucherController extends Controller
             'ptext',
             'employees',
             'mainEntry',
-            'subEntries'
+            'subEntries',
+            'branches'
         ));
     }
 
@@ -541,7 +553,7 @@ class MultiVoucherController extends Controller
         $operHead = OperHead::findOrFail($id);
 
         // التحقق من الصلاحية قبل التحديث
-        $pname         = \App\Models\ProType::find($operHead->pro_type)?->pname;
+        $pname = \App\Models\ProType::find($operHead->pro_type)?->pname;
         $permissionMap = [
             'multi_payment' => 'edit multi-payment',
             'multi_receipt' => 'edit multi-receipt',
@@ -552,15 +564,15 @@ class MultiVoucherController extends Controller
             abort(403, 'غير مصرح لك بتعديل هذا السند المتعدد');
         }
         $request->validate([
-            'pro_date'    => 'required|date',
-            'details'     => 'string|max:255',
-            'sub_value'   => 'required|array|min:1',
+            'pro_date' => 'required|date',
+            'details' => 'string|max:255',
+            'sub_value' => 'required|array|min:1',
             'sub_value.*' => 'nullable|numeric|min:0',
-            'note.*'      => 'nullable|string|max:255',
-            'acc1'        => 'nullable|array',
-            'acc1.*'      => 'nullable|exists:acc_head,id',
-            'acc2'        => 'nullable|array',
-            'acc2.*'      => 'nullable|exists:acc_head,id',
+            'note.*' => 'nullable|string|max:255',
+            'acc1' => 'nullable|array',
+            'acc1.*' => 'nullable|exists:acc_head,id',
+            'acc2' => 'nullable|array',
+            'acc2.*' => 'nullable|exists:acc_head,id',
         ]);
 
         try {
@@ -570,19 +582,19 @@ class MultiVoucherController extends Controller
             $pro_type = $operHead->pro_type;
 
             $pro_value = collect($request->sub_value)
-                ->filter(fn($v) => floatval($v) > 0)
+                ->filter(fn ($v) => floatval($v) > 0)
                 ->sum();
 
             $operHead->update([
-                'pro_date'    => $request->pro_date,
-                'pro_value'   => $pro_value,
-                'details'     => $request->details,
-                'pro_serial'  => $request->pro_serial,
-                'pro_num'     => $request->pro_num ?? null,
-                'emp_id'      => $request->emp_id,
+                'pro_date' => $request->pro_date,
+                'pro_value' => $pro_value,
+                'details' => $request->details,
+                'pro_serial' => $request->pro_serial,
+                'pro_num' => $request->pro_num ?? null,
+                'emp_id' => $request->emp_id,
                 'cost_center' => $request->cost_center ?? null,
-                'info'        => $request->info ?? null,
-                'user'        => Auth::id(),
+                'info' => $request->info ?? null,
+                'user' => Auth::id(),
             ]);
 
             // تحديث رأس القيد
@@ -590,10 +602,10 @@ class MultiVoucherController extends Controller
 
             if ($journalHead) {
                 $journalHead->update([
-                    'total'   => $pro_value,
-                    'date'    => $request->pro_date,
+                    'total' => $pro_value,
+                    'date' => $request->pro_date,
                     'details' => $request->details,
-                    'user'    => Auth::id(),
+                    'user' => Auth::id(),
                 ]);
             }
 
@@ -604,14 +616,14 @@ class MultiVoucherController extends Controller
             $account2_types = ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54'];
 
             // الحساب الرئيسي
-            $mainAcc     = null;
+            $mainAcc = null;
             $mainIsDebit = null;
 
             if (in_array($pro_type, $account1_types)) {
-                $mainAcc     = $request->acc1[0] ?? null;
+                $mainAcc = $request->acc1[0] ?? null;
                 $mainIsDebit = true;
             } elseif (in_array($pro_type, $account2_types)) {
-                $mainAcc     = $request->acc2[0] ?? null;
+                $mainAcc = $request->acc2[0] ?? null;
                 $mainIsDebit = false;
             }
 
@@ -619,13 +631,13 @@ class MultiVoucherController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalHead->journal_id,
                     'account_id' => $mainAcc,
-                    'debit'      => $mainIsDebit ? $pro_value : 0,
-                    'credit'     => $mainIsDebit ? 0 : $pro_value,
-                    'op_id'      => $operHead->id,
-                    'type'       => $mainIsDebit ? 0 : 1,
-                    'info'       => null,
-                    'isdeleted'  => 0,
-                    'branch_id'  => $request->branch_id ?? $operHead->branch_id ?? null,
+                    'debit' => $mainIsDebit ? $pro_value : 0,
+                    'credit' => $mainIsDebit ? 0 : $pro_value,
+                    'op_id' => $operHead->id,
+                    'type' => $mainIsDebit ? 0 : 1,
+                    'info' => null,
+                    'isdeleted' => 0,
+                    'branch_id' => $request->branch_id ?? $operHead->branch_id ?? null,
                 ]);
             }
 
@@ -637,20 +649,20 @@ class MultiVoucherController extends Controller
                 }
 
                 $acc_id = null;
-                $debit  = 0;
+                $debit = 0;
                 $credit = 0;
-                $type   = null;
+                $type = null;
 
                 if (in_array($pro_type, $account1_types)) {
                     $acc_id = $request->acc2[$index] ?? null;
-                    $debit  = 0;
+                    $debit = 0;
                     $credit = $value;
-                    $type   = 1;
+                    $type = 1;
                 } elseif (in_array($pro_type, $account2_types)) {
                     $acc_id = $request->acc1[$index] ?? null;
-                    $debit  = $value;
+                    $debit = $value;
                     $credit = 0;
-                    $type   = 0;
+                    $type = 0;
                 }
 
                 if (! $acc_id) {
@@ -660,13 +672,13 @@ class MultiVoucherController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalHead->journal_id,
                     'account_id' => $acc_id,
-                    'debit'      => $debit,
-                    'credit'     => $credit,
-                    'op_id'      => $operHead->id,
-                    'type'       => $type,
-                    'info'       => $request->note[$index] ?? null,
-                    'isdeleted'  => 0,
-                    'branch_id'  => $request->branch_id ?? $operHead->branch_id ?? null,
+                    'debit' => $debit,
+                    'credit' => $credit,
+                    'op_id' => $operHead->id,
+                    'type' => $type,
+                    'info' => $request->note[$index] ?? null,
+                    'isdeleted' => 0,
+                    'branch_id' => $request->branch_id ?? $operHead->branch_id ?? null,
                 ]);
             }
 
@@ -674,13 +686,14 @@ class MultiVoucherController extends Controller
 
             // Determine ProType name and redirect accordingly
             $pname = \App\Models\ProType::find($operHead->pro_type)?->pname;
-            $type  = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
+            $type = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
 
             return redirect()->route('vouchers.index', ['type' => $type])
                 ->with('success', 'تم تحديث القيد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'حدث خطأ أثناء التحديث: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'حدث خطأ أثناء التحديث: '.$e->getMessage()]);
         }
     }
 
@@ -689,7 +702,7 @@ class MultiVoucherController extends Controller
         $operHead = OperHead::findOrFail($id);
 
         // التحقق من الصلاحية قبل الحذف
-        $pname         = \App\Models\ProType::find($operHead->pro_type)?->pname;
+        $pname = \App\Models\ProType::find($operHead->pro_type)?->pname;
         $permissionMap = [
             'multi_payment' => 'delete multi-payment',
             'multi_receipt' => 'delete multi-receipt',
@@ -721,13 +734,77 @@ class MultiVoucherController extends Controller
 
             // Determine ProType name and redirect accordingly
             $pname = \App\Models\ProType::find($oper->pro_type)?->pname;
-            $type  = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
+            $type = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
 
             return redirect()->route('vouchers.index', ['type' => $type])->with('success', 'تم حذف القيد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: '.$e->getMessage()]);
         }
+    }
+
+    public function duplicate($id)
+    {
+        $operHead = OperHead::with(['journalHead.dets.accHead', 'employee'])
+            ->findOrFail($id);
+
+        $pname = \App\Models\ProType::find($operHead->pro_type)?->pname;
+
+        // التحقق من الصلاحية
+        $permissionMap = [
+            'multi_payment' => 'create multi-payment',
+            'multi_receipt' => 'create multi-receipt',
+        ];
+
+        $requiredPermission = $permissionMap[$pname] ?? null;
+        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
+            abort(403, 'غير مصرح لك بنسخ هذا السند المتعدد');
+        }
+
+        // تحضير البيانات للنسخ
+        $journalDetails = $operHead->journalHead?->dets ?? [];
+        $account1_types = ['32', '40', '41', '46', '47', '50', '53', '55'];
+        $account2_types = ['33', '42', '43', '44', '45', '48', '49', '51', '52', '54'];
+
+        // تحديد الحساب الرئيسي
+        $mainAccount = null;
+        $subEntries = [];
+
+        foreach ($journalDetails as $detail) {
+            if (
+                (in_array($operHead->pro_type, $account1_types) && $detail->debit > 0) ||
+                (in_array($operHead->pro_type, $account2_types) && $detail->credit > 0)
+            ) {
+                $mainAccount = $detail->account_id;
+            } else {
+                $subEntries[] = [
+                    'account_id' => $detail->account_id,
+                    'value' => $detail->debit > 0 ? $detail->debit : $detail->credit,
+                    'note' => $detail->info,
+                ];
+            }
+        }
+
+        // حفظ البيانات في session للاستخدام في create
+        session([
+            'duplicate_data' => [
+                'pro_date' => $operHead->pro_date,
+                'pro_serial' => $operHead->pro_serial,
+                'pro_num' => null, // رقم جديد
+                'details' => $operHead->details,
+                'emp_id' => $operHead->emp_id,
+                'cost_center' => $operHead->cost_center,
+                'info' => $operHead->info,
+                'branch_id' => $operHead->branch_id,
+                'main_account' => $mainAccount,
+                'sub_entries' => $subEntries,
+            ],
+        ]);
+
+        // التوجيه إلى صفحة create مع النوع
+        return redirect()->route('multi-vouchers.create', ['type' => $pname])
+            ->with('success', 'تم تحميل بيانات السند للنسخ. يمكنك تعديلها ثم حفظها.');
     }
 
     public function statistics()
@@ -771,7 +848,7 @@ class MultiVoucherController extends Controller
                     'count' => $item->count,
                     'value' => $item->value,
                     'color' => $proTypeMap[$item->pro_type]['color'],
-                    'icon'  => $proTypeMap[$item->pro_type]['icon'],
+                    'icon' => $proTypeMap[$item->pro_type]['icon'],
                 ];
             })->toArray();
 

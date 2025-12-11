@@ -147,6 +147,7 @@
                                         $canDelete = auth()->user()->can('delete recipt');
                                         break;
                                     case 2: // payment
+                                    case 101: // expense_voucher (payment)
                                         $canEdit = auth()->user()->can('edit payment');
                                         $canDelete = auth()->user()->can('delete payment');
                                         break;
@@ -154,13 +155,13 @@
                                         $canEdit = auth()->user()->can('edit exp-payment');
                                         $canDelete = auth()->user()->can('delete exp-payment');
                                         break;
-                                    case 4: // multi_payment
-                                        $canEdit = auth()->user()->can('edit multi-payment');
-                                        $canDelete = auth()->user()->can('delete multi-payment');
-                                        break;
-                                    case 5: // multi_receipt
+                                    case 32: // multi_receipt
                                         $canEdit = auth()->user()->can('edit multi-receipt');
                                         $canDelete = auth()->user()->can('delete multi-receipt');
+                                        break;
+                                    case 33: // multi_payment
+                                        $canEdit = auth()->user()->can('edit multi-payment');
+                                        $canDelete = auth()->user()->can('delete multi-payment');
                                         break;
                                 }
 
@@ -174,10 +175,10 @@
                                     <span
                                         class="badge
                                         @if ($voucher->pro_type == 1) bg-success
-                                        @elseif($voucher->pro_type == 2) bg-danger
+                                        @elseif(in_array($voucher->pro_type, [2, 101])) bg-danger
                                         @elseif($voucher->pro_type == 3) bg-warning
-                                        @elseif($voucher->pro_type == 4) bg-info
-                                        @elseif($voucher->pro_type == 5) bg-primary
+                                        @elseif($voucher->pro_type == 32) bg-primary
+                                        @elseif($voucher->pro_type == 33) bg-info
                                         @else bg-secondary @endif">
                                         {{ $voucher->type->ptext ?? 'غير محدد' }}
                                     </span>
@@ -199,7 +200,7 @@
                                     @if($hasAnyActionPermission)
                                         <div class="btn-group" role="group">
                                             @if($canEdit)
-                                                @if(in_array($voucher->pro_type, [4, 5])) {{-- multi vouchers --}}
+                                                @if(in_array($voucher->pro_type, [32, 33])) {{-- multi vouchers --}}
                                                     <a href="{{ route('multi-vouchers.edit', $voucher) }}" class="btn btn-sm btn-warning" title="تعديل">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
@@ -210,9 +211,25 @@
                                                 @endif
                                             @endif
 
+                                            @if(in_array($voucher->pro_type, [32, 33])) {{-- multi vouchers --}}
+                                                @php
+                                                    $pname = $voucher->type->pname ?? null;
+                                                    $canDuplicate = match($pname) {
+                                                        'multi_payment' => auth()->user()->can('create multi-payment'),
+                                                        'multi_receipt' => auth()->user()->can('create multi-receipt'),
+                                                        default => false,
+                                                    };
+                                                @endphp
+                                                @if($canDuplicate)
+                                                    <a href="{{ route('multi-vouchers.duplicate', $voucher) }}" class="btn btn-sm btn-info" title="نسخ العملية">
+                                                        <i class="fas fa-copy"></i>
+                                                    </a>
+                                                @endif
+                                            @endif
+
                                             @if($canDelete)
                                                 <form action="{{
-                                                    in_array($voucher->pro_type, [4, 5])
+                                                    in_array($voucher->pro_type, [32, 33])
                                                     ? route('multi-vouchers.destroy', $voucher->id)
                                                     : route('vouchers.destroy', $voucher->id)
                                                 }}" method="POST" style="display:inline;">

@@ -7,39 +7,16 @@
 
 @section('content')
 
-    <style>
-        .form-group {
-            margin-bottom: 1rem;
-        }
+    @include('components.breadcrumb', [
+        'title' => $pageTitle ?? 'إضافة تحويل نقدي',
+        'items' => [
+            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
+            ['label' => 'التحويلات النقدية', 'url' => route('transfers.index')],
+            ['label' => 'إضافة جديد'],
+        ],
+    ])
 
-        label {
-            font-weight: 600;
-            margin-bottom: 0.4rem;
-            display: inline-block;
-        }
-
-        .form-control {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.95rem;
-            border-radius: 0.4rem;
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-
-        .card {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
-        }
-
-        .row+.row {
-            margin-top: 1rem;
-        }
-    </style>
-
+  
     <div class="content-wrapper">
         <section class="content">
             @if ($errors->any())
@@ -55,9 +32,9 @@
             <form action="{{ route('transfers.store') }}" method="POST">
                 @csrf
 
-                <div class="card bg-white mt-3 col-md-10 container">
+                <div class="card bg-white">
                     <div class="card-header">
-                        <h2 class="card-title"> {{ $pro_type }}</h2>
+                        <h2 class="card-title">{{ $pageTitle ?? 'إضافة تحويل نقدي' }}</h2>
                     </div>
 
                     <input type="text" name="pro_type" value="{{ $pro_type }}" hidden>
@@ -103,7 +80,7 @@
                                 <label>من حساب</label>
                                 <select name="acc2" class="form-control">
                                     <option value="">اختر الحساب</option>
-                                    @foreach ($cashAccounts as $account)
+                                    @foreach ($fromAccounts as $account)
                                         <option value="{{ $account->id }}">{{ $account->aname }}</option>
                                     @endforeach
                                 </select>
@@ -112,7 +89,7 @@
                                 <label>إلى حساب</label>
                                 <select name="acc1" class="form-control">
                                     <option value="">اختر الحساب</option>
-                                    @foreach ($bankAccounts as $account)
+                                    @foreach ($toAccounts as $account)
                                         <option value="{{ $account->id }}">{{ $account->aname }}</option>
                                     @endforeach
                                 </select>
@@ -168,5 +145,4 @@
             </form>
         </section>
     </div>
-
 @endsection

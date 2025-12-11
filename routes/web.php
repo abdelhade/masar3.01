@@ -218,6 +218,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('transfers', TransferController::class)->names('transfers');
 
     Route::get('multi-vouchers/statistics', [MultiVoucherController::class, 'statistics'])->name('multi-vouchers.statistics');
+    Route::get('multi-vouchers/{multivoucher}/duplicate', [MultiVoucherController::class, 'duplicate'])->name('multi-vouchers.duplicate');
     Route::resource('multi-vouchers', MultiVoucherController::class)->names('multi-vouchers');
 
     Route::resource('multi-journals', MultiJournalController::class)->names('multi-journals');

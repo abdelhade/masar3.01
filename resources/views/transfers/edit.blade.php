@@ -91,8 +91,6 @@
 
                             <select name="acc1" required id="acc1" class="form-control" onblur="validateRequired(this); checkSameAccounts();">
                                 <option value="">اختر الحساب</option>
-                                @php $fromAccounts = ($type === 'cash_to_cash' || $type === 'cash_to_bank') ? $cashAccounts : $bankAccounts;
-                                @endphp
                                 @foreach ($fromAccounts as $account)
                                     <option value="{{ $account->id }}" {{ old('acc1', $transfer->acc1 ?? '') == $account->id ? 'selected' : '' }}>
                                         {{ $account->aname }}
@@ -106,7 +104,6 @@
                             <label>إلى حساب: {{ $acc2_text }} <span class="badge badge-outline-info">مدين</span></label>
                             <select name="acc2" id="acc2" required class="form-control" onblur="validateRequired(this); ">
                                 <option value="">اختر الحساب</option>
-                                @php $toAccounts = ($type === 'cash_to_cash' || $type === 'bank_to_cash') ? $cashAccounts : $bankAccounts; @endphp
                                 @foreach ($toAccounts as $account)
                                     <option value="{{ $account->id }}" {{ old('acc2', $transfer->acc2 ?? '') == $account->id ? ' selected ' : '' }}>
                                         {{ $account->aname }}

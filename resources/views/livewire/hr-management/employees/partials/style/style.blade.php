@@ -1,5 +1,12 @@
 <style>
     /* ==========================================
+       Alpine.js - Hide elements until ready
+       ========================================== */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* ==========================================
        Form Layout & Structure
        ========================================== */
     .employee-form-container {

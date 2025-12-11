@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{OperHead, Transfer, JournalHead};
 use App\Models\JournalDetail;
-use Modules\Accounts\Models\AccHead;
+use App\Models\JournalHead;
+use App\Models\OperHead;
+use App\Models\Transfer;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-
+use Modules\Accounts\Models\AccHead;
 
 class TransferController extends Controller
 {
@@ -40,10 +41,14 @@ class TransferController extends Controller
                 if ($type) {
                     // Normalize incoming type to hyphen form (accept underscores or hyphens)
                     $normType = str_replace('_', '-', $type);
-                    if ($allow("view {$normType}")) return $next($request);
+                    if ($allow("view {$normType}")) {
+                        return $next($request);
+                    }
                     abort(403);
                 }
-                if ($allow('view transfers')) return $next($request);
+                if ($allow('view transfers')) {
+                    return $next($request);
+                }
                 abort(403);
             }
 
@@ -52,9 +57,13 @@ class TransferController extends Controller
                 $type = $request->get('type');
                 if ($type) {
                     $normType = str_replace('_', '-', $type);
-                    if ($allow("create {$normType}")) return $next($request);
+                    if ($allow("create {$normType}")) {
+                        return $next($request);
+                    }
                 }
-                if ($allow('create transfers')) return $next($request);
+                if ($allow('create transfers')) {
+                    return $next($request);
+                }
                 abort(403);
             }
 
@@ -62,21 +71,32 @@ class TransferController extends Controller
             if (in_array($action, ['edit', 'update', 'destroy'])) {
                 $routeParam = $request->route('id') ?? $request->route('transfer') ?? $request->route('operhead') ?? null;
                 $id = null;
-                if (is_object($routeParam) && isset($routeParam->id)) $id = $routeParam->id;
-                elseif (is_numeric($routeParam)) $id = $routeParam;
+                if (is_object($routeParam) && isset($routeParam->id)) {
+                    $id = $routeParam->id;
+                } elseif (is_numeric($routeParam)) {
+                    $id = $routeParam;
+                }
 
                 $oper = $id ? OperHead::find($id) : null;
                 $typeSlug = $oper && isset($typeSlugs[$oper->pro_type]) ? $typeSlugs[$oper->pro_type] : null;
 
                 if ($action === 'destroy') {
-                    if ($typeSlug && $allow("delete {$typeSlug}")) return $next($request);
-                    if ($allow('delete transfers')) return $next($request);
+                    if ($typeSlug && $allow("delete {$typeSlug}")) {
+                        return $next($request);
+                    }
+                    if ($allow('delete transfers')) {
+                        return $next($request);
+                    }
                     abort(403);
                 }
 
                 // edit/update
-                if ($typeSlug && $allow("edit {$typeSlug}")) return $next($request);
-                if ($allow('edit transfers')) return $next($request);
+                if ($typeSlug && $allow("edit {$typeSlug}")) {
+                    return $next($request);
+                }
+                if ($allow('edit transfers')) {
+                    return $next($request);
+                }
                 abort(403);
             }
 
@@ -111,20 +131,72 @@ class TransferController extends Controller
 
         $pro_type = $proTypeMap[$type] ?? null;
 
+        // تحديد العنوان العربي حسب نوع التحويل
+        $typeTitles = [
+            'cash_to_cash' => 'تحويل من صندوق إلى صندوق',
+            'cash_to_bank' => 'تحويل من صندوق إلى بنك',
+            'bank_to_cash' => 'تحويل من بنك إلى صندوق',
+            'bank_to_bank' => 'تحويل من بنك إلى بنك',
+        ];
+        $pageTitle = $typeTitles[$type] ?? 'تحويل نقدي';
+
         $lastProId = OperHead::where('pro_type', $pro_type)->max('pro_id') ?? 0;
         $newProId = $lastProId + 1;
 
-        // حسابات الصندوق
-        $cashAccounts = AccHead::where('isdeleted', 0)
+        // تحديد نوع الحسابات حسب نوع التحويل
+        // acc_type = 3: صندوق
+        // acc_type = 4: بنك
+        $fromAccountType = null;
+        $toAccountType = null;
+
+        switch ($type) {
+            case 'cash_to_cash':
+                $fromAccountType = 3; // صندوق
+                $toAccountType = 3; // صندوق
+                break;
+            case 'cash_to_bank':
+                $fromAccountType = 3; // صندوق
+                $toAccountType = 4; // بنك
+                break;
+            case 'bank_to_cash':
+                $fromAccountType = 4; // بنك
+                $toAccountType = 3; // صندوق
+                break;
+            case 'bank_to_bank':
+                $fromAccountType = 4; // بنك
+                $toAccountType = 4; // بنك
+                break;
+        }
+
+        // حسابات "من حساب" حسب نوع التحويل
+        $fromAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '1101%')
+            ->when($fromAccountType, function ($query) use ($fromAccountType) {
+                return $query->where('acc_type', $fromAccountType);
+            })
             ->select('id', 'aname')
             ->get();
 
-        // حسابات البنك
+        // حسابات "إلى حساب" حسب نوع التحويل
+        $toAccounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->when($toAccountType, function ($query) use ($toAccountType) {
+                return $query->where('acc_type', $toAccountType);
+            })
+            ->select('id', 'aname')
+            ->get();
+
+        // حسابات الصندوق (للاحتفاظ بالتوافق مع الكود القديم إن لزم)
+        $cashAccounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('acc_type', 3)
+            ->select('id', 'aname')
+            ->get();
+
+        // حسابات البنك (للاحتفاظ بالتوافق مع الكود القديم إن لزم)
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '1102%')
+            ->where('acc_type', 4)
             ->select('id', 'aname')
             ->get();
 
@@ -138,12 +210,17 @@ class TransferController extends Controller
         // باقي الحسابات
         $otherAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where(function ($query) {
-                $query->where('is_fund', 'not', '1');
-                $query->where('is_stock', 'not', '1 order by code');
-            })
+            ->where('is_fund', '!=', 1)
+            ->where('is_stock', '!=', 1)
+            ->orderBy('code')
             ->select('id', 'aname', 'code')
             ->get();
+
+        // مراكز التكلفة (إن وُجِدَت في التطبيق)
+        $costCenters = [];
+        if (class_exists('\Modules\\CostCenter\\Models\\CostCenter')) {
+            $costCenters = \Modules\CostCenter\Models\CostCenter::where('isdeleted', 0)->select('id', 'name')->get();
+        }
 
         return view('transfers.create', get_defined_vars());
     }
@@ -250,10 +327,10 @@ class TransferController extends Controller
             return redirect()->route('transfers.index')->with('success', 'تم حفظ السند والقيد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
+
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
         }
     }
-
 
     public function edit($id)
     {
@@ -268,17 +345,60 @@ class TransferController extends Controller
         ];
         $type = $typeMap[$transfer->pro_type] ?? null;
 
-        // حسابات الصندوق
-        $cashAccounts = AccHead::where('isdeleted', 0)
+        // تحديد نوع الحسابات حسب نوع التحويل
+        // acc_type = 3: صندوق
+        // acc_type = 4: بنك
+        $fromAccountType = null;
+        $toAccountType = null;
+
+        switch ($type) {
+            case 'cash_to_cash':
+                $fromAccountType = 3; // صندوق
+                $toAccountType = 3; // صندوق
+                break;
+            case 'cash_to_bank':
+                $fromAccountType = 3; // صندوق
+                $toAccountType = 4; // بنك
+                break;
+            case 'bank_to_cash':
+                $fromAccountType = 4; // بنك
+                $toAccountType = 3; // صندوق
+                break;
+            case 'bank_to_bank':
+                $fromAccountType = 4; // بنك
+                $toAccountType = 4; // بنك
+                break;
+        }
+
+        // حسابات "من حساب" حسب نوع التحويل
+        $fromAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '1101%')
+            ->when($fromAccountType, function ($query) use ($fromAccountType) {
+                return $query->where('acc_type', $fromAccountType);
+            })
             ->select('id', 'aname')
             ->get();
 
-        // حسابات البنك
+        // حسابات "إلى حساب" حسب نوع التحويل
+        $toAccounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->when($toAccountType, function ($query) use ($toAccountType) {
+                return $query->where('acc_type', $toAccountType);
+            })
+            ->select('id', 'aname')
+            ->get();
+
+        // حسابات الصندوق (للاحتفاظ بالتوافق مع الكود القديم)
+        $cashAccounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('acc_type', 3)
+            ->select('id', 'aname')
+            ->get();
+
+        // حسابات البنك (للاحتفاظ بالتوافق مع الكود القديم)
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
-            ->where('code', 'like', '1102%')
+            ->where('acc_type', 4)
             ->select('id', 'aname')
             ->get();
 
@@ -298,41 +418,42 @@ class TransferController extends Controller
             ->select('id', 'aname', 'code')
             ->get();
 
-            // تأكد من أن الحسابات الحالية موجودة في القوائم حتى لو تغيرت التصنيفات
-            if ($transfer->acc1) {
-                $acc1 = AccHead::select('id', 'aname')->find($transfer->acc1);
-                if ($acc1 && !$cashAccounts->contains('id', $acc1->id) && !$bankAccounts->contains('id', $acc1->id)) {
-                    // ضع acc1 في otherAccounts كي يظهر في القوائم
-                    $otherAccounts->push($acc1);
-                }
+        // تأكد من أن الحسابات الحالية موجودة في القوائم حتى لو تغيرت التصنيفات
+        if ($transfer->acc1) {
+            $acc1 = AccHead::select('id', 'aname')->find($transfer->acc1);
+            if ($acc1 && ! $fromAccounts->contains('id', $acc1->id)) {
+                // ضع acc1 في fromAccounts كي يظهر في القوائم
+                $fromAccounts->push($acc1);
             }
+        }
 
-            if ($transfer->acc2) {
-                $acc2 = AccHead::select('id', 'aname')->find($transfer->acc2);
-                if ($acc2 && !$cashAccounts->contains('id', $acc2->id) && !$bankAccounts->contains('id', $acc2->id)) {
-                    $otherAccounts->push($acc2);
-                }
+        if ($transfer->acc2) {
+            $acc2 = AccHead::select('id', 'aname')->find($transfer->acc2);
+            if ($acc2 && ! $toAccounts->contains('id', $acc2->id)) {
+                // ضع acc2 في toAccounts كي يظهر في القوائم
+                $toAccounts->push($acc2);
             }
+        }
 
-            // تأكد أن الموظف/المندوب موجودان في قائمة الحسابات الخاصة بالموظفين
-            if ($transfer->emp_id) {
-                $e1 = AccHead::select('id', 'aname')->find($transfer->emp_id);
-                if ($e1 && !$employeeAccounts->contains('id', $e1->id)) {
-                    $employeeAccounts->push($e1);
-                }
+        // تأكد أن الموظف/المندوب موجودان في قائمة الحسابات الخاصة بالموظفين
+        if ($transfer->emp_id) {
+            $e1 = AccHead::select('id', 'aname')->find($transfer->emp_id);
+            if ($e1 && ! $employeeAccounts->contains('id', $e1->id)) {
+                $employeeAccounts->push($e1);
             }
-            if ($transfer->emp2_id) {
-                $e2 = AccHead::select('id', 'aname')->find($transfer->emp2_id);
-                if ($e2 && !$employeeAccounts->contains('id', $e2->id)) {
-                    $employeeAccounts->push($e2);
-                }
+        }
+        if ($transfer->emp2_id) {
+            $e2 = AccHead::select('id', 'aname')->find($transfer->emp2_id);
+            if ($e2 && ! $employeeAccounts->contains('id', $e2->id)) {
+                $employeeAccounts->push($e2);
             }
+        }
 
-            // مراكز التكلفة (إن وُجِدَت في التطبيق)
-            $costCenters = [];
-            if (class_exists('\Modules\\CostCenter\\Models\\CostCenter')) {
-                $costCenters = \Modules\CostCenter\Models\CostCenter::where('isdeleted', 0)->select('id', 'name')->get();
-            }
+        // مراكز التكلفة (إن وُجِدَت في التطبيق)
+        $costCenters = [];
+        if (class_exists('\Modules\\CostCenter\\Models\\CostCenter')) {
+            $costCenters = \Modules\CostCenter\Models\CostCenter::where('isdeleted', 0)->select('id', 'name')->get();
+        }
 
         return view('transfers.edit', [
             'transfer' => $transfer,
@@ -346,8 +467,6 @@ class TransferController extends Controller
             'costCenters' => $costCenters,
         ]);
     }
-
-
 
     public function update(Request $request, $id)
     {
@@ -435,16 +554,16 @@ class TransferController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('transfers.index')->with('success', 'تم تعديل السند بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
+
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
         }
     }
 
-
     public function show(string $request) {}
-
 
     public function destroy(string $id)
     {
@@ -468,10 +587,12 @@ class TransferController extends Controller
             $voucher->delete();
 
             DB::commit();
+
             return redirect()->route('transfers.index')->with('success', 'تم حذف السند والقيد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: '.$e->getMessage()]);
         }
     }
 

@@ -99,6 +99,18 @@
                                             class="btn btn-success btn-icon-square-sm"><i class="las la-edit"></i></a>
                                     @endif
 
+                                    @php
+                                        $canDuplicate = match($pname) {
+                                            'multi_payment' => Auth::user()->can('create multi-payment'),
+                                            'multi_receipt' => Auth::user()->can('create multi-receipt'),
+                                            default => false,
+                                        };
+                                    @endphp
+                                    @if ($canDuplicate)
+                                        <a href="{{ route('multi-vouchers.duplicate', $multi) }}"
+                                            class="btn btn-info btn-icon-square-sm" title="نسخ العملية"><i class="las la-copy"></i></a>
+                                    @endif
+
                                     @if ($deletePerm && Auth::user()->can($deletePerm))
                                         <form action="{{ route('multi-vouchers.destroy', $multi->id) }}" method="POST"
                                             style="display:inline;">

@@ -53,6 +53,12 @@
         </div>
         <div class="card-body">
 
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -79,14 +85,14 @@
                     <div class="col-md-2">
                         <div class="form-group">
                             <label>SN</label>
-                            <input type="text" name="pro_serial" class="form-control">
+                            <input type="text" name="pro_serial" class="form-control" value="{{ $duplicateData['pro_serial'] ?? '' }}">
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>التاريخ</label>
-                            <input type="date" name="pro_date" class="form-control" value="{{ now()->format('Y-m-d') }}">
+                            <input type="date" name="pro_date" class="form-control" value="{{ $duplicateData['pro_date'] ?? now()->format('Y-m-d') }}">
                         </div>
                     </div>
                 </div>
@@ -103,14 +109,18 @@
                             @if (in_array($pro_type, $account1_types))
                                 <select name="acc1[]" class="form-control js-tom-select js-balance-source" required>
                                     @foreach ($accounts1 as $acc1)
-                                        <option value="{{ $acc1->id }}" data-balance="{{ $acc1->balance ?? 0 }}">{{ $acc1->code }} _ {{ $acc1->aname }}
+                                        <option value="{{ $acc1->id }}" data-balance="{{ $acc1->balance ?? 0 }}" 
+                                            {{ isset($duplicateData['main_account']) && $duplicateData['main_account'] == $acc1->id ? 'selected' : '' }}>
+                                            {{ $acc1->code }} _ {{ $acc1->aname }}
                                         </option>
                                     @endforeach
                                 </select>
                             @elseif (in_array($pro_type, $account2_types))
                                 <select name="acc2[]" class="form-control js-tom-select js-balance-source" required>
                                     @foreach ($accounts2 as $acc2)
-                                        <option value="{{ $acc2->id }}" data-balance="{{ $acc2->balance ?? 0 }}">{{ $acc2->code }} _ {{ $acc2->aname }}
+                                        <option value="{{ $acc2->id }}" data-balance="{{ $acc2->balance ?? 0 }}"
+                                            {{ isset($duplicateData['main_account']) && $duplicateData['main_account'] == $acc2->id ? 'selected' : '' }}>
+                                            {{ $acc2->code }} _ {{ $acc2->aname }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -129,7 +139,9 @@
                             <label>الموظف</label>
                             <select name="emp_id" class="form-control js-tom-select" required>
                                 @foreach ($employees as $emp)
-                                    <option value="{{ $emp->id }}">{{ $emp->code }} _ {{ $emp->aname }}
+                                    <option value="{{ $emp->id }}" 
+                                        {{ isset($duplicateData['emp_id']) && $duplicateData['emp_id'] == $emp->id ? 'selected' : '' }}>
+                                        {{ $emp->code }} _ {{ $emp->aname }}
                                     </option>
                                 @endforeach
                             </select>
@@ -143,7 +155,7 @@
                     <div class="col-md-9">
                         <div class="form-group">
                             <label>البيان</label>
-                            <input name="details" required type="text" class="form-control frst">
+                            <input name="details" required type="text" class="form-control frst" value="{{ $duplicateData['details'] ?? '' }}">
                         </div>
                     </div>
                 </div>
@@ -159,38 +171,77 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01"
-                                        value="0"></td>
-                                <td>
-                                    @if (in_array($pro_type, $account2_types))
-                                        <select name="acc1[]" class="form-control js-tom-select js-balance-dest" required>
-                                            <option value="">__ اختر حساب __</option>
-                                            @foreach ($accounts1 as $acc1)
-                                                <option value="{{ $acc1->id }}" data-balance="{{ $acc1->balance ?? 0 }}">{{ $acc1->code }} _
-                                                    {{ $acc1->aname }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @elseif (in_array($pro_type, $account1_types))
-                                        <select name="acc2[]" class="form-control js-tom-select js-balance-dest" required>
-                                            <option value="">__ اختر حساب __</option>
-                                            @foreach ($accounts2 as $acc2)
-                                                <option value="{{ $acc2->id }}" data-balance="{{ $acc2->balance ?? 0 }}">{{ $acc2->code }} _
-                                                    {{ $acc2->aname }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @endif
-                                    <small class="text-muted d-block mt-1">
-                                        رصيد قبل: <span class="rowBalanceBefore">0.00</span>
-                                        &nbsp;|&nbsp;
-                                        بعد: <span class="rowBalanceAfter">0.00</span>
-                                    </small>
-                                </td>
-                                <td><input type="text" name="note[]" class="form-control"></td>
-                                <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
-                            </tr>
+                            @if(isset($duplicateData['sub_entries']) && count($duplicateData['sub_entries']) > 0)
+                                @foreach($duplicateData['sub_entries'] as $entry)
+                                    <tr>
+                                        <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01"
+                                                value="{{ $entry['value'] }}"></td>
+                                        <td>
+                                            @if (in_array($pro_type, $account2_types))
+                                                <select name="acc1[]" class="form-control js-tom-select js-balance-dest" required>
+                                                    <option value="">__ اختر حساب __</option>
+                                                    @foreach ($accounts1 as $acc1)
+                                                        <option value="{{ $acc1->id }}" data-balance="{{ $acc1->balance ?? 0 }}"
+                                                            {{ $entry['account_id'] == $acc1->id ? 'selected' : '' }}>
+                                                            {{ $acc1->code }} _ {{ $acc1->aname }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            @elseif (in_array($pro_type, $account1_types))
+                                                <select name="acc2[]" class="form-control js-tom-select js-balance-dest" required>
+                                                    <option value="">__ اختر حساب __</option>
+                                                    @foreach ($accounts2 as $acc2)
+                                                        <option value="{{ $acc2->id }}" data-balance="{{ $acc2->balance ?? 0 }}"
+                                                            {{ $entry['account_id'] == $acc2->id ? 'selected' : '' }}>
+                                                            {{ $acc2->code }} _ {{ $acc2->aname }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            @endif
+                                            <small class="text-muted d-block mt-1">
+                                                رصيد قبل: <span class="rowBalanceBefore">0.00</span>
+                                                &nbsp;|&nbsp;
+                                                بعد: <span class="rowBalanceAfter">0.00</span>
+                                            </small>
+                                        </td>
+                                        <td><input type="text" name="note[]" class="form-control" value="{{ $entry['note'] ?? '' }}"></td>
+                                        <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td><input type="number" name="sub_value[]" class="form-control debit" step="0.01"
+                                            value="0"></td>
+                                    <td>
+                                        @if (in_array($pro_type, $account2_types))
+                                            <select name="acc1[]" class="form-control js-tom-select js-balance-dest" required>
+                                                <option value="">__ اختر حساب __</option>
+                                                @foreach ($accounts1 as $acc1)
+                                                    <option value="{{ $acc1->id }}" data-balance="{{ $acc1->balance ?? 0 }}">{{ $acc1->code }} _
+                                                        {{ $acc1->aname }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        @elseif (in_array($pro_type, $account1_types))
+                                            <select name="acc2[]" class="form-control js-tom-select js-balance-dest" required>
+                                                <option value="">__ اختر حساب __</option>
+                                                @foreach ($accounts2 as $acc2)
+                                                    <option value="{{ $acc2->id }}" data-balance="{{ $acc2->balance ?? 0 }}">{{ $acc2->code }} _
+                                                        {{ $acc2->aname }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        @endif
+                                        <small class="text-muted d-block mt-1">
+                                            رصيد قبل: <span class="rowBalanceBefore">0.00</span>
+                                            &nbsp;|&nbsp;
+                                            بعد: <span class="rowBalanceAfter">0.00</span>
+                                        </small>
+                                    </td>
+                                    <td><input type="text" name="note[]" class="form-control"></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm removeRow">حذف</button></td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
 
@@ -204,7 +255,7 @@
                     <div class="col-md-12">
                         <div class="form-group">
                             <label>ملاحظات عامة</label>
-                            <input type="text" name="info" class="form-control">
+                            <input type="text" name="info" class="form-control" value="{{ $duplicateData['info'] ?? '' }}">
                         </div>
                     </div>
                 </div>

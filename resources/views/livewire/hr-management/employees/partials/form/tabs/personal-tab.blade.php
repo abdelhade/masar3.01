@@ -1,9 +1,5 @@
 {{-- Personal Information Tab --}}
-<div x-show="activeTab === 'personal'" 
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     style="display: none;">
+<div>
     <div class="row">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
@@ -133,61 +129,21 @@
                 <div class="card-body text-center py-3">
                     <div class="mb-3">
                         <div class="position-relative d-inline-block">
-                            <template x-if="imagePreview">
-                                <img :src="imagePreview"
-                                    alt="{{ __('صورة الموظف') }}"
-                                    class="rounded-circle border border-3 border-light shadow"
-                                    style="width: 120px; height: 120px; object-fit: cover;">
-                            </template>
-                            <template x-if="!imagePreview && isEdit && currentImageUrl">
-                                <div style="position: relative;">
-                                    <img :src="currentImageUrl"
-                                        alt="{{ __('صورة الموظف') }}"
-                                        class="rounded-circle border border-3 border-light shadow"
-                                        style="width: 120px; height: 120px; object-fit: cover; display: none;"
-                                        x-on:load="
-                                            $el.style.display = 'block';
-                                            $el.nextElementSibling.style.display = 'none';
-                                            $el.nextElementSibling.nextElementSibling.style.display = 'none';
-                                        "
-                                        x-on:error="
-                                            $el.style.display = 'none';
-                                            $el.nextElementSibling.style.display = 'none';
-                                            $el.nextElementSibling.nextElementSibling.style.display = 'block';
-                                        ">
-                                    
-                                    <!-- Loading indicator -->
-                                    <div style="display: block; text-align: center; padding: 20px;">
-                                        <div class="spinner-border text-primary rounded-circle" role="status" style="width: 120px; height: 120px;">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Placeholder (shown on error) -->
-                                    <div style="display: none; text-align: center;">
-                                        <img src="{{ asset('assets/images/avatar-placeholder.svg') }}"
-                                            alt="{{ __('صورة الموظف') }}"
-                                            class="rounded-circle border border-3 border-light shadow"
-                                            style="width: 120px; height: 120px; object-fit: cover;">
-                                    </div>
-                                </div>
-                            </template>
-                            <template x-if="!imagePreview && (!isEdit || !currentImageUrl)">
-                                <img src="{{ asset('assets/images/avatar-placeholder.svg') }}"
-                                    alt="{{ __('صورة الموظف') }}"
-                                    class="rounded-circle border border-3 border-light shadow"
-                                    style="width: 120px; height: 120px; object-fit: cover;">
-                            </template>
+                            <img id="employee-image-preview" 
+                                 src="{{ asset('assets/images/avatar-placeholder.svg') }}"
+                                 alt="{{ __('صورة الموظف') }}"
+                                 class="rounded-circle border border-3 border-light shadow"
+                                 style="width: 120px; height: 120px; object-fit: cover;">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <input type="file" class="form-control" wire:model="image" 
-                               @change="handleImageChange($event)" accept="image/jpeg,image/png,image/jpg,image/gif">
+                        <input type="file" id="employee-image-input" class="form-control" wire:model="image" 
+                               onchange="handleEmployeeImageChange(this)" accept="image/jpeg,image/png,image/jpg,image/gif">
                         
                         <!-- File Info -->
-                        <div x-show="selectedFileName" x-transition class="alert alert-info py-2 mt-2" style="font-size: 0.85rem;">
+                        <div id="file-info" class="alert alert-info py-2 mt-2" style="font-size: 0.85rem; display: none;">
                             <i class="fas fa-file-image me-1"></i>
-                            <span x-text="selectedFileName"></span>
+                            <span id="file-name"></span>
                         </div>
 
                         <!-- Upload Progress -->

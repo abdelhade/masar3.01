@@ -19,7 +19,7 @@
         $type = request()->get('type');
         $proTypeMap = [
             'receipt' => 1,
-            'payment' => 2,
+            'payment' => 101,
             'exp-payment' => 3,
         ];
         $pro_type = $proTypeMap[$type] ?? null;
@@ -118,20 +118,38 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label for="cash_account">حساب الصندوق</label>
+                                        <label for="cash_account">{{ $type === 'receipt' ? 'الصندوق / البنك' : 'حساب الصندوق' }}</label>
                                         <select name="{{ $type === 'receipt' ? 'acc1' : 'acc2' }}"
-                                            typess="{{ $type }}" id="cash_account" class="form-control">
-
-                                            @foreach ($cashAccounts as $account)
-                                                <option value="{{ $account->id }}" data-balance="{{ $account->balance }}">
-                                                    {{ $account->aname }}
-                                                </option>
-                                            @endforeach
+                                            typess="{{ $type }}" id="cash_account" class="form-control js-tom-select">
+                                            @if ($type === 'receipt')
+                                                <optgroup label="الصناديق">
+                                                    @foreach ($cashAccounts as $account)
+                                                        <option value="{{ $account->id }}" data-balance="{{ $account->balance }}">
+                                                            {{ $account->aname }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+                                                @if ($bankAccounts->isNotEmpty())
+                                                    <optgroup label="البنوك">
+                                                        @foreach ($bankAccounts as $account)
+                                                            <option value="{{ $account->id }}" data-balance="{{ $account->balance }}">
+                                                                {{ $account->aname }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                @endif
+                                            @else
+                                                @foreach ($cashAccounts as $account)
+                                                    <option value="{{ $account->id }}" data-balance="{{ $account->balance }}">
+                                                        {{ $account->aname }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
                                         </select>
                                     </div>
                                     <div class="row">
                                         <div class="col">قبل : <span class="text-primary"
-                                                id="cash_before">{{ $cashAccounts->first()->balance ?? 0 }}</span></div>
+                                                id="cash_before">{{ ($type === 'receipt' && ($cashAccounts->isNotEmpty() || $bankAccounts->isNotEmpty())) ? ($cashAccounts->first()->balance ?? $bankAccounts->first()->balance ?? 0) : ($cashAccounts->first()->balance ?? 0) }}</span></div>
                                         <div class="col">بعد : <span class="text-primary" id="cash_after">00.00</span>
                                         </div>
                                     </div>
@@ -142,10 +160,17 @@
                                         <label
                                             for="other_account">{{ $type === 'receipt' ? 'الحساب الدائن' : 'الحساب المدين' }}</label>
                                         <select name="{{ $type === 'receipt' ? 'acc2' : 'acc1' }}" id="other_account"
-                                            class="form-control">
+                                            class="form-control js-tom-select">
                                             <option value="">اختر الحساب</option>
                                             @if ($type == 'exp-payment')
                                                 @foreach ($expensesAccounts as $account)
+                                                    <option value="{{ $account->id }}"
+                                                        data-balance="{{ $account->balance }}">
+                                                        {{ $account->aname }}
+                                                    </option>
+                                                @endforeach
+                                            @elseif ($type == 'payment')
+                                                @foreach ($paymentExpensesAccounts as $account)
                                                     <option value="{{ $account->id }}"
                                                         data-balance="{{ $account->balance }}">
                                                         {{ $account->aname }}
@@ -163,7 +188,15 @@
                                     </div>
                                     <div class="row mt-2">
                                         <div class="col">قبل : <span
-                                                id="acc_before">{{ $type === 'exp-payment' ? ($expensesAccounts->first()->balance ?? 0) : ($otherAccounts->first()->balance ?? 0) }}</span></div>
+                                                id="acc_before">
+                                                @if ($type === 'exp-payment')
+                                                    {{ $expensesAccounts->first()->balance ?? 0 }}
+                                                @elseif ($type === 'payment')
+                                                    {{ $paymentExpensesAccounts->first()->balance ?? 0 }}
+                                                @else
+                                                    {{ $otherAccounts->first()->balance ?? 0 }}
+                                                @endif
+                                            </span></div>
 
                                         <div class="col">بعد : <span id="acc_after">00.00</span></div>
                                     </div>
@@ -175,7 +208,6 @@
                                     <div class="form-group">
                                         <label for="emp_id">الموظف</label>
                                         <select name="emp_id" class="form-control">
-                                            <option value="">اختر موظف</option>
                                             @foreach ($employeeAccounts as $emp)
                                                 <option value="{{ $emp->id }}">{{ $emp->aname }}</option>
                                             @endforeach
@@ -200,7 +232,6 @@
                                     <div class="form-group">
                                         <label for="cost_center">مركز التكلفة</label>
                                         <select name="cost_center" class="form-control">
-                                            <option value="">بدون مركز تكلفة</option>
                                             @foreach ($costCenters as $cost)
                                                 <option value="{{ $cost->id }}">{{ $cost->cname }}</option>
                                             @endforeach
@@ -254,9 +285,44 @@
 
                 // Update initial balances
                 function updateBalances() {
-                    const cashBalance = parseFloat(cashAccount.options[cashAccount.selectedIndex].dataset.balance) || 0;
-                    const otherBalance = parseFloat(otherAccount.options[otherAccount.selectedIndex].dataset.balance) ||
-                        0;
+                    // Get cash balance
+                    let cashBalance = 0;
+                    if (cashAccount.tomselect) {
+                        // Using Tom Select
+                        const selectedValue = cashAccount.tomselect.getValue();
+                        if (selectedValue) {
+                            const selectedOption = cashAccount.querySelector(`option[value="${selectedValue}"]`);
+                            if (selectedOption && selectedOption.dataset.balance) {
+                                cashBalance = parseFloat(selectedOption.dataset.balance);
+                            }
+                        }
+                    } else {
+                        // Using native select
+                        const selectedCashOption = cashAccount.options[cashAccount.selectedIndex];
+                        if (selectedCashOption && selectedCashOption.dataset.balance) {
+                            cashBalance = parseFloat(selectedCashOption.dataset.balance);
+                        }
+                    }
+                    
+                    // Get other account balance
+                    let otherBalance = 0;
+                    if (otherAccount.tomselect) {
+                        // Using Tom Select
+                        const selectedValue = otherAccount.tomselect.getValue();
+                        if (selectedValue) {
+                            const selectedOption = otherAccount.querySelector(`option[value="${selectedValue}"]`);
+                            if (selectedOption && selectedOption.dataset.balance) {
+                                otherBalance = parseFloat(selectedOption.dataset.balance);
+                            }
+                        }
+                    } else {
+                        // Using native select
+                        const selectedOtherOption = otherAccount.options[otherAccount.selectedIndex];
+                        if (selectedOtherOption && selectedOtherOption.dataset.balance) {
+                            otherBalance = parseFloat(selectedOtherOption.dataset.balance);
+                        }
+                    }
+                    
                     const value = parseFloat(proValue.value) || 0;
 
                     // For receipt: cash increases, other account decreases
@@ -273,9 +339,76 @@
                     accBefore.textContent = otherBalance.toFixed(2);
                 }
 
-                // Event listeners
-                cashAccount.addEventListener("change", updateBalances);
-                otherAccount.addEventListener("change", updateBalances);
+                // Initialize Tom Select for searchable selects
+                function initTomSelect() {
+                    if (window.TomSelect) {
+                        // Initialize cash_account
+                        const cashAccountSelect = document.getElementById('cash_account');
+                        if (cashAccountSelect && !cashAccountSelect.tomselect) {
+                            const cashTomSelect = new TomSelect(cashAccountSelect, {
+                                create: false,
+                                searchField: ['text'],
+                                sortField: {field: 'text', direction: 'asc'},
+                                dropdownInput: true,
+                                placeholder: 'ابحث...',
+                                onItemAdd: function() {
+                                    updateBalances();
+                                },
+                                onItemRemove: function() {
+                                    updateBalances();
+                                }
+                            });
+                            
+                            // Set z-index for dropdown
+                            cashTomSelect.on('dropdown_open', function() {
+                                const dropdown = cashAccountSelect.parentElement.querySelector('.ts-dropdown');
+                                if (dropdown) {
+                                    dropdown.style.zIndex = '99999';
+                                }
+                            });
+                        }
+
+                        // Initialize other_account
+                        const otherAccountSelect = document.getElementById('other_account');
+                        if (otherAccountSelect && !otherAccountSelect.tomselect) {
+                            const otherTomSelect = new TomSelect(otherAccountSelect, {
+                                create: false,
+                                searchField: ['text'],
+                                sortField: {field: 'text', direction: 'asc'},
+                                dropdownInput: true,
+                                placeholder: 'ابحث عن الحساب...',
+                                onItemAdd: function() {
+                                    updateBalances();
+                                },
+                                onItemRemove: function() {
+                                    updateBalances();
+                                }
+                            });
+                            
+                            // Set z-index for dropdown
+                            otherTomSelect.on('dropdown_open', function() {
+                                const dropdown = otherAccountSelect.parentElement.querySelector('.ts-dropdown');
+                                if (dropdown) {
+                                    dropdown.style.zIndex = '99999';
+                                }
+                            });
+                        }
+                    } else {
+                        // Retry if Tom Select not loaded yet
+                        setTimeout(initTomSelect, 100);
+                    }
+                }
+                
+                // Initialize Tom Select
+                initTomSelect();
+
+                // Event listeners for native selects (if not using Tom Select)
+                if (!cashAccount.tomselect) {
+                    cashAccount.addEventListener("change", updateBalances);
+                }
+                if (!otherAccount.tomselect) {
+                    otherAccount.addEventListener("change", updateBalances);
+                }
                 proValue.addEventListener("input", updateBalances);
 
                 // Initial update
