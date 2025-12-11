@@ -1,7 +1,6 @@
 {{-- Employee Form with Alpine.js Tabs --}}
-<div class="container-fluid" style="direction: rtl;">
-    @php
-        $tabs = [
+@php
+    $tabs = [
             'personal' => [
                 'icon' => 'fa-user',
                 'label' => __('البيانات الشخصية'),
@@ -45,16 +44,18 @@
         ];
     @endphp
 
-    <!-- Navigation Tabs - Alpine.js -->
-    <ul class="nav nav-tabs mb-3" role="tablist" wire:ignore.self>
+    <!-- Navigation Tabs - Bootstrap -->
+    <ul class="nav nav-tabs mb-3" role="tablist" id="employeeFormTabs">
         @foreach($tabs as $tabKey => $tab)
             <li class="nav-item" role="presentation" wire:key="tab-nav-{{ $tabKey }}">
-                <button class="nav-link font-hold fw-bold @if($errors->hasAny($tab['errors'])) text-danger @endif"
-                        :class="{ 'active': activeTab === '{{ $tabKey }}' }"
-                        @click.prevent="switchTab('{{ $tabKey }}')"
+                <button class="nav-link font-hold fw-bold @if($loop->first) active @endif @if($errors->hasAny($tab['errors'])) text-danger @endif"
+                        id="{{ $tabKey }}-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#{{ $tabKey }}-content"
                         type="button"
-                        :aria-selected="activeTab === '{{ $tabKey }}'"
-                        :tabindex="activeTab === '{{ $tabKey }}' ? 0 : -1">
+                        role="tab"
+                        aria-controls="{{ $tabKey }}-content"
+                        aria-selected="{{ $loop->first ? 'true' : 'false' }}">
                     <i class="fas {{ $tab['icon'] }} me-2"></i>{{ $tab['label'] }}
                     @if($errors->hasAny($tab['errors']))
                         <span class="badge bg-danger ms-2" wire:key="error-badge-{{ $tabKey }}-{{ $errors->count() }}">{{ $errors->hasAny($tab['errors']) ? count(array_filter($tab['errors'], fn($e) => $errors->has($e))) : 0 }}</span>
@@ -64,8 +65,8 @@
         @endforeach
     </ul>
 
-    <!-- Tab Content with Lazy Loading -->
-    <div class="tab-content">
+    <!-- Tab Content -->
+    <div class="tab-content" id="employeeFormTabsContent">
         @foreach($tabs as $tabKey => $tab)
             @php
                 // Convert tab key to file name
@@ -75,14 +76,13 @@
                     default => strtolower($tabKey)
                 };
             @endphp
-            <div x-show="activeTab === '{{ $tabKey }}'" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-cloak
-                 wire:key="tab-content-{{ $tabKey }}">
+            <div wire:key="tab-content-{{ $tabKey }}"
+                 class="tab-pane fade @if($loop->first) show active @endif"
+                 id="{{ $tabKey }}-content"
+                 role="tabpanel"
+                 aria-labelledby="{{ $tabKey }}-tab"
+                 tabindex="0">
                 @include("livewire.hr-management.employees.partials.form.tabs.{$tabFileName}-tab")
             </div>
         @endforeach
     </div>
-</div>

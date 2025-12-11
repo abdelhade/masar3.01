@@ -33,15 +33,6 @@
 
 <hr class="my-3 border-secondary">
 
-@can('view multi-voucher-statistics')
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('multi-vouchers.statistics') }}">
-        <i class="ti-control-record"></i>{{ __('Multi vouchers Statistics') }}
-    </a>
-</li>
-@endcan
-
-
 @can('view multi-payment')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('multi-vouchers.index', ['type' => 'multi_payment']) }}">

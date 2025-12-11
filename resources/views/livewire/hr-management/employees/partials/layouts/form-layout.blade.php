@@ -4,17 +4,8 @@
     $isEdit = $isEdit ?? false;
 @endphp
 
-<div style="font-family: 'Cairo', sans-serif; direction: rtl;" x-data="employeeFormManager({
-    kpiIds: $wire.entangle('kpi_ids'),
-    kpiWeights: $wire.entangle('kpi_weights'),
-    selectedKpiId: $wire.entangle('selected_kpi_id'),
-    leaveBalances: $wire.entangle('leave_balances'),
-    selectedLeaveTypeId: $wire.entangle('selected_leave_type_id'),
-    currentImageUrl: $wire.entangle('currentImageUrl'),
-    kpis: @js($kpis),
-    leaveTypes: @js($leaveTypes),
-    isEdit: {{ $isEdit ? 'true' : 'false' }}
-})" x-init="init()">
+
+<div style="font-family: 'Cairo', sans-serif; direction: rtl;" wire:ignore.self>
 
     <!-- Notification Container -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 60px;">
@@ -132,6 +123,43 @@
 @endpush
 
 @push('scripts')
-    @vite('resources/js/components/employee-form-scripts.js')
+<script>
+// Simple JavaScript for employee form - No Alpine needed
+function handleEmployeeImageChange(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('employee-image-preview');
+    const fileInfo = document.getElementById('file-info');
+    const fileName = document.getElementById('file-name');
+    
+    if (file) {
+        // Show file info
+        fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+        fileInfo.style.display = 'block';
+        
+        // Preview image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Toggle password visibility
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 @endpush
 

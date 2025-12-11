@@ -28,12 +28,7 @@
                     </div>
                     <div class="col-sm-2">
                         <label class="form-label">نوع العملية</label>
-                        <select id="filterType" class="form-select">
-                            <option value="">الكل</option>
-                            @foreach ($operationTypes as $type)
-                                <option value="{{ $type->ptext }}">{{ $type->ptext }}</option>
-                            @endforeach
-                        </select>
+                        <input type="text" id="filterType" class="form-control" placeholder="ابحث بنوع العملية">
                     </div>
                     <div class="col-sm-1">
                         <label class="form-label">الحركة</label>
@@ -178,8 +173,8 @@
                     }
                     if (fJid) ok = ok && jid.includes(fJid);
                     if (fAcc) ok = ok && acc.includes(fAcc);
-                    // فلترة نوع العملية - مطابقة كاملة
-                    if (fType) ok = ok && typ === fType;
+                    // فلترة نوع العملية - بحث جزئي
+                    if (fType) ok = ok && typ.includes(fType);
                     if (fDC === 'debit') ok = ok && debit > 0;
                     if (fDC === 'credit') ok = ok && credit > 0;
 
@@ -198,7 +193,7 @@
             // إضافة مستمعي الأحداث
             // للحقول النصية: keyup و input
             ['keyup', 'input'].forEach(ev => {
-                ['jid', 'acc'].forEach(k => {
+                ['jid', 'acc', 'type'].forEach(k => {
                     if (els[k]) {
                         els[k].addEventListener(ev, applyFilters);
                     }
@@ -206,7 +201,7 @@
             });
             // للحقول التاريخية والـ select: change فقط
             ['change'].forEach(ev => {
-                ['from', 'to', 'type', 'dc'].forEach(k => {
+                ['from', 'to', 'dc'].forEach(k => {
                     if (els[k]) {
                         els[k].addEventListener(ev, applyFilters);
                     }
