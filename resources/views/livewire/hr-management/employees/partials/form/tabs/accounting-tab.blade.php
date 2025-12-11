@@ -1,10 +1,5 @@
 {{-- Accounting Tab --}}
-<div x-show="activeTab === 'Accounting'" 
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     x-cloak
-     style="display: none;">
+<div>
     {{--  Accounting --}}
     <div class="row mt-3">
         <div class="col-lg-6">

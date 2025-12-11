@@ -1,10 +1,5 @@
 {{-- Leave Balances Tab --}}
-<div x-show="activeTab === 'leaveBalances'" 
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     x-cloak
->
+<div>
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-primary text-white py-3">
             <h6 class="card-title mb-0 font-hold fw-bold d-flex align-items-center">

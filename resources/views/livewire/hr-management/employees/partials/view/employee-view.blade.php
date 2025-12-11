@@ -22,7 +22,7 @@
                                              class="rounded-circle border-3 border-white shadow-lg"
                                              style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
                                              loading="lazy"
-                                             @click="previewImageUrl = '{{ $employeeImage }}'; isLightboxVisible = true"
+                                             onclick="openLightbox({{ json_encode($employeeImage) }})"
                                              onerror="this.src='{{ asset('assets/images/avatar-placeholder.svg') }}'">
                                     @else
                                         <img src="{{ asset('assets/images/avatar-placeholder.svg') }}"
@@ -49,183 +49,193 @@
             </div>
         </div>
 
-        {{-- Navigation Tabs --}}
-        <ul class="nav nav-tabs mb-3" role="tablist">
+        {{-- Navigation Tabs - Bootstrap --}}
+        <ul class="nav nav-tabs mb-3" role="tablist" id="employeeViewTabs">
             <li class="nav-item" role="presentation">
-                <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'personal' }"
-                        @click="switchViewTab('personal')"
-                        type="button">
+                <button class="nav-link font-hold fw-bold active"
+                        id="personal-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#personal-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="personal-view-content"
+                        aria-selected="true">
                     <i class="fas fa-user me-2"></i>{{ __('البيانات الشخصية') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'location' }"
-                        @click="switchViewTab('location')"
-                        type="button">
+                        id="location-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#location-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="location-view-content"
+                        aria-selected="false">
                     <i class="fas fa-map-marker-alt me-2"></i>{{ __('الموقع') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'job' }"
-                        @click="switchViewTab('job')"
-                        type="button">
+                        id="job-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#job-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="job-view-content"
+                        aria-selected="false">
                     <i class="fas fa-briefcase me-2"></i>{{ __('الوظيفة') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'attendance' }"
-                        @click="switchViewTab('attendance')"
-                        type="button">
+                        id="attendance-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#attendance-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="attendance-view-content"
+                        aria-selected="false">
                     <i class="fas fa-clock me-2"></i>{{ __('الحضور') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'accounting' }"
-                        @click="switchViewTab('accounting')"
-                        type="button">
+                        id="accounting-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#accounting-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="accounting-view-content"
+                        aria-selected="false">
                     <i class="fas fa-calculator me-2"></i>{{ __('الحسابات') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'kpi' }"
-                        @click="switchViewTab('kpi')"
-                        type="button">
+                        id="kpi-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#kpi-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="kpi-view-content"
+                        aria-selected="false">
                     <i class="fas fa-chart-line me-2"></i>{{ __('معدلات الأداء') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'leaveBalances' }"
-                        @click="switchViewTab('leaveBalances')"
-                        type="button">
+                        id="leaveBalances-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#leaveBalances-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="leaveBalances-view-content"
+                        aria-selected="false">
                     <i class="fas fa-calendar-check me-2"></i>{{ __('رصيد الإجازات') }}
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link font-hold fw-bold"
-                        :class="{ 'active': activeViewTab === 'otherDetails' }"
-                        @click="switchViewTab('otherDetails')"
-                        type="button">
+                        id="otherDetails-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#otherDetails-view-content"
+                        type="button"
+                        role="tab"
+                        aria-controls="otherDetails-view-content"
+                        aria-selected="false">
                     <i class="fas fa-info-circle me-2"></i>{{ __('تفاصيل أخرى') }}
                 </button>
             </li>
         </ul>
 
-        {{-- Tab Content with Lazy Loading --}}
-        <div class="tab-content">
-            {{-- Personal Tab (always loaded) --}}
-            <div x-show="activeViewTab === 'personal'" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100">
+        {{-- Tab Content - Bootstrap --}}
+        <div class="tab-content" id="employeeViewTabsContent">
+            {{-- Personal Tab --}}
+            <div class="tab-pane fade show active"
+                 id="personal-view-content"
+                 role="tabpanel"
+                 aria-labelledby="personal-tab"
+                 tabindex="0">
                 @include('livewire.hr-management.employees.partials.view.tabs.personal-tab')
             </div>
 
-            {{-- Location Tab (lazy loaded) --}}
-            <div x-show="activeViewTab === 'location'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-data="{ loaded: loadedTabs.has('location') }"
-                 x-init="if (!loaded) { loadedTabs.add('location'); loaded = true; }">
-                <template x-if="loaded">
-                    <div>
-                        @php
-                            $locationEmployee = method_exists($this, 'employeeWithLocation') ? $this->employeeWithLocation : $viewEmployee;
-                        @endphp
-                        @include('livewire.hr-management.employees.partials.view.tabs.location-tab', ['viewEmployee' => $locationEmployee ?? $viewEmployee])
-                    </div>
-                </template>
+            {{-- Location Tab --}}
+            <div class="tab-pane fade"
+                 id="location-view-content"
+                 role="tabpanel"
+                 aria-labelledby="location-tab"
+                 tabindex="0">
+                @php
+                    $locationEmployee = method_exists($this, 'employeeWithLocation') ? $this->employeeWithLocation : $viewEmployee;
+                @endphp
+                @include('livewire.hr-management.employees.partials.view.tabs.location-tab', ['viewEmployee' => $locationEmployee ?? $viewEmployee])
             </div>
 
-            {{-- Job Tab (always loaded - uses basic employee data) --}}
-            <div x-show="activeViewTab === 'job'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100">
+            {{-- Job Tab --}}
+            <div class="tab-pane fade"
+                 id="job-view-content"
+                 role="tabpanel"
+                 aria-labelledby="job-tab"
+                 tabindex="0">
                 @include('livewire.hr-management.employees.partials.view.tabs.job-tab')
             </div>
 
-            {{-- Attendance Tab (always loaded - uses basic employee data) --}}
-            <div x-show="activeViewTab === 'attendance'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100">
+            {{-- Attendance Tab --}}
+            <div class="tab-pane fade"
+                 id="attendance-view-content"
+                 role="tabpanel"
+                 aria-labelledby="attendance-tab"
+                 tabindex="0">
                 @include('livewire.hr-management.employees.partials.view.tabs.attendance-tab')
             </div>
 
-            {{-- Accounting Tab (lazy loaded) --}}
-            <div x-show="activeViewTab === 'accounting'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-data="{ loaded: loadedTabs.has('accounting') }"
-                 x-init="if (!loaded) { loadedTabs.add('accounting'); loaded = true; }">
-                <template x-if="loaded">
-                    <div>
-                        @php
-                            $accountEmployee = method_exists($this, 'employeeWithAccount') ? $this->employeeWithAccount : $viewEmployee;
-                        @endphp
-                        @include('livewire.hr-management.employees.partials.view.tabs.accounting-tab', ['viewEmployee' => $accountEmployee ?? $viewEmployee])
-                    </div>
-                </template>
+            {{-- Accounting Tab --}}
+            <div class="tab-pane fade"
+                 id="accounting-view-content"
+                 role="tabpanel"
+                 aria-labelledby="accounting-tab"
+                 tabindex="0">
+                @php
+                    $accountEmployee = method_exists($this, 'employeeWithAccount') ? $this->employeeWithAccount : $viewEmployee;
+                @endphp
+                @include('livewire.hr-management.employees.partials.view.tabs.accounting-tab', ['viewEmployee' => $accountEmployee ?? $viewEmployee])
             </div>
 
-            {{-- KPI Tab (lazy loaded) --}}
-            <div x-show="activeViewTab === 'kpi'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-data="{ loaded: loadedTabs.has('kpi') }"
-                 x-init="if (!loaded) { loadedTabs.add('kpi'); loaded = true; }">
-                <template x-if="loaded">
-                    <div>
-                        @php
-                            $kpiEmployee = method_exists($this, 'employeeWithKpis') ? $this->employeeWithKpis : $viewEmployee;
-                        @endphp
-                        @include('livewire.hr-management.employees.partials.view.tabs.kpi-tab', ['viewEmployee' => $kpiEmployee ?? $viewEmployee])
-                    </div>
-                </template>
+            {{-- KPI Tab --}}
+            <div class="tab-pane fade"
+                 id="kpi-view-content"
+                 role="tabpanel"
+                 aria-labelledby="kpi-tab"
+                 tabindex="0">
+                @php
+                    $kpiEmployee = method_exists($this, 'employeeWithKpis') ? $this->employeeWithKpis : $viewEmployee;
+                @endphp
+                @include('livewire.hr-management.employees.partials.view.tabs.kpi-tab', ['viewEmployee' => $kpiEmployee ?? $viewEmployee])
             </div>
 
-            {{-- Leave Balances Tab (lazy loaded) --}}
-            <div x-show="activeViewTab === 'leaveBalances'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-data="{ loaded: loadedTabs.has('leaveBalances') }"
-                 x-init="if (!loaded) { loadedTabs.add('leaveBalances'); loaded = true; }">
-                <template x-if="loaded">
-                    <div>
-                        @php
-                            $leaveEmployee = method_exists($this, 'employeeWithLeaveBalances') ? $this->employeeWithLeaveBalances : $viewEmployee;
-                        @endphp
-                        @include('livewire.hr-management.employees.partials.view.tabs.leave-balances-tab', ['viewEmployee' => $leaveEmployee ?? $viewEmployee])
-                    </div>
-                </template>
+            {{-- Leave Balances Tab --}}
+            <div class="tab-pane fade"
+                 id="leaveBalances-view-content"
+                 role="tabpanel"
+                 aria-labelledby="leaveBalances-tab"
+                 tabindex="0">
+                @php
+                    $leaveEmployee = method_exists($this, 'employeeWithLeaveBalances') ? $this->employeeWithLeaveBalances : $viewEmployee;
+                @endphp
+                @include('livewire.hr-management.employees.partials.view.tabs.leave-balances-tab', ['viewEmployee' => $leaveEmployee ?? $viewEmployee])
             </div>
 
-            {{-- Other Details Tab (lazy loaded) --}}
-            <div x-show="activeViewTab === 'otherDetails'"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-data="{ loaded: loadedTabs.has('otherDetails') }"
-                 x-init="if (!loaded) { loadedTabs.add('otherDetails'); loaded = true; }">
-                <template x-if="loaded">
-                    <div>
-                        @php
-                            $otherDetailsEmployee = method_exists($this, 'employeeWithOtherDetails') ? $this->employeeWithOtherDetails : $viewEmployee;
-                        @endphp
-                        @include('livewire.hr-management.employees.partials.view.tabs.other-details-tab', ['viewEmployee' => $otherDetailsEmployee ?? $viewEmployee])
-                    </div>
-                </template>
+            {{-- Other Details Tab --}}
+            <div class="tab-pane fade"
+                 id="otherDetails-view-content"
+                 role="tabpanel"
+                 aria-labelledby="otherDetails-tab"
+                 tabindex="0">
+                @php
+                    $otherDetailsEmployee = method_exists($this, 'employeeWithOtherDetails') ? $this->employeeWithOtherDetails : $viewEmployee;
+                @endphp
+                @include('livewire.hr-management.employees.partials.view.tabs.other-details-tab', ['viewEmployee' => $otherDetailsEmployee ?? $viewEmployee])
             </div>
         </div>
     @else

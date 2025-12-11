@@ -1,9 +1,5 @@
 {{-- Attendance Tab --}}
-<div x-show="activeTab === 'attendance'" 
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     style="display: none;">
+<div>
     <div class="row">
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">

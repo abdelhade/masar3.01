@@ -1,9 +1,5 @@
 {{-- Location Tab --}}
-<div x-show="activeTab === 'location'" 
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     style="display: none;">
+<div>
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-gradient-info text-white py-2">
             <h6 class="card-title mb-0 font-hold fw-bold">

@@ -84,18 +84,7 @@ new class extends Component {
     }
 }; ?>
 
-<div style="font-family: 'Cairo', sans-serif; direction: rtl;" x-data="{ 
-    activeViewTab: 'personal', 
-    isLightboxVisible: false, 
-    previewImageUrl: '',
-    loadedTabs: new Set(['personal']),
-    switchViewTab(tab) {
-        this.activeViewTab = tab;
-        this.loadedTabs.add(tab);
-        // Trigger Livewire to load data for this tab
-        @this.set('activeTab', tab);
-    }
-}">
+<div style="font-family: 'Cairo', sans-serif; direction: rtl;">
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -105,28 +94,12 @@ new class extends Component {
                     </h5>
                     <div class="d-flex gap-2">
                         @can('edit Hr-Employees')
-                            <a href="{{ route('employees.edit', $employeeId) }}"
-                               class="btn btn-success"
-                               x-data="{ loadingEdit: false }"
-                               @click.prevent="if (!loadingEdit) { loadingEdit = true; window.location.href='{{ route('employees.edit', $employeeId) }}'; }">
-                                <span x-show="!loadingEdit">
-                                    <i class="fas fa-edit me-2"></i>{{ __('hr.edit') }}
-                                </span>
-                                <span x-show="loadingEdit" style="display: none;">
-                                    <i class="fas fa-spinner fa-spin me-2"></i>{{ __('hr.loading') }}
-                                </span>
+                            <a href="{{ route('employees.edit', $employeeId) }}" class="btn btn-success">
+                                <i class="fas fa-edit me-2"></i>{{ __('hr.edit') }}
                             </a>
                         @endcan
-                        <a href="{{ route('employees.index') }}"
-                           class="btn btn-secondary"
-                           x-data="{ loadingBack: false }"
-                           @click.prevent="if (!loadingBack) { loadingBack = true; window.location.href='{{ route('employees.index') }}'; }">
-                            <span x-show="!loadingBack">
-                                <i class="fas fa-arrow-left me-2"></i>{{ __('hr.back_to_list') }}
-                            </span>
-                            <span x-show="loadingBack" style="display: none;">
-                                <i class="fas fa-spinner fa-spin me-2"></i>{{ __('hr.please_wait') }}
-                            </span>
+                        <a href="{{ route('employees.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>{{ __('hr.back_to_list') }}
                         </a>
                     </div>
                 </div>
@@ -145,30 +118,44 @@ new class extends Component {
     </div>
 
     <!-- Lightbox for Image Preview -->
-    <template x-if="isLightboxVisible">
-        <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-            style="z-index: 10000; background-color: rgba(0,0,0,0.9);"
-            @click="isLightboxVisible = false"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0">
-            <button type="button" 
-                class="btn-close btn-close-white position-absolute top-0 end-0 m-4"
-                @click="isLightboxVisible = false"
-                aria-label="{{ __('hr.close') }}"></button>
-            <img :src="previewImageUrl" 
-                class="img-fluid" 
-                style="max-height: 90vh; max-width: 90vw;"
-                @click.stop
-                alt="{{ __('hr.employee_image') }}">
-        </div>
-    </template>
+    <div id="imageLightbox" class="position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+        style="z-index: 10000; background-color: rgba(0,0,0,0.9); display: none;"
+        onclick="closeLightbox()">
+        <button type="button" 
+            class="btn-close btn-close-white position-absolute top-0 end-0 m-4"
+            onclick="closeLightbox()"
+            aria-label="{{ __('hr.close') }}"></button>
+        <img id="lightboxImage" 
+            src="" 
+            class="img-fluid" 
+            style="max-height: 90vh; max-width: 90vw;"
+            onclick="event.stopPropagation()"
+            alt="{{ __('hr.employee_image') }}">
+    </div>
 </div>
 
 @push('styles')
 @include('livewire.hr-management.employees.partials.view.style')
+@endpush
+
+@push('scripts')
+<script>
+// Simple lightbox functions
+function openLightbox(imageUrl) {
+    document.getElementById('lightboxImage').src = imageUrl;
+    document.getElementById('imageLightbox').style.display = 'flex';
+}
+
+function closeLightbox() {
+    document.getElementById('imageLightbox').style.display = 'none';
+}
+
+// Close lightbox on ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+    }
+});
+</script>
 @endpush
 
