@@ -104,8 +104,14 @@
         <ul class="list-unstyled topbar-nav mb-0 d-flex align-items-center order-first">
 
             <li>
-                <button class="nav-link button-menu-mobile transition-base" style="color: #34d3a3;">
-                    <i class="fas fa-bars fa-2x align-self-center topbar-icon" style="color: #34d3a3;"></i>
+                <button 
+                    x-data="{ sidebarHidden: localStorage.getItem('sidebarHidden') === 'true' }"
+                    @click="sidebarHidden = !sidebarHidden; localStorage.setItem('sidebarHidden', sidebarHidden); toggleSidebar()"
+                    class="nav-link transition-base" 
+                    style="color: #34d3a3;"
+                    title="{{ __('navigation.toggle_sidebar') }}">
+                    <i x-show="!sidebarHidden" class="fas fa-bars fa-2x align-self-center topbar-icon" style="color: #34d3a3;"></i>
+                    <i x-show="sidebarHidden" class="fas fa-x fa-2x align-self-center topbar-icon" style="color: #34d3a3;"></i>
                 </button>
             </li>
             <li>

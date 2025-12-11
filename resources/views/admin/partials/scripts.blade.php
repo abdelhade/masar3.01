@@ -295,4 +295,43 @@ document.addEventListener('DOMContentLoaded', function() {
              console.warn('Alpine.js is not loaded. Make sure Vite assets are loaded in head.');
          }
      });
+
+     // Sidebar Hide/Show Toggle Functionality
+     window.toggleSidebar = function() {
+         const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+         const sidebar = document.querySelector('.left-sidenav');
+         const pageWrapper = document.querySelector('.page-wrapper');
+         
+         if (sidebar && pageWrapper) {
+             if (sidebarHidden) {
+                 sidebar.style.display = 'none';
+                 if (document.body.classList.contains('enlarge-menu')) {
+                     pageWrapper.style.marginLeft = '0';
+                     pageWrapper.style.marginRight = '0';
+                 } else {
+                     pageWrapper.style.marginLeft = '0';
+                     pageWrapper.style.marginRight = '0';
+                 }
+             } else {
+                 sidebar.style.display = '';
+                 pageWrapper.style.marginLeft = '';
+                 pageWrapper.style.marginRight = '';
+             }
+         }
+     };
+
+     // Initialize sidebar state on page load
+     function initSidebarState() {
+         const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+         if (sidebarHidden) {
+             setTimeout(toggleSidebar, 100);
+         }
+     }
+
+     // Initialize on DOM ready
+     if (document.readyState === 'loading') {
+         document.addEventListener('DOMContentLoaded', initSidebarState);
+     } else {
+         initSidebarState();
+     }
  </script>

@@ -32,6 +32,9 @@
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
 
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.0/dist/cdn.min.js"></script>
+
     <!-- @vite(entrypoints: ['resources/css/app.css', 'resources/js/app.js'])
     
   -->
