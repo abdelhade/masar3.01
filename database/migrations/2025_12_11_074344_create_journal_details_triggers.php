@@ -26,6 +26,7 @@ return new class extends Migration
             BEGIN
                 DECLARE current_id BIGINT DEFAULT start_account_id;
                 DECLARE parent_id_val BIGINT;
+                DECLARE calculated_balance DECIMAL(18,3) DEFAULT 0;
                 
                 loop_label: REPEAT
                     SELECT parent_id INTO parent_id_val
@@ -36,14 +37,16 @@ return new class extends Migration
                         LEAVE loop_label;
                     END IF;
                     
-                    UPDATE acc_head AS parent
-                    SET balance = (
-                        SELECT COALESCE(SUM(balance), 0)
-                        FROM acc_head
-                        WHERE parent_id = parent_id_val
-                          AND (isdeleted = 0 OR isdeleted IS NULL)
-                    )
-                    WHERE parent.id = parent_id_val;
+                    -- حساب الرصيد أولاً في متغير منفصل لتجنب مشكلة MySQL 1093
+                    SELECT COALESCE(SUM(balance), 0) INTO calculated_balance
+                    FROM acc_head
+                    WHERE parent_id = parent_id_val
+                      AND (isdeleted = 0 OR isdeleted IS NULL);
+                    
+                    -- ثم تحديث الجدول باستخدام المتغير
+                    UPDATE acc_head
+                    SET balance = calculated_balance
+                    WHERE id = parent_id_val;
                     
                     SET current_id = parent_id_val;
                 UNTIL parent_id_val IS NULL END REPEAT loop_label;
@@ -55,15 +58,21 @@ return new class extends Migration
             AFTER INSERT ON journal_details
             FOR EACH ROW
             BEGIN
+                DECLARE calculated_balance DECIMAL(18,3) DEFAULT 0;
+                
+                -- حساب الرصيد أولاً في متغير منفصل لتجنب مشكلة MySQL 1093
+                SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
+                       COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
+                INTO calculated_balance
+                FROM journal_details
+                WHERE account_id = NEW.account_id
+                  AND (isdeleted = 0 OR isdeleted IS NULL);
+                
+                -- ثم تحديث الجدول باستخدام المتغير
                 UPDATE acc_head
-                SET balance = (
-                    SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
-                           COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
-                    FROM journal_details
-                    WHERE account_id = NEW.account_id
-                      AND (isdeleted = 0 OR isdeleted IS NULL)
-                )
+                SET balance = calculated_balance
                 WHERE id = NEW.account_id;
+                
                 CALL sp_update_parent_balances(NEW.account_id);
             END
         ');
@@ -73,35 +82,55 @@ return new class extends Migration
             AFTER UPDATE ON journal_details
             FOR EACH ROW
             BEGIN
+                DECLARE calculated_balance DECIMAL(18,3) DEFAULT 0;
+                
                 IF OLD.account_id != NEW.account_id OR OLD.account_id IS NULL OR NEW.account_id IS NULL THEN
                     IF OLD.account_id IS NOT NULL THEN
-                        UPDATE acc_head SET balance = (
-                            SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
-                                   COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
-                            FROM journal_details
-                            WHERE account_id = OLD.account_id
-                              AND (isdeleted = 0 OR isdeleted IS NULL)
-                        ) WHERE id = OLD.account_id;
+                        -- حساب الرصيد للحساب القديم
+                        SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
+                               COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
+                        INTO calculated_balance
+                        FROM journal_details
+                        WHERE account_id = OLD.account_id
+                          AND (isdeleted = 0 OR isdeleted IS NULL);
+                        
+                        -- تحديث الجدول باستخدام المتغير
+                        UPDATE acc_head
+                        SET balance = calculated_balance
+                        WHERE id = OLD.account_id;
+                        
                         CALL sp_update_parent_balances(OLD.account_id);
                     END IF;
                     IF NEW.account_id IS NOT NULL THEN
-                        UPDATE acc_head SET balance = (
-                            SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
-                                   COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
-                            FROM journal_details
-                            WHERE account_id = NEW.account_id
-                              AND (isdeleted = 0 OR isdeleted IS NULL)
-                        ) WHERE id = NEW.account_id;
+                        -- حساب الرصيد للحساب الجديد
+                        SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
+                               COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
+                        INTO calculated_balance
+                        FROM journal_details
+                        WHERE account_id = NEW.account_id
+                          AND (isdeleted = 0 OR isdeleted IS NULL);
+                        
+                        -- تحديث الجدول باستخدام المتغير
+                        UPDATE acc_head
+                        SET balance = calculated_balance
+                        WHERE id = NEW.account_id;
+                        
                         CALL sp_update_parent_balances(NEW.account_id);
                     END IF;
                 ELSE
-                    UPDATE acc_head SET balance = (
-                        SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
-                               COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
-                        FROM journal_details
-                        WHERE account_id = NEW.account_id
-                          AND (isdeleted = 0 OR isdeleted IS NULL)
-                    ) WHERE id = NEW.account_id;
+                    -- حساب الرصيد للحساب
+                    SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
+                           COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
+                    INTO calculated_balance
+                    FROM journal_details
+                    WHERE account_id = NEW.account_id
+                      AND (isdeleted = 0 OR isdeleted IS NULL);
+                    
+                    -- تحديث الجدول باستخدام المتغير
+                    UPDATE acc_head
+                    SET balance = calculated_balance
+                    WHERE id = NEW.account_id;
+                    
                     CALL sp_update_parent_balances(NEW.account_id);
                 END IF;
             END
@@ -113,13 +142,21 @@ return new class extends Migration
             AFTER DELETE ON journal_details
             FOR EACH ROW
             BEGIN
-                UPDATE acc_head SET balance = (
-                    SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
-                           COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
-                    FROM journal_details
-                    WHERE account_id = OLD.account_id
-                      AND (isdeleted = 0 OR isdeleted IS NULL)
-                ) WHERE id = OLD.account_id;
+                DECLARE calculated_balance DECIMAL(18,3) DEFAULT 0;
+                
+                -- حساب الرصيد أولاً في متغير منفصل لتجنب مشكلة MySQL 1093
+                SELECT COALESCE(SUM(CAST(debit AS DECIMAL(18,3))), 0) - 
+                       COALESCE(SUM(CAST(credit AS DECIMAL(18,3))), 0)
+                INTO calculated_balance
+                FROM journal_details
+                WHERE account_id = OLD.account_id
+                  AND (isdeleted = 0 OR isdeleted IS NULL);
+                
+                -- ثم تحديث الجدول باستخدام المتغير
+                UPDATE acc_head
+                SET balance = calculated_balance
+                WHERE id = OLD.account_id;
+                
                 CALL sp_update_parent_balances(OLD.account_id);
             END
         ');
