@@ -19,7 +19,6 @@ class ResourceCategoryRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
             'color' => ['nullable', 'string', 'max:255'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
         ];
     }
@@ -29,8 +28,6 @@ class ResourceCategoryRequest extends FormRequest
         return [
             'name.required' => 'الاسم بالإنجليزية مطلوب',
             'name_ar.required' => 'الاسم بالعربية مطلوب',
-            'sort_order.integer' => 'ترتيب العرض يجب أن يكون رقمًا',
-            'sort_order.min' => 'ترتيب العرض يجب أن يكون أكبر من أو يساوي 0',
         ];
     }
 }

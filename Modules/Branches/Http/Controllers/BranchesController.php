@@ -4,9 +4,9 @@ namespace Modules\Branches\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Branches\Http\Requests\BranchesRequest;
 use Modules\Branches\Models\Branch;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Branches\Http\Requests\BranchesRequest;
 
 class BranchesController extends Controller
 {
@@ -21,6 +21,7 @@ class BranchesController extends Controller
     public function index()
     {
         $branches = Branch::all();
+
         return view('branches::branches.index', compact('branches'));
     }
 
@@ -34,9 +35,11 @@ class BranchesController extends Controller
         try {
             Branch::create($request->validated());
             Alert::toast('تم الانشاء بنجاح', 'success');
+
             return redirect()->route('branches.index');
         } catch (\Exception) {
             Alert::toast('حدث خطأ', 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -44,6 +47,7 @@ class BranchesController extends Controller
     public function edit($id)
     {
         $branch = Branch::findOrFail($id);
+
         return view('branches::branches.edit', compact('branch'));
     }
 
@@ -53,9 +57,11 @@ class BranchesController extends Controller
             $branch = Branch::findOrFail($id);
             $branch->update($request->validated());
             Alert::toast('تم التعديل بنجاح', 'success');
+
             return redirect()->route('branches.index');
         } catch (\Exception) {
             Alert::toast('حدث خطأ', 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -67,11 +73,20 @@ class BranchesController extends Controller
             $branch = Branch::findOrFail($id);
             $branch->delete();
             Alert::toast('تم حذف الفرع بنجاح', 'success');
+
             return redirect()->route('branches.index');
         } catch (\Exception) {
             Alert::toast('حدث خطأ', 'error');
+
             return redirect()->back()->withInput();
         }
+    }
+
+    public function show($id)
+    {
+        $branch = Branch::findOrFail($id);
+
+        return view('branches::branches.show', compact('branch'));
     }
 
     public function toggleStatus(Request $request)

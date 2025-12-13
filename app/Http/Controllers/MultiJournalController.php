@@ -18,7 +18,7 @@ class MultiJournalController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view multi-journals')->only(['index']);
+        $this->middleware('can:view multi-journals')->only(['index', 'show']);
         $this->middleware('can:create multi-journals')->only(['create', 'store']);
         $this->middleware('can:edit multi-journals')->only(['update']);
         $this->middleware('can:delete multi-journals')->only(['destroy']);
@@ -126,6 +126,23 @@ class MultiJournalController extends Controller
 
             return back()->withErrors(['error' => 'خطأ في الحفظ: '.$e->getMessage()])->withInput();
         }
+    }
+
+    public function show($id)
+    {
+        $oper = OperHead::with([
+            'journalHead.journalDetails.accountHead',
+            'acc1Head',
+            'acc2Head',
+            'employee',
+            'type',
+            'user',
+        ])->findOrFail($id);
+
+        $journal = JournalHead::where('op_id', $id)->first();
+        $details = $journal ? JournalDetail::with('accountHead')->where('journal_id', $journal->journal_id)->get() : collect();
+
+        return view('multi-journals.show', compact('oper', 'journal', 'details'));
     }
 
     public function edit($id)

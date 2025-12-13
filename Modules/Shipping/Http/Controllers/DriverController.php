@@ -3,9 +3,9 @@
 namespace Modules\Shipping\Http\Controllers;
 
 use Illuminate\Routing\Controller;
+use Modules\Shipping\Http\Requests\DriverRequest;
 use Modules\Shipping\Models\Driver;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Shipping\Http\Requests\DriverRequest;
 
 class DriverController extends Controller
 {
@@ -20,12 +20,14 @@ class DriverController extends Controller
     public function index()
     {
         $drivers = Driver::paginate(10);
+
         return view('shipping::drivers.index', compact('drivers'));
     }
 
     public function create()
     {
         $branches = userBranches();
+
         return view('shipping::drivers.create', compact('branches'));
     }
 
@@ -33,6 +35,7 @@ class DriverController extends Controller
     {
         Driver::create($request->validated());
         Alert::toast(__('Driver created successfully.'), 'success');
+
         return redirect()->route('drivers.index');
     }
 
@@ -45,18 +48,28 @@ class DriverController extends Controller
     {
         $driver->update($request->validated());
         Alert::toast(__('Driver updated successfully.'), 'success');
+
         return redirect()->route('drivers.index');
+    }
+
+    public function show(Driver $driver)
+    {
+        $driver->load('branch');
+
+        return view('shipping::drivers.show', compact('driver'));
     }
 
     public function destroy(Driver $driver)
     {
         if ($driver->orders()->exists()) {
             Alert::toast(__('Cannot delete driver with existing orders.'), 'error');
+
             return redirect()->route('drivers.index');
         }
 
         $driver->delete();
         Alert::toast(__('Driver deleted successfully.'), 'success');
+
         return redirect()->route('drivers.index');
     }
 }

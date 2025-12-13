@@ -19,7 +19,6 @@ class ResourceStatusRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'color' => ['nullable', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
         ];
     }
@@ -28,9 +27,6 @@ class ResourceStatusRequest extends FormRequest
     {
         return [
             'name.required' => 'الاسم بالإنجليزية مطلوب',
-            'sort_order.integer' => 'ترتيب العرض يجب أن يكون رقمًا',
-            'sort_order.min' => 'ترتيب العرض يجب أن يكون أكبر من أو يساوي 0',
         ];
     }
 }
-

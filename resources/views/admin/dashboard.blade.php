@@ -3,6 +3,10 @@
 @include('admin.partials.head')
 
 <body>
+    {{-- YouTube-style Progress Bar Loader --}}
+    <div id="page-loader" class="page-loader">
+        <div class="loader-bar"></div>
+    </div>
     {{-- Dynamic Sidebar: كل صفحة تحدد الـ sidebar الخاص بها --}}
     @hasSection('sidebar')
         {{-- Sidebar Wrapper: يحتوي الـ structure الثابت --}}
@@ -24,20 +28,18 @@
                 </ul>
             </div>
         </div>
-    <!-- @else
+    @else
         {{-- Default Sidebar: للصفحات القديمة اللي ما عندهاش dynamic sidebar --}}
         @include('admin.partials.sidebar-default')
-    @endif -->
+    @endif
 
     <div class="page-wrapper">
         @include('admin.partials.topbar')
         <div class="page-content">
-            <div class="page-content">
-                <div class="container-fluid">
-                    <div class="row">
-                        @include('sweetalert::alert')
-                        @yield('content')
-                    </div>
+            <div class="container-fluid">
+                <div class="row">
+                    @include('sweetalert::alert')
+                    @yield('content')
                 </div>
             </div>
             @include('admin.partials.footer')

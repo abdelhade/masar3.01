@@ -3,8 +3,8 @@
 namespace Modules\MyResources\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\MyResources\Models\ResourceCategory;
 use Modules\MyResources\Http\Requests\ResourceCategoryRequest;
+use Modules\MyResources\Models\ResourceCategory;
 
 class ResourceCategoryController extends Controller
 {
@@ -22,7 +22,10 @@ class ResourceCategoryController extends Controller
 
     public function store(ResourceCategoryRequest $request)
     {
-        ResourceCategory::create($request->validated());
+        $data = $request->validated();
+        $data['sort_order'] = (ResourceCategory::max('sort_order') ?? 0) + 1;
+
+        ResourceCategory::create($data);
 
         return redirect()
             ->route('myresources.categories.index')
@@ -43,6 +46,11 @@ class ResourceCategoryController extends Controller
             ->with('success', 'تم تحديث التصنيف بنجاح');
     }
 
+    public function show(ResourceCategory $category)
+    {
+        return view('myresources::categories.show', compact('category'));
+    }
+
     public function destroy(ResourceCategory $category)
     {
         $category->delete();
@@ -52,4 +60,3 @@ class ResourceCategoryController extends Controller
             ->with('success', 'تم حذف التصنيف بنجاح');
     }
 }
-

@@ -20,12 +20,14 @@ class ServiceTypeController extends Controller
     public function index()
     {
         $types = ServiceType::all();
+
         return view('maintenance::service-types.index', compact('types'));
     }
 
     public function create()
     {
         $branches = userBranches();
+
         return view('maintenance::service-types.create', compact('branches'));
     }
 
@@ -34,9 +36,11 @@ class ServiceTypeController extends Controller
         try {
             ServiceType::create($request->validated());
             Alert::toast(__('Item created successfully'), 'success');
+
             return redirect()->route('service.types.index');
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred'), 'error');
+
             return redirect()->back();
         }
     }
@@ -44,6 +48,7 @@ class ServiceTypeController extends Controller
     public function edit($id)
     {
         $type = ServiceType::findOrFail($id);
+
         return view('maintenance::service-types.edit', compact('type'));
     }
 
@@ -52,11 +57,21 @@ class ServiceTypeController extends Controller
         try {
             $service_type->update($request->validated());
             Alert::toast(__('Item updated successfully'), 'success');
+
             return redirect()->route('service.types.index');
         } catch (\Exception) {
             Alert::toast(__('An error occurred'), 'error');
+
             return redirect()->back();
         }
+    }
+
+    public function show($id)
+    {
+        $type = ServiceType::findOrFail($id);
+        $type->load('branch');
+
+        return view('maintenance::service-types.show', compact('type'));
     }
 
     public function destroy($id)
@@ -68,6 +83,7 @@ class ServiceTypeController extends Controller
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred'), 'error');
         }
+
         return redirect()->route('service.types.index');
     }
 }

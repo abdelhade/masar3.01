@@ -4,9 +4,10 @@ namespace Modules\MyResources\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Modules\MyResources\Http\Requests\ResourceAssignmentRequest;
 use Modules\MyResources\Models\Resource;
 use Modules\MyResources\Models\ResourceAssignment;
-use Modules\MyResources\Http\Requests\ResourceAssignmentRequest;
 
 class ResourceAssignmentController extends Controller
 {
@@ -30,7 +31,7 @@ class ResourceAssignmentController extends Controller
     public function store(ResourceAssignmentRequest $request)
     {
         $data = $request->validated();
-        $data['assigned_by'] = auth()->id();
+        $data['assigned_by'] = Auth::id();
 
         ResourceAssignment::create($data);
 
@@ -56,6 +57,13 @@ class ResourceAssignmentController extends Controller
             ->with('success', 'تم تحديث التعيين بنجاح');
     }
 
+    public function show(ResourceAssignment $assignment)
+    {
+        $assignment->load(['resource', 'project', 'assignedBy']);
+
+        return view('myresources::assignments.show', compact('assignment'));
+    }
+
     public function destroy(ResourceAssignment $assignment)
     {
         $assignment->delete();
@@ -65,4 +73,3 @@ class ResourceAssignmentController extends Controller
             ->with('success', 'تم حذف التعيين بنجاح');
     }
 }
-

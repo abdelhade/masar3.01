@@ -97,23 +97,112 @@
                     transform: scale(1.1);
                     transition: transform 0.2s ease;
                 }
+
+                .sidebar-toggle-btn:hover i {
+                    transform: scale(1.1);
+                    transition: transform 0.2s ease;
+                }
+
+                .sidebar-toggle-btn:active i {
+                    transform: scale(0.95);
+                }
             </style>
+
+            <script>
+                function toggleSidebarMenu() {
+                    const sidebar = document.querySelector('.left-sidenav');
+                    const pageWrapper = document.querySelector('.page-wrapper');
+                    const toggleIcon = document.getElementById('sidebar-toggle-icon');
+                    
+                    if (!sidebar || !pageWrapper) {
+                        console.warn('Sidebar or page wrapper not found');
+                        return;
+                    }
+
+                    // Get current state from localStorage or check DOM
+                    const currentState = localStorage.getItem('sidebarHidden');
+                    const isCurrentlyHidden = currentState === 'true' || 
+                                             sidebar.style.display === 'none' ||
+                                             window.getComputedStyle(sidebar).display === 'none';
+                    
+                    // Toggle state
+                    const newState = !isCurrentlyHidden;
+                    localStorage.setItem('sidebarHidden', newState.toString());
+                    
+                    // Apply new state
+                    if (newState) {
+                        // Hide sidebar
+                        sidebar.style.display = 'none';
+                        pageWrapper.style.marginLeft = '0';
+                        pageWrapper.style.marginRight = '0';
+                        if (toggleIcon) {
+                            toggleIcon.classList.remove('fa-times');
+                            toggleIcon.classList.add('fa-bars');
+                        }
+                    } else {
+                        // Show sidebar
+                        sidebar.style.display = '';
+                        pageWrapper.style.marginLeft = '';
+                        pageWrapper.style.marginRight = '';
+                        if (toggleIcon) {
+                            toggleIcon.classList.remove('fa-bars');
+                            toggleIcon.classList.add('fa-times');
+                        }
+                    }
+                }
+
+                // Update icon state based on sidebar visibility
+                function updateSidebarToggleIcon() {
+                    const sidebar = document.querySelector('.left-sidenav');
+                    const toggleIcon = document.getElementById('sidebar-toggle-icon');
+                    
+                    if (!sidebar || !toggleIcon) {
+                        return;
+                    }
+
+                    const isHidden = localStorage.getItem('sidebarHidden') === 'true' ||
+                                     sidebar.style.display === 'none' ||
+                                     window.getComputedStyle(sidebar).display === 'none';
+                    
+                    if (isHidden) {
+                        toggleIcon.classList.remove('fa-times');
+                        toggleIcon.classList.add('fa-bars');
+                    } else {
+                        toggleIcon.classList.remove('fa-bars');
+                        toggleIcon.classList.add('fa-times');
+                    }
+                }
+
+                // Initialize icon state on page load
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        setTimeout(updateSidebarToggleIcon, 100);
+                    });
+                } else {
+                    setTimeout(updateSidebarToggleIcon, 100);
+                }
+
+                // Also update on window load
+                window.addEventListener('load', function() {
+                    setTimeout(updateSidebarToggleIcon, 200);
+                });
+            </script>
 
         </ul><!--end topbar-nav-->
 
         <ul class="list-unstyled topbar-nav mb-0 d-flex align-items-center order-first">
-
-            <li>
-                <button 
-                    x-data="{ sidebarHidden: localStorage.getItem('sidebarHidden') === 'true' }"
-                    @click="sidebarHidden = !sidebarHidden; localStorage.setItem('sidebarHidden', sidebarHidden); toggleSidebar()"
-                    class="nav-link transition-base" 
-                    style="color: #34d3a3;"
-                    title="{{ __('navigation.toggle_sidebar') }}">
-                    <i x-show="!sidebarHidden" class="fas fa-bars fa-2x align-self-center topbar-icon" style="color: #34d3a3;"></i>
-                    <i x-show="sidebarHidden" class="fas fa-x fa-2x align-self-center topbar-icon" style="color: #34d3a3;"></i>
+            {{-- Sidebar Toggle Button --}}
+            <li class="me-3">
+                <button type="button" 
+                        id="sidebar-toggle-btn" 
+                        class="btn btn-lg transition-base sidebar-toggle-btn"
+                        title="{{ __('إظهار/إخفاء القائمة الجانبية') }}"
+                        onclick="toggleSidebarMenu()"
+                        style="background: none; border: none; color: #34d3a3; cursor: pointer; padding: 8px 12px;">
+                    <i id="sidebar-toggle-icon" class="fas fa-bars fa-2x" style="color: #34d3a3;"></i>
                 </button>
             </li>
+            
             <li>
                 <a title="help" href="https://www.updates.elhadeerp.com" class="nav-link transition-base"
                     target="_blank" style="color: #34d3a3;">

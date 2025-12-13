@@ -2,17 +2,18 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use Exception;
 use App\Http\Controllers\Controller;
+use Exception;
+use Modules\Progress\Http\Requests\WorkItemRequest;
 use Modules\Progress\Models\WorkItem;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Progress\Http\Requests\WorkItemRequest;
 
 class WorkItemController extends Controller
 {
     public function index()
     {
         $workItems = WorkItem::paginate(20);
+
         return view('progress::work-items.index', compact('workItems'));
     }
 
@@ -26,9 +27,11 @@ class WorkItemController extends Controller
         try {
             WorkItem::create($request->validated());
             Alert::toast('تم الاضافه بنجاح', 'success');
+
             return redirect()->route('work.items.index');
         } catch (Exception) {
             Alert::toast('حدث خطا', 'error');
+
             return redirect()->route('work.items.index');
         }
     }
@@ -43,11 +46,18 @@ class WorkItemController extends Controller
         try {
             $workItem->update($request->validated());
             Alert::toast('تم التعديل بنجاح', 'success');
+
             return redirect()->route('work.items.index');
         } catch (Exception) {
             Alert::toast('حدث خطا', 'error');
+
             return redirect()->route('work.items.index');
         }
+    }
+
+    public function show(WorkItem $workItem)
+    {
+        return view('progress::work-items.show', compact('workItem'));
     }
 
     public function destroy(WorkItem $workItem)
@@ -55,9 +65,11 @@ class WorkItemController extends Controller
         try {
             $workItem->delete();
             Alert::toast('تم الحذف بنجاح', 'success');
+
             return redirect()->route('work.items.index');
         } catch (Exception) {
             Alert::toast('حدث خطا', 'error');
+
             return redirect()->route('work.items.index');
         }
     }

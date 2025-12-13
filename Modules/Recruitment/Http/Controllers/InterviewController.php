@@ -21,9 +21,15 @@ class InterviewController extends Controller
         return view('recruitment::interviews.manage');
     }
 
+    public function show($id)
+    {
+        $interview = \Modules\Recruitment\Models\Interview::with(['cv', 'branch'])->findOrFail($id);
+
+        return view('recruitment::interviews.show', compact('interview'));
+    }
+
     public function calendar()
     {
         return view('recruitment::interviews.calendar');
     }
 }
-

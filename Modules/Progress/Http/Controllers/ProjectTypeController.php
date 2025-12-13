@@ -2,18 +2,18 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use Exception;
 use App\Http\Controllers\Controller;
+use Exception;
+use Modules\Progress\Http\Requests\ProjectTypeRequest;
 use Modules\Progress\Models\ProjectType;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Progress\Http\Requests\ProjectTypeRequest;
 
 class ProjectTypeController extends Controller
 {
-
     public function index()
     {
         $types = ProjectType::paginate(20);
+
         return view('progress::project-types.index', compact('types'));
     }
 
@@ -27,9 +27,11 @@ class ProjectTypeController extends Controller
         try {
             ProjectType::create($request->validated());
             Alert::toast('تم الاضافه بنجاح', 'success');
+
             return redirect()->route('project.types.index');
         } catch (Exception) {
             Alert::toast('حدث خطا', 'error');
+
             return redirect()->route('project.types.index');
         }
     }
@@ -44,11 +46,18 @@ class ProjectTypeController extends Controller
         try {
             $projectType->update($request->validated());
             Alert::toast('تم التعديل بنجاح', 'success');
+
             return redirect()->route('project.types.index');
         } catch (Exception) {
             Alert::toast('حدث خطا', 'error');
+
             return redirect()->route('project.types.index');
         }
+    }
+
+    public function show(ProjectType $projectType)
+    {
+        return view('progress::project-types.show', compact('projectType'));
     }
 
     public function destroy(ProjectType $projectType)
@@ -56,9 +65,11 @@ class ProjectTypeController extends Controller
         try {
             $projectType->delete();
             Alert::toast('تم الحذف بنجاح', 'success');
+
             return redirect()->route('project.types.index');
         } catch (Exception) {
             Alert::toast('حدث خطا', 'error');
+
             return redirect()->route('project.types.index');
         }
     }

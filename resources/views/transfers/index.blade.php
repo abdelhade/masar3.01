@@ -94,6 +94,12 @@
                                             $slug = $typeSlugs[$transfer->pro_type] ?? null;
                                         @endphp
 
+                                        @if(($slug && (\Illuminate\Support\Facades\Gate::allows("view {$slug}"))) || \Illuminate\Support\Facades\Gate::allows('view transfers'))
+                                            <a href="{{ route('transfers.show', $transfer) }}" class="btn btn-info btn-icon-square-sm" title="{{ __('Show') }}">
+                                                <i class="las la-eye"></i>
+                                            </a>
+                                        @endif
+
                                         @if(($slug && (\Illuminate\Support\Facades\Gate::allows("edit {$slug}"))) || \Illuminate\Support\Facades\Gate::allows('edit transfers'))
                                             <button class="btn btn-success btn-icon-square-sm">
                                                 <a href="{{ route('transfers.edit', $transfer) }}"><i class="las la-pen"></i></a>

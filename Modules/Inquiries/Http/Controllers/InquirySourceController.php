@@ -3,13 +3,12 @@
 namespace Modules\Inquiries\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Inquiries\Models\InquirySource;
 use Modules\Inquiries\Http\Requests\InquirySourceRequest;
+use Modules\Inquiries\Models\InquirySource;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class InquirySourceController extends Controller
 {
-
     public function __construct()
     {
         $this->middleware('can:view Inquiries Source')->only(['index', 'getTreeData']);
@@ -17,6 +16,7 @@ class InquirySourceController extends Controller
         $this->middleware('can:edit Inquiries Source')->only('update');
         $this->middleware('can:delete Inquiries Source')->only('destroy');
     }
+
     public function index()
     {
         $sources = InquirySource::whereNull('parent_id')
@@ -38,19 +38,21 @@ class InquirySourceController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('Source created successfully'),
-                    'source' => $this->formatSourceForResponse($source)
+                    'source' => $this->formatSourceForResponse($source),
                 ]);
             }
+
             return redirect()->route('inquiry.sources.index');
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Error during save')
+                    'message' => __('Error during save'),
                 ], 500);
             }
 
             Alert::toast(__('Error during save'), 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -65,11 +67,12 @@ class InquirySourceController extends Controller
                 if ($request->ajax()) {
                     return response()->json([
                         'success' => false,
-                        'message' => __('Cannot make source child of itself or its children')
+                        'message' => __('Cannot make source child of itself or its children'),
                     ], 400);
                 }
 
                 Alert::toast(__('Cannot make source child of itself or its children'), 'error');
+
                 return redirect()->back()->withInput();
             }
 
@@ -79,21 +82,23 @@ class InquirySourceController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('Source updated successfully'),
-                    'source' => $this->formatSourceForResponse($source)
+                    'source' => $this->formatSourceForResponse($source),
                 ]);
             }
 
             Alert::toast(__('Source updated successfully'), 'success');
+
             return redirect()->route('inquiry.sources.index');
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Error during update')
+                    'message' => __('Error during update'),
                 ], 500);
             }
 
             Alert::toast(__('Error during update'), 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -107,12 +112,12 @@ class InquirySourceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Source and children deleted successfully')
+                'message' => __('Source and children deleted successfully'),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Error during delete')
+                'message' => __('Error during delete'),
             ], 500);
         }
     }
@@ -121,18 +126,18 @@ class InquirySourceController extends Controller
     {
         try {
             $source = InquirySource::findOrFail($id);
-            $source->is_active = !$source->is_active;
+            $source->is_active = ! $source->is_active;
             $source->save();
 
             return response()->json([
                 'success' => true,
                 'is_active' => $source->is_active,
-                'message' => $source->is_active ? __('Source activated') : __('Source deactivated')
+                'message' => $source->is_active ? __('Source activated') : __('Source deactivated'),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Error during status change')
+                'message' => __('Error during status change'),
             ], 500);
         }
     }
@@ -146,7 +151,7 @@ class InquirySourceController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $this->buildTreeArray($sources)
+            'data' => $this->buildTreeArray($sources),
         ]);
     }
 
@@ -159,7 +164,7 @@ class InquirySourceController extends Controller
                 'parent_id' => $source->parent_id,
                 'is_active' => $source->is_active,
                 'created_at' => $source->created_at->format('Y-m-d H:i'),
-                'children' => $this->buildTreeArray($source->childrenRecursive)
+                'children' => $this->buildTreeArray($source->childrenRecursive),
             ];
         })->toArray();
     }
@@ -177,7 +182,7 @@ class InquirySourceController extends Controller
             'has_children' => $source->childrenRecursive->count() > 0,
             'children_count' => $source->childrenRecursive->count(),
             'created_at' => $source->created_at->format('Y-m-d H:i'),
-            'path' => $this->buildSourcePath($source)
+            'path' => $this->buildSourcePath($source),
         ];
     }
 
@@ -198,7 +203,7 @@ class InquirySourceController extends Controller
         return array_map(function ($item) {
             return [
                 'id' => $item->id,
-                'name' => $item->name
+                'name' => $item->name,
             ];
         }, $path);
     }
@@ -210,6 +215,7 @@ class InquirySourceController extends Controller
         }
 
         $descendants = $this->getAllDescendants($source);
+
         return $descendants->pluck('id')->contains($potentialParentId);
     }
 
@@ -223,6 +229,13 @@ class InquirySourceController extends Controller
         }
 
         return $descendants;
+    }
+
+    public function show($id)
+    {
+        $source = InquirySource::with(['parent', 'children'])->findOrFail($id);
+
+        return view('inquiries::inquiry-sources.show', compact('source'));
     }
 
     private function deleteSourceAndChildren($source)

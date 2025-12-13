@@ -3,8 +3,8 @@
 namespace Modules\Inquiries\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\Inquiries\Models\PricingStatus;
 use Modules\Inquiries\Http\Requests\PricingStatusRequest;
+use Modules\Inquiries\Models\PricingStatus;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class PricingStatusController extends Controller
@@ -20,6 +20,7 @@ class PricingStatusController extends Controller
     public function index()
     {
         $pricingStatuses = PricingStatus::paginate(20);
+
         return view('inquiries::pricing-statuses.index', compact('pricingStatuses'));
     }
 
@@ -32,12 +33,14 @@ class PricingStatusController extends Controller
     {
         PricingStatus::create($request->validated());
         Alert::toast(__('Item created successfully'), 'success');
+
         return redirect()->route('pricing-statuses.index');
     }
 
     public function edit($id)
     {
         $pricingStatus = PricingStatus::findOrFail($id);
+
         return view('inquiries::pricing-statuses.edit', compact('pricingStatus'));
     }
 
@@ -50,11 +53,20 @@ class PricingStatusController extends Controller
 
             $pricingStatus->update($data);
             Alert::toast(__('Item updated successfully'), 'success');
+
             return redirect()->route('pricing-statuses.index');
         } catch (\Exception $e) {
             Alert::toast(__('Error edit item'), 'error');
+
             return redirect()->back();
         }
+    }
+
+    public function show($id)
+    {
+        $pricingStatus = PricingStatus::findOrFail($id);
+
+        return view('inquiries::pricing-statuses.show', compact('pricingStatus'));
     }
 
     public function destroy($id)
@@ -65,14 +77,17 @@ class PricingStatusController extends Controller
             // التحقق من عدم وجود inquiries مرتبطة
             if ($pricingStatus->inquiries()->count() > 0) {
                 Alert::toast(__('Cannot delete: Pricing Status is in use'), 'error');
+
                 return redirect()->back();
             }
 
             $pricingStatus->delete();
             Alert::toast(__('Item deleted successfully'), 'success');
+
             return redirect()->route('pricing-statuses.index');
         } catch (\Exception $e) {
             Alert::toast(__('Error deleting item'), 'error');
+
             return redirect()->back();
         }
     }

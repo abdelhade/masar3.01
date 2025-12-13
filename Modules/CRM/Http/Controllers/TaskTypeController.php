@@ -20,6 +20,7 @@ class TaskTypeController extends Controller
     public function index()
     {
         $taskType = TaskType::all();
+
         return view('crm::task-types.index', compact('taskType'));
     }
 
@@ -32,12 +33,14 @@ class TaskTypeController extends Controller
     {
         TaskType::create($request->validated());
         Alert::toast(__('Task type created successfully'), 'success');
+
         return redirect()->route('tasks.types.index');
     }
 
     public function edit($id)
     {
         $taskType = TaskType::findOrFail($id);
+
         return view('crm::task-types.edit', compact('taskType'));
     }
 
@@ -46,7 +49,15 @@ class TaskTypeController extends Controller
         $taskType = TaskType::findOrFail($id);
         $taskType->update($request->validated());
         Alert::toast(__('Task type updated successfully'), 'success');
+
         return redirect()->route('tasks.types.index');
+    }
+
+    public function show($id)
+    {
+        $taskType = TaskType::findOrFail($id);
+
+        return view('crm::task-types.show', compact('taskType'));
     }
 
     public function destroy($id)
@@ -58,6 +69,7 @@ class TaskTypeController extends Controller
         } catch (\Exception) {
             Alert::toast(__('An error occurred while deleting the task type'), 'error');
         }
+
         return redirect()->route('tasks.types.index');
     }
 }

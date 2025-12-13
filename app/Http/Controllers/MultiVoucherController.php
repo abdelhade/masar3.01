@@ -40,7 +40,7 @@ class MultiVoucherController extends Controller
             }
 
             return $next($request);
-        })->only(['index']);
+        })->only(['index', 'show']);
         // ✅ حماية إنشاء السندات المتعددة (Create)
         $this->middleware(function ($request, $next) {
             $type = $request->get('type');
@@ -477,6 +477,35 @@ class MultiVoucherController extends Controller
 
             return back()->withErrors(['error' => 'حدث خطأ أثناء حفظ البيانات: '.$e->getMessage()]);
         }
+    }
+
+    public function show($id)
+    {
+        $operHead = OperHead::with([
+            'journalHead.dets.accHead',
+            'employee',
+            'acc1Head',
+            'acc2Head',
+            'type',
+            'user',
+        ])->findOrFail($id);
+
+        $pname = \App\Models\ProType::find($operHead->pro_type)?->pname;
+        $permissionMap = [
+            'multi_payment' => 'view multi-payment',
+            'multi_receipt' => 'view multi-receipt',
+        ];
+
+        $requiredPermission = $permissionMap[$pname] ?? null;
+        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
+            abort(403, 'غير مصرح لك بعرض هذا السند المتعدد');
+        }
+
+        $journalDetails = $operHead->journalHead?->dets ?? collect();
+        $pro_type = $operHead->pro_type;
+        $ptext = ProType::where('id', $pro_type)->first()?->ptext;
+
+        return view('multi-vouchers.show', compact('operHead', 'journalDetails', 'ptext', 'pname'));
     }
 
     public function edit($id)

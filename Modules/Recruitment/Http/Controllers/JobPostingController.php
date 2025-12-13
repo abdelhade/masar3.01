@@ -20,5 +20,11 @@ class JobPostingController extends Controller
     {
         return view('recruitment::job-postings.manage');
     }
-}
 
+    public function show($id)
+    {
+        $jobPosting = \Modules\Recruitment\Models\JobPosting::with(['branch'])->findOrFail($id);
+
+        return view('recruitment::job-postings.show', compact('jobPosting'));
+    }
+}

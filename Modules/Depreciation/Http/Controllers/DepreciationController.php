@@ -4,16 +4,23 @@ namespace Modules\Depreciation\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Modules\Depreciation\Models\DepreciationItem;
-use Illuminate\Support\Facades\DB;
 
 class DepreciationController extends Controller
 {
     public function index()
     {
         return view('depreciation::index');
+    }
+
+    public function show($id)
+    {
+        $item = DepreciationItem::with(['assetAccount', 'branch'])->findOrFail($id);
+
+        return view('depreciation::show', compact('item'));
     }
 
     /**
@@ -31,38 +38,38 @@ class DepreciationController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $items = DepreciationItem::where('is_active', true)->get();
             $updatedCount = 0;
-            
+
             foreach ($items as $item) {
                 $yearsUsed = now()->diffInYears($item->purchase_date);
                 $totalDepreciation = min(
-                    $yearsUsed * $item->annual_depreciation, 
+                    $yearsUsed * $item->annual_depreciation,
                     $item->cost - $item->salvage_value
                 );
-                
+
                 $item->update([
-                    'accumulated_depreciation' => $totalDepreciation
+                    'accumulated_depreciation' => $totalDepreciation,
                 ]);
-                
+
                 $updatedCount++;
             }
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "تم حساب الإهلاك لـ {$updatedCount} أصل بنجاح",
-                'updated_count' => $updatedCount
+                'updated_count' => $updatedCount,
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء حساب الإهلاك: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء حساب الإهلاك: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -73,22 +80,22 @@ class DepreciationController extends Controller
     public function report(Request $request)
     {
         $query = DepreciationItem::with(['assetAccount', 'branch']);
-        
+
         if ($request->has('branch_id') && $request->branch_id) {
             $query->where('branch_id', $request->branch_id);
         }
-        
+
         if ($request->has('from_date') && $request->from_date) {
             $query->where('purchase_date', '>=', $request->from_date);
         }
-        
+
         if ($request->has('to_date') && $request->to_date) {
             $query->where('purchase_date', '<=', $request->to_date);
         }
-        
+
         $items = $query->orderBy('purchase_date', 'desc')->get();
         $branches = Branch::orderBy('name')->get();
-        
+
         return view('depreciation::report', compact('items', 'branches'));
     }
 
@@ -100,27 +107,27 @@ class DepreciationController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $items = DepreciationItem::whereNotNull('asset_account_id')
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('depreciation_account_id')
-                          ->orWhereNull('expense_account_id');
+                        ->orWhereNull('expense_account_id');
                 })
                 ->get();
-            
+
             $syncedCount = 0;
-            
+
             foreach ($items as $item) {
                 // Find depreciation account (acc_type = 15)
                 $depreciationAccount = AccHead::where('account_id', $item->asset_account_id)
                     ->where('acc_type', 15)
                     ->first();
-                    
+
                 // Find expense account (acc_type = 16)
                 $expenseAccount = AccHead::where('account_id', $item->asset_account_id)
                     ->where('acc_type', 16)
                     ->first();
-                
+
                 if ($depreciationAccount || $expenseAccount) {
                     $item->update([
                         'depreciation_account_id' => $depreciationAccount?->id,
@@ -129,21 +136,21 @@ class DepreciationController extends Controller
                     $syncedCount++;
                 }
             }
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "تم ربط {$syncedCount} حساب إهلاك بنجاح",
-                'synced_count' => $syncedCount
+                'synced_count' => $syncedCount,
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء ربط حسابات الإهلاك: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء ربط حسابات الإهلاك: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -156,19 +163,19 @@ class DepreciationController extends Controller
         try {
             $assetId = $request->input('asset_id');
             $asset = \Modules\Depreciation\Models\AccountAsset::with('accHead')->findOrFail($assetId);
-            
+
             $schedule = $this->calculateDepreciationSchedule($asset);
-            
+
             return response()->json([
                 'success' => true,
                 'schedule' => $schedule,
-                'asset' => $asset
+                'asset' => $asset,
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء إنشاء الجدولة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء إنشاء الجدولة: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -181,27 +188,27 @@ class DepreciationController extends Controller
         try {
             $asset = \Modules\Depreciation\Models\AccountAsset::with('accHead')->findOrFail($assetId);
             $schedule = $this->calculateDepreciationSchedule($asset);
-            
-            $filename = 'depreciation_schedule_' . ($asset->asset_name ?: $asset->accHead->aname) . '_' . now()->format('Y-m-d') . '.csv';
-            
+
+            $filename = 'depreciation_schedule_'.($asset->asset_name ?: $asset->accHead->aname).'_'.now()->format('Y-m-d').'.csv';
+
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ];
-            
-            $callback = function() use ($schedule, $asset) {
+
+            $callback = function () use ($schedule, $asset) {
                 $file = fopen('php://output', 'w');
-                
+
                 // UTF-8 BOM for proper Arabic display in Excel
                 fwrite($file, "\xEF\xBB\xBF");
-                
+
                 // Header
                 fputcsv($file, [
-                    'اسم الأصل', 'السنة', 'من تاريخ', 'إلى تاريخ', 
-                    'القيمة الدفترية في البداية', 'إهلاك السنة', 
-                    'الإهلاك المتراكم', 'القيمة الدفترية في النهاية', 'النسبة %'
+                    'اسم الأصل', 'السنة', 'من تاريخ', 'إلى تاريخ',
+                    'القيمة الدفترية في البداية', 'إهلاك السنة',
+                    'الإهلاك المتراكم', 'القيمة الدفترية في النهاية', 'النسبة %',
                 ]);
-                
+
                 foreach ($schedule as $row) {
                     fputcsv($file, [
                         $asset->asset_name ?: $asset->accHead->aname,
@@ -212,19 +219,19 @@ class DepreciationController extends Controller
                         number_format($row['annual_depreciation'], 2),
                         number_format($row['accumulated_depreciation'], 2),
                         number_format($row['ending_book_value'], 2),
-                        number_format($row['percentage'], 2) . '%'
+                        number_format($row['percentage'], 2).'%',
                     ]);
                 }
-                
+
                 fclose($file);
             };
-            
+
             return response()->stream($callback, 200, $headers);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تصدير الجدولة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء تصدير الجدولة: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -237,28 +244,28 @@ class DepreciationController extends Controller
         try {
             $assetIds = $request->input('asset_ids', []);
             $action = $request->input('action', 'calculate');
-            
+
             if (empty($assetIds)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'يرجى اختيار أصل واحد على الأقل'
+                    'message' => 'يرجى اختيار أصل واحد على الأقل',
                 ], 400);
             }
-            
+
             DB::beginTransaction();
-            
+
             $processedCount = 0;
             $totalAmount = 0;
             $errors = [];
-            
+
             foreach ($assetIds as $assetId) {
                 try {
                     $asset = \Modules\Depreciation\Models\AccountAsset::with('accHead')->find($assetId);
-                    
-                    if (!$asset || !$asset->is_active) {
+
+                    if (! $asset || ! $asset->is_active) {
                         continue;
                     }
-                    
+
                     if ($action === 'calculate') {
                         // Calculate monthly depreciation
                         $monthlyDepreciation = $asset->annual_depreciation / 12;
@@ -269,33 +276,33 @@ class DepreciationController extends Controller
                         // Reset accumulated depreciation
                         $asset->update([
                             'accumulated_depreciation' => 0,
-                            'last_depreciation_date' => null
+                            'last_depreciation_date' => null,
                         ]);
                     }
-                    
+
                     $processedCount++;
-                    
+
                 } catch (\Exception $e) {
-                    $errors[] = "خطأ في الأصل {$assetId}: " . $e->getMessage();
+                    $errors[] = "خطأ في الأصل {$assetId}: ".$e->getMessage();
                 }
             }
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "تم معالجة {$processedCount} أصل بنجاح",
                 'processed_count' => $processedCount,
                 'total_amount' => $totalAmount,
-                'errors' => $errors
+                'errors' => $errors,
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء المعالجة المجمعة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء المعالجة المجمعة: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -306,8 +313,8 @@ class DepreciationController extends Controller
     private function calculateDepreciationSchedule($asset)
     {
         $schedule = [];
-        
-        if (!$asset->useful_life_years || !$asset->purchase_cost) {
+
+        if (! $asset->useful_life_years || ! $asset->purchase_cost) {
             return $schedule;
         }
 
@@ -319,12 +326,12 @@ class DepreciationController extends Controller
         for ($year = 1; $year <= $asset->useful_life_years; $year++) {
             $yearStartDate = $startDate->copy()->addYears($year - 1);
             $yearEndDate = $startDate->copy()->addYears($year)->subDay();
-            
+
             $annualDepreciation = $this->calculateYearlyDepreciation(
-                $asset, 
-                $currentBookValue, 
-                $accumulatedDepreciation, 
-                $depreciableAmount, 
+                $asset,
+                $currentBookValue,
+                $accumulatedDepreciation,
+                $depreciableAmount,
                 $year
             );
 
@@ -374,14 +381,16 @@ class DepreciationController extends Controller
             case 'double_declining':
                 $rate = 2 / $asset->useful_life_years;
                 $depreciation = $currentBookValue * $rate;
-                
+
                 // Don't depreciate below salvage value
                 $remainingDepreciable = $depreciableAmount - $accumulatedDepreciation;
+
                 return min($depreciation, $remainingDepreciable);
 
             case 'sum_of_years':
                 $sumOfYears = ($asset->useful_life_years * ($asset->useful_life_years + 1)) / 2;
                 $remainingYears = $asset->useful_life_years - ($year - 1);
+
                 return ($depreciableAmount * $remainingYears) / $sumOfYears;
 
             default:

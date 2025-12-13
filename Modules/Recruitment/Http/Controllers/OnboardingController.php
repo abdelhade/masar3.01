@@ -20,5 +20,11 @@ class OnboardingController extends Controller
     {
         return view('recruitment::onboardings.manage');
     }
-}
 
+    public function show($id)
+    {
+        $onboarding = \Modules\Recruitment\Models\Onboarding::with(['contract', 'branch'])->findOrFail($id);
+
+        return view('recruitment::onboardings.show', compact('onboarding'));
+    }
+}

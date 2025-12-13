@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Item;
 use App\Models\Employee;
-use App\Models\OperHead;
-use App\Models\JournalHead;
-use Illuminate\Http\Request;
+use App\Models\Item;
 use App\Models\JournalDetail;
+use App\Models\JournalHead;
 use App\Models\OperationItems;
+use App\Models\OperHead;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Modules\Accounts\Models\AccHead;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -41,13 +41,13 @@ class InvoiceController extends Controller
     {
         $invoiceType = $request->input('type');
 
-        if (!$invoiceType || !array_key_exists($invoiceType, $this->titles)) {
+        if (! $invoiceType || ! array_key_exists($invoiceType, $this->titles)) {
             return redirect()->route('admin.dashboard')->with('error', 'Invalid invoice type.');
         }
 
-        $permissionName = 'view ' . $this->titles[$invoiceType];
-        if (!auth()->user()->can($permissionName)) {
-            abort(403, 'You do not have permission to view ' . $this->titles[$invoiceType]);
+        $permissionName = 'view '.$this->titles[$invoiceType];
+        if (! auth()->user()->can($permissionName)) {
+            abort(403, 'You do not have permission to view '.$this->titles[$invoiceType]);
         }
 
         $startDate = $request->input('start_date', Carbon::today()->toDateString());
@@ -92,7 +92,7 @@ class InvoiceController extends Controller
      */
     public function getCreateRoute($type)
     {
-        return url('/invoices/create?type=' . $type . '&q=' . md5($type));
+        return url('/invoices/create?type='.$type.'&q='.md5($type));
     }
 
     /**
@@ -101,13 +101,13 @@ class InvoiceController extends Controller
     public function create(Request $request)
     {
         $type = (int) $request->get('type');
-        if (!isset($this->titles[$type])) {
+        if (! isset($this->titles[$type])) {
             abort(404, 'Unknown invoice type.');
         }
 
-        $permissionName = 'create ' . $this->titles[$type];
-        if (!auth()->user()->can($permissionName)) {
-            abort(403, 'You do not have permission to create ' . $this->titles[$type]);
+        $permissionName = 'create '.$this->titles[$type];
+        if (! auth()->user()->can($permissionName)) {
+            abort(403, 'You do not have permission to create '.$this->titles[$type]);
         }
 
         $expectedHash = md5($type);
@@ -123,36 +123,60 @@ class InvoiceController extends Controller
         ]);
     }
 
-
     public function store(Request $request) {}
 
-    public function show(string $id) {}
-
-
-
-    public function edit(OperHead $invoice)
+    public function show(string $id)
     {
-        if (!$invoice || ($invoice->isdeleted ?? false)) {
+        $invoice = OperHead::with([
+            'operationItems.item',
+            'acc1Head',
+            'acc2Head',
+            'employee',
+            'type',
+            'user',
+            'journalHead.journalDetails.accountHead',
+        ])->findOrFail($id);
+
+        if (! $invoice || ($invoice->isdeleted ?? false)) {
             abort(404, 'Invoice not found or has been deleted.');
         }
 
         $type = $invoice->pro_type;
-        if (!isset($this->titles[$type])) {
+        if (! isset($this->titles[$type])) {
             abort(404, 'Unknown operation type.');
         }
 
-        $permissionName = 'edit ' . $this->titles[$type];
-        if (!Auth::user()->can($permissionName)) {
-            abort(403, 'You do not have permission to edit ' . $this->titles[$type]);
+        $permissionName = 'view '.$this->titles[$type];
+        if (! Auth::user()->can($permissionName)) {
+            abort(403, 'You do not have permission to view '.$this->titles[$type]);
+        }
+
+        return view('invoices.show', compact('invoice', 'type'));
+    }
+
+    public function edit(OperHead $invoice)
+    {
+        if (! $invoice || ($invoice->isdeleted ?? false)) {
+            abort(404, 'Invoice not found or has been deleted.');
+        }
+
+        $type = $invoice->pro_type;
+        if (! isset($this->titles[$type])) {
+            abort(404, 'Unknown operation type.');
+        }
+
+        $permissionName = 'edit '.$this->titles[$type];
+        if (! Auth::user()->can($permissionName)) {
+            abort(403, 'You do not have permission to edit '.$this->titles[$type]);
         }
 
         if ($invoice->is_posted ?? false) {
             Alert::toast('Cannot edit a posted invoice.', 'warning');
+
             return redirect()->route('invoices.index');
         }
 
         $invoice->load(['operationItems.item.units', 'operationItems.item.prices', 'acc1Head', 'acc2Head', 'employee']);
-
 
         return view('invoices.edit', compact('invoice'));
     }
@@ -167,13 +191,13 @@ class InvoiceController extends Controller
         $operation = OperHead::with('operationItems')->findOrFail($id);
         $type = $operation->pro_type;
 
-        if (!isset($this->titles[$type])) {
+        if (! isset($this->titles[$type])) {
             abort(404, 'Unknown operation type.');
         }
 
-        $permissionName = 'delete ' . $this->titles[$type];
-        if (!Auth::user()->can($permissionName)) {
-            abort(403, 'You do not have permission to delete ' . $this->titles[$type]);
+        $permissionName = 'delete '.$this->titles[$type];
+        if (! Auth::user()->can($permissionName)) {
+            abort(403, 'You do not have permission to delete '.$this->titles[$type]);
         }
 
         // التحقق من أن الفاتورة ليست مرحلة (اختياري حسب منطق عملك)
@@ -205,7 +229,7 @@ class InvoiceController extends Controller
                 $recalcData = [
                     'tenantId' => $tenantId,
                     'invoiceDate' => $invoiceDate,
-                    'itemIds' => $affectedItemIds
+                    'itemIds' => $affectedItemIds,
                 ];
 
                 // 2. عمليات الحذف (كما هي تماماً) ...
@@ -232,25 +256,26 @@ class InvoiceController extends Controller
 
             // 3. الآن نستدعي الـ Procedure (خارج الـ Transaction)
             // هذا يضمن أن الـ Procedure يرى البيانات بعد الحذف فعلياً
-            if (!empty($recalcData['itemIds'])) {
+            if (! empty($recalcData['itemIds'])) {
                 foreach ($recalcData['itemIds'] as $itemId) {
-                    DB::statement("CALL RecalculateItemCost(?, ?, ?)", [
+                    DB::statement('CALL RecalculateItemCost(?, ?, ?)', [
                         $itemId,
                         $recalcData['invoiceDate'],
-                        $recalcData['tenantId']
+                        $recalcData['tenantId'],
                     ]);
                 }
             }
 
             Alert::toast('Operation deleted and costs recalculated successfully.', 'success');
+
             return redirect()->back();
         } catch (\Exception $e) {
-            Log::error('Invoice Delete Error: ' . $e->getMessage());
-            Alert::toast('An error occurred: ' . $e->getMessage(), 'error');
+            Log::error('Invoice Delete Error: '.$e->getMessage());
+            Alert::toast('An error occurred: '.$e->getMessage(), 'error');
+
             return redirect()->back();
         }
     }
-
 
     /**
      * Print the specified resource.
@@ -260,12 +285,12 @@ class InvoiceController extends Controller
         $operation = OperHead::with('operationItems')->findOrFail($operation_id);
         $type = $operation->pro_type;
 
-        if (!isset($this->titles[$type])) {
+        if (! isset($this->titles[$type])) {
             abort(404, 'Unknown operation type.');
         }
 
-        $permissionName = 'print ' . $this->titles[$type];
-        if (!Auth::user()->can($permissionName)) {
+        $permissionName = 'print '.$this->titles[$type];
+        if (! Auth::user()->can($permissionName)) {
             abort(403, 'You do not have permission to print this type.');
         }
 
@@ -293,6 +318,7 @@ class InvoiceController extends Controller
             'items' => $items,
             'invoiceItems' => $operation->operationItems->map(function ($item) {
                 $unit = \App\Models\Unit::find($item->unit_id);
+
                 return [
                     'item_id' => $item->item_id,
                     'unit_id' => $item->unit_id,

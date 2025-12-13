@@ -1,19 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Inquiries\Http\Controllers\{
-    ContactController,
-    WorkTypeController,
-    ProjectSizeController,
-    InquiriesController,
-    InquirySourceController,
-    DifficultyMatrixController,
-    InquiriesRoleController,
-    QuotationInfoController,
-    InquiryDocumentController,
-    InquiryStatisticsController,
-    PricingStatusController
-};
+use Modules\Inquiries\Http\Controllers\ContactController;
+use Modules\Inquiries\Http\Controllers\DifficultyMatrixController;
+use Modules\Inquiries\Http\Controllers\InquiriesController;
+use Modules\Inquiries\Http\Controllers\InquiriesRoleController;
+use Modules\Inquiries\Http\Controllers\InquiryDocumentController;
+use Modules\Inquiries\Http\Controllers\InquirySourceController;
+use Modules\Inquiries\Http\Controllers\InquiryStatisticsController;
+use Modules\Inquiries\Http\Controllers\PricingStatusController;
+use Modules\Inquiries\Http\Controllers\ProjectSizeController;
+use Modules\Inquiries\Http\Controllers\QuotationInfoController;
+use Modules\Inquiries\Http\Controllers\WorkTypeController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -35,27 +33,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('inquiry-documents', InquiryDocumentController::class)->names([
-        'index'   => 'inquiry.documents.index',
-        'create'  => 'inquiry.documents.create',
-        'store'   => 'inquiry.documents.store',
-        'show'    => 'inquiry.documents.show',
-        'edit'    => 'inquiry.documents.edit',
-        'update'  => 'inquiry.documents.update',
+        'index' => 'inquiry.documents.index',
+        'create' => 'inquiry.documents.create',
+        'store' => 'inquiry.documents.store',
+        'show' => 'inquiry.documents.show',
+        'edit' => 'inquiry.documents.edit',
+        'update' => 'inquiry.documents.update',
         'destroy' => 'inquiry.documents.destroy',
     ]);
 
     Route::resource('contacts', ContactController::class)->names('contacts');
     Route::resource('pricing-statuses', PricingStatusController::class)->names('pricing-statuses');
 
-
-    Route::resource('inquiry-sources', InquirySourceController::class)->names('inquiry.sources')->except(['show']);
+    Route::resource('inquiry-sources', InquirySourceController::class)->names('inquiry.sources');
 
     Route::prefix('inquiry-sources')->name('inquiry.sources.')->group(function () {
         Route::post('/{id}/toggle-status', [InquirySourceController::class, 'toggleStatus'])->name('toggleStatus');
         Route::get('/tree', [InquirySourceController::class, 'getTreeData'])->name('tree');
     });
 
-    Route::resource('work-types', WorkTypeController::class)->names('work.types')->except(['show']);
+    Route::resource('work-types', WorkTypeController::class)->names('work.types');
 
     Route::resource('project-size', ProjectSizeController::class)->names('project-size');
 
