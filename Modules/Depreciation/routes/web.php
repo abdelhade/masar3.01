@@ -7,9 +7,10 @@ use Modules\Depreciation\Http\Controllers\DepreciationController;
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('depreciation')->name('depreciation.')->group(function () {
         Route::get('/', [DepreciationController::class, 'index'])->name('index');
-        Route::get('/{id}', [DepreciationController::class, 'show'])->name('show');
+        // Specific routes must come before parameterized routes
         Route::get('/schedule', [DepreciationController::class, 'schedule'])->name('schedule');
         Route::get('/report', [DepreciationController::class, 'report'])->name('report');
+        Route::get('/{id}', [DepreciationController::class, 'show'])->name('show');
 
         // Depreciation calculation routes
         Route::post('/calculate-all', [DepreciationController::class, 'calculateAllDepreciation'])->name('calculate-all');

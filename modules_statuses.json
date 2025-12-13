@@ -22,5 +22,6 @@
     "Quality": true,
     "Installments": true,
     "MyResources": true,
-    "Recruitment": true
+    "Recruitment": true,
+    "Fleet": true
 }

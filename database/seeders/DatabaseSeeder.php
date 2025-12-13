@@ -34,6 +34,7 @@ use Modules\Settings\Database\Seeders\InvoiceOptionsSeeder;
 use Modules\Settings\Database\Seeders\SettingSeeder;
 use Modules\Settings\Database\Seeders\SystemSettingsSeeder;
 use Modules\Shipping\Database\Seeders\ShippingPermissionsSeeder;
+use Modules\Fleet\Database\Seeders\FleetPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -99,6 +100,7 @@ class DatabaseSeeder extends Seeder
             QualityModulePermissionsSeeder::class,
             GiveAllPermissionsToAdminSeeder::class,
             MaintenancePermissionsSeeder::class,
+            FleetPermissionsSeeder::class,
         ]);
     }
 }

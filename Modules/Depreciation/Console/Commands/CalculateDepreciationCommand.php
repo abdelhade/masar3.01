@@ -2,15 +2,14 @@
 
 namespace Modules\Depreciation\Console\Commands;
 
-use Illuminate\Console\Command;
-use Modules\Depreciation\Models\AccountAsset;
-use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Modules\Accounts\Models\AccHead;
+use Modules\Depreciation\Models\AccountAsset;
 
 class CalculateDepreciationCommand extends Command
 {
@@ -49,6 +48,7 @@ class CalculateDepreciationCommand extends Command
 
         if ($assets->isEmpty()) {
             $this->warn('No assets found for depreciation calculation.');
+
             return 0;
         }
 
@@ -60,7 +60,7 @@ class CalculateDepreciationCommand extends Command
         foreach ($assets as $asset) {
             if ($this->shouldCalculateDepreciation($asset)) {
                 $depreciationAmount = $this->calculateDepreciationAmount($asset);
-                
+
                 if ($depreciationAmount > 0) {
                     $this->info(sprintf(
                         'Asset: %s - Depreciation: %s',
@@ -68,7 +68,7 @@ class CalculateDepreciationCommand extends Command
                         number_format($depreciationAmount, 2)
                     ));
 
-                    if (!$this->option('dry-run')) {
+                    if (! $this->option('dry-run')) {
                         $this->processDepreciationEntry($asset, $depreciationAmount);
                     }
 
@@ -102,8 +102,8 @@ class CalculateDepreciationCommand extends Command
         }
 
         $now = now();
-        $lastDepreciationDate = $asset->last_depreciation_date 
-            ? Carbon::parse($asset->last_depreciation_date) 
+        $lastDepreciationDate = $asset->last_depreciation_date
+            ? Carbon::parse($asset->last_depreciation_date)
             : Carbon::parse($asset->depreciation_start_date);
 
         if ($this->option('monthly')) {
@@ -132,13 +132,13 @@ class CalculateDepreciationCommand extends Command
         } else {
             // Default: calculate based on months passed
             $now = now();
-            $lastDepreciationDate = $asset->last_depreciation_date 
-                ? Carbon::parse($asset->last_depreciation_date) 
+            $lastDepreciationDate = $asset->last_depreciation_date
+                ? Carbon::parse($asset->last_depreciation_date)
                 : Carbon::parse($asset->depreciation_start_date);
 
             $monthsPassed = $lastDepreciationDate->diffInMonths($now);
             $monthlyDepreciation = ($asset->annual_depreciation ?? 0) / 12;
-            
+
             return $monthlyDepreciation * $monthsPassed;
         }
     }
@@ -183,16 +183,17 @@ class CalculateDepreciationCommand extends Command
     private function getOrCreateDepreciationAccounts(AccHead $assetAccount)
     {
         // Find accumulated depreciation account (acc_type = 15)
-        $accumulatedDepreciation = AccHead::where('account_id', $assetAccount->id)
+        $accumulatedDepreciation = AccHead::where('accountable_id', $assetAccount->id)
             ->where('acc_type', 15)
             ->first();
 
-        if (!$accumulatedDepreciation) {
+        if (! $accumulatedDepreciation) {
             $accumulatedDepreciation = AccHead::create([
-                'aname' => 'مجمع إهلاك ' . $assetAccount->aname,
+                'aname' => 'مجمع إهلاك '.$assetAccount->aname,
                 'code' => $this->generateAccountCode(15, $assetAccount->branch_id),
                 'acc_type' => 15,
-                'account_id' => $assetAccount->id,
+                'accountable_id' => $assetAccount->id,
+                'accountable_type' => AccHead::class,
                 'branch_id' => $assetAccount->branch_id,
                 'is_basic' => 0,
                 'isdeleted' => 0,
@@ -200,16 +201,17 @@ class CalculateDepreciationCommand extends Command
         }
 
         // Find expense depreciation account (acc_type = 16)
-        $expenseDepreciation = AccHead::where('account_id', $assetAccount->id)
+        $expenseDepreciation = AccHead::where('accountable_id', $assetAccount->id)
             ->where('acc_type', 16)
             ->first();
 
-        if (!$expenseDepreciation) {
+        if (! $expenseDepreciation) {
             $expenseDepreciation = AccHead::create([
-                'aname' => 'مصروف إهلاك ' . $assetAccount->aname,
+                'aname' => 'مصروف إهلاك '.$assetAccount->aname,
                 'code' => $this->generateAccountCode(16, $assetAccount->branch_id),
                 'acc_type' => 16,
-                'account_id' => $assetAccount->id,
+                'accountable_id' => $assetAccount->id,
+                'accountable_type' => AccHead::class,
                 'branch_id' => $assetAccount->branch_id,
                 'is_basic' => 0,
                 'isdeleted' => 0,
@@ -236,8 +238,8 @@ class CalculateDepreciationCommand extends Command
             'acc1' => $expenseAccount->id,
             'acc2' => $accumulatedAccount->id,
             'pro_value' => $amount,
-            'details' => 'قيد إهلاك تلقائي - ' . $assetAccount->aname,
-            'info' => 'قيد إهلاك تلقائي من الأمر ' . $this->signature,
+            'details' => 'قيد إهلاك تلقائي - '.$assetAccount->aname,
+            'info' => 'قيد إهلاك تلقائي من الأمر '.$this->signature,
             'user' => 1, // System user
             'branch_id' => $assetAccount->branch_id,
             'isdeleted' => 0,
@@ -254,7 +256,7 @@ class CalculateDepreciationCommand extends Command
             'op_id' => $oper->id,
             'pro_type' => 61,
             'date' => now()->format('Y-m-d'),
-            'details' => 'قيد إهلاك تلقائي - ' . $assetAccount->aname,
+            'details' => 'قيد إهلاك تلقائي - '.$assetAccount->aname,
             'user' => 1,
             'branch_id' => $assetAccount->branch_id,
         ]);
@@ -266,7 +268,7 @@ class CalculateDepreciationCommand extends Command
             'debit' => $amount,
             'credit' => 0,
             'type' => 0, // مدين
-            'info' => 'مصروف إهلاك تلقائي - ' . $assetAccount->aname,
+            'info' => 'مصروف إهلاك تلقائي - '.$assetAccount->aname,
             'op_id' => $oper->id,
             'isdeleted' => 0,
             'branch_id' => $assetAccount->branch_id,
@@ -279,7 +281,7 @@ class CalculateDepreciationCommand extends Command
             'debit' => 0,
             'credit' => $amount,
             'type' => 1, // دائن
-            'info' => 'مجمع إهلاك تلقائي - ' . $assetAccount->aname,
+            'info' => 'مجمع إهلاك تلقائي - '.$assetAccount->aname,
             'op_id' => $oper->id,
             'isdeleted' => 0,
             'branch_id' => $assetAccount->branch_id,
@@ -291,18 +293,18 @@ class CalculateDepreciationCommand extends Command
     private function generateAccountCode($accType, $branchId)
     {
         // Generate a unique account code based on account type and branch
-        $prefix = $accType . str_pad($branchId, 2, '0', STR_PAD_LEFT);
-        $lastAccount = AccHead::where('code', 'like', $prefix . '%')
+        $prefix = $accType.str_pad($branchId, 2, '0', STR_PAD_LEFT);
+        $lastAccount = AccHead::where('code', 'like', $prefix.'%')
             ->orderBy('code', 'desc')
             ->first();
-        
+
         if ($lastAccount) {
-            $lastNumber = (int)substr($lastAccount->code, -4);
+            $lastNumber = (int) substr($lastAccount->code, -4);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 }

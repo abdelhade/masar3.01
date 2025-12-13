@@ -8,9 +8,15 @@
                     <i class="fas fa-calculator me-2"></i>
                     {{ __('إدارة إهلاك الأصول') }}
                 </h2>
-                <div class="text-muted">
-                    <i class="fas fa-info-circle me-2"></i>
-                    {{ __('اختر حساب أصل من القائمة لتطبيق الإهلاك عليه') }}
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{{ route('depreciation.schedule') }}" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        {{ __('جدولة الإهلاك') }}
+                    </a>
+                    <div class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ __('اختر حساب أصل من القائمة لتطبيق الإهلاك عليه') }}
+                    </div>
                 </div>
             </div>
         </div>

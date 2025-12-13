@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('acc_head', function (Blueprint $table) {
-            $table->renameColumn('account_id', 'accountable_id');
-        });
+        // Check if account_id column exists before renaming
+        if (Schema::hasColumn('acc_head', 'account_id') && ! Schema::hasColumn('acc_head', 'accountable_id')) {
+            Schema::table('acc_head', function (Blueprint $table) {
+                $table->renameColumn('account_id', 'accountable_id');
+            });
+        }
     }
 
     /**
@@ -21,8 +24,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('acc_head', function (Blueprint $table) {
-            $table->renameColumn('accountable_id', 'account_id');
-        });
+        // Check if accountable_id column exists before renaming back
+        if (Schema::hasColumn('acc_head', 'accountable_id') && ! Schema::hasColumn('acc_head', 'account_id')) {
+            Schema::table('acc_head', function (Blueprint $table) {
+                $table->renameColumn('accountable_id', 'account_id');
+            });
+        }
     }
 };

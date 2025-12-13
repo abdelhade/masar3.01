@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Depreciation\Models\AccountAsset;
 use Modules\Branches\Models\Branch;
+use Modules\Accounts\Models\AccHead;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,7 @@ class DepreciationSchedule extends Component
     public $selectedBranch = '';
     public $showModal = false;
     public $showJournalModal = false;
+    public $showFreeJournalModal = false;
     public $scheduleData = [];
     public $journalPreview = [];
     public $selectedAssetForJournal = null;
@@ -28,6 +30,16 @@ class DepreciationSchedule extends Component
     public $filterJournalStatus = '';
     public $filterDateFrom = '';
     public $filterDateTo = '';
+    
+    // Free Journal Entry Fields
+    public $freeJournalDate = '';
+    public $freeJournalDescription = '';
+    public $freeJournalDebitAccount = '';
+    public $freeJournalDebitAmount = 0;
+    public $freeJournalCreditAccount = '';
+    public $freeJournalCreditAmount = 0;
+    public $freeJournalNotes = '';
+    public $freeJournalAssetId = null;
 
     public function render()
     {
@@ -104,10 +116,16 @@ class DepreciationSchedule extends Component
             ->paginate(15);
 
         $branches = Branch::select(['id', 'name'])->orderBy('name')->get();
+        $accounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->select(['id', 'code', 'aname', 'branch_id'])
+            ->orderBy('code')
+            ->get();
 
         return view('depreciation::livewire.depreciation-schedule', [
             'assets' => $assets,
             'branches' => $branches,
+            'accounts' => $accounts,
         ]);
     }
 
@@ -244,30 +262,51 @@ class DepreciationSchedule extends Component
                 return;
             }
 
-            // Check if already processed this month
-            $currentMonth = now()->format('Y-m');
-            $lastDepreciation = $asset->last_depreciation_date ? 
-                Carbon::parse($asset->last_depreciation_date)->format('Y-m') : null;
-
-            if ($lastDepreciation === $currentMonth) {
+            // Calculate months passed since last depreciation
+            $now = Carbon::now();
+            $lastDepreciationDate = $asset->last_depreciation_date 
+                ? Carbon::parse($asset->last_depreciation_date)
+                : ($asset->depreciation_start_date 
+                    ? Carbon::parse($asset->depreciation_start_date)
+                    : Carbon::parse($asset->purchase_date));
+            
+            // Check if there's any time passed
+            if ($lastDepreciationDate->greaterThanOrEqualTo($now)) {
                 $this->dispatch('alert', [
                     'type' => 'warning',
-                    'message' => 'تم إنشاء قيد الإهلاك لهذا الشهر مسبقاً'
+                    'message' => 'لا توجد مدة فائتة للإهلاك - آخر إهلاك في: ' . $lastDepreciationDate->format('Y-m-d')
                 ]);
                 return;
             }
 
+            // Calculate months passed (at least 1 month)
+            $monthsPassed = max(1, $lastDepreciationDate->diffInMonths($now));
+            
+            // Calculate monthly depreciation
             $monthlyDepreciation = $asset->annual_depreciation / 12;
+            
+            // Calculate total depreciation for the period
+            $totalDepreciation = $monthlyDepreciation * $monthsPassed;
+            
+            // Check if exceeds remaining depreciable amount
+            $remainingDepreciable = ($asset->purchase_cost - ($asset->salvage_value ?? 0)) - $asset->accumulated_depreciation;
+            if ($totalDepreciation > $remainingDepreciable) {
+                $totalDepreciation = $remainingDepreciable;
+                $monthsPassed = ceil(($totalDepreciation / $monthlyDepreciation));
+            }
             
             // Prepare journal preview
             $this->selectedAssetForJournal = $asset;
             $this->journalPreview = [
                 'asset_name' => $asset->asset_name ?: $asset->accHead->aname,
-                'amount' => $monthlyDepreciation,
-                'date' => now()->format('Y-m-d'),
+                'amount' => $totalDepreciation,
+                'months' => $monthsPassed,
+                'from_date' => $lastDepreciationDate->format('Y-m-d'),
+                'to_date' => $now->format('Y-m-d'),
+                'date' => $now->format('Y-m-d'),
                 'debit_account' => $asset->expenseAccount->aname . ' (' . $asset->expenseAccount->code . ')',
                 'credit_account' => $asset->depreciationAccount->aname . ' (' . $asset->depreciationAccount->code . ')',
-                'description' => 'قيد إهلاك شهري - ' . ($asset->asset_name ?: $asset->accHead->aname) . ' - ' . now()->format('Y/m')
+                'description' => 'قيد إهلاك - ' . ($asset->asset_name ?: $asset->accHead->aname) . ' - ' . $monthsPassed . ' ' . ($monthsPassed == 1 ? 'شهر' : 'أشهر') . ' (' . $lastDepreciationDate->format('Y/m') . ' - ' . $now->format('Y/m') . ')'
             ];
             
             $this->showJournalModal = true;
@@ -291,9 +330,10 @@ class DepreciationSchedule extends Component
             $result = $this->createDepreciationJournalEntry($asset, $amount);
             
             if ($result['success']) {
-                // Update asset
-                $asset->increment('accumulated_depreciation', $amount);
-                $asset->update(['last_depreciation_date' => now()]);
+            // Update asset
+            $asset->increment('accumulated_depreciation', $amount);
+            // Update last depreciation date to now (end of the period)
+            $asset->update(['last_depreciation_date' => now()]);
                 
                 DB::commit();
                 
@@ -330,14 +370,14 @@ class DepreciationSchedule extends Component
     {
         try {
             // Get next operation ID
-            $lastProId = \App\Models\OperHead::where('pro_type', 64)->max('pro_id') ?? 0;
+            $lastProId = \App\Models\OperHead::where('pro_type', 50)->max('pro_id') ?? 0;
             $newProId = $lastProId + 1;
 
             // Create operation header
             $oper = \App\Models\OperHead::create([
                 'pro_id' => $newProId,
                 'pro_date' => now()->format('Y-m-d'),
-                'pro_type' => 64, // قيد يومية
+                'pro_type' => 50, // إهلاك أصل
                 'acc1' => $asset->expense_account_id,
                 'acc2' => $asset->depreciation_account_id,
                 'pro_value' => $amount,
@@ -358,7 +398,7 @@ class DepreciationSchedule extends Component
                 'journal_id' => $newJournalId,
                 'total' => $amount,
                 'op_id' => $oper->id,
-                'pro_type' => 64,
+                'pro_type' => 50, // إهلاك أصل
                 'date' => now()->format('Y-m-d'),
                 'details' => 'قيد إهلاك شهري - ' . ($asset->asset_name ?: $asset->accHead->aname),
                 'user' => Auth::id(),
@@ -527,5 +567,189 @@ class DepreciationSchedule extends Component
     public function updatingFilterStatus()
     {
         $this->resetPage();
+    }
+
+    public function openFreeJournalModal()
+    {
+        $this->freeJournalDate = now()->format('Y-m-d');
+        $this->freeJournalDescription = '';
+        $this->freeJournalDebitAccount = '';
+        $this->freeJournalDebitAmount = 0;
+        $this->freeJournalCreditAccount = '';
+        $this->freeJournalCreditAmount = 0;
+        $this->freeJournalNotes = '';
+        $this->freeJournalAssetId = null;
+        $this->showFreeJournalModal = true;
+    }
+
+    public function openFreeJournalModalForAsset($assetId)
+    {
+        $asset = AccountAsset::with(['accHead', 'depreciationAccount', 'expenseAccount'])->findOrFail($assetId);
+        
+        // Validation
+        if (!$asset->depreciationAccount || !$asset->expenseAccount) {
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => 'حسابات الإهلاك غير مكتملة - يرجى التأكد من وجود حساب مجمع الإهلاك وحساب مصروف الإهلاك'
+            ]);
+            return;
+        }
+
+        $this->freeJournalDate = now()->format('Y-m-d');
+        $this->freeJournalDescription = 'قيد إهلاك يدوي - ' . ($asset->asset_name ?: $asset->accHead->aname);
+        $this->freeJournalDebitAccount = $asset->expense_account_id;
+        $this->freeJournalDebitAmount = $asset->annual_depreciation ? ($asset->annual_depreciation / 12) : 0;
+        $this->freeJournalCreditAccount = $asset->depreciation_account_id;
+        $this->freeJournalCreditAmount = $this->freeJournalDebitAmount;
+        $this->freeJournalNotes = 'قيد إهلاك يدوي للأصل: ' . ($asset->asset_name ?: $asset->accHead->aname);
+        $this->freeJournalAssetId = $assetId;
+        $this->showFreeJournalModal = true;
+    }
+
+    public function closeFreeJournalModal()
+    {
+        $this->showFreeJournalModal = false;
+        $this->freeJournalDate = '';
+        $this->freeJournalDescription = '';
+        $this->freeJournalDebitAccount = '';
+        $this->freeJournalDebitAmount = 0;
+        $this->freeJournalCreditAccount = '';
+        $this->freeJournalCreditAmount = 0;
+        $this->freeJournalNotes = '';
+        $this->freeJournalAssetId = null;
+    }
+
+    public function updatedFreeJournalDebitAmount()
+    {
+        $this->freeJournalCreditAmount = $this->freeJournalDebitAmount;
+    }
+
+    public function createFreeJournalEntry()
+    {
+        if (!$this->freeJournalAssetId) {
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => 'يجب تحديد الأصل أولاً'
+            ]);
+            return;
+        }
+
+        $asset = AccountAsset::with(['accHead', 'depreciationAccount', 'expenseAccount'])->findOrFail($this->freeJournalAssetId);
+
+        $this->validate([
+            'freeJournalDate' => 'required|date',
+            'freeJournalDescription' => 'required|string|max:255',
+            'freeJournalDebitAccount' => 'required|exists:acc_head,id',
+            'freeJournalDebitAmount' => 'required|numeric|min:0.01',
+            'freeJournalCreditAccount' => 'required|exists:acc_head,id',
+            'freeJournalNotes' => 'nullable|string|max:500',
+        ], [
+            'freeJournalDate.required' => 'التاريخ مطلوب',
+            'freeJournalDescription.required' => 'الوصف مطلوب',
+            'freeJournalDebitAccount.required' => 'حساب مصروف الإهلاك مطلوب',
+            'freeJournalDebitAmount.required' => 'مبلغ الإهلاك مطلوب',
+            'freeJournalCreditAccount.required' => 'حساب مجمع الإهلاك مطلوب',
+        ]);
+
+        // Validate amount doesn't exceed remaining depreciable amount
+        $remainingDepreciable = ($asset->purchase_cost - ($asset->salvage_value ?? 0)) - $asset->accumulated_depreciation;
+        if ($this->freeJournalDebitAmount > $remainingDepreciable) {
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => 'مبلغ الإهلاك أكبر من المبلغ القابل للإهلاك المتبقي: ' . number_format($remainingDepreciable, 2)
+            ]);
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $debitAccount = AccHead::findOrFail($this->freeJournalDebitAccount);
+            $creditAccount = AccHead::findOrFail($this->freeJournalCreditAccount);
+            $this->freeJournalCreditAmount = $this->freeJournalDebitAmount;
+
+            // Get branch from asset
+            $branchId = $asset->accHead->branch_id ?? 1;
+
+            // Get next operation ID
+            $lastProId = \App\Models\OperHead::where('pro_type', 50)->max('pro_id') ?? 0;
+            $newProId = $lastProId + 1;
+
+            // Create operation header
+            $oper = \App\Models\OperHead::create([
+                'pro_id' => $newProId,
+                'pro_date' => $this->freeJournalDate,
+                'pro_type' => 50, // إهلاك أصل
+                'acc1' => $debitAccount->id,
+                'acc2' => $creditAccount->id,
+                'pro_value' => $this->freeJournalDebitAmount,
+                'details' => $this->freeJournalDescription,
+                'info' => $this->freeJournalNotes ?: 'قيد إهلاك يدوي - ' . ($asset->asset_name ?: $asset->accHead->aname),
+                'user' => Auth::id(),
+                'branch_id' => $branchId,
+                'isdeleted' => 0,
+            ]);
+
+            // Get next journal ID
+            $lastJournalId = \App\Models\JournalHead::max('journal_id') ?? 0;
+            $newJournalId = $lastJournalId + 1;
+
+            // Create journal header
+            $journalHead = \App\Models\JournalHead::create([
+                'journal_id' => $newJournalId,
+                'total' => $this->freeJournalDebitAmount,
+                'op_id' => $oper->id,
+                'pro_type' => 50, // إهلاك أصل
+                'date' => $this->freeJournalDate,
+                'details' => $this->freeJournalDescription,
+                'user' => Auth::id(),
+                'branch_id' => $branchId,
+            ]);
+
+            // Debit Entry (Expense Account)
+            \App\Models\JournalDetail::create([
+                'journal_id' => $newJournalId,
+                'account_id' => $debitAccount->id,
+                'debit' => $this->freeJournalDebitAmount,
+                'credit' => 0,
+                'type' => 0, // مدين
+                'info' => 'مصروف إهلاك يدوي - ' . ($asset->asset_name ?: $asset->accHead->aname) . ($this->freeJournalNotes ? ' - ' . $this->freeJournalNotes : ''),
+                'op_id' => $oper->id,
+                'isdeleted' => 0,
+                'branch_id' => $branchId,
+            ]);
+
+            // Credit Entry (Accumulated Depreciation Account)
+            \App\Models\JournalDetail::create([
+                'journal_id' => $newJournalId,
+                'account_id' => $creditAccount->id,
+                'debit' => 0,
+                'credit' => $this->freeJournalCreditAmount,
+                'type' => 1, // دائن
+                'info' => 'مجمع إهلاك يدوي - ' . ($asset->asset_name ?: $asset->accHead->aname) . ($this->freeJournalNotes ? ' - ' . $this->freeJournalNotes : ''),
+                'op_id' => $oper->id,
+                'isdeleted' => 0,
+                'branch_id' => $branchId,
+            ]);
+
+            // Update asset accumulated depreciation
+            $asset->increment('accumulated_depreciation', $this->freeJournalDebitAmount);
+            $asset->update(['last_depreciation_date' => $this->freeJournalDate]);
+
+            DB::commit();
+
+            $this->dispatch('alert', [
+                'type' => 'success',
+                'message' => 'تم إنشاء قيد الإهلاك بنجاح - رقم القيد: ' . $newJournalId . ' - الإهلاك المتراكم الجديد: ' . number_format($asset->fresh()->accumulated_depreciation, 2)
+            ]);
+
+            $this->closeFreeJournalModal();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->dispatch('alert', [
+                'type' => 'error',
+                'message' => 'حدث خطأ أثناء إنشاء القيد: ' . $e->getMessage()
+            ]);
+        }
     }
 }

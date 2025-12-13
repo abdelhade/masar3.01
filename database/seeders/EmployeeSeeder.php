@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\Employee;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class EmployeeSeeder extends Seeder
 {
@@ -78,10 +79,29 @@ class EmployeeSeeder extends Seeder
         ];
 
         foreach ($employees as $employeeData) {
+            // Filter out columns that don't exist in the table
+            $filteredData = $this->filterColumns($employeeData);
+
             Employee::firstOrCreate(
-                ['email' => $employeeData['email']],
-                $employeeData
+                ['email' => $filteredData['email']],
+                $filteredData
             );
         }
+    }
+
+    /**
+     * Filter out columns that don't exist in the employees table.
+     */
+    private function filterColumns(array $data): array
+    {
+        $filtered = [];
+
+        foreach ($data as $key => $value) {
+            if (Schema::hasColumn('employees', $key)) {
+                $filtered[$key] = $value;
+            }
+        }
+
+        return $filtered;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Authorization\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 
 class PermissionSelectiveOptionsSeeder extends Seeder
@@ -33,14 +34,24 @@ class PermissionSelectiveOptionsSeeder extends Seeder
                 'allow_secret_accounts' => 'السماح برؤية الحسابات السرية',
             ],
 
-
         ];
 
         foreach ($permissionGroups as $category => $permissions) {
             foreach ($permissions as $name => $description) {
+                $data = ['category' => $category];
+
+                // Add optional columns only if they exist in the table
+                if (Schema::hasColumn('permissions', 'option_type')) {
+                    $data['option_type'] = '2';
+                }
+
+                if (Schema::hasColumn('permissions', 'description')) {
+                    $data['description'] = $description;
+                }
+
                 Permission::updateOrCreate(
                     ['name' => $name, 'guard_name' => 'web'],
-                    ['category' => $category, 'option_type' => '2', 'description' => $description]
+                    $data
                 );
             }
         }

@@ -119,12 +119,12 @@ class DepreciationController extends Controller
 
             foreach ($items as $item) {
                 // Find depreciation account (acc_type = 15)
-                $depreciationAccount = AccHead::where('account_id', $item->asset_account_id)
+                $depreciationAccount = AccHead::where('accountable_id', $item->asset_account_id)
                     ->where('acc_type', 15)
                     ->first();
 
                 // Find expense account (acc_type = 16)
-                $expenseAccount = AccHead::where('account_id', $item->asset_account_id)
+                $expenseAccount = AccHead::where('accountable_id', $item->asset_account_id)
                     ->where('acc_type', 16)
                     ->first();
 

@@ -2,46 +2,61 @@
 
 namespace Modules\Depreciation\Livewire;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperHead;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
 use Modules\Depreciation\Models\AccountAsset;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class DepreciationManager extends Component
 {
     use WithPagination;
 
     public $showModal = false;
+
     public $selectedAccount = null;
+
     public $editMode = false;
+
     public $itemId = null;
 
     // Asset form fields
     public $asset_name = '';
+
     public $purchase_date = '';
+
     public $purchase_cost = '';
+
     public $salvage_value = 0;
-    
+
     // Depreciation form fields
     public $annual_depreciation_amount = '';
+
     public $depreciation_method = 'straight_line';
+
     public $useful_life_years = '';
+
     public $depreciation_date = '';
+
     public $notes = '';
+
     public $schedulePreview = [];
 
     // Search and filter
     public $search = '';
+
     public $filterBranch = '';
+
     public $filterStatus = '';
+
     public $selectedAssets = [];
+
     public $selectAll = false;
 
     protected $rules = [
@@ -86,8 +101,8 @@ class DepreciationManager extends Component
             ->with(['accHead', 'depreciationAccount', 'expenseAccount', 'accHead.branch'])
             ->when($this->search, function ($query) {
                 $query->whereHas('accHead', function ($q) {
-                    $q->where('aname', 'like', '%' . $this->search . '%');
-                })->orWhere('asset_name', 'like', '%' . $this->search . '%');
+                    $q->where('aname', 'like', '%'.$this->search.'%');
+                })->orWhere('asset_name', 'like', '%'.$this->search.'%');
             })
             ->when($this->filterBranch, function ($query) {
                 $query->whereHas('accHead', function ($q) {
@@ -139,7 +154,7 @@ class DepreciationManager extends Component
     public function editAsset($assetId)
     {
         $asset = AccountAsset::with('accHead')->findOrFail($assetId);
-        
+
         $this->selectedAccount = $asset->accHead;
         $this->asset_name = $asset->asset_name;
         $this->purchase_date = $asset->purchase_date ? $asset->purchase_date->format('Y-m-d') : '';
@@ -151,7 +166,7 @@ class DepreciationManager extends Component
         $this->depreciation_date = $asset->depreciation_start_date ? $asset->depreciation_start_date->format('Y-m-d') : now()->format('Y-m-d');
         $this->notes = $asset->notes;
         $this->itemId = $asset->id;
-        
+
         $this->editMode = true;
         $this->showModal = true;
         $this->recalculateSchedulePreview();
@@ -159,19 +174,21 @@ class DepreciationManager extends Component
 
     public function processDepreciation()
     {
-        if (!$this->selectedAccount) {
+        if (! $this->selectedAccount) {
             $this->addError('selectedAccount', 'يرجى اختيار حساب الأصل أولاً.');
+
             return;
         }
 
         $this->validate();
 
         // Validate dates relationship: depreciation_date >= purchase_date when both provided
-        if (!empty($this->purchase_date) && !empty($this->depreciation_date)) {
+        if (! empty($this->purchase_date) && ! empty($this->depreciation_date)) {
             $purchase = Carbon::parse($this->purchase_date);
             $firstDep = Carbon::parse($this->depreciation_date);
             if ($firstDep->lt($purchase)) {
                 $this->addError('depreciation_date', 'تاريخ أول إهلاك لا يمكن أن يكون قبل تاريخ الشراء');
+
                 return;
             }
         }
@@ -182,7 +199,7 @@ class DepreciationManager extends Component
             \Log::info('Processing asset depreciation', [
                 'edit_mode' => $this->editMode,
                 'item_id' => $this->itemId,
-                'account_id' => $this->selectedAccount->id
+                'account_id' => $this->selectedAccount->id,
             ]);
 
             // Create or update AccountAsset record
@@ -203,7 +220,7 @@ class DepreciationManager extends Component
 
             // Find or create depreciation accounts first
             $depreciationAccounts = $this->getOrCreateDepreciationAccounts($this->selectedAccount);
-            
+
             // Add depreciation account IDs to asset data
             $assetData['depreciation_account_id'] = $depreciationAccounts['accumulated_depreciation']->id;
             $assetData['expense_account_id'] = $depreciationAccounts['expense_depreciation']->id;
@@ -226,39 +243,39 @@ class DepreciationManager extends Component
                 $asset->depreciation_account_id = $assetData['depreciation_account_id'];
                 $asset->expense_account_id = $assetData['expense_account_id'];
                 $asset->save();
-                
+
                 \Log::info('Asset updated successfully', [
                     'asset_id' => $asset->id,
                     'asset_name' => $asset->asset_name,
-                    'purchase_cost' => $asset->purchase_cost
+                    'purchase_cost' => $asset->purchase_cost,
                 ]);
-                
+
                 $message = 'تم تحديث بيانات الأصل بنجاح';
             } else {
                 // Create new asset record
                 $asset = AccountAsset::create($assetData);
                 $message = 'تم إنشاء سجل الأصل بنجاح';
             }
-            
+
             // لا تنشئ أي قيود محاسبية من هذه الشاشة
             $message .= ' (تم حفظ بيانات الأصل والإعدادات فقط)';
 
             DB::commit();
-            
+
             $this->showModal = false;
             $this->resetForm();
             $this->dispatch('alert', [
                 'type' => 'success',
-                'message' => $message
+                'message' => $message,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             // Surface the error inside the modal as validation-style message
-            $this->addError('general', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
+            $this->addError('general', 'حدث خطأ أثناء الحفظ: '.$e->getMessage());
             $this->dispatch('alert', [
                 'type' => 'error',
-                'message' => 'حدث خطأ: ' . $e->getMessage()
+                'message' => 'حدث خطأ: '.$e->getMessage(),
             ]);
         }
     }
@@ -266,11 +283,12 @@ class DepreciationManager extends Component
     public function generatePreview(): void
     {
         // Same date validation when generating preview
-        if (!empty($this->purchase_date) && !empty($this->depreciation_date)) {
+        if (! empty($this->purchase_date) && ! empty($this->depreciation_date)) {
             $purchase = Carbon::parse($this->purchase_date);
             $firstDep = Carbon::parse($this->depreciation_date);
             if ($firstDep->lt($purchase)) {
                 $this->addError('depreciation_date', 'تاريخ أول إهلاك لا يمكن أن يكون قبل تاريخ الشراء');
+
                 return;
             }
         }
@@ -307,9 +325,9 @@ class DepreciationManager extends Component
     private function recalculateSchedulePreview(): void
     {
         $asset = (object) [
-            'purchase_cost' => (float)($this->purchase_cost ?: 0),
-            'salvage_value' => (float)($this->salvage_value ?: 0),
-            'useful_life_years' => (int)($this->useful_life_years ?: 0),
+            'purchase_cost' => (float) ($this->purchase_cost ?: 0),
+            'salvage_value' => (float) ($this->salvage_value ?: 0),
+            'useful_life_years' => (int) ($this->useful_life_years ?: 0),
             'depreciation_method' => $this->depreciation_method ?: 'straight_line',
             'depreciation_start_date' => $this->depreciation_date ?: now()->format('Y-m-d'),
         ];
@@ -317,10 +335,10 @@ class DepreciationManager extends Component
         $this->schedulePreview = $this->calculateDepreciationSchedulePreview($asset);
 
         // Auto-derive the first year's depreciation amount if possible
-        if (!empty($this->schedulePreview)) {
+        if (! empty($this->schedulePreview)) {
             $firstYear = $this->schedulePreview[0];
             // Only override if user hasn't set a custom value or when creating
-            if (empty($this->annual_depreciation_amount) || !$this->editMode) {
+            if (empty($this->annual_depreciation_amount) || ! $this->editMode) {
                 $this->annual_depreciation_amount = (string) round($firstYear['annual_depreciation'], 2);
             }
         }
@@ -330,7 +348,7 @@ class DepreciationManager extends Component
     {
         $schedule = [];
 
-        if (!$asset->useful_life_years || !$asset->purchase_cost) {
+        if (! $asset->useful_life_years || ! $asset->purchase_cost) {
             return $schedule;
         }
 
@@ -392,6 +410,7 @@ class DepreciationManager extends Component
                 $rate = 1 / max($asset->useful_life_years, 1);
                 $db = $currentBookValue * $rate;
                 $remainingDepreciable = $depreciableAmount - $accumulatedDepreciation;
+
                 return min($db, $remainingDepreciable);
             case 'double_declining':
                 $rate = 2 / max($asset->useful_life_years, 1);
@@ -400,10 +419,12 @@ class DepreciationManager extends Component
                 $remainingYears = max($asset->useful_life_years - ($year - 1), 1);
                 $slRemaining = $remainingDepreciable / $remainingYears;
                 $depreciation = max($ddb, $slRemaining);
+
                 return min($depreciation, $remainingDepreciable);
             case 'sum_of_years':
                 $sumOfYears = ($asset->useful_life_years * ($asset->useful_life_years + 1)) / 2;
                 $remainingYears = $asset->useful_life_years - ($year - 1);
+
                 return ($depreciableAmount * $remainingYears) / max($sumOfYears, 1);
             default:
                 return $depreciableAmount / max($asset->useful_life_years, 1);
@@ -413,16 +434,17 @@ class DepreciationManager extends Component
     private function getOrCreateDepreciationAccounts(AccHead $assetAccount)
     {
         // Find accumulated depreciation account (acc_type = 15)
-        $accumulatedDepreciation = AccHead::where('account_id', $assetAccount->id)
+        $accumulatedDepreciation = AccHead::where('accountable_id', $assetAccount->id)
             ->where('acc_type', 15)
             ->first();
 
-        if (!$accumulatedDepreciation) {
+        if (! $accumulatedDepreciation) {
             $accumulatedDepreciation = AccHead::create([
-                'aname' => 'مجمع إهلاك ' . $assetAccount->aname,
+                'aname' => 'مجمع إهلاك '.$assetAccount->aname,
                 'code' => $this->generateAccountCode(15, $assetAccount->branch_id),
                 'acc_type' => 15,
-                'account_id' => $assetAccount->id,
+                'accountable_id' => $assetAccount->id,
+                'accountable_type' => AccHead::class,
                 'branch_id' => $assetAccount->branch_id,
                 'is_basic' => 0,
                 'isdeleted' => 0,
@@ -430,16 +452,17 @@ class DepreciationManager extends Component
         }
 
         // Find expense depreciation account (acc_type = 16)
-        $expenseDepreciation = AccHead::where('account_id', $assetAccount->id)
+        $expenseDepreciation = AccHead::where('accountable_id', $assetAccount->id)
             ->where('acc_type', 16)
             ->first();
 
-        if (!$expenseDepreciation) {
+        if (! $expenseDepreciation) {
             $expenseDepreciation = AccHead::create([
-                'aname' => 'مصروف إهلاك ' . $assetAccount->aname,
+                'aname' => 'مصروف إهلاك '.$assetAccount->aname,
                 'code' => $this->generateAccountCode(16, $assetAccount->branch_id),
                 'acc_type' => 16,
-                'account_id' => $assetAccount->id,
+                'accountable_id' => $assetAccount->id,
+                'accountable_type' => AccHead::class,
                 'branch_id' => $assetAccount->branch_id,
                 'is_basic' => 0,
                 'isdeleted' => 0,
@@ -466,7 +489,7 @@ class DepreciationManager extends Component
             'acc1' => $expenseAccount->id,
             'acc2' => $accumulatedAccount->id,
             'pro_value' => $amount,
-            'details' => 'قيد إهلاك ' . $assetAccount->aname . ' - ' . $this->notes,
+            'details' => 'قيد إهلاك '.$assetAccount->aname.' - '.$this->notes,
             'info' => 'قيد إهلاك تلقائي',
             'user' => Auth::id(),
             'branch_id' => $assetAccount->branch_id,
@@ -484,7 +507,7 @@ class DepreciationManager extends Component
             'op_id' => $oper->id,
             'pro_type' => 61,
             'date' => $this->depreciation_date,
-            'details' => 'قيد إهلاك ' . $assetAccount->aname,
+            'details' => 'قيد إهلاك '.$assetAccount->aname,
             'user' => Auth::id(),
             'branch_id' => $assetAccount->branch_id,
         ]);
@@ -496,7 +519,7 @@ class DepreciationManager extends Component
             'debit' => $amount,
             'credit' => 0,
             'type' => 0, // مدين
-            'info' => 'مصروف إهلاك ' . $assetAccount->aname,
+            'info' => 'مصروف إهلاك '.$assetAccount->aname,
             'op_id' => $oper->id,
             'isdeleted' => 0,
             'branch_id' => $assetAccount->branch_id,
@@ -509,7 +532,7 @@ class DepreciationManager extends Component
             'debit' => 0,
             'credit' => $amount,
             'type' => 1, // دائن
-            'info' => 'مجمع إهلاك ' . $assetAccount->aname,
+            'info' => 'مجمع إهلاك '.$assetAccount->aname,
             'op_id' => $oper->id,
             'isdeleted' => 0,
             'branch_id' => $assetAccount->branch_id,
@@ -521,19 +544,19 @@ class DepreciationManager extends Component
     private function generateAccountCode($accType, $branchId)
     {
         // Generate a unique account code based on account type and branch
-        $prefix = $accType . str_pad($branchId, 2, '0', STR_PAD_LEFT);
-        $lastAccount = AccHead::where('code', 'like', $prefix . '%')
+        $prefix = $accType.str_pad($branchId, 2, '0', STR_PAD_LEFT);
+        $lastAccount = AccHead::where('code', 'like', $prefix.'%')
             ->orderBy('code', 'desc')
             ->first();
-        
+
         if ($lastAccount) {
-            $lastNumber = (int)substr($lastAccount->code, -4);
+            $lastNumber = (int) substr($lastAccount->code, -4);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     public function closeModal()
@@ -588,8 +611,8 @@ class DepreciationManager extends Component
             ->with(['accHead'])
             ->when($this->search, function ($query) {
                 $query->whereHas('accHead', function ($q) {
-                    $q->where('aname', 'like', '%' . $this->search . '%');
-                })->orWhere('asset_name', 'like', '%' . $this->search . '%');
+                    $q->where('aname', 'like', '%'.$this->search.'%');
+                })->orWhere('asset_name', 'like', '%'.$this->search.'%');
             })
             ->when($this->filterBranch, function ($query) {
                 $query->whereHas('accHead', function ($q) {
@@ -605,8 +628,9 @@ class DepreciationManager extends Component
         if (empty($this->selectedAssets)) {
             $this->dispatch('alert', [
                 'type' => 'warning',
-                'message' => 'يرجى اختيار أصل واحد على الأقل'
+                'message' => 'يرجى اختيار أصل واحد على الأقل',
             ]);
+
             return;
         }
 
@@ -619,15 +643,15 @@ class DepreciationManager extends Component
         try {
             foreach ($this->selectedAssets as $assetId) {
                 $asset = AccountAsset::with('accHead')->find($assetId);
-                
-                if (!$asset || !$asset->annual_depreciation) {
+
+                if (! $asset || ! $asset->annual_depreciation) {
                     continue;
                 }
 
                 // Calculate monthly depreciation if not done this month
                 $monthlyDepreciation = $asset->annual_depreciation / 12;
-                $lastDepreciation = $asset->last_depreciation_date ? 
-                    Carbon::parse($asset->last_depreciation_date) : 
+                $lastDepreciation = $asset->last_depreciation_date ?
+                    Carbon::parse($asset->last_depreciation_date) :
                     Carbon::parse($asset->depreciation_start_date);
 
                 if ($lastDepreciation->format('Y-m') >= now()->format('Y-m')) {
@@ -636,7 +660,7 @@ class DepreciationManager extends Component
 
                 // Get or create depreciation accounts
                 $depreciationAccounts = $this->getOrCreateDepreciationAccounts($asset->accHead);
-                
+
                 // Create depreciation voucher
                 $this->createDepreciationVoucher(
                     $asset->accHead,
@@ -658,20 +682,20 @@ class DepreciationManager extends Component
             }
 
             DB::commit();
-            
+
             $this->selectedAssets = [];
             $this->selectAll = false;
-            
+
             $this->dispatch('alert', [
                 'type' => 'success',
-                'message' => "تم معالجة {$processedCount} أصل بإجمالي " . number_format($totalAmount, 2)
+                'message' => "تم معالجة {$processedCount} أصل بإجمالي ".number_format($totalAmount, 2),
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', [
                 'type' => 'error',
-                'message' => 'حدث خطأ أثناء المعالجة المجمعة: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء المعالجة المجمعة: '.$e->getMessage(),
             ]);
         }
     }

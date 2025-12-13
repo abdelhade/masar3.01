@@ -1,7 +1,7 @@
 @extends('admin.dashboard')
 
 @section('sidebar')
-    @include('components.sidebar.accounts')
+    @include('components.sidebar.multi-vouchers')
 @endsection
 
 @section('content')
@@ -22,9 +22,36 @@
     @push('styles')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Mint Green Color */
+        .bg-mint-green {
+            background-color: #a7f3d0 !important;
+        }
+        
+        .text-white {
+            color: #ffffff !important;
+        }
+        
         .card {
             border: none;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        /* Ensure all text in mint green cards is white */
+        .bg-mint-green * {
+            color: #ffffff !important;
+        }
+        
+        .bg-mint-green .text-muted {
+            color: #ffffff !important;
+        }
+        
+        .bg-mint-green .text-primary,
+        .bg-mint-green .text-success,
+        .bg-mint-green .text-warning,
+        .bg-mint-green .text-info,
+        .bg-mint-green .text-danger,
+        .bg-mint-green .text-secondary {
+            color: #ffffff !important;
         }
         
         .table th {

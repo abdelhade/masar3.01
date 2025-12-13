@@ -3,6 +3,7 @@
 namespace Modules\Quality\database\seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Modules\Authorization\Models\Permission;
 
 class QualityModulePermissionsSeeder extends Seeder
@@ -20,7 +21,7 @@ class QualityModulePermissionsSeeder extends Seeder
                 'rateSuppliers',
                 'certificates',
                 'audits',
-                        ],
+            ],
         ];
 
         $actions = ['view', 'create', 'edit', 'delete', 'print'];
@@ -30,9 +31,16 @@ class QualityModulePermissionsSeeder extends Seeder
                 foreach ($actions as $action) {
                     $fullName = "$action $basePermission";
 
+                    $data = ['category' => $category];
+
+                    // Add optional columns only if they exist in the table
+                    if (Schema::hasColumn('permissions', 'option_type')) {
+                        $data['option_type'] = '1';
+                    }
+
                     Permission::firstOrCreate(
                         ['name' => $fullName, 'guard_name' => 'web'],
-                        ['category' => $category, 'option_type' => '1']
+                        $data
                     );
                 }
             }

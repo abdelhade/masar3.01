@@ -16,6 +16,82 @@
 </head>
 <body class="theme-neumorphism-lite">
 
+<!-- Animated Doodles Background - Geometric Shapes, Currency & ERP Icons -->
+<div class="doodles-container">
+    <!-- Dollar Sign Icon -->
+    <svg class="doodle doodle-1" width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="30" stroke="#239d77" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <text x="40" y="50" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#239d77" opacity="0.3" text-anchor="middle">$</text>
+    </svg>
+    
+    <!-- Chart/Graph Icon -->
+    <svg class="doodle doodle-2" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="60" width="15" height="30" fill="#34d3a3" opacity="0.25"/>
+        <rect x="40" y="40" width="15" height="50" fill="#239d77" opacity="0.25"/>
+        <rect x="60" y="30" width="15" height="60" fill="#2ba88a" opacity="0.25"/>
+        <line x1="15" y1="80" x2="85" y2="80" stroke="#239d77" stroke-width="2" opacity="0.2"/>
+        <line x1="15" y1="80" x2="15" y2="15" stroke="#239d77" stroke-width="2" opacity="0.2"/>
+    </svg>
+    
+    <!-- Box/Inventory Icon -->
+    <svg class="doodle doodle-3" width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <rect x="25" y="25" width="40" height="40" stroke="#34d3a3" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <rect x="30" y="30" width="30" height="30" stroke="#239d77" stroke-width="2" fill="none" opacity="0.2"/>
+        <line x1="25" y1="25" x2="35" y2="15" stroke="#239d77" stroke-width="2" opacity="0.2"/>
+        <line x1="65" y1="25" x2="75" y2="15" stroke="#239d77" stroke-width="2" opacity="0.2"/>
+        <line x1="35" y1="15" x2="75" y2="15" stroke="#239d77" stroke-width="2" opacity="0.2"/>
+    </svg>
+    
+    <!-- Euro Sign -->
+    <svg class="doodle doodle-4" width="70" height="70" viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="35" cy="35" r="25" stroke="#2ba88a" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <text x="35" y="45" font-family="Arial, sans-serif" font-size="35" font-weight="bold" fill="#2ba88a" opacity="0.3" text-anchor="middle">€</text>
+    </svg>
+    
+    <!-- Database Icon -->
+    <svg class="doodle doodle-5" width="110" height="110" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="55" cy="30" rx="35" ry="12" stroke="#34d3a3" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <ellipse cx="55" cy="55" rx="35" ry="12" stroke="#239d77" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <ellipse cx="55" cy="80" rx="35" ry="12" stroke="#2ba88a" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <line x1="20" y1="30" x2="20" y2="80" stroke="#239d77" stroke-width="2.5" opacity="0.2"/>
+        <line x1="90" y1="30" x2="90" y2="80" stroke="#239d77" stroke-width="2.5" opacity="0.2"/>
+    </svg>
+    
+    <!-- File/Document Icon -->
+    <svg class="doodle doodle-6" width="85" height="85" viewBox="0 0 85 85" xmlns="http://www.w3.org/2000/svg">
+        <path d="M25 20 L25 65 L60 65 L60 35 L45 35 L45 20 Z" stroke="#239d77" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <line x1="45" y1="20" x2="60" y2="35" stroke="#239d77" stroke-width="2.5" opacity="0.25"/>
+        <line x1="30" y1="40" x2="55" y2="40" stroke="#34d3a3" stroke-width="2" opacity="0.2"/>
+        <line x1="30" y1="50" x2="55" y2="50" stroke="#34d3a3" stroke-width="2" opacity="0.2"/>
+    </svg>
+    
+    <!-- Geometric Shapes: Triangle -->
+    <svg class="doodle doodle-7" width="75" height="75" viewBox="0 0 75 75" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="37.5,15 60,55 15,55" stroke="#34d3a3" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <circle cx="37.5" cy="40" r="8" fill="#239d77" opacity="0.2"/>
+    </svg>
+    
+    <!-- Geometric Shapes: Hexagon -->
+    <svg class="doodle doodle-8" width="95" height="95" viewBox="0 0 95 95" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="47.5,15 70,30 70,55 47.5,70 25,55 25,30" stroke="#2ba88a" stroke-width="2.5" fill="none" opacity="0.25"/>
+        <circle cx="47.5" cy="42.5" r="12" stroke="#239d77" stroke-width="2" fill="none" opacity="0.2"/>
+    </svg>
+    
+    <!-- Coin/Circle with $ -->
+    <svg class="doodle doodle-9" width="65" height="65" viewBox="0 0 65 65" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32.5" cy="32.5" r="25" stroke="#239d77" stroke-width="2.5" fill="#239d77" opacity="0.15"/>
+        <text x="32.5" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#239d77" opacity="0.4" text-anchor="middle">$</text>
+    </svg>
+    
+    <!-- Square Grid -->
+    <svg class="doodle doodle-10" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="20" height="20" stroke="#34d3a3" stroke-width="2" fill="none" opacity="0.25"/>
+        <rect x="50" y="20" width="20" height="20" stroke="#239d77" stroke-width="2" fill="none" opacity="0.25"/>
+        <rect x="20" y="50" width="20" height="20" stroke="#2ba88a" stroke-width="2" fill="none" opacity="0.25"/>
+        <rect x="50" y="50" width="20" height="20" stroke="#34d3a3" stroke-width="2" fill="none" opacity="0.25"/>
+    </svg>
+</div>
+
 <style>
     .header-section {
         padding: 1.5rem 2rem !important;
@@ -29,13 +105,23 @@
         margin-bottom: 1.25rem;
         flex-wrap: wrap;
         gap: 1rem;
+        background: linear-gradient(135deg, rgba(52, 211, 163, 0.15) 0%, rgba(35, 157, 119, 0.12) 100%);
+        padding: 1rem 1.5rem;
+        border-radius: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header-top-row::before {
+        display: none;
     }
 
     .title {
         margin: 0 !important;
         font-size: 1.75rem !important;
-        color: #34d3a3 !important;
+        color: #ffffff !important;
         font-family: 'IBM Plex Sans Arabic', 'Inter', ui-sans-serif, system-ui, sans-serif;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .user-section {
@@ -74,6 +160,7 @@
             gap: 1rem;
             text-align: center;
             margin-bottom: 1rem;
+            padding: 0.875rem 1.25rem !important;
         }
 
         .title {
@@ -110,6 +197,10 @@
 
         .user-section {
             gap: 0.75rem;
+        }
+
+        .header-top-row {
+            padding: 0.75rem 1rem !important;
         }
 
         .logout-text {
@@ -183,10 +274,9 @@
             <div class="app-group" data-group-index="0">
                 <div class="group-header">
                     <div class="group-icon-wrapper" style="background: #34d3a320;">
-                        <i data-lucide="settings" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                        <i data-lucide="settings" style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
                     </div>
                     <h2 class="group-title">الإعدادات الأساسية</h2>
-                    <div class="group-count">4</div>
                 </div>
 
                 <div class="group-apps-grid">
@@ -214,7 +304,7 @@
                         <a href="{{ route('accounts.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="chart-bar-increasing"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">البيانات الاساسيه</p>
                         </a>
@@ -233,7 +323,7 @@
                         <a href="{{ route('items.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="boxes"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">الاصناف</p>
                         </a>
@@ -243,7 +333,7 @@
                         'view activity-logs'])
                         <a href="{{ route('users.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="key" style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                <i data-lucide="key" style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">الصلاحيات</p>
                         </a>
@@ -254,7 +344,7 @@
                         <a href="{{ route('export-settings') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="settings"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">الاعدادات</p>
                         </a>
@@ -271,17 +361,16 @@
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
                     <i data-lucide="shopping-bag"
-                        style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                        style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title"> ادارة المبيعات</h2>
-                <div class="group-count">4</div>
             </div>
             <div class="group-apps-grid">
                 {{-- crm --}}
                 <a href="{{ route('statistics.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="user-cog"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">CRM</p>
                 </a>
@@ -289,7 +378,7 @@
                 <a href="{{ route('invoices.index', ['type' => 10]) }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="trending-up"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">المبيعات</p>
                 </a>
@@ -297,7 +386,7 @@
                 <a href="{{ route('pos.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="shopping-cart"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">نقطة البيع</p>
                 </a>
@@ -305,7 +394,7 @@
                 <a href="{{ route('rentals.buildings.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="building"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة المستأجرات</p>
                 </a>
@@ -316,17 +405,16 @@
         <div class="app-group" data-group-index="2">
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="wallet" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                    <i data-lucide="wallet" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title">المحاسبة والمالية</h2>
-                <div class="group-count">7</div>
             </div>
             <div class="group-apps-grid">
                 {{-- ادارة الحسابات --}}
                 <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="file-text"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">أدارة الحسابات</p>
                 </a>
@@ -334,7 +422,7 @@
                 <a href="{{ route('reports.expenses-balance-report') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="file-text"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة المصروفات</p>
                 </a>
@@ -342,7 +430,7 @@
                 <a href="{{ route('vouchers.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="receipt"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">السندات الماليه</p>
                 </a>
@@ -350,7 +438,7 @@
                 <a href="{{ route('transfers.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="arrow-left-right"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">التحويلات النقديه</p>
                 </a>
@@ -358,7 +446,7 @@
                 <a href="{{ route('installments.plans.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="tag"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة الدفعات</p>
                 </a>
@@ -367,7 +455,7 @@
                     <span class="new-badge">جديد 🎉</span>
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="file-check-2"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">إدارة الشيكات</p>
                 </a>
@@ -376,7 +464,7 @@
                     <span class="new-badge">جديد 🎉</span>
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="file-text"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة الملفات</p>
                 </a>
@@ -388,17 +476,16 @@
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
                     <i data-lucide="shopping-bag"
-                        style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                        style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title"> ادارة المخزون و التصنيع</h2>
-                <div class="group-count">5</div>
             </div>
             <div class="group-apps-grid">
                 {{-- ادارة المخزون --}}
                 <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="package"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة المخزون</p>
                 </a>
@@ -406,7 +493,7 @@
                 <a href="{{ route('manufacturing.create') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="factory"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">التصنيع</p>
                 </a>
@@ -414,7 +501,7 @@
                 <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="shopping-bag"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">المشتريات</p>
                 </a>
@@ -422,7 +509,7 @@
                 <a href="{{ route('service.types.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="package"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">الصيانه</p>
                 </a>
@@ -435,17 +522,16 @@
         <div class="app-group" data-group-index="4">
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="kanban" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                    <i data-lucide="kanban" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title">المشاريع والإنتاج</h2>
-                <div class="group-count">4</div>
             </div>
             <div class="group-apps-grid">
                 {{-- المشاريع  --}}
                 <a href="{{ route('projects.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="kanban"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">المشاريع</p>
                 </a>
@@ -453,7 +539,7 @@
                 <a href="{{ route('progress.projcet.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="bar-chart-3"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">التقدم اليومي</p>
                 </a>
@@ -461,7 +547,7 @@
                 <a href="{{ route('depreciation.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="building"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">عمليات الاصول</p>
                 </a>
@@ -469,7 +555,7 @@
                 <a href="{{ route('myresources.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="cog"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">إدارة الموارد</p>
                 </a>
@@ -480,17 +566,16 @@
         <div class="app-group" data-group-index="5">
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="users" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                    <i data-lucide="users" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title">الموارد البشرية</h2>
-                <div class="group-count">2</div>
             </div>
             <div class="group-apps-grid">
                 {{-- الموارد البشريه --}}
                 <a href="{{ route('employees.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="users"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">الموارد البشريه</p>
                 </a>
@@ -498,7 +583,7 @@
                 <a href="{{ route('mobile.employee-login') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="fingerprint"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">بصمه الموبايل</p>
                 </a>
@@ -509,17 +594,16 @@
         <div class="app-group" data-group-index="6">
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="truck" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                    <i data-lucide="truck" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title">الخدمات والعمليات</h2>
-                <div class="group-count">3</div>
             </div>
             <div class="group-apps-grid">
                 {{-- ادارة المستأجرات  --}}
                 <a href="{{ route('rentals.buildings.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="building"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة المستأجرات</p>
                 </a>
@@ -527,7 +611,7 @@
                 <a href="{{ route('orders.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="truck"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">أدارة الشحن</p>
                 </a>
@@ -535,7 +619,7 @@
                 <a href="{{ route('inquiries.index') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="layers"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">Inquiries</p>
                 </a>
@@ -557,10 +641,9 @@
             <div class="app-group" data-group-index="7">
                 <div class="group-header">
                     <div class="group-icon-wrapper" style="background: #34d3a320;">
-                        <i data-lucide="award" style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                        <i data-lucide="award" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
                     </div>
                     <h2 class="group-title">إدارة الجودة</h2>
-                    <div class="group-count">10</div>
                 </div>
                 <div class="group-apps-grid">
                     {{-- لوحة تحكم الجودة --}}
@@ -569,7 +652,7 @@
                             <span class="new-badge">جديد 🎉</span>
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="chart-line"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">لوحة تحكم الجودة</p>
                         </a>
@@ -579,7 +662,7 @@
                         <a href="{{ route('quality.inspections.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="clipboard-check"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">فحوصات الجودة</p>
                         </a>
@@ -590,7 +673,7 @@
                         <a href="{{ route('quality.standards.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="ruler"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">معايير الجودة</p>
                         </a>
@@ -600,7 +683,7 @@
                         <a href="{{ route('quality.ncr.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="alert-triangle"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">عدم المطابقة (NCR)</p>
                         </a>
@@ -610,7 +693,7 @@
                         <a href="{{ route('quality.capa.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="wrench"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">الإجراءات التصحيحية</p>
                         </a>
@@ -620,7 +703,7 @@
                         <a href="{{ route('quality.batches.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="barcode"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">تتبع الدفعات</p>
                         </a>
@@ -630,7 +713,7 @@
                         <a href="{{ route('quality.suppliers.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="star"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">تقييم الموردين</p>
                         </a>
@@ -640,7 +723,7 @@
                         <a href="{{ route('quality.certificates.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="award"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">الشهادات والامتثال</p>
                         </a>
@@ -650,7 +733,7 @@
                         <a href="{{ route('quality.audits.index') }}" class="app-card">
                             <div class="app-icon" style="background-color: white;">
                                 <i data-lucide="search"
-                                    style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                             </div>
                             <p class="app-name">التدقيق الداخلي</p>
                         </a>
@@ -659,7 +742,7 @@
                     <a href="{{ route('quality.reports') }}" class="app-card">
                         <div class="app-icon" style="background-color: white;">
                             <i data-lucide="chart-pie"
-                                style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                         </div>
                         <p class="app-name">تقارير الجودة</p>
                     </a>
@@ -672,17 +755,16 @@
             <div class="group-header">
                 <div class="group-icon-wrapper" style="background: #34d3a320;">
                     <i data-lucide="file-bar-chart"
-                        style="color: #34d3a3; width: 24px; height: 24px; stroke-width: 2.5;"></i>
+                        style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
                 </div>
                 <h2 class="group-title">التقارير</h2>
-                <div class="group-count">8</div>
             </div>
             <div class="group-apps-grid">
                 {{-- محلل العمل اليومي --}}
                 <a href="{{ route('reports.overall') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="bar-chart-3"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">محلل العمل اليومي</p>
                 </a>
@@ -690,7 +772,7 @@
                 <a href="{{ route('reports.accounts-tree') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="git-branch"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">شجرة الحسابات</p>
                 </a>
@@ -698,7 +780,7 @@
                 <a href="{{ route('reports.general-balance-sheet') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="scale"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">الميزانية العمومية</p>
                 </a>
@@ -706,7 +788,7 @@
                 <a href="{{ route('reports.general-profit-loss-report') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="trending-up"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">أرباح وخسائر</p>
                 </a>
@@ -714,7 +796,7 @@
                 <a href="{{ route('reports.sales.total') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="shopping-cart"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">تقارير المبيعات</p>
                 </a>
@@ -722,7 +804,7 @@
                 <a href="{{ route('reports.purchases.total') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="shopping-bag"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">تقارير المشتريات</p>
                 </a>
@@ -730,7 +812,7 @@
                 <a href="{{ route('reports.general-inventory-balances') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="package"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">تقارير المخزون</p>
                 </a>
@@ -738,7 +820,7 @@
                 <a href="{{ route('reports.expenses-balance-report') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
                         <i data-lucide="file-text"
-                            style="color: #00695C; width: 30px; height: 25px; stroke-width: 2.5;"></i>
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">تقارير المصروفات</p>
                 </a>

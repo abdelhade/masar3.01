@@ -466,11 +466,10 @@ class MultiVoucherController extends Controller
 
             DB::commit();
 
-            // Determine the ProType name and redirect to vouchers.index with that type
-            $pname = \App\Models\ProType::find($pro_type)?->pname;
-            $type = in_array($pname, ['multi_payment', 'multi_receipt']) ? $pname : 'multi_payment';
+            // Redirect back to create page with the same type parameter
+            $type = $request->type ?? \App\Models\ProType::find($pro_type)?->pname;
 
-            return redirect()->route('vouchers.index', ['type' => $type])
+            return redirect()->route('multi-vouchers.create', ['type' => $type])
                 ->with('success', 'تم حفظ القيد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();

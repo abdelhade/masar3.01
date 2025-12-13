@@ -405,6 +405,12 @@
                                                 {{ __('عمل قيد') }}
                                         </button>
                                         @endif
+                                        <button wire:click="openFreeJournalModalForAsset({{ $asset->id }})" 
+                                                class="btn btn-warning rounded-pill px-4 py-2" 
+                                                title="{{ __('قيد محاسبي حر') }}">
+                                            <i class="fas fa-file-invoice me-2"></i>
+                                            {{ __('قيد حر') }}
+                                        </button>
                                         <button wire:click="exportSchedule({{ $asset->id }})" 
                                                 class="btn btn-info rounded-pill px-4 py-2" 
                                                 title="{{ __('تصدير') }}">
@@ -450,52 +456,52 @@
                         <!-- Asset Summary -->
                         <div class="row mb-4">
                             <div class="col-md-2">
-                                <div class="card bg-primary text-white">
+                                <div class="card bg-mint-green">
                                     <div class="card-body text-center">
-                                        <h6>{{ __('تكلفة الشراء') }}</h6>
-                                        <h4>{{ number_format($selectedAsset->purchase_cost, 2) }}</h4>
+                                        <h6 class="text-dark">{{ __('تكلفة الشراء') }}</h6>
+                                        <h4 class="text-dark">{{ number_format($selectedAsset->purchase_cost, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-success text-white">
+                                <div class="card bg-mint-green">
                                     <div class="card-body text-center">
-                                        <h6>{{ __('قيمة الخردة') }}</h6>
-                                        <h4>{{ number_format($selectedAsset->salvage_value ?? 0, 2) }}</h4>
+                                        <h6 class="text-dark">{{ __('قيمة الخردة') }}</h6>
+                                        <h4 class="text-dark">{{ number_format($selectedAsset->salvage_value ?? 0, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-warning text-white">
+                                <div class="card bg-mint-green">
                                     <div class="card-body text-center">
-                                        <h6>{{ __('المبلغ القابل للإهلاك') }}</h6>
-                                        <h4>{{ number_format($selectedAsset->purchase_cost - ($selectedAsset->salvage_value ?? 0), 2) }}</h4>
+                                        <h6 class="text-dark">{{ __('المبلغ القابل للإهلاك') }}</h6>
+                                        <h4 class="text-dark">{{ number_format($selectedAsset->purchase_cost - ($selectedAsset->salvage_value ?? 0), 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-info text-white">
+                                <div class="card bg-mint-green">
                                     <div class="card-body text-center">
-                                        <h6>{{ __('العمر الإنتاجي') }}</h6>
-                                        <h4>{{ $selectedAsset->useful_life_years }} {{ __('سنوات') }}</h4>
+                                        <h6 class="text-dark">{{ __('العمر الإنتاجي') }}</h6>
+                                        <h4 class="text-dark">{{ $selectedAsset->useful_life_years }} {{ __('سنوات') }}</h4>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-secondary text-white">
+                                <div class="card bg-mint-green">
                                     <div class="card-body text-center">
-                                        <h6>{{ __('الإهلاك المتراكم') }}</h6>
-                                        <h4>{{ number_format($selectedAsset->accumulated_depreciation ?? 0, 2) }}</h4>
-                                        <small>{{ number_format($selectedAsset->getDepreciationPercentage(), 1) }}%</small>
+                                        <h6 class="text-dark">{{ __('الإهلاك المتراكم') }}</h6>
+                                        <h4 class="text-dark">{{ number_format($selectedAsset->accumulated_depreciation ?? 0, 2) }}</h4>
+                                        <small class="text-dark">{{ number_format($selectedAsset->getDepreciationPercentage(), 1) }}%</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-dark text-white">
+                                <div class="card bg-mint-green">
                                     <div class="card-body text-center">
-                                        <h6>{{ __('القيمة الدفترية') }}</h6>
-                                        <h4>{{ number_format($selectedAsset->getNetBookValue(), 2) }}</h4>
-                                        <small>{{ __('متبقي') }}: {{ $selectedAsset->getRemainingLife() }} {{ __('سنوات') }}</small>
+                                        <h6 class="text-dark">{{ __('القيمة الدفترية') }}</h6>
+                                        <h4 class="text-dark">{{ number_format($selectedAsset->getNetBookValue(), 2) }}</h4>
+                                        <small class="text-dark">{{ __('متبقي') }}: {{ $selectedAsset->getRemainingLife() }} {{ __('سنوات') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -504,11 +510,11 @@
                         <!-- Asset Details -->
                         <div class="row mb-3">
                             <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">{{ __('تفاصيل الأصل') }}</h6>
+                                <div class="card bg-mint-green">
+                                    <div class="card-header bg-mint-green">
+                                        <h6 class="mb-0 text-dark">{{ __('تفاصيل الأصل') }}</h6>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body text-dark">
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <strong>{{ __('تاريخ الشراء') }}:</strong> {{ $selectedAsset->purchase_date ? $selectedAsset->purchase_date->format('Y-m-d') : __('غير محدد') }}
@@ -617,35 +623,35 @@
                         <!-- Schedule Summary -->
                         @if(!empty($scheduleData))
                             <div class="row mt-4">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">{{ __('ملخص جدولة الإهلاك') }}</h6>
+                                    <div class="col-12">
+                                    <div class="card bg-mint-green">
+                                        <div class="card-header bg-mint-green">
+                                            <h6 class="mb-0 text-dark">{{ __('ملخص جدولة الإهلاك') }}</h6>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body text-dark">
                                             <div class="row">
                                                 <div class="col-md-3">
                                                     <div class="text-center">
-                                                        <h5 class="text-primary">{{ count($scheduleData) }}</h5>
-                                                        <small class="text-muted">{{ __('إجمالي السنوات') }}</small>
+                                                        <h5 class="text-dark">{{ count($scheduleData) }}</h5>
+                                                        <small class="text-dark">{{ __('إجمالي السنوات') }}</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
                                                     <div class="text-center">
-                                                        <h5 class="text-success">{{ number_format(collect($scheduleData)->sum('annual_depreciation'), 2) }}</h5>
-                                                        <small class="text-muted">{{ __('إجمالي الإهلاك') }}</small>
+                                                        <h5 class="text-dark">{{ number_format(collect($scheduleData)->sum('annual_depreciation'), 2) }}</h5>
+                                                        <small class="text-dark">{{ __('إجمالي الإهلاك') }}</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
                                                     <div class="text-center">
-                                                        <h5 class="text-warning">{{ number_format(collect($scheduleData)->sum('annual_depreciation') / count($scheduleData), 2) }}</h5>
-                                                        <small class="text-muted">{{ __('متوسط الإهلاك السنوي') }}</small>
+                                                        <h5 class="text-dark">{{ number_format(collect($scheduleData)->sum('annual_depreciation') / count($scheduleData), 2) }}</h5>
+                                                        <small class="text-dark">{{ __('متوسط الإهلاك السنوي') }}</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
                                                     <div class="text-center">
-                                                        <h5 class="text-info">{{ number_format((collect($scheduleData)->sum('annual_depreciation') / count($scheduleData)) / 12, 2) }}</h5>
-                                                        <small class="text-muted">{{ __('متوسط الإهلاك الشهري') }}</small>
+                                                        <h5 class="text-dark">{{ number_format((collect($scheduleData)->sum('annual_depreciation') / count($scheduleData)) / 12, 2) }}</h5>
+                                                        <small class="text-dark">{{ __('متوسط الإهلاك الشهري') }}</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -683,7 +689,7 @@
                         <button type="button" class="btn btn-secondary" wire:click="closeModal">
                             {{ __('إغلاق') }}
                         </button>
-                        <button type="button" class="btn btn-success" wire:click="exportSchedule({{ $selectedAsset->id }})">
+                        <button type="button" class="btn btn-main" wire:click="exportSchedule({{ $selectedAsset->id }})">
                             <i class="fas fa-download me-2"></i>
                             {{ __('تصدير إلى CSV') }}
                         </button>
@@ -707,14 +713,14 @@
                     </div>
                     <div class="modal-body">
                         <!-- Asset Info -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">
+                        <div class="card bg-mint-green mb-4">
+                            <div class="card-header bg-mint-green">
+                                <h6 class="mb-0 text-dark">
                                     <i class="fas fa-cube me-2"></i>
                                     {{ __('بيانات الأصل') }}
                                 </h6>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body text-dark">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <strong>{{ __('اسم الأصل') }}:</strong> {{ $journalPreview['asset_name'] }}
@@ -723,18 +729,39 @@
                                         <strong>{{ __('تاريخ القيد') }}:</strong> {{ $journalPreview['date'] }}
                                     </div>
                                 </div>
+                                @if(isset($journalPreview['months']))
+                                    <div class="row mt-2">
+                                        <div class="col-md-4">
+                                            <strong>{{ __('عدد الأشهر') }}:</strong> {{ $journalPreview['months'] }} {{ $journalPreview['months'] == 1 ? __('شهر') : __('أشهر') }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>{{ __('من تاريخ') }}:</strong> {{ $journalPreview['from_date'] ?? '' }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>{{ __('إلى تاريخ') }}:</strong> {{ $journalPreview['to_date'] ?? '' }}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>{{ __('الإهلاك الشهري') }}:</strong> {{ number_format($journalPreview['amount'] / $journalPreview['months'], 2) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>{{ __('الإهلاك الإجمالي') }}:</strong> <span class="text-primary fw-bold">{{ number_format($journalPreview['amount'], 2) }}</span>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 
                         <!-- Journal Entry Preview -->
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h6 class="mb-0">
+                        <div class="card bg-mint-green">
+                            <div class="card-header bg-mint-green">
+                                <h6 class="mb-0 text-dark">
                                     <i class="fas fa-file-invoice me-2"></i>
                                     {{ __('معاينة القيد المحاسبي') }}
                                 </h6>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body text-dark">
                                 <div class="table-responsive">
                                     <table class="table table-bordered">
                                         <thead class="table-dark">
@@ -781,10 +808,151 @@
                             <i class="fas fa-times me-2"></i>
                             {{ __('إلغاء') }}
                         </button>
-                        <button type="button" class="btn btn-success rounded-pill px-4" wire:click="confirmJournalEntry">
+                        <button type="button" class="btn btn-main rounded-pill px-4" wire:click="confirmJournalEntry">
                             <i class="fas fa-check me-2"></i>
                             {{ __('تأكيد وإنشاء القيد') }}
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Free Depreciation Entry Modal -->
+    @if($showFreeJournalModal && $freeJournalAssetId)
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-file-invoice me-2"></i>
+                            {{ __('قيد إهلاك يدوي') }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="closeFreeJournalModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @php
+                            $asset = \Modules\Depreciation\Models\AccountAsset::with(['accHead', 'depreciationAccount', 'expenseAccount'])->find($freeJournalAssetId);
+                        @endphp
+                        
+                        @if($asset)
+                            <!-- Asset Info -->
+                            <div class="card bg-mint-green mb-3">
+                                <div class="card-header bg-mint-green">
+                                    <h6 class="mb-0 text-dark">
+                                        <i class="fas fa-cube me-2"></i>
+                                        {{ __('بيانات الأصل') }}
+                                    </h6>
+                                </div>
+                                <div class="card-body text-dark">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>{{ __('اسم الأصل') }}:</strong> {{ $asset->asset_name ?: $asset->accHead->aname }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>{{ __('تكلفة الشراء') }}:</strong> {{ number_format($asset->purchase_cost, 2) }}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>{{ __('الإهلاك المتراكم') }}:</strong> {{ number_format($asset->accumulated_depreciation, 2) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>{{ __('القيمة الدفترية') }}:</strong> {{ number_format($asset->getNetBookValue(), 2) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form wire:submit.prevent="createFreeJournalEntry">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">{{ __('التاريخ') }}</label>
+                                        <input type="date" wire:model="freeJournalDate" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">{{ __('مبلغ الإهلاك') }}</label>
+                                        <input type="number" wire:model="freeJournalDebitAmount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                                        <small class="text-muted">
+                                            {{ __('الإهلاك الشهري المقترح') }}: {{ number_format(($asset->annual_depreciation ?? 0) / 12, 2) }}
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">{{ __('حساب مصروف الإهلاك') }}</label>
+                                        <select wire:model="freeJournalDebitAccount" class="form-select" required>
+                                            <option value="">{{ __('اختر حساب') }}</option>
+                                            @if($asset->expenseAccount)
+                                                <option value="{{ $asset->expenseAccount->id }}" selected>
+                                                    {{ $asset->expenseAccount->code }} - {{ $asset->expenseAccount->aname }}
+                                                </option>
+                                            @endif
+                                            @foreach($accounts as $account)
+                                                @if(!$asset->expenseAccount || $account->id != $asset->expenseAccount->id)
+                                                    <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->aname }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">{{ __('حساب مجمع الإهلاك') }}</label>
+                                        <select wire:model="freeJournalCreditAccount" class="form-select" required>
+                                            <option value="">{{ __('اختر حساب') }}</option>
+                                            @if($asset->depreciationAccount)
+                                                <option value="{{ $asset->depreciationAccount->id }}" selected>
+                                                    {{ $asset->depreciationAccount->code }} - {{ $asset->depreciationAccount->aname }}
+                                                </option>
+                                            @endif
+                                            @foreach($accounts as $account)
+                                                @if(!$asset->depreciationAccount || $account->id != $asset->depreciationAccount->id)
+                                                    <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->aname }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">{{ __('الوصف') }}</label>
+                                        <input type="text" wire:model="freeJournalDescription" class="form-control" placeholder="{{ __('وصف قيد الإهلاك') }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">{{ __('ملاحظات') }}</label>
+                                        <textarea wire:model="freeJournalNotes" class="form-control" rows="2" placeholder="{{ __('ملاحظات إضافية (اختياري)') }}"></textarea>
+                                    </div>
+                                </div>
+
+                                @if($freeJournalDebitAmount > 0)
+                                    @php
+                                        $remainingDepreciable = ($asset->purchase_cost - ($asset->salvage_value ?? 0)) - $asset->accumulated_depreciation;
+                                    @endphp
+                                    @if($freeJournalDebitAmount > $remainingDepreciable)
+                                        <div class="alert alert-danger">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            {{ __('تحذير: المبلغ المدخل أكبر من المبلغ القابل للإهلاك المتبقي') }} ({{ number_format($remainingDepreciable, 2) }})
+                                        </div>
+                                    @endif
+                                @endif
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" wire:click="closeFreeJournalModal">
+                                        <i class="fas fa-times me-2"></i>
+                                        {{ __('إلغاء') }}
+                                    </button>
+                                    <button type="submit" class="btn btn-warning" 
+                                            @if($freeJournalDebitAmount <= 0 || !$freeJournalDebitAccount || !$freeJournalCreditAccount) disabled @endif>
+                                        <i class="fas fa-check me-2"></i>
+                                        {{ __('إنشاء قيد الإهلاك') }}
+                                    </button>
+                                </div>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -794,6 +962,20 @@
 
 @push('styles')
 <style>
+    /* Mint Green Color */
+    .bg-mint-green {
+        background-color: #a7f3d0 !important;
+        color: #212529;
+    }
+    
+    .bg-mint-green .text-dark {
+        color: #212529 !important;
+    }
+    
+    .text-white {
+        color: #ffffff !important;
+    }
+    
     .progress {
         background-color: #e9ecef;
     }

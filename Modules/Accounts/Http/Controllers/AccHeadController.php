@@ -372,7 +372,8 @@ class AccHeadController extends Controller
             'crtime' => now(),
             'mdtime' => now(),
             'branch_id' => $branchId,
-            'account_id' => $asset->id,
+            'accountable_id' => $asset->id,
+            'accountable_type' => AccHead::class,
             'acc_type' => 15,
         ]);
 
@@ -391,7 +392,8 @@ class AccHeadController extends Controller
             'crtime' => now(),
             'mdtime' => now(),
             'branch_id' => $branchId,
-            'account_id' => $asset->id,
+            'accountable_id' => $asset->id,
+            'accountable_type' => AccHead::class,
             'acc_type' => 16,
         ]);
     }
@@ -404,7 +406,7 @@ class AccHeadController extends Controller
     {
         try {
             // Update all depreciation accounts (type 15) linked to this asset
-            $depreciationUpdated = AccHead::where('account_id', $asset->id)
+            $depreciationUpdated = AccHead::where('accountable_id', $asset->id)
                 ->where('acc_type', 15)
                 ->update([
                     'aname' => 'مجمع إهلاك '.$asset->aname,
@@ -415,7 +417,7 @@ class AccHeadController extends Controller
             Log::info('Depreciation accounts updated: '.$depreciationUpdated);
 
             // Update all expense accounts (type 16) linked to this asset
-            $expenseUpdated = AccHead::where('account_id', $asset->id)
+            $expenseUpdated = AccHead::where('accountable_id', $asset->id)
                 ->where('acc_type', 16)
                 ->update([
                     'aname' => 'مصروف إهلاك '.$asset->aname,
