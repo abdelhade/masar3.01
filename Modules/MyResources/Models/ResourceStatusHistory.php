@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ResourceStatusHistory extends Model
 {
+    protected $table = 'resource_status_history';
+
     protected $fillable = [
         'resource_id',
         'old_status_id',

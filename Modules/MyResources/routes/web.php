@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\MyResources\Http\Controllers\ResourceController;
-use Modules\MyResources\Http\Controllers\ResourceCategoryController;
-use Modules\MyResources\Http\Controllers\ResourceTypeController;
-use Modules\MyResources\Http\Controllers\ResourceStatusController;
 use Modules\MyResources\Http\Controllers\ResourceAssignmentController;
+use Modules\MyResources\Http\Controllers\ResourceCategoryController;
+use Modules\MyResources\Http\Controllers\ResourceController;
 use Modules\MyResources\Http\Controllers\ResourceDashboardController;
+use Modules\MyResources\Http\Controllers\ResourceStatusController;
+use Modules\MyResources\Http\Controllers\ResourceTypeController;
 
 Route::middleware(['auth', 'verified'])->prefix('myresources')->name('myresources.')->group(function () {
     // Dashboard
@@ -19,17 +19,14 @@ Route::middleware(['auth', 'verified'])->prefix('myresources')->name('myresource
 
     // Categories (must come before resource routes)
     Route::resource('/categories', ResourceCategoryController::class)
-        ->except(['show'])
         ->middleware('can:view Resource Categories');
 
     // Types (must come before resource routes)
     Route::resource('/types', ResourceTypeController::class)
-        ->except(['show'])
         ->middleware('can:view Resource Types');
 
     // Statuses (must come before resource routes)
     Route::resource('/statuses', ResourceStatusController::class)
-        ->except(['show'])
         ->middleware('can:view Resource Statuses');
 
     // Assignments (must come before resource routes)

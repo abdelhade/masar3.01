@@ -20,5 +20,11 @@ class CvController extends Controller
     {
         return view('recruitment::cvs.manage');
     }
-}
 
+    public function show($id)
+    {
+        $cv = \Modules\Recruitment\Models\Cv::with(['branch', 'jobPosting', 'interviews', 'contract'])->findOrFail($id);
+
+        return view('recruitment::cvs.show', compact('cv'));
+    }
+}

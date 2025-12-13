@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Note;
 use App\Models\Unit;
-use App\Enums\ItemType;
 use App\Models\Varibal;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -23,6 +22,7 @@ class ItemController extends Controller
         $this->middleware('can:view item-statistics')->only(['getStatistics', 'refresh']);
 
     }
+
     public function index()
     {
         return view('item-management.items.index');
@@ -40,12 +40,15 @@ class ItemController extends Controller
 
     public function show($id)
     {
-        //
+        $item = Item::with(['units', 'prices', 'notes', 'barcodes', 'branch'])->findOrFail($id);
+
+        return view('item-management.items.show', compact('item'));
     }
 
     public function edit($id)
     {
         $itemModel = Item::findOrFail($id);
+
         return view('item-management.items.edit', compact('itemModel'));
     }
 
@@ -79,10 +82,10 @@ class ItemController extends Controller
         // Get item as JSON for AJAX requests
     }
 
-
     public function getItemJson($id)
     {
         $item = Item::with(['units', 'prices'])->findOrFail($id);
+
         return response()->json($item);
     }
 
@@ -160,7 +163,7 @@ class ItemController extends Controller
             ->map(function ($item) {
                 return [
                     'name' => $item->name,
-                    'units_count' => $item->units_count
+                    'units_count' => $item->units_count,
                 ];
             });
 
@@ -174,7 +177,7 @@ class ItemController extends Controller
                     'name' => $item->name,
                     'code' => $item->code,
                     'type' => $item->type->label(),
-                    'created_at' => $item->created_at->format('Y-m-d')
+                    'created_at' => $item->created_at->format('Y-m-d'),
                 ];
             });
 
@@ -224,7 +227,6 @@ class ItemController extends Controller
 
         return view('item-management.items.items-statistics', $statistics);
     }
-
 
     public function refresh()
     {

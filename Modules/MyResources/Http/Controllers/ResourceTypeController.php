@@ -3,9 +3,9 @@
 namespace Modules\MyResources\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\MyResources\Models\ResourceType;
-use Modules\MyResources\Models\ResourceCategory;
 use Modules\MyResources\Http\Requests\ResourceTypeRequest;
+use Modules\MyResources\Models\ResourceCategory;
+use Modules\MyResources\Models\ResourceType;
 
 class ResourceTypeController extends Controller
 {
@@ -49,6 +49,13 @@ class ResourceTypeController extends Controller
             ->with('success', 'تم تحديث النوع بنجاح');
     }
 
+    public function show(ResourceType $type)
+    {
+        $type->load('category');
+
+        return view('myresources::types.show', compact('type'));
+    }
+
     public function destroy(ResourceType $type)
     {
         $type->delete();
@@ -58,4 +65,3 @@ class ResourceTypeController extends Controller
             ->with('success', 'تم حذف النوع بنجاح');
     }
 }
-

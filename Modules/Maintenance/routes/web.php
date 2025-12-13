@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Maintenance\Http\Controllers\PeriodicMaintenanceController;
+use Modules\Maintenance\Http\Controllers\MaintenanceController;
 use Modules\Maintenance\Http\Controllers\MaintenanceStatisticsController;
-use Modules\Maintenance\Http\Controllers\{MaintenanceController, ServiceTypeController};
+use Modules\Maintenance\Http\Controllers\PeriodicMaintenanceController;
+use Modules\Maintenance\Http\Controllers\ServiceTypeController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('service-types', ServiceTypeController::class)->names('service.types');
@@ -19,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [PeriodicMaintenanceController::class, 'index'])->name('index');
         Route::get('/create', [PeriodicMaintenanceController::class, 'create'])->name('create');
         Route::post('/', [PeriodicMaintenanceController::class, 'store'])->name('store');
+        Route::get('/{periodicMaintenance}', [PeriodicMaintenanceController::class, 'show'])->name('show');
         Route::get('/{periodicMaintenance}/edit', [PeriodicMaintenanceController::class, 'edit'])->name('edit');
         Route::put('/{periodicMaintenance}', [PeriodicMaintenanceController::class, 'update'])->name('update');
         Route::delete('/{periodicMaintenance}', [PeriodicMaintenanceController::class, 'destroy'])->name('destroy');

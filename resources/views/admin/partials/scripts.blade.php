@@ -1,92 +1,114 @@
- <!-- jQuery  -->
-  <!-- ضع هذا العنصر في أي مكان في الصفحة (يفضل قبل نهاية الـ body) -->
+{{-- Audio element for form submission sound --}}
 <audio id="submit-sound" src="{{ asset('assets/wav/paper_sound.wav') }}"></audio>
 
+{{-- Livewire Scripts - MUST be loaded FIRST to ensure Alpine.js is available --}}
+{{-- Livewire 3 includes Alpine.js internally, no need to load separately --}}
+@livewireScripts
+
+{{-- Core JavaScript Libraries - Loaded after Livewire/Alpine.js --}}
+<script src="{{ asset('assets/js/jquery.min.js') }}" defer></script>
+<script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
+<script src="{{ asset('assets/js/metismenu.min.js') }}" defer></script>
+<script src="{{ asset('assets/js/waves.js') }}" defer></script>
+<script src="{{ asset('assets/js/feather.min.js') }}" defer></script>
+<script src="{{ asset('assets/js/simplebar.min.js') }}" defer></script>
+<script src="{{ asset('assets/js/moment.js') }}" defer></script>
+<script src="{{ asset('assets/plugins/daterangepicker/daterangepicker.js') }}" defer></script>
+<script src="{{ asset('assets/plugins/apex-charts/apexcharts.min.js') }}" defer></script>
+<script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-2.0.2.min.js') }}" defer></script>
+<script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-us-aea-en.js') }}" defer></script>
+<script src="{{ asset('assets/pages/jquery.analytics_dashboard.init.js') }}" defer></script>
+
+{{-- Select2 --}}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
+@if(app()->getLocale() === 'ar')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/ar.js" defer></script>
+@elseif(app()->getLocale() === 'tr')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/tr.js" defer></script>
+@else
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/en.js" defer></script>
+@endif
+
+{{-- Tom Select JS --}}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js" defer></script>
+
+{{-- SweetAlert2 --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+
+{{-- Stack for additional scripts from components --}}
+@stack('scripts')
+
+{{-- Unified initialization script - runs after all libraries are loaded --}}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // استهدف جميع النماذج في الصفحة
-    document.querySelectorAll('form').forEach(function(form) {
-        form.addEventListener('submit', function(event) {
-            // شغل الصوت
-            var audio = document.getElementById('submit-sound');
-            if (audio) {
-                audio.currentTime = 0; // إعادة الصوت للبداية
-                audio.play();
-            }
-            // يمكنك إزالة السطر التالي إذا كنت لا تريد منع الإرسال الفعلي للنموذج
-            // event.preventDefault();
-        });
-    });
-});
-</script>
+(function() {
+    'use strict';
 
+    // Wait for Alpine.js and all libraries to be ready
+    function initApp() {
+        // Check if Alpine.js is loaded (optional, only if needed)
+        // Alpine.js is loaded with Livewire, but we don't need to wait for it for MetisMenu
+        
+        // Check if jQuery and MetisMenu are loaded (required for sidebar)
+        if (typeof jQuery === 'undefined' || typeof jQuery.fn.metisMenu === 'undefined') {
+            // Retry after a short delay if jQuery or MetisMenu not ready
+            setTimeout(initApp, 100);
+            return;
+        }
 
- <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
- <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
- <script src="{{ asset('assets/js/metismenu.min.js') }}"></script>
- <script>
-     // تفعيل MetisMenu للقوائم المتداخلة
-     (function() {
-         function initMetisMenu() {
-             if (typeof jQuery !== 'undefined' && typeof jQuery.fn.metisMenu !== 'undefined') {
-                 jQuery('.metismenu').metisMenu();
-             } else {
-                 // إعادة المحاولة بعد 100ms إذا لم تكن المكتبات جاهزة
-                 setTimeout(initMetisMenu, 100);
-             }
-         }
-         
-         if (document.readyState === 'loading') {
-             document.addEventListener('DOMContentLoaded', initMetisMenu);
-         } else {
-             initMetisMenu();
-         }
-     })();
- </script>
- <script src="{{ asset('assets/js/waves.js') }}"></script>
- <script src="{{ asset('assets/js/feather.min.js') }}"></script>
- <script src="{{ asset('assets/js/simplebar.min.js') }}"></script>
- <script src="{{ asset('assets/js/moment.js') }}"></script>
- <script src="{{ asset('assets/plugins/daterangepicker/daterangepicker.js') }}"></script>
- <script src="{{ asset('assets/plugins/apex-charts/apexcharts.min.js') }}"></script>
- <script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-2.0.2.min.js') }}"></script>
- <script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-us-aea-en.js') }}"></script>
- <script src="{{ asset('assets/pages/jquery.analytics_dashboard.init.js') }}"></script>
- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        // Initialize MetisMenu
+        try {
+            jQuery('.metismenu').metisMenu();
+            console.log('MetisMenu initialized successfully');
+        } catch (error) {
+            console.error('MetisMenu initialization failed:', error);
+            // Retry once more
+            setTimeout(function() {
+                if (typeof jQuery !== 'undefined' && typeof jQuery.fn.metisMenu !== 'undefined') {
+                    jQuery('.metismenu').metisMenu();
+                }
+            }, 200);
+        }
 
- <!-- Select2 Language Support -->
- @if(app()->getLocale() === 'ar')
-     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/ar.js"></script>
- @elseif(app()->getLocale() === 'tr')
-     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/tr.js"></script>
- @else
-     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/en.js"></script>
- @endif
-
- <!-- Tom Select JS -->
- <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
- <!-- App js (Legacy - only if not using Vite) -->
- {{-- Note: Vite assets (including app.js) are loaded in head.blade.php via @vite --}}
- {{-- This legacy app.js is kept for backward compatibility but should not conflict with Vite --}}
- {{-- <script src="{{ asset('assets/js/app.js') }}"></script> --}}
-
-<script>
-    // تحسينات الـ Sidebar
-    document.addEventListener('DOMContentLoaded', function() {
-        // تفعيل Feather Icons أولاً
+        // Initialize Feather Icons
         if (typeof feather !== 'undefined') {
             feather.replace();
         }
-        
+
+        // Initialize Lucide Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Form submission sound
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                const audio = document.getElementById('submit-sound');
+                if (audio) {
+                    audio.currentTime = 0;
+                    audio.play().catch(function(err) {
+                        console.warn('Audio play failed:', err);
+                    });
+                }
+            });
+        });
+
+        // Sidebar effects
+        initSidebarEffects();
+
+        // Navbar effects
+        initNavbarEffects();
+
+        // Sidebar state initialization
+        initSidebarState();
+    }
+
+    // Sidebar effects initialization
+    function initSidebarEffects() {
         const sidebarLinks = document.querySelectorAll('.left-sidenav-menu li > a');
         
-        // Ripple effect على الـ links
+        // Ripple effect on links
         sidebarLinks.forEach(link => {
             link.addEventListener('click', function(e) {
-                // Ripple animation
                 const ripple = document.createElement('span');
                 ripple.style.cssText = `
                     position: absolute;
@@ -111,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Particle effect على الأيقونات
+        // Particle effect on icons
         const menuIcons = document.querySelectorAll('.menu-icon');
         menuIcons.forEach(icon => {
             icon.parentElement.addEventListener('mouseenter', function(e) {
@@ -147,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Add animation for particles
+        // Add animation styles if not already added
         if (!document.getElementById('sidebar-animations')) {
             const style = document.createElement('style');
             style.id = 'sidebar-animations';
@@ -172,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.head.appendChild(style);
         }
 
-        // تفعيل الأيقونات مرة إضافية
+        // Re-initialize icons after a short delay
         setTimeout(function() {
             if (typeof feather !== 'undefined') {
                 feather.replace();
@@ -181,24 +203,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 lucide.createIcons();
             }
         }, 100);
-    });
+    }
 
-    // تفعيل عند تحميل الصفحة كاملة
-    window.addEventListener('load', function() {
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    });
-
-    // تأثيرات الـ Navbar
+    // Navbar effects initialization
     function initNavbarEffects() {
         const navLinks = document.querySelectorAll('.topbar .nav-link');
         
         navLinks.forEach(link => {
-            // Ripple على الـ links
             link.addEventListener('click', function(e) {
                 const ripple = document.createElement('span');
                 ripple.style.cssText = `
@@ -225,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Particles على زر القائمة
+        // Particles on menu button
         const menuBtn = document.querySelector('.button-menu-mobile');
         if (menuBtn) {
             menuBtn.addEventListener('click', function(e) {
@@ -267,71 +278,227 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // تفعيل تأثيرات الـ navbar
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(initNavbarEffects, 200);
+    // Sidebar Hide/Show Toggle Functionality
+    window.toggleSidebar = function() {
+        const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+        const sidebar = document.querySelector('.left-sidenav');
+        const pageWrapper = document.querySelector('.page-wrapper');
+        
+        if (sidebar && pageWrapper) {
+            if (sidebarHidden) {
+                sidebar.style.display = 'none';
+                pageWrapper.style.marginLeft = '0';
+                pageWrapper.style.marginRight = '0';
+            } else {
+                sidebar.style.display = '';
+                pageWrapper.style.marginLeft = '';
+                pageWrapper.style.marginRight = '';
+            }
+        }
+    };
+
+    // Initialize sidebar state on page load
+    function initSidebarState() {
+        const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+        if (sidebarHidden) {
+            setTimeout(toggleSidebar, 100);
+        }
+    }
+
+    // Initialize when all scripts are loaded
+    // Since we use 'defer' attribute, scripts load after DOM is ready
+    // So we use window.load event to ensure all deferred scripts are loaded
+    function startInitialization() {
+        // Check if page is already loaded
+        if (document.readyState === 'complete') {
+            // Page already loaded, try to initialize immediately
+            // But still check if scripts are ready (they might not be)
+            setTimeout(initApp, 100);
+        } else {
+            // Wait for window load event (fires after all deferred scripts)
+            window.addEventListener('load', function() {
+                // Give a small delay to ensure all scripts are fully initialized
+                setTimeout(initApp, 50);
+            });
+        }
+    }
+
+    // Start initialization
+    startInitialization();
+
+    // Also re-initialize icons on window load as fallback
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }, 100);
     });
+})();
 </script>
- <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
- <!-- Livewire Scripts -->
- {{-- Livewire scripts must be loaded after Vite assets (which include Alpine.js) --}}
- {{-- Vite assets are loaded in head.blade.php via @vite directive --}}
- @livewireScripts
+{{-- YouTube-style Progress Bar Loader Script --}}
+<script>
+(function() {
+    'use strict';
 
- {{-- Stack for additional scripts from components --}}
- @stack('scripts')
+    const loader = document.getElementById('page-loader');
+    const loaderBar = loader?.querySelector('.loader-bar');
+    
+    if (!loader || !loaderBar) {
+        return;
+    }
 
- {{-- Ensure Alpine.js is ready before any component scripts --}}
- <script>
-     document.addEventListener('DOMContentLoaded', function() {
-         // Wait for Alpine.js to be ready
-         if (typeof window.Alpine !== 'undefined') {
-             // Alpine.js is loaded, ensure employeeManager is registered
-             if (window.Alpine && !window.Alpine.data('employeeManager')) {
-                 console.warn('Alpine.js employeeManager component not found. Make sure Vite assets are loaded.');
-             }
-         } else {
-             console.warn('Alpine.js is not loaded. Make sure Vite assets are loaded in head.');
-         }
-     });
+    let progressTimer = null;
+    let completeTimer = null;
 
-     // Sidebar Hide/Show Toggle Functionality
-     window.toggleSidebar = function() {
-         const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
-         const sidebar = document.querySelector('.left-sidenav');
-         const pageWrapper = document.querySelector('.page-wrapper');
-         
-         if (sidebar && pageWrapper) {
-             if (sidebarHidden) {
-                 sidebar.style.display = 'none';
-                 if (document.body.classList.contains('enlarge-menu')) {
-                     pageWrapper.style.marginLeft = '0';
-                     pageWrapper.style.marginRight = '0';
-                 } else {
-                     pageWrapper.style.marginLeft = '0';
-                     pageWrapper.style.marginRight = '0';
-                 }
-             } else {
-                 sidebar.style.display = '';
-                 pageWrapper.style.marginLeft = '';
-                 pageWrapper.style.marginRight = '';
-             }
-         }
-     };
+    // Show loader and start progress
+    function startLoader() {
+        if (completeTimer) {
+            clearTimeout(completeTimer);
+            completeTimer = null;
+        }
+        
+        loader.classList.add('active');
+        loaderBar.style.width = '0%';
+        
+        // Simulate progress
+        let progress = 0;
+        progressTimer = setInterval(function() {
+            progress += Math.random() * 15;
+            if (progress > 90) {
+                progress = 90;
+            }
+            loaderBar.style.width = progress + '%';
+        }, 200);
+    }
 
-     // Initialize sidebar state on page load
-     function initSidebarState() {
-         const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
-         if (sidebarHidden) {
-             setTimeout(toggleSidebar, 100);
-         }
-     }
+    // Complete loader
+    function completeLoader() {
+        if (progressTimer) {
+            clearInterval(progressTimer);
+            progressTimer = null;
+        }
+        
+        loader.classList.add('completing');
+        loaderBar.style.width = '100%';
+        
+        // Hide loader after animation
+        completeTimer = setTimeout(function() {
+            loader.classList.remove('active', 'completing');
+            loaderBar.style.width = '0%';
+        }, 400);
+    }
 
-     // Initialize on DOM ready
-     if (document.readyState === 'loading') {
-         document.addEventListener('DOMContentLoaded', initSidebarState);
-     } else {
-         initSidebarState();
-     }
- </script>
+    // Start loader on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            startLoader();
+            // Complete when page is fully loaded
+            window.addEventListener('load', function() {
+                setTimeout(completeLoader, 300);
+            });
+        });
+    } else {
+        // Page already loading
+        startLoader();
+        if (document.readyState === 'complete') {
+            setTimeout(completeLoader, 300);
+        } else {
+            window.addEventListener('load', function() {
+                setTimeout(completeLoader, 300);
+            });
+        }
+    }
+
+    // Show loader on form submissions
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        // Skip if form has data-no-loader attribute
+        if (form.hasAttribute('data-no-loader')) {
+            return;
+        }
+        startLoader();
+    });
+
+    // Show loader on link clicks (navigation)
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        
+        // Skip if link has data-no-loader attribute
+        if (link.hasAttribute('data-no-loader')) {
+            return;
+        }
+        
+        // Skip if it's a hash link or javascript link
+        if (link.href && 
+            (link.href.includes('#') || 
+             link.href.startsWith('javascript:') ||
+             link.getAttribute('target') === '_blank')) {
+            return;
+        }
+        
+        // Skip if it's a Livewire wire:navigate link (Livewire handles it)
+        if (link.hasAttribute('wire:navigate')) {
+            return;
+        }
+        
+        // Show loader for regular navigation
+        const href = link.getAttribute('href');
+        if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+            startLoader();
+        }
+    });
+
+    // Show loader on Livewire navigation
+    if (typeof window.Livewire !== 'undefined') {
+        document.addEventListener('livewire:init', function() {
+            Livewire.hook('morph.updating', function() {
+                startLoader();
+            });
+            
+            Livewire.hook('morph.updated', function() {
+                setTimeout(completeLoader, 200);
+            });
+            
+            Livewire.hook('morph.failed', function() {
+                completeLoader();
+            });
+        });
+    }
+
+    // Show loader on AJAX requests
+    let activeAjaxRequests = 0;
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        activeAjaxRequests++;
+        if (activeAjaxRequests === 1) {
+            startLoader();
+        }
+        
+        return originalFetch.apply(this, args)
+            .then(function(response) {
+                activeAjaxRequests--;
+                if (activeAjaxRequests === 0) {
+                    setTimeout(completeLoader, 200);
+                }
+                return response;
+            })
+            .catch(function(error) {
+                activeAjaxRequests--;
+                if (activeAjaxRequests === 0) {
+                    completeLoader();
+                }
+                throw error;
+            });
+    };
+
+    // Expose functions globally for manual control
+    window.showPageLoader = startLoader;
+    window.hidePageLoader = completeLoader;
+})();
+</script>

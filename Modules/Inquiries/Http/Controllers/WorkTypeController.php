@@ -5,9 +5,9 @@ namespace Modules\Inquiries\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Inquiries\Http\Requests\WorkTypeRequest;
 use Modules\Inquiries\Models\WorkType;
 use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Inquiries\Http\Requests\WorkTypeRequest;
 
 class WorkTypeController extends Controller
 {
@@ -32,6 +32,7 @@ class WorkTypeController extends Controller
             return view('inquiries::work-types.index', compact('workTypes', 'workTypesTree'));
         } catch (Exception $e) {
             Alert::toast(__('Error loading data'), 'error');
+
             return redirect()->back();
         }
     }
@@ -48,21 +49,23 @@ class WorkTypeController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('Work type created successfully'),
-                    'workType' => $this->formatWorkTypeForResponse($workType)
+                    'workType' => $this->formatWorkTypeForResponse($workType),
                 ]);
             }
 
             Alert::toast(__('Work type created successfully'), 'success');
+
             return redirect()->route('work.types.index');
         } catch (Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Error during work type save')
+                    'message' => __('Error during work type save'),
                 ], 500);
             }
 
             Alert::toast(__('Error during work type save'), 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -79,11 +82,12 @@ class WorkTypeController extends Controller
                     if ($request->ajax()) {
                         return response()->json([
                             'success' => false,
-                            'message' => __('Cannot make work type child of itself or its children')
+                            'message' => __('Cannot make work type child of itself or its children'),
                         ], 400);
                     }
 
                     Alert::toast(__('Cannot make work type child of itself or its children'), 'error');
+
                     return redirect()->back()->withInput();
                 }
             }
@@ -94,21 +98,23 @@ class WorkTypeController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => __('Work type updated successfully'),
-                    'workType' => $this->formatWorkTypeForResponse($workType)
+                    'workType' => $this->formatWorkTypeForResponse($workType),
                 ]);
             }
 
             Alert::toast(__('Work type updated successfully'), 'success');
+
             return redirect()->route('work.types.index');
         } catch (Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('Error during work type update')
+                    'message' => __('Error during work type update'),
                 ], 500);
             }
 
             Alert::toast(__('Error during work type update'), 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -125,12 +131,12 @@ class WorkTypeController extends Controller
                 'success' => true,
                 'message' => $childrenCount > 0
                     ? __('Work type and :count child(ren) deleted successfully', ['count' => $childrenCount])
-                    : __('Work type deleted successfully')
+                    : __('Work type deleted successfully'),
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Error during work type delete')
+                'message' => __('Error during work type delete'),
             ], 500);
         }
     }
@@ -139,7 +145,7 @@ class WorkTypeController extends Controller
     {
         try {
             $workType = WorkType::findOrFail($id);
-            $workType->is_active = !$workType->is_active;
+            $workType->is_active = ! $workType->is_active;
             $workType->save();
 
             return response()->json([
@@ -147,12 +153,12 @@ class WorkTypeController extends Controller
                 'is_active' => $workType->is_active,
                 'message' => $workType->is_active
                     ? __('Work type activated successfully')
-                    : __('Work type deactivated successfully')
+                    : __('Work type deactivated successfully'),
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Error during work type status change')
+                'message' => __('Error during work type status change'),
             ], 500);
         }
     }
@@ -167,13 +173,13 @@ class WorkTypeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $this->buildTreeArray($workTypes)
+                'data' => $this->buildTreeArray($workTypes),
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Error loading work types data'),
-                'data' => []
+                'data' => [],
             ], 500);
         }
     }
@@ -195,13 +201,13 @@ class WorkTypeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $workTypes
+                'data' => $workTypes,
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => __('Error loading work types'),
-                'data' => []
+                'data' => [],
             ], 500);
         }
     }
@@ -216,7 +222,7 @@ class WorkTypeController extends Controller
                 'is_active' => $workType->is_active,
                 'created_at' => $workType->created_at->format('Y-m-d H:i'),
                 'updated_at' => $workType->updated_at->format('Y-m-d H:i'),
-                'children' => $this->buildTreeArray($workType->childrenRecursive)
+                'children' => $this->buildTreeArray($workType->childrenRecursive),
             ];
         })->toArray();
     }
@@ -235,7 +241,7 @@ class WorkTypeController extends Controller
             'children_count' => $workType->childrenRecursive->count(),
             'created_at' => $workType->created_at->format('Y-m-d H:i'),
             'updated_at' => $workType->updated_at->format('Y-m-d H:i'),
-            'path' => $this->buildWorkTypePath($workType)
+            'path' => $this->buildWorkTypePath($workType),
         ];
     }
 
@@ -256,7 +262,7 @@ class WorkTypeController extends Controller
         return array_map(function ($item) {
             return [
                 'id' => $item->id,
-                'name' => $item->name
+                'name' => $item->name,
             ];
         }, $path);
     }
@@ -268,6 +274,7 @@ class WorkTypeController extends Controller
         }
 
         $descendants = $this->getAllDescendants($workType);
+
         return $descendants->pluck('id')->contains($potentialParentId);
     }
 
@@ -281,6 +288,13 @@ class WorkTypeController extends Controller
         }
 
         return $descendants;
+    }
+
+    public function show($id)
+    {
+        $workType = WorkType::with(['parent', 'children'])->findOrFail($id);
+
+        return view('inquiries::work-types.show', compact('workType'));
     }
 
     private function deleteWorkTypeAndChildren($workType)

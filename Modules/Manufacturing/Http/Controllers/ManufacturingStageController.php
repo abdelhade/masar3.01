@@ -3,9 +3,9 @@
 namespace Modules\Manufacturing\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Manufacturing\Models\ManufacturingStage;
 use Modules\Manufacturing\Http\Requests\ManufacturingStageRequest;
+use Modules\Manufacturing\Models\ManufacturingStage;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class ManufacturingStageController extends Controller
 {
@@ -27,6 +27,7 @@ class ManufacturingStageController extends Controller
     public function create()
     {
         $branches = userBranches();
+
         return view('manufacturing::manufacturing-stages.create', compact('branches'));
     }
 
@@ -35,16 +36,21 @@ class ManufacturingStageController extends Controller
         try {
             ManufacturingStage::create($request->validated());
             Alert::toast(__('Created Successfully'), 'success');
+
             return redirect()->route('manufacturing.stages.index');
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred while creating'), 'error');
+
             return redirect()->back();
         }
     }
 
+    public function show(ManufacturingStage $manufacturingStage)
+    {
+        $manufacturingStage->load('branch');
 
-    public function show(ManufacturingStage $manufacturingStage) {}
-
+        return view('manufacturing::manufacturing-stages.show', compact('manufacturingStage'));
+    }
 
     public function edit(ManufacturingStage $manufacturingStage)
     {
@@ -56,9 +62,11 @@ class ManufacturingStageController extends Controller
         try {
             $manufacturingStage->update($request->validated());
             Alert::toast(__('Updated Successfully'), 'success');
+
             return redirect()->route('manufacturing.stages.index');
-        } catch (\Exception ) {
+        } catch (\Exception) {
             Alert::toast(__('An error occurred while updating'), 'error');
+
             return redirect()->back();
         }
     }
@@ -68,9 +76,11 @@ class ManufacturingStageController extends Controller
         try {
             $manufacturingStage->delete();
             Alert::toast(__('Stage Deleted Successfully'), 'success');
+
             return redirect()->route('manufacturing.stages.index');
         } catch (\Exception) {
             Alert::toast(__('An error occurred while deleting the stage'), 'error');
+
             return redirect()->back();
         }
     }

@@ -3,8 +3,8 @@
 namespace Modules\Invoices\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\Invoices\Models\InvoiceTemplate;
 use Modules\Invoices\Http\Requests\InvoiceTemplateRequest;
+use Modules\Invoices\Models\InvoiceTemplate;
 
 class InvoiceTemplateController extends Controller
 {
@@ -15,6 +15,7 @@ class InvoiceTemplateController extends Controller
         $this->middleware('permission:edit Invoice Templates')->only(['edit', 'update', 'toggleActive']);
         $this->middleware('permission:delete Invoice Templates')->only(['destroy']);
     }
+
     public function index()
     {
         $templates = InvoiceTemplate::with('invoiceTypes')
@@ -77,7 +78,6 @@ class InvoiceTemplateController extends Controller
             ->with('success', 'تم إنشاء النموذج بنجاح');
     }
 
-
     public function edit(InvoiceTemplate $template)
     {
         $template->load('invoiceTypes');
@@ -134,7 +134,6 @@ class InvoiceTemplateController extends Controller
             ->with('success', 'تم تحديث النموذج بنجاح');
     }
 
-
     public function destroy(InvoiceTemplate $template)
     {
         $template->delete();
@@ -143,10 +142,17 @@ class InvoiceTemplateController extends Controller
             ->with('success', 'تم حذف النموذج بنجاح');
     }
 
+    public function show(InvoiceTemplate $template)
+    {
+        $template->load('invoiceTypes');
+
+        return view('invoices::invoice-templates.show', compact('template'));
+    }
+
     public function toggleActive(InvoiceTemplate $template)
     {
         $template->update([
-            'is_active' => !$template->is_active
+            'is_active' => ! $template->is_active,
         ]);
 
         return back()->with('success', 'تم تحديث حالة النموذج');

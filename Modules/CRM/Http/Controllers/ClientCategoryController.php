@@ -20,6 +20,7 @@ class ClientCategoryController extends Controller
     public function index()
     {
         $categories = ClientCategory::paginate(20);
+
         return view('crm::client-categories.index', compact('categories'));
     }
 
@@ -32,6 +33,7 @@ class ClientCategoryController extends Controller
     {
         ClientCategory::create($request->validated());
         Alert::toast(__('Category created successfully'), 'success');
+
         return redirect()->route('client.categories.index');
     }
 
@@ -44,7 +46,13 @@ class ClientCategoryController extends Controller
     {
         $category->update($request->validated());
         Alert::toast(__('Category updated successfully'), 'success');
+
         return redirect()->route('client.categories.index');
+    }
+
+    public function show(ClientCategory $category)
+    {
+        return view('crm::client-categories.show', compact('category'));
     }
 
     public function destroy(ClientCategory $category)
@@ -55,6 +63,7 @@ class ClientCategoryController extends Controller
         } catch (\Exception) {
             Alert::toast(__('An error occurred while deleting the category'), 'error');
         }
+
         return redirect()->route('client.categories.index');
     }
 }

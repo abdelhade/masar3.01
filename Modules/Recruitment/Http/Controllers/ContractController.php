@@ -20,5 +20,21 @@ class ContractController extends Controller
     {
         return view('recruitment::contracts.manage');
     }
-}
 
+    public function show($id)
+    {
+        $contract = \Modules\Recruitment\Models\Contract::with([
+            'branch',
+            'contract_type',
+            'job',
+            'employee',
+            'user',
+            'contract_points',
+            'salary_points',
+            'cv',
+            'interview',
+        ])->findOrFail($id);
+
+        return view('recruitment::contracts.show', compact('contract'));
+    }
+}

@@ -456,7 +456,40 @@ class VoucherController extends Controller
         }
     }
 
-    public function show($id) {}
+    public function show($id)
+    {
+        $voucher = Voucher::with([
+            'journalHead.journalDetails.accountHead',
+            'acc1Head',
+            'acc2Head',
+            'employee',
+            'type',
+            'user',
+        ])->findOrFail($id);
+
+        // التحقق من الصلاحية
+        $typePermissionMap = [
+            1 => 'view receipt vouchers',
+            2 => 'view payment vouchers',
+            101 => 'view payment vouchers',
+            3 => 'view exp-payment',
+        ];
+
+        $requiredPermission = $typePermissionMap[$voucher->pro_type] ?? null;
+        if ($requiredPermission && ! Auth::user()->can($requiredPermission)) {
+            abort(403, 'غير مصرح لك بعرض هذا السند');
+        }
+
+        // تحديد نوع السند
+        $typeMap = [
+            1 => 'receipt',
+            101 => 'payment',
+            3 => 'exp-payment',
+        ];
+        $type = $typeMap[$voucher->pro_type] ?? 'receipt';
+
+        return view('vouchers.show', compact('voucher', 'type'));
+    }
 
     public function edit($id)
     {

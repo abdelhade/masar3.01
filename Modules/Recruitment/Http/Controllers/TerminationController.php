@@ -20,5 +20,11 @@ class TerminationController extends Controller
     {
         return view('recruitment::terminations.manage');
     }
-}
 
+    public function show($id)
+    {
+        $termination = \Modules\Recruitment\Models\Termination::with(['contract', 'branch'])->findOrFail($id);
+
+        return view('recruitment::terminations.show', compact('termination'));
+    }
+}

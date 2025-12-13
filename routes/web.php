@@ -160,7 +160,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('varibals', VaribalController::class)->names('varibals')->middleware('can:view varibals');
     Route::get('varibalValues/{varibalId?}', [VaribalValueController::class, 'index'])->name('varibalValues.index')->middleware('can:view varibalsValues');
-    Route::resource('items', ItemController::class)->names('items')->only('index', 'create', 'edit');
+    Route::resource('items', ItemController::class)->names('items')->only('index', 'show', 'create', 'edit');
     Route::get('items/{id}/json', [ItemController::class, 'getItemJson'])->name('items.json');
     Route::get('items/print', [ItemController::class, 'printItems'])->name('items.print');
     Route::get('item-movement/print', [ItemController::class, 'printItemMovement'])->name('item-movement.print');

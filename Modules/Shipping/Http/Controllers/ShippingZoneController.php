@@ -2,9 +2,9 @@
 
 namespace Modules\Shipping\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Shipping\Models\ShippingZone;
-use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class ShippingZoneController extends Controller
@@ -12,12 +12,14 @@ class ShippingZoneController extends Controller
     public function index()
     {
         $zones = ShippingZone::paginate(10);
+
         return view('shipping::zones.index', compact('zones'));
     }
 
     public function create()
     {
         $branches = userBranches();
+
         return view('shipping::zones.create', compact('branches'));
     }
 
@@ -36,12 +38,14 @@ class ShippingZoneController extends Controller
 
         ShippingZone::create($validated);
         Alert::toast(__('Zone created successfully.'), 'success');
+
         return redirect()->route('shipping.zones.index');
     }
 
     public function edit(ShippingZone $zone)
     {
         $branches = userBranches();
+
         return view('shipping::zones.edit', compact('zone', 'branches'));
     }
 
@@ -49,7 +53,7 @@ class ShippingZoneController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:shipping_zones,code,' . $zone->id,
+            'code' => 'required|string|unique:shipping_zones,code,'.$zone->id,
             'description' => 'nullable|string',
             'base_rate' => 'required|numeric|min:0',
             'rate_per_kg' => 'required|numeric|min:0',
@@ -60,13 +64,22 @@ class ShippingZoneController extends Controller
 
         $zone->update($validated);
         Alert::toast(__('Zone updated successfully.'), 'success');
+
         return redirect()->route('shipping.zones.index');
+    }
+
+    public function show(ShippingZone $zone)
+    {
+        $zone->load('branch');
+
+        return view('shipping::zones.show', compact('zone'));
     }
 
     public function destroy(ShippingZone $zone)
     {
         $zone->delete();
         Alert::toast(__('Zone deleted successfully.'), 'success');
+
         return redirect()->route('shipping.zones.index');
     }
 }

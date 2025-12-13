@@ -4,10 +4,10 @@ namespace Modules\Maintenance\Http\Controllers;
 
 use App\Models\OperHead;
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
+use Modules\Maintenance\Http\Requests\MaintenanceRequest;
 use Modules\Maintenance\Models\Maintenance;
 use Modules\Maintenance\Models\ServiceType;
-use Modules\Maintenance\Http\Requests\MaintenanceRequest;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class MaintenanceController extends Controller
 {
@@ -22,6 +22,7 @@ class MaintenanceController extends Controller
     public function index()
     {
         $maintenances = Maintenance::with('type')->orderBy('accural_date', 'asc')->paginate(20);
+
         return view('maintenance::maintenances.index', compact('maintenances'));
     }
 
@@ -29,6 +30,7 @@ class MaintenanceController extends Controller
     {
         $types = ServiceType::all();
         $branches = userBranches();
+
         return view('maintenance::maintenances.create', compact('types', 'branches'));
     }
 
@@ -40,15 +42,17 @@ class MaintenanceController extends Controller
             OperHead::create([
                 'pro_date' => $request->date,
                 'accural_date' => $request->accural_date,
-                'info' => 'صيانة ' . $request->item . ' رقم البند ' . $request->item_number,
+                'info' => 'صيانة '.$request->item.' رقم البند '.$request->item_number,
                 'status' => $request->status,
                 'op2' => $maintenance->id,
             ]);
 
             Alert::toast(__('Item created successfully'), 'success');
+
             return redirect()->route('maintenances.index');
         } catch (\Exception) {
             Alert::toast(__('An error occurred'), 'error');
+
             return redirect()->back();
         }
     }
@@ -56,6 +60,7 @@ class MaintenanceController extends Controller
     public function edit(Maintenance $maintenance)
     {
         $types = ServiceType::all();
+
         return view('maintenance::maintenances.edit', compact('maintenance', 'types'));
     }
 
@@ -64,17 +69,26 @@ class MaintenanceController extends Controller
         try {
             $maintenance->update($request->validated());
             $maintenance->operHead()->update([
-                'pro_date'      => $request->date,
-                'accural_date'  => $request->accural_date,
-                'info'          => 'صيانة ' . $request->item_name . ' رقم البند ' . $request->item_number,
-                'status'        => $request->status,
+                'pro_date' => $request->date,
+                'accural_date' => $request->accural_date,
+                'info' => 'صيانة '.$request->item_name.' رقم البند '.$request->item_number,
+                'status' => $request->status,
             ]);
             Alert::toast(__('Item updated successfully'), 'success');
+
             return redirect()->route('maintenances.index');
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred'), 'error');
+
             return redirect()->back();
         }
+    }
+
+    public function show(Maintenance $maintenance)
+    {
+        $maintenance->load(['type', 'branch']);
+
+        return view('maintenance::maintenances.show', compact('maintenance'));
     }
 
     public function destroy(Maintenance $maintenance)
@@ -85,6 +99,7 @@ class MaintenanceController extends Controller
         } catch (\Exception) {
             Alert::toast(__('An error occurred'), 'error');
         }
+
         return redirect()->route('maintenances.index');
     }
 }

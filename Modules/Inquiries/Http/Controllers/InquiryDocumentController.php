@@ -3,9 +3,9 @@
 namespace Modules\Inquiries\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Inquiries\Models\InquiryDocument;
 use Modules\Inquiries\Http\Requests\InquiryDocumentRequest;
+use Modules\Inquiries\Models\InquiryDocument;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class InquiryDocumentController extends Controller
 {
@@ -20,6 +20,7 @@ class InquiryDocumentController extends Controller
     public function index()
     {
         $documents = InquiryDocument::latest()->get();
+
         return view('inquiries::project-documents.index', compact('documents'));
     }
 
@@ -33,9 +34,11 @@ class InquiryDocumentController extends Controller
         try {
             InquiryDocument::create($request->validated());
             Alert::toast(__('Document created successfully'), 'success');
+
             return redirect()->route('inquiry.documents.index');
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred while creating the document'), 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -43,6 +46,7 @@ class InquiryDocumentController extends Controller
     public function edit($id)
     {
         $document = InquiryDocument::findOrFail($id);
+
         return view('inquiries::project-documents.edit', compact('document'));
     }
 
@@ -52,11 +56,20 @@ class InquiryDocumentController extends Controller
             $document = InquiryDocument::findOrFail($id);
             $document->update($request->validated());
             Alert::toast(__('Document updated successfully'), 'success');
+
             return redirect()->route('inquiry.documents.index');
         } catch (\Exception) {
             Alert::toast(__('An error occurred while updating the document'), 'error');
+
             return redirect()->back()->withInput();
         }
+    }
+
+    public function show($id)
+    {
+        $document = InquiryDocument::findOrFail($id);
+
+        return view('inquiries::project-documents.show', compact('document'));
     }
 
     public function destroy($id)
@@ -65,9 +78,11 @@ class InquiryDocumentController extends Controller
             $document = InquiryDocument::findOrFail($id);
             $document->delete();
             Alert::toast(__('Document deleted successfully'), 'success');
+
             return redirect()->route('inquiry.documents.index');
         } catch (\Exception) {
             Alert::toast(__('An error occurred while deleting the document'), 'error');
+
             return redirect()->back();
         }
     }

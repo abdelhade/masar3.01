@@ -3,8 +3,8 @@
 namespace Modules\MyResources\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\MyResources\Models\ResourceStatus;
 use Modules\MyResources\Http\Requests\ResourceStatusRequest;
+use Modules\MyResources\Models\ResourceStatus;
 
 class ResourceStatusController extends Controller
 {
@@ -22,7 +22,10 @@ class ResourceStatusController extends Controller
 
     public function store(ResourceStatusRequest $request)
     {
-        ResourceStatus::create($request->validated());
+        $data = $request->validated();
+        $data['sort_order'] = (ResourceStatus::max('sort_order') ?? 0) + 1;
+
+        ResourceStatus::create($data);
 
         return redirect()
             ->route('myresources.statuses.index')
@@ -43,6 +46,11 @@ class ResourceStatusController extends Controller
             ->with('success', 'تم تحديث الحالة بنجاح');
     }
 
+    public function show(ResourceStatus $status)
+    {
+        return view('myresources::statuses.show', compact('status'));
+    }
+
     public function destroy(ResourceStatus $status)
     {
         $status->delete();
@@ -52,4 +60,3 @@ class ResourceStatusController extends Controller
             ->with('success', 'تم حذف الحالة بنجاح');
     }
 }
-

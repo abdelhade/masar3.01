@@ -51,7 +51,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="icon" class="form-label">الأيقونة</label>
                                 <input type="text" name="icon" id="icon" class="form-control @error('icon') is-invalid @enderror" value="{{ old('icon', $category->icon) }}" placeholder="مثال: fas fa-cogs">
                                 <small class="text-muted">استخدم Font Awesome icons</small>
@@ -60,7 +60,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="color" class="form-label">اللون</label>
                                 <select name="color" id="color" class="form-select @error('color') is-invalid @enderror">
                                     <option value="primary" {{ old('color', $category->color) == 'primary' ? 'selected' : '' }}>أزرق</option>
@@ -71,14 +71,6 @@
                                     <option value="secondary" {{ old('color', $category->color) == 'secondary' ? 'selected' : '' }}>رمادي</option>
                                 </select>
                                 @error('color')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="sort_order" class="form-label">ترتيب العرض</label>
-                                <input type="number" name="sort_order" id="sort_order" class="form-control @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $category->sort_order ?? 0) }}" min="0">
-                                @error('sort_order')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

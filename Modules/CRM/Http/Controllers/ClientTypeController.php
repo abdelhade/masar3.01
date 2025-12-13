@@ -20,12 +20,14 @@ class ClientTypeController extends Controller
     public function index()
     {
         $customerTypes = ClientType::paginate(20);
+
         return view('crm::client-type.index', compact('customerTypes'));
     }
 
     public function create()
     {
         $branches = userBranches();
+
         return view('crm::client-type.create', compact('branches'));
     }
 
@@ -33,6 +35,7 @@ class ClientTypeController extends Controller
     {
         ClientType::create($request->validated());
         Alert::toast(__('Client type created successfully'), 'success');
+
         return redirect()->route('client-types.index');
     }
 
@@ -45,7 +48,15 @@ class ClientTypeController extends Controller
     {
         $client_type->update($request->validated());
         Alert::toast(__('Client type updated successfully'), 'success');
+
         return redirect()->route('client-types.index');
+    }
+
+    public function show(ClientType $client_type)
+    {
+        $client_type->load('branch');
+
+        return view('crm::client-type.show', compact('client_type'));
     }
 
     public function destroy(ClientType $client_type)
@@ -56,6 +67,7 @@ class ClientTypeController extends Controller
         } catch (\Exception) {
             Alert::toast(__('An error occurred while deleting the client type'), 'error');
         }
+
         return redirect()->route('client-types.index');
     }
 }

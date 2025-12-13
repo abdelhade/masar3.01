@@ -67,8 +67,8 @@ class TransferController extends Controller
                 abort(403);
             }
 
-            // EDIT / UPDATE / DESTROY: نقرأ السجل لمعرفة pro_type
-            if (in_array($action, ['edit', 'update', 'destroy'])) {
+            // SHOW / EDIT / UPDATE / DESTROY: نقرأ السجل لمعرفة pro_type
+            if (in_array($action, ['show', 'edit', 'update', 'destroy'])) {
                 $routeParam = $request->route('id') ?? $request->route('transfer') ?? $request->route('operhead') ?? null;
                 $id = null;
                 if (is_object($routeParam) && isset($routeParam->id)) {
@@ -79,6 +79,16 @@ class TransferController extends Controller
 
                 $oper = $id ? OperHead::find($id) : null;
                 $typeSlug = $oper && isset($typeSlugs[$oper->pro_type]) ? $typeSlugs[$oper->pro_type] : null;
+
+                if ($action === 'show') {
+                    if ($typeSlug && $allow("view {$typeSlug}")) {
+                        return $next($request);
+                    }
+                    if ($allow('view transfers')) {
+                        return $next($request);
+                    }
+                    abort(403);
+                }
 
                 if ($action === 'destroy') {
                     if ($typeSlug && $allow("delete {$typeSlug}")) {
@@ -458,6 +468,8 @@ class TransferController extends Controller
         return view('transfers.edit', [
             'transfer' => $transfer,
             'type' => $type,
+            'fromAccounts' => $fromAccounts,
+            'toAccounts' => $toAccounts,
             'cashAccounts' => $cashAccounts,
             'bankAccounts' => $bankAccounts,
             'employeeAccounts' => $employeeAccounts,
@@ -563,7 +575,30 @@ class TransferController extends Controller
         }
     }
 
-    public function show(string $request) {}
+    public function show($id)
+    {
+        $transfer = OperHead::with([
+            'journalHead.dets.accHead',
+            'acc1Head',
+            'acc2Head',
+            'employee',
+            'type',
+            'user',
+        ])
+            ->whereIn('pro_type', [3, 4, 5, 6])
+            ->findOrFail($id);
+
+        $typeSlugs = [
+            3 => 'cash-to-cash',
+            4 => 'cash-to-bank',
+            5 => 'bank-to-cash',
+            6 => 'bank-to-bank',
+        ];
+
+        $type = $typeSlugs[$transfer->pro_type] ?? 'transfer';
+
+        return view('transfers.show', compact('transfer', 'type'));
+    }
 
     public function destroy(string $id)
     {

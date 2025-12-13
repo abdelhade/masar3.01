@@ -3,9 +3,9 @@
 namespace Modules\Shipping\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use RealRashid\SweetAlert\Facades\Alert;
-use Modules\Shipping\Models\ShippingCompany;
 use Modules\Shipping\Http\Requests\ShippingCompanyRequest;
+use Modules\Shipping\Models\ShippingCompany;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class ShippingCompanyController extends Controller
 {
@@ -20,12 +20,14 @@ class ShippingCompanyController extends Controller
     public function index()
     {
         $companies = ShippingCompany::paginate(10);
+
         return view('shipping::companies.index', compact('companies'));
     }
 
     public function create()
     {
         $branches = userBranches();
+
         return view('shipping::companies.create', compact('branches'));
     }
 
@@ -33,6 +35,7 @@ class ShippingCompanyController extends Controller
     {
         ShippingCompany::create($request->validated());
         Alert::toast(__('Shipping Company created successfully.'), 'success');
+
         return redirect()->route('companies.index');
     }
 
@@ -45,18 +48,28 @@ class ShippingCompanyController extends Controller
     {
         $company->update($request->validated());
         Alert::toast(__('Shipping Company updated successfully.'), 'success');
+
         return redirect()->route('companies.index');
+    }
+
+    public function show(ShippingCompany $company)
+    {
+        $company->load('branch');
+
+        return view('shipping::companies.show', compact('company'));
     }
 
     public function destroy(ShippingCompany $company)
     {
         if ($company->shipments()->exists()) {
             Alert::toast(__('Cannot delete company with existing shipments.'), 'error');
+
             return redirect()->route('companies.index');
         }
 
         $company->delete();
         Alert::toast(__('Shipping Company deleted successfully.'), 'success');
+
         return redirect()->route('companies.index');
     }
 }

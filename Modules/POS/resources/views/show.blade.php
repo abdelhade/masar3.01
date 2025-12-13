@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-4">
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-4 no-print">
         <div class="card-body d-flex justify-content-between align-items-start gap-3 flex-wrap">
             <div class="transaction-info">
                 <h1>عرض معاملة POS</h1>
@@ -23,6 +23,11 @@
                     <i class="fas fa-print"></i>
                     طباعة
                 </a>
+                
+                <button onclick="window.print()" class="btn btn-info">
+                    <i class="fas fa-print"></i>
+                    طباعة الصفحة
+                </button>
                 
                 <a href="{{ route('pos.index') }}" 
                    class="btn btn-secondary">
@@ -203,6 +208,19 @@
     </div>
 </div>
 
+
+@push('styles')
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        .card { border: 1px solid #000 !important; box-shadow: none !important; }
+        .card-header { background: #f1f1f1 !important; color: #000 !important; }
+        body { font-size: 12px; }
+        .detail-row { border-bottom: 1px solid #ddd; padding: 0.5rem 0; }
+        .table { font-size: 10px; }
+    }
+</style>
+@endpush
 
 <script>
     // دعم اختصارات لوحة المفاتيح

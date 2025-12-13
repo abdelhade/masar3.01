@@ -3,9 +3,11 @@
 namespace Modules\Shipping\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Modules\Shipping\Models\{Order, Driver, Shipment};
-use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Shipping\Http\Requests\OrderRequest;
+use Modules\Shipping\Models\Driver;
+use Modules\Shipping\Models\Order;
+use Modules\Shipping\Models\Shipment;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class OrderController extends Controller
 {
@@ -20,6 +22,7 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::with(['driver', 'shipment'])->paginate(10);
+
         return view('shipping::orders.index', compact('orders'));
     }
 
@@ -28,6 +31,7 @@ class OrderController extends Controller
         $branches = userBranches();
         $drivers = Driver::where('is_available', true)->get();
         $shipments = Shipment::all();
+
         return view('shipping::orders.create', compact('drivers', 'shipments', 'branches'));
     }
 
@@ -35,6 +39,7 @@ class OrderController extends Controller
     {
         Order::create($request->validated());
         Alert::toast(__('Order created successfully.'), 'success');
+
         return redirect()->route('orders.index');
     }
 
@@ -42,6 +47,7 @@ class OrderController extends Controller
     {
         $drivers = Driver::where('is_available', true)->get();
         $shipments = Shipment::all();
+
         return view('shipping::orders.edit', compact('order', 'drivers', 'shipments'));
     }
 
@@ -49,13 +55,22 @@ class OrderController extends Controller
     {
         $order->update($request->validated());
         Alert::toast(__('Order updated successfully.'), 'success');
+
         return redirect()->route('orders.index');
+    }
+
+    public function show(Order $order)
+    {
+        $order->load(['driver', 'shipment', 'branch']);
+
+        return view('shipping::orders.show', compact('order'));
     }
 
     public function destroy(Order $order)
     {
         $order->delete();
         Alert::toast(__('Order deleted successfully.'), 'success');
+
         return redirect()->route('orders.index');
     }
 }

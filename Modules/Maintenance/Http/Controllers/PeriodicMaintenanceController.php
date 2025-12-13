@@ -23,6 +23,7 @@ class PeriodicMaintenanceController extends Controller
         $schedules = PeriodicMaintenanceSchedule::with('serviceType')
             ->orderBy('next_maintenance_date', 'asc')
             ->paginate(20);
+
         return view('maintenance::periodic.index', compact('schedules'));
     }
 
@@ -30,6 +31,7 @@ class PeriodicMaintenanceController extends Controller
     {
         $types = ServiceType::all();
         $branches = userBranches();
+
         return view('maintenance::periodic.create', compact('types', 'branches'));
     }
 
@@ -38,9 +40,11 @@ class PeriodicMaintenanceController extends Controller
         try {
             PeriodicMaintenanceSchedule::create($request->validated());
             Alert::toast(__('Item created successfully'), 'success');
+
             return redirect()->route('periodic.maintenances.index');
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred'), 'error');
+
             return redirect()->back()->withInput();
         }
     }
@@ -48,6 +52,7 @@ class PeriodicMaintenanceController extends Controller
     public function edit(PeriodicMaintenanceSchedule $periodicMaintenance)
     {
         $types = ServiceType::all();
+
         return view('maintenance::periodic.edit', compact('periodicMaintenance', 'types'));
     }
 
@@ -59,13 +64,14 @@ class PeriodicMaintenanceController extends Controller
             $periodic_maintenance->update($request->validated());
 
             Alert::toast(__('Item updated successfully'), 'success');
+
             return redirect()->route('periodic.maintenances.index');
         } catch (\Exception) {
             Alert::toast(__('An error occurred'), 'error');
+
             return redirect()->back();
         }
     }
-
 
     public function destroy(PeriodicMaintenanceSchedule $periodicMaintenance)
     {
@@ -75,6 +81,7 @@ class PeriodicMaintenanceController extends Controller
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred'), 'error');
         }
+
         return redirect()->route('periodic.maintenances.index');
     }
 
@@ -82,17 +89,26 @@ class PeriodicMaintenanceController extends Controller
     {
         $types = ServiceType::all();
         $branches = userBranches();
+
         return view('maintenance::maintenances.create-from-schedule', compact('schedule', 'types', 'branches'));
+    }
+
+    public function show(PeriodicMaintenanceSchedule $periodicMaintenance)
+    {
+        $periodicMaintenance->load(['serviceType', 'branch']);
+
+        return view('maintenance::periodic.show', compact('periodicMaintenance'));
     }
 
     public function toggleActive(PeriodicMaintenanceSchedule $periodicMaintenance)
     {
         try {
-            $periodicMaintenance->update(['is_active' => !$periodicMaintenance->is_active]);
+            $periodicMaintenance->update(['is_active' => ! $periodicMaintenance->is_active]);
             Alert::toast(__('Item updated successfully'), 'success');
         } catch (\Exception $e) {
             Alert::toast(__('An error occurred'), 'error');
         }
+
         return redirect()->back();
     }
 }
