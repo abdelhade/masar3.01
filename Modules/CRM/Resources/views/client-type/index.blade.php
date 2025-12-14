@@ -34,7 +34,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('Title') }}</th>
-                                    <th>{{ __('Branch') }}</th>
+                                    {{-- <th>{{ __('Branch') }}</th> --}}
                                     @canany(['edit Client Types', 'delete Client Types'])
                                         <th>{{ __('Actions') }}</th>
                                     @endcanany
@@ -45,7 +45,7 @@
                                     <tr class="text-center">
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $type->title }}</td>
-                                        <td>{{ $type->branch->name ?? '-' }}</td>
+                                        {{-- <td>{{ $type->branch->name ?? '-' }}</td> --}}
 
                                         @canany(['edit Client Types', 'delete Client Types'])
                                             <td>

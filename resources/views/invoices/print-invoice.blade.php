@@ -616,6 +616,16 @@
                     <h1>Massar</h1>
                     <p>نظام إدارة المبيعات والمشتريات</p>
                     <p>📧 info@massar.com | 📱 +966 12 345 6789</p>
+                    @php
+                        $nationalAddress = \Modules\Settings\Models\PublicSetting::where('key', 'national_address')->value('value');
+                        $taxNumber = \Modules\Settings\Models\PublicSetting::where('key', 'tax_number')->value('value');
+                    @endphp
+                    @if($nationalAddress)
+                    <p>📍 العنوان الوطني: {{ $nationalAddress }}</p>
+                    @endif
+                    @if($taxNumber)
+                    <p>🔢 الرقم الضريبي: {{ $taxNumber }}</p>
+                    @endif
                 </div>
 
                 <div class="invoice-title">

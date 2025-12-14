@@ -3,11 +3,12 @@
 namespace Modules\CRM\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\Client;
+use App\Models\{Client, User};
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\CRM\Enums\{TaskStatusEnum, TaskPriorityEnum};
-use Modules\CRM\Models\{Lead, Task, ChanceSource, LeadStatus, ClientContact};
+use Modules\CRM\Models\{Lead, Task, ChanceSource, LeadStatus, ClientContact, Activity, Ticket, ReturnOrder};
 
 class StatisticsController extends Controller
 {
@@ -16,29 +17,54 @@ class StatisticsController extends Controller
         $this->middleware('can:view CRM Statistics')->only(['index']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $statistics = $this->getStatistics();
-        return view('crm::statistics.index', compact('statistics'));
+        $period = $request->get('period', 'this_month');
+        $userId = $request->get('user_id');
+        
+        $dateRange = $this->getDateRange($period);
+        $users = User::select('id', 'name')->get();
+        
+        $statistics = $this->getStatistics($dateRange, $userId);
+        
+        return view('crm::statistics.index', compact('statistics', 'users', 'period', 'userId'));
+    }
+    
+    private function getDateRange($period)
+    {
+        $now = Carbon::now();
+        
+        return match($period) {
+            'this_month' => [
+                'start' => $now->copy()->startOfMonth(),
+                'end' => $now->copy()->endOfMonth(),
+            ],
+            'this_quarter' => [
+                'start' => $now->copy()->startOfQuarter(),
+                'end' => $now->copy()->endOfQuarter(),
+            ],
+            'this_year' => [
+                'start' => $now->copy()->startOfYear(),
+                'end' => $now->copy()->endOfYear(),
+            ],
+            default => [
+                'start' => $now->copy()->startOfMonth(),
+                'end' => $now->copy()->endOfMonth(),
+            ],
+        };
     }
 
-    public function getStatistics()
+    public function getStatistics($dateRange, $userId = null)
     {
         return [
-            // إحصائيات العملاء
             'clients' => $this->getClientStatistics(),
-
-            // إحصائيات الفرص (Leads)
             'leads' => $this->getLeadStatistics(),
-
-            // إحصائيات المهام
             'tasks' => $this->getTaskStatistics(),
-
-            // إحصائيات المصادر
             'sources' => $this->getSourceStatistics(),
-
-            // إحصائيات جهات الاتصال
             'contacts' => $this->getContactStatistics(),
+            'activities' => $this->getActivityStatistics($dateRange, $userId),
+            'tickets' => $this->getTicketStatistics($dateRange, $userId),
+            'returns' => $this->getReturnStatistics($dateRange, $userId),
         ];
     }
 
@@ -227,7 +253,6 @@ class StatisticsController extends Controller
 
     private function getContactStatistics()
     {
-        // Single query to get both total contacts and unique clients
         $contactStats = ClientContact::selectRaw('
             COUNT(*) as total_contacts,
             COUNT(DISTINCT client_id) as unique_clients
@@ -240,6 +265,85 @@ class StatisticsController extends Controller
         return [
             'total' => $contactStats->total_contacts,
             'average_per_client' => $averageContactsPerClient,
+        ];
+    }
+    
+    private function getActivityStatistics($dateRange, $userId = null)
+    {
+        $query = Activity::whereBetween('activity_date', [$dateRange['start'], $dateRange['end']]);
+        
+        if ($userId) {
+            $query->where('assigned_to', $userId);
+        }
+        
+        $activities = $query->with(['client', 'assignedUser'])->get();
+        
+        $byType = $activities->groupBy('type')->map(fn($items) => $items->count());
+        $byUser = $activities->groupBy('assigned_to')->map(function($items) {
+            return [
+                'count' => $items->count(),
+                'user' => $items->first()->assignedUser->name ?? 'غير محدد'
+            ];
+        });
+        
+        return [
+            'total' => $activities->count(),
+            'by_type' => $byType,
+            'by_user' => $byUser,
+            'list' => $activities->take(10)
+        ];
+    }
+    
+    private function getTicketStatistics($dateRange, $userId = null)
+    {
+        $query = Ticket::whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+        
+        if ($userId) {
+            $query->where('assigned_to', $userId);
+        }
+        
+        $tickets = $query->with(['client', 'assignedTo'])->get();
+        
+        $byStatus = $tickets->groupBy('status')->map(fn($items) => $items->count());
+        $byPriority = $tickets->groupBy('priority')->map(fn($items) => $items->count());
+        $byUser = $tickets->groupBy('assigned_to')->map(function($items) {
+            return [
+                'count' => $items->count(),
+                'user' => $items->first()->assignedTo->name ?? 'غير محدد'
+            ];
+        });
+        
+        return [
+            'total' => $tickets->count(),
+            'by_status' => $byStatus,
+            'by_priority' => $byPriority,
+            'by_user' => $byUser,
+            'list' => $tickets->take(10)
+        ];
+    }
+    
+    private function getReturnStatistics($dateRange, $userId = null)
+    {
+        $query = ReturnOrder::whereBetween('return_date', [$dateRange['start'], $dateRange['end']]);
+        
+        if ($userId) {
+            $query->where('created_by', $userId);
+        }
+        
+        $returns = $query->with(['client', 'createdBy'])->get();
+        
+        $byStatus = $returns->groupBy('status')->map(fn($items) => $items->count());
+        $byType = $returns->groupBy('return_type')->map(fn($items) => $items->count());
+        $totalAmount = $returns->sum('total_amount');
+        $totalRefund = $returns->sum('refund_amount');
+        
+        return [
+            'total' => $returns->count(),
+            'by_status' => $byStatus,
+            'by_type' => $byType,
+            'total_amount' => $totalAmount,
+            'total_refund' => $totalRefund,
+            'list' => $returns->take(10)
         ];
     }
 }

@@ -101,6 +101,35 @@
             </div>
         </div>
 
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="GET" action="{{ route('statistics.index') }}" class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="fas fa-calendar me-2"></i>{{ __('Time Period') }}</label>
+                                <select name="period" class="form-select" onchange="this.form.submit()">
+                                    <option value="this_month" {{ $period == 'this_month' ? 'selected' : '' }}>{{ __('This Month') }}</option>
+                                    <option value="this_quarter" {{ $period == 'this_quarter' ? 'selected' : '' }}>{{ __('This Quarter') }}</option>
+                                    <option value="this_year" {{ $period == 'this_year' ? 'selected' : '' }}>{{ __('This Year') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="fas fa-user me-2"></i>{{ __('Responsible') }}</label>
+                                <select name="user_id" class="form-select" onchange="this.form.submit()">
+                                    <option value="">{{ __('All Users') }}</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}" {{ $userId == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Overview Cards -->
         <div class="row mb-4">
             <div class="col-md-3 mb-3">
@@ -238,6 +267,135 @@
                                 <small class="text-muted">{{ $source['percentage'] }}%</small>
                             </div>
                         @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activities Report -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-calendar-check me-2"></i>{{ __('Activities Report') }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <h5>{{ __('Total Activities') }}: <span class="badge bg-primary">{{ $statistics['activities']['total'] }}</span></h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>{{ __('By Type') }}</h6>
+                                @foreach($statistics['activities']['by_type'] as $type => $count)
+                                    <div class="mb-2">
+                                        <span>{{ $type }}</span>
+                                        <span class="badge bg-info float-end">{{ $count }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="col-md-6">
+                                <h6>{{ __('By User') }}</h6>
+                                @foreach($statistics['activities']['by_user'] as $data)
+                                    <div class="mb-2">
+                                        <span>{{ $data['user'] }}</span>
+                                        <span class="badge bg-success float-end">{{ $data['count'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Report -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>{{ __('Tickets Report') }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <h5>{{ __('Total Tickets') }}: <span class="badge bg-warning">{{ $statistics['tickets']['total'] }}</span></h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6>{{ __('By Status') }}</h6>
+                                @foreach($statistics['tickets']['by_status'] as $status => $count)
+                                    <div class="mb-2">
+                                        <span>{{ $status }}</span>
+                                        <span class="badge bg-primary float-end">{{ $count }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="col-md-4">
+                                <h6>{{ __('By Priority') }}</h6>
+                                @foreach($statistics['tickets']['by_priority'] as $priority => $count)
+                                    <div class="mb-2">
+                                        <span>{{ $priority }}</span>
+                                        <span class="badge bg-danger float-end">{{ $count }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="col-md-4">
+                                <h6>{{ __('By User') }}</h6>
+                                @foreach($statistics['tickets']['by_user'] as $data)
+                                    <div class="mb-2">
+                                        <span>{{ $data['user'] }}</span>
+                                        <span class="badge bg-success float-end">{{ $data['count'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Returns Report -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h6 class="mb-0"><i class="fas fa-undo me-2"></i>{{ __('Returns Report') }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <h5>{{ __('Total Returns') }}: <span class="badge bg-danger">{{ $statistics['returns']['total'] }}</span></h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>{{ __('Total Amount') }}: <span class="badge bg-info">{{ number_format($statistics['returns']['total_amount'], 2) }}</span></h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>{{ __('Total Refund') }}: <span class="badge bg-warning">{{ number_format($statistics['returns']['total_refund'], 2) }}</span></h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>{{ __('By Status') }}</h6>
+                                @foreach($statistics['returns']['by_status'] as $status => $count)
+                                    <div class="mb-2">
+                                        <span>{{ $status }}</span>
+                                        <span class="badge bg-primary float-end">{{ $count }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="col-md-6">
+                                <h6>{{ __('By Type') }}</h6>
+                                @foreach($statistics['returns']['by_type'] as $type => $count)
+                                    <div class="mb-2">
+                                        <span>{{ $type }}</span>
+                                        <span class="badge bg-success float-end">{{ $count }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

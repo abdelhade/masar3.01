@@ -394,6 +394,42 @@ class ManufacturingInvoiceService
                             'branch_id' => $component->branch_id,
                         ]);
                     }
+
+                    // قيد المصروفات (كود 5)
+                    $journalId++;
+                    JournalHead::create([
+                        'journal_id' => $journalId,
+                        'total' => $totalExpenses,
+                        'date' => $component->invoiceDate,
+                        'op_id' => $operation->id,
+                        'pro_type' => 59,
+                        'details' => 'مصروفات تصنيع',
+                        'user' => Auth::id(),
+                        'branch_id' => $component->branch_id,
+                    ]);
+
+                    foreach ($component->additionalExpenses as $expense) {
+                        JournalDetail::create([
+                            'journal_id' => $journalId,
+                            'account_id' => $expense['account_id'],
+                            'debit' => $expense['amount'],
+                            'credit' => 0,
+                            'type' => 1,
+                            'info' => 'مصروفات تصنيع',
+                            'op_id' => $operation->id,
+                            'branch_id' => $component->branch_id,
+                        ]);
+                    }
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $component->OperatingAccount,
+                        'debit' => 0,
+                        'credit' => $totalExpenses,
+                        'type' => 1,
+                        'info' => 'مصروفات تصنيع',
+                        'op_id' => $operation->id,
+                        'branch_id' => $component->branch_id,
+                    ]);
                 }
 
                 $journalId++;
@@ -666,13 +702,49 @@ class ManufacturingInvoiceService
                         'branch_id' => $component->branch_id,
                     ]);
                 }
+
+                // قيد المصروفات (كود 5)
+                $journalId++;
+                JournalHead::create([
+                    'journal_id' => $journalId,
+                    'total' => $totalExpenses,
+                    'date' => $component->invoiceDate,
+                    'op_id' => $operation->id,
+                    'pro_type' => 59,
+                    'details' => 'مصروفات تصنيع',
+                    'user' => Auth::id(),
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                foreach ($component->additionalExpenses as $expense) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $expense['account_id'],
+                        'debit' => $expense['amount'],
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => 'مصروفات تصنيع',
+                        'op_id' => $operation->id,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                }
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->OperatingAccount,
+                    'debit' => 0,
+                    'credit' => $totalExpenses,
+                    'type' => 1,
+                    'info' => 'مصروفات تصنيع',
+                    'op_id' => $operation->id,
+                    'branch_id' => $component->branch_id,
+                ]);
             }
 
             // قيد إنتاج المنتجات
             $journalId++;
             JournalHead::create([
                 'journal_id' => $journalId,
-                'total' => $totalRaw,
+                'total' => $totalRaw + $totalExpenses,
                 'date' => $component->invoiceDate,
                 'op_id' => $operation->id,
                 'pro_type' => 59,
@@ -683,7 +755,7 @@ class ManufacturingInvoiceService
             JournalDetail::create([
                 'journal_id' => $journalId,
                 'account_id' => $component->productAccount,
-                'debit' => $totalRaw,
+                'debit' => $totalRaw + $totalExpenses,
                 'credit' => 0,
                 'type' => 1,
                 'info' => 'إنتاج منتجات تامة',
@@ -694,7 +766,7 @@ class ManufacturingInvoiceService
                 'journal_id' => $journalId,
                 'account_id' => $component->OperatingAccount,
                 'debit' => 0,
-                'credit' => $totalRaw,
+                'credit' => $totalRaw + $totalExpenses,
                 'type' => 1,
                 'info' => 'إنتاج منتجات تامة',
                 'op_id' => $operation->id,

@@ -237,6 +237,20 @@
         <div class="header">
             <div class="company-name">Massar</div>
             <div class="invoice-title">{{ $titles[$type] ?? 'فاتورة' }}</div>
+            @php
+                $nationalAddress = \Modules\Settings\Models\PublicSetting::where('key', 'national_address')->value('value');
+                $taxNumber = \Modules\Settings\Models\PublicSetting::where('key', 'tax_number')->value('value');
+            @endphp
+            @if($nationalAddress || $taxNumber)
+            <div style="font-size: 10px; margin-top: 5px;">
+                @if($nationalAddress)
+                <div>العنوان الوطني: {{ $nationalAddress }}</div>
+                @endif
+                @if($taxNumber)
+                <div>الرقم الضريبي: {{ $taxNumber }}</div>
+                @endif
+            </div>
+            @endif
         </div>
 
         <!-- Invoice Information -->

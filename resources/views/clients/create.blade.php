@@ -1,5 +1,4 @@
 @extends('admin.dashboard')
-
 {{-- Dynamic Sidebar --}}
 @section('sidebar')
     @include('components.sidebar.crm')
@@ -65,7 +64,7 @@
                         <div class="row">
                             {{-- الاسم --}}
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label">اسم العميل</label>
+                                <label class="form-label">اسم المنشأة</label>
                                 <input type="text" name="cname" class="form-control">
                                 @error('cname')
                                     <small class="text-danger">{{ $message }}</small>
@@ -83,7 +82,7 @@
 
                             {{-- الهاتف 1 --}}
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label">الهاتف 1</label>
+                                <label class="form-label">الهاتف الرئيسي </label>
                                 <input type="text" name="phone" class="form-control">
                                 @error('phone')
                                     <small class="text-danger">{{ $message }}</small>
@@ -92,13 +91,13 @@
 
                             {{-- الهاتف 2 --}}
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label">الهاتف 2</label>
+                                <label class="form-label">هاتف بديل</label>
                                 <input type="text" name="phone2" class="form-control">
                             </div>
 
                             {{-- العنوان 1 --}}
                             <div class="mb-3 col-lg-4">
-                                <label class="form-label">العنوان 1</label>
+                                <label class="form-label">عنوان المقر الرئيسي / عنوان الفروع </label>
                                 <input type="text" name="address" class="form-control">
                             </div>
 
@@ -109,16 +108,16 @@
                             </div>
 
                             {{-- تاريخ الميلاد --}}
-                            <div class="mb-3 col-lg-4">
+                            {{-- <div class="mb-3 col-lg-4">
                                 <label class="form-label">تاريخ الميلاد</label>
                                 <input type="date" name="date_of_birth" class="form-control">
-                            </div>
+                            </div> --}}
 
                             {{-- الرقم القومي --}}
-                            <div class="mb-3 col-lg-4">
+                            {{-- <div class="mb-3 col-lg-4">
                                 <label class="form-label">الرقم القومي</label>
                                 <input type="text" name="national_id" class="form-control">
-                            </div>
+                            </div> --}}
 
                             <div class="mb-3 col-lg-4">
                                 <label class="form-label">الوظيفة</label>
@@ -138,10 +137,10 @@
                             </div>
 
                             {{-- العلاقة --}}
-                            <div class="mb-3 col-lg-4">
+                            {{-- <div class="mb-3 col-lg-4">
                                 <label class="form-label">صلة القرابة</label>
                                 <input type="text" name="contact_relation" class="form-control">
-                            </div>
+                            </div> --}}
 
                             {{-- معلومات إضافية --}}
                             <div class="mb-3 col-lg-12">
@@ -165,14 +164,14 @@
                                     </select>
                                 </div>
 
-                                <div class="col-lg-3 col-md-6">
+                                {{-- <div class="col-lg-3 col-md-6">
                                     <label class="form-label">النوع</label>
                                     <select name="gender" id="gender" class="form-select">
                                         <option value="">اختر النوع</option>
                                         <option value="male">ذكر</option>
                                         <option value="female">أنثى</option>
                                     </select>
-                                </div>
+                                </div> --}}
 
                                 <div class="mb-3 col-lg-3">
                                     <label class="form-label">تصنيف العميل</label>
@@ -196,8 +195,8 @@
                                     <div class="status-container d-flex align-items-center justify-content-between">
                                         <span class="status-label">نشط</span>
                                         <div class="form-check form-switch m-0">
-                                            <input type="checkbox" class="form-check-input" id="is_active"
-                                                name="is_active" value="1" checked>
+                                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                                                value="1" checked>
                                         </div>
                                     </div>
                                 </div>
