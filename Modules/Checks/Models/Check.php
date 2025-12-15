@@ -3,11 +3,10 @@
 namespace Modules\Checks\Models;
 
 use App\Models\User;
-use App\Models\OperHead;
-use Modules\Accounts\Models\AccHead;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Accounts\Models\AccHead;
 
 class Check extends Model
 {
@@ -41,23 +40,33 @@ class Check extends Model
         'handled_by',
     ];
 
-    protected $casts = [
-        'issue_date' => 'date',
-        'due_date' => 'date',
-        'payment_date' => 'date',
-        'approved_at' => 'datetime',
-        'amount' => 'decimal:2',
-        'attachments' => 'array',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     */
+    protected function casts(): array
+    {
+        return [
+            'issue_date' => 'date',
+            'due_date' => 'date',
+            'payment_date' => 'date',
+            'approved_at' => 'datetime',
+            'amount' => 'decimal:2',
+            'attachments' => 'array',
+        ];
+    }
 
     // Define the status constants
     const STATUS_PENDING = 'pending';
+
     const STATUS_CLEARED = 'cleared';
+
     const STATUS_BOUNCED = 'bounced';
+
     const STATUS_CANCELLED = 'cancelled';
 
     // Define the type constants
     const TYPE_INCOMING = 'incoming';
+
     const TYPE_OUTGOING = 'outgoing';
 
     /**
@@ -66,10 +75,10 @@ class Check extends Model
     public static function getStatuses(): array
     {
         return [
-            self::STATUS_PENDING => 'Pending',
-            self::STATUS_CLEARED => 'Cleared',
-            self::STATUS_BOUNCED => 'Bounced',
-            self::STATUS_CANCELLED => 'Cancelled',
+            self::STATUS_PENDING => 'معلق',
+            self::STATUS_CLEARED => 'مصفى',
+            self::STATUS_BOUNCED => 'مرتد',
+            self::STATUS_CANCELLED => 'ملغى',
         ];
     }
 
@@ -79,8 +88,8 @@ class Check extends Model
     public static function getTypes(): array
     {
         return [
-            self::TYPE_INCOMING => 'Incoming',
-            self::TYPE_OUTGOING => 'Outgoing',
+            self::TYPE_INCOMING => 'وارد',
+            self::TYPE_OUTGOING => 'صادر',
         ];
     }
 
@@ -169,7 +178,7 @@ class Check extends Model
      */
     public function isOverdue(): bool
     {
-        return $this->status === self::STATUS_PENDING && 
+        return $this->status === self::STATUS_PENDING &&
                $this->due_date < now()->toDateString();
     }
 
@@ -184,7 +193,7 @@ class Check extends Model
     /**
      * Mark check as cleared
      */
-    public function markAsCleared(string $paymentDate = null): void
+    public function markAsCleared(?string $paymentDate = null): void
     {
         $this->update([
             'status' => self::STATUS_CLEARED,
@@ -230,7 +239,7 @@ class Check extends Model
      */
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_PENDING => 'warning',
             self::STATUS_CLEARED => 'success',
             self::STATUS_BOUNCED => 'danger',
@@ -245,5 +254,50 @@ class Check extends Model
     public function getFormattedAmountAttribute(): string
     {
         return number_format($this->amount, 2);
+    }
+
+    /**
+     * Scope to filter overdue checks
+     */
+    public function scopeOverdue($query)
+    {
+        return $query->where('status', self::STATUS_PENDING)
+            ->where('due_date', '<', now()->toDateString());
+    }
+
+    /**
+     * Scope to filter by date range
+     */
+    public function scopeCreatedBetween($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
+
+    /**
+     * Get days until due date
+     */
+    public function daysUntilDue(): int
+    {
+        return now()->diffInDays($this->due_date, false);
+    }
+
+    /**
+     * Get days overdue
+     */
+    public function daysOverdue(): int
+    {
+        if (! $this->isOverdue()) {
+            return 0;
+        }
+
+        return now()->diffInDays($this->due_date);
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Modules\Checks\Database\Factories\CheckFactory::new();
     }
 }

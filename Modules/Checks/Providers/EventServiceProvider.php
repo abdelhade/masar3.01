@@ -11,7 +11,20 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        \Modules\Checks\Events\CheckCreated::class => [
+            \Modules\Checks\Listeners\SendCheckCreatedNotification::class,
+        ],
+        \Modules\Checks\Events\CheckCleared::class => [
+            // يمكن إضافة listeners هنا
+        ],
+        \Modules\Checks\Events\CheckBounced::class => [
+            // يمكن إضافة listeners هنا
+        ],
+        \Modules\Checks\Events\CheckOverdue::class => [
+            \Modules\Checks\Listeners\SendCheckOverdueNotification::class,
+        ],
+    ];
 
     /**
      * Indicates if events should be discovered.

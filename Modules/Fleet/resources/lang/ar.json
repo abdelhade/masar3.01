@@ -125,6 +125,9 @@
     "Month Fuel Cost": "تكلفة وقود الشهر",
     "Total Fuel Quantity": "إجمالي كمية الوقود",
     "Recent Trips": "أحدث الرحلات",
-    "Recent Fuel Records": "أحدث سجلات الوقود"
+    "Recent Fuel Records": "أحدث سجلات الوقود",
+    
+    "Choose": "اختر",
+    "Optional": "اختياري"
 }
 

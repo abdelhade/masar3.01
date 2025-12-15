@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Item;
+use App\Models\JournalDetail;
+use App\Models\JournalHead;
+use App\Models\OperationItems;
+use App\Models\OperHead;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use App\Models\{OperHead, OperationItems, Item, JournalHead, JournalDetail, User};
-use Modules\Notifications\Notifications\OrderNotification;
+use Illuminate\Support\Facades\DB;
 
 class SaveInvoiceService
 {
@@ -13,6 +17,7 @@ class SaveInvoiceService
     {
         if (empty($component->invoiceItems)) {
             $component->dispatch('error', title: 'خطا!', text: 'لا يمكن حفظ الفاتورة بدون أصناف.', icon: 'error');
+
             return false;
         }
         $component->validate([
@@ -38,7 +43,7 @@ class SaveInvoiceService
 
         if ($checkExpiredItems && in_array($component->type, [10, 12, 14, 16, 19, 22])) {
             foreach ($component->invoiceItems as $index => $item) {
-                if (!empty($item['expiry_date'])) {
+                if (! empty($item['expiry_date'])) {
                     $expiryDate = \Carbon\Carbon::parse($item['expiry_date']);
 
                     if ($expiryDate->isPast()) {
@@ -49,12 +54,47 @@ class SaveInvoiceService
                             text: "الصنف '{$itemName}' منتهي الصلاحية بتاريخ: {$expiryDate->format('Y-m-d')}",
                             icon: 'warning'
                         );
+
                         return false;
                     }
                 }
             }
         }
 
+        // ✅ التحقق من حد الائتمان للعملاء في فواتير المبيعات فقط (type: 10)
+        if ($component->type == 10) {
+            $customer = DB::table('acc_head')->where('id', $component->acc1_id)->first();
+
+            if ($customer && $customer->debit_limit !== null) {
+                // حساب الرصيد الحالي للعميل
+                $currentBalance = $customer->balance ?? 0;
+
+                // حساب قيمة الفاتورة الجديدة
+                $invoiceTotal = $component->total_after_additional ?? 0;
+
+                // حساب المدفوع من العميل
+                $receivedFromClient = $component->received_from_client ?? 0;
+
+                // حساب الرصيد بعد الفاتورة
+                $balanceAfterInvoice = $currentBalance + ($invoiceTotal - $receivedFromClient);
+
+                // التحقق من تجاوز الحد
+                if ($balanceAfterInvoice > $customer->debit_limit) {
+                    $component->dispatch(
+                        'error',
+                        title: 'تجاوز حد الائتمان!',
+                        text: sprintf(
+                            'تجاوز العميل حد الائتمان المسموح (الحد: %s، الرصيد بعد الفاتورة: %s)',
+                            number_format($customer->debit_limit, 3),
+                            number_format($balanceAfterInvoice, 3)
+                        ),
+                        icon: 'error'
+                    );
+
+                    return false;
+                }
+            }
+        }
 
         // التحقق من الكميات المتاحة فقط للمبيعات والصرف
         foreach ($component->invoiceItems as $index => $item) {
@@ -88,14 +128,15 @@ class SaveInvoiceService
                 $allowNegative = (setting('invoice_allow_negative_quantity') ?? '0') == '1' && $component->type == 10;
 
                 // ✅ 4. Compare base quantities
-                if (!$allowNegative && $availableQty < $quantityInBaseUnits) {
+                if (! $allowNegative && $availableQty < $quantityInBaseUnits) {
                     $itemName = Item::find($item['item_id'])->name;
                     $component->dispatch(
                         'error',
                         title: 'خطا!',
-                        text: 'الكمية غير متوفرة للصنف: ' . $itemName . ' (المتاح: ' . $availableQty . ')',
+                        text: 'الكمية غير متوفرة للصنف: '.$itemName.' (المتاح: '.$availableQty.')',
                         icon: 'error'
                     );
+
                     return false;
                 }
             }
@@ -113,33 +154,33 @@ class SaveInvoiceService
             $isPayment = in_array($component->type, [11, 12]);
 
             $operationData = [
-                'pro_type'       => $component->type,
-                'acc1'           => $component->acc1_id,
-                'acc2'           => $component->acc2_id,
-                'emp_id'         => $component->emp_id,
+                'pro_type' => $component->type,
+                'acc1' => $component->acc1_id,
+                'acc2' => $component->acc2_id,
+                'emp_id' => $component->emp_id,
                 'emp2_id' => $component->delivery_id,
-                'is_manager'     => $isManager,
-                'is_journal'     => $isJournal,
-                'is_stock'       => 1,
-                'pro_date'       => $component->pro_date,
+                'is_manager' => $isManager,
+                'is_journal' => $isJournal,
+                'is_stock' => 1,
+                'pro_date' => $component->pro_date,
                 // op2 may be provided by the create form when converting an existing operation
-                'op2'            => $component->op2 ?? request()->get('op2') ?? 0,
-                'pro_value'      => $component->total_after_additional,
-                'fat_net'        => $component->total_after_additional,
-                'price_list'     => $component->selectedPriceType,
-                'accural_date'   => $component->accural_date,
-                'pro_serial'     => $component->serial_number,
-                'fat_disc_per'   => $component->discount_percentage,
-                'fat_disc'       => $component->discount_value,
-                'fat_plus_per'   => $component->additional_percentage,
-                'fat_plus'       => $component->additional_value,
-                'fat_total'      => $component->subtotal,
-                'info'           => $component->notes,
-                'status'         => $component->status ?? 0,
-                'acc_fund'       => $component->cash_box_id ?: 0,
+                'op2' => $component->op2 ?? request()->get('op2') ?? 0,
+                'pro_value' => $component->total_after_additional,
+                'fat_net' => $component->total_after_additional,
+                'price_list' => $component->selectedPriceType,
+                'accural_date' => $component->accural_date,
+                'pro_serial' => $component->serial_number,
+                'fat_disc_per' => $component->discount_percentage,
+                'fat_disc' => $component->discount_value,
+                'fat_plus_per' => $component->additional_percentage,
+                'fat_plus' => $component->additional_value,
+                'fat_total' => $component->subtotal,
+                'info' => $component->notes,
+                'status' => $component->status ?? 0,
+                'acc_fund' => $component->cash_box_id ?: 0,
                 'paid_from_client' => $component->received_from_client,
-                'user'           => Auth::id(),
-                'branch_id' => $component->branch_id
+                'user' => Auth::id(),
+                'branch_id' => $component->branch_id,
             ];
 
             // تحديث الفاتورة الحالية أو إنشاء جديدة
@@ -152,7 +193,7 @@ class SaveInvoiceService
                 $operationData['pro_id'] = $component->pro_id;
                 $operation = OperHead::create($operationData);
 
-                if (!empty($operationData['op2'])) {
+                if (! empty($operationData['op2'])) {
                     $parentId = $operationData['op2'];
                     $parent = OperHead::find($parentId);
 
@@ -171,14 +212,14 @@ class SaveInvoiceService
                             $parent->workflow_state,
                             $operation->workflow_state,
                             Auth::id(),
-                            'convert_to_' . $operation->pro_type,
+                            'convert_to_'.$operation->pro_type,
                             $component->branch_id
                         );
 
                         // ✅ تحديث حالة الـ parent
                         $parent->update([
                             'workflow_state' => $this->getWorkflowStateByType($operation->pro_type),
-                            'is_locked' => 1 // قفل المستند الأصلي
+                            'is_locked' => 1, // قفل المستند الأصلي
                         ]);
 
                         // ✅ تحديث الـ root (أمر الاحتياج الأصلي)
@@ -187,7 +228,7 @@ class SaveInvoiceService
                         if ($root && $root->id != $parent->id) {
                             $root->update([
                                 'workflow_state' => $this->getWorkflowStateByType($operation->pro_type),
-                                'is_locked' => 1 // قفل المستند الأصلي
+                                'is_locked' => 1, // قفل المستند الأصلي
                             ]);
 
                             // ✅ تسجيل انتقال إضافي للـ root
@@ -197,7 +238,7 @@ class SaveInvoiceService
                                 $root->workflow_state,
                                 $this->getWorkflowStateByType($operation->pro_type),
                                 Auth::id(),
-                                'root_update_to_' . $operation->pro_type,
+                                'root_update_to_'.$operation->pro_type,
                                 $component->branch_id
                             );
                         }
@@ -212,13 +253,13 @@ class SaveInvoiceService
             // إضافة عناصر الفاتورة
             $totalProfit = 0;
             foreach ($component->invoiceItems as $invoiceItem) {
-                $itemId    = $invoiceItem['item_id'];
-                $quantity  = $invoiceItem['quantity'];
-                $unitId    = $invoiceItem['unit_id'];
-                $price     = $invoiceItem['price'];
-                $subValue  = $invoiceItem['sub_value'] ?? $price * $quantity;
-                $discount  = $invoiceItem['discount'] ?? 0;
-                $itemCost  = Item::where('id', $itemId)->value('average_cost');
+                $itemId = $invoiceItem['item_id'];
+                $quantity = $invoiceItem['quantity'];
+                $unitId = $invoiceItem['unit_id'];
+                $price = $invoiceItem['price'];
+                $subValue = $invoiceItem['sub_value'] ?? $price * $quantity;
+                $discount = $invoiceItem['discount'] ?? 0;
+                $itemCost = Item::where('id', $itemId)->value('average_cost');
 
                 // ✅ إضافة جديدة: جلب بيانات الصلاحية
                 $batchNumber = $invoiceItem['batch_number'] ?? null;
@@ -227,52 +268,52 @@ class SaveInvoiceService
                 if ($component->type == 21) {
                     // 1. خصم الكمية من المخزن المحوَّل منه (المخزن الأول acc1)
                     OperationItems::create([
-                        'pro_tybe'      => $component->type,
-                        'detail_store'  => $component->acc1_id,
-                        'pro_id'        => $operation->id,
-                        'item_id'       => $itemId,
-                        'unit_id'       => $unitId,
-                        'qty_in'        => 0,
-                        'qty_out'       => $baseQty, // ✅ Store base quantity
-                        'item_price'    => $price,
-                        'cost_price'    => $itemCost,
+                        'pro_tybe' => $component->type,
+                        'detail_store' => $component->acc1_id,
+                        'pro_id' => $operation->id,
+                        'item_id' => $itemId,
+                        'unit_id' => $unitId,
+                        'qty_in' => 0,
+                        'qty_out' => $baseQty, // ✅ Store base quantity
+                        'item_price' => $price,
+                        'cost_price' => $itemCost,
                         'item_discount' => $discount,
-                        'detail_value'  => $subValue,
-                        'notes'         => $invoiceItem['notes'] ?? 'تحويل إلى مخزن ' . $component->acc2_id,
-                        'is_stock'      => 1,
-                        'branch_id'     => $component->branch_id,
-                        'length'        => $invoiceItem['length'] ?? null,
-                        'width'         => $invoiceItem['width'] ?? null,
-                        'height'        => $invoiceItem['height'] ?? null,
-                        'density'       => $invoiceItem['density'] ?? 1,
+                        'detail_value' => $subValue,
+                        'notes' => $invoiceItem['notes'] ?? 'تحويل إلى مخزن '.$component->acc2_id,
+                        'is_stock' => 1,
+                        'branch_id' => $component->branch_id,
+                        'length' => $invoiceItem['length'] ?? null,
+                        'width' => $invoiceItem['width'] ?? null,
+                        'height' => $invoiceItem['height'] ?? null,
+                        'density' => $invoiceItem['density'] ?? 1,
                         // ✅ إضافة حقول الصلاحية
-                        'batch_number'  => $batchNumber,
-                        'expiry_date'   => $expiryDate,
+                        'batch_number' => $batchNumber,
+                        'expiry_date' => $expiryDate,
                     ]);
 
                     // 2. إضافة الكمية إلى المخزن المحوَّل إليه (المخزن الثاني acc2)
                     OperationItems::create([
-                        'pro_tybe'      => $component->type,
-                        'detail_store'  => $component->acc2_id,
-                        'pro_id'        => $operation->id,
-                        'item_id'       => $itemId,
-                        'unit_id'       => $unitId,
-                        'qty_in'        => $baseQty, // ✅ Store base quantity
-                        'qty_out'       => 0,
-                        'item_price'    => $price,
-                        'cost_price'    => $itemCost,
+                        'pro_tybe' => $component->type,
+                        'detail_store' => $component->acc2_id,
+                        'pro_id' => $operation->id,
+                        'item_id' => $itemId,
+                        'unit_id' => $unitId,
+                        'qty_in' => $baseQty, // ✅ Store base quantity
+                        'qty_out' => 0,
+                        'item_price' => $price,
+                        'cost_price' => $itemCost,
                         'item_discount' => $discount,
-                        'detail_value'  => $subValue,
-                        'notes'         => $invoiceItem['notes'] ?? 'تحويل من مخزن ' . $component->acc1_id,
-                        'is_stock'      => 1,
-                        'branch_id'     => $component->branch_id,
-                        'length'        => $invoiceItem['length'] ?? null,
-                        'width'         => $invoiceItem['width'] ?? null,
-                        'height'        => $invoiceItem['height'] ?? null,
-                        'density'       => $invoiceItem['density'] ?? 1,
+                        'detail_value' => $subValue,
+                        'notes' => $invoiceItem['notes'] ?? 'تحويل من مخزن '.$component->acc1_id,
+                        'is_stock' => 1,
+                        'branch_id' => $component->branch_id,
+                        'length' => $invoiceItem['length'] ?? null,
+                        'width' => $invoiceItem['width'] ?? null,
+                        'height' => $invoiceItem['height'] ?? null,
+                        'density' => $invoiceItem['density'] ?? 1,
                         // ✅ إضافة حقول الصلاحية
-                        'batch_number'  => $batchNumber,
-                        'expiry_date'   => $expiryDate,
+                        'batch_number' => $batchNumber,
+                        'expiry_date' => $expiryDate,
                     ]);
                 }
 
@@ -302,13 +343,17 @@ class SaveInvoiceService
                     ->value('unit_id');
 
                 // If no base unit found, use the selected unit as fallback
-                if (!$baseUnitId) {
+                if (! $baseUnitId) {
                     $baseUnitId = $unitId;
                 }
 
                 $qty_in = $qty_out = 0;
-                if (in_array($component->type, [11, 12, 20])) $qty_in = $baseQty;
-                if (in_array($component->type, [10, 13, 18, 19])) $qty_out = $baseQty;
+                if (in_array($component->type, [11, 12, 20])) {
+                    $qty_in = $baseQty;
+                }
+                if (in_array($component->type, [10, 13, 18, 19])) {
+                    $qty_out = $baseQty;
+                }
 
                 // تحديث متوسط التكلفة للمشتريات
                 if (in_array($component->type, [11, 12, 20])) {
@@ -340,35 +385,34 @@ class SaveInvoiceService
                     }
 
                     OperationItems::create([
-                        'pro_tybe'      => $component->type,
-                        'detail_store'  => $component->acc2_id,
-                        'pro_id'        => $operation->id,
-                        'item_id'       => $itemId,
-                        'unit_id'       => $baseUnitId, // ✅ Store base unit ID instead of selected unit
-                        'qty_in'        => $qty_in,
-                        'qty_out'       => $qty_out,
-                        'fat_quantity'  => $originalQty, // ✅ Store original quantity
-                        'fat_price'     => $originalPrice, // ✅ Store original price (per selected unit)
-                        'fat_unit_id'   => $unitId, // ✅ Store original unit for reference
-                        'item_price'    => $basePrice, // ✅ Store base price (per base unit)
-                        'cost_price'    => $itemCost,
+                        'pro_tybe' => $component->type,
+                        'detail_store' => $component->acc2_id,
+                        'pro_id' => $operation->id,
+                        'item_id' => $itemId,
+                        'unit_id' => $baseUnitId, // ✅ Store base unit ID instead of selected unit
+                        'qty_in' => $qty_in,
+                        'qty_out' => $qty_out,
+                        'fat_quantity' => $originalQty, // ✅ Store original quantity
+                        'fat_price' => $originalPrice, // ✅ Store original price (per selected unit)
+                        'fat_unit_id' => $unitId, // ✅ Store original unit for reference
+                        'item_price' => $basePrice, // ✅ Store base price (per base unit)
+                        'cost_price' => $itemCost,
                         'item_discount' => $discount,
-                        'detail_value'  => $subValue,
-                        'notes'         => $invoiceItem['notes'] ?? null,
-                        'is_stock'      => 1,
-                        'profit'        => $profit,
-                        'branch_id'     => $component->branch_id,
-                        'length'        => $invoiceItem['length'] ?? null,
-                        'width'         => $invoiceItem['width'] ?? null,
-                        'height'        => $invoiceItem['height'] ?? null,
-                        'density'       => $invoiceItem['density'] ?? 1,
+                        'detail_value' => $subValue,
+                        'notes' => $invoiceItem['notes'] ?? null,
+                        'is_stock' => 1,
+                        'profit' => $profit,
+                        'branch_id' => $component->branch_id,
+                        'length' => $invoiceItem['length'] ?? null,
+                        'width' => $invoiceItem['width'] ?? null,
+                        'height' => $invoiceItem['height'] ?? null,
+                        'density' => $invoiceItem['density'] ?? 1,
                         // ✅ إضافة حقول الصلاحية
-                        'batch_number'  => $batchNumber,
-                        'expiry_date'   => $expiryDate,
+                        'batch_number' => $batchNumber,
+                        'expiry_date' => $expiryDate,
                     ]);
                 }
             }
-
 
             // تحديث إجمالي الربح
             $operation->update(['profit' => $totalProfit]);
@@ -396,14 +440,15 @@ class SaveInvoiceService
             return $operation->id;
         } catch (\Exception $e) {
             DB::rollBack();
-            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
+            logger()->error('خطأ أثناء حفظ الفاتورة: '.$e->getMessage());
             logger()->error($e->getTraceAsString());
             $component->dispatch(
                 'error',
                 title: 'خطأ!',
-                text: 'فشل في حفظ الفاتورة: ' . $e->getMessage(),
+                text: 'فشل في حفظ الفاتورة: '.$e->getMessage(),
                 icon: 'error'
             );
+
             return false;
         }
     }
@@ -460,6 +505,7 @@ class SaveInvoiceService
         }
 
         Item::where('id', $itemId)->update(['average_cost' => $newCost]);
+
         return $newCost; // ✅ إرجاع التكلفة الجديدة    }
     }
 
@@ -537,14 +583,14 @@ class SaveInvoiceService
         // إنشاء رأس القيد
         JournalHead::create([
             'journal_id' => $journalId,
-            'total'      => $component->total_after_additional,
-            'op2'        => $operation->id,
-            'op_id'      => $operation->id,
-            'pro_type'   => $component->type,
-            'date'       => $component->pro_date,
-            'details'    => $component->notes,
-            'user'       => Auth::id(),
-            'branch_id' => $component->branch_id
+            'total' => $component->total_after_additional,
+            'op2' => $operation->id,
+            'op_id' => $operation->id,
+            'pro_type' => $component->type,
+            'date' => $component->pro_date,
+            'details' => $component->notes,
+            'user' => Auth::id(),
+            'branch_id' => $component->branch_id,
         ]);
 
         // الطرف المدين
@@ -552,13 +598,13 @@ class SaveInvoiceService
             JournalDetail::create([
                 'journal_id' => $journalId,
                 'account_id' => $debit,
-                'debit'      => $component->total_after_additional,
-                'credit'     => 0,
-                'type'       => 1,
-                'info'       => $component->notes,
-                'op_id'      => $operation->id,
-                'isdeleted'  => 0,
-                'branch_id' => $component->branch_id
+                'debit' => $component->total_after_additional,
+                'credit' => 0,
+                'type' => 1,
+                'info' => $component->notes,
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
             ]);
         }
 
@@ -567,13 +613,13 @@ class SaveInvoiceService
             JournalDetail::create([
                 'journal_id' => $journalId,
                 'account_id' => $credit,
-                'debit'      => 0,
-                'credit'     => $component->total_after_additional - $component->additional_value,
-                'type'       => 1,
-                'info'       => $component->notes,
-                'op_id'      => $operation->id,
-                'isdeleted'  => 0,
-                'branch_id' => $component->branch_id
+                'debit' => 0,
+                'credit' => $component->total_after_additional - $component->additional_value,
+                'type' => 1,
+                'info' => $component->notes,
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
             ]);
         }
 
@@ -582,13 +628,13 @@ class SaveInvoiceService
             JournalDetail::create([
                 'journal_id' => $journalId,
                 'account_id' => 69, // حساب الإضافات
-                'debit'      => 0,
-                'credit'     => $component->additional_value,
-                'type'       => 1,
-                'info'       => 'إضافات - ' . $component->notes,
-                'op_id'      => $operation->id,
-                'isdeleted'  => 0,
-                'branch_id' => $component->branch_id
+                'debit' => 0,
+                'credit' => $component->additional_value,
+                'type' => 1,
+                'info' => 'إضافات - '.$component->notes,
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
             ]);
         }
 
@@ -603,7 +649,7 @@ class SaveInvoiceService
      */
     private function recordTransition(?int $fromId, ?int $toId, ?int $fromState, ?int $toState, ?int $userId, string $action, ?int $branchId = null): void
     {
-        if (!$fromId || !$toId) {
+        if (! $fromId || ! $toId) {
             return;
         }
 
@@ -632,38 +678,38 @@ class SaveInvoiceService
         if ($costAllSales > 0) {
             JournalHead::create([
                 'journal_id' => $costJournalId,
-                'total'      => $costAllSales,
-                'op2'        => $operation->id,
-                'op_id'      => $operation->id,
-                'pro_type'   => $component->type,
-                'date'       => $component->pro_date,
-                'details'    => 'قيد تكلفة البضاعة - ' . $component->notes,
-                'user'       => Auth::id(),
-                'branch_id' => $component->branch_id
+                'total' => $costAllSales,
+                'op2' => $operation->id,
+                'op_id' => $operation->id,
+                'pro_type' => $component->type,
+                'date' => $component->pro_date,
+                'details' => 'قيد تكلفة البضاعة - '.$component->notes,
+                'user' => Auth::id(),
+                'branch_id' => $component->branch_id,
             ]);
 
             JournalDetail::create([
                 'journal_id' => $costJournalId,
                 'account_id' => 16, // حساب تكلفة البضاعة المباعة
-                'debit'      => $costAllSales,
-                'credit'     => 0,
-                'type'       => 1,
-                'info'       => 'قيد تكلفة البضاعة',
-                'op_id'      => $operation->id,
-                'isdeleted'  => 0,
-                'branch_id' => $component->branch_id
+                'debit' => $costAllSales,
+                'credit' => 0,
+                'type' => 1,
+                'info' => 'قيد تكلفة البضاعة',
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
             ]);
 
             JournalDetail::create([
                 'journal_id' => $costJournalId,
                 'account_id' => $component->acc2_id, // حساب المخزن
-                'debit'      => 0,
-                'credit'     => $costAllSales,
-                'type'       => 1,
-                'info'       => 'قيد تكلفة البضاعة',
-                'op_id'      => $operation->id,
-                'isdeleted'  => 0,
-                'branch_id' => $component->branch_id
+                'debit' => 0,
+                'credit' => $costAllSales,
+                'type' => 1,
+                'info' => 'قيد تكلفة البضاعة',
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
             ]);
         }
     }
@@ -672,10 +718,10 @@ class SaveInvoiceService
     {
         $voucherValue = $component->received_from_client ?? $component->total_after_additional;
         $cashBoxId = is_numeric($component->cash_box_id) && $component->cash_box_id > 0
-            ? (int)$component->cash_box_id
+            ? (int) $component->cash_box_id
             : null;
 
-        if (!$cashBoxId) {
+        if (! $cashBoxId) {
             return; // لا يمكن إنشاء سند بدون صندوق
         }
 
@@ -695,18 +741,18 @@ class SaveInvoiceService
 
         // إنشاء السند
         $voucher = OperHead::create([
-            'pro_id'     => $operation->pro_id,
-            'pro_type'   => $proType,
-            'acc1'       => $component->acc1_id,
-            'acc2'       => $cashBoxId,
-            'pro_value'  => $voucherValue,
-            'pro_date'   => $component->pro_date,
-            'info'       => 'سند ' . $voucherType . ' آلي مرتبط بعملية رقم ' . $operation->id,
-            'op2'        => $operation->id,
+            'pro_id' => $operation->pro_id,
+            'pro_type' => $proType,
+            'acc1' => $component->acc1_id,
+            'acc2' => $cashBoxId,
+            'pro_value' => $voucherValue,
+            'pro_date' => $component->pro_date,
+            'info' => 'سند '.$voucherType.' آلي مرتبط بعملية رقم '.$operation->id,
+            'op2' => $operation->id,
             'is_journal' => 1,
-            'is_stock'   => 0,
-            'user'       => Auth::id(),
-            'branch_id' => $component->branch_id
+            'is_stock' => 0,
+            'user' => Auth::id(),
+            'branch_id' => $component->branch_id,
         ]);
 
         // إنشاء قيد السند
@@ -714,38 +760,38 @@ class SaveInvoiceService
 
         JournalHead::create([
             'journal_id' => $voucherJournalId,
-            'total'      => $voucherValue,
-            'op_id'      => $voucher->id,
-            'op2'        => $operation->id,
-            'pro_type'   => $proType,
-            'date'       => $component->pro_date,
-            'details'    => 'قيد سند ' . $voucherType . ' آلي',
-            'user'       => Auth::id(),
-            'branch_id' => $component->branch_id
+            'total' => $voucherValue,
+            'op_id' => $voucher->id,
+            'op2' => $operation->id,
+            'pro_type' => $proType,
+            'date' => $component->pro_date,
+            'details' => 'قيد سند '.$voucherType.' آلي',
+            'user' => Auth::id(),
+            'branch_id' => $component->branch_id,
         ]);
 
         JournalDetail::create([
             'journal_id' => $voucherJournalId,
             'account_id' => $debitAccount,
-            'debit'      => $voucherValue,
-            'credit'     => 0,
-            'type'       => 1,
-            'info'       => 'سند ' . $voucherType,
-            'op_id'      => $voucher->id,
-            'isdeleted'  => 0,
-            'branch_id' => $component->branch_id
+            'debit' => $voucherValue,
+            'credit' => 0,
+            'type' => 1,
+            'info' => 'سند '.$voucherType,
+            'op_id' => $voucher->id,
+            'isdeleted' => 0,
+            'branch_id' => $component->branch_id,
         ]);
 
         JournalDetail::create([
             'journal_id' => $voucherJournalId,
             'account_id' => $creditAccount,
-            'debit'      => 0,
-            'credit'     => $voucherValue,
-            'type'       => 1,
-            'info'       => 'سند ' . $voucherType,
-            'op_id'      => $voucher->id,
-            'isdeleted'  => 0,
-            'branch_id' => $component->branch_id
+            'debit' => 0,
+            'credit' => $voucherValue,
+            'type' => 1,
+            'info' => 'سند '.$voucherType,
+            'op_id' => $voucher->id,
+            'isdeleted' => 0,
+            'branch_id' => $component->branch_id,
         ]);
     }
 }

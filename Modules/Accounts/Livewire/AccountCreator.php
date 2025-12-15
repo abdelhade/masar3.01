@@ -37,6 +37,8 @@ class AccountCreator extends Component
 
     public $nationality = '';
 
+    public $debit_limit = '';
+
     public $parent_id = '';
 
     // قوائم البيانات
@@ -155,24 +157,35 @@ class AccountCreator extends Component
 
     public function saveAccount()
     {
-        $this->validate([
+        $rules = [
             'code' => 'required|string|max:9|unique:acc_head,code',
             'aname' => 'required|string|max:100|unique:acc_head,aname',
             'phone' => 'nullable|string|max:15',
             'address' => 'nullable|string|max:250',
             'parent_id' => 'required|integer|exists:acc_head,id',
             'branch_id' => 'required|exists:branches,id',
-        ], [
+        ];
+
+        $messages = [
             'code.required' => 'الكود مطلوب.',
             'code.unique' => 'هذا الكود مستخدم بالفعل.',
             'aname.required' => 'اسم الحساب مطلوب.',
             'aname.unique' => 'هذا الاسم مستخدم بالفعل.',
             'parent_id.required' => 'يجب اختيار الحساب الأب.',
             'branch_id.required' => 'الفرع مطلوب.',
-        ]);
+        ];
+
+        // إضافة validation لـ debit_limit للعملاء فقط
+        if ($this->accountType === 'client') {
+            $rules['debit_limit'] = 'nullable|numeric|min:0';
+            $messages['debit_limit.numeric'] = 'حد الائتمان يجب أن يكون رقماً.';
+            $messages['debit_limit.min'] = 'حد الائتمان يجب أن يكون صفر أو أكبر.';
+        }
+
+        $this->validate($rules, $messages);
 
         try {
-            $newAccount = AccHead::create([
+            $accountData = [
                 'code' => $this->code,
                 'aname' => $this->aname,
                 'phone' => $this->phone,
@@ -195,7 +208,14 @@ class AccountCreator extends Component
                 'isdeleted' => 0,
                 'crtime' => now(),
                 'mdtime' => now(),
-            ]);
+            ];
+
+            // إضافة debit_limit للعملاء فقط
+            if ($this->accountType === 'client') {
+                $accountData['debit_limit'] = $this->debit_limit ?? null;
+            }
+
+            $newAccount = AccHead::create($accountData);
 
             // إذا كان الحساب شريك، ننشئ جاري شريك تلقائياً
             if ($this->accountType === 'partner') {
@@ -231,6 +251,7 @@ class AccountCreator extends Component
         $this->zatca_address = '';
         $this->company_type = '';
         $this->nationality = '';
+        $this->debit_limit = '';
     }
 
     /**

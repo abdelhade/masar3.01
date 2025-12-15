@@ -21,7 +21,7 @@ class FleetServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadJsonTranslationsFrom(__DIR__ . '/../Resources/lang');
+        $this->loadJsonTranslationsFrom(__DIR__.'/../resources/lang');
         $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
@@ -69,8 +69,8 @@ class FleetServiceProvider extends ServiceProvider
             $this->loadTranslationsFrom($langPath, $this->nameLower);
             $this->loadJsonTranslationsFrom($langPath);
         } else {
-            $this->loadTranslationsFrom(module_path($this->name, 'Resources/lang'), $this->nameLower);
-            $this->loadJsonTranslationsFrom(module_path($this->name, 'Resources/lang'));
+            $this->loadTranslationsFrom(module_path($this->name, 'resources/lang'), $this->nameLower);
+            $this->loadJsonTranslationsFrom(module_path($this->name, 'resources/lang'));
         }
     }
 
@@ -130,7 +130,7 @@ class FleetServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->nameLower);
 
-        Blade::componentNamespace(config('modules.namespace').'\\' . $this->name . '\\View\\Components', $this->nameLower);
+        Blade::componentNamespace(config('modules.namespace').'\\'.$this->name.'\\View\\Components', $this->nameLower);
     }
 
     /**

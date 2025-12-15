@@ -1,396 +1,356 @@
+<?php
+
+use Livewire\Volt\Component;
+use Modules\Checks\Models\Check;
+use Modules\Checks\Services\CheckService;
+use Illuminate\Support\Facades\DB;
+
+new class extends Component
+{
+    public $dateFilter = 'month';
+
+    private function checkService(): CheckService
+    {
+        return app(CheckService::class);
+    }
+
+    private function getDateRange(): array
+    {
+        return match($this->dateFilter) {
+            'week' => [now()->startOfWeek(), now()->endOfWeek()],
+            'month' => [now()->startOfMonth(), now()->endOfMonth()],
+            'year' => [now()->startOfYear(), now()->endOfYear()],
+            default => [now()->startOfMonth(), now()->endOfMonth()],
+        };
+    }
+
+    public function with(): array
+    {
+        $dateRange = $this->getDateRange();
+        
+        $stats = $this->checkService()->getStatistics($dateRange);
+
+        $overdueChecks = Check::where('status', Check::STATUS_PENDING)
+            ->where('due_date', '<', now())
+            ->orderBy('due_date', 'asc')
+            ->limit(10)
+            ->get();
+
+        $recentChecks = Check::with(['creator'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $checksByBank = Check::whereBetween('created_at', $dateRange)
+            ->select('bank_name', DB::raw('count(*) as count'), DB::raw('sum(amount) as total_amount'))
+            ->groupBy('bank_name')
+            ->orderBy('count', 'desc')
+            ->limit(5)
+            ->get();
+
+        $monthlyTrend = Check::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('count(*) as count'),
+                DB::raw('sum(amount) as total_amount')
+            )
+            ->where('created_at', '>=', now()->subYear())
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
+
+        return [
+            'stats' => $stats,
+            'overdueChecks' => $overdueChecks,
+            'recentChecks' => $recentChecks,
+            'checksByBank' => $checksByBank,
+            'monthlyTrend' => $monthlyTrend,
+        ];
+    }
+};
+
+?>
+
 <div>
-    <div class="container-fluid">
-        <!-- Header -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="page-title">
-                        <i class="fas fa-tachometer-alt"></i> لوحة تحكم الشيكات
-                    </h2>
-                    <div class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="dateFilter" id="week" value="week" wire:model.live="dateFilter">
-                        <label class="btn btn-outline-primary" for="week">أسبوع</label>
+    <flux:heading>لوحة تحكم الشيكات</flux:heading>
 
-                        <input type="radio" class="btn-check" name="dateFilter" id="month" value="month" wire:model.live="dateFilter">
-                        <label class="btn btn-outline-primary" for="month">شهر</label>
-
-                        <input type="radio" class="btn-check" name="dateFilter" id="year" value="year" wire:model.live="dateFilter">
-                        <label class="btn btn-outline-primary" for="year">سنة</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-left-primary">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    إجمالي الشيكات
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    {{ number_format($stats['total']) }}
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-check-square fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-left-warning">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    شيكات معلقة
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    {{ number_format($stats['pending']) }}
-                                </div>
-                                <div class="text-xs text-muted">
-                                    {{ number_format($stats['pendingAmount'], 2) }} ر.س
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-clock fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-left-success">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    شيكات مصفاة
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    {{ number_format($stats['cleared']) }}
-                                </div>
-                                <div class="text-xs text-muted">
-                                    {{ number_format($stats['clearedAmount'], 2) }} ر.س
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-left-danger">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                    شيكات مرتدة
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    {{ number_format($stats['bounced']) }}
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts and Tables Row -->
-        <div class="row mb-4">
-            <!-- Overdue Checks -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-exclamation-circle"></i> الشيكات المتأخرة
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        @if($overdueChecks->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>رقم الشيك</th>
-                                            <th>البنك</th>
-                                            <th>المبلغ</th>
-                                            <th>تاريخ الاستحقاق</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($overdueChecks as $check)
-                                            <tr>
-                                                <td>{{ $check->check_number }}</td>
-                                                <td>{{ $check->bank_name }}</td>
-                                                <td>{{ number_format($check->amount, 2) }}</td>
-                                                <td class="text-danger">
-                                                    {{ $check->due_date->format('Y-m-d') }}
-                                                    <br><small>{{ $check->due_date->diffForHumans() }}</small>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                <p class="text-muted">لا توجد شيكات متأخرة</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Checks by Bank -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-university"></i> الشيكات حسب البنك
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        @if($checksByBank->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>البنك</th>
-                                            <th>العدد</th>
-                                            <th>إجمالي المبلغ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($checksByBank as $bank)
-                                            <tr>
-                                                <td>{{ $bank->bank_name }}</td>
-                                                <td>
-                                                    <span class="badge bg-primary">{{ $bank->count }}</span>
-                                                </td>
-                                                <td>{{ number_format($bank->total_amount, 2) }} ر.س</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-university fa-2x text-muted mb-2"></i>
-                                <p class="text-muted">لا توجد بيانات</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Checks -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-history"></i> الشيكات الأخيرة
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        @if($recentChecks->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>رقم الشيك</th>
-                                            <th>البنك</th>
-                                            <th>المبلغ</th>
-                                            <th>تاريخ الاستحقاق</th>
-                                            <th>الحالة</th>
-                                            <th>النوع</th>
-                                            <th>أُنشئ بواسطة</th>
-                                            <th>تاريخ الإنشاء</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($recentChecks as $check)
-                                            <tr>
-                                                <td>
-                                                    <strong>{{ $check->check_number }}</strong>
-                                                </td>
-                                                <td>{{ $check->bank_name }}</td>
-                                                <td>{{ number_format($check->amount, 2) }} ر.س</td>
-                                                <td>{{ $check->due_date->format('Y-m-d') }}</td>
-                                                <td>
-                                                    <span class="badge bg-{{ $check->status_color }}">
-                                                        {{ ucfirst($check->status) }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-{{ $check->type === 'incoming' ? 'success' : 'info' }}">
-                                                        {{ ucfirst($check->type) }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $check->creator->name ?? 'غير محدد' }}</td>
-                                                <td>{{ $check->created_at->format('Y-m-d H:i') }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">لا توجد شيكات</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Monthly Trend Chart (if needed) -->
-        @if($monthlyTrend->count() > 0)
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-chart-line"></i> الاتجاه الشهري
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="monthlyTrendChart" width="400" height="100"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
+    <!-- Date Filter -->
+    <div class="mb-4 flex justify-end gap-2">
+        <flux:button wire:click="$set('dateFilter', 'week')" variant="{{ $dateFilter === 'week' ? 'primary' : 'ghost' }}" size="sm">
+            أسبوع
+        </flux:button>
+        <flux:button wire:click="$set('dateFilter', 'month')" variant="{{ $dateFilter === 'month' ? 'primary' : 'ghost' }}" size="sm">
+            شهر
+        </flux:button>
+        <flux:button wire:click="$set('dateFilter', 'year')" variant="{{ $dateFilter === 'year' ? 'primary' : 'ghost' }}" size="sm">
+            سنة
+        </flux:button>
     </div>
 
-    @if($monthlyTrend->count() > 0)
-    @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    @endpush
-    @script
-    <script>
-        const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
-        const monthlyData = @json($monthlyTrend);
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <flux:card>
+            <div class="flex justify-between items-center">
+                <div>
+                    <flux:text class="text-sm text-gray-600 dark:text-gray-400">إجمالي الشيكات</flux:text>
+                    <flux:heading size="lg">{{ number_format($stats['total']) }}</flux:heading>
+                </div>
+                <flux:icon name="check-square" class="w-12 h-12 text-gray-300" />
+            </div>
+        </flux:card>
+
+        <flux:card>
+            <div class="flex justify-between items-center">
+                <div>
+                    <flux:text class="text-sm text-yellow-600 dark:text-yellow-400">شيكات معلقة</flux:text>
+                    <flux:heading size="lg">{{ number_format($stats['pending']) }}</flux:heading>
+                    <flux:text class="text-xs text-gray-500">{{ number_format($stats['pending_amount'], 2) }} ر.س</flux:text>
+                </div>
+                <flux:icon name="clock" class="w-12 h-12 text-gray-300" />
+            </div>
+        </flux:card>
+
+        <flux:card>
+            <div class="flex justify-between items-center">
+                <div>
+                    <flux:text class="text-sm text-green-600 dark:text-green-400">شيكات مصفاة</flux:text>
+                    <flux:heading size="lg">{{ number_format($stats['cleared']) }}</flux:heading>
+                    <flux:text class="text-xs text-gray-500">{{ number_format($stats['cleared_amount'], 2) }} ر.س</flux:text>
+                </div>
+                <flux:icon name="check" class="w-12 h-12 text-gray-300" />
+            </div>
+        </flux:card>
+
+        <flux:card>
+            <div class="flex justify-between items-center">
+                <div>
+                    <flux:text class="text-sm text-red-600 dark:text-red-400">شيكات مرتدة</flux:text>
+                    <flux:heading size="lg">{{ number_format($stats['bounced']) }}</flux:heading>
+                </div>
+                <flux:icon name="exclamation-triangle" class="w-12 h-12 text-gray-300" />
+            </div>
+        </flux:card>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <!-- Overdue Checks -->
+        <flux:card>
+            <flux:heading size="md">الشيكات المتأخرة</flux:heading>
+            
+            @if($overdueChecks->count() > 0)
+                <flux:table :headers="['رقم الشيك', 'البنك', 'المبلغ', 'تاريخ الاستحقاق']">
+                    @foreach($overdueChecks as $check)
+                        <flux:row wire:key="overdue-{{ $check->id }}">
+                            <flux:cell>{{ $check->check_number }}</flux:cell>
+                            <flux:cell>{{ $check->bank_name }}</flux:cell>
+                            <flux:cell>{{ number_format($check->amount, 2) }} ر.س</flux:cell>
+                            <flux:cell>
+                                <div class="text-red-600">
+                                    {{ $check->due_date->format('Y-m-d') }}
+                                    <br><small>{{ $check->due_date->diffForHumans() }}</small>
+                                </div>
+                            </flux:cell>
+                        </flux:row>
+                    @endforeach
+                </flux:table>
+            @else
+                <flux:empty-state>
+                    لا توجد شيكات متأخرة
+                </flux:empty-state>
+            @endif
+        </flux:card>
+
+        <!-- Checks by Bank -->
+        <flux:card>
+            <flux:heading size="md">الشيكات حسب البنك</flux:heading>
+            
+            @if($checksByBank->count() > 0)
+                <flux:table :headers="['البنك', 'العدد', 'إجمالي المبلغ']">
+                    @foreach($checksByBank as $bank)
+                        <flux:row wire:key="bank-{{ $bank->bank_name }}">
+                            <flux:cell>{{ $bank->bank_name }}</flux:cell>
+                            <flux:cell>
+                                <flux:badge>{{ $bank->count }}</flux:badge>
+                            </flux:cell>
+                            <flux:cell>{{ number_format($bank->total_amount, 2) }} ر.س</flux:cell>
+                        </flux:row>
+                    @endforeach
+                </flux:table>
+            @else
+                <flux:empty-state>
+                    لا توجد بيانات
+                </flux:empty-state>
+            @endif
+        </flux:card>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <!-- Status Distribution Chart -->
+        <flux:card>
+            <flux:heading size="md">توزيع الحالات</flux:heading>
+            <div class="h-64">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </flux:card>
+
+        <!-- Monthly Trend Chart -->
+        <flux:card>
+            <flux:heading size="md">الاتجاه الشهري</flux:heading>
+            <div class="h-64">
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+        </flux:card>
+    </div>
+
+    <!-- Recent Checks -->
+    <flux:card>
+        <flux:heading size="md">الشيكات الأخيرة</flux:heading>
         
-        const labels = monthlyData.map(item => `${item.year}-${item.month.toString().padStart(2, '0')}`);
-        const counts = monthlyData.map(item => item.count);
-        const amounts = monthlyData.map(item => item.total_amount);
-        
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
+        @if($recentChecks->count() > 0)
+            <flux:table :headers="['رقم الشيك', 'البنك', 'المبلغ', 'تاريخ الاستحقاق', 'الحالة', 'النوع', 'أُنشئ بواسطة', 'تاريخ الإنشاء']">
+                @foreach($recentChecks as $check)
+                    <flux:row wire:key="recent-{{ $check->id }}">
+                        <flux:cell><strong>{{ $check->check_number }}</strong></flux:cell>
+                        <flux:cell>{{ $check->bank_name }}</flux:cell>
+                        <flux:cell>{{ number_format($check->amount, 2) }} ر.س</flux:cell>
+                        <flux:cell>{{ $check->due_date->format('Y-m-d') }}</flux:cell>
+                        <flux:cell>
+                            <flux:badge color="{{ $check->status_color }}">
+                                {{ Check::getStatuses()[$check->status] }}
+                            </flux:badge>
+                        </flux:cell>
+                        <flux:cell>
+                            <flux:badge color="{{ $check->type === 'incoming' ? 'success' : 'info' }}">
+                                {{ Check::getTypes()[$check->type] }}
+                            </flux:badge>
+                        </flux:cell>
+                        <flux:cell>{{ $check->creator->name ?? 'غير محدد' }}</flux:cell>
+                        <flux:cell>{{ $check->created_at->format('Y-m-d H:i') }}</flux:cell>
+                    </flux:row>
+                @endforeach
+            </flux:table>
+        @else
+            <flux:empty-state>
+                لا توجد شيكات
+            </flux:empty-state>
+        @endif
+    </flux:card>
+</div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@endpush
+
+@script
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            const statusData = {
+                labels: ['معلق', 'مصفى', 'مرتد', 'ملغى'],
                 datasets: [{
-                    label: 'عدد الشيكات',
-                    data: counts,
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                    tension: 0.1,
-                    yAxisID: 'y'
-                }, {
-                    label: 'إجمالي المبلغ',
-                    data: amounts,
-                    borderColor: 'rgb(255, 99, 132)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                    tension: 0.1,
-                    yAxisID: 'y1'
+                    data: [
+                        {{ $stats['pending'] }},
+                        {{ $stats['cleared'] }},
+                        {{ $stats['bounced'] }},
+                        {{ $stats['total'] - $stats['pending'] - $stats['cleared'] - $stats['bounced'] }}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 193, 7)',
+                        'rgb(40, 167, 69)',
+                        'rgb(220, 53, 69)',
+                        'rgb(108, 117, 125)'
+                    ],
+                    borderWidth: 2
                 }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'اتجاه الشيكات الشهري'
-                    }
-                },
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                scales: {
-                    x: {
-                        display: true,
-                        title: {
-                            display: true,
-                            text: 'الشهر'
+            };
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: statusData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
                         }
-                    },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'عدد الشيكات'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'المبلغ (ر.س)'
-                        },
-                        grid: {
-                            drawOnChartArea: false,
-                        },
                     }
                 }
-            }
-        });
-    </script>
-    @endscript
-    @endif
+            });
+        }
 
-    @style
-    <style>
-    .border-left-primary {
-        border-left: 0.25rem solid #4e73df !important;
-    }
+        // Monthly Trend Chart
+        const trendCtx = document.getElementById('monthlyTrendChart');
+        if (trendCtx) {
+            const monthlyData = @json($monthlyTrend);
+            const labels = monthlyData.map(item => `${item.year}-${String(item.month).padStart(2, '0')}`);
+            const counts = monthlyData.map(item => item.count);
+            const amounts = monthlyData.map(item => item.total_amount);
 
-    .border-left-success {
-        border-left: 0.25rem solid #1cc88a !important;
-    }
-
-    .border-left-warning {
-        border-left: 0.25rem solid #f6c23e !important;
-    }
-
-    .border-left-danger {
-        border-left: 0.25rem solid #e74a3b !important;
-    }
-
-    .text-xs {
-        font-size: 0.75rem;
-    }
-
-    .text-gray-800 {
-        color: #5a5c69 !important;
-    }
-
-    .text-gray-300 {
-        color: #dddfeb !important;
-    }
-    </style>
-    @endstyle
-</div>
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'عدد الشيكات',
+                        data: counts,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'إجمالي المبلغ (ر.س)',
+                        data: amounts,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'عدد الشيكات'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'المبلغ (ر.س)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endscript

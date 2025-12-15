@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Modules\Authorization\Models\Permission;
 use Modules\Branches\Models\Branch;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -31,12 +32,22 @@ class UserController extends Controller
     public function create()
     {
         try {
-            $permissions = Permission::where('option_type', '1')
-                ->get()
-                ->groupBy('category');
-            $selectivePermissions = Permission::where('option_type', '2')
-                ->get()
-                ->groupBy('category');
+            $hasOptionType = Schema::hasColumn('permissions', 'option_type');
+
+            if ($hasOptionType) {
+                $permissions = Permission::where('option_type', '1')
+                    ->get()
+                    ->groupBy('category');
+                $selectivePermissions = Permission::where('option_type', '2')
+                    ->get()
+                    ->groupBy('category');
+            } else {
+                $permissions = Permission::whereNotNull('category')
+                    ->get()
+                    ->groupBy('category');
+                $selectivePermissions = collect();
+            }
+
             $branches = Branch::where('is_active', 1)->get();
 
             return view('users.create', compact('permissions', 'selectivePermissions', 'branches'));
@@ -78,14 +89,24 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $permissions = Permission::where('option_type', '1')
-            ->whereNotNull('category')
-            ->get()
-            ->groupBy('category');
+        $hasOptionType = Schema::hasColumn('permissions', 'option_type');
 
-        $selectivePermissions = Permission::where('option_type', '2')
-            ->get()
-            ->groupBy('category');
+        if ($hasOptionType) {
+            $permissions = Permission::where('option_type', '1')
+                ->whereNotNull('category')
+                ->get()
+                ->groupBy('category');
+
+            $selectivePermissions = Permission::where('option_type', '2')
+                ->get()
+                ->groupBy('category');
+        } else {
+            $permissions = Permission::whereNotNull('category')
+                ->get()
+                ->groupBy('category');
+
+            $selectivePermissions = collect();
+        }
 
         $branches = Branch::where('is_active', 1)->get();
 

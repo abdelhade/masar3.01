@@ -15,6 +15,7 @@ use Modules\Checks\database\seeders\CheckPortfoliosPermissionsSeeder;
 use Modules\Checks\database\seeders\ChecksPermissionsSeeder;
 use Modules\CRM\Database\Seeders\CRMPermissionsSeeder;
 use Modules\CRM\Database\Seeders\LeadStatusSeeder;
+use Modules\Fleet\database\seeders\FleetPermissionsSeeder;
 use Modules\Inquiries\database\seeders\DiffcultyMatrixSeeder;
 use Modules\Inquiries\database\seeders\InquiriesPermissionsSeeder;
 use Modules\Inquiries\database\seeders\InquiriesRolesSeeder;
@@ -34,7 +35,6 @@ use Modules\Settings\Database\Seeders\InvoiceOptionsSeeder;
 use Modules\Settings\Database\Seeders\SettingSeeder;
 use Modules\Settings\Database\Seeders\SystemSettingsSeeder;
 use Modules\Shipping\Database\Seeders\ShippingPermissionsSeeder;
-use Modules\Fleet\Database\Seeders\FleetPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
 {

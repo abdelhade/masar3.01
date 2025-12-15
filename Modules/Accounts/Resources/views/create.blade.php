@@ -6,38 +6,111 @@
 @endsection
 
 @section('content')
+    @php
+        $parent = request()->get('parent');
+        
+        // خريطة تربط parent_id بنوع الحساب
+        $parentTypeMap = [
+            '1103' => '1', // العملاء
+            '2101' => '2', // الموردين
+            '1101' => '3', // الصناديق
+            '1102' => '4', // البنوك
+            '2102' => '5', //الموظفين
+            '1104' => '6', // المخازن
+            '5'    => '7', // المصروفات
+            '42'   => '8', // الإيرادات
+            '2104' => '9', // دائنين اخرين
+            '1106' => '10', // مدينين آخرين
+            '31'   => '11', // الشريك الرئيسي
+            '32'   => '12', // جاري الشريك
+            '12'   => '13', // الأصول
+            '1202' => '14', // الأصول القابلة للتأجير
+            '1105' => '17', // حافظات أوراق القبض
+            '2103' => '18', // حافظات أوراق الدفع
+        ];
+        $type = $parentTypeMap[$parent] ?? '0';
+        
+        // خريطة الترجمة العربية لأنواع الحسابات
+        $permissionLabels = [
+            'clients' => 'العملاء',
+            'suppliers' => 'الموردين',
+            'funds' => 'الصناديق',
+            'banks' => 'البنوك',
+            'employees' => 'الموظفين',
+            'warhouses' => 'المخازن',
+            'expenses' => 'المصروفات',
+            'revenues' => 'الإيرادات',
+            'creditors' => 'دائنين آخرين',
+            'debtors' => 'مدينين آخرين',
+            'partners' => 'الشركاء',
+            'current-partners' => 'جاري الشريك',
+            'assets' => 'الأصول',
+            'rentables' => 'الممتلكات القابلة للإيجار',
+            'check-portfolios-incoming' => 'حافظات أوراق القبض',
+            'check-portfolios-outgoing' => 'حافظات أوراق الدفع',
+        ];
+        
+        // الحصول على اسم نوع الحساب بالعربية
+        $accountTypeName = null;
+        if ($type && $type != '0') {
+            $accountType = $accountTypes->firstWhere('id', $type);
+            if ($accountType && isset($permissionLabels[$accountType->name])) {
+                $accountTypeName = $permissionLabels[$accountType->name];
+            }
+        }
+        
+        // بناء العنوان مع نوع الحساب
+        $pageTitle = __('انشاء حساب');
+        if ($accountTypeName) {
+            $pageTitle .= ' - ' . $accountTypeName;
+        }
+        
+        // خريطة عكسية لتحويل parent إلى type name للرابط
+        $parentToTypeMap = [
+            '1103' => 'clients',
+            '2101' => 'suppliers',
+            '1101' => 'funds',
+            '1102' => 'banks',
+            '2102' => 'employees',
+            '1104' => 'warhouses',
+            '5' => 'expenses',
+            '42' => 'revenues',
+            '2104' => 'creditors',
+            '1106' => 'debtors',
+            '31' => 'partners',
+            '32' => 'current-partners',
+            '12' => 'assets',
+            '1202' => 'rentables',
+            '1105' => 'check-portfolios-incoming',
+            '2103' => 'check-portfolios-outgoing',
+        ];
+        
+        // بناء breadcrumb items
+        $breadcrumbItems = [
+            ['label' => 'الرئيسية', 'url' => route('admin.dashboard')],
+        ];
+        
+        // إضافة رابط صفحة العرض إذا كان هناك نوع حساب
+        if ($parent && isset($parentToTypeMap[$parent])) {
+            $typeName = $parentToTypeMap[$parent];
+            $breadcrumbItems[] = [
+                'label' => $accountTypeName ?? __('قائمة الحسابات'),
+                'url' => route('accounts.index', ['type' => $typeName])
+            ];
+        }
+        
+        $breadcrumbItems[] = ['label' => __('انشاء')];
+    @endphp
+    
     @include('components.breadcrumb', [
-        'title' => __('انشاء حساب'),
-        'items' => [['label' => 'الرئيسية' , 'url' => route('admin.dashboard')], ['label' => __('انشاء')]],
+        'title' => $pageTitle,
+        'items' => $breadcrumbItems,
     ])
     <div class="content-wrapper">
         <section class="content-header">
             <div class="container-fluid">
                 @php
-                    $parent = request()->get('parent');
                     $isClientOrSupplier = in_array($parent, ['1103', '2101']); // تحديد ما إذا كان حساب عميل أو مورد
-                @endphp
-                @php
-                    // خريطة تربط parent_id بنوع الحساب
-                    $parentTypeMap = [
-                        '1103' => '1', // العملاء
-                        '2101' => '2', // الموردين
-                        '1101' => '3', // الصناديق
-                        '1102' => '4', // البنوك
-                        '2102' => '5', //الموظفين
-                        '1104' => '6', // المخازن
-                        '5'    => '7', // المصروفات
-                        '42'   => '8', // الإيرادات
-                        '2104' => '9', // دائنين اخرين
-                        '1106' => '10', // مدينين آخرين
-                        '31'   => '11', // الشريك الرئيسي
-                        '32'   => '12', // جاري الشريك
-                        '12'   => '13', // الأصول
-                        '1202' => '14', // الأصول القابلة للتأجير
-                        '1105' => '17', // حافظات أوراق القبض
-                        '2103' => '18', // حافظات أوراق الدفع
-                    ];
-                    $type = $parentTypeMap[$parent] ?? '0';
                 @endphp
 
                 <section class="content">
@@ -63,9 +136,6 @@
                             @csrf
                             <input type="hidden" name="q" value="{{ $parent }}">
                             <div class="card card-info">
-                                <div class="card-header">
-                                    <h3>{{ __('اضافة حساب') }}</h3>
-                                </div>
                                 <div class="card-body">
                                     @if ($errors->any())
                                         <div class="alert alert-danger">
@@ -203,7 +273,25 @@
                                                         id="nationality" placeholder="{{ __('الجنسية') }}">
                                                 </div>
                                             </div>
+                                        </div>
 
+                                        @if($parent === '1103')
+                                            {{-- حقل حد الائتمان للعملاء فقط --}}
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="debit_limit">
+                                                            <i class="fas fa-money-bill-wave"></i> {{ __('حد الائتمان المسموح') }}
+                                                        </label>
+                                                        <input class="form-control" type="number" step="0.001" name="debit_limit"
+                                                            id="debit_limit" placeholder="0.000">
+                                                        <small class="text-muted">{{ __('اترك الحقل فارغاً لعدم وضع حد') }}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <div class="row">
                                             <div class="col-md-4 mb-3">
                                                 <x-dynamic-search name="country_id" label="الدولة" column="title"
                                                     model="App\Models\Country" placeholder="ابحث عن الدولة..."

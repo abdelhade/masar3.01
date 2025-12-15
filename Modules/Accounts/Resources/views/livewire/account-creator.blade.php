@@ -156,6 +156,24 @@
                                         @enderror
                                     </div>
                                 </div>
+
+                                @if ($accountType === 'client')
+                                    <!-- حقل حد الائتمان للعملاء فقط -->
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-money-bill-wave"></i> حد الائتمان المسموح
+                                            </label>
+                                            <input type="number" step="0.001"
+                                                class="form-control @error('debit_limit') is-invalid @enderror"
+                                                wire:model="debit_limit" placeholder="0.000">
+                                            <small class="text-muted">اترك الحقل فارغاً لعدم وضع حد</small>
+                                            @error('debit_limit')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                @endif
                             @endif
 
                             <div class="row">

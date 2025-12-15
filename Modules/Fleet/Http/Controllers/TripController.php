@@ -33,7 +33,7 @@ class TripController extends Controller
     public function create()
     {
         $vehicles = Vehicle::where('is_active', true)->get();
-        $drivers = Driver::where('is_available', true)->get();
+        $drivers = Driver::withoutGlobalScopes()->where('is_available', true)->get();
         $branches = userBranches();
 
         return view('fleet::trips.create', compact('vehicles', 'drivers', 'branches'));
@@ -65,7 +65,7 @@ class TripController extends Controller
     {
         $trip = Trip::findOrFail($id);
         $vehicles = Vehicle::where('is_active', true)->get();
-        $drivers = Driver::where('is_available', true)->get();
+        $drivers = Driver::withoutGlobalScopes()->where('is_available', true)->get();
         $branches = userBranches();
 
         return view('fleet::trips.edit', compact('trip', 'vehicles', 'drivers', 'branches'));

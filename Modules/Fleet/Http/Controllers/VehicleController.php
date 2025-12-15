@@ -33,7 +33,7 @@ class VehicleController extends Controller
     public function create()
     {
         $vehicleTypes = VehicleType::where('is_active', true)->get();
-        $drivers = Driver::where('is_available', true)->get();
+        $drivers = Driver::withoutGlobalScopes()->where('is_available', true)->get();
         $branches = userBranches();
 
         return view('fleet::vehicles.create', compact('vehicleTypes', 'drivers', 'branches'));
@@ -65,7 +65,7 @@ class VehicleController extends Controller
     {
         $vehicle = Vehicle::findOrFail($id);
         $vehicleTypes = VehicleType::where('is_active', true)->get();
-        $drivers = Driver::where('is_available', true)->get();
+        $drivers = Driver::withoutGlobalScopes()->where('is_available', true)->get();
         $branches = userBranches();
 
         return view('fleet::vehicles.edit', compact('vehicle', 'vehicleTypes', 'drivers', 'branches'));

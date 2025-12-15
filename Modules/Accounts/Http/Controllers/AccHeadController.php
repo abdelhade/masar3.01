@@ -255,6 +255,7 @@ class AccHeadController extends Controller
             'credit' => 'nullable|numeric',
             'debit' => 'nullable|numeric',
             'balance' => 'nullable|numeric',
+            'debit_limit' => 'nullable|numeric|min:0',
             'secret' => 'nullable',
             'info' => 'nullable|string|max:500',
             'tenant' => 'nullable|integer',
@@ -309,6 +310,7 @@ class AccHeadController extends Controller
                 'credit' => $validated['credit'] ?? 0,
                 'debit' => $validated['debit'] ?? 0,
                 'balance' => $validated['balance'] ?? 0,
+                'debit_limit' => $validated['debit_limit'] ?? null,
                 'secret' => $validated['secret'] ?? 0,
                 'crtime' => now(),
                 'mdtime' => now(),
@@ -574,6 +576,7 @@ class AccHeadController extends Controller
                 'kind' => 'nullable|string|max:50',
                 'acc_type' => 'nullable|integer',
                 'is_basic' => 'nullable',
+                'debit_limit' => 'nullable|numeric|min:0',
                 'secret' => 'nullable',
                 'info' => 'nullable|string|max:500',
                 'zatca_name' => 'nullable|string|max:100',
@@ -616,6 +619,7 @@ class AccHeadController extends Controller
             $account->kind = $validated['kind'] ?? null;
             $account->acc_type = $validated['acc_type'] ?? $account->acc_type;
             $account->is_basic = $validated['is_basic'] ?? 0;
+            $account->debit_limit = $validated['debit_limit'] ?? null;
             $account->secret = $validated['secret'] ?? 0;
             $account->mdtime = now();
             $account->info = $validated['info'] ?? null;

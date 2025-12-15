@@ -102,10 +102,11 @@
 
                 <!-- فلاتر البحث -->
                 <div class="card-body">
-                    <form method="GET" action="{{ route('checks.index') }}" id="filterForm">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">البحث</label>
+                    <form method="GET" action="{{ route('checks.' . $pageType) }}" id="filterForm">
+                        <!-- الصف الأول -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">البحث العام</label>
                                 <input type="text" name="search" class="form-control"
                                        placeholder="رقم الشيك، البنك، أو الاسم..."
                                        value="{{ request('search') }}">
@@ -121,17 +122,83 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label fw-bold">من تاريخ</label>
+                                <label class="form-label fw-bold">البنك</label>
+                                <input type="text" name="bank_name" class="form-control"
+                                       placeholder="اسم البنك..."
+                                       value="{{ request('bank_name') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">رقم الحساب</label>
+                                <input type="text" name="account_number" class="form-control"
+                                       placeholder="رقم الحساب..."
+                                       value="{{ request('account_number') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">المستفيد</label>
+                                <input type="text" name="payee_name" class="form-control"
+                                       placeholder="اسم المستفيد..."
+                                       value="{{ request('payee_name') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">الدافع</label>
+                                <input type="text" name="payer_name" class="form-control"
+                                       placeholder="اسم الدافع..."
+                                       value="{{ request('payer_name') }}">
+                            </div>
+                        </div>
+
+                        <!-- الصف الثاني -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">من تاريخ الاستحقاق</label>
                                 <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label fw-bold">إلى تاريخ</label>
+                                <label class="form-label fw-bold">إلى تاريخ الاستحقاق</label>
                                 <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                             </div>
-                            <div class="col-md-1 align-self-end">
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">من تاريخ الإصدار</label>
+                                <input type="date" name="issue_date_from" class="form-control" value="{{ request('issue_date_from') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">إلى تاريخ الإصدار</label>
+                                <input type="date" name="issue_date_to" class="form-control" value="{{ request('issue_date_to') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">المبلغ من</label>
+                                <input type="number" name="amount_min" class="form-control" step="0.01"
+                                       placeholder="0.00" value="{{ request('amount_min') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">المبلغ إلى</label>
+                                <input type="number" name="amount_max" class="form-control" step="0.01"
+                                       placeholder="0.00" value="{{ request('amount_max') }}">
+                            </div>
+                        </div>
+
+                        <!-- الصف الثالث - فلتر سريع -->
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">فلتر سريع - حتى (يوم)</label>
+                                <select name="days_ahead" class="form-select">
+                                    <option value="">اختر...</option>
+                                    <option value="7" {{ request('days_ahead') == '7' ? 'selected' : '' }}>حتى 7 أيام</option>
+                                    <option value="15" {{ request('days_ahead') == '15' ? 'selected' : '' }}>حتى 15 يوم</option>
+                                    <option value="30" {{ request('days_ahead') == '30' ? 'selected' : '' }}>حتى 30 يوم</option>
+                                    <option value="60" {{ request('days_ahead') == '60' ? 'selected' : '' }}>حتى 60 يوم</option>
+                                    <option value="90" {{ request('days_ahead') == '90' ? 'selected' : '' }}>حتى 90 يوم</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 align-self-end">
                                 <button type="submit" class="btn btn-primary w-100">
                                     <i class="fas fa-search"></i> بحث
                                 </button>
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <a href="{{ route('checks.' . $pageType) }}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-redo"></i> إعادة تعيين
+                                </a>
                             </div>
                         </div>
                     </form>
@@ -372,9 +439,81 @@ function editCheck(id) {
 }
 
 function viewCheck(id) {
+    $('#viewModal').modal('show');
+    $('#checkDetails').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">جاري التحميل...</span></div></div>');
+    
     $.get(`/checks/${id}`, function(data) {
-        $('#viewModal').modal('show');
-        // Display check details
+        const statusLabels = {
+            'pending': 'معلق',
+            'cleared': 'مصفى',
+            'bounced': 'مرتد',
+            'cancelled': 'ملغى'
+        };
+        
+        const typeLabels = {
+            'incoming': 'ورقة قبض',
+            'outgoing': 'ورقة دفع'
+        };
+        
+        const html = `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="fw-bold text-muted">رقم الشيك:</label>
+                    <p class="fs-5">${data.check_number || ''}</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold text-muted">البنك:</label>
+                    <p class="fs-5">${data.bank_name || ''}</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold text-muted">رقم الحساب:</label>
+                    <p>${data.account_number || ''}</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold text-muted">صاحب الحساب:</label>
+                    <p>${data.account_holder_name || ''}</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold text-muted">المبلغ:</label>
+                    <p class="fs-4 text-primary"><strong>${parseFloat(data.amount || 0).toLocaleString('ar-EG', {minimumFractionDigits: 2})} ر.س</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold text-muted">النوع:</label>
+                    <p><span class="badge bg-${data.type === 'incoming' ? 'success' : 'info'}">${typeLabels[data.type] || data.type}</span></p>
+                </div>
+                <div class="col-md-4">
+                    <label class="fw-bold text-muted">تاريخ الإصدار:</label>
+                    <p>${data.issue_date || ''}</p>
+                </div>
+                <div class="col-md-4">
+                    <label class="fw-bold text-muted">تاريخ الاستحقاق:</label>
+                    <p>${data.due_date || ''}</p>
+                </div>
+                <div class="col-md-4">
+                    <label class="fw-bold text-muted">الحالة:</label>
+                    <p><span class="badge bg-${data.status === 'pending' ? 'warning' : data.status === 'cleared' ? 'success' : data.status === 'bounced' ? 'danger' : 'secondary'}">${statusLabels[data.status] || data.status}</span></p>
+                </div>
+                ${data.payment_date ? `<div class="col-md-4"><label class="fw-bold text-muted">تاريخ الدفع:</label><p>${data.payment_date}</p></div>` : ''}
+                ${data.payee_name ? `<div class="col-md-6"><label class="fw-bold text-muted">المستفيد:</label><p>${data.payee_name}</p></div>` : ''}
+                ${data.payer_name ? `<div class="col-md-6"><label class="fw-bold text-muted">الدافع:</label><p>${data.payer_name}</p></div>` : ''}
+                ${data.reference_number ? `<div class="col-12"><label class="fw-bold text-muted">رقم المرجع:</label><p>${data.reference_number}</p></div>` : ''}
+                ${data.notes ? `<div class="col-12"><label class="fw-bold text-muted">ملاحظات:</label><p class="border p-2 bg-light">${data.notes}</p></div>` : ''}
+                <div class="col-12 border-top pt-3">
+                    <small class="text-muted">
+                        أُنشئ بواسطة: ${data.creator ? data.creator.name : 'غير معروف'} 
+                        في ${data.created_at ? new Date(data.created_at).toLocaleString('ar-EG') : ''}
+                    </small>
+                </div>
+            </div>
+        `;
+        
+        $('#checkDetails').html(html);
+    }).fail(function(xhr) {
+        let errorMessage = 'حدث خطأ في تحميل البيانات';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMessage = xhr.responseJSON.message;
+        }
+        $('#checkDetails').html(`<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ${errorMessage}</div>`);
     });
 }
 

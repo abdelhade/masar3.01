@@ -37,6 +37,20 @@ class ChecksServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+
+        // Register Services
+        $this->app->singleton(\Modules\Checks\Services\CheckPortfolioService::class);
+        $this->app->singleton(\Modules\Checks\Services\CheckAccountingService::class, function ($app) {
+            return new \Modules\Checks\Services\CheckAccountingService(
+                $app->make(\Modules\Checks\Services\CheckPortfolioService::class)
+            );
+        });
+        $this->app->singleton(\Modules\Checks\Services\CheckService::class, function ($app) {
+            return new \Modules\Checks\Services\CheckService(
+                $app->make(\Modules\Checks\Services\CheckAccountingService::class),
+                $app->make(\Modules\Checks\Services\CheckPortfolioService::class)
+            );
+        });
     }
 
     /**
@@ -130,7 +144,7 @@ class ChecksServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->nameLower);
 
-        Blade::componentNamespace(config('modules.namespace').'\\' . $this->name . '\\View\\Components', $this->nameLower);
+        Blade::componentNamespace(config('modules.namespace').'\\'.$this->name.'\\View\\Components', $this->nameLower);
     }
 
     /**
@@ -138,10 +152,7 @@ class ChecksServiceProvider extends ServiceProvider
      */
     protected function registerLivewireComponents(): void
     {
-        if (class_exists(\Livewire\Livewire::class)) {
-            \Livewire\Livewire::component('checks::checks-dashboard', \Modules\Checks\Livewire\ChecksDashboard::class);
-            \Livewire\Livewire::component('checks::checks-management', \Modules\Checks\Livewire\ChecksManagement::class);
-        }
+        // Volt components are auto-discovered, no need to register manually
     }
 
     /**

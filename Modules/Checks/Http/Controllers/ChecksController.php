@@ -2,20 +2,28 @@
 
 namespace Modules\Checks\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
-use Modules\Checks\Models\Check;
-use Modules\Accounts\Models\AccHead;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Models\OperHead;
-use App\Models\JournalHead;
-use App\Models\JournalDetail;
+use Modules\Accounts\Models\AccHead;
+use Modules\Checks\Http\Requests\BatchCancelRequest;
+use Modules\Checks\Http\Requests\BatchCollectRequest;
+use Modules\Checks\Http\Requests\ClearCheckRequest;
+use Modules\Checks\Http\Requests\StoreCheckRequest;
+use Modules\Checks\Http\Requests\UpdateCheckRequest;
+use Modules\Checks\Models\Check;
+use Modules\Checks\Services\CheckAccountingService;
+use Modules\Checks\Services\CheckPortfolioService;
+use Modules\Checks\Services\CheckService;
 
 class ChecksController extends Controller
 {
+    public function __construct(
+        private CheckService $checkService,
+        private CheckAccountingService $accountingService,
+        private CheckPortfolioService $portfolioService
+    ) {}
+
     /**
      * Display the main checks page
      */
@@ -25,35 +33,29 @@ class ChecksController extends Controller
     }
 
     /**
-     * Display incoming checks (Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶)
+     * Display incoming checks (أوراق القبض)
      */
     public function incoming(Request $request)
     {
-        $query = Check::query()->with(['creator', 'approver'])->where('type', 'incoming');
+        $checks = $this->checkService->getChecks([
+            'type' => 'incoming',
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+            'days_ahead' => $request->get('days_ahead'),
+            'bank_name' => $request->get('bank_name'),
+            'account_number' => $request->get('account_number'),
+            'payee_name' => $request->get('payee_name'),
+            'payer_name' => $request->get('payer_name'),
+            'amount_min' => $request->get('amount_min'),
+            'amount_max' => $request->get('amount_max'),
+            'issue_date_from' => $request->get('issue_date_from'),
+            'issue_date_to' => $request->get('issue_date_to'),
+        ]);
 
-        // Search filter
-        if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('check_number', 'like', '%' . $request->search . '%')
-                  ->orWhere('bank_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('account_holder_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('payee_name', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Date range filter
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('due_date', [$request->start_date, $request->end_date]);
-        }
-
-        $checks = $query->orderBy('created_at', 'desc')->paginate(15);
         $pageType = 'incoming';
-        $pageTitle = 'Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶';
+        $pageTitle = 'أوراق القبض';
 
         return view('checks::index', compact('checks', 'pageType', 'pageTitle'));
     }
@@ -64,48 +66,58 @@ class ChecksController extends Controller
     public function createIncoming()
     {
         $pageType = 'incoming';
-        $pageTitle = 'Ø¥Ø¶Ø§ÙØ© ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶';
-        
-        // Get clients accounts
-        $accounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', '1103%')
-            ->select('id', 'aname', 'code')
-            ->get();
+        $pageTitle = 'إضافة ورقة قبض';
 
-        return view('checks::create', compact('pageType', 'pageTitle', 'accounts'));
+        // تحميل الحسابات الطبيعية (عملاء، موردين، موظفين، دائنين، مدينين)
+        $accountTypes = [
+            1 => 'العملاء',
+            2 => 'الموردين',
+            5 => 'الموظفين',
+            9 => 'الدائنين',
+            10 => 'المدينين',
+        ];
+
+        $groupedAccounts = [];
+        foreach ($accountTypes as $typeId => $typeName) {
+            $accounts = AccHead::where('is_basic', 0)
+                ->where('isdeleted', 0)
+                ->where('acc_type', $typeId)
+                ->select('id', 'aname', 'code', 'balance')
+                ->orderBy('code')
+                ->get();
+
+            if ($accounts->isNotEmpty()) {
+                $groupedAccounts[$typeName] = $accounts;
+            }
+        }
+
+        return view('checks::create', compact('pageType', 'pageTitle', 'groupedAccounts'));
     }
 
     /**
-     * Display outgoing checks (Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹)
+     * Display outgoing checks (أوراق الدفع)
      */
     public function outgoing(Request $request)
     {
-        $query = Check::query()->with(['creator', 'approver'])->where('type', 'outgoing');
+        $checks = $this->checkService->getChecks([
+            'type' => 'outgoing',
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+            'days_ahead' => $request->get('days_ahead'),
+            'bank_name' => $request->get('bank_name'),
+            'account_number' => $request->get('account_number'),
+            'payee_name' => $request->get('payee_name'),
+            'payer_name' => $request->get('payer_name'),
+            'amount_min' => $request->get('amount_min'),
+            'amount_max' => $request->get('amount_max'),
+            'issue_date_from' => $request->get('issue_date_from'),
+            'issue_date_to' => $request->get('issue_date_to'),
+        ]);
 
-        // Search filter
-        if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('check_number', 'like', '%' . $request->search . '%')
-                  ->orWhere('bank_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('account_holder_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('payer_name', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Date range filter
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('due_date', [$request->start_date, $request->end_date]);
-        }
-
-        $checks = $query->orderBy('created_at', 'desc')->paginate(15);
         $pageType = 'outgoing';
-        $pageTitle = 'Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹';
+        $pageTitle = 'أوراق الدفع';
 
         return view('checks::index', compact('checks', 'pageType', 'pageTitle'));
     }
@@ -116,32 +128,71 @@ class ChecksController extends Controller
     public function createOutgoing()
     {
         $pageType = 'outgoing';
-        $pageTitle = 'Ø¥Ø¶Ø§ÙØ© ÙˆØ±Ù‚Ø© Ø¯ÙØ¹';
-        
-        // Get suppliers accounts
-        $accounts = AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', '2101%')
-            ->select('id', 'aname', 'code')
-            ->get();
+        $pageTitle = 'إضافة ورقة دفع';
 
-        return view('checks::create', compact('pageType', 'pageTitle', 'accounts'));
+        // تحميل الحسابات الطبيعية (عملاء، موردين، موظفين، دائنين، مدينين)
+        $accountTypes = [
+            1 => 'العملاء',
+            2 => 'الموردين',
+            5 => 'الموظفين',
+            9 => 'الدائنين',
+            10 => 'المدينين',
+        ];
+
+        $groupedAccounts = [];
+        foreach ($accountTypes as $typeId => $typeName) {
+            $accounts = AccHead::where('is_basic', 0)
+                ->where('isdeleted', 0)
+                ->where('acc_type', $typeId)
+                ->select('id', 'aname', 'code', 'balance')
+                ->orderBy('code')
+                ->get();
+
+            if ($accounts->isNotEmpty()) {
+                $groupedAccounts[$typeName] = $accounts;
+            }
+        }
+
+        return view('checks::create', compact('pageType', 'pageTitle', 'groupedAccounts'));
     }
 
     /**
      * Show the dashboard
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        return view('checks::index');
+        $checks = $this->checkService->getChecks([
+            'type' => 'incoming',
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+        ]);
+
+        $pageType = 'incoming';
+        $pageTitle = 'لوحة تحكم الشيكات';
+
+        return view('checks::index', compact('checks', 'pageType', 'pageTitle'));
     }
 
     /**
      * Show the management page
      */
-    public function management()
+    public function management(Request $request)
     {
-        return view('checks::index', ['defaultTab' => 'management']);
+        $checks = $this->checkService->getChecks([
+            'type' => 'incoming',
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+        ]);
+
+        $pageType = 'incoming';
+        $pageTitle = 'إدارة الشيكات';
+        $defaultTab = 'management';
+
+        return view('checks::index', compact('checks', 'pageType', 'pageTitle', 'defaultTab'));
     }
 
     /**
@@ -149,18 +200,19 @@ class ChecksController extends Controller
      */
     public function downloadAttachment(Check $check, $attachmentIndex)
     {
-        if (!$check->attachments || !isset($check->attachments[$attachmentIndex])) {
+        if (! $check->attachments || ! isset($check->attachments[$attachmentIndex])) {
             abort(404, 'Attachment not found');
         }
 
         $attachment = $check->attachments[$attachmentIndex];
         $filePath = $attachment['path'];
 
-        if (!Storage::disk('public')->exists($filePath)) {
+        if (! Storage::disk('public')->exists($filePath)) {
             abort(404, 'File not found');
         }
 
         $fullPath = Storage::disk('public')->path($filePath);
+
         return response()->download($fullPath, $attachment['name']);
     }
 
@@ -169,58 +221,46 @@ class ChecksController extends Controller
      */
     public function export(Request $request)
     {
-        $query = Check::query()->with(['creator', 'approver']);
+        $checks = $this->checkService->getChecks([
+            'status' => $request->get('status'),
+            'type' => $request->get('type'),
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+            'bank_name' => $request->get('bank_name'),
+            'per_page' => 10000, // Get all for export
+        ])->items();
 
-        // Apply filters from request
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        $filename = 'checks_export_'.now()->format('Y_m_d_H_i_s').'.csv';
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('due_date', [$request->start_date, $request->end_date]);
-        }
-
-        if ($request->filled('bank_name')) {
-            $query->where('bank_name', 'like', '%' . $request->bank_name . '%');
-        }
-
-        $checks = $query->orderBy('created_at', 'desc')->get();
-
-        $filename = 'checks_export_' . now()->format('Y_m_d_H_i_s') . '.csv';
-        
         $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($checks) {
+        $callback = function () use ($checks) {
             $file = fopen('php://output', 'w');
-            
+
             // UTF-8 BOM for proper Arabic encoding
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // CSV headers
             fputcsv($file, [
-                'Ø±Ù‚Ù… Ø§Ù„Ø´ÙŠÙƒ',
-                'Ø§Ù„Ø¨Ù†Ùƒ',
-                'Ø±Ù‚Ù… Ø§Ù„Ø­Ø³Ø§Ø¨',
-                'ØµØ§Ø­Ø¨ Ø§Ù„Ø­Ø³Ø§Ø¨',
-                'Ø§Ù„Ù…Ø¨Ù„Øº',
-                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥ØµØ¯Ø§Ø±',
-                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø§Ø³ØªØ­Ù‚Ø§Ù‚',
-                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¯ÙØ¹',
-                'Ø§Ù„Ø­Ø§Ù„Ø©',
-                'Ø§Ù„Ù†ÙˆØ¹',
-                'Ø§Ù„Ù…Ø³ØªÙÙŠØ¯',
-                'Ø§Ù„Ø¯Ø§ÙØ¹',
-                'Ø±Ù‚Ù… Ø§Ù„Ù…Ø±Ø¬Ø¹',
-                'Ù…Ù„Ø§Ø­Ø¸Ø§Øª',
-                'Ø£Ù†Ø´Ø¦ Ø¨ÙˆØ§Ø³Ø·Ø©',
-                'ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡'
+                'رقم الشيك',
+                'البنك',
+                'رقم الحساب',
+                'صاحب الحساب',
+                'المبلغ',
+                'تاريخ الإصدار',
+                'تاريخ الاستحقاق',
+                'تاريخ الدفع',
+                'الحالة',
+                'النوع',
+                'المستفيد',
+                'الدافع',
+                'رقم المرجع',
+                'ملاحظات',
+                'أنشئ بواسطة',
+                'تاريخ الإنشاء',
             ]);
 
             // Data rows
@@ -241,7 +281,7 @@ class ChecksController extends Controller
                     $check->reference_number,
                     $check->notes,
                     $check->creator->name ?? '',
-                    $check->created_at->format('Y-m-d H:i:s')
+                    $check->created_at->format('Y-m-d H:i:s'),
                 ]);
             }
 
@@ -257,6 +297,7 @@ class ChecksController extends Controller
     public function show(Check $check)
     {
         $check->load(['creator', 'approver']);
+
         return response()->json($check);
     }
 
@@ -271,203 +312,34 @@ class ChecksController extends Controller
     /**
      * Store a newly created check
      */
-    public function store(Request $request)
+    public function store(StoreCheckRequest $request)
     {
-        $validated = $request->validate([
-            'pro_date' => 'required|date', // Ø§Ù„ØªØ§Ø±ÙŠØ®
-            'check_number' => 'required|string|max:50|unique:checks',
-            'bank_name' => 'required|string|max:100',
-            'account_number' => 'required|string|max:50',
-            'account_holder_name' => 'required|string|max:100',
-            'amount' => 'required|numeric|min:0.01',
-            'issue_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issue_date',
-            'status' => 'required|in:pending,cleared,bounced,cancelled',
-            'type' => 'required|in:incoming,outgoing',
-            'payee_name' => 'nullable|string|max:100',
-            'payer_name' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
-            'reference_number' => 'nullable|string|max:50',
-            'acc1_id' => 'required|integer|exists:acc_head,id', // Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³ØªÙ„Ù… Ù…Ù†Ù‡
-            'portfolio_id' => 'required|integer|exists:acc_head,id', // Ø§Ù„Ø­Ø§ÙØ¸Ø© (required now)
-            'branch_id' => 'required|exists:branches,id',
-        ]);
-
         try {
-            DB::beginTransaction();
+            $validated = $request->validated();
+            $validated['pro_date'] = $validated['issue_date'];
+            $validated['customer_id'] = $validated['type'] === 'incoming' ? $validated['acc1_id'] : null;
+            $validated['supplier_id'] = $validated['type'] === 'outgoing' ? $validated['acc1_id'] : null;
 
-            // ØªØ­Ø¯ÙŠØ¯ Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©
-            $proType = $validated['type'] === 'incoming' ? 65 : 66; // 65: ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶ØŒ 66: ÙˆØ±Ù‚Ø© Ø¯ÙØ¹
-            $portfolioAccount = $validated['portfolio_id']; // Ø§Ù„Ø­Ø§ÙØ¸Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø© Ù…Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
-            
-            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø³Ø¬Ù„ ÙÙŠ operhead
-            $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
-            $newProId = $lastProId + 1;
+            $this->checkService->createCheck($validated);
 
-            $oper = OperHead::create([
-                'pro_id' => $newProId,
-                'pro_type' => $proType,
-                'pro_date' => $validated['pro_date'], // Ø§Ù„ØªØ§Ø±ÙŠØ® Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ
-                'pro_num' => $validated['check_number'],
-                'pro_serial' => $validated['reference_number'] ?? null,
-                'acc1' => $portfolioAccount, // Ø§Ù„Ø­Ø§ÙØ¸Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø©
-                'acc2' => $validated['acc1_id'], // Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³ØªÙ„Ù… Ù…Ù†Ù‡/Ø§Ù„Ù…Ø¯ÙÙˆØ¹ Ù„Ù‡
-                'acc1_before' => 0,
-                'acc1_after' => 0,
-                'acc2_before' => 0,
-                'acc2_after' => 0,
-                'pro_value' => $validated['amount'],
-                'fat_net' => $validated['amount'],
-                'details' => "Ø´ÙŠÙƒ Ø±Ù‚Ù… {$validated['check_number']} - {$validated['bank_name']} - Ø§Ø³ØªØ­Ù‚Ø§Ù‚: {$validated['due_date']}",
-                'info' => $validated['payee_name'] ?? $validated['payer_name'] ?? $validated['account_holder_name'],
-                'info2' => $validated['notes'],
-                'info3' => json_encode([
-                    'bank_name' => $validated['bank_name'],
-                    'account_number' => $validated['account_number'],
-                    'account_holder' => $validated['account_holder_name'],
-                    'due_date' => $validated['due_date'],
-                ]),
-                'is_finance' => 1,
-                'is_journal' => 1,
-                'journal_type' => 2,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'user' => Auth::id(),
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ
-            $this->createJournalEntry($oper, $validated, $portfolioAccount, $proType);
-
-            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø´ÙŠÙƒ
-            $validated['created_by'] = Auth::id();
-            $validated['oper_id'] = $oper->id; // Ø±Ø¨Ø· Ø§Ù„Ø´ÙŠÙƒ Ø¨Ø§Ù„Ø¹Ù…Ù„ÙŠØ©
-            $check = Check::create($validated);
-
-            DB::commit();
-
-            return redirect()->route('checks.index')->with('success', 'ØªÙ… Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ø´ÙŠÙƒ ÙˆØ¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ Ø¨Ù†Ø¬Ø§Ø­');
+            return redirect()->route('checks.index')->with('success', 'تم إضافة الشيك وإنشاء القيد المحاسبي بنجاح');
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Ø­Ø¯Ø« Ø®Ø·Ø£: ' . $e->getMessage()])->withInput();
-        }
-    }
-
-    /**
-     * Create journal entry for check
-     */
-    private function createJournalEntry($oper, $data, $portfolioAccount, $proType)
-    {
-        // Ø¥Ù†Ø´Ø§Ø¡ journal_head
-        $lastJournalId = JournalHead::max('journal_id') ?? 0;
-        $newJournalId = $lastJournalId + 1;
-
-        $journalHead = JournalHead::create([
-            'journal_id' => $newJournalId,
-            'total' => $data['amount'],
-            'date' => $data['pro_date'], // Ø§Ù„ØªØ§Ø±ÙŠØ® Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ Ù„Ù„Ø¹Ù…Ù„ÙŠØ©
-            'op_id' => $oper->id,
-            'pro_type' => $proType,
-            'details' => "Ø´ÙŠÙƒ Ø±Ù‚Ù… {$data['check_number']} - {$data['bank_name']} - Ø§Ø³ØªØ­Ù‚Ø§Ù‚: {$data['due_date']}",
-            'user' => Auth::id(),
-            'branch_id' => $data['branch_id'],
-        ]);
-
-        $checkInfo = "Ø´ÙŠÙƒ {$data['check_number']} - {$data['bank_name']} - Ø§Ø³ØªØ­Ù‚Ø§Ù‚ {$data['due_date']}";
-
-        // Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ
-        if ($data['type'] === 'incoming') {
-            // ÙˆØ±Ù‚Ø© Ù‚Ø¨Ø¶: Ù…Ù† Ø­/ Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶ (Ù…Ø¯ÙŠÙ†)
-            //              Ø¥Ù„Ù‰ Ø­/ Ø§Ù„Ø¹Ù…ÙŠÙ„ (Ø¯Ø§Ø¦Ù†)
-            JournalDetail::create([
-                'journal_id' => $newJournalId,
-                'account_id' => $portfolioAccount, // Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶
-                'debit' => $data['amount'],
-                'credit' => 0,
-                'type' => 0, // Ù…Ø¯ÙŠÙ†
-                'info' => $checkInfo,
-                'op_id' => $oper->id,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'branch_id' => $data['branch_id'],
-            ]);
-
-            if (isset($data['acc1_id']) && $data['acc1_id']) {
-                JournalDetail::create([
-                    'journal_id' => $newJournalId,
-                    'account_id' => $data['acc1_id'], // Ø§Ù„Ø¹Ù…ÙŠÙ„
-                    'debit' => 0,
-                    'credit' => $data['amount'],
-                    'type' => 1, // Ø¯Ø§Ø¦Ù†
-                    'info' => $checkInfo,
-                    'op_id' => $oper->id,
-                    'isdeleted' => 0,
-                    'tenant' => 0,
-                    'branch' => 1,
-                    'branch_id' => $data['branch_id'],
-                ]);
-            }
-        } else {
-            // ÙˆØ±Ù‚Ø© Ø¯ÙØ¹: Ù…Ù† Ø­/ Ø§Ù„Ù…ÙˆØ±Ø¯ (Ù…Ø¯ÙŠÙ†)
-            //            Ø¥Ù„Ù‰ Ø­/ Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹ (Ø¯Ø§Ø¦Ù†)
-            if (isset($data['acc1_id']) && $data['acc1_id']) {
-                JournalDetail::create([
-                    'journal_id' => $newJournalId,
-                    'account_id' => $data['acc1_id'], // Ø§Ù„Ù…ÙˆØ±Ø¯
-                    'debit' => $data['amount'],
-                    'credit' => 0,
-                    'type' => 0, // Ù…Ø¯ÙŠÙ†
-                    'info' => $checkInfo,
-                    'op_id' => $oper->id,
-                    'isdeleted' => 0,
-                    'tenant' => 0,
-                    'branch' => 1,
-                    'branch_id' => $data['branch_id'],
-                ]);
-            }
-
-            JournalDetail::create([
-                'journal_id' => $newJournalId,
-                'account_id' => $portfolioAccount, // Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ø¯ÙØ¹
-                'debit' => 0,
-                'credit' => $data['amount'],
-                'type' => 1, // Ø¯Ø§Ø¦Ù†
-                'info' => $checkInfo,
-                'op_id' => $oper->id,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'branch_id' => $data['branch_id'],
-            ]);
+            return back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
         }
     }
 
     /**
      * Update the specified check
      */
-    public function update(Request $request, Check $check)
+    public function update(UpdateCheckRequest $request, Check $check)
     {
-        $validated = $request->validate([
-            'check_number' => 'required|string|max:50|unique:checks,check_number,' . $check->id,
-            'bank_name' => 'required|string|max:100',
-            'account_number' => 'required|string|max:50',
-            'account_holder_name' => 'required|string|max:100',
-            'amount' => 'required|numeric|min:0.01',
-            'issue_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issue_date',
-            'status' => 'required|in:pending,cleared,bounced,cancelled',
-            'type' => 'required|in:incoming,outgoing',
-            'payee_name' => 'nullable|string|max:100',
-            'payer_name' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
-            'reference_number' => 'nullable|string|max:50',
-        ]);
+        try {
+            $this->checkService->updateCheck($check, $request->validated());
 
-        $check->update($validated);
-
-        return redirect()->route('checks.index')->with('success', 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­');
+            return redirect()->route('checks.index')->with('success', 'تم تحديث الشيك بنجاح');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
+        }
     }
 
     /**
@@ -475,261 +347,80 @@ class ChecksController extends Controller
      */
     public function destroy(Check $check)
     {
-        // Delete attached files
-        if (!empty($check->attachments)) {
-            foreach ($check->attachments as $attachment) {
-                if (isset($attachment['path'])) {
-                    Storage::disk('public')->delete($attachment['path']);
-                }
-            }
+        try {
+            $this->checkService->deleteCheck($check);
+
+            return response()->json(['success' => true, 'message' => 'تم حذف الشيك بنجاح']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
         }
-
-        $check->delete();
-
-        return response()->json(['success' => true, 'message' => 'ØªÙ… Ø­Ø°Ù Ø§Ù„Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­']);
     }
 
     /**
-     * Clear a check (ØªØ­ØµÙŠÙ„ Ø§Ù„Ø´ÙŠÙƒ - ØªØ­ÙˆÙŠÙ„ Ù„Ù„Ø¨Ù†Ùƒ)
+     * Clear a check (تحصيل الشيك - تحويل للبنك)
      */
-    public function clear(Request $request, Check $check)
+    public function clear(ClearCheckRequest $request, Check $check)
     {
-        $validated = $request->validate([
-            'bank_account_id' => 'required|integer|exists:acc_head,id', // Ø­Ø³Ø§Ø¨ Ø§Ù„Ø¨Ù†Ùƒ
-            'collection_date' => 'required|date',
-            'branch_id' => 'required|exists:branches,id',
-        ]);
-
         try {
-            DB::beginTransaction();
+            $validated = $request->validated();
 
-            // Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©: ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ (67)
-            $proType = 67;
-            $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
-            $newProId = $lastProId + 1;
+            $this->accountingService->clearCheck(
+                $check,
+                $validated['bank_account_id'],
+                $validated['collection_date'],
+                $validated['branch_id']
+            );
 
-            // Ø­Ø§ÙØ¸Ø© Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù‚Ø¨Ø¶ Ø£Ùˆ Ø§Ù„Ø¯ÙØ¹
-            $portfolioAccount = $check->type === 'incoming' ? 63 : 66;
-
-            // Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØªØ­ØµÙŠÙ„ ÙÙŠ operhead
-            $oper = OperHead::create([
-                'pro_id' => $newProId,
-                'pro_type' => $proType,
-                'pro_date' => $validated['collection_date'],
-                'pro_num' => $check->check_number,
-                'acc1' => $validated['bank_account_id'], // Ø§Ù„Ø¨Ù†Ùƒ (Ù…Ø¯ÙŠÙ†)
-                'acc2' => $portfolioAccount, // Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚ (Ø¯Ø§Ø¦Ù†)
-                'acc1_before' => 0,
-                'acc1_after' => 0,
-                'acc2_before' => 0,
-                'acc2_after' => 0,
-                'pro_value' => $check->amount,
-                'fat_net' => $check->amount,
-                'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number} Ù…Ù† {$check->bank_name}",
-                'info' => $check->account_holder_name,
-                'info2' => "ØªØ­ÙˆÙŠÙ„ Ù„Ù„Ø¨Ù†Ùƒ Ø¨ØªØ§Ø±ÙŠØ® {$validated['collection_date']}",
-                'is_finance' => 1,
-                'is_journal' => 1,
-                'journal_type' => 2,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'user' => Auth::id(),
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø­Ø§Ø³Ø¨ÙŠ Ù„Ù„ØªØ­ØµÙŠÙ„
-            $lastJournalId = JournalHead::max('journal_id') ?? 0;
-            $newJournalId = $lastJournalId + 1;
-
-            $journalHead = JournalHead::create([
-                'journal_id' => $newJournalId,
-                'total' => $check->amount,
-                'date' => $validated['collection_date'],
-                'op_id' => $oper->id,
-                'pro_type' => $proType,
-                'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number}",
-                'user' => Auth::id(),
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            $checkInfo = "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ {$check->check_number} - {$check->bank_name}";
-
-            // Ù…Ù† Ø­/ Ø§Ù„Ø¨Ù†Ùƒ (Ù…Ø¯ÙŠÙ†)
-            JournalDetail::create([
-                'journal_id' => $newJournalId,
-                'account_id' => $validated['bank_account_id'],
-                'debit' => $check->amount,
-                'credit' => 0,
-                'type' => 0,
-                'info' => $checkInfo,
-                'op_id' => $oper->id,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            // Ø¥Ù„Ù‰ Ø­/ Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚ Ø§Ù„Ù…Ø§Ù„ÙŠØ© (Ø¯Ø§Ø¦Ù†)
-            JournalDetail::create([
-                'journal_id' => $newJournalId,
-                'account_id' => $portfolioAccount,
-                'debit' => 0,
-                'credit' => $check->amount,
-                'type' => 1,
-                'info' => $checkInfo,
-                'op_id' => $oper->id,
-                'isdeleted' => 0,
-                'tenant' => 0,
-                'branch' => 1,
-                'branch_id' => $validated['branch_id'],
-            ]);
-
-            // ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ø´ÙŠÙƒ
-            $check->markAsCleared($validated['collection_date']);
-
-            DB::commit();
-
-            return response()->json(['success' => true, 'message' => 'ØªÙ… ØªØµÙÙŠØ© Ø§Ù„Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­']);
+            return response()->json(['success' => true, 'message' => 'تم تصفية الشيك بنجاح']);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Ø­Ø¯Ø« Ø®Ø·Ø£: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
         }
     }
 
     /**
      * Batch collect checks
      */
-    public function batchCollect(Request $request)
+    public function batchCollect(BatchCollectRequest $request)
     {
-        $validated = $request->validate([
-            'ids' => 'required|array',
-            'bank_account_id' => 'required|integer|exists:acc_head,id',
-            'collection_date' => 'required|date',
-            'branch_id' => 'required|exists:branches,id',
-        ]);
-
         try {
-            DB::beginTransaction();
+            $validated = $request->validated();
 
-            $checks = Check::whereIn('id', $validated['ids'])
-                ->where('status', Check::STATUS_PENDING)
-                ->get();
+            $processedCount = $this->accountingService->batchCollectChecks(
+                $validated['ids'],
+                $validated['bank_account_id'],
+                $validated['collection_date'],
+                $validated['branch_id']
+            );
 
-            foreach ($checks as $check) {
-                // ØªØ­ØµÙŠÙ„ ÙƒÙ„ Ø´ÙŠÙƒ Ø¹Ù„Ù‰ Ø­Ø¯Ø©
-                $this->collectSingleCheck($check, $validated['bank_account_id'], $validated['collection_date'], $validated['branch_id']);
-            }
-
-            DB::commit();
-
-            return response()->json(['success' => true, 'message' => "ØªÙ… ØªØ­ØµÙŠÙ„ {$checks->count()} Ø´ÙŠÙƒ Ø¨Ù†Ø¬Ø§Ø­"]);
+            return response()->json([
+                'success' => true,
+                'message' => "تم تحصيل {$processedCount} شيك بنجاح",
+            ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Ø­Ø¯Ø« Ø®Ø·Ø£: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
         }
-    }
-
-    /**
-     * Collect single check (helper method)
-     */
-    private function collectSingleCheck($check, $bankAccountId, $collectionDate, $branchId)
-    {
-        // Ù†ÙˆØ¹ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©: ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ (67)
-        $proType = 67;
-        $lastProId = OperHead::where('pro_type', $proType)->max('pro_id') ?? 0;
-        $newProId = $lastProId + 1;
-
-        $portfolioAccount = $check->type === 'incoming' ? 63 : 66;
-
-        // Ø¥Ù†Ø´Ø§Ø¡ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØªØ­ØµÙŠÙ„
-        $oper = OperHead::create([
-            'pro_id' => $newProId,
-            'pro_type' => $proType,
-            'pro_date' => $collectionDate,
-            'pro_num' => $check->check_number,
-            'acc1' => $bankAccountId,
-            'acc2' => $portfolioAccount,
-            'acc1_before' => 0,
-            'acc1_after' => 0,
-            'acc2_before' => 0,
-            'acc2_after' => 0,
-            'pro_value' => $check->amount,
-            'fat_net' => $check->amount,
-            'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number} Ù…Ù† {$check->bank_name}",
-            'info' => $check->account_holder_name,
-            'is_finance' => 1,
-            'is_journal' => 1,
-            'journal_type' => 2,
-            'isdeleted' => 0,
-            'tenant' => 0,
-            'branch' => 1,
-            'user' => Auth::id(),
-            'branch_id' => $branchId,
-        ]);
-
-        // Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù‚ÙŠØ¯
-        $lastJournalId = JournalHead::max('journal_id') ?? 0;
-        $newJournalId = $lastJournalId + 1;
-
-        JournalHead::create([
-            'journal_id' => $newJournalId,
-            'total' => $check->amount,
-            'date' => $collectionDate,
-            'op_id' => $oper->id,
-            'pro_type' => $proType,
-            'details' => "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ Ø±Ù‚Ù… {$check->check_number}",
-            'user' => Auth::id(),
-            'branch_id' => $branchId,
-        ]);
-
-        $checkInfo = "ØªØ­ØµÙŠÙ„ Ø´ÙŠÙƒ {$check->check_number}";
-
-        // Ù…Ù† Ø­/ Ø§Ù„Ø¨Ù†Ùƒ
-        JournalDetail::create([
-            'journal_id' => $newJournalId,
-            'account_id' => $bankAccountId,
-            'debit' => $check->amount,
-            'credit' => 0,
-            'type' => 0,
-            'info' => $checkInfo,
-            'op_id' => $oper->id,
-            'isdeleted' => 0,
-            'tenant' => 0,
-            'branch' => 1,
-            'branch_id' => $branchId,
-        ]);
-
-        // Ø¥Ù„Ù‰ Ø­/ Ø­Ø§ÙØ¸Ø© Ø§Ù„Ø£ÙˆØ±Ø§Ù‚
-        JournalDetail::create([
-            'journal_id' => $newJournalId,
-            'account_id' => $portfolioAccount,
-            'debit' => 0,
-            'credit' => $check->amount,
-            'type' => 1,
-            'info' => $checkInfo,
-            'op_id' => $oper->id,
-            'isdeleted' => 0,
-            'tenant' => 0,
-            'branch' => 1,
-            'branch_id' => $branchId,
-        ]);
-
-        // ØªØ­Ø¯ÙŠØ« Ø­Ø§Ù„Ø© Ø§Ù„Ø´ÙŠÙƒ
-        $check->markAsCleared($collectionDate);
     }
 
     /**
      * Batch cancel with reversal entry
      */
-    public function batchCancelReversal(Request $request)
+    public function batchCancelReversal(BatchCancelRequest $request)
     {
-        $ids = $request->input('ids', []);
-        Check::whereIn('id', $ids)->update(['status' => Check::STATUS_CANCELLED]);
-        
-        // TODO: Add reversal journal entry logic here
+        try {
+            $validated = $request->validated();
+            $checks = Check::whereIn('id', $validated['ids'])->get();
 
-        return response()->json(['success' => true, 'message' => 'ØªÙ… Ø¥Ù„ØºØ§Ø¡ Ø§Ù„Ø´ÙŠÙƒØ§Øª Ø¨Ù‚ÙŠØ¯ Ø¹ÙƒØ³ÙŠ']);
+            foreach ($checks as $check) {
+                $this->accountingService->cancelCheckWithReversal($check, $validated['branch_id']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إلغاء الشيكات بقيد عكسي بنجاح',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
+        }
     }
 
     /**
@@ -738,28 +429,57 @@ class ChecksController extends Controller
     public function statistics(Request $request)
     {
         $dateRange = $this->getDateRange($request->get('period', 'month'));
-        
-        $stats = [
-            'total' => Check::whereBetween('created_at', $dateRange)->count(),
-            'pending' => Check::whereBetween('created_at', $dateRange)
-                ->where('status', Check::STATUS_PENDING)->count(),
-            'cleared' => Check::whereBetween('created_at', $dateRange)
-                ->where('status', Check::STATUS_CLEARED)->count(),
-            'bounced' => Check::whereBetween('created_at', $dateRange)
-                ->where('status', Check::STATUS_BOUNCED)->count(),
-            'total_amount' => Check::whereBetween('created_at', $dateRange)->sum('amount'),
-            'pending_amount' => Check::whereBetween('created_at', $dateRange)
-                ->where('status', Check::STATUS_PENDING)->sum('amount'),
-            'cleared_amount' => Check::whereBetween('created_at', $dateRange)
-                ->where('status', Check::STATUS_CLEARED)->sum('amount'),
-        ];
+
+        $stats = $this->checkService->getStatistics($dateRange);
 
         return response()->json($stats);
     }
 
-    private function getDateRange($period)
+    /**
+     * Get accounts for Tom Select (AJAX)
+     */
+    public function getAccounts(Request $request)
     {
-        return match($period) {
+        $search = $request->get('search', '');
+
+        // فلترة الحسابات الطبيعية فقط (عملاء، موردين، موظفين، دائنين، مدينين)
+        $allowedTypes = [1, 2, 5, 9, 10];
+
+        $query = AccHead::where('is_basic', 0)
+            ->where('isdeleted', 0)
+            ->whereIn('acc_type', $allowedTypes);
+
+        // Search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('aname', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        $accounts = $query->select('id', 'aname', 'code', 'balance', 'acc_type')
+            ->orderBy('acc_type')
+            ->orderBy('code')
+            ->limit(100)
+            ->get();
+
+        return response()->json([
+            'results' => $accounts->map(function ($account) {
+                return [
+                    'value' => $account->id,
+                    'text' => "[{$account->code}] {$account->aname} - ".number_format($account->balance ?? 0, 2).' ر.س',
+                    'balance' => $account->balance ?? 0,
+                ];
+            })->toArray(),
+        ]);
+    }
+
+    /**
+     * Get date range based on period
+     */
+    private function getDateRange(string $period): array
+    {
+        return match ($period) {
             'week' => [now()->startOfWeek(), now()->endOfWeek()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
             'year' => [now()->startOfYear(), now()->endOfYear()],

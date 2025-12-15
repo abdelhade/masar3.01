@@ -459,15 +459,6 @@
                     </div>
                     <p class="app-name">إدارة الشيكات</p>
                 </a>
-                {{-- ادارة الملفات  --}}
-                <a href="{{ route('home') }}" class="app-card">
-                    <span class="new-badge">جديد 🎉</span>
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="file-text"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">ادارة الملفات</p>
-                </a>
             </div>
         </div>
 
@@ -513,6 +504,17 @@
                     </div>
                     <p class="app-name">الصيانه</p>
                 </a>
+                {{-- إدارة الأسطول --}}
+                @can('view Fleet Dashboard')
+                <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" class="app-card">
+                    <span class="new-badge">جديد 🎉</span>
+                    <div class="app-icon" style="background-color: white;">
+                        <i data-lucide="truck"
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                    </div>
+                    <p class="app-name">إدارة الأسطول</p>
+                </a>
+                @endcan
 
 
             </div>

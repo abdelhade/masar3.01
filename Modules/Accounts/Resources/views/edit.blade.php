@@ -178,6 +178,20 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @if(substr($account->code, 0, 4) === '1103')
+                                        {{-- حقل حد الائتمان للعملاء فقط --}}
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="debit_limit">
+                                                        <i class="fas fa-money-bill-wave"></i> {{ __('حد الائتمان المسموح') }}
+                                                    </label>
+                                                    <input class="form-control" type="number" step="0.001" name="debit_limit" id="debit_limit" value="{{ $account->debit_limit }}" placeholder="0.000">
+                                                    <small class="text-muted">{{ __('اترك الحقل فارغاً لعدم وضع حد') }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <x-dynamic-search name="country_id" label="الدولة" column="title" model="App\Models\Country" placeholder="ابحث عن الدولة..." :required="false" :class="'form-select'" :selected="$account->country_id" />
