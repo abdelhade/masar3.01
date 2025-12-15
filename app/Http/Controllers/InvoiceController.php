@@ -49,7 +49,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'view ' . $this->titles[$invoiceType];
         $user = Auth::user();
-        if (!$user instanceof User || !$user->can($permissionName)) {
+        if (!($user instanceof User) || !$user->can($permissionName)) {
             abort(403, 'You do not have permission to view ' . $this->titles[$invoiceType]);
         }
 
@@ -110,7 +110,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'create ' . $this->titles[$type];
         $user = Auth::user();
-        if (!$user instanceof User || !$user->can($permissionName)) {
+        if (!($user instanceof User) || !$user->can($permissionName)) {
             abort(403, 'You do not have permission to create ' . $this->titles[$type]);
         }
 
@@ -152,7 +152,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'view ' . $this->titles[$type];
         $user = Auth::user();
-        if (!$user instanceof User || !$user->can($permissionName)) {
+        if (!($user instanceof User) || !$user->can($permissionName)) {
             abort(403, 'You do not have permission to view ' . $this->titles[$type]);
         }
 
@@ -172,7 +172,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'edit ' . $this->titles[$type];
         $user = Auth::user();
-        if (!$user instanceof User || !$user->can($permissionName)) {
+        if (!($user instanceof User) || !$user->can($permissionName)) {
             abort(403, 'You do not have permission to edit ' . $this->titles[$type]);
         }
 
@@ -203,7 +203,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'delete ' . $this->titles[$type];
         $user = Auth::user();
-        if (!$user instanceof User || !$user->can($permissionName)) {
+        if (!($user instanceof User) || !$user->can($permissionName)) {
             abort(403, 'You do not have permission to delete ' . $this->titles[$type]);
         }
 
@@ -315,7 +315,7 @@ class InvoiceController extends Controller
 
         $permissionName = 'print ' . $this->titles[$type];
         $user = Auth::user();
-        if (!$user instanceof User || !$user->can($permissionName)) {
+        if (!($user instanceof User) || !$user->can($permissionName)) {
             abort(403, 'You do not have permission to print this type.');
         }
 
