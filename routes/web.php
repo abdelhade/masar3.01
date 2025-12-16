@@ -1,46 +1,47 @@
 <?php
 
-use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\CityController;
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\CostCenterController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\CovenantController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\EmployeeAuthController;
-use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\EmployeesJobController;
-use App\Http\Controllers\ErrandController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InventoryStartBalanceController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\InvoiceWorkflowController;
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\JournalController;
+use Livewire\Volt\Volt;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KpiController;
-use App\Http\Controllers\MobileAttendanceController;
-use App\Http\Controllers\MultiJournalController;
-use App\Http\Controllers\MultiVoucherController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NoteController;
-use App\Http\Controllers\PosShiftController;
-use App\Http\Controllers\PosVouchersController;
-use App\Http\Controllers\PriceController;
-use App\Http\Controllers\ProductionOrderController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\RentalController;
-use App\Http\Controllers\ShiftController;
-use App\Http\Controllers\StateController;
 use App\Http\Controllers\TownController;
-use App\Http\Controllers\TransferController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PriceController;
+use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ErrandController;
+use App\Http\Controllers\RentalController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\JournalController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\VaribalController;
-use App\Http\Controllers\VaribalValueController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\CovenantController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PosShiftController;
+use App\Http\Controllers\TransferController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CostCenterController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\PosVouchersController;
+use App\Http\Controllers\EmployeeAuthController;
+use App\Http\Controllers\EmployeesJobController;
+use App\Http\Controllers\MultiJournalController;
+use App\Http\Controllers\MultiVoucherController;
+use App\Http\Controllers\VaribalValueController;
+use App\Http\Controllers\Api\ItemSearchController;
 use App\Http\Controllers\WorkPermissionController;
-use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
+use App\Http\Controllers\InvoiceWorkflowController;
+use App\Http\Controllers\ProductionOrderController;
+use App\Http\Controllers\MobileAttendanceController;
+use App\Http\Controllers\InventoryStartBalanceController;
 
 Route::get('/locale/{locale}', function (string $locale) {
     if (! in_array($locale, ['ar', 'en'], true)) {
@@ -250,11 +251,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/purchases/statistics', [InvoiceController::class, 'purchasesStatistics'])->name('purchases.statistics');
     Route::get('/inventory/statistics', [InvoiceController::class, 'inventoryStatistics'])->name('inventory.statistics');
 
-    require __DIR__.'/modules/magicals.php';
-    require __DIR__.'/modules/cheques.php';
-    require __DIR__.'/modules/invoice-reports.php';
-    require __DIR__.'/modules/attendance.php';
-    require __DIR__.'/modules/reports.php';
+    Route::get('/items/statistics', [ItemController::class, 'getStatistics'])->name('items.statistics');
+    Route::get('/items/statistics/refresh', [ItemController::class, 'refresh'])->name('items.statistics.refresh');
+
+    require __DIR__ . '/modules/magicals.php';
+    require __DIR__ . '/modules/cheques.php';
+    require __DIR__ . '/modules/invoice-reports.php';
+    require __DIR__ . '/modules/attendance.php';
+    require __DIR__ . '/modules/reports.php';
+
 });
 
 // ===== Employee Mobile Routes (خارج auth middleware) =====
@@ -281,4 +286,8 @@ Route::get('/api/attendance/history', [MobileAttendanceController::class, 'getAt
 Route::get('/api/attendance/stats', [MobileAttendanceController::class, 'getAttendanceStats'])->middleware(['employee.auth'])->name('api.attendance.stats');
 Route::get('/api/attendance/can-record', [MobileAttendanceController::class, 'canRecordAttendance'])->middleware(['employee.auth'])->name('api.attendance.can-record');
 
-require __DIR__.'/auth.php';
+Route::get('/api/items/search', [ItemSearchController::class, 'search'])
+    ->middleware('auth')
+    ->name('api.items.search');
+
+require __DIR__ . '/auth.php';

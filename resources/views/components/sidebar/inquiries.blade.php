@@ -19,12 +19,6 @@
         <a class="dropdown-item" href="{{ route('inquiries.drafts') }}">
             <i class="fas fa-file-alt me-2"></i>
             {{ __('My Drafts') }}
-            @php
-                $draftCount = \Modules\Inquiries\Models\Inquiry::myDrafts()->count();
-            @endphp
-            @if ($draftCount > 0)
-                <span class="badge bg-warning text-dark ms-2">{{ $draftCount }}</span>
-            @endif
         </a>
     </li>
 @endcan

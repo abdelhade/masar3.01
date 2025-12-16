@@ -175,7 +175,7 @@
                                 style="font-size: 1em;">{{ __('Amount Received from Customer') }}</label>
                         @endif
                         <input type="number" step="0.01" wire:model="received_from_client"
-                            onkeyup="calculateInvoiceTotals()" id="received_from_client"
+                            @input="updateReceived()" @keyup="updateReceived()" id="received-from-client"
                             class="form-control form-control-sm scnd"
                             style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0">
                     </div>
@@ -199,7 +199,7 @@
                     {{-- إضافة الإجمالي الفرعي لا ينطبق على التحويلات --}}
                     <div class="row mb-2">
                         <div class="col-3 text-right font-weight-bold">{{ __('Subtotal:') }}</div>
-                        <div class="col-3 text-left text-primary" id="display_subtotal">
+                        <div class="col-3 text-left text-primary" id="display-subtotal">
                             {{ number_format($subtotal) }}
                         </div>
                     </div>
@@ -213,7 +213,7 @@
                         <div class="col-3">
                             <div class="input-group">
                                 <input type="number" step="0.01" wire:model="discount_percentage"
-                                    onkeyup="calculateInvoiceTotals()" class="form-control form-control-sm"
+                                    @input="updateDiscountFromPercentage()" @keyup="updateDiscountFromPercentage()" id="discount-percentage" class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                     max="100">
                                 <div class="input-group-append">
@@ -231,9 +231,9 @@
 
                         <div class="col-3">
                             <input type="number" step="0.01" wire:model="discount_value"
-                                onkeyup="calculateInvoiceTotals()" class="form-control form-control-sm"
+                                @input="updateDiscountFromValue()" @keyup="updateDiscountFromValue()" class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                id="discount_value">
+                                id="discount-value">
                         </div>
 
 
@@ -250,7 +250,7 @@
                         <div class="col-3">
                             <div class="input-group">
                                 <input type="number" step="0.01" wire:model="additional_percentage"
-                                    onkeyup="calculateInvoiceTotals()" class="form-control form-control-sm"
+                                    @input="updateAdditionalFromPercentage()" @keyup="updateAdditionalFromPercentage()" id="additional-percentage" class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                     max="100">
                                 <div class="input-group-append">
@@ -268,9 +268,9 @@
 
                         <div class="col-3">
                             <input type="number" step="0.01" wire:model="additional_value"
-                                onkeyup="calculateInvoiceTotals()" class="form-control form-control-sm"
+                                @input="updateAdditionalFromValue()" @keyup="updateAdditionalFromValue()" class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                id="additional_value">
+                                id="additional-value">
                         </div>
                     </div>
                 @endif
@@ -280,7 +280,7 @@
                     {{-- إضافة الإجمالي النهائي لا ينطبق على التحويلات --}}
                     <div class="row mb-2">
                         <div class="col-3 text-right font-weight-bold">{{ __('Final Total:') }}</div>
-                        <div class="col-3 text-left font-weight-bold fs-5 main-num" id="display_total">
+                        <div class="col-3 text-left font-weight-bold fs-5 main-num" id="display-total">
                             {{ number_format($total_after_additional) }}
                         </div>
                     </div>
@@ -289,7 +289,7 @@
                     @if ($type != 21)
                         {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
                         <div class="col-3 text-right font-weight-bold">{{ __('Paid by Customer:') }}</div>
-                        <div class="col-3 text-left font-weight-bold fs-5" id="display_received">
+                        <div class="col-3 text-left font-weight-bold fs-5" id="display-received">
                             {{ number_format($received_from_client) }}
                         </div>
                     @endif {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
@@ -343,7 +343,7 @@
                     {{-- إضافة الباقي لا ينطبق على التحويلات --}}
                     <div class="row">
                         <div class="col-3 text-right font-weight-bold">{{ __('Remaining:') }}</div>
-                        <div class="col-3 text-left font-weight-bold text-danger" id="display_remaining">
+                        <div class="col-3 text-left font-weight-bold text-danger" id="display-remaining">
                             @php
                                 $remaining = $total_after_additional - $received_from_client;
                             @endphp

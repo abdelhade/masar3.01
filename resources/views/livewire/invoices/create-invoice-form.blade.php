@@ -4,11 +4,9 @@
         <section class="content">
             <form wire:submit="saveForm">
 
-
                 @include('components.invoices.invoice-head')
+
                 <div class="row">
-
-
                     @if (setting('invoice_use_templates'))
                         @if ($availableTemplates->isNotEmpty())
                             <div class="col-lg-1">
@@ -27,34 +25,213 @@
                             </div>
                         @endif
                     @endif
+
                     <div class="col-lg-3 mb-3" style="position: relative;">
-                        <label>ابحث عن صنف</label>
-                        <div style="position: relative;">
-                            <input type="text" wire:model.live="searchTerm" class="form-control frst" id="search-input"
-                                placeholder="ابدأ بكتابة اسم الصنف..." autocomplete="off" />
-                            {{-- <div wire:loading wire:target="searchTerm"
+
+                        <label>{{ __('Search Item') }}</label>
+
+                        <div x-data="{
+                            searchTerm: '',
+                            searchResults: [],
+                            loading: false,
+                            showResults: false,
+                            selectedIndex: -1,
+
+                            async search() {
+                                if (this.searchTerm.length === 0) {
+                                    this.searchResults = [];
+                                    this.showResults = false;
+                                    this.selectedIndex = -1;
+                                    return;
+                                }
+
+                                this.loading = true;
+
+                                try {
+                                    const url = '{{ url('/api/items/search') }}?term=' + encodeURIComponent(this.searchTerm) +
+                                        '&type={{ $type }}&branch_id={{ $branch_id ?? '' }}&price_type={{ $selectedPriceType ?? 1 }}';
+
+                                    const response = await fetch(url, {
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        },
+                                        credentials: 'same-origin'
+                                    });
+
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+
+                                    const data = await response.json();
+                                    this.searchResults = data;
+                                    this.showResults = true;
+                                    this.selectedIndex = data.length > 0 ? 0 : -1;
+                                } catch (error) {
+                                    console.error('Search error:', error);
+                                } finally {
+                                    this.loading = false;
+                                }
+                            },
+
+                            selectNext() {
+                                const totalItems = this.searchResults.length;
+
+                                if (totalItems === 0 && this.searchTerm.length > 0) {
+                                    this.selectedIndex = 0;
+                                    return;
+                                }
+
+                                if (totalItems > 0) {
+                                    if (this.selectedIndex === -1) {
+                                        this.selectedIndex = 0;
+                                    } else if (this.selectedIndex < totalItems - 1) {
+                                        this.selectedIndex++;
+                                    }
+                                }
+
+                                this.scrollToSelected();
+                            },
+
+                            selectPrevious() {
+                                if (this.selectedIndex <= 0) {
+                                    this.selectedIndex = 0;
+                                } else {
+                                    this.selectedIndex--;
+                                }
+
+                                this.scrollToSelected();
+                            },
+
+                            scrollToSelected() {
+                                this.$nextTick(() => {
+                                    const selected = this.$el.querySelector('.search-item-' + this.selectedIndex);
+                                    if (selected) {
+                                        selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                                    }
+                                });
+                            },
+
+                            addSelectedItem() {
+                                if (this.searchResults.length === 0 && this.searchTerm.length > 0 && this.selectedIndex === 0) {
+                                    this.createNewItem();
+                                    return;
+                                }
+
+                                if (this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
+                                    this.addItemFast(this.searchResults[this.selectedIndex]);
+                                }
+                            },
+
+                            // Helper to safely focus and calculate
+                            waitForRowAndCalculate(index) {
+                                let attempts = 0;
+                                const check = () => {
+                                    const quantityField = document.getElementById('quantity-' + index);
+                                    if (quantityField) {
+                                        quantityField.focus();
+                                        quantityField.select();
+                                        
+                                        // Force row calculation to ensure sub_value is set
+                                        if (window.calculateRowTotal) {
+                                            window.calculateRowTotal(index);
+                                        }
+
+                                        // Ensure standard IDs are used for calculation
+                                        if (window.calculateInvoiceTotals) {
+                                            window.calculateInvoiceTotals();
+                                        }
+                                    } else if (attempts < 20) { // Try for ~1 second
+                                        attempts++;
+                                        setTimeout(check, 50);
+                                    }
+                                };
+                                check();
+                            },
+
+                            // ✅ إضافة سريعة
+                            addItemFast(item) {
+                                // إخفاء البحث فوراً
+                                this.clearSearch();
+
+                                // ✅ Call Livewire method
+                                @this.call('addItemFromSearchFast', item.id).then((result) => {
+                                    if (result && result.success) {
+                                        this.waitForRowAndCalculate(result.index);
+                                    }
+                                }).catch(error => {
+                                    console.error('Error adding item:', error);
+                                });
+                            },
+
+                            createNewItem() {
+                                @this.call('createNewItem', this.searchTerm).then((result) => {
+                                    if (result && result.success) {
+                                        this.clearSearch();
+                                        this.waitForRowAndCalculate(result.index);
+                                    }
+                                });
+                            },
+
+                            clearSearch() {
+                                this.searchTerm = '';
+                                this.searchResults = [];
+                                this.showResults = false;
+                                this.selectedIndex = -1;
+                            }
+                        }" style="position: relative;">
+
+                            <input type="text" x-model="searchTerm" @input.debounce.50ms="search()"
+                                @keydown.arrow-down.prevent="selectNext()" @keydown.arrow-up.prevent="selectPrevious()"
+                                @keydown.enter.prevent="addSelectedItem()" @keydown.escape="clearSearch()"
+                                class="form-control frst" id="search-input"
+                                placeholder="{{ __('Search by name, code, or barcode...') }}" autocomplete="off">
+
+                            {{-- Loading spinner --}}
+                            <div x-show="loading" x-cloak
                                 style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
                                 <i class="fas fa-spinner fa-spin text-primary"></i>
-                            </div> --}}
-                        </div>
-                        @if (strlen($searchTerm) > 0 && $searchResults->count())
-                            <ul class="list-group position-absolute w-100" id="search-results-list" style="z-index: 999;">
-                                @foreach ($searchResults as $index => $item)
-                                    <li class="list-group-item list-group-item-action" data-item-id="{{ $item->id }}" data-index="{{ $index }}">
-                                        {{ $item->name }}
+                            </div>
+
+                            {{-- نتائج البحث --}}
+                            <div x-show="showResults && searchResults.length > 0" x-cloak
+                                class="list-group position-absolute w-100"
+                                style="z-index: 999; max-height: 300px; overflow-y: auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ddd;"
+                                @click.away="showResults = false">
+
+                                <template x-for="(item, index) in searchResults" :key="item.id">
+                                    <li :class="'list-group-item list-group-item-action search-item-' + index + (selectedIndex ===
+                                        index ? ' active' : '')"
+                                        @click="addItemFast(item)" @mouseenter="selectedIndex = index"
+                                        style="cursor: pointer; transition: all 0.2s;">
+                                        <strong x-text="item.name"></strong>
+                                        <small class="text-muted" x-show="item.code"> - <span
+                                                x-text="item.code"></span></small>
                                     </li>
-                                @endforeach
-                            </ul>
-                        @elseif (strlen($searchTerm) > 0 && $searchResults->isEmpty())
-                            <ul class="list-group position-absolute w-100" id="search-results-list" style="z-index: 999;">
-                                <li class="list-group-item list-group-item-action list-group-item-success"
-                                    data-create-new="true" data-index="0" style="cursor: pointer;">
+                                </template>
+                            </div>
+
+                            {{-- زر إضافة صنف جديد --}}
+                            <div x-show="showResults && searchResults.length === 0 && searchTerm.length > 0" x-cloak
+                                class="list-group position-absolute w-100"
+                                style="z-index: 999; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ddd;">
+                                <li :class="'list-group-item list-group-item-action list-group-item-success search-item-0' + (
+                                    selectedIndex === 0 ? ' active' : '')"
+                                    @click="createNewItem()" @mouseenter="selectedIndex = 0"
+                                    style="cursor: pointer; transition: all 0.2s;">
                                     <i class="fas fa-plus"></i>
-                                    <strong>{{ __('Create new item:') }}</strong> "{{ $searchTerm }}"
+                                    <strong>{{ __('Create new item') }}</strong>: <span x-text="searchTerm"></span>
                                 </li>
-                            </ul>
-                        @endif
+                            </div>
+                        </div>
                     </div>
+
+
+
+
+
+
 
 
                     <div class="col-lg-3 mb-3">
@@ -66,7 +243,7 @@
                             <ul class="list-group position-absolute w-100" style="z-index: 999;">
                                 @foreach ($barcodeSearchResults as $index => $item)
                                     <li class="list-group-item list-group-item-action"
-                                        wire:click="addItemFromSearch({{ $item->id }})">
+                                        wire:click="addItemFromSearchFast({{ $item->id }})">
                                         {{ $item->name }} ({{ $item->code }})
                                     </li>
                                 @endforeach
@@ -92,8 +269,8 @@
                             </div>
                         @endif
                     @endif
-                    {{-- <x-branches::branch-select :branches="$branches" model="branch_id" /> --}}
 
+                    {{-- <x-branches::branch-select :branches="$branches" model="branch_id" /> --}}
 
                     @if ($type == 14)
                         <div class="col-lg-1">
@@ -124,6 +301,12 @@
     </div>
 </div>
 @push('scripts')
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // إضافة Alpine.js directive للتحكم في التركيز
@@ -177,7 +360,8 @@
                 }).then((result) => {
                     if (result.isConfirmed && result.value) {
                         // استدعاء دالة Livewire لإتمام عملية الإنشاء
-                        console.log('Calling createItemFromPrompt with:', result.value, event.barcode);
+                        console.log('Calling createItemFromPrompt with:', result.value, event
+                            .barcode);
                         @this.call('createItemFromPrompt', result.value, event.barcode);
                     }
                 });
@@ -234,6 +418,113 @@
         });
 
 
+
+
+        // document.addEventListener('alpine:init', () => {
+        //     Alpine.data('itemSearch', (config) => ({
+        //         searchTerm: '',
+        //         searchResults: [],
+        //         loading: false,
+        //         showResults: false,
+        //         selectedIndex: -1,
+
+        //         search() {
+        //             if (this.searchTerm.length === 0) {
+        //                 this.searchResults = [];
+        //                 this.showResults = false;
+        //                 return;
+        //             }
+
+        //             this.loading = true;
+
+        //             fetch(`${config.apiUrl}?term=${encodeURIComponent(this.searchTerm)}&type=${config.type}&branch_id=${config.branchId}`, {
+        //                     headers: {
+        //                         'Accept': 'application/json',
+        //                         'X-CSRF-TOKEN': config.csrfToken,
+        //                         'X-Requested-With': 'XMLHttpRequest'
+        //                     },
+        //                     credentials: 'same-origin'
+        //                 })
+        //                 .then(response => response.json())
+        //                 .then(data => {
+        //                     this.searchResults = data;
+        //                     this.showResults = true;
+        //                     this.selectedIndex = -1;
+        //                     this.loading = false;
+        //                 })
+        //                 .catch(error => {
+        //                     console.error('Search error:', error);
+        //                     this.loading = false;
+        //                 });
+        //         },
+
+        //         selectNext() {
+        //             if (this.searchResults.length === 0) return;
+        //             this.selectedIndex = (this.selectedIndex + 1) % this.searchResults.length;
+        //         },
+
+        //         selectPrevious() {
+        //             if (this.searchResults.length === 0) return;
+        //             this.selectedIndex = this.selectedIndex <= 0 ?
+        //                 this.searchResults.length - 1 :
+        //                 this.selectedIndex - 1;
+        //         },
+
+        //         addSelectedItem() {
+        //             if (this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
+        //                 this.addItem(this.searchResults[this.selectedIndex].id);
+        //             } else if (this.searchResults.length === 0 && this.searchTerm.length > 0) {
+        //                 this.createNewItem();
+        //             }
+        //         },
+
+        //         addItem(itemId) {
+        //             // Call Livewire method
+        //             @this.call('getItemForInvoice', itemId).then(result => {
+        //                 if (result && result.success) {
+        //                     // Item added successfully
+        //                     this.clearSearch();
+
+        //                     // Recalculate totals client-side
+        //                     setTimeout(() => {
+        //                         window.calculateInvoiceTotals();
+        //                         // Focus on quantity field
+        //                         const quantityField = document.getElementById(
+        //                             `quantity-${result.index}`);
+        //                         if (quantityField) {
+        //                             quantityField.focus();
+        //                             quantityField.select();
+        //                         }
+        //                     }, 100);
+        //                 } else if (result && result.exists) {
+        //                     // Item already exists, focus on it
+        //                     this.clearSearch();
+        //                     setTimeout(() => {
+        //                         const quantityField = document.getElementById(
+        //                             `quantity-${result.index}`);
+        //                         if (quantityField) {
+        //                             quantityField.focus();
+        //                             quantityField.select();
+        //                         }
+        //                     }, 100);
+        //                 }
+        //             });
+        //         },
+
+        //         createNewItem() {
+        //             // Call Livewire method for creating new item
+        //             @this.call('createNewItem', this.searchTerm);
+        //             this.clearSearch();
+        //         },
+
+        //         clearSearch() {
+        //             this.searchTerm = '';
+        //             this.searchResults = [];
+        //             this.showResults = false;
+        //             this.selectedIndex = -1;
+        //         }
+        //     }));
+        // });
         // document.addEventListener('item-not-found', function() {
         // Swal.fire({
         // title: 'الصنف غير موجود',
@@ -266,7 +557,7 @@
         // استمع لحدث التركيز على حقل الكمية الجديد
         window.addEventListener('focusQuantityField', function(e) {
             setTimeout(function() {
-                const field = document.getElementById('quantity_' + e.detail.rowIndex);
+                const field = document.getElementById('quantity-' + e.detail.rowIndex);
                 if (field) {
                     field.focus();
                     field.select();
@@ -320,10 +611,10 @@
         // دالة للعثور على العنصر التالي في نفس الصف
         function findNextInRow(currentElement, rowIndex) {
             const fieldOrder = [
-                `quantity_${rowIndex}`,
-                `price_${rowIndex}`,
-                `discount_${rowIndex}`,
-                `sub_value_${rowIndex}`
+                `quantity-${rowIndex}`,
+                `price-${rowIndex}`,
+                `discount-${rowIndex}`,
+                `sub_value-${rowIndex}`
             ];
 
 
@@ -348,10 +639,10 @@
         function findNextInNextRow(currentRowIndex) {
             const nextRowIndex = currentRowIndex + 1;
             const nextRowFields = [
-                `quantity_${nextRowIndex}`,
-                `price_${nextRowIndex}`,
-                `discount_${nextRowIndex}`,
-                `sub_value_${nextRowIndex}`
+                `quantity-${nextRowIndex}`,
+                `price-${nextRowIndex}`,
+                `discount-${nextRowIndex}`,
+                `sub_value-${nextRowIndex}`
             ];
 
 
@@ -386,7 +677,7 @@
 
         // دالة للعثور على أول حقل كمية متاح
         function findFirstAvailableQuantityField() {
-            const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
+            const quantityFields = document.querySelectorAll('input[id^="quantity-"]');
             for (let field of quantityFields) {
                 if (isElementAccessible(field)) {
                     return field;
@@ -398,7 +689,7 @@
 
         // دالة للتحقق من وجود عناصر في الجدول
         function hasTableItems() {
-            const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
+            const quantityFields = document.querySelectorAll('input[id^="quantity-"]');
             return quantityFields.length > 0;
         }
 
@@ -409,7 +700,7 @@
 
 
             // جمع جميع حقول الجدول
-            ['quantity_', 'price_', 'discount_', 'sub_value_'].forEach(function(prefix) {
+            ['quantity-', 'price-', 'discount-', 'sub_value-'].forEach(function(prefix) {
                 document.querySelectorAll(`input[id^="${prefix}"]`).forEach(function(field) {
                     allTableFields.push(field);
                 });
@@ -438,8 +729,8 @@
 
 
             // إذا كان العنصر من حقول الجدول
-            if (currentId.startsWith('quantity_') || currentId.startsWith('price_') || currentId.startsWith('discount_')) {
-                const index = currentId.split('_')[1];
+            if (currentId.startsWith('quantity-') || currentId.startsWith('price-') || currentId.startsWith('discount-')) {
+                const index = currentId.split('-')[1];
                 nextElement = findNextInRow(currentElement, index);
                 if (!nextElement) {
                     nextElement = findNextInNextRow(parseInt(index));
@@ -447,8 +738,8 @@
                 if (!nextElement) {
                     nextElement = findNextFormElement(currentElement);
                 }
-            } else if (currentId.startsWith('sub_value_')) {
-                const index = currentId.split('_')[2];
+            } else if (currentId.startsWith('sub_value-')) {
+                const index = currentId.split('-')[1];
                 nextElement = findNextInNextRow(parseInt(index));
                 if (!nextElement) {
                     nextElement = findNextFormElement(currentElement);
@@ -486,7 +777,7 @@
 
 
             // إضافة مستمعات لجميع حقول الجدول (كمية، سعر، خصم، قيمة فرعية)
-            const tableFields = ['quantity_', 'price_', 'discount_', 'sub_value_'];
+            const tableFields = ['quantity-', 'price-', 'discount-', 'sub_value-'];
             tableFields.forEach(function(prefix) {
                 document.querySelectorAll(`input[id^="${prefix}"]`).forEach(function(field) {
                     if (!field.hasAttribute('data-listener')) {
@@ -509,7 +800,7 @@
             // دالة للتركيز على حقل الكمية بعد إضافة صنف من البحث
             window.focusLastQuantityField = function() {
                 setTimeout(function() {
-                    const quantityFields = document.querySelectorAll('input[id^="quantity_"]');
+                    const quantityFields = document.querySelectorAll('input[id^="quantity-"]');
                     if (quantityFields.length > 0) {
                         const lastField = quantityFields[quantityFields.length - 1];
                         if (isElementAccessible(lastField)) {
@@ -646,13 +937,17 @@
                         items.forEach(item => item.classList.remove('active'));
                         currentSearchIndex = (currentSearchIndex + 1) % totalItems;
                         items[currentSearchIndex].classList.add('active');
-                        items[currentSearchIndex].scrollIntoView({ block: 'nearest' });
+                        items[currentSearchIndex].scrollIntoView({
+                            block: 'nearest'
+                        });
                     } else if (e.key === 'ArrowUp') {
                         e.preventDefault();
                         items.forEach(item => item.classList.remove('active'));
                         currentSearchIndex = currentSearchIndex <= 0 ? totalItems - 1 : currentSearchIndex - 1;
                         items[currentSearchIndex].classList.add('active');
-                        items[currentSearchIndex].scrollIntoView({ block: 'nearest' });
+                        items[currentSearchIndex].scrollIntoView({
+                            block: 'nearest'
+                        });
                     } else if (e.key === 'Enter') {
                         e.preventDefault();
                         if (currentSearchIndex >= 0 && items[currentSearchIndex]) {
@@ -663,7 +958,7 @@
                                 @this.call('createNewItem', searchInput.value);
                             } else {
                                 const itemId = selectedItem.getAttribute('data-item-id');
-                                @this.call('addItemFromSearch', parseInt(itemId));
+                                @this.call('addItemFromSearchFast', parseInt(itemId));
                             }
                             currentSearchIndex = -1;
                         }
@@ -686,7 +981,7 @@
                         @this.call('createNewItem', searchInput.value);
                     } else {
                         const itemId = listItem.getAttribute('data-item-id');
-                        @this.call('addItemFromSearch', parseInt(itemId));
+                        @this.call('addItemFromSearchFast', parseInt(itemId));
                     }
                     currentSearchIndex = -1;
                 }
@@ -798,78 +1093,198 @@
         });
 
 
-        // حسابات الفاتورة - JavaScript فقط
-        function calculateRowTotal(index) {
-            const quantity = parseFloat(document.getElementById(`quantity_${index}`)?.value || 0);
-            const price = parseFloat(document.getElementById(`price_${index}`)?.value || 0);
-            const discount = parseFloat(document.getElementById(`discount_${index}`)?.value || 0);
+        // حسابات الفاتورة - JavaScript Live Client Side
+        
+        // ✅ تحسين عمل الـ calculateRowTotal
+        window.calculateRowTotal = function(index) {
+            let quantity = parseFloat(document.getElementById(`quantity-${index}`)?.value);
+            if (isNaN(quantity)) quantity = 0;
+            
+            let price = parseFloat(document.getElementById(`price-${index}`)?.value);
+            if (isNaN(price)) price = 0;
+            
+            let discount = parseFloat(document.getElementById(`discount-${index}`)?.value);
+            if (isNaN(discount)) discount = 0;
 
-            const subValue = (quantity * price) - discount;
-            const subValueField = document.getElementById(`sub_value_${index}`);
+            let subValue = (quantity * price) - discount;
+            subValue = Math.max(0, subValue);
+
+            // Try to find the field with both possible ID formats to be safe
+            const subValueField = document.getElementById(`sub_value-${index}`);
+            
             if (subValueField) {
                 subValueField.value = subValue.toFixed(2);
             }
 
-            calculateInvoiceTotals();
-        }
+            // Update Livewire في الخلفية
+            @this.set(`invoiceItems.${index}.sub_value`, subValue, false);
 
-        function calculateInvoiceTotals() {
+            // Recalculate totals
+            if (window.calculateInvoiceTotals) {
+                window.calculateInvoiceTotals();
+            }
+        };
+
+        // 2. تحديث الخصم بناءً على النسبة المئوية
+        window.updateDiscountFromPercentage = function() {
+            const subtotal = getSubtotal();
+            const discountPercentage = parseFloat(document.getElementById('discount-percentage')?.value || 0);
+            
+            let discountValue = 0;
+            if (subtotal > 0) {
+                discountValue = (subtotal * discountPercentage) / 100;
+            }
+
+            // Update Value Input
+            const discountValueField = document.getElementById('discount-value');
+            if (discountValueField) discountValueField.value = discountValue.toFixed(2);
+
+            // Sync Livewire
+            @this.set('discount_percentage', discountPercentage, false);
+            @this.set('discount_value', discountValue.toFixed(2), false);
+
+            calculateFinalTotal(false); // don't recalc discount from value again
+        };
+
+        // 3. تحديث الخصم بناءً على القيمة
+        window.updateDiscountFromValue = function() {
+            const subtotal = getSubtotal();
+            const discountValue = parseFloat(document.getElementById('discount-value')?.value || 0);
+
+            let discountPercentage = 0;
+            if (subtotal > 0 && discountValue > 0) {
+                discountPercentage = (discountValue * 100) / subtotal;
+            }
+
+            // Update Percentage Input
+            // Note: we might want to round it for display, but keep precision for logic?
+            // Let's toggle only if needed to avoid jumping cursor.
+            // Usually valid to update the percentage field here.
+            const discountPercentageField = document.getElementById('discount-percentage');
+            if (discountPercentageField) {
+                 // Avoid overwriting if user is typing, but here we are in "FromValue"
+                 // so user is typing in Value field. Update Percentage field.
+                 discountPercentageField.value = discountPercentage.toFixed(2);
+            }
+
+            // Sync Livewire
+            @this.set('discount_percentage', discountPercentage.toFixed(2), false);
+            @this.set('discount_value', discountValue, false);
+
+            calculateFinalTotal(false);
+        };
+
+        // 4. تحديث الإضافي بناءً على النسبة
+        window.updateAdditionalFromPercentage = function() {
+            const subtotal = getSubtotal();
+            const additionalPercentage = parseFloat(document.getElementById('additional-percentage')?.value || 0);
+
+            let additionalValue = 0;
+            if (subtotal > 0) {
+                additionalValue = (subtotal * additionalPercentage) / 100;
+            }
+
+            const additionalValueField = document.getElementById('additional-value');
+            if (additionalValueField) additionalValueField.value = additionalValue.toFixed(2);
+
+            @this.set('additional_percentage', additionalPercentage, false);
+            @this.set('additional_value', additionalValue.toFixed(2), false);
+
+            calculateFinalTotal(false);
+        };
+
+        // 5. تحديث الإضافي بناءً على القيمة
+        window.updateAdditionalFromValue = function() {
+            const subtotal = getSubtotal();
+            const additionalValue = parseFloat(document.getElementById('additional-value')?.value || 0);
+
+            let additionalPercentage = 0;
+            if (subtotal > 0 && additionalValue > 0) {
+                additionalPercentage = (additionalValue * 100) / subtotal;
+            }
+
+            const additionalPercentageField = document.getElementById('additional-percentage');
+            if (additionalPercentageField) additionalPercentageField.value = additionalPercentage.toFixed(2);
+
+            @this.set('additional_percentage', additionalPercentage.toFixed(2), false);
+            @this.set('additional_value', additionalValue, false);
+
+            calculateFinalTotal(false);
+        };
+
+        // Helper: Get Subtotal from DOM
+        function getSubtotal() {
             let subtotal = 0;
-            document.querySelectorAll('input[id^="sub_value_"]').forEach(field => {
+            document.querySelectorAll('input[id^="sub_value-"]').forEach(field => {
                 subtotal += parseFloat(field.value || 0);
             });
+            return subtotal;
+        }
 
-            const discountPercentageField = document.querySelector('input[wire\\:model="discount_percentage"]');
-            const discountValueField = document.getElementById('discount_value');
-            const additionalPercentageField = document.querySelector('input[wire\\:model="additional_percentage"]');
-            const additionalValueField = document.getElementById('additional_value');
-            const receivedField = document.getElementById('received_from_client');
-
-            // حساب الخصم
-            let discountValue = 0;
-            const discountPercentage = parseFloat(discountPercentageField?.value || 0);
-            if (discountPercentage > 0) {
-                discountValue = (subtotal * discountPercentage) / 100;
-                if (discountValueField) discountValueField.value = discountValue.toFixed(2);
-            } else if (discountValueField) {
-                discountValue = parseFloat(discountValueField.value || 0);
-            }
-
-            // حساب الإضافة
-            let additionalValue = 0;
-            const additionalPercentage = parseFloat(additionalPercentageField?.value || 0);
-            if (additionalPercentage > 0) {
-                additionalValue = (subtotal * additionalPercentage) / 100;
-                if (additionalValueField) additionalValueField.value = additionalValue.toFixed(2);
-            } else if (additionalValueField) {
-                additionalValue = parseFloat(additionalValueField.value || 0);
-            }
-
-            const totalAfterAdditional = subtotal - discountValue + additionalValue;
-            const receivedFromClient = parseFloat(receivedField?.value || 0);
-            const remaining = Math.max(totalAfterAdditional - receivedFromClient, 0);
-
-            // تحديث العرض فوراً
-            const displaySubtotal = document.getElementById('display_subtotal');
-            const displayTotal = document.getElementById('display_total');
-            const displayReceived = document.getElementById('display_received');
-            const displayRemaining = document.getElementById('display_remaining');
-
+        // 6. الحساب النهائي الموحد (يجمع كل شيء)
+        function calculateFinalTotal(shouldRecalculateDerivedValues = true) {
+            const subtotal = getSubtotal();
+            
+            // Update Subtotal Display
+            const displaySubtotal = document.getElementById('display-subtotal');
             if (displaySubtotal) displaySubtotal.textContent = Math.round(subtotal).toLocaleString();
-            if (displayTotal) displayTotal.textContent = Math.round(totalAfterAdditional).toLocaleString();
-            if (displayReceived) displayReceived.textContent = Math.round(receivedFromClient).toLocaleString();
-            if (displayRemaining) displayRemaining.textContent = Math.round(remaining).toLocaleString();
-
-            // تحديث Livewire في الخلفية
             @this.set('subtotal', subtotal.toFixed(2), false);
-            @this.set('discount_value', discountValue.toFixed(2), false);
-            @this.set('additional_value', additionalValue.toFixed(2), false);
-            @this.set('total_after_additional', totalAfterAdditional.toFixed(2), false);
+
+            // Get current values (derived or input)
+            let discountValue = parseFloat(document.getElementById('discount-value')?.value || 0);
+            let additionalValue = parseFloat(document.getElementById('additional-value')?.value || 0);
+
+            // If we just changed rows, we usually want to KEEP PERCENTAGE constant and update value.
+            if (shouldRecalculateDerivedValues) {
+                 const discountPercentage = parseFloat(document.getElementById('discount-percentage')?.value || 0);
+                 const additionalPercentage = parseFloat(document.getElementById('additional-percentage')?.value || 0);
+                 
+                 discountValue = (subtotal * discountPercentage) / 100;
+                 additionalValue = (subtotal * additionalPercentage) / 100;
+
+                 // Update DOM values
+                 const discValInput = document.getElementById('discount-value');
+                 const addValInput = document.getElementById('additional-value');
+                 if(discValInput) discValInput.value = discountValue.toFixed(2);
+                 if(addValInput) addValInput.value = additionalValue.toFixed(2);
+
+                 // Sync derived values
+                 @this.set('discount_value', discountValue.toFixed(2), false);
+                 @this.set('additional_value', additionalValue.toFixed(2), false);
+            }
+
+            const total = subtotal - discountValue + additionalValue;
+            
+            // Display Total
+            const displayTotal = document.getElementById('display-total');
+            if (displayTotal) displayTotal.textContent = Math.round(total).toLocaleString();
+            @this.set('total_after_additional', total.toFixed(2), false);
+
+            // Calculate Remaining
+            const received = parseFloat(document.getElementById('received-from-client')?.value || 0);
+            const remaining = Math.max(total - received, 0);
+
+            const displayReceived = document.getElementById('display-received');
+            if (displayReceived) displayReceived.textContent = Math.round(received).toLocaleString();
+            
+            const displayRemaining = document.getElementById('display-remaining');
+            if (displayRemaining) displayRemaining.textContent = Math.round(remaining).toLocaleString();
+        }
+
+        // 7. عند تحديث المدفوع
+        window.updateReceived = function() {
+            calculateFinalTotal(false); 
+            // Also sync received value
+            const received = document.getElementById('received-from-client')?.value || 0;
+            @this.set('received_from_client', received, false);
         }
 
         // جعل الدوال متاحة عالمياً
         window.calculateRowTotal = calculateRowTotal;
-        window.calculateInvoiceTotals = calculateInvoiceTotals;
+        window.calculateFinalTotal = calculateFinalTotal;
+        window.calculateInvoiceTotals = calculateFinalTotal; // Alias for compatibility
+
+
 
         document.addEventListener('livewire:init', () => {
             Livewire.on('open-print-window', (event) => {
@@ -887,7 +1302,7 @@
 
             Livewire.on('focus-field', (event) => {
                 setTimeout(() => {
-                    const field = document.getElementById(event.field + '_' + event.rowIndex);
+                    const field = document.getElementById(event.field + '-' + event.rowIndex);
                     if (field && isElementAccessible(field)) {
                         field.focus();
                         if (field.select) field.select();
@@ -897,12 +1312,82 @@
 
             Livewire.on('focus-search-field', () => {
                 setTimeout(() => {
-                    const searchField = document.querySelector('input[wire\\:model\\.live="searchTerm"]');
+                    const searchField = document.querySelector(
+                        'input[wire\\:model\\.live="searchTerm"]');
                     if (searchField && isElementAccessible(searchField)) {
                         searchField.focus();
                         if (searchField.select) searchField.select();
                     }
                 }, 100);
+            });
+        });
+
+        // ✅ التنقل الذكي بين حقول الجدول
+        // ✅ التنقل الذكي مع تخطي الحقول الـ disabled
+        window.moveToNextFieldInRow = function(event) {
+            const currentField = event.target;
+            const currentRow = parseInt(currentField.dataset.row);
+            const currentFieldName = currentField.dataset.field;
+
+            // ترتيب الحقول في الصف
+            const fieldOrder = ['quantity', 'unit', 'price', 'discount', 'sub_value'];
+            const currentIndex = fieldOrder.indexOf(currentFieldName);
+
+            // ✅ البحث عن الحقل التالي المتاح (غير disabled/readonly)
+            let nextField = null;
+
+            // محاولة الانتقال للحقول التالية في نفس الصف
+            for (let i = currentIndex + 1; i < fieldOrder.length; i++) {
+                const fieldName = fieldOrder[i];
+                const field = document.getElementById(`${fieldName}-${currentRow}`);
+
+                if (field && !field.disabled && !field.readOnly && field.offsetParent !== null) {
+                    nextField = field;
+                    break;
+                }
+            }
+
+            // إذا وجدنا حقل متاح في نفس الصف
+            if (nextField) {
+                nextField.focus();
+                nextField.select();
+                return;
+            }
+
+            // ✅ إذا لم يوجد حقل متاح في نفس الصف، نعود لحقل البحث فوراً (حسب طلب العميل)
+            const searchField = document.getElementById('search-input');
+            if (searchField) {
+                searchField.focus();
+                searchField.select();
+            }
+        };
+
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const target = e.target;
+
+                    // إذا كان الحقل في الجدول
+                    if (target.classList.contains('invoice-field')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        });
+
+        // ✅ منع التصرف الافتراضي للـ Enter في جميع الحقول
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const target = e.target;
+
+                    // إذا كان الحقل في الجدول
+                    if (target.classList.contains('invoice-field')) {
+                        e.preventDefault();
+                    }
+                }
             });
         });
     </script>

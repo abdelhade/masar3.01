@@ -638,24 +638,25 @@ class CreateInvoiceForm extends Component
 
         $this->addedFromBarcode = true;
 
-        $lastIndex = count($this->invoiceItems) - 1;
-        if ($lastIndex >= 0 && $this->invoiceItems[$lastIndex]['item_id'] === $item->id) {
-            $this->recalculateSubValues();
-            $this->calculateTotals();
+        // Use the fast add method which handles incrementing if exists
+        $result = $this->addItemFromSearchFast($item->id);
+
+        if ($result && isset($result['success']) && $result['success']) {
+            $index = $result['index'];
             $this->barcodeTerm = '';
-            return;
+            $this->barcodeSearchResults = collect();
+            $this->selectedBarcodeResultIndex = -1;
+            $this->lastQuantityFieldIndex = $index;
+
+            // Notify user
+             if (isset($result['exists']) && $result['exists']) {
+                 $this->dispatch('alert', ['type' => 'info', 'message' => 'تم زيادة كمية الصنف.']);
+             } else {
+                 $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
+             }
+
+            $this->dispatch('focus-quantity', ['index' => $index]);
         }
-
-        $this->addItemFromSearch($item->id);
-        $this->barcodeTerm = '';
-        $this->barcodeSearchResults = collect();
-        $this->selectedBarcodeResultIndex = -1;
-        $this->lastQuantityFieldIndex = count($this->invoiceItems) - 1;
-        $newRowIndex = count($this->invoiceItems) - 1;
-
-        $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
-        $this->dispatch('focus-quantity', ['index' => $newRowIndex]);
-        $this->calculateTotals();
     }
 
     public function updatedBarcodeTerm($value)
@@ -707,65 +708,69 @@ class CreateInvoiceForm extends Component
 
     protected static $itemsCache = [];
 
-    public function updatedSearchTerm($value)
-    {
-        $this->searchResults = collect();
-        $this->selectedResultIndex = -1;
+    // public function updatedSearchTerm($value)
+    // {
+    //     $this->searchResults = collect();
+    //     $this->selectedResultIndex = -1;
 
-        $searchTerm = trim($value);
-        if (empty($searchTerm)) {
-            return;
-        }
+    //     $searchTerm = trim($value);
+    //     if (empty($searchTerm)) {
+    //         return;
+    //     }
 
-        // البحث بالاسم أولاً - أول 10 نتائج فقط
-        $query = Item::select('id', 'name', 'code')
-            ->where('name', 'like', $searchTerm . '%');
+    //     // البحث بالاسم أولاً - أول 10 نتائج فقط
+    //     $query = Item::select('id', 'name', 'code')
+    //         ->where('name', 'like', $searchTerm . '%');
 
-        // إضافة البحث بالكود
-        if (!is_numeric($searchTerm)) {
-            $query->orWhere('code', 'like', $searchTerm . '%');
-        } else {
-            $query->orWhere('code', $searchTerm);
-        }
+    //     // إضافة البحث بالكود
+    //     if (!is_numeric($searchTerm)) {
+    //         $query->orWhere('code', 'like', $searchTerm . '%');
+    //     } else {
+    //         $query->orWhere('code', $searchTerm);
+    //     }
 
-        // تطبيق الفلاتر حسب نوع الفاتورة
-        if (in_array($this->type, [11, 13, 15, 17])) {
-            $query->where('type', ItemType::Inventory->value);
-        } elseif ($this->type == 24) {
-            $query->where('type', ItemType::Service->value);
-        }
+    //     // تطبيق الفلاتر حسب نوع الفاتورة
+    //     if (in_array($this->type, [11, 13, 15, 17])) {
+    //         $query->where('type', ItemType::Inventory->value);
+    //     } elseif ($this->type == 24) {
+    //         $query->where('type', ItemType::Service->value);
+    //     }
 
-        $this->searchResults = $query->limit(10)->get();
+    //     $this->searchResults = $query->limit(10)->get();
 
-        // البحث في الباركود فقط إذا لم توجد نتائج
-        if ($this->searchResults->isEmpty()) {
-            $barcodeQuery = Item::select('items.id', 'items.name', 'items.code')
-                ->join('barcodes', 'items.id', '=', 'barcodes.item_id')
-                ->where('barcodes.barcode', 'like', $searchTerm . '%');
+    //     // البحث في الباركود فقط إذا لم توجد نتائج
+    //     if ($this->searchResults->isEmpty()) {
+    //         $barcodeQuery = Item::select('items.id', 'items.name', 'items.code')
+    //             ->join('barcodes', 'items.id', '=', 'barcodes.item_id')
+    //             ->where('barcodes.barcode', 'like', $searchTerm . '%');
 
-            if (in_array($this->type, [11, 13, 15, 17])) {
-                $barcodeQuery->where('items.type', ItemType::Inventory->value);
-            } elseif ($this->type == 24) {
-                $barcodeQuery->where('items.type', ItemType::Service->value);
-            }
+    //         if (in_array($this->type, [11, 13, 15, 17])) {
+    //             $barcodeQuery->where('items.type', ItemType::Inventory->value);
+    //         } elseif ($this->type == 24) {
+    //             $barcodeQuery->where('items.type', ItemType::Service->value);
+    //         }
 
-            $this->searchResults = $barcodeQuery->limit(10)->distinct()->get();
-        }
-    }
-
-    public function addItemFromSearch($itemId)
+    //         $this->searchResults = $barcodeQuery->limit(10)->distinct()->get();
+    //     }
+    // }
+    /**
+     * Get item complete data for adding to invoice (called from Alpine.js)
+     */
+    public function getItemForInvoice($itemId)
     {
         $item = Item::with([
             'units' => fn($q) => $q->orderBy('pivot_u_val', 'asc'),
             'prices'
         ])->find($itemId);
 
-        if (!$item) return;
+        if (!$item) {
+            return null;
+        }
 
         // ✅ فحص الرصيد المتاح قبل الإضافة (فقط لفواتير البيع)
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
             if (!auth()->user()->can('prevent_transactions_without_stock')) {
-                $availableQty = OperationItems::where('item_id', $item->id)
+                $availableQty = \App\Models\OperationItems::where('item_id', $item->id)
                     ->where('detail_store', $this->acc2_id)
                     ->selectRaw('SUM(qty_in - qty_out) as total')
                     ->value('total') ?? 0;
@@ -777,7 +782,7 @@ class CreateInvoiceForm extends Component
                         text: 'لا يوجد رصيد كافي من هذا الصنف في المخزن المحدد.',
                         icon: 'warning'
                     );
-                    return;
+                    return ['error' => 'insufficient_stock'];
                 }
             }
         }
@@ -791,33 +796,13 @@ class CreateInvoiceForm extends Component
             }
         }
 
-        // إذا كان الصنف موجود، التركيز عليه فقط
+        // إذا كان الصنف موجود
         if ($existingItemIndex !== null) {
-            $this->recalculateSubValues();
-            $this->calculateTotals();
-
-            $unitId = $this->invoiceItems[$existingItemIndex]['unit_id'];
-            $price = $this->invoiceItems[$existingItemIndex]['price'];
-            $this->updateSelectedItemData($item, $unitId, $price);
-
-            $this->searchTerm = '';
-            $this->searchResults = collect();
-            $this->selectedResultIndex = -1;
-            $this->barcodeTerm = '';
-            $this->barcodeSearchResults = collect();
-            $this->selectedBarcodeResultIndex = -1;
             $this->lastQuantityFieldIndex = $existingItemIndex;
-
-            if ($this->addedFromBarcode) {
-                $this->js('window.focusBarcodeSearch()');
-            } else {
-                $this->js('window.focusLastQuantityField()');
-            }
-
-            $newRowIndex = count($this->invoiceItems) - 1;
-            $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
-            $this->dispatch('focus-quantity', ['index' => $newRowIndex]);
-            return;
+            return [
+                'exists' => true,
+                'index' => $existingItemIndex
+            ];
         }
 
         // إضافة صنف جديد
@@ -831,10 +816,10 @@ class CreateInvoiceForm extends Component
                 $this->dispatch(
                     'error',
                     title: 'خطأ!',
-                    text: 'لا يمكن أن يكون سعر الشراء صفرًا. تواصل مع المسؤول للحصول على الصلاحية.',
+                    text: 'لا يمكن أن يكون سعر الشراء صفرًا.',
                     icon: 'error'
                 );
-                return;
+                return ['error' => 'zero_price'];
             }
         }
 
@@ -845,10 +830,10 @@ class CreateInvoiceForm extends Component
                 text: 'لا يمكن إدخال سعر سالب في الفاتورة.',
                 icon: 'error'
             );
-            return;
+            return ['error' => 'negative_price'];
         }
 
-        $vm = new ItemViewModel(null, $item, $unitId);
+        $vm = new \App\Helpers\ItemViewModel(null, $item, $unitId);
         $unitOptions = $vm->getUnitOptions();
         $availableUnits = collect($unitOptions)->map(function ($unit) {
             return (object) [
@@ -859,7 +844,7 @@ class CreateInvoiceForm extends Component
 
         $quantity = ($this->settings['default_quantity_greater_than_zero'] ?? '0') == '1' && $this->type == 10 ? 1 : 1;
 
-        $this->invoiceItems[] = [
+        $newItem = [
             'item_id' => $item->id,
             'unit_id' => $unitId,
             'name' => $item->name,
@@ -876,35 +861,113 @@ class CreateInvoiceForm extends Component
             'expiry_date' => null,
         ];
 
-        $this->updateSelectedItemData($item, $unitId, $price);
-
-        $newIndex = count($this->invoiceItems) - 1;
-        if (in_array($this->type, [10, 12, 14, 16, 22])) {
-            $storeId = $this->acc2_id;
-            $this->autoAssignExpiryData($itemId, $storeId, $newIndex);
-        }
-
-        $this->barcodeTerm = '';
-        $this->barcodeSearchResults = collect();
-        $this->selectedBarcodeResultIndex = -1;
+        $this->invoiceItems[] = $newItem;
         $this->lastQuantityFieldIndex = count($this->invoiceItems) - 1;
 
-        if ($this->addedFromBarcode) {
-            $this->js('window.focusBarcodeSearch()');
-        } else {
-            $this->js('window.focusLastQuantityField()');
-        }
-
-        $this->searchTerm = '';
-        $this->searchResults = collect();
-        $this->selectedResultIndex = -1;
+        $this->recalculateSubValues();
         $this->calculateTotals();
 
-        if (in_array($this->type, [10, 12, 14, 16, 22])) {
-            $storeId = $this->acc2_id;
-            $this->autoAssignExpiryData($itemId, $storeId, $newIndex);
-        }
+        return [
+            'success' => true,
+            'index' => $this->lastQuantityFieldIndex,
+            'item' => $newItem
+        ];
     }
+
+
+    public function addItemFromSearchFast($itemId)
+    {
+        $item = Item::with([
+            'units' => fn($q) => $q->orderBy('item_units.u_val', 'asc'), // ✅ صحح اسم الـ column
+            'prices'
+        ])->find($itemId);
+
+        if (!$item) {
+            return ['success' => false, 'message' => 'Item not found'];
+        }
+
+        // التحقق من وجود الصنف بالفعل
+        $existingItemIndex = null;
+        foreach ($this->invoiceItems as $index => $invoiceItem) {
+            if ($invoiceItem['item_id'] == $item->id) {
+                $existingItemIndex = $index;
+                break;
+            }
+        }
+
+        if ($existingItemIndex !== null) {
+            // الصنف موجود - نزود الكمية
+            $this->invoiceItems[$existingItemIndex]['quantity']++;
+            $this->recalculateSubValues();
+            $this->calculateTotals();
+
+            // ✅ تحديث بيانات الصنف المختار تلقائياً (Auto-Select)
+            $this->updateSelectedItemData(
+                $item, 
+                $this->invoiceItems[$existingItemIndex]['unit_id'], 
+                $this->invoiceItems[$existingItemIndex]['price']
+            );
+
+            return [
+                'success' => true,
+                'exists' => true,
+                'index' => $existingItemIndex
+            ];
+        }
+
+        // إضافة صنف جديد
+        $firstUnit = $item->units->first();
+        $unitId = $firstUnit?->id;
+        $price = $this->calculateItemPrice($item, $unitId, $this->selectedPriceType);
+
+        $quantity = ($this->settings->default_quantity_greater_than_zero ?? 0) == 1 && $this->type == 10 ? 1 : 1;
+
+        // ✅ استخدم الـ units مباشرة بدون ItemViewModel
+        $availableUnits = $item->units->map(function ($unit) {
+            return (object)[
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'uval' => $unit->pivot->u_val ?? 1, // ✅ صحح اسم الـ column
+            ];
+        });
+
+        $newItem = [
+            'item_id' => $item->id,
+            'unit_id' => $unitId,
+            'name' => $item->name,
+            'quantity' => $quantity,
+            'price' => $price,
+            'sub_value' => $price * $quantity,
+            'discount' => 0,
+            'available_units' => $availableUnits,
+            'length' => null,
+            'width' => null,
+            'height' => null,
+            'density' => 1,
+            'batch_number' => null,
+            'expiry_date' => null,
+        ];
+
+        $this->invoiceItems[] = $newItem;
+        $newIndex = count($this->invoiceItems) - 1;
+
+        $this->recalculateSubValues();
+        $this->calculateTotals();
+
+        // ✅ تحديث بيانات الصنف المختار تلقائياً (Auto-Select)
+        $this->updateSelectedItemData($item, $unitId, $price);
+
+        return [
+            'success' => true,
+            'index' => $newIndex,
+            'item' => $newItem
+        ];
+    }
+
+
+
+
+
 
 
     public function updatedAcc2Id()
@@ -1152,21 +1215,21 @@ class CreateInvoiceForm extends Component
             $this->recalculateSubValues();
             $this->calculateTotals();
         } elseif ($field === 'item_id') {
-        //     $this->updateUnits($rowIndex);
+            //     $this->updateUnits($rowIndex);
 
-        //     $itemId = $this->invoiceItems[$rowIndex]['item_id'];
-        //     if ($itemId) {
-        //         $item = Item::with(['units', 'prices'])->find($itemId);
-        //         if ($item) {
-        //             $unitId = $this->invoiceItems[$rowIndex]['unit_id'];
-        //             $price = $this->invoiceItems[$rowIndex]['price'];
-        //             $this->updateSelectedItemData($item, $unitId, $price);
-        //         }
-        //     }
-        // }
-        // if ($field === 'item_id') {
-        //     // عند تغيير الصنف، قم بتحديث الوحدات
-        //     $this->updateUnits($rowIndex);
+            //     $itemId = $this->invoiceItems[$rowIndex]['item_id'];
+            //     if ($itemId) {
+            //         $item = Item::with(['units', 'prices'])->find($itemId);
+            //         if ($item) {
+            //             $unitId = $this->invoiceItems[$rowIndex]['unit_id'];
+            //             $price = $this->invoiceItems[$rowIndex]['price'];
+            //             $this->updateSelectedItemData($item, $unitId, $price);
+            //         }
+            //     }
+            // }
+            // if ($field === 'item_id') {
+            //     // عند تغيير الصنف، قم بتحديث الوحدات
+            //     $this->updateUnits($rowIndex);
 
             // تحديث بيانات الصنف المختار
             $itemId = $this->invoiceItems[$rowIndex]['item_id'];
@@ -1191,12 +1254,12 @@ class CreateInvoiceForm extends Component
             }
         } elseif ($field === 'sub_value') {
             if (($this->settings['allow_edit_invoice_value'] ?? '0') != '1') {
-                $this->dispatch(
-                    'error',
-                    title: 'خطأ!',
-                    text: 'غير مسموح بتعديل قيمة الفاتورة مباشرة.',
-                    icon: 'error'
-                );
+                // $this->dispatch(
+                //     'error',
+                //     title: 'خطأ!',
+                //     text: 'غير مسموح بتعديل قيمة الفاتورة مباشرة.',
+                //     icon: 'error'
+                // );
                 return;
             }
             $this->calculateQuantityFromSubValue($rowIndex);
@@ -1477,56 +1540,82 @@ class CreateInvoiceForm extends Component
 
     public function createNewItem($name, $barcode = null)
     {
-        \Log::info('createNewItem called', ['name' => $name, 'barcode' => $barcode]);
+        info('createNewItem called', ['name' => $name, 'barcode' => $barcode]);
+
         try {
+            // التحقق من وجود صنف بنفس الاسم
             $existingItem = Item::where('name', $name)->first();
+
             if ($existingItem) {
-                $this->addItemFromSearch($existingItem->id);
-                // $this->dispatch('success', title: 'نجح!', text: 'تم إضافة الصنف للفاتورة.', icon: 'success');
+                $this->addItemFromSearchFast($existingItem->id);
+                $this->dispatch('success', [
+                    'title' => 'تم!',
+                    'text' => 'الصنف موجود بالفعل وتم إضافته.',
+                    'icon' => 'success'
+                ]);
                 return;
             }
 
-            $defaultBarcode = Item::max('code') + 1 ?? 1;
+            // توليد كود فريد
+            $defaultBarcode = (Item::max('code') + 1) ?? 1;
+
+            // ✅ إذا لم يتم إرسال باركود، استخدم الكود التلقائي
             $finalBarcode = $barcode ?? $defaultBarcode;
 
-            $existingBarcode = Barcode::where('barcode', $finalBarcode)->exists();
+            // ✅ التحقق من الباركود فقط إذا كان مختلف عن الكود التلقائي
+            if ($barcode && $barcode != $defaultBarcode) {
+                $existingBarcode = \App\Models\Barcode::where('barcode', $finalBarcode)->exists();
 
-            if ($existingBarcode) {
-                $this->dispatch('error', title: 'خطأ!', text: 'هذا الباركود (' . $finalBarcode . ') مستخدم بالفعل لصنف آخر.', icon: 'error');
-                return;
+                if ($existingBarcode) {
+                    $this->dispatch('error', [
+                        'title' => 'خطأ!',
+                        'text' => 'الباركود "' . $finalBarcode . '" مستخدم من قبل. سيتم استخدام باركود تلقائي.',
+                        'icon' => 'error'
+                    ]);
+
+                    // استخدم الكود التلقائي بدلاً من الباركود المكرر
+                    $finalBarcode = $defaultBarcode;
+                }
             }
 
+            // إنشاء الصنف
             $newItem = Item::create([
                 'name' => $name,
                 'code' => $defaultBarcode,
             ]);
 
-            $newItem->units()->attach([
-                1 => [
-                    'u_val' => 1,
-                    'cost' => 0
-                ]
-            ]);
+            // ربط الوحدة الافتراضية
+            $newItem->units()->attach(1, ['u_val' => 1, 'cost' => 0]);
 
+            // إنشاء الباركود
             $newItem->barcodes()->create([
                 'barcode' => $finalBarcode,
                 'unit_id' => 1
             ]);
 
-            // إعادة تحميل الصنف مع العلاقات
-            $newItem = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($newItem->id);
+            // إعادة تحميل الصنف مع الـ relationships
+            $newItem = Item::with([
+                'units' => fn($q) => $q->orderBy('item_units.u_val', 'asc'),
+                'prices'
+            ])->find($newItem->id);
 
-            $this->updateSelectedItemData($newItem, 1, 0);
-            $this->addItemFromSearch($newItem->id);
+            // إضافة الصنف للفاتورة
+            $result = $this->addItemFromSearchFast($newItem->id);
 
             $this->searchTerm = '';
             $this->barcodeTerm = '';
 
-            // $this->dispatch('success', title: 'نجح!', text: 'تم إنشاء وإضافة الصنف بنجاح.', icon: 'success');
+            // Return the result so the frontend can use it
+            return $result;
         } catch (\Exception $e) {
-            $this->dispatch('error', title: 'خطأ!', text: 'حدث خطأ أثناء إنشاء الصنف: ' . $e->getMessage(), icon: 'error');
+            $this->dispatch('error', [
+                'title' => 'خطأ!',
+                'text' => 'حدث خطأ: ' . $e->getMessage(),
+                'icon' => 'error'
+            ]);
         }
     }
+
 
     public function updatedDiscountPercentage()
     {
@@ -1582,9 +1671,9 @@ class CreateInvoiceForm extends Component
 
     public function updatedAdditionalValue()
     {
-        $afterDiscount = $this->subtotal - $this->discount_value;
-        if ($this->additional_value >= 0 && $afterDiscount > 0) {
-            $this->additional_percentage = ($this->additional_value * 100) / $afterDiscount;
+        // Fix: Calculate percentage on Subtotal directly, as requested
+        if ($this->additional_value >= 0 && $this->subtotal > 0) {
+            $this->additional_percentage = ($this->additional_value * 100) / $this->subtotal;
             $this->calculateTotals();
             $this->calculateBalanceAfterInvoice();
         }

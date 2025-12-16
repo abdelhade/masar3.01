@@ -40,7 +40,7 @@
                                     @if ($this->shouldShowColumn('item_name'))
                                         <td style="width: 18%; font-size: 1.2em;">
                                             <span class="form-control"
-                                                wire:click="selectItemFromTable({{ $row['item_id'] }}, {{ $row['unit_id'] ?? '' }}, {{ $row['price'] ?? 0 }})"
+                                                wire:click="selectItemFromTable({{ $row['item_id'] ?? 0 }}, {{ $row['unit_id'] ?? 'null' }}, {{ $row['price'] ?? 0 }})"
                                                 style="cursor: pointer; font-size: 0.85em; height: 2em; padding: 1px 4px; display: block;">
                                                 {{ $row['name'] ?? __('Not Specified') }}
                                             </span>
@@ -61,14 +61,15 @@
 
                                     {{-- الوحدة --}}
                                     @if ($this->shouldShowColumn('unit'))
-                                        <td style="width: 15%; font-size: 1.2em;">
+                                        <td style="width: 10%; font-size: 1.2em;">
                                             <select wire:model.live="invoiceItems.{{ $index }}.unit_id"
                                                 wire:key="unit-select-{{ $index }}-{{ $row['item_id'] ?? 'default' }}"
                                                 wire:change="updatePriceForUnit({{ $index }})"
-                                                wire:keydown.enter="moveToNextField({{ $index }})"
-                                                id="unit_id_{{ $index }}"
+                                                @keydown.enter.prevent="moveToNextFieldInRow($event)"
+                                                id="unit-{{ $index }}"
+                                                data-field="unit" data-row="{{ $index }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                class="form-control @error('invoiceItems.' . $index . '.unit_id') is-invalid @enderror">
+                                                class="form-control invoice-field @error('invoiceItems.' . $index . '.unit_id') is-invalid @enderror">
                                                 @if (isset($row['available_units']) && $row['available_units']->count() > 0)
                                                     @foreach ($row['available_units'] as $unit)
                                                         <option value="{{ $unit->id }}">{{ $unit->name }}
@@ -84,12 +85,17 @@
                                     @if ($this->shouldShowColumn('quantity'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.001" min="0"
-                                                wire:model.blur="invoiceItems.{{ $index }}.quantity"
-                                                wire:keydown.enter="moveToNextField({{ $index }})"
-                                                onkeyup="calculateRowTotal({{ $index }})"
-                                                id="quantity_{{ $index }}" placeholder="{{ __('Quantity') }}"
+                                                id="quantity-{{ $index }}" value="{{ $row['quantity'] ?? 0 }}"
+                                                data-field="quantity" data-row="{{ $index }}"
+                                                @input="
+                $wire.set('invoiceItems.{{ $index }}.quantity', $event.target.value, false);
+                calculateRowTotal({{ $index }});
+            "
+                                                @keyup="calculateRowTotal({{ $index }})"
+                                                @keydown.enter.prevent="moveToNextFieldInRow($event)"
+                                                placeholder="{{ __('Quantity') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                class="form-control invoice-quantity">
+                                                class="form-control invoice-quantity invoice-field">
                                         </td>
                                     @endif
 
@@ -201,8 +207,6 @@
                                     @endif
 
 
-
-
                                     {{-- الطول --}}
                                     @if ($this->shouldShowColumn('length'))
                                         <td style="width: 10%; font-size: 1.2em;">
@@ -255,13 +259,17 @@
                                     {{-- السعر --}}
                                     @if ($this->shouldShowColumn('price'))
                                         <td style="width: 15%; font-size: 1.2em;">
-                                            <input type="number"
-                                                wire:model.live.debounce.300ms="invoiceItems.{{ $index }}.price"
-                                                wire:keydown.enter="moveToNextField({{ $index }})"
-                                                onkeyup="calculateRowTotal({{ $index }})"
-                                                id="price_{{ $index }}"
-                                                class="form-control text-center invoice-price" step="1"
-                                                @if ($this->type == 10 && !auth()->user()->can('allow_price_change')) readonly @endif />
+                                            <input type="number" id="price-{{ $index }}"
+                                                value="{{ $row['price'] ?? 0 }}" data-field="price"
+                                                data-row="{{ $index }}"
+                                                @input="
+                $wire.set('invoiceItems.{{ $index }}.price', $event.target.value, false);
+                calculateRowTotal({{ $index }});
+            "
+                                                @keyup="calculateRowTotal({{ $index }})"
+                                                @keydown.enter.prevent="moveToNextFieldInRow($event)"
+                                                class="form-control text-center invoice-price invoice-field"
+                                                step="1" @if ($this->type == 10 && !auth()->user()->can('allow_price_change')) readonly @endif />
                                         </td>
                                     @endif
 
@@ -269,13 +277,17 @@
                                     {{-- الخصم --}}
                                     @if ($this->shouldShowColumn('discount'))
                                         <td style="width: 15%; font-size: 1.2em;">
-                                            <input type="number"
-                                                wire:model.live="invoiceItems.{{ $index }}.discount"
-                                                wire:keydown.enter="moveToNextField({{ $index }})"
-                                                onkeyup="calculateRowTotal({{ $index }})"
-                                                id="discount_{{ $index }}"
-                                                class="form-control text-center invoice-discount" step="0.01"
-                                                @if (!auth()->user()->can('allow_discount_change')) readonly @endif />
+                                            <input type="number" id="discount-{{ $index }}"
+                                                value="{{ $row['discount'] ?? 0 }}" data-field="discount"
+                                                data-row="{{ $index }}"
+                                                @input="
+                $wire.set('invoiceItems.{{ $index }}.discount', $event.target.value, false);
+                calculateRowTotal({{ $index }});
+            "
+                                                @keyup="calculateRowTotal({{ $index }})"
+                                                @keydown.enter.prevent="moveToNextFieldInRow($event)"
+                                                class="form-control text-center invoice-discount invoice-field"
+                                                step="0.01" @if (!auth()->user()->can('allow_discount_change')) readonly @endif />
                                         </td>
                                     @endif
 
@@ -284,11 +296,17 @@
                                     @if ($this->shouldShowColumn('sub_value'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
-                                                wire:model.blur="invoiceItems.{{ $index }}.sub_value"
-                                                x-on:input.debounce.150ms="$wire.set('invoiceItems.{{ $index }}.sub_value', $event.target.value); $wire.call('calculateQuantityFromSubValue', {{ $index }})"
-                                                id="sub_value_{{ $index }}" placeholder="{{ __('Value') }}"
+                                                id="sub_value-{{ $index }}"
+                                                value="{{ $row['sub_value'] ?? 0 }}" data-field="sub_value"
+                                                data-row="{{ $index }}"
+                                                @input.debounce.150ms="
+                $wire.set('invoiceItems.{{ $index }}.sub_value', $event.target.value, false);
+                $wire.call('calculateQuantityFromSubValue', {{ $index }});
+            "
+                                                @keydown.enter.prevent="moveToNextFieldInRow($event)"
+                                                placeholder="{{ __('Value') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                class="form-control">
+                                                class="form-control invoice-field">
                                         </td>
                                     @endif
 

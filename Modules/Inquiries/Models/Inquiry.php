@@ -33,11 +33,11 @@ class Inquiry extends Model implements HasMedia
         'working_conditions' => 'array',
     ];
 
-    public function scopeMyDrafts($query, $userId = null)
-    {
-        $userId = $userId ?? Auth::id();
-        return $query->where('is_draft', true)->where('created_by', $userId);
-    }
+    // public function scopeMyDrafts($query, $userId = null)
+    // {
+    //     $userId = $userId ?? Auth::id();
+    //     return $query->where('is_draft', true)->where('created_by', $userId);
+    // }
 
     public function getClientAttribute()
     {
@@ -120,10 +120,10 @@ class Inquiry extends Model implements HasMedia
             ->first();
     }
 
-    public function scopeDrafts($query)
-    {
-        return $query->where('is_draft', true);
-    }
+    // public function scopeDrafts($query)
+    // {
+    //     return $query->where('is_draft', true);
+    // }
     // علاقات Contacts بناءً على الأدوار
     public function contacts()
     {
