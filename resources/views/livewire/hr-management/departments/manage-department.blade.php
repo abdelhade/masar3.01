@@ -74,6 +74,7 @@ new class extends Component
     public function employees($departmentId = null)
     {
         return Employee::query()
+            ->with('job:id,title')
             ->when($departmentId, fn ($query) => $query->where('department_id', $departmentId))
             ->orderByDesc('id')
             ->get();
@@ -396,7 +397,7 @@ new class extends Component
                             <select class="form-control @error('director_id') is-invalid @enderror font-hold fw-bold" id="director_id" wire:model.blur="director_id">
                                 <option value="">{{ __('Select Director') }}</option>
                                 @forelse ($this->employees($departmentId) as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->name }} - {{ $employee->job->title }}</option>
+                                    <option value="{{ $employee->id }}">{{ $employee->name }}@if($employee->job) - {{ $employee->job->title }}@endif</option>
                                 @empty
                                     <option value="">{{ __('No employees found in this department.') }}</option>
                                 @endforelse
@@ -412,7 +413,7 @@ new class extends Component
                             <select class="form-control @error('deputy_director_id') is-invalid @enderror font-hold fw-bold" id="deputy_director_id" wire:model.blur="deputy_director_id">
                                 <option value="">{{ __('Select Deputy Director') }}</option>
                                 @forelse ($this->employees($departmentId) as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->name }} - {{ $employee->job->title }}</option>
+                                    <option value="{{ $employee->id }}">{{ $employee->name }}@if($employee->job) - {{ $employee->job->title }}@endif</option>
                                 @empty
                                     <option value="">{{ __('No employees found in this department.') }}</option>
                                 @endforelse

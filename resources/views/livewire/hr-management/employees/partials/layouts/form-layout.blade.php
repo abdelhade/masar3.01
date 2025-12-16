@@ -8,7 +8,31 @@
 <div style="font-family: 'Cairo', sans-serif; direction: rtl;" wire:ignore.self>
 
     <!-- Notification Container -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 60px;">
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 60px;"
+         x-data="{
+             notifications: [],
+             init() {
+                 // Listen for Livewire notify events
+                 if (window.Livewire) {
+                     Livewire.on('notify', (data) => {
+                         const notification = {
+                             id: Date.now() + Math.random(),
+                             type: data[0]?.type || 'info',
+                             message: data[0]?.message || ''
+                         };
+                         this.notifications.push(notification);
+                         
+                         // Auto-remove after 5 seconds
+                         setTimeout(() => {
+                             const index = this.notifications.findIndex(n => n.id === notification.id);
+                             if (index > -1) {
+                                 this.notifications.splice(index, 1);
+                             }
+                         }, 5000);
+                     });
+                 }
+             }
+         }">
         <template x-for="notification in notifications" :key="notification.id">
             <div class="alert mb-2 shadow-lg"
                 :class="{
@@ -159,12 +183,16 @@
 <script>
 // Simple JavaScript for employee form - No Alpine needed
 function handleEmployeeImageChange(input) {
+    if (!input || !input.files || !input.files[0]) {
+        return;
+    }
+    
     const file = input.files[0];
     const preview = document.getElementById('employee-image-preview');
     const fileInfo = document.getElementById('file-info');
     const fileName = document.getElementById('file-name');
     
-    if (file) {
+    if (file && preview && fileInfo && fileName) {
         // Show file info
         fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
         fileInfo.style.display = 'block';
@@ -172,7 +200,9 @@ function handleEmployeeImageChange(input) {
         // Preview image
         const reader = new FileReader();
         reader.onload = function(e) {
-            preview.src = e.target.result;
+            if (preview) {
+                preview.src = e.target.result;
+            }
         };
         reader.readAsDataURL(file);
     }
@@ -182,6 +212,10 @@ function handleEmployeeImageChange(input) {
 function togglePasswordVisibility(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
+    
+    if (!input || !icon) {
+        return;
+    }
     
     if (input.type === 'password') {
         input.type = 'text';

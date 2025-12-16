@@ -14,10 +14,8 @@
 <script src="{{ asset('assets/js/simplebar.min.js') }}" defer></script>
 <script src="{{ asset('assets/js/moment.js') }}" defer></script>
 <script src="{{ asset('assets/plugins/daterangepicker/daterangepicker.js') }}" defer></script>
-<script src="{{ asset('assets/plugins/apex-charts/apexcharts.min.js') }}" defer></script>
-<script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-2.0.2.min.js') }}" defer></script>
-<script src="{{ asset('assets/plugins/jvectormap/jquery-jvectormap-us-aea-en.js') }}" defer></script>
-<script src="{{ asset('assets/pages/jquery.analytics_dashboard.init.js') }}" defer></script>
+{{-- Dashboard scripts moved to @stack('dashboard-scripts') to avoid loading on non-dashboard pages --}}
+@stack('dashboard-scripts')
 <script src="{{ asset('assets/js/jq.js') }}"></script>
 
 {{-- Select2 --}}

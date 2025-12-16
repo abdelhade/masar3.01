@@ -175,6 +175,23 @@
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
         border: 1px solid rgba(0, 0, 0, 0.15) !important;
         border-radius: 0.375rem !important;
+        background-color: white !important;
+    }
+    
+    /* Ensure dropdowns work even in hidden tabs */
+    .tab-pane .kpi-dropdown-container,
+    .tab-pane .leave-type-dropdown-container {
+        position: relative !important;
+    }
+    
+    /* Ensure dropdowns are properly styled */
+    .tab-pane.show.active .employee-dropdown {
+        position: absolute !important;
+    }
+    
+    /* Hide dropdowns when not shown */
+    .employee-dropdown[x-cloak] {
+        display: none !important;
     }
     
     /* Force ALL cards to lower z-index - Must be below dropdown */
@@ -249,5 +266,42 @@
     /* Cursor pointer utility */
     .cursor-pointer {
         cursor: pointer !important;
+    }
+    
+    /* ==========================================
+       Fix Empty Space in Tabs
+       ========================================== */
+    
+    /* Remove unnecessary padding/margin from tab content */
+    #employeeFormTabsContent .tab-pane {
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+    }
+    
+    /* Ensure tab content doesn't have extra space */
+    #employeeFormTabsContent .tab-pane > div {
+        margin-bottom: 0;
+    }
+    
+    /* Remove extra padding from card-body in tabs */
+    #employeeFormTabsContent .tab-pane .card-body {
+        padding: 1rem !important;
+    }
+    
+    /* Ensure tab content container doesn't add extra space */
+    .tab-content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Fix for empty space in form layout */
+    .card-body form {
+        margin-bottom: 0;
+    }
+    
+    /* Remove extra margin from last element in tabs */
+    #employeeFormTabsContent .tab-pane > div:last-child {
+        margin-bottom: 0;
     }
 </style>
