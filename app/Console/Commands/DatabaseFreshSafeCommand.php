@@ -126,8 +126,11 @@ class DatabaseFreshSafeCommand extends Command
             $excludeTables = implode(' ', array_map(fn ($t) => "--ignore-table={$database}.{$t}", $this->excludedTables));
 
             // بناء أمر mysqldump (بدون shell redirection ليعمل على Windows و Linux)
+            // --no-create-info: لحفظ البيانات فقط بدون structure (الجداول تُنشأ من migrations)
+            // --complete-insert: لكتابة أسماء الأعمدة في INSERT statements
+            // --skip-triggers --skip-routines: لتجنب مشاكل الصلاحيات
             $command = sprintf(
-                'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --quick --lock-tables=false --routines --triggers %s %s',
+                'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --quick --lock-tables=false --no-create-info --complete-insert --skip-triggers --skip-routines %s %s',
                 escapeshellarg($username),
                 escapeshellarg($password),
                 escapeshellarg($host),
@@ -366,12 +369,6 @@ class DatabaseFreshSafeCommand extends Command
 
     private function restoreData(string $backupPath): void
     {
-        $database = config('database.connections.mysql.database');
-        $username = config('database.connections.mysql.username');
-        $password = config('database.connections.mysql.password');
-        $host = config('database.connections.mysql.host');
-        $port = config('database.connections.mysql.port', 3306);
-
         // If file is compressed, decompress first
         if (str_ends_with($backupPath, '.gz')) {
             $this->info('📦 Decompressing file...');
@@ -387,46 +384,382 @@ class DatabaseFreshSafeCommand extends Command
             throw new \Exception("Backup file not found: {$backupPath}");
         }
 
-        // Use unified method that works on Windows and Linux
-        // Read file content and pass it via stdin (works on both systems)
+        // Read SQL file and parse it
         $sqlContent = File::get($backupPath);
 
-        // Build mysql command
-        $command = sprintf(
-            'mysql --user=%s --password=%s --host=%s --port=%s %s',
-            escapeshellarg($username),
-            escapeshellarg($password),
-            escapeshellarg($host),
-            escapeshellarg($port),
-            escapeshellarg($database)
-        );
-
-        // Execute command with SQL content passed via stdin
-        $process = Process::timeout(3600)
-            ->input($sqlContent)
-            ->run($command);
-
-        if (! $process->successful()) {
-            $errorOutput = $process->errorOutput();
-            $output = $process->output();
-            $errorMessage = $errorOutput ?: $output ?: 'Unknown error';
-
-            // Show additional information to help diagnose
-            $this->error('❌ Error details:');
-            if ($errorOutput) {
-                $this->error('   Error Output: '.$errorOutput);
-            }
-            if ($output) {
-                $this->error('   Output: '.$output);
-            }
-
-            throw new \Exception('Failed to restore data: '.$errorMessage);
-        }
+        // Parse SQL file to extract INSERT statements
+        $this->restoreDataFromSql($sqlContent);
 
         // Delete uncompressed file if temporary
         if (str_contains($backupPath, 'backup_') && File::exists($backupPath)) {
             File::delete($backupPath);
         }
+    }
+
+    private function restoreDataFromSql(string $sqlContent): void
+    {
+        // Disable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+        // Try to use mysql command line first (faster for large files)
+        // If it fails, fall back to Laravel method
+        if ($this->tryRestoreWithMysql($sqlContent)) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+            return;
+        }
+
+        // Fallback: Use Laravel DB facade with smart column matching
+        $this->warn('⚠️  Falling back to Laravel restore method (slower but handles schema changes)...');
+
+        // Parse SQL content to extract INSERT statements
+        $insertStatements = $this->extractInsertStatements($sqlContent);
+
+        if (empty($insertStatements)) {
+            $this->warn('⚠️  No INSERT statements found in backup file');
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+            return;
+        }
+
+        $totalStatements = count($insertStatements);
+        $progressBar = $this->output->createProgressBar($totalStatements);
+        $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% - %message%');
+        $progressBar->setMessage('Restoring data...');
+        $progressBar->start();
+
+        $tablesProcessed = [];
+        foreach ($insertStatements as $statement) {
+            $tableName = $statement['table'];
+            if (! isset($tablesProcessed[$tableName])) {
+                $tablesProcessed[$tableName] = 0;
+            }
+            $tablesProcessed[$tableName]++;
+
+            $this->processInsertStatement($statement, $tableName);
+            $progressBar->setMessage("Restoring: {$tableName} ({$tablesProcessed[$tableName]} rows)");
+            $progressBar->advance();
+        }
+
+        $progressBar->setMessage('Completed!');
+        $progressBar->finish();
+        $this->newLine(2);
+
+        // Re-enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+    }
+
+    private function tryRestoreWithMysql(string $sqlContent): bool
+    {
+        try {
+            $database = config('database.connections.mysql.database');
+            $username = config('database.connections.mysql.username');
+            $password = config('database.connections.mysql.password');
+            $host = config('database.connections.mysql.host');
+            $port = config('database.connections.mysql.port', 3306);
+
+            // Build mysql command
+            $command = sprintf(
+                'mysql --user=%s --password=%s --host=%s --port=%s %s',
+                escapeshellarg($username),
+                escapeshellarg($password),
+                escapeshellarg($host),
+                escapeshellarg($port),
+                escapeshellarg($database)
+            );
+
+            // Execute command with SQL content passed via stdin
+            $process = Process::timeout(3600)
+                ->input($sqlContent)
+                ->run($command);
+
+            if ($process->successful()) {
+                return true;
+            }
+
+            // Check if error is due to missing columns (schema mismatch)
+            $errorOutput = $process->errorOutput();
+            if (str_contains($errorOutput, 'Unknown column') || str_contains($errorOutput, "doesn't exist")) {
+                // Schema mismatch - need to use Laravel method
+                return false;
+            }
+
+            // Other error - log and return false
+            $this->warn('⚠️  mysql command failed: '.$errorOutput);
+
+            return false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    private function extractInsertStatements(string $sqlContent): array
+    {
+        $statements = [];
+        $lines = explode("\n", $sqlContent);
+        $currentStatement = null;
+        $currentTable = null;
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            // Skip comments and empty lines
+            if (empty($line) || str_starts_with($line, '--') || str_starts_with($line, '/*')) {
+                continue;
+            }
+
+            // Skip SET statements
+            if (preg_match('/^SET\s+/i', $line) || preg_match('/^START\s+TRANSACTION/i', $line) || preg_match('/^COMMIT/i', $line)) {
+                continue;
+            }
+
+            // Start of INSERT statement
+            if (preg_match('/^INSERT\s+INTO\s+`?(\w+)`?\s*\(/i', $line, $matches)) {
+                // Save previous statement if exists
+                if ($currentStatement !== null && $currentTable !== null) {
+                    $statements[] = [
+                        'table' => $currentTable,
+                        'sql' => $currentStatement,
+                    ];
+                }
+
+                $currentTable = $matches[1];
+                $currentStatement = $line;
+            } elseif ($currentStatement !== null) {
+                // Continuation of INSERT statement (multi-line)
+                $currentStatement .= ' '.$line;
+            }
+
+            // Check if statement is complete (ends with semicolon)
+            if ($currentStatement !== null && str_ends_with($line, ';')) {
+                $statements[] = [
+                    'table' => $currentTable,
+                    'sql' => $currentStatement,
+                ];
+                $currentStatement = null;
+                $currentTable = null;
+            }
+        }
+
+        // Add last statement if exists
+        if ($currentStatement !== null && $currentTable !== null) {
+            $statements[] = [
+                'table' => $currentTable,
+                'sql' => $currentStatement,
+            ];
+        }
+
+        return $statements;
+    }
+
+    private function processInsertStatement(array $statement, string $tableName): void
+    {
+        try {
+            $sql = $statement['sql'];
+
+            // Extract columns and values from INSERT statement
+            // Handle both single and multi-value INSERTs
+            if (preg_match('/^INSERT\s+INTO\s+`?(\w+)`?\s*\(([^)]+)\)\s*VALUES\s*(.+?);?$/is', $sql, $matches)) {
+                $backupColumns = array_map(function ($col) {
+                    return trim(str_replace(['`', "'", '"'], '', $col));
+                }, explode(',', $matches[2]));
+
+                // Get current table structure (after migrations)
+                $currentColumns = $this->getTableColumns($tableName);
+
+                if (empty($currentColumns)) {
+                    // Table doesn't exist, skip
+                    return;
+                }
+
+                // Parse values - handle both single and multi-row inserts
+                $valuesString = trim($matches[3]);
+                $valuesString = rtrim($valuesString, ';');
+
+                // Split by ),( to handle multi-row inserts
+                $valueRows = preg_split('/\)\s*,\s*\(/', $valuesString);
+                $valueRows[0] = ltrim($valueRows[0], '(');
+                $valueRows[count($valueRows) - 1] = rtrim($valueRows[count($valueRows) - 1], ')');
+
+                foreach ($valueRows as $valueRow) {
+                    $backupValues = $this->parseValues($valueRow);
+
+                    // Build data array matching current table structure
+                    $data = [];
+                    foreach ($currentColumns as $column) {
+                        $columnName = $column['name'];
+                        $columnIndex = array_search($columnName, $backupColumns);
+
+                        if ($columnIndex !== false && isset($backupValues[$columnIndex])) {
+                            // Column exists in backup, use its value
+                            $value = $backupValues[$columnIndex];
+                            $data[$columnName] = $this->parseValue($value, $column['type']);
+                        } else {
+                            // New column not in backup - use default or NULL
+                            if ($column['nullable'] || $column['default'] !== null) {
+                                $data[$columnName] = $column['default'];
+                            } else {
+                                // For required columns without default, use appropriate default based on type
+                                $data[$columnName] = $this->getDefaultValueForType($column['type']);
+                            }
+                        }
+                    }
+
+                    // Insert data using Laravel (handles all edge cases)
+                    if (! empty($data)) {
+                        DB::table($tableName)->insert($data);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Log error but continue with other rows
+            $this->warn("⚠️  Error inserting into {$tableName}: ".$e->getMessage());
+        }
+    }
+
+    private function getTableColumns(string $tableName): array
+    {
+        try {
+            $columns = DB::select("SHOW COLUMNS FROM `{$tableName}`");
+            $result = [];
+
+            foreach ($columns as $column) {
+                $column = (array) $column;
+                $result[] = [
+                    'name' => $column['Field'],
+                    'type' => $column['Type'],
+                    'nullable' => $column['Null'] === 'YES',
+                    'default' => $column['Default'],
+                ];
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    private function parseValues(string $valuesString): array
+    {
+        $values = [];
+        $current = '';
+        $inQuotes = false;
+        $quoteChar = null;
+        $depth = 0;
+        $length = strlen($valuesString);
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $valuesString[$i];
+            $prevChar = $i > 0 ? $valuesString[$i - 1] : null;
+
+            if (! $inQuotes && ($char === '"' || $char === "'")) {
+                $inQuotes = true;
+                $quoteChar = $char;
+                $current .= $char;
+            } elseif ($inQuotes && $char === $quoteChar) {
+                // Check if it's escaped
+                if ($prevChar === '\\') {
+                    $current .= $char;
+                } else {
+                    // Check if next char is also quote (escaped quote in SQL)
+                    $nextChar = $i < $length - 1 ? $valuesString[$i + 1] : null;
+                    if ($nextChar === $quoteChar) {
+                        $current .= $char.$nextChar;
+                        $i++; // Skip next char
+                    } else {
+                        $inQuotes = false;
+                        $quoteChar = null;
+                        $current .= $char;
+                    }
+                }
+            } elseif (! $inQuotes && $char === '(') {
+                $depth++;
+                $current .= $char;
+            } elseif (! $inQuotes && $char === ')') {
+                $depth--;
+                $current .= $char;
+            } elseif (! $inQuotes && $char === ',' && $depth === 0) {
+                $values[] = trim($current);
+                $current = '';
+            } else {
+                $current .= $char;
+            }
+        }
+
+        if (! empty($current)) {
+            $values[] = trim($current);
+        }
+
+        return $values;
+    }
+
+    private function parseValue(string $value, string $columnType): mixed
+    {
+        $value = trim($value);
+
+        // Handle NULL
+        if (strtoupper($value) === 'NULL') {
+            return null;
+        }
+
+        // Remove quotes
+        if ((str_starts_with($value, "'") && str_ends_with($value, "'")) || (str_starts_with($value, '"') && str_ends_with($value, '"'))) {
+            $value = substr($value, 1, -1);
+            // Unescape
+            $value = str_replace(["\\'", '\\"', '\\\\'], ["'", '"', '\\'], $value);
+        }
+
+        // Handle boolean
+        if (in_array(strtolower($value), ['true', 'false', '1', '0'])) {
+            return in_array(strtolower($value), ['true', '1']);
+        }
+
+        // Handle numeric types
+        if (preg_match('/^(int|tinyint|smallint|mediumint|bigint)/i', $columnType)) {
+            return (int) $value;
+        }
+
+        if (preg_match('/^(float|double|decimal)/i', $columnType)) {
+            return (float) $value;
+        }
+
+        return $value;
+    }
+
+    private function getDefaultValueForType(string $columnType): mixed
+    {
+        // Handle integer types
+        if (preg_match('/^(int|tinyint|smallint|mediumint|bigint)/i', $columnType)) {
+            return 0;
+        }
+
+        // Handle float types
+        if (preg_match('/^(float|double|decimal)/i', $columnType)) {
+            return 0.0;
+        }
+
+        // Handle datetime/timestamp types
+        if (preg_match('/^(datetime|timestamp)/i', $columnType)) {
+            return now();
+        }
+
+        // Handle date type
+        if (preg_match('/^(date)/i', $columnType)) {
+            return now()->toDateString();
+        }
+
+        // Handle time type
+        if (preg_match('/^(time)/i', $columnType)) {
+            return now()->toTimeString();
+        }
+
+        // Handle boolean/tinyint(1)
+        if (preg_match('/^(tinyint\(1\)|boolean)/i', $columnType)) {
+            return false;
+        }
+
+        // Default: empty string for text types
+        return '';
     }
 
     private function compressFile(string $source, string $destination): void

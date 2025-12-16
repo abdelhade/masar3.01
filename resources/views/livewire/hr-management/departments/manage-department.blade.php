@@ -177,7 +177,7 @@ new class extends Component
         $this->director_id = $department->director_id;
         $this->deputy_director_id = $department->deputy_director_id;
         $this->description = $department->description;
-        $this->max_leave_percentage = $department->max_leave_percentage;
+        $this->max_leave_percentage = $department->max_leave_percentage !== null ? (float) $department->max_leave_percentage : null;
         $this->isEdit = true;
         $this->showModal = true;
         $this->dispatch('showModal');
