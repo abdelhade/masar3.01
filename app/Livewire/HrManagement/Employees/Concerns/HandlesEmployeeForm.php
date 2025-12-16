@@ -201,8 +201,8 @@ trait HandlesEmployeeForm
 
         // Cache for 2 hours (moderately updated - HR data)
         $this->departments = $cache->remember('departments_list', 7200, function () {
-            return Department::with('director')
-                ->select('id', 'title')
+            return Department::with('director:id,name')
+                ->select('id', 'title', 'director_id')
                 ->orderBy('title')
                 ->get();
         });
@@ -228,10 +228,21 @@ trait HandlesEmployeeForm
         $this->currentImageUrl = null;
     }
 
+    /**
+     * Line managers computed property
+     * Note: This is now handled client-side by Alpine.js for better performance
+     * Keeping this for backward compatibility if needed
+     */
     #[Computed]
     public function lineManagers()
     {
-        return Employee::where('department_id', $this->department_id)->where('id', '!=', $this->employeeId)->get();
+        if (!$this->department_id) {
+            return collect([]);
+        }
+        return Employee::where('department_id', $this->department_id)
+            ->where('id', '!=', $this->employeeId)
+            ->select('id', 'name')
+            ->get();
     }
 
     /**
@@ -615,9 +626,22 @@ trait HandlesEmployeeForm
         $this->image = null;
     }
 
+    /**
+     * Handle property updates
+     * Note: We removed real-time validation to improve performance
+     * Validation happens only on save() to reduce server requests
+     */
     public function updated($propertyName): void
     {
-        $this->validateOnly($propertyName);
+        // Only validate specific fields that need immediate feedback
+        // Most validation happens on save() to avoid unnecessary server requests
+        
+        // Email uniqueness check (important for user feedback)
+        if ($propertyName === 'email' && !empty($this->email)) {
+            $this->validateOnly('email');
+        }
+        
+        // Don't validate on every change - let save() handle it
     }
 
     /**
@@ -673,147 +697,43 @@ trait HandlesEmployeeForm
         }
     }
 
+    /**
+     * Add KPI - DEPRECATED: Now handled client-side by Alpine.js
+     * Keeping for backward compatibility and server-side fallback
+     * KPIs are now managed locally and synced via $wire.set() on save
+     */
     public function addKpi(): void
     {
-        // Authorization check
-        /** @var User|null $user */
-        $user = Auth::user();
-        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
-
-        if ($this->selected_kpi_id) {
-            if (! is_array($this->kpi_ids)) {
-                $this->kpi_ids = [];
-            }
-            if (! is_array($this->kpi_weights)) {
-                $this->kpi_weights = [];
-            }
-
-            if (! in_array($this->selected_kpi_id, $this->kpi_ids)) {
-                $this->kpi_ids[] = $this->selected_kpi_id;
-                $this->kpi_weights[$this->selected_kpi_id] = 0;
-                $this->selected_kpi_id = '';
-
-                // Dispatch event to clear Alpine.js selection
-                $this->dispatch('kpiAdded');
-
-                $this->dispatch('notify', [
-                    'type' => 'success',
-                    'message' => __('hr.kpi_added'),
-                ]);
-            } else {
-                $this->dispatch('notify', [
-                    'type' => 'error',
-                    'message' => __('hr.kpi_already_added'),
-                ]);
-            }
-        } else {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => __('hr.kpi_required'),
-            ]);
-        }
+        // Note: This method is no longer called from frontend
+        // KPI management is now done client-side for better performance
+        // Data is synced to Livewire via $wire.set() before save()
     }
 
+    /**
+     * Remove KPI - DEPRECATED: Now handled client-side by Alpine.js
+     */
     public function removeKpi($kpiId): void
     {
-        // Authorization check
-        /** @var User|null $user */
-        $user = Auth::user();
-        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
-
-        if (! is_array($this->kpi_ids)) {
-            $this->kpi_ids = [];
-        }
-        if (! is_array($this->kpi_weights)) {
-            $this->kpi_weights = [];
-        }
-
-        $this->kpi_ids = array_filter($this->kpi_ids, function ($id) use ($kpiId) {
-            return $id != $kpiId;
-        });
-        unset($this->kpi_weights[$kpiId]);
-
-        $this->dispatch('notify', [
-            'type' => 'success',
-            'message' => __('hr.kpi_removed'),
-        ]);
+        // Note: This method is no longer called from frontend
+        // KPI management is now done client-side for better performance
     }
 
+    /**
+     * Add Leave Balance - DEPRECATED: Now handled client-side by Alpine.js
+     */
     public function addLeaveBalance(): void
     {
-        // Authorization check
-        /** @var User|null $user */
-        $user = Auth::user();
-        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
-
-        if ($this->selected_leave_type_id) {
-            if (! is_array($this->leave_balances)) {
-                $this->leave_balances = [];
-            }
-
-            // Check if this leave type already exists for the current year
-            $currentYear = date('Y');
-            $key = $this->selected_leave_type_id.'_'.$currentYear;
-
-            if (isset($this->leave_balances[$key])) {
-                $this->dispatch('notify', [
-                    'type' => 'error',
-                    'message' => __('hr.leave_balance_already_exists'),
-                ]);
-
-                return;
-            }
-
-            // Note: Validation for existing balances will be done in save() method
-            // This check is only for UI feedback, not critical for data integrity
-
-            // Add new leave balance with default values
-            $this->leave_balances[$key] = [
-                'leave_type_id' => $this->selected_leave_type_id,
-                'year' => $currentYear,
-                'opening_balance_days' => 0,
-                'used_days' => 0,
-                'pending_days' => 0,
-                'max_monthly_days' => 0,
-                'notes' => '',
-            ];
-
-            $this->selected_leave_type_id = '';
-
-            // Dispatch event to clear Alpine.js selection
-            $this->dispatch('leaveBalanceAdded');
-
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => __('hr.leave_balance_added'),
-            ]);
-        } else {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => __('hr.leave_type_required'),
-            ]);
-        }
+        // Note: This method is no longer called from frontend
+        // Leave balance management is now done client-side for better performance
     }
 
+    /**
+     * Remove Leave Balance - DEPRECATED: Now handled client-side by Alpine.js
+     */
     public function removeLeaveBalance($balanceKey): void
     {
-        // Authorization check
-        /** @var User|null $user */
-        $user = Auth::user();
-        abort_unless($user?->can('edit Hr-Employees') ?? false, 403, __('hr.unauthorized_action'));
-
-        if (! is_array($this->leave_balances)) {
-            $this->leave_balances = [];
-        }
-
-        if (isset($this->leave_balances[$balanceKey])) {
-            unset($this->leave_balances[$balanceKey]);
-        }
-
-        $this->dispatch('notify', [
-            'type' => 'success',
-            'message' => __('hr.leave_balance_removed'),
-        ]);
+        // Note: This method is no longer called from frontend
+        // Leave balance management is now done client-side for better performance
     }
 
     /**

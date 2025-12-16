@@ -1,5 +1,51 @@
 {{-- Job Tab --}}
-<div>
+@php
+    // Prepare departments with director data for Alpine.js
+    $departmentsForJs = $departments->map(function($dept) {
+        return [
+            'id' => $dept->id,
+            'title' => $dept->title,
+            'director' => $dept->director ? [
+                'id' => $dept->director->id,
+                'name' => $dept->director->name,
+            ] : null,
+        ];
+    })->values();
+@endphp
+<div wire:ignore.self x-data="{
+    departments: @js($departmentsForJs),
+    employees: @js(\App\Models\Employee::select('id', 'name', 'department_id')->get()),
+    selectedDepartmentId: $wire.entangle('department_id'),
+    selectedLineManagerId: $wire.entangle('line_manager_id'),
+    employeeId: @js($employeeId ?? null),
+    
+    get currentDepartment() {
+        if (!this.selectedDepartmentId) return null;
+        return this.departments.find(d => d.id == this.selectedDepartmentId);
+    },
+    
+    get departmentDirector() {
+        return this.currentDepartment?.director?.name || '';
+    },
+    
+    get availableLineManagers() {
+        if (!this.selectedDepartmentId) return [];
+        return this.employees.filter(e => 
+            e.department_id == this.selectedDepartmentId && 
+            e.id != this.employeeId
+        );
+    },
+    
+    onDepartmentChange() {
+        // Reset line manager when department changes (entangle syncs automatically)
+        if (this.selectedLineManagerId) {
+            const managerInDept = this.availableLineManagers.find(m => m.id == this.selectedLineManagerId);
+            if (!managerInDept) {
+                this.selectedLineManagerId = '';
+            }
+        }
+    }
+}">
     <div class="row">
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
@@ -14,11 +60,13 @@
                          <div class="row gx-4 g-1">
                             <div class="col-6">
                                 <label class="form-label fw-bold text-dark">{{ __('القسم') }}</label>
-                                <select class="form-select" wire:model.blur="department_id">
+                                <select class="form-select" 
+                                        x-model="selectedDepartmentId"
+                                        @change="onDepartmentChange()">
                                     <option value="">{{ __('اختر القسم') }}</option>
-                                    @foreach ($departments as $department)
-                                        <option value="{{ $department->id }}">{{ $department->title }}</option>
-                                    @endforeach
+                                    <template x-for="department in departments" :key="department.id">
+                                        <option :value="department.id" x-text="department.title"></option>
+                                    </template>
                                 </select>
                                 @error('department_id')
                                     <div class="text-danger small mt-1">
@@ -28,17 +76,20 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold text-dark">{{ __('مدير القسم') }}</label>
-                                <input type="text" class="form-control" value="{{ $departments?->find($department_id)?->director?->name }}" disabled readonly>
+                                <input type="text" class="form-control" 
+                                       :value="departmentDirector" 
+                                       disabled readonly>
                             </div>
                         </div>
                         {{-- Line Manager --}}
                         <div class="col-12">
                             <label class="form-label fw-bold text-dark">{{ __('المدير المباشر') }}</label>
-                            <select class="form-select" wire:model.defer="line_manager_id">
+                            <select class="form-select" 
+                                    x-model="selectedLineManagerId">
                                 <option value="">{{ __('اختر المدير المباشر') }}</option>
-                                    @foreach ($this->lineManagers as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                                @endforeach
+                                <template x-for="manager in availableLineManagers" :key="manager.id">
+                                    <option :value="manager.id" x-text="manager.name"></option>
+                                </template>
                             </select>
                             @error('line_manager_id')
                                 <div class="text-danger small mt-1">

@@ -1,5 +1,5 @@
 {{-- Attendance Tab --}}
-<div>
+<div x-data="{ showPassword: false }">
     <div class="row">
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
@@ -122,7 +122,7 @@
                                     wire:model.defer="password" 
                                     :placeholder="$wire.isEdit ? '{{ __('اتركه فارغاً للحفاظ على الباسورد الحالي') }}' : '{{ __('أدخل باسورد الهاتف') }}'">
                                 <button class="btn btn-outline-secondary" type="button" 
-                                        @click="togglePassword()"
+                                        @click="showPassword = !showPassword"
                                         data-bs-toggle="tooltip" 
                                         :title="showPassword ? '{{ __('إخفاء كلمة المرور') }}' : '{{ __('إظهار كلمة المرور') }}'">
                                     <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>

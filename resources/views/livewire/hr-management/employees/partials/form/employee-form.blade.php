@@ -77,23 +77,20 @@
             // Clear saved tab for new employee
             localStorage.removeItem('employeeFormActiveTab');
             this.activeTab = 'personal';
-            this.$nextTick(() => {
-                this.switchTab('personal', false);
-            });
         } else {
             // Restore active tab from localStorage for edit mode
             const savedTab = localStorage.getItem('employeeFormActiveTab');
             if (savedTab) {
                 this.activeTab = savedTab;
-                this.$nextTick(() => {
-                    this.switchTab(savedTab, false);
-                });
             } else {
-                this.$nextTick(() => {
-                    this.switchTab('personal', false);
-                });
+                this.activeTab = 'personal';
             }
         }
+        
+        // Initialize the active tab immediately after DOM is ready
+        this.$nextTick(() => {
+            this.switchTab(this.activeTab, false);
+        });
         
         // Watch for tab changes and save to localStorage
         this.$watch('activeTab', (value) => {
@@ -101,40 +98,14 @@
                 localStorage.setItem('employeeFormActiveTab', value);
             }
         });
-    }
         
-        // Listen for Livewire updates to preserve active tab
+        // Re-apply tab state after Livewire updates (e.g., validation errors)
         if (window.Livewire) {
-            // Preserve tab after DOM updates
             Livewire.hook('morph.updated', ({ el, component }) => {
-                const currentTab = this.activeTab || localStorage.getItem('employeeFormActiveTab') || 'personal';
-                // Only restore if we're not already on the correct tab
-                if (this.activeTab !== currentTab) {
-                    this.$nextTick(() => {
-                        setTimeout(() => {
-                            this.switchTab(currentTab, false);
-                        }, 100);
-                    });
-                } else {
-                    // Just ensure the tab is properly displayed
-                    this.$nextTick(() => {
-                        setTimeout(() => {
-                            this.switchTab(this.activeTab, false);
-                        }, 50);
-                    });
-                }
-            });
-            
-            // Also listen for component updates
-            Livewire.hook('message.processed', (message, component) => {
-                const currentTab = this.activeTab || localStorage.getItem('employeeFormActiveTab') || 'personal';
-                if (this.activeTab !== currentTab) {
-                    this.$nextTick(() => {
-                        setTimeout(() => {
-                            this.switchTab(currentTab, false);
-                        }, 100);
-                    });
-                }
+                // Re-apply tab visibility after Livewire morphs the DOM
+                this.$nextTick(() => {
+                    this.switchTab(this.activeTab, false);
+                });
             });
         }
     },
@@ -146,32 +117,68 @@
             localStorage.setItem('employeeFormActiveTab', tabName);
         }
         
-        // Update Bootstrap tabs
+        // Update Bootstrap tabs immediately
+        // Remove active class from all tabs and hide them
+        const allLinks = document.querySelectorAll('#employeeFormTabs .nav-link');
+        const allPanes = document.querySelectorAll('#employeeFormTabsContent .tab-pane');
+        
+        allLinks.forEach(link => {
+            link.classList.remove('active');
+            link.setAttribute('aria-selected', 'false');
+        });
+        
+        allPanes.forEach(pane => {
+            pane.classList.remove('show', 'active');
+            // Use visibility instead of display to keep Alpine.js working
+            pane.style.visibility = 'hidden';
+            pane.style.position = 'absolute';
+            pane.style.opacity = '0';
+            pane.style.pointerEvents = 'none';
+            pane.style.height = '0';
+            pane.style.overflow = 'hidden';
+        });
+        
+        // Add active class to selected tab and show it
+        const tabButton = document.querySelector(`#${tabName}-tab`);
+        const tabPane = document.querySelector(`#${tabName}-content`);
+        
+        if (tabButton) {
+            tabButton.classList.add('active');
+            tabButton.setAttribute('aria-selected', 'true');
+        }
+        if (tabPane) {
+            tabPane.classList.add('show', 'active');
+            // Show active tab properly
+            tabPane.style.visibility = 'visible';
+            tabPane.style.position = 'relative';
+            tabPane.style.opacity = '1';
+            tabPane.style.pointerEvents = 'auto';
+            tabPane.style.height = 'auto';
+            tabPane.style.overflow = 'visible';
+        }
+        
+        // Ensure Alpine reactivity updates
         this.$nextTick(() => {
-            // Remove active class from all tabs
-            const allLinks = document.querySelectorAll('#employeeFormTabs .nav-link');
-            const allPanes = document.querySelectorAll('#employeeFormTabsContent .tab-pane');
-            
-            allLinks.forEach(link => {
-                link.classList.remove('active');
-                link.setAttribute('aria-selected', 'false');
-            });
-            
+            // Double-check the tab is visible and others are hidden
             allPanes.forEach(pane => {
-                pane.classList.remove('show', 'active');
+                if (pane.id === `${tabName}-content`) {
+                    pane.classList.add('show', 'active');
+                    pane.style.visibility = 'visible';
+                    pane.style.position = 'relative';
+                    pane.style.opacity = '1';
+                    pane.style.pointerEvents = 'auto';
+                    pane.style.height = 'auto';
+                    pane.style.overflow = 'visible';
+                } else {
+                    pane.classList.remove('show', 'active');
+                    pane.style.visibility = 'hidden';
+                    pane.style.position = 'absolute';
+                    pane.style.opacity = '0';
+                    pane.style.pointerEvents = 'none';
+                    pane.style.height = '0';
+                    pane.style.overflow = 'hidden';
+                }
             });
-            
-            // Add active class to selected tab
-            const tabButton = document.querySelector(`#${tabName}-tab`);
-            const tabPane = document.querySelector(`#${tabName}-content`);
-            
-            if (tabButton) {
-                tabButton.classList.add('active');
-                tabButton.setAttribute('aria-selected', 'true');
-            }
-            if (tabPane) {
-                tabPane.classList.add('show', 'active');
-            }
         });
     },
     isActiveTab(tabName) {
@@ -235,7 +242,7 @@
     </ul>
 
     <!-- Tab Content -->
-    <div class="tab-content" id="employeeFormTabsContent">
+    <div class="tab-content" id="employeeFormTabsContent" style="min-height: auto;">
         @foreach($tabs as $tabKey => $tab)
             @php
                 // Convert tab key to file name
@@ -244,15 +251,15 @@
                     'leaveBalances' => 'leave-balances',
                     default => strtolower($tabKey)
                 };
+                $isFirstTab = $loop->first;
             @endphp
-            <div class="tab-pane fade"
+            <div class="tab-pane fade @if($isFirstTab) show active @endif"
                  :class="{ 'show active': isActiveTab('{{ $tabKey }}') }"
                  id="{{ $tabKey }}-content"
                  role="tabpanel"
                  aria-labelledby="{{ $tabKey }}-tab"
                  tabindex="0"
-                 x-show="isActiveTab('{{ $tabKey }}')"
-                 x-transition>
+                 style="min-height: auto; padding: 0; @if(!$isFirstTab) visibility: hidden; position: absolute; opacity: 0; pointer-events: none; height: 0; overflow: hidden; @else visibility: visible; position: relative; opacity: 1; pointer-events: auto; height: auto; overflow: visible; @endif">
                 @include("livewire.hr-management.employees.partials.form.tabs.{$tabFileName}-tab")
             </div>
         @endforeach

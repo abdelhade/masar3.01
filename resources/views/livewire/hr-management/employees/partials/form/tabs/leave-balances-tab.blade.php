@@ -1,25 +1,39 @@
 {{-- Leave Balances Tab --}}
-<div x-data="{
-    // Initialize from Livewire
-    get selectedLeaveTypeId() { return $wire.get('selected_leave_type_id') || ''; },
-    set selectedLeaveTypeId(value) { $wire.set('selected_leave_type_id', value); },
-    get leaveBalances() { return $wire.get('leave_balances') || {}; },
-    leaveTypes: @js($leaveTypes) || [],
-    
-    // Local search state
+<div wire:ignore.self x-data="{
+    // Local state (Alpine.js only)
+    selectedLeaveTypeId: '',
     leaveTypeSearch: '',
     leaveTypeSearchOpen: false,
     leaveTypeSearchIndex: -1,
+    currentYear: @js(now()->year),
+    
+    // Two-way binding with Livewire (without .live to prevent re-renders)
+    leaveBalances: $wire.entangle('leave_balances'),
+    leaveTypes: @js($leaveTypes) || [],
+    
+    init() {
+        // Ensure object is properly initialized
+        if (!this.leaveBalances || typeof this.leaveBalances !== 'object') {
+            this.leaveBalances = {};
+        }
+    },
     
     // Computed properties
     get leaveBalanceIds() {
-        return Object.keys(this.leaveBalances || {});
+        if (!this.leaveBalances || typeof this.leaveBalances !== 'object') {
+            return [];
+        }
+        return Object.keys(this.leaveBalances);
     },
     
     get availableLeaveTypes() {
-        const addedLeaveTypeIds = Object.values(this.leaveBalances || {})
-            .map(b => b.leave_type_id);
-        return this.leaveTypes.filter(lt => !addedLeaveTypeIds.includes(lt.id));
+        if (!this.leaveBalances || typeof this.leaveBalances !== 'object') {
+            return this.leaveTypes || [];
+        }
+        const addedLeaveTypeIds = Object.values(this.leaveBalances)
+            .map(b => b && b.leave_type_id ? b.leave_type_id : null)
+            .filter(id => id !== null);
+        return (this.leaveTypes || []).filter(lt => !addedLeaveTypeIds.includes(lt.id));
     },
     
     get filteredLeaveTypes() {
@@ -48,6 +62,22 @@
         this.selectedLeaveTypeId = '';
         this.leaveTypeSearch = '';
         this.leaveTypeSearchOpen = false;
+        this.leaveTypeSearchIndex = -1;
+    },
+    
+    toggleDropdown() {
+        this.leaveTypeSearchOpen = !this.leaveTypeSearchOpen;
+        if (this.leaveTypeSearchOpen) {
+            this.$nextTick(() => {
+                this.leaveTypeSearchIndex = -1;
+            });
+        }
+    },
+    
+    openDropdown() {
+        if (!this.leaveTypeSearchOpen) {
+            this.leaveTypeSearchOpen = true;
+        }
     },
     
     navigateLeaveTypeDown() {
@@ -68,6 +98,34 @@
         }
     },
     
+    addLeaveBalance() {
+        if (!this.selectedLeaveTypeId) return;
+        
+        // Check if this leave type already exists for the current year
+        const key = this.selectedLeaveTypeId + '_' + this.currentYear;
+        const balances = this.leaveBalances || {};
+        if (balances[key]) {
+            return;
+        }
+        
+        // Add leave balance - entangle syncs automatically with Livewire
+        this.leaveBalances = {
+            ...balances,
+            [key]: {
+                leave_type_id: this.selectedLeaveTypeId,
+                year: this.currentYear,
+                opening_balance_days: 0,
+                used_days: 0,
+                pending_days: 0,
+                max_monthly_days: 0,
+                notes: ''
+            }
+        };
+        
+        // Clear selection
+        this.clearLeaveTypeSelection();
+    },
+    
     calculateRemainingDays(balance) {
         const opening = parseFloat(balance.opening_balance_days) || 0;
         const used = parseFloat(balance.used_days) || 0;
@@ -77,18 +135,26 @@
     },
     
     updateLeaveBalance(balanceKey, field, value) {
-        const balances = { ...this.leaveBalances };
+        const balances = this.leaveBalances || {};
         if (balances[balanceKey]) {
-            balances[balanceKey][field] = value;
-            $wire.set('leave_balances', balances);
+            // Update - entangle syncs automatically
+            this.leaveBalances = {
+                ...balances,
+                [balanceKey]: {
+                    ...balances[balanceKey],
+                    [field]: value
+                }
+            };
         }
     },
     
-    init() {
-        // Watch for Livewire updates to clear selection after leave balance is added
-        $wire.on('leaveBalanceAdded', () => {
-            this.clearLeaveTypeSelection();
-        });
+    removeLeaveBalance(balanceKey) {
+        if (confirm('{{ __('هل أنت متأكد من حذف رصيد الإجازة؟') }}')) {
+            // Remove leave balance - entangle syncs automatically
+            const balances = {...(this.leaveBalances || {})};
+            delete balances[balanceKey];
+            this.leaveBalances = balances;
+        }
     }
 }">
     <div class="card border-0 shadow-sm mb-4">
@@ -116,8 +182,9 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control"
                                         :value="selectedLeaveTypeId ? getLeaveTypeName(selectedLeaveTypeId) : leaveTypeSearch"
-                                        @input="leaveTypeSearch = $event.target.value; if (selectedLeaveTypeId) { selectedLeaveTypeId = ''; } leaveTypeSearchOpen = true"
-                                        @click="leaveTypeSearchOpen = true"
+                                        @input="leaveTypeSearch = $event.target.value; if (selectedLeaveTypeId) { clearLeaveTypeSelection(); } openDropdown()"
+                                        @focus="openDropdown()"
+                                        @click="openDropdown()"
                                         @keydown.escape="leaveTypeSearchOpen = false"
                                         @keydown.arrow-down.prevent="navigateLeaveTypeDown()"
                                         @keydown.arrow-up.prevent="navigateLeaveTypeUp()"
@@ -125,20 +192,12 @@
                                         :placeholder="selectedLeaveTypeId ? '' : '{{ __('ابحث عن نوع الإجازة...') }}'"
                                         autocomplete="off">
                                     <button class="btn btn-outline-secondary" type="button"
-                                        @click="leaveTypeSearchOpen = !leaveTypeSearchOpen"
-                                        wire:loading.attr="disabled" wire:target="save"
-                                        wire:loading.class="opacity-50 cursor-not-allowed"
-                                        :disabled="$root.isRedirecting"
-                                        :class="{ 'opacity-50 cursor-not-allowed': $root.isRedirecting }">
+                                        @click="toggleDropdown()">
                                         <i class="fas" :class="leaveTypeSearchOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                                     </button>
                                     <button class="btn btn-outline-danger" type="button"
                                         x-show="selectedLeaveTypeId"
                                         @click="clearLeaveTypeSelection()"
-                                        wire:loading.attr="disabled" wire:target="save"
-                                        wire:loading.class="opacity-50 cursor-not-allowed"
-                                        :disabled="$root.isRedirecting"
-                                        :class="{ 'opacity-50 cursor-not-allowed': $root.isRedirecting }"
                                         title="{{ __('مسح الاختيار') }}">
                                         <i class="fas fa-times"></i>
                                     </button>
@@ -149,14 +208,18 @@
                                     x-transition:enter="transition ease-out duration-100"
                                     x-transition:enter-start="transform opacity-0 scale-95"
                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
                                     class="position-absolute w-100 bg-white border rounded shadow-lg mt-1 employee-dropdown"
                                     style="z-index: 999999 !important; max-height: 250px; overflow-y: auto; top: 100%; right: 0;"
                                     @click.away="leaveTypeSearchOpen = false"
                                     x-cloak>
                                     <template x-for="(leaveType, index) in filteredLeaveTypes" :key="leaveType.id">
                                         <div class="p-2 border-bottom cursor-pointer"
-                                            @click="selectLeaveType(leaveType); leaveTypeSearchOpen = false"
-                                            :class="leaveTypeSearchIndex === index ? 'bg-primary text-white' : 'hover-bg-light'">
+                                            @click="selectLeaveType(leaveType)"
+                                            :class="leaveTypeSearchIndex === index ? 'bg-primary text-white' : 'hover-bg-light'"
+                                            @mouseenter="leaveTypeSearchIndex = index">
                                             <div class="fw-bold" x-text="leaveType.name"></div>
                                             <small class="text-muted" x-show="leaveType.code" x-text="'الكود: ' + leaveType.code"></small>
                                         </div>
@@ -184,17 +247,10 @@
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="button" class="btn btn-main w-100"
-                                @click="if(selectedLeaveTypeId) $wire.addLeaveBalance()"
-                                :disabled="!selectedLeaveTypeId || $root.isRedirecting"
-                                wire:loading.attr="disabled" wire:target="save,addLeaveBalance"
-                                wire:loading.class="opacity-50 cursor-not-allowed"
-                                :class="{ 'opacity-50 cursor-not-allowed': $root.isRedirecting }">
-                                <span wire:loading.remove wire:target="addLeaveBalance">
-                                    <i class="fas fa-plus me-2"></i>{{ __('إضافة') }}
-                                </span>
-                                <span wire:loading wire:target="addLeaveBalance">
-                                    <i class="fas fa-spinner fa-spin me-2"></i>{{ __('جاري الإضافة...') }}
-                                </span>
+                                @click="addLeaveBalance()"
+                                :disabled="!selectedLeaveTypeId"
+                                :class="{ 'opacity-50 cursor-not-allowed': !selectedLeaveTypeId }">
+                                <i class="fas fa-plus me-2"></i>{{ __('إضافة') }}
                             </button>
                         </div>
                     </div>
@@ -202,7 +258,7 @@
             </div>
 
             <!-- أرصدة الإجازات المضافة -->
-            <template x-if="leaveBalanceIds && leaveBalanceIds.length > 0">
+            <template x-if="leaveBalanceIds && Array.isArray(leaveBalanceIds) && leaveBalanceIds.length > 0">
                 <div class="mt-4">
                     <h6 class="fw-bold mb-3">
                         <i class="fas fa-list me-2 text-primary"></i>{{ __('أرصدة الإجازات المضافة') }}
@@ -290,9 +346,7 @@
                                         </td>
                                         <td class="align-middle text-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger"
-                                                @click="$wire.removeLeaveBalance(balanceKey)"
-                                                wire:loading.attr="disabled" wire:target="save,removeLeaveBalance"
-                                                wire:loading.class="opacity-50 cursor-not-allowed"
+                                                @click="removeLeaveBalance(balanceKey)"
                                                 :disabled="$root.isRedirecting"
                                                 :class="{ 'opacity-50 cursor-not-allowed': $root.isRedirecting }"
                                                 title="{{ __('حذف رصيد الإجازة') }}">
@@ -308,7 +362,7 @@
             </template>
 
             <!-- رسالة عند عدم وجود أرصدة -->
-            <template x-if="!leaveBalanceIds || leaveBalanceIds.length === 0">
+            <template x-if="!leaveBalanceIds || !Array.isArray(leaveBalanceIds) || leaveBalanceIds.length === 0">
                 <div class="card border-0 shadow-sm text-center py-5">
                     <div class="card-body">
                         <div class="mb-4">
