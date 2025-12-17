@@ -68,24 +68,6 @@
                             </button>
                         </div>
                         <div class="col-auto">
-                            <button type="button" class="btn btn-lg btn-light shadow-sm px-4 py-3" onclick="collectSelected()">
-                                <i class="fas fa-check-circle fa-lg text-primary me-2"></i>
-                                <span class="fw-bold">تحصيل الأوراق المحددة</span>
-                            </button>
-                        </div>
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-lg btn-light shadow-sm px-4 py-3" onclick="endorseSelected()">
-                                <i class="fas fa-exchange-alt fa-lg text-warning me-2"></i>
-                                <span class="fw-bold">تظهير الأوراق</span>
-                            </button>
-                        </div>
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-lg btn-light shadow-sm px-4 py-3" onclick="cancelWithReversalEntry()">
-                                <i class="fas fa-ban fa-lg text-danger me-2"></i>
-                                <span class="fw-bold">إلغاء بقيد عكسي</span>
-                            </button>
-                        </div>
-                        <div class="col-auto">
                             <button type="button" class="btn btn-lg btn-light shadow-sm px-4 py-3" onclick="exportToExcel()">
                                 <i class="fas fa-file-excel fa-lg text-success me-2"></i>
                                 <span class="fw-bold">تصدير Excel</span>
@@ -221,6 +203,8 @@
                                     <th>الحالة</th>
                                     <th>النوع</th>
                                     <th>صاحب الحساب</th>
+                                    <th>اسم الحساب</th>
+                                    <th>الحساب المقابل</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>
@@ -263,6 +247,12 @@
                                         </td>
                                         <td>{{ $check->account_holder_name }}</td>
                                         <td>
+                                            {{ $check->operation?->acc1Head?->aname ?? '-' }}
+                                        </td>
+                                        <td>
+                                            {{ $check->operation?->acc2Head?->aname ?? $check->customer?->aname ?? $check->supplier?->aname ?? '-' }}
+                                        </td>
+                                        <td>
                                             <div class="btn-group btn-group-sm">
                                                 <button class="btn btn-outline-info" onclick="viewCheck({{ $check->id }})" title="عرض">
                                                     <i class="fas fa-eye"></i>
@@ -274,6 +264,12 @@
                                                     <a href="{{ route('checks.collect', $check) }}" class="btn btn-outline-success" title="تحصيل">
                                                         <i class="fas fa-check"></i>
                                                     </a>
+                                                    <a href="{{ route('checks.show-clear', $check) }}" class="btn btn-outline-warning" title="تظهير الورقة">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </a>
+                                                    <a href="{{ route('checks.show-cancel-reversal', $check) }}" class="btn btn-outline-danger" title="إلغاء بقيد عكسي">
+                                                        <i class="fas fa-ban"></i>
+                                                    </a>
                                                 @endif
                                                 <button class="btn btn-outline-danger" onclick="deleteCheck({{ $check->id }})" title="حذف">
                                                     <i class="fas fa-trash"></i>
@@ -283,7 +279,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center py-5">
+                                        <td colspan="12" class="text-center py-5">
                                             <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
                                             <p class="text-muted">لا توجد شيكات مطابقة للبحث</p>
                                         </td>

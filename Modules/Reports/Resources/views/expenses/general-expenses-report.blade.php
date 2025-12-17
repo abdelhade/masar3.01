@@ -101,7 +101,7 @@
                                     <td>{{ $transaction->crtime ? \Carbon\Carbon::parse($transaction->crtime)->format('Y-m-d') : '---' }}</td>
                                     <td>{{ $transaction->head->journal_id ?? '---' }}</td>
                                     <td>{{ $transaction->accHead->aname ?? '---' }}</td>
-                                    <td>{{ $transaction->costCenter->name ?? '---' }}</td>
+                                    <td>{{ $transaction->costCenter->cname ?? '---' }}</td>
                                     <td>{{ $transaction->info ?? '---' }}</td>
                                     <td class="text-end">{{ number_format($transaction->debit, 2) }}</td>
                                     <td class="text-end">{{ number_format($transaction->credit, 2) }}</td>

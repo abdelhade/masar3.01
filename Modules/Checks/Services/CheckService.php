@@ -114,7 +114,7 @@ class CheckService
      */
     public function getChecks(array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $query = Check::query()->with(['creator', 'approver']);
+        $query = Check::query()->with(['creator', 'approver', 'customer', 'supplier', 'operation.acc1Head', 'operation.acc2Head']);
 
         if (isset($filters['type'])) {
             $query->where('type', $filters['type']);
@@ -167,12 +167,18 @@ class CheckService
             $query->where('payer_name', 'like', '%'.$filters['payer_name'].'%');
         }
 
-        if (isset($filters['amount_min']) && is_numeric($filters['amount_min'])) {
-            $query->where('amount', '>=', $filters['amount_min']);
+        if (isset($filters['amount_min']) && $filters['amount_min'] !== '' && $filters['amount_min'] !== null) {
+            $amountMin = (float) $filters['amount_min'];
+            if ($amountMin > 0) {
+                $query->where('amount', '>=', $amountMin);
+            }
         }
 
-        if (isset($filters['amount_max']) && is_numeric($filters['amount_max'])) {
-            $query->where('amount', '<=', $filters['amount_max']);
+        if (isset($filters['amount_max']) && $filters['amount_max'] !== '' && $filters['amount_max'] !== null) {
+            $amountMax = (float) $filters['amount_max'];
+            if ($amountMax > 0) {
+                $query->where('amount', '<=', $amountMax);
+            }
         }
 
         if (isset($filters['issue_date_from'])) {

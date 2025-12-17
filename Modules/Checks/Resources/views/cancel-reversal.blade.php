@@ -10,16 +10,16 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <!-- Header -->
-                <div class="card-header bg-gradient-primary text-white py-4">
+                <div class="card-header bg-gradient-danger text-white py-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
-                            <div class="icon-shape bg-white text-primary rounded-circle p-3 me-3">
-                                <i class="fas fa-check-circle fa-2x"></i>
+                            <div class="icon-shape bg-white text-danger rounded-circle p-3 me-3">
+                                <i class="fas fa-ban fa-2x"></i>
                             </div>
                             <div>
                                 <h2 class="mb-1 fw-bold header-title">{{ $pageTitle }}</h2>
                                 <p class="mb-0 text-white-75 header-subtitle">
-                                    إنشاء قيد محاسبي لتحصيل الورقة
+                                    إنشاء قيد محاسبي عكسي لإلغاء الورقة
                                 </p>
                             </div>
                         </div>
@@ -30,7 +30,7 @@
                 </div>
 
                 <!-- Form -->
-                <form method="POST" action="{{ route('checks.store-collect', $check) }}">
+                <form method="POST" action="{{ route('checks.cancel-reversal', $check) }}">
                     @csrf
                     <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id ?? 1 }}">
 
@@ -58,6 +58,16 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         @endif
+
+                        <!-- تحذير -->
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle me-2"></i> تحذير
+                            </h5>
+                            <p class="mb-0">
+                                سيتم إلغاء هذه الورقة وإنشاء قيد محاسبي عكسي للقيد الأصلي. هذا الإجراء لا يمكن التراجع عنه.
+                            </p>
+                        </div>
 
                         <!-- معلومات الورقة -->
                         <div class="row mb-4">
@@ -93,7 +103,7 @@
                                             <div class="col-6">
                                                 <label class="form-label fw-bold text-muted">الحالة:</label>
                                                 <p class="mb-0">
-                                                    <span class="badge bg-warning">معلق</span>
+                                                    <span class="badge bg-{{ $check->status_color }}">{{ $check->status }}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -103,69 +113,24 @@
                             <div class="col-md-6">
                                 <div class="alert alert-info">
                                     <h6 class="fw-bold mb-2">
-                                        <i class="fas fa-info-circle me-2"></i> القيد المحاسبي:
+                                        <i class="fas fa-info-circle me-2"></i> القيد المحاسبي العكسي:
                                     </h6>
                                     @if($check->type === 'incoming')
                                         <p class="mb-1">
-                                            <strong>من:</strong> حساب البنك/الصندوق (مدين)
+                                            <strong>من:</strong> حافظة أوراق القبض (دائن)
                                         </p>
                                         <p class="mb-0">
-                                            <strong>إلى:</strong> حافظة أوراق القبض (دائن)
+                                            <strong>إلى:</strong> الحساب المقابل (مدين)
                                         </p>
                                     @else
                                         <p class="mb-1">
-                                            <strong>من:</strong> حافظة أوراق الدفع (مدين)
+                                            <strong>من:</strong> الحساب المقابل (دائن)
                                         </p>
                                         <p class="mb-0">
-                                            <strong>إلى:</strong> حساب البنك/الصندوق (دائن)
+                                            <strong>إلى:</strong> حافظة أوراق الدفع (مدين)
                                         </p>
                                     @endif
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- بيانات التحصيل -->
-                        <div class="row">
-                            <div class="col-12">
-                                <h5 class="mb-3 text-primary">
-                                    <i class="fas fa-edit me-2"></i> بيانات التحصيل
-                                </h5>
-                            </div>
-
-                            <!-- نوع الحساب -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">نوع الحساب <span class="text-danger">*</span></label>
-                                <select name="account_type" id="account_type" class="form-select" required>
-                                    <option value="">اختر نوع الحساب</option>
-                                    <option value="bank" {{ old('account_type') === 'bank' ? 'selected' : '' }}>بنك</option>
-                                    <option value="cash" {{ old('account_type') === 'cash' ? 'selected' : '' }}>صندوق</option>
-                                </select>
-                                @error('account_type')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- الحساب -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">الحساب <span class="text-danger">*</span></label>
-                                <select name="account_id" id="account_id" class="form-select" required>
-                                    <option value="">اختر الحساب</option>
-                                </select>
-                                @error('account_id')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- تاريخ التحصيل -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">تاريخ التحصيل <span class="text-danger">*</span></label>
-                                <input type="date" name="collection_date" id="collection_date" 
-                                       class="form-control" 
-                                       value="{{ old('collection_date', date('Y-m-d')) }}" 
-                                       required>
-                                @error('collection_date')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
                             </div>
                         </div>
                     </div>
@@ -175,8 +140,8 @@
                             <a href="{{ route($check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing') }}" class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i> إلغاء
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-check-circle me-2"></i> تحصيل الورقة وإنشاء القيد
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من إلغاء هذه الورقة بقيد عكسي؟ لا يمكن التراجع عن هذا الإجراء.')">
+                                <i class="fas fa-ban me-2"></i> إلغاء بقيد عكسي
                             </button>
                         </div>
                     </div>
@@ -186,42 +151,4 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    const bankAccounts = @json($bankAccounts);
-    const cashAccounts = @json($cashAccounts);
-
-    $('#account_type').on('change', function() {
-        const accountType = $(this).val();
-        const $accountSelect = $('#account_id');
-        
-        $accountSelect.empty().append('<option value="">اختر الحساب</option>');
-
-        if (accountType === 'bank') {
-            bankAccounts.forEach(function(account) {
-                $accountSelect.append(
-                    `<option value="${account.id}">${account.aname} - ${account.code} (رصيد: ${parseFloat(account.balance).toLocaleString('ar-EG', {minimumFractionDigits: 2})})</option>`
-                );
-            });
-        } else if (accountType === 'cash') {
-            cashAccounts.forEach(function(account) {
-                $accountSelect.append(
-                    `<option value="${account.id}">${account.aname} - ${account.code} (رصيد: ${parseFloat(account.balance).toLocaleString('ar-EG', {minimumFractionDigits: 2})})</option>`
-                );
-            });
-        }
-    });
-
-    // تحميل الحسابات إذا كان هناك قيمة قديمة
-    @if(old('account_type'))
-        $('#account_type').trigger('change');
-        @if(old('account_id'))
-            $('#account_id').val('{{ old('account_id') }}');
-        @endif
-    @endif
-});
-</script>
-@endpush
 

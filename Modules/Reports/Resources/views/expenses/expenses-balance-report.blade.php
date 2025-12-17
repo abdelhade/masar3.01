@@ -31,7 +31,7 @@
                     <select id="cost_center" class="form-control" wire:model="costCenter">
                         <option value="">{{ __('reports.all') }}</option>
                         @foreach($costCenters as $center)
-                            <option value="{{ $center->id }}">{{ $center->name }}</option>
+                            <option value="{{ $center->id }}">{{ $center->cname }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -59,7 +59,7 @@
                             <td>{{ $expense->code }}</td>
                             <td>{{ $expense->aname }}</td>
                             <td>{{ $expense->category->name ?? '---' }}</td>
-                            <td>{{ $expense->costCenter->name ?? '---' }}</td>
+                            <td>{{ $expense->costCenter->cname ?? '---' }}</td>
                             <td class="text-end">{{ number_format($expense->total_expenses, 2) }}</td>
                             <td class="text-end">{{ number_format($expense->total_payments, 2) }}</td>
                             <td class="text-end">{{ number_format($expense->balance, 2) }}</td>

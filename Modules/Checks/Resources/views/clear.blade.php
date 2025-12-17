@@ -14,12 +14,12 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             <div class="icon-shape bg-white text-primary rounded-circle p-3 me-3">
-                                <i class="fas fa-check-circle fa-2x"></i>
+                                <i class="fas fa-exchange-alt fa-2x"></i>
                             </div>
                             <div>
                                 <h2 class="mb-1 fw-bold header-title">{{ $pageTitle }}</h2>
                                 <p class="mb-0 text-white-75 header-subtitle">
-                                    إنشاء قيد محاسبي لتحصيل الورقة
+                                    إنشاء قيد محاسبي لتظهير الورقة
                                 </p>
                             </div>
                         </div>
@@ -30,7 +30,7 @@
                 </div>
 
                 <!-- Form -->
-                <form method="POST" action="{{ route('checks.store-collect', $check) }}">
+                <form method="POST" action="{{ route('checks.clear', $check) }}">
                     @csrf
                     <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id ?? 1 }}">
 
@@ -105,60 +105,43 @@
                                     <h6 class="fw-bold mb-2">
                                         <i class="fas fa-info-circle me-2"></i> القيد المحاسبي:
                                     </h6>
-                                    @if($check->type === 'incoming')
-                                        <p class="mb-1">
-                                            <strong>من:</strong> حساب البنك/الصندوق (مدين)
-                                        </p>
-                                        <p class="mb-0">
-                                            <strong>إلى:</strong> حافظة أوراق القبض (دائن)
-                                        </p>
-                                    @else
-                                        <p class="mb-1">
-                                            <strong>من:</strong> حافظة أوراق الدفع (مدين)
-                                        </p>
-                                        <p class="mb-0">
-                                            <strong>إلى:</strong> حساب البنك/الصندوق (دائن)
-                                        </p>
-                                    @endif
+                                    <p class="mb-1">
+                                        <strong>من:</strong> حافظة أوراق القبض (مدين)
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>إلى:</strong> حساب البنك (دائن)
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- بيانات التحصيل -->
+                        <!-- بيانات التظهير -->
                         <div class="row">
                             <div class="col-12">
                                 <h5 class="mb-3 text-primary">
-                                    <i class="fas fa-edit me-2"></i> بيانات التحصيل
+                                    <i class="fas fa-edit me-2"></i> بيانات التظهير
                                 </h5>
-                            </div>
-
-                            <!-- نوع الحساب -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">نوع الحساب <span class="text-danger">*</span></label>
-                                <select name="account_type" id="account_type" class="form-select" required>
-                                    <option value="">اختر نوع الحساب</option>
-                                    <option value="bank" {{ old('account_type') === 'bank' ? 'selected' : '' }}>بنك</option>
-                                    <option value="cash" {{ old('account_type') === 'cash' ? 'selected' : '' }}>صندوق</option>
-                                </select>
-                                @error('account_type')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
                             </div>
 
                             <!-- الحساب -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">الحساب <span class="text-danger">*</span></label>
-                                <select name="account_id" id="account_id" class="form-select" required>
+                                <select name="bank_account_id" id="bank_account_id" class="form-select js-tom-select" required>
                                     <option value="">اختر الحساب</option>
+                                    @foreach($accounts as $account)
+                                        <option value="{{ $account->id }}" {{ old('bank_account_id') == $account->id ? 'selected' : '' }}>
+                                            {{ $account->aname }} - {{ $account->code }} (رصيد: {{ number_format($account->balance ?? 0, 2) }})
+                                        </option>
+                                    @endforeach
                                 </select>
-                                @error('account_id')
+                                @error('bank_account_id')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <!-- تاريخ التحصيل -->
+                            <!-- تاريخ التظهير -->
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">تاريخ التحصيل <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">تاريخ التظهير <span class="text-danger">*</span></label>
                                 <input type="date" name="collection_date" id="collection_date" 
                                        class="form-control" 
                                        value="{{ old('collection_date', date('Y-m-d')) }}" 
@@ -176,7 +159,7 @@
                                 <i class="fas fa-times me-2"></i> إلغاء
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-check-circle me-2"></i> تحصيل الورقة وإنشاء القيد
+                                <i class="fas fa-exchange-alt me-2"></i> تظهير الورقة وإنشاء القيد
                             </button>
                         </div>
                     </div>
@@ -190,37 +173,36 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    const bankAccounts = @json($bankAccounts);
-    const cashAccounts = @json($cashAccounts);
-
-    $('#account_type').on('change', function() {
-        const accountType = $(this).val();
-        const $accountSelect = $('#account_id');
-        
-        $accountSelect.empty().append('<option value="">اختر الحساب</option>');
-
-        if (accountType === 'bank') {
-            bankAccounts.forEach(function(account) {
-                $accountSelect.append(
-                    `<option value="${account.id}">${account.aname} - ${account.code} (رصيد: ${parseFloat(account.balance).toLocaleString('ar-EG', {minimumFractionDigits: 2})})</option>`
-                );
+    // Initialize Tom Select for searchable select
+    function initTomSelect() {
+        const selectElement = document.getElementById('bank_account_id');
+        if (selectElement && window.TomSelect && !selectElement.tomselect) {
+            const tomSelect = new TomSelect(selectElement, {
+                create: false,
+                searchField: ['text'],
+                sortField: {field: 'text', direction: 'asc'},
+                dropdownInput: true,
+                placeholder: 'ابحث واختر الحساب...',
+                maxOptions: 1000,
+                allowEmptyOption: true,
             });
-        } else if (accountType === 'cash') {
-            cashAccounts.forEach(function(account) {
-                $accountSelect.append(
-                    `<option value="${account.id}">${account.aname} - ${account.code} (رصيد: ${parseFloat(account.balance).toLocaleString('ar-EG', {minimumFractionDigits: 2})})</option>`
-                );
+            
+            // Set z-index for dropdown
+            tomSelect.on('dropdown_open', function() {
+                const dropdown = selectElement.parentElement.querySelector('.ts-dropdown');
+                if (dropdown) {
+                    dropdown.style.zIndex = '99999';
+                }
             });
         }
-    });
-
-    // تحميل الحسابات إذا كان هناك قيمة قديمة
-    @if(old('account_type'))
-        $('#account_type').trigger('change');
-        @if(old('account_id'))
-            $('#account_id').val('{{ old('account_id') }}');
-        @endif
-    @endif
+    }
+    
+    // Initialize when document is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTomSelect);
+    } else {
+        initTomSelect();
+    }
 });
 </script>
 @endpush

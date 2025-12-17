@@ -83,12 +83,7 @@ class GeneralReportController extends Controller
 
     public function dailyActivityAnalyzer()
     {
-        $users = User::all();
-        $operations = OperHead::with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
-
-        return view('reports::general-reports.daily-activity-analyzer', compact('users', 'operations'));
+        return view('reports::general-reports.daily-activity-analyzer');
     }
 
     public function generalCashboxMovementReport()

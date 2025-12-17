@@ -93,7 +93,7 @@
                                     <td>{{ $transaction->crtime ? \Carbon\Carbon::parse($transaction->crtime)->format('Y-m-d') : '---' }}</td>
                                     <td>{{ $transaction->head->journal_id ?? '---' }}</td>
                                     <td>{{ $transaction->info ?? $transaction->description ?? '---' }}</td>
-                                    <td>{{ $transaction->costCenter->name ?? '---' }}</td>
+                                    <td>{{ $transaction->costCenter->cname ?? '---' }}</td>
                                     <td class="text-end">
                                         @if($transaction->debit > 0)
                                             <span class="text-danger">{{ number_format($transaction->debit, 2) }}</span>

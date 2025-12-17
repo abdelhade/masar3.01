@@ -131,6 +131,31 @@
         flex-wrap: wrap;
     }
 
+    .header-icon-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .header-icon-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-icon-btn i {
+        width: 20px;
+        height: 20px;
+    }
+
     .search-container {
         margin: 0 auto;
         max-width: 600px;
@@ -350,6 +375,15 @@
                         </a>
                     @endcan
 
+                    {{-- التقارير --}}
+                    <a href="{{ route('reports.overall') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="file-bar-chart"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">التقارير</p>
+                    </a>
+
                 </div>
             </div>
 
@@ -419,9 +453,9 @@
                     <p class="app-name">أدارة الحسابات</p>
                 </a>
                 {{-- ادارة المصروفات --}}
-                <a href="{{ route('reports.expenses-balance-report') }}" class="app-card">
+                <a href="{{ route('expenses.dashboard') }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="file-text"
+                        <i data-lucide="credit-card"
                             style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                     </div>
                     <p class="app-name">ادارة المصروفات</p>
@@ -488,6 +522,26 @@
                     </div>
                     <p class="app-name">التصنيع</p>
                 </a>
+                {{-- إدارة الجودة --}}
+                @canany([
+                    'view quality',
+                    'view inspections',
+                    'view standards',
+                    'view ncr',
+                    'view capa',
+                    'view batches',
+                    'view rateSuppliers',
+                    'view certificates',
+                    'view audits',
+                ])
+                    <a href="{{ route('quality.dashboard') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="award"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">إدارة الجودة</p>
+                    </a>
+                @endcanany
                 {{-- المشتريات --}}
                 <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-card">
                     <div class="app-icon" style="background-color: white;">
@@ -628,207 +682,6 @@
             </div>
         </div>
 
-        <!-- مجموعة إدارة الجودة -->
-        @canany([
-            'view quality',
-            'view inspections',
-            'view standards',
-            'view ncr',
-            'view capa',
-            'view batches',
-            'view rateSuppliers',
-            'view certificates',
-            'view audits',
-            ])
-            <div class="app-group" data-group-index="7">
-                <div class="group-header">
-                    <div class="group-icon-wrapper" style="background: #34d3a320;">
-                        <i data-lucide="award" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
-                    </div>
-                    <h2 class="group-title">إدارة الجودة</h2>
-                </div>
-                <div class="group-apps-grid">
-                    {{-- لوحة تحكم الجودة --}}
-                    @can('view quality')
-                        <a href="{{ route('quality.dashboard') }}" class="app-card">
-                            <span class="new-badge">جديد 🎉</span>
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="chart-line"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">لوحة تحكم الجودة</p>
-                        </a>
-                    @endcan
-                    {{-- فحوصات الجوده  --}}
-                    @can('view inspections')
-                        <a href="{{ route('quality.inspections.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="clipboard-check"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">فحوصات الجودة</p>
-                        </a>
-                    @endcan
-
-                    {{-- معايير الجوده --}}
-                    @can('view standards')
-                        <a href="{{ route('quality.standards.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="ruler"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">معايير الجودة</p>
-                        </a>
-                    @endcan
-                    {{-- عدم المطابقة (NCR) --}}
-                    @can('view ncr')
-                        <a href="{{ route('quality.ncr.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="alert-triangle"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">عدم المطابقة (NCR)</p>
-                        </a>
-                    @endcan
-                    {{-- الاجراءات التصحيحية --}}
-                    @can('view capa')
-                        <a href="{{ route('quality.capa.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="wrench"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">الإجراءات التصحيحية</p>
-                        </a>
-                    @endcan
-                    {{-- تتبع الدفعات  --}}
-                    @can('view batches')
-                        <a href="{{ route('quality.batches.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="barcode"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">تتبع الدفعات</p>
-                        </a>
-                    @endcan
-                    {{-- تقييم الموردين  --}}
-                    @can('view rateSuppliers')
-                        <a href="{{ route('quality.suppliers.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="star"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">تقييم الموردين</p>
-                        </a>
-                    @endcan
-                    {{-- الشهادات والامتثال  --}}
-                    @can('view certificates')
-                        <a href="{{ route('quality.certificates.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="award"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">الشهادات والامتثال</p>
-                        </a>
-                    @endcan
-                    {{-- التدقيق الداخلي  --}}
-                    @can('view audits')
-                        <a href="{{ route('quality.audits.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="search"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">التدقيق الداخلي</p>
-                        </a>
-                    @endcan
-                    {{-- تقارير الجوده  --}}
-                    <a href="{{ route('quality.reports') }}" class="app-card">
-                        <div class="app-icon" style="background-color: white;">
-                            <i data-lucide="chart-pie"
-                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                        </div>
-                        <p class="app-name">تقارير الجودة</p>
-                    </a>
-                </div>
-            </div>
-        @endcanany
-
-        <!-- مجموعة التقارير -->
-        <div class="app-group" data-group-index="8">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="file-bar-chart"
-                        style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title">التقارير</h2>
-            </div>
-            <div class="group-apps-grid">
-                {{-- محلل العمل اليومي --}}
-                <a href="{{ route('reports.overall') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="bar-chart-3"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">محلل العمل اليومي</p>
-                </a>
-                {{-- شجره الحسابات --}}
-                <a href="{{ route('reports.accounts-tree') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="git-branch"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">شجرة الحسابات</p>
-                </a>
-                {{-- الميزانيه العموميه --}}
-                <a href="{{ route('reports.general-balance-sheet') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="scale"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">الميزانية العمومية</p>
-                </a>
-                {{-- ارباح وخسائر --}}
-                <a href="{{ route('reports.general-profit-loss-report') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="trending-up"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">أرباح وخسائر</p>
-                </a>
-                {{-- تقارير المبيعات  --}}
-                <a href="{{ route('reports.sales.total') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="shopping-cart"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">تقارير المبيعات</p>
-                </a>
-                {{-- تقارير المشتريات  --}}
-                <a href="{{ route('reports.purchases.total') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="shopping-bag"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">تقارير المشتريات</p>
-                </a>
-                {{-- تقارير المخزون --}}
-                <a href="{{ route('reports.general-inventory-balances') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="package"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">تقارير المخزون</p>
-                </a>
-                {{-- تقارير المصروفات  --}}
-                <a href="{{ route('reports.expenses-balance-report') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="file-text"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">تقارير المصروفات</p>
-                </a>
-
-            </div>
-        </div>
     </div>
 </div>
 

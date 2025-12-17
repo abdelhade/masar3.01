@@ -29,7 +29,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Check operations (يجب أن تكون قبل CRUD operations لأنها تحتوي على parameters إضافية)
         Route::get('/{check}/collect', [ChecksController::class, 'collect'])->name('collect');
         Route::post('/{check}/collect', [ChecksController::class, 'storeCollect'])->name('store-collect');
+        Route::get('/{check}/clear', [ChecksController::class, 'showClear'])->name('show-clear');
         Route::post('/{check}/clear', [ChecksController::class, 'clear'])->name('clear');
+        Route::get('/{check}/cancel-reversal', [ChecksController::class, 'showCancelReversal'])->name('show-cancel-reversal');
+        Route::post('/{check}/cancel-reversal', [ChecksController::class, 'cancelReversal'])->name('cancel-reversal');
         Route::get('/{check}/download/{attachmentIndex}', [ChecksController::class, 'downloadAttachment'])
             ->name('download.attachment');
         Route::get('/{check}/edit', [ChecksController::class, 'edit'])->name('edit');

@@ -4,6 +4,7 @@ namespace Modules\Checks\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Modules\Accounts\Models\AccHead;
 use Modules\Checks\Http\Requests\BatchCancelRequest;
@@ -158,22 +159,53 @@ class ChecksController extends Controller
     }
 
     /**
-     * Show the dashboard
+     * Show the dashboard with statistics
      */
     public function dashboard(Request $request)
     {
-        $checks = $this->checkService->getChecks([
-            'type' => 'incoming',
-            'search' => $request->get('search'),
-            'status' => $request->get('status'),
-            'start_date' => $request->get('start_date'),
-            'end_date' => $request->get('end_date'),
-        ]);
+        $dateFilter = $request->get('date_filter', 'month');
+        $dateRange = $this->getDateRange($dateFilter);
 
-        $pageType = 'incoming';
-        $pageTitle = 'لوحة تحكم الشيكات';
+        $stats = $this->checkService->getStatistics($dateRange);
 
-        return view('checks::index', compact('checks', 'pageType', 'pageTitle'));
+        $overdueChecks = Check::where('status', Check::STATUS_PENDING)
+            ->where('due_date', '<', now())
+            ->orderBy('due_date', 'asc')
+            ->limit(10)
+            ->get();
+
+        $recentChecks = Check::with(['creator'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $checksByBank = Check::whereBetween('created_at', $dateRange)
+            ->select('bank_name', DB::raw('count(*) as count'), DB::raw('sum(amount) as total_amount'))
+            ->groupBy('bank_name')
+            ->orderBy('count', 'desc')
+            ->limit(5)
+            ->get();
+
+        $monthlyTrend = Check::select(
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('YEAR(created_at) as year'),
+            DB::raw('count(*) as count'),
+            DB::raw('sum(amount) as total_amount')
+        )
+            ->where('created_at', '>=', now()->subYear())
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
+
+        return view('checks::dashboard', compact(
+            'stats',
+            'overdueChecks',
+            'recentChecks',
+            'checksByBank',
+            'monthlyTrend',
+            'dateFilter'
+        ));
     }
 
     /**
@@ -369,7 +401,9 @@ class ChecksController extends Controller
     public function collect(Check $check)
     {
         if ($check->status !== Check::STATUS_PENDING) {
-            return redirect()->route('checks.incoming')
+            $routeName = $check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing';
+
+            return redirect()->route($routeName)
                 ->with('error', 'لا يمكن تحصيل ورقة غير معلقة');
         }
 
@@ -419,12 +453,38 @@ class ChecksController extends Controller
                 $validated['branch_id']
             );
 
-            return redirect()->route('checks.incoming')
+            $routeName = $check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing';
+
+            return redirect()->route($routeName)
                 ->with('success', 'تم تحصيل الورقة بنجاح وإنشاء القيد المحاسبي');
         } catch (\Exception $e) {
             return redirect()->route('checks.collect', $check)
                 ->with('error', 'حدث خطأ: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Show clear check page (صفحة تظهير الورقة)
+     */
+    public function showClear(Check $check)
+    {
+        if ($check->status !== Check::STATUS_PENDING) {
+            $routeName = $check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing';
+
+            return redirect()->route($routeName)
+                ->with('error', 'لا يمكن تظهير ورقة غير معلقة');
+        }
+
+        // تحميل جميع الحسابات
+        $accounts = AccHead::where('is_basic', 0)
+            ->where('isdeleted', 0)
+            ->select('id', 'aname', 'code', 'balance')
+            ->orderBy('code')
+            ->get();
+
+        $pageTitle = $check->type === 'incoming' ? 'تظهير ورقة قبض' : 'تظهير ورقة دفع';
+
+        return view('checks::clear', compact('check', 'accounts', 'pageTitle'));
     }
 
     /**
@@ -442,9 +502,52 @@ class ChecksController extends Controller
                 $validated['branch_id']
             );
 
-            return response()->json(['success' => true, 'message' => 'تم تصفية الشيك بنجاح']);
+            $routeName = $check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing';
+
+            return redirect()->route($routeName)
+                ->with('success', 'تم تظهير الورقة بنجاح وإنشاء القيد المحاسبي');
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
+            return redirect()->route('checks.show-clear', $check)
+                ->with('error', 'حدث خطأ: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Show cancel with reversal entry page (صفحة إلغاء بقيد عكسي)
+     */
+    public function showCancelReversal(Check $check)
+    {
+        if ($check->status === Check::STATUS_CANCELLED) {
+            $routeName = $check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing';
+
+            return redirect()->route($routeName)
+                ->with('error', 'الورقة ملغاة بالفعل');
+        }
+
+        $pageTitle = $check->type === 'incoming' ? 'إلغاء ورقة قبض بقيد عكسي' : 'إلغاء ورقة دفع بقيد عكسي';
+
+        return view('checks::cancel-reversal', compact('check', 'pageTitle'));
+    }
+
+    /**
+     * Cancel check with reversal entry (إلغاء بقيد عكسي)
+     */
+    public function cancelReversal(Request $request, Check $check)
+    {
+        try {
+            $request->validate([
+                'branch_id' => ['required', 'exists:branches,id'],
+            ]);
+
+            $this->accountingService->cancelCheckWithReversal($check, $request->branch_id);
+
+            $routeName = $check->type === 'incoming' ? 'checks.incoming' : 'checks.outgoing';
+
+            return redirect()->route($routeName)
+                ->with('success', 'تم إلغاء الورقة بقيد عكسي بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->route('checks.show-cancel-reversal', $check)
+                ->with('error', 'حدث خطأ: '.$e->getMessage());
         }
     }
 
