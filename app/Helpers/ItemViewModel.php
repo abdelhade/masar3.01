@@ -26,6 +26,7 @@ class ItemViewModel
         return $this->item->units->map(fn($unit) => [
             'value' => $unit->id,
             'label' => $unit->name . ' [' . number_format($unit->pivot->u_val ?? 1) . ']',
+            'u_val' => $unit->pivot->u_val ?? 1,
         ])->toArray();
     }
 

@@ -107,11 +107,11 @@ trait HandlesInvoiceData
                 'sub_value' => $item->detail_value ?? ($price * $quantity),
                 'available_units' => $item->item->units->map(fn($unit) => (object)[
                     'id' => $unit->id,
-                    'name' => $unit->name
+                    'name' => $unit->name,
+                    'u_val' => $unit->pivot->u_val ?? 1
                 ]),
-                'notes' => $item->notes // ✅ نقل الملاحظات
+                'notes' => $item->notes
             ];
-            // dd($this->invoiceItems);
         }
 
         // ✅ نقل بيانات الفاتورة

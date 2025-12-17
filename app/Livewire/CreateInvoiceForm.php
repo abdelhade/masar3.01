@@ -58,6 +58,7 @@ class CreateInvoiceForm extends Component
     public $delivery_id = null;
     public $nextProId;
     public $acc1Role;
+    public $isCurrentAccountCash = false;
     public $acc2Role;
     public $cashAccounts;
 
@@ -460,26 +461,25 @@ class CreateInvoiceForm extends Component
 
     private function checkCashAccount($accountId)
     {
-        if (!$accountId || $this->total_after_additional <= 0) {
+        $this->isCurrentAccountCash = false;
+
+        if (!$accountId) {
             return;
         }
 
-        $isCashAccount = false;
-
         // للعملاء في فواتير المبيعات ومردود المبيعات واتفاقيات التسعير
         if (in_array($this->type, [10, 12, 26]) && in_array($accountId, $this->cashClientIds)) {
-            $isCashAccount = true;
+            $this->isCurrentAccountCash = true;
         }
         // للموردين في فواتير المشتريات ومردود المشتريات
         elseif (in_array($this->type, [11, 13]) && in_array($accountId, $this->cashSupplierIds)) {
-            $isCashAccount = true;
+            $this->isCurrentAccountCash = true;
         }
 
         // إذا كان حساب نقدي، املأ المبلغ المدفوع بقيمة الفاتورة
-        if ($isCashAccount) {
+        if ($this->isCurrentAccountCash && $this->total_after_additional > 0) {
             $this->received_from_client = $this->total_after_additional;
         }
-        // إذا لم يكن نقدي، لا تغير المبلغ (اتركه كما هو للتعديل اليدوي)
     }
 
     private function getRecommendedItems($clientId)
@@ -839,6 +839,7 @@ class CreateInvoiceForm extends Component
             return (object) [
                 'id' => $unit['value'],
                 'name' => $unit['label'],
+                'u_val' => $unit['u_val'] ?? 1,
             ];
         });
 
@@ -927,7 +928,7 @@ class CreateInvoiceForm extends Component
             return (object)[
                 'id' => $unit->id,
                 'name' => $unit->name,
-                'uval' => $unit->pivot->u_val ?? 1, // ✅ صحح اسم الـ column
+                'u_val' => $unit->pivot->u_val ?? 1,
             ];
         });
 
@@ -1030,6 +1031,7 @@ class CreateInvoiceForm extends Component
         $unitsCollection = collect($opts)->map(fn($entry) => (object)[
             'id' => $entry['value'],
             'name' => $entry['label'],
+            'u_val' => $entry['u_val'] ?? 1,
         ]);
 
         $this->invoiceItems[$index]['available_units'] = $unitsCollection;
@@ -1242,7 +1244,7 @@ class CreateInvoiceForm extends Component
                 }
             }
         } elseif ($field === 'unit_id') {
-            $this->updatePriceForUnit($rowIndex);
+            // $this->updatePriceForUnit($rowIndex);
             $itemId = $this->invoiceItems[$rowIndex]['item_id'];
             if ($itemId) {
                 $item = Item::with(['units', 'prices'])->find($itemId);

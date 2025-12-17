@@ -62,17 +62,18 @@
                                     {{-- الوحدة --}}
                                     @if ($this->shouldShowColumn('unit'))
                                         <td style="width: 10%; font-size: 1.2em;">
-                                            <select wire:model.live="invoiceItems.{{ $index }}.unit_id"
+                                            <select wire:model="invoiceItems.{{ $index }}.unit_id"
                                                 wire:key="unit-select-{{ $index }}-{{ $row['item_id'] ?? 'default' }}"
-                                                wire:change="updatePriceForUnit({{ $index }})"
+                                                onchange="window.updatePriceClientSide({{ $index }}, this)"
                                                 @keydown.enter.prevent="moveToNextFieldInRow($event)"
                                                 id="unit-{{ $index }}"
                                                 data-field="unit" data-row="{{ $index }}"
+                                                data-last-u-val="{{ $row['available_units']->firstWhere('id', $row['unit_id'])->u_val ?? 1 }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
                                                 class="form-control invoice-field @error('invoiceItems.' . $index . '.unit_id') is-invalid @enderror">
                                                 @if (isset($row['available_units']) && $row['available_units']->count() > 0)
                                                     @foreach ($row['available_units'] as $unit)
-                                                        <option value="{{ $unit->id }}">{{ $unit->name }}
+                                                        <option value="{{ $unit->id }}" data-u-val="{{ $unit->u_val ?? 1 }}">{{ $unit->name }}
                                                         </option>
                                                     @endforeach
                                                 @endif

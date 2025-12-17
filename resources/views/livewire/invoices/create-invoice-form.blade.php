@@ -6,7 +6,11 @@
 
                 @include('components.invoices.invoice-head')
 
-                <div class="row">
+                <div id="invoice-config" 
+             data-is-cash="{{ $isCurrentAccountCash ? '1' : '0' }}" 
+             style="display:none;"></div>
+
+        <div class="row">
                     @if (setting('invoice_use_templates'))
                         @if ($availableTemplates->isNotEmpty())
                             <div class="col-lg-1">
@@ -1095,6 +1099,36 @@
 
         // حسابات الفاتورة - JavaScript Live Client Side
         
+        // ✅ تحديث السعر عند تغيير الوحدة (Client Side)
+        window.updatePriceClientSide = function(index, selectElement) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const newUVal = parseFloat(selectedOption.getAttribute('data-u-val') || 1);
+            const oldUVal = parseFloat(selectElement.getAttribute('data-last-u-val') || 1);
+
+            const priceField = document.getElementById(`price-${index}`);
+            if (priceField) {
+                let currentPrice = parseFloat(priceField.value || 0);
+                
+                if (oldUVal > 0 && newUVal > 0) {
+                    let basePrice = currentPrice / oldUVal;
+                    let newPrice = basePrice * newUVal;
+                    
+                    // استخدام دقة مناسبة
+                    priceField.value = parseFloat(newPrice.toFixed(4)); 
+                    
+                    // Trigger Livewire/Alpine updates
+                    priceField.dispatchEvent(new Event('input', { bubbles: true }));
+                    priceField.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    if (window.calculateRowTotal) {
+                        window.calculateRowTotal(index);
+                    }
+                }
+            }
+            
+            selectElement.setAttribute('data-last-u-val', newUVal);
+        };
+
         // ✅ تحسين عمل الـ calculateRowTotal
         window.calculateRowTotal = function(index) {
             let quantity = parseFloat(document.getElementById(`quantity-${index}`)?.value);
@@ -1261,7 +1295,19 @@
             @this.set('total_after_additional', total.toFixed(2), false);
 
             // Calculate Remaining
-            const received = parseFloat(document.getElementById('received-from-client')?.value || 0);
+            const receivedField = document.getElementById('received-from-client');
+            let received = parseFloat(receivedField?.value || 0);
+
+            // ✅ Auto-update received if cash account
+            const configDiv = document.getElementById('invoice-config');
+            const isCash = configDiv?.getAttribute('data-is-cash') === '1';
+
+            if (isCash && receivedField) {
+                received = total;
+                receivedField.value = received.toFixed(2);
+                @this.set('received_from_client', received, false); // Sync with Livewire
+            }
+
             const remaining = Math.max(total - received, 0);
 
             const displayReceived = document.getElementById('display-received');
