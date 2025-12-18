@@ -3,12 +3,9 @@
 namespace Modules\Settings\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class BarcodePrintSetting extends Model
 {
-    use HasFactory;
-
     protected $table = 'barcode_print_settings';
 
     protected $fillable = [
