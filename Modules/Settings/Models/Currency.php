@@ -41,16 +41,6 @@ class Currency extends Model
         return $this->hasOne(ExchangeRate::class)->latestOfMany('rate_date');
     }
 
-    /**
-     * الحصول على سعر الصرف في تاريخ محدد
-     */
-    public function rateOnDate($date)
-    {
-        return $this->hasOne(ExchangeRate::class)
-            ->where('rate_date', '<=', $date)
-            ->orderBy('rate_date', 'desc');
-    }
-
     // ==================== Scopes ====================
 
     /**
@@ -70,75 +60,11 @@ class Currency extends Model
     }
 
     /**
-     * العملات التي تستخدم API
-     */
-    public function scopeAutomatic($query)
-    {
-        return $query->where('rate_mode', 'automatic');
-    }
-
-    /**
      * العملات اليدوية
      */
     public function scopeManual($query)
     {
         return $query->where('rate_mode', 'manual');
-    }
-
-    // ==================== Helper Methods ====================
-
-    /**
-     * التحقق من أن العملة هي الافتراضية
-     */
-    public function isDefault(): bool
-    {
-        return $this->is_default;
-    }
-
-    /**
-     * التحقق من أن العملة نشطة
-     */
-    public function isActive(): bool
-    {
-        return $this->is_active;
-    }
-
-    /**
-     * التحقق من أن العملة تستخدم API
-     */
-    public function isAutomatic(): bool
-    {
-        return $this->rate_mode === 'automatic';
-    }
-
-    /**
-     * الحصول على سعر الصرف الحالي
-     */
-    public function getCurrentRate()
-    {
-        // لو العملة هي الافتراضية، السعر = 1
-        if ($this->is_default) {
-            return 1;
-        }
-
-        return $this->latestRate?->rate ?? null;
-    }
-
-    /**
-     * تنسيق المبلغ حسب decimal_places
-     */
-    public function formatAmount($amount): string
-    {
-        return number_format($amount, $this->decimal_places, '.', ',');
-    }
-
-    /**
-     * عرض المبلغ مع رمز العملة
-     */
-    public function displayAmount($amount): string
-    {
-        $formatted = $this->formatAmount($amount);
-        return $this->symbol . ' ' . $formatted;
     }
 
     // ==================== Events ====================

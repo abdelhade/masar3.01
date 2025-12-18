@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Settings\Database\seeders;
+namespace Modules\Settings\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Settings\Models\Category;

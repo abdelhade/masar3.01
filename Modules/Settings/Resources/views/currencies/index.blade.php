@@ -15,12 +15,12 @@
 
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('create currencies') --}}
-            <a href="{{ route('currencies.create') }}" type="button" class="btn btn-main font-hold fw-bold">
-                {{ __('Add New') }}
-                <i class="fas fa-plus me-2"></i>
-            </a>
-            {{-- @endcan --}}
+            @can('create Currencies')
+                <a href="{{ route('currencies.create') }}" type="button" class="btn btn-main font-hold fw-bold">
+                    {{ __('Add New') }}
+                    <i class="fas fa-plus me-2"></i>
+                </a>
+            @endcan
             <br>
             <br>
 
@@ -58,34 +58,24 @@
                                     <th>{{ __('Rate Mode') }}</th>
                                     <th>{{ __('Exchange Rate') }}</th>
                                     <th>{{ __('Status') }}</th>
-                                    {{-- @canany(['edit currencies', 'delete currencies']) --}}
-                                    <th>{{ __('Actions') }}</th>
-                                    {{-- @endcanany --}}
+                                    @canany(['edit Currencies', 'delete Currencies'])
+                                        <th>{{ __('Actions') }}</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($currencies as $currency)
                                     <tr class="text-center align-middle">
                                         <td>{{ $loop->iteration }}</td>
-
-                                        <!-- Currency Name -->
                                         <td>
                                             {{ $currency->name }}
                                             @if ($currency->is_default)
                                                 <span class="badge bg-success ms-2">{{ __('Default Currency') }}</span>
                                             @endif
                                         </td>
-
-                                        <!-- Currency Code -->
                                         <td><span class="badge bg-primary">{{ $currency->code }}</span></td>
-
-                                        <!-- Currency Symbol -->
                                         <td>{{ $currency->symbol ?? '-' }}</td>
-
-                                        <!-- Decimal Places -->
                                         <td>{{ $currency->decimal_places }}</td>
-
-                                        <!-- Rate Mode Switch -->
                                         <td>
                                             @if ($currency->is_default)
                                                 <span class="text-muted">-</span>
@@ -105,8 +95,6 @@
                                                 </div>
                                             @endif
                                         </td>
-
-                                        <!-- Exchange Rate -->
                                         <td>
                                             @if ($currency->is_default)
                                                 <span class="text-muted">-</span>
@@ -153,8 +141,6 @@
                                                 </div>
                                             @endif
                                         </td>
-
-                                        <!-- Status -->
                                         <td>
                                             @if ($currency->is_active)
                                                 <span class="badge bg-success">{{ __('Active') }}</span>
@@ -162,32 +148,30 @@
                                                 <span class="badge bg-danger">{{ __('Inactive') }}</span>
                                             @endif
                                         </td>
+                                        @canany(['edit Currencies', 'delete Currencies'])
+                                            <td>
+                                                @can('edit Currencies')
+                                                    <a class="btn btn-success btn-icon-square-sm"
+                                                        href="{{ route('currencies.edit', $currency->id) }}">
+                                                        <i class="las la-edit"></i>
+                                                    </a>
+                                                @endcan
 
-                                        <!-- Actions -->
-                                        {{-- @canany(['edit currencies', 'delete currencies']) --}}
-                                        <td>
-                                            {{-- @can('edit currencies') --}}
-                                            <a class="btn btn-success btn-icon-square-sm"
-                                                href="{{ route('currencies.edit', $currency->id) }}">
-                                                <i class="las la-edit"></i>
-                                            </a>
-                                            {{-- @endcan --}}
-
-                                            {{-- @can('delete currencies') --}}
-                                            @unless ($currency->is_default)
-                                                <form action="{{ route('currencies.destroy', $currency->id) }}" method="POST"
-                                                    style="display:inline-block;"
-                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete?') }}');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-icon-square-sm">
-                                                        <i class="las la-trash"></i>
-                                                    </button>
-                                                </form>
-                                            @endunless
-                                            {{-- @endcan --}}
-                                        </td>
-                                        {{-- @endcanany --}}
+                                                @can('delete Currencies')
+                                                    @unless ($currency->is_default)
+                                                        <form action="{{ route('currencies.destroy', $currency->id) }}" method="POST"
+                                                            style="display:inline-block;"
+                                                            onsubmit="return confirm('{{ __('Are you sure you want to delete?') }}');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger btn-icon-square-sm">
+                                                                <i class="las la-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endunless
+                                                @endcan
+                                            </td>
+                                        @endcanany
                                     </tr>
                                 @empty
                                     <tr>

@@ -50,5 +50,37 @@
     "Please enter a valid rate": "يرجى إدخال سعر صحيح",
     "Error": "خطأ",
     "Success": "نجح",
-    "Warning": "تنبيه"
+    "Warning": "تنبيه",
+    "Currency name is required": "اسم العملة مطلوب",
+    "Currency name cannot exceed 255 characters": "اسم العملة لا يمكن أن يتجاوز 255 حرف",
+
+    "Currency code is required": "كود العملة مطلوب",
+    "Currency code must be exactly 3 characters (e.g., USD, EUR, EGP)": "كود العملة يجب أن يكون 3 أحرف فقط (مثال: USD, EUR, EGP)",
+    "This currency code already exists": "كود العملة موجود بالفعل",
+
+    "Currency symbol cannot exceed 10 characters": "رمز العملة لا يمكن أن يتجاوز 10 أحرف",
+
+    "Decimal places is required": "عدد الأرقام العشرية مطلوب",
+    "Decimal places must be a whole number": "عدد الأرقام العشرية يجب أن يكون رقماً صحيحاً",
+    "Decimal places must be at least 0": "عدد الأرقام العشرية يجب أن يكون 0 على الأقل",
+    "Decimal places cannot exceed 4": "عدد الأرقام العشرية لا يمكن أن يتجاوز 4",
+
+    "Rate update mode is required": "طريقة تحديث السعر مطلوبة",
+    "Invalid rate update mode": "طريقة تحديث السعر غير صحيحة",
+
+    "Initial exchange rate is required for non-default currencies": "سعر الصرف الابتدائي مطلوب للعملات غير الافتراضية",
+    "Exchange rate must be a number": "سعر الصرف يجب أن يكون رقماً",
+    "Exchange rate must be greater than zero": "سعر الصرف يجب أن يكون أكبر من صفر",
+    "Exchange rate is too large": "سعر الصرف كبير جداً",
+
+    "Cannot deactivate the default currency": "لا يمكن تعطيل العملة الافتراضية",
+
+    "currency name": "اسم العملة",
+    "currency code": "كود العملة",
+    "currency symbol": "رمز العملة",
+    "decimal places": "عدد الأرقام العشرية",
+    "default currency": "عملة افتراضية",
+    "activation status": "حالة التفعيل",
+    "update mode": "طريقة التحديث",
+    "exchange rate": "سعر الصرف"
 }

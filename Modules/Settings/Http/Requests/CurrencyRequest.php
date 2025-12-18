@@ -7,17 +7,11 @@ use Illuminate\Validation\Rule;
 
 class CurrencyRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         $currencyId = $this->route('currency') ? $this->route('currency')->id : null;
@@ -25,7 +19,6 @@ class CurrencyRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-
             'code' => [
                 'required',
                 'string',
@@ -34,118 +27,76 @@ class CurrencyRequest extends FormRequest
                     ? Rule::unique('currencies', 'code')->ignore($currencyId)
                     : 'unique:currencies,code'
             ],
-
             'symbol' => ['nullable', 'string', 'max:10'],
-
-            'decimal_places' => [
-                'required',
-                'integer',
-                'min:0',
-                'max:4'
-            ],
-
+            'decimal_places' => ['required', 'integer', 'min:0', 'max:4'],
             'is_default' => ['boolean'],
             'is_active' => ['boolean'],
-
-            'rate_mode' => [
-                'required',
-                Rule::in(['automatic', 'manual'])
-            ],
-
+            'rate_mode' => ['required', Rule::in(['automatic', 'manual'])],
             'initial_rate' => [
                 'nullable',
                 'numeric',
                 'min:0.00000001',
                 'max:9999999999',
-                Rule::requiredIf(function () use ($isUpdating) {
-                    return !$isUpdating && !$this->boolean('is_default');
-                })
+                Rule::requiredIf(fn() => !$isUpdating && !$this->boolean('is_default'))
             ],
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
     public function messages(): array
     {
         return [
-            'name.required' => 'اسم العملة مطلوب',
-            'name.max' => 'اسم العملة لا يمكن أن يتجاوز 255 حرف',
-
-            'code.required' => 'كود العملة مطلوب',
-            'code.size' => 'كود العملة يجب أن يكون 3 أحرف فقط (مثال: USD, EUR, EGP)',
-            'code.unique' => 'كود العملة موجود بالفعل',
-
-            'symbol.max' => 'رمز العملة لا يمكن أن يتجاوز 10 أحرف',
-
-            'decimal_places.required' => 'عدد الأرقام العشرية مطلوب',
-            'decimal_places.integer' => 'عدد الأرقام العشرية يجب أن يكون رقماً صحيحاً',
-            'decimal_places.min' => 'عدد الأرقام العشرية يجب أن يكون 0 على الأقل',
-            'decimal_places.max' => 'عدد الأرقام العشرية لا يمكن أن يتجاوز 4',
-
-            'rate_mode.required' => 'طريقة تحديث السعر مطلوبة',
-            'rate_mode.in' => 'طريقة تحديث السعر غير صحيحة',
-
-            'initial_rate.required' => 'سعر الصرف الابتدائي مطلوب للعملات غير الافتراضية',
-            'initial_rate.numeric' => 'سعر الصرف يجب أن يكون رقماً',
-            'initial_rate.min' => 'سعر الصرف يجب أن يكون أكبر من صفر',
-            'initial_rate.max' => 'سعر الصرف كبير جداً',
+            'name.required' => __('Currency name is required'),
+            'name.max' => __('Currency name cannot exceed 255 characters'),
+            'code.required' => __('Currency code is required'),
+            'code.size' => __('Currency code must be exactly 3 characters (e.g., USD, EUR, EGP)'),
+            'code.unique' => __('This currency code already exists'),
+            'symbol.max' => __('Currency symbol cannot exceed 10 characters'),
+            'decimal_places.required' => __('Decimal places is required'),
+            'decimal_places.integer' => __('Decimal places must be a whole number'),
+            'decimal_places.min' => __('Decimal places must be at least 0'),
+            'decimal_places.max' => __('Decimal places cannot exceed 4'),
+            'rate_mode.required' => __('Rate update mode is required'),
+            'rate_mode.in' => __('Invalid rate update mode'),
+            'initial_rate.required' => __('Initial exchange rate is required for non-default currencies'),
+            'initial_rate.numeric' => __('Exchange rate must be a number'),
+            'initial_rate.min' => __('Exchange rate must be greater than zero'),
+            'initial_rate.max' => __('Exchange rate is too large'),
         ];
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     */
     public function attributes(): array
     {
         return [
-            'name' => 'اسم العملة',
-            'code' => 'كود العملة',
-            'symbol' => 'رمز العملة',
-            'decimal_places' => 'عدد الأرقام العشرية',
-            'is_default' => 'عملة افتراضية',
-            'is_active' => 'حالة التفعيل',
-            'rate_mode' => 'طريقة التحديث',
-            'initial_rate' => 'سعر الصرف',
+            'name' => __('currency name'),
+            'code' => __('currency code'),
+            'symbol' => __('currency symbol'),
+            'decimal_places' => __('decimal places'),
+            'is_default' => __('default currency'),
+            'is_active' => __('activation status'),
+            'rate_mode' => __('update mode'),
+            'initial_rate' => __('exchange rate'),
         ];
     }
 
-    /**
-     * Prepare the data for validation.
-     */
     protected function prepareForValidation(): void
     {
-        $data = [];
-
-        // تحويل الكود إلى uppercase تلقائياً
-        if ($this->has('code')) {
-            $data['code'] = strtoupper($this->code);
-        }
-
-        // تحويل الـ checkboxes إلى boolean
-        $data['is_default'] = $this->boolean('is_default');
-        $data['is_active'] = $this->boolean('is_active', true);
-
-        $this->merge($data);
+        $this->merge([
+            'code' => $this->has('code') ? strtoupper($this->code) : null,
+            'is_default' => $this->boolean('is_default'),
+            'is_active' => $this->boolean('is_active', true),
+        ]);
     }
 
-    /**
-     * Configure the validator instance.
-     */
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
             $currency = $this->route('currency');
 
-            if ($currency && $currency->is_default) {
-                // منع تعطيل العملة الافتراضية
-                if (!$this->boolean('is_active')) {
-                    $validator->errors()->add(
-                        'is_active',
-                        'لا يمكن تعطيل العملة الافتراضية'
-                    );
-                }
+            if ($currency?->is_default && !$this->boolean('is_active')) {
+                $validator->errors()->add(
+                    'is_active',
+                    __('Cannot deactivate the default currency')
+                );
             }
         });
     }
