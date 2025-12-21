@@ -632,12 +632,14 @@ class EditInvoiceForm extends Component
         $cashClientIds = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '110301%')
+            ->where('branch_id', $this->branch_id)
             ->pluck('id')
             ->toArray();
 
         $cashSupplierIds = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '210101%')
+            ->where('branch_id', $this->branch_id)
             ->pluck('id')
             ->toArray();
 

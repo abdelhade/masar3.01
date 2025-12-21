@@ -369,20 +369,20 @@ trait HandlesInvoiceData
         $this->pro_date = now()->format('Y-m-d');
         $this->accural_date = now()->format('Y-m-d');
 
-        $this->emp_id = 65;
-        $this->cash_box_id = 59;
-        $this->delivery_id = 65;
+        $this->emp_id = $this->employees->first()->id ?? null;
+        $this->cash_box_id = $this->cashAccounts->first()->id ?? null;
+        $this->delivery_id = $this->deliverys->first()->id ?? null;
         $this->status = 0;
 
-        if (in_array($this->type, [10, 12, 14, 16, 22])) {
-            $this->acc1_id = 61;
-            $this->acc2_id = 62;
+        if (in_array($this->type, [10, 12, 14, 16, 22, 26])) {
+            $this->acc1_id = !empty($this->cashClientIds) ? $this->cashClientIds[0] : ($this->acc1List->first()->id ?? null);
+            $this->acc2_id = $this->acc2List->first()->id ?? null;
         } elseif (in_array($this->type, [11, 13, 15, 17])) {
-            $this->acc1_id = $this->acc1List->first()->id ?? null; // ⬅️ هنا التعديل
+            $this->acc1_id = !empty($this->cashSupplierIds) ? $this->cashSupplierIds[0] : ($this->acc1List->first()->id ?? null);
             $this->acc2_id = $this->acc2List->first()->id ?? null;
         } elseif (in_array($this->type, [18, 19, 20])) {
             $this->acc1_id = null;
-            $this->acc2_id = 62;
+            $this->acc2_id = $this->acc2List->first()->id ?? null;
         } elseif ($this->type == 24) {
             // Service invoice: acc1 is expenses, acc2 is supplier
             $this->acc1_id = $this->acc1List->first()->id ?? null;
@@ -416,20 +416,22 @@ trait HandlesInvoiceData
             return;
         }
 
-        // 3. تهيئة بيانات الفاتورة الافتراضية
-        $this->setDefaultValues();
-
-        // 4. تحميل البيانات الضرورية
+        // 3. تحميل البيانات الضرورية الحساسة للفرع أولاً
         $this->loadInvoiceData();
 
-        // 5. تحديد حالة عرض الرصيد
+        // 4. تهيئة بيانات الفاتورة الافتراضية
+        $this->setDefaultValues();
+
+        // 5. حساب الإجماليات الأولية لتحديث حالة "الحساب النقدي" (Cash Account status)
+        $this->calculateTotals();
+
+        // 6. تحديد حالة عرض الرصيد
         $this->showBalance = in_array($this->type, [10, 11, 12, 13]);
         if ($this->showBalance && $this->acc1_id) {
-            $this->currentBalance = $this->getAccountBalance($this->acc1_id);
             $this->calculateBalanceAfterInvoice();
         }
 
-        // 6. تحميل توصيات الأصناف للعميل (فقط لفواتير المبيعات)
+        // 7. تحميل توصيات الأصناف للعميل (فقط لفواتير المبيعات)
         if ($this->type == 10 && $this->acc1_id) {
             $this->recommendedItems = $this->getRecommendedItems($this->acc1_id);
         }
@@ -438,39 +440,34 @@ trait HandlesInvoiceData
     protected function loadInvoiceData()
     {
         // تحميل البيانات الأساسية
-        $this->deliverys = $this->getAccountsByCode('2102%');
+        $this->deliverys = $this->getAccountsByCodeAndBranch('2102%', $this->branch_id);
         $this->cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('is_fund', 1)
+            ->where('branch_id', $this->branch_id)
             ->select('id', 'aname')
             ->get();
 
         $this->cashClientIds = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '110301%')
+            ->where('branch_id', $this->branch_id)
             ->pluck('id')
             ->toArray();
 
         $this->cashSupplierIds = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '210101%')
+            ->where('branch_id', $this->branch_id)
             ->pluck('id')
             ->toArray();
 
-        $this->employees = $this->getAccountsByCode('2102%');
+        $this->employees = $this->getAccountsByCodeAndBranch('2102%', $this->branch_id);
         $this->priceTypes = Price::pluck('name', 'id')->toArray();
         $this->searchResults = collect();
         $this->barcodeSearchResults = collect();
     }
 
-    protected function getAccountsByCode(string $code)
-    {
-        return AccHead::where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->where('code', 'like', $code)
-            ->select('id', 'aname')
-            ->get();
-    }
 
     /**
      * حساب سعر الصنف بناءً على نوع الفاتورة والوحدة المختارة
