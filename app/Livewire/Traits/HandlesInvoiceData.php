@@ -252,22 +252,24 @@ trait HandlesInvoiceData
         // ✅ تحقق من الإعداد
         $allowAllClientTypes = setting('invoice_enable_all_client_types') == '1';
 
+        // القيم المجمعة (للاستخدام عند تفعيل الإعداد)
+        $mergedAccounts = null;
+        if ($allowAllClientTypes) {
+             $mergedAccounts = collect()
+                ->merge($clientsAccounts)
+                ->merge($suppliersAccounts)
+                ->merge($employeesAccounts)
+                ->unique('id')
+                ->values();
+        }
+
         // تحديد acc1 حسب نوع الفاتورة
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
-            if ($allowAllClientTypes) {
-                // ✅ ضم العملاء + الموردين + الموظفين في نفس القائمة
-                $this->acc1List = collect()
-                    ->merge($clientsAccounts)
-                    ->merge($suppliersAccounts)
-                    ->merge($employeesAccounts)
-                    ->unique('id')
-                    ->values();
-            } else {
-                // العملاء فقط
-                $this->acc1List = $clientsAccounts;
-            }
+            // فواتير المبيعات
+            $this->acc1List = $allowAllClientTypes ? $mergedAccounts : $clientsAccounts;
         } elseif (in_array($this->type, [11, 13, 15, 17])) {
-            $this->acc1List = $suppliersAccounts;
+            // فواتير المشتريات
+            $this->acc1List = $allowAllClientTypes ? $mergedAccounts : $suppliersAccounts;
         } elseif ($this->type == 18) {
             $this->acc1List = $wasted;
         } elseif (in_array($this->type, [19, 20])) {
@@ -316,7 +318,8 @@ trait HandlesInvoiceData
                 ->where('is_basic', 0)
                 ->where('code', 'like', $code)
                 ->where('branch_id', $branchId)
-                ->select('id', 'aname')
+                ->select('id', 'code', 'aname')
+                ->orderBy('id')
                 ->get();
         }
 

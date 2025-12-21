@@ -70,28 +70,20 @@
                     <div class="row" style="min-width: 400px">
                         <div class="col-6">
                             <label>{{ __('Current Balance: ') }}</label>
-                            <span class="fw-bold text-primary">{{ number_format($currentBalance) }}</span>
+                            <span class="fw-bold text-primary" x-text="window.formatNumberFixed(currentBalance)">{{ number_format($currentBalance) }}</span>
                         </div>
                         <div class="col-6">
                             <label>{{ __('Balance After Invoice: ') }}</label>
-                            <span class="fw-bold {{ $balanceAfterInvoice < 0 ? 'text-danger' : 'text-success' }}">
+                            <span class="fw-bold" 
+                                :class="calculatedBalanceAfter < 0 ? 'text-danger' : 'text-success'"
+                                x-text="window.formatNumberFixed(calculatedBalanceAfter)">
                                 {{ number_format($balanceAfterInvoice) }}
                             </span>
                         </div>
                     </div>
 
 
-                    @if ($received_from_client > 0 && $received_from_client != $total_after_additional)
-                        <div class="row mt-1">
-                            <div class="col-6">
-                                <label>{{ __('Amount Due: ') }}</label>
-                                <span
-                                    class="fw-bold {{ $total_after_additional - $received_from_client < 0 ? 'text-success' : 'text-danger' }}">
-                                    {{ number_format($total_after_additional - $received_from_client) }}
-                                </span>
-                            </div>
-                        </div>
-                    @endif
+
                 </div>
             @endif
         @endif
@@ -117,36 +109,18 @@
                         {{-- ✅ Label فوق الحقل --}}
                         <label class="form-label">{{ $acc1Role }}</label>
 
-                        {{-- ✅ Async Select مع الزر ملزوق --}}
+                        {{-- ✅ Async Select مع الزر ملزوق (استخدام options بدلاً من endpoint) --}}
                         <div class="input-group">
                             <div class="flex-grow-1">
                                 <livewire:async-select
                                     name="acc1_id"
                                     wire:model.live="acc1_id"
-                                    endpoint="/api/accounts/search?type={{ $type }}&branch_id={{ $branch_id }}"
-                                    selected-endpoint="/api/accounts/search?type={{ $type }}&branch_id={{ $branch_id }}"
-                                    :selected="$acc1_id"
+                                    :options="$acc1Options"
                                     placeholder="{{ __('Search for ') . $acc1Role . __('...') }}"
-                                    value-field="id"
-                                    label-field="name"
-                                    min-search-length="0"
-                                    :autoload="true"
                                     ui="bootstrap"
-                                    :key="'acc1-async-' . $type . '-' . $branch_id"
+                                    :key="'acc1-async-add-' . $type . '-' . $branch_id . '-' . count($acc1Options)"
                                 />
                             </div>
-
-                            <livewire:async-select
-                            :options="[
-                                ['value' => 'active', 'label' => 'Active'],
-                                ['value' => 'inactive', 'label' => 'Inactive'],
-                                ['value' => 'pending', 'label' => 'Pending']
-                            ]"
-                                placeholder="Select user..."
-                                value-field="value"
-                                label-field="label"
-                                min-search-length="0"
-                            />
 
                             @canany(['create ' . $titles[$type], 'create invoices'])
                                 <livewire:accounts::account-creator :type="$accountType" :button-class="'btn btn-success'" :button-text="'+'"
@@ -154,21 +128,15 @@
                             @endcanany
                         </div>
                     @else
-                        {{-- ✅ بدون زر إضافة --}}
+                        {{-- ✅ بدون زر إضافة (استخدام options بدلاً من endpoint) --}}
                         <label class="form-label">{{ $acc1Role }}</label>
                         <livewire:async-select
                             name="acc1_id"
                             wire:model.live="acc1_id"
-                            endpoint="/api/accounts/search?type={{ $type }}&branch_id={{ $branch_id }}"
-                            selected-endpoint="/api/accounts/search?type={{ $type }}&branch_id={{ $branch_id }}"
-                            :selected="$acc1_id"
+                            :options="$acc1Options"
                             placeholder="{{ __('Search for ') . $acc1Role . __('...') }}"
-                            value-field="id"
-                            label-field="name"
-                            min-search-length="0"
-                            :autoload="true"
                             ui="bootstrap"
-                            :key="'acc1-async-' . $type . '-' . $branch_id"
+                            :key="'acc1-async-' . $type . '-' . $branch_id . '-' . count($acc1Options)"
                         />
                     @endif
 

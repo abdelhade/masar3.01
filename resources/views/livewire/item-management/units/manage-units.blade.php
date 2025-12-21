@@ -224,4 +224,20 @@ new class extends Component {
             });
         });
     </script>
+
+@php
+    $type = 11;
+    $branch_id = 1;
+@endphp
+     <livewire:async-select
+                                    name="acc1_id"
+                                    {{-- wire:model.live="acc1_id" --}}
+                                    endpoint="/api/accounts/search?type={{ $type }}&branch_id={{ $branch_id }}"
+                                    placeholder="{{ __('Search for ') . __('...') }}"
+                                    value-field="value"
+                                    label-field="label"
+                                    min-search-length="0"
+                                    :autoload="true"
+                                    ui="bootstrap"
+                                />
 </div>

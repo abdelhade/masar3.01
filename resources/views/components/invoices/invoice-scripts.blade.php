@@ -594,7 +594,10 @@
             enableDimensionsCalculation: initialData.enableDimensionsCalculation || false,
             invoiceType: initialData.invoiceType || 10,
             isCashAccount: initialData.isCashAccount || false,
+            items: initialData.items || [],
             editableFieldsOrder: initialData.editableFieldsOrder || ['quantity', 'price', 'discount', 'sub_value'],
+            currentBalance: parseFloat(initialData.currentBalance) || 0,
+            calculatedBalanceAfter: parseFloat(initialData.currentBalance) || 0,
             
             // Calculated values
             subtotal: 0,
@@ -616,44 +619,77 @@
                     receivedFromClient: this.receivedFromClient
                 });
                 
-                // ✅ حساب الإجمالي الفرعي فوراً من البيانات الأولية (بدون debounce)
-                this.calculateInitialTotals();
-                
-                // تحديث الحسابات بعد التحميل
-                this.$nextTick(() => {
-                    // ✅ التحقق من isCashAccount مرة أخرى بعد التحميل
-                    this.checkCashAccountStatus();
-                    this.calculateInitialTotals();
-                    this.syncToStore();
-                });
+                // حفظ reference في window
+                window.invoiceCalculationsInstance = this;
                 
                 // حفظ الدوال في Alpine store
                 Alpine.store('invoiceNavigation').moveToNextField = (event) => this.moveToNextField(event);
                 Alpine.store('invoiceNavigation').calculateRowTotal = (index) => this.calculateRowTotal(index);
                 Alpine.store('invoiceNavigation').syncRowToLivewire = (index) => this.syncRowToLivewire(index);
                 Alpine.store('invoiceNavigation').editableFieldsOrder = this.editableFieldsOrder;
-                
-                // حفظ reference في window
-                window.invoiceCalculationsInstance = this;
-                
-                // مراقبة تغييرات invoiceItems من Livewire
-                if (this.$wire) {
-                    this.$watch('$wire.invoiceItems', (items) => {
-                        if (items && Array.isArray(items)) {
-                            this.invoiceItems = items;
-                            this.updateDisplays();
-                        }
-                    }, { deep: true });
-                    
-                    // ✅ نعتمد على DOM attribute data-is-cash بدلاً من Livewire property
-                    // لتجنب أخطاء عدم وجود الخاصية في بعض المكونات
-                }
-                
-                // مراقبة data-is-cash من DOM
+
+                // ✅ مراقبة data-is-cash من DOM (احتياطي)
                 this.watchCashAccountChanges();
                 
-                // مراقبة تغييرات القيم المحسوبة لتحديث store
+                // ✅ مراقبة تغييرات القيم المحسوبة لتحديث store
                 this.setupStoreWatchers();
+                
+                // ✅ مراقبة وحساب الرصيد
+                this.setupBalanceWatchers();
+
+                // ✅ مراقبة جميع المدخلات المؤثرة على الحسابات (Reactive Engine)
+                this.$watch('items', () => this.calculateTotalsFromData(), { deep: true });
+                this.$watch('discountPercentage', () => {
+                    this._discountValueFromPercentage = true;
+                    this.calculateFinalTotals();
+                });
+                this.$watch('discountValue', () => {
+                    if (!this._discountValueFromPercentage) this.calculateFinalTotals();
+                });
+                this.$watch('additionalPercentage', () => {
+                    this._additionalValueFromPercentage = true;
+                    this.calculateFinalTotals();
+                });
+                this.$watch('additionalValue', () => {
+                   if (!this._additionalValueFromPercentage) this.calculateFinalTotals();
+                });
+                this.$watch('receivedFromClient', () => this.calculateFinalTotals());
+                this.$watch('isCashAccount', () => this.calculateFinalTotals());
+
+                // ✅ مراقبة تغيير العميل لتصفير الخصومات والمبالغ المدفوعة
+                this.$watch('acc1Id', (newVal) => {
+                    if (newVal) {
+                        console.log('🔄 Account Changed:', newVal);
+                        this.discountPercentage = 0;
+                        this.discountValue = 0;
+                        this.additionalPercentage = 0;
+                        this.additionalValue = 0;
+                        this.receivedFromClient = 0;
+                        
+                        // ✅ ننتظر قليلاً للتأكد من أن حالة isCashAccount قد زامنت من Livewire
+                        setTimeout(() => {
+                            this.calculateFinalTotals();
+                        }, 50);
+                    }
+                });
+
+                // ✅ الاستماع لحدث التصفير من Livewire (Brute Force Reset)
+                Livewire.on('reset-invoice-parameters', () => {
+                    console.log('🧹 Invoice Parameters Reset Triggered | isCash:', this.isCashAccount);
+                    this.discountPercentage = 0;
+                    this.discountValue = 0;
+                    this.additionalPercentage = 0;
+                    this.additionalValue = 0;
+                    this.receivedFromClient = 0;
+                    
+                    // ✅ ننتظر قليلاً للتأكد من مزامنة الحالة النقدية
+                    setTimeout(() => {
+                        this.calculateFinalTotals();
+                    }, 50);
+                });
+                
+                // حساب أولي
+                this.calculateTotalsFromData();
             },
             
             /**
@@ -697,32 +733,6 @@
                         }
                     });
                 });
-                
-                // ✅ مراقبة تغيير الإجمالي النهائي لتحديث المدفوع تلقائياً للحسابات النقدية
-                this.$watch('totalAfterAdditional', (newTotal) => {
-                    if (this.isCashAccount && newTotal > 0) {
-                        this.receivedFromClient = parseFloat(parseFloat(newTotal || 0).toFixed(2));
-                        if (this.$wire) {
-                            this.$wire.set('received_from_client', this.receivedFromClient, false);
-                        }
-                        this.remaining = 0;
-                        this.syncToStore();
-                        console.log('💰 Cash Account: Updated receivedFromClient to', this.receivedFromClient, 'remaining:', this.remaining);
-                    }
-                });
-                
-                // ✅ مراقبة تغيير isCashAccount لتحديث المدفوع تلقائياً
-                this.$watch('isCashAccount', (isCash) => {
-                    if (isCash && this.totalAfterAdditional > 0) {
-                        this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                        if (this.$wire) {
-                            this.$wire.set('received_from_client', this.receivedFromClient, false);
-                        }
-                        this.remaining = 0;
-                        this.syncToStore();
-                        console.log('💰 Cash Account Changed: Updated receivedFromClient to', this.receivedFromClient, 'remaining:', this.remaining);
-                    }
-                });
             },
             
             /**
@@ -741,14 +751,14 @@
             },
 
             syncToStore() {
-                if (!Alpine.store('invoiceValues')) return;
-
-                Alpine.store('invoiceValues').subtotal = this.subtotal;
-                Alpine.store('invoiceValues').discountValue = this.discountValue;
-                Alpine.store('invoiceValues').additionalValue = this.additionalValue;
-                Alpine.store('invoiceValues').totalAfterAdditional = this.totalAfterAdditional;
-                Alpine.store('invoiceValues').remaining = this.remaining;
-                Alpine.store('invoiceValues').receivedFromClient = this.receivedFromClient;
+                if (Alpine.store('invoiceValues')) {
+                    Alpine.store('invoiceValues').subtotal = this.subtotal;
+                    Alpine.store('invoiceValues').discountValue = this.discountValue;
+                    Alpine.store('invoiceValues').additionalValue = this.additionalValue;
+                    Alpine.store('invoiceValues').totalAfterAdditional = this.totalAfterAdditional;
+                    Alpine.store('invoiceValues').remaining = this.remaining;
+                    Alpine.store('invoiceValues').receivedFromClient = this.receivedFromClient;
+                }
             },
 
             /**
@@ -756,140 +766,13 @@
              * ✅ تحديث فوري مع debounce قصير جداً للسماح بكتابة الأرقام الكبيرة
              */
             calculateRowTotal(index) {
-                // ✅ إلغاء أي timer سابق
-                if (this._calculateDebounceTimer) {
-                    clearTimeout(this._calculateDebounceTimer);
-                }
-                
-                // ✅ debounce قصير جداً (30ms) للسماح بكتابة الأرقام الكبيرة مع تحديث فوري تقريباً
-                this._calculateDebounceTimer = setTimeout(() => {
-                    // ✅ الحصول على القيم مباشرة من DOM (أكثر دقة)
-                    const quantityField = document.getElementById(`quantity-${index}`);
-                    const priceField = document.getElementById(`price-${index}`);
-                    const discountField = document.getElementById(`discount-${index}`);
-                    const subValueField = document.getElementById(`sub_value-${index}`);
-                    
-                    if (!quantityField || !priceField) return; // تأكد من وجود الحقول
-                    
-                    // ✅ قراءة القيم من الحقول مباشرة (أحدث قيمة)
-                    const quantity = parseFloat(quantityField.value) || 0;
-                    const price = parseFloat(priceField.value) || 0;
-                    const discount = discountField ? (parseFloat(discountField.value) || 0) : 0;
-                    const subValue = (quantity * price) - discount;
-                    
-                    // ✅ تحديث حقل sub_value في DOM مباشرة
-                    if (subValueField) {
-                        subValueField.value = subValue.toFixed(2);
-                    }
-                    
-                    // ✅ تحديث محلي في Alpine.js
-                    if (this.invoiceItems[index]) {
-                        this.invoiceItems[index].quantity = quantity;
-                        this.invoiceItems[index].price = price;
-                        this.invoiceItems[index].discount = discount;
-                        this.invoiceItems[index].sub_value = subValue;
-                    }
-                    
-                    // ✅ تحديث في Livewire data محلياً (لا request)
-                    if (this.$wire && this.$wire.invoiceItems && this.$wire.invoiceItems[index]) {
-                        this.$wire.invoiceItems[index].quantity = quantity;
-                        this.$wire.invoiceItems[index].price = price;
-                        this.$wire.invoiceItems[index].discount = discount;
-                        this.$wire.invoiceItems[index].sub_value = subValue;
-                    }
-                    
-                    // ✅ تحديث العروض الحسابية فوراً
-                    this.updateDisplaysImmediate();
-                }, 30); // ✅ debounce قصير جداً (30ms) للاستجابة الفورية تقريباً
+                // مفرغة: يتم الحساب الآن تلقائياً عبر x-model و deep watch على items
             },
             
             /**
              * ✅ تحديث الإجماليات فوراً (بدون debounce)
              */
-            updateDisplaysImmediate() {
-                // ✅ التحقق من حالة الحساب النقدي قبل الحساب
-                this.checkCashAccountStatus();
-                
-                // ✅ الحصول على عدد الأصناف من Livewire
-                const itemsCount = this.$wire?.invoiceItems?.length || this.invoiceItems?.length || 0;
-                let totalSubtotal = 0;
-                
-                // ✅ 1. حساب sub_value لكل صنف من DOM مباشرة
-                for (let index = 0; index < itemsCount; index++) {
-                    const quantityField = document.getElementById(`quantity-${index}`);
-                    const priceField = document.getElementById(`price-${index}`);
-                    const discountField = document.getElementById(`discount-${index}`);
-                    const subValueField = document.getElementById(`sub_value-${index}`);
-                    
-                    // ✅ قراءة القيم من DOM مباشرة (أحدث قيمة)
-                    const quantity = quantityField ? parseFloat(quantityField.value) || 0 : 0;
-                    const price = priceField ? parseFloat(priceField.value) || 0 : 0;
-                    const discount = discountField ? parseFloat(discountField.value) || 0 : 0;
-                    const calculatedSubValue = (quantity * price) - discount;
-                    
-                    // ✅ تحديث حقل sub_value في DOM
-                    if (subValueField) {
-                        subValueField.value = calculatedSubValue.toFixed(2);
-                    }
-                    
-                    // ✅ تحديث في البيانات المحلية
-                    if (this.invoiceItems[index]) {
-                        this.invoiceItems[index].quantity = quantity;
-                        this.invoiceItems[index].price = price;
-                        this.invoiceItems[index].discount = discount;
-                        this.invoiceItems[index].sub_value = calculatedSubValue;
-                    }
-                    
-                    if (this.$wire && this.$wire.invoiceItems && this.$wire.invoiceItems[index]) {
-                        this.$wire.invoiceItems[index].quantity = quantity;
-                        this.$wire.invoiceItems[index].price = price;
-                        this.$wire.invoiceItems[index].discount = discount;
-                        this.$wire.invoiceItems[index].sub_value = calculatedSubValue;
-                    }
-                    
-                    // ✅ إضافة إلى الإجمالي
-                    totalSubtotal += calculatedSubValue;
-                }
-                
-                // ✅ 2. تحديث المجموع الفرعي
-                this.subtotal = totalSubtotal;
-                
-                // ✅ 3. حساب الخصم
-                if (this._discountValueFromPercentage) {
-                    this.discountValue = (this.subtotal * this.discountPercentage) / 100;
-                }
-                
-                // ✅ 4. حساب الإضافي
-                const afterDiscount = this.subtotal - this.discountValue;
-                if (this._additionalValueFromPercentage) {
-                    this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
-                }
-                
-                // ✅ 5. حساب الإجمالي النهائي
-                this.totalAfterAdditional = afterDiscount + this.additionalValue;
-                
-                // ✅ 6. تحديث المدفوع للعملاء/الموردين النقديين تلقائياً
-                if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                    this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                    // تحديث Livewire أيضاً
-                    if (this.$wire) {
-                        this.$wire.set('received_from_client', this.receivedFromClient, false);
-                    }
-                    // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                    this.remaining = 0;
-                    console.log('💰 Cash Account - updateDisplaysImmediate:', {
-                        totalAfterAdditional: this.totalAfterAdditional,
-                        receivedFromClient: this.receivedFromClient,
-                        remaining: this.remaining
-                    });
-                } else {
-                    // ✅ حساب المتبقي (للحسابات غير النقدية)
-                    this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                }
-                
-                // ✅ 8. تحديث Store
-                this.syncToStore();
-            },
+
             
             /**
              * ✅ Sync صف واحد مع Livewire (تُستدعى عند blur)
@@ -909,257 +792,107 @@
             },
 
             /**
-             * تحديث جميع العروض الحسابية (مع debounce أطول لتقليل الطلبات)
+             * ✅ حساب الإجماليات بناءً على البيانات (Entangled Data)
+             * هذا هو المصدر الوحيد للحقيقة الآن
              */
-            updateDisplays() {
-                if (this._updateDisplaysDebounceTimer) {
-                    clearTimeout(this._updateDisplaysDebounceTimer);
+            calculateTotalsFromData() {
+                let tempSubtotal = 0;
+                const items = this.items || [];
+                
+                // حساب مجموع الصفوف
+                items.forEach(item => {
+                   const qty = parseFloat(item.quantity) || 0;
+                   const price = parseFloat(item.price) || 0;
+                   const discount = parseFloat(item.discount) || 0;
+                   
+                   const rowTotal = (qty * price) - discount;
+                   tempSubtotal += rowTotal;
+                   
+                   // تحديث قيمة الصف في البيانات
+                   item.sub_value = parseFloat(rowTotal.toFixed(2));
+                });
+                
+                this.subtotal = parseFloat(tempSubtotal.toFixed(2));
+                
+                // ✅ حساب القيم النهائية (خصم، إضافي، ضرائب)
+                this.calculateFinalTotals();
+            },
+
+            /**
+             * ✅ المحرك الموحد للحسابات النهائية
+             * يضمن تزامن الخصم، الإضافي، المدفوع، والمتبقي
+             */
+            calculateFinalTotals() {
+                // 1. حساب قيمة الخصم
+                if (this._discountValueFromPercentage) {
+                    this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100).toFixed(2));
+                } else if (this.subtotal > 0) {
+                    this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100).toFixed(2));
+                }
+
+                const afterDiscount = parseFloat((this.subtotal - this.discountValue).toFixed(2));
+
+                // 2. حساب القيمة الإضافية
+                if (this._additionalValueFromPercentage) {
+                    this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100).toFixed(2));
+                } else if (afterDiscount > 0) {
+                    this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
                 }
                 
-                this._updateDisplaysDebounceTimer = setTimeout(() => {
-                    // ✅ التحقق من حالة الحساب النقدي قبل الحساب
-                    this.checkCashAccountStatus();
-                    
-                    // ✅ الحصول على العناصر من المصدر الصحيح
-                    let items = this.invoiceItems;
-                    if (this.$wire && this.$wire.invoiceItems && Array.isArray(this.$wire.invoiceItems)) {
-                        items = this.$wire.invoiceItems;
-                    }
-                    
-                    // ✅ 1. حساب sub_value لكل صنف أولاً (إذا لم يكن محسوباً)
-                    items.forEach((item, index) => {
-                        const quantity = parseFloat(item.quantity) || 0;
-                        const price = parseFloat(item.price) || 0;
-                        const discount = parseFloat(item.discount) || 0;
-                        const calculatedSubValue = (quantity * price) - discount;
-                        
-                        // تحديث sub_value إذا كان مختلفاً
-                        if (Math.abs(parseFloat(item.sub_value || 0) - calculatedSubValue) > 0.01) {
-                            item.sub_value = calculatedSubValue;
-                            // تحديث في Livewire data محلياً (لا request)
-                            if (this.$wire && this.$wire.invoiceItems && this.$wire.invoiceItems[index]) {
-                                this.$wire.invoiceItems[index].sub_value = calculatedSubValue;
-                            }
-                        }
-                    });
-                    
-                    // ✅ 2. حساب المجموع الفرعي من sub_value المحسوب
-                    const newSubtotal = items.reduce((sum, item) => {
-                        const subValue = parseFloat(item.sub_value) || 0;
-                        return sum + subValue;
-                    }, 0);
-                    const subtotalChanged = Math.abs(this.subtotal - newSubtotal) > 0.01;
-                    this.subtotal = newSubtotal;
-
-                    // حساب الخصم
-                    if (this._discountValueFromPercentage || subtotalChanged) {
-                        this.discountValue = (this.subtotal * this.discountPercentage) / 100;
-                    }
-                    
-                    // حساب الإضافي
-                    const afterDiscount = this.subtotal - this.discountValue;
-                    if (this._additionalValueFromPercentage || subtotalChanged) {
-                        this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
-                    }
-                    
-                    // حساب الإجمالي
-                    this.totalAfterAdditional = afterDiscount + this.additionalValue;
-                    
-                    // ✅ تحديث المدفوع للعملاء/الموردين النقديين تلقائياً
-                    if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                        this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                        if (this.$wire) {
-                            this.$wire.set('received_from_client', this.receivedFromClient, false);
-                        }
-                        // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                        this.remaining = 0;
-                    } else {
-                        // ✅ حساب المتبقي (للحسابات غير النقدية)
-                        this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                    }
-                    
-                    this.syncToStore();
-                }, 500); // ✅ زيادة من 100ms إلى 500ms
+                // 3. الإجمالي النهائي
+                this.totalAfterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));
+                
+                // 4. الحسابات النقدية
+                if (this.isCashAccount) {
+                    this.receivedFromClient = this.totalAfterAdditional;
+                    this.remaining = 0;
+                } 
+                // 5. الحسابات العادية
+                else {
+                    // للمحافظة على المبلغ المدفوع حتى لو أصبح الإجمالي صفراً (مثلاً عند حذف صنف)
+                    this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
+                }
+                
+                // 7. تحديث الرصيد والمتجر
+                this.calculateBalance();
+                this.syncToStore();
             },
+
+            // ⚠️ Legacy Wrappers (توجيه الاستدعاءات القديمة للنظام الجديد)
+            updateDisplaysImmediate() {
+                this.calculateTotalsFromData();
+            },
+            
+            updateDisplays() {
+                 this.calculateTotalsFromData();
+            },
+
+            // ✅ دوال فارغة لأن Binding يتعامل معها الآن
+            calculateRowTotal(index) {},
+            syncRowToLivewire(index) {},
 
             updateDiscountFromPercentage() {
                 this._discountValueFromPercentage = true;
-
-                // ✅ التحقق من حالة الحساب النقدي
-                this.checkCashAccountStatus();
-
-                // ✅ إعادة حساب subtotal إذا كان 0
-                if (this.subtotal === 0) {
-                    this.calculateInitialTotals();
-                }
-
-                // ✅ تقييد النسبة المئوية إلى رقمين فقط
-                if (this.discountPercentage !== null && this.discountPercentage !== undefined) {
-                    this.discountPercentage = parseFloat(parseFloat(this.discountPercentage || 0).toFixed(2));
-                } else {
-                    this.discountPercentage = 0;
-                }
-
-                this.discountValue = (this.subtotal * this.discountPercentage) / 100;
-
-                const afterDiscount = this.subtotal - this.discountValue;
-                if (this._additionalValueFromPercentage) {
-                    this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
-                }
-                this.totalAfterAdditional = afterDiscount + this.additionalValue;
-                
-                // ✅ تحديث المدفوع للحسابات النقدية
-                if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                    this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                    if (this.$wire) {
-                        this.$wire.set('received_from_client', this.receivedFromClient, false);
-                    }
-                    // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                    this.remaining = 0;
-                } else {
-                    // ✅ حساب المتبقي (للحسابات غير النقدية)
-                    this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                }
-
-                console.log('updateDiscountFromPercentage:', {
-                    subtotal: this.subtotal,
-                    discountPercentage: this.discountPercentage,
-                    discountValue: this.discountValue,
-                    totalAfterAdditional: this.totalAfterAdditional,
-                    isCashAccount: this.isCashAccount,
-                    receivedFromClient: this.receivedFromClient,
-                    remaining: this.remaining
-                });
-
-                this.syncToStore();
-                this.$wire?.set('discount_value', this.discountValue, false);
+                this.calculateFinalTotals();
             },
 
             updateDiscountFromValue() {
                 this._discountValueFromPercentage = false;
-
-                // ✅ التحقق من حالة الحساب النقدي
-                this.checkCashAccountStatus();
-
-                // ✅ إعادة حساب subtotal إذا كان 0
-                if (this.subtotal === 0) {
-                    this.calculateInitialTotals();
-                }
-
-                if (this.subtotal > 0 && this.discountValue >= 0) {
-                    this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100).toFixed(2));
-                } else {
-                    this.discountPercentage = 0;
-                }
-
-                const afterDiscount = this.subtotal - this.discountValue;
-                if (this._additionalValueFromPercentage) {
-                    this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
-                }
-                this.totalAfterAdditional = afterDiscount + this.additionalValue;
-                
-                // ✅ تحديث المدفوع للحسابات النقدية
-                if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                    this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                    if (this.$wire) {
-                        this.$wire.set('received_from_client', this.receivedFromClient, false);
-                    }
-                    // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                    this.remaining = 0;
-                } else {
-                    // ✅ حساب المتبقي (للحسابات غير النقدية)
-                    this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                }
-                
-                this.syncToStore();
-                this.$wire?.set('discount_percentage', this.discountPercentage, false);
+                this.calculateFinalTotals();
             },
 
             updateAdditionalFromPercentage() {
                 this._additionalValueFromPercentage = true;
-
-                // ✅ التحقق من حالة الحساب النقدي
-                this.checkCashAccountStatus();
-
-                // ✅ إعادة حساب subtotal إذا كان 0
-                if (this.subtotal === 0) {
-                    this.calculateInitialTotals();
-                }
-
-                // ✅ تقييد النسبة المئوية إلى رقمين فقط
-                if (this.additionalPercentage !== null && this.additionalPercentage !== undefined) {
-                    this.additionalPercentage = parseFloat(parseFloat(this.additionalPercentage || 0).toFixed(2));
-                } else {
-                    this.additionalPercentage = 0;
-                }
-
-                const afterDiscount = this.subtotal - this.discountValue;
-                this.additionalValue = (afterDiscount * this.additionalPercentage) / 100;
-
-                this.totalAfterAdditional = afterDiscount + this.additionalValue;
-                
-                // ✅ تحديث المدفوع للحسابات النقدية
-                if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                    this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                    if (this.$wire) {
-                        this.$wire.set('received_from_client', this.receivedFromClient, false);
-                    }
-                    // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                    this.remaining = 0;
-                } else {
-                    // ✅ حساب المتبقي (للحسابات غير النقدية)
-                    this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                }
-
-                this.syncToStore();
-                this.$wire?.set('additional_value', this.additionalValue, false);
+                this.calculateFinalTotals();
             },
 
             updateAdditionalFromValue() {
                 this._additionalValueFromPercentage = false;
-
-                // ✅ التحقق من حالة الحساب النقدي
-                this.checkCashAccountStatus();
-
-                const afterDiscount = this.subtotal - this.discountValue;
-                if (afterDiscount > 0 && this.additionalValue >= 0) {
-                    this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
-                } else {
-                    this.additionalPercentage = 0;
-                }
-
-                this.totalAfterAdditional = afterDiscount + this.additionalValue;
-                
-                // ✅ تحديث المدفوع للحسابات النقدية
-                if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                    this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                    if (this.$wire) {
-                        this.$wire.set('received_from_client', this.receivedFromClient, false);
-                    }
-                    // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                    this.remaining = 0;
-                } else {
-                    // ✅ حساب المتبقي (للحسابات غير النقدية)
-                    this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                }
-                
-                this.syncToStore();
-                this.$wire?.set('additional_percentage', this.additionalPercentage, false);
+                this.calculateFinalTotals();
             },
 
             updateReceived() {
-                // ✅ إذا كان حساب نقدي، لا يمكن تغيير المدفوع يدوياً (يجب أن يساوي الإجمالي)
-                if (this.isCashAccount && this.totalAfterAdditional > 0) {
-                    this.receivedFromClient = parseFloat(parseFloat(this.totalAfterAdditional || 0).toFixed(2));
-                    // ✅ الباقي يجب أن يكون 0 للحسابات النقدية
-                    this.remaining = 0;
-                } else {
-                    // ✅ حساب المتبقي (للحسابات غير النقدية)
-                    this.remaining = Math.max(0, this.totalAfterAdditional - this.receivedFromClient);
-                }
-                
-                this.syncToStore();
-                this.$wire?.set('received_from_client', this.receivedFromClient, false);
+                this.calculateFinalTotals();
             },
 
             /**
@@ -1235,6 +968,54 @@
                 this.$wire.set('total_after_additional', this.totalAfterAdditional, false);
 
                 console.log('✅ Sync completed', alpineData);
+            },
+
+            /**
+             * ✅ إعداد مراقبات الرصيد
+             */
+            setupBalanceWatchers() {
+                // مراقبة تغيير الرصيد الحالي من Livewire
+                if (this.$wire) {
+                    this.$watch('$wire.currentBalance', (val) => {
+                        this.currentBalance = parseFloat(val) || 0;
+                        this.calculateBalance();
+                    });
+                }
+
+                // مراقبة المتغيرات التي تؤثر على الرصيد
+                this.$watch('totalAfterAdditional', () => this.calculateBalance());
+                this.$watch('receivedFromClient', () => this.calculateBalance());
+                this.$watch('currentBalance', () => this.calculateBalance());
+                
+                // حساب أولي
+                this.calculateBalance();
+            },
+
+            /**
+             * ✅ حساب الرصيد بعد الفاتورة (مطابق لمنطق PHP)
+             */
+            calculateBalance() {
+                const netTotal = parseFloat(this.totalAfterAdditional) || 0;
+                const received = parseFloat(this.receivedFromClient) || 0;
+                const type = parseInt(this.invoiceType);
+                let effect = 0;
+
+                if (type == 10) { // مبيعات
+                    effect = netTotal - received;
+                } else if (type == 11) { // مشتريات
+                    effect = -(netTotal - received);
+                } else if (type == 12) { // مردود مبيعات
+                    effect = -netTotal + received;
+                } else if (type == 13) { // مردود مشتريات
+                    effect = netTotal - received;
+                }
+
+                this.calculatedBalanceAfter = (parseFloat(this.currentBalance) || 0) + effect;
+                
+                // تحديث Store
+                if (Alpine.store('invoiceValues')) {
+                    Alpine.store('invoiceValues').calculatedBalanceAfter = this.calculatedBalanceAfter;
+                }
             },
 
             /**

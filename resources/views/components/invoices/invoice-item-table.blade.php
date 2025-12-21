@@ -36,7 +36,7 @@
                     <table class="table mb-0" style="background: transparent;">
                         <tbody>
                             @forelse ($invoiceItems as $index => $row)
-                                <tr wire:key="invoice-row-{{ $index }}">
+                                <tr wire:key="invoice-row-{{ $row['item_id'] }}">
                                     {{-- اسم الصنف --}}
                                     @if ($this->shouldShowColumn('item_name'))
                                         <td style="width: 18%; font-size: 1.2em;">
@@ -106,12 +106,9 @@
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.001" min="0"
                                                 id="quantity-{{ $index }}" 
-                                                value="{{ number_format((float)($row['quantity'] ?? 0), 3, '.', '') }}"
+                                                x-model.number="items[{{ $index }}].quantity"
                                                 data-field="quantity" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
-                                                @keyup="window.handleQuantityKeyup && window.handleQuantityKeyup({{ $index }}, $event)"
-                                                @input="window.handleQuantityKeyup && window.handleQuantityKeyup({{ $index }}, $event)"
-                                                @blur="window.handleFieldBlur && window.handleFieldBlur({{ $index }}, $event)"
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                                 placeholder="{{ __('Quantity') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
@@ -280,25 +277,9 @@
                                     @if ($this->shouldShowColumn('price'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" id="price-{{ $index }}"
-                                                value="{{ number_format((float)($row['price'] ?? 0), 2, '.', '') }}" 
+                                                x-model.number="items[{{ $index }}].price"
                                                 data-field="price" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
-                                                @keyup="window.handlePriceKeyup && window.handlePriceKeyup({{ $index }}, $event)"
-                                                @input="window.handlePriceKeyup && window.handlePriceKeyup({{ $index }}, $event)"
-                                                @blur="
-                                                    // ✅ عند blur: sync مع Livewire
-                                                    var val = parseFloat($event.target.value) || 0;
-                                                    if ($wire && $wire.invoiceItems && $wire.invoiceItems[{{ $index }}]) {
-                                                        $wire.invoiceItems[{{ $index }}].price = val;
-                                                    }
-                                                    if (window.handleCalculateRowTotal) {
-                                                        window.handleCalculateRowTotal({{ $index }});
-                                                    }
-                                                    // Sync مع Livewire عند blur
-                                                    if (Alpine.store('invoiceNavigation') && Alpine.store('invoiceNavigation').syncRowToLivewire) {
-                                                        Alpine.store('invoiceNavigation').syncRowToLivewire({{ $index }});
-                                                    }
-                                                "
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                                 class="form-control text-center invoice-price invoice-field"
                                                 step="0.01" @if ($this->type == 10 && !auth()->user()->can('allow_price_change')) readonly @endif />
@@ -310,25 +291,9 @@
                                     @if ($this->shouldShowColumn('discount'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" id="discount-{{ $index }}"
-                                                value="{{ number_format((float)($row['discount'] ?? 0), 2, '.', '') }}" 
+                                                x-model.number="items[{{ $index }}].discount"
                                                 data-field="discount" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
-                                                @keyup="window.handleDiscountKeyup && window.handleDiscountKeyup({{ $index }}, $event)"
-                                                @input="window.handleDiscountKeyup && window.handleDiscountKeyup({{ $index }}, $event)"
-                                                @blur="
-                                                    // ✅ عند blur: sync مع Livewire
-                                                    var val = parseFloat($event.target.value) || 0;
-                                                    if ($wire && $wire.invoiceItems && $wire.invoiceItems[{{ $index }}]) {
-                                                        $wire.invoiceItems[{{ $index }}].discount = val;
-                                                    }
-                                                    if (window.handleCalculateRowTotal) {
-                                                        window.handleCalculateRowTotal({{ $index }});
-                                                    }
-                                                    // Sync مع Livewire عند blur
-                                                    if (Alpine.store('invoiceNavigation') && Alpine.store('invoiceNavigation').syncRowToLivewire) {
-                                                        Alpine.store('invoiceNavigation').syncRowToLivewire({{ $index }});
-                                                    }
-                                                "
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                                 class="form-control text-center invoice-discount invoice-field"
                                                 step="0.01" @if (!auth()->user()->can('allow_discount_change')) readonly @endif />
@@ -341,17 +306,14 @@
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 id="sub_value-{{ $index }}"
-                                                value="{{ number_format((float)($row['sub_value'] ?? 0), 2, '.', '') }}"
+                                                x-model.number="items[{{ $index }}].sub_value"
                                                 data-field="sub_value"
                                                 data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
-                                                @keyup="window.handleSubValueKeyup && window.handleSubValueKeyup({{ $index }}, $event)"
-                                                @input="window.handleSubValueKeyup && window.handleSubValueKeyup({{ $index }}, $event)"
-                                                @blur="window.handleFieldBlur && window.handleFieldBlur({{ $index }}, $event)"
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                                 placeholder="{{ __('Value') }}"
                                                 style="font-size: 0.85em; height: 2em; padding: 1px 4px;"
-                                                class="form-control invoice-field">
+                                                class="form-control invoice-field" readonly>
                                         </td>
                                     @endif
 

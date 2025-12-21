@@ -141,7 +141,7 @@ class CreateInvoiceForm extends Component
     protected $listeners = [
         'account-created' => 'handleAccountCreated',
         'branch-changed' => 'handleBranchChange',
-        'itemSelected' => 'handleItemSelected',
+        // 'itemSelected' => 'handleItemSelected', // ✅ تم إزالة هذا لأن async-select يستخدم wire:model.live مباشرة
         'batch-selected' => 'selectBatch',
     ];
 
@@ -343,41 +343,29 @@ class CreateInvoiceForm extends Component
 
         // تحديث قائمة الحسابات
         if ($type === 'client' || $type === 'supplier') {
-        // إعادة تحميل acc1List حسب الفرع أيضاً
-            $this->acc1_id = $account['id'];
-            // ✅ لا حاجة لـ dispatch refreshItems - async-select يستخدم wire:model مباشرة
-
-            if ($type === 'client') {
-                $this->acc1List = $this->getAccountsByCodeAndBranch('1103%', $this->branch_id);
-            } else {
-                $this->acc1List = $this->getAccountsByCodeAndBranch('2101%', $this->branch_id);
-            }
-
-            // تحديد الحساب الجديد كمختار
+            // تحديث الحساب المختار
             $this->acc1_id = $account['id'];
 
-            // إضافة: تحديث قوائم الحسابات النقدية أيضاً
-            if ($type === 'client') {
-                $this->cashClientIds = AccHead::where('isdeleted', 0)
-                    ->where('is_basic', 0)
-                    ->where('code', 'like', '110301%')
-                    ->pluck('id')
-                    ->toArray();
-            } else {
-                $this->cashSupplierIds = AccHead::where('isdeleted', 0)
-                    ->where('is_basic', 0)
-                    ->where('code', 'like', '210101%')
-                    ->pluck('id')
-                    ->toArray();
-            }
+            // ✅ إعادة تحميل جميع القوائم والبيانات المرتبطة بالفرع لضمان تحديث قوائم الحسابات بالكامل
+            // هذا يضمن بقاء جميع أنواع الحسابات متاحة في البحث ويحل مشكلة اختفاء السكرول
+            $this->loadBranchFilteredData($this->branch_id);
+
+            // ✅ إعادة تعيين القيم عند تغيير العميل (عبر الإنشاء الجديد)
+            $this->discount_percentage = 0;
+            $this->discount_value = 0;
+            $this->additional_percentage = 0;
+            $this->additional_value = 0;
+            $this->received_from_client = 0;
 
             if ($this->showBalance) {
                 $this->currentBalance = $this->getAccountBalance($this->acc1_id);
-                $this->calculateBalanceAfterInvoice();
             }
 
-            // تحقق من الحساب النقدي للحساب الجديد
-            $this->checkCashAccount($this->acc1_id);
+            // ✅ إعادة حساب الإجماليات (سيقوم داخلياً بفحص الحساب النقدي وحساب الرصيد)
+            $this->calculateTotals();
+
+            // ✅ إرسال حدث للـ Alpine.js لتصفير القيم فوراً في الواجهة
+            $this->dispatch('reset-invoice-parameters');
         }
 
         $this->dispatch('success', [
@@ -440,9 +428,21 @@ class CreateInvoiceForm extends Component
 
     public function updatedAcc1Id($value)
     {
+        // ✅ إعادة تعيين القيم عند تغيير العميل
+        $this->discount_percentage = 0;
+        $this->discount_value = 0;
+        $this->additional_percentage = 0;
+        $this->additional_value = 0;
+        $this->received_from_client = 0;
+
+        // ✅ إعادة حساب الإجماليات (سيقوم داخلياً بفحص الحساب النقدي وحساب الرصيد)
+        $this->calculateTotals();
+
+        // ✅ إرسال حدث للـ Alpine.js لتصفير القيم فوراً في الواجهة
+        $this->dispatch('reset-invoice-parameters');
+
         if ($this->showBalance) {
             $this->currentBalance = $this->getAccountBalance($value);
-            $this->calculateBalanceAfterInvoice();
         }
 
         // جلب التوصيات لأكثر 5 أصناف تم شراؤها من قبل العميل
@@ -486,7 +486,7 @@ class CreateInvoiceForm extends Component
             $this->recommendedItems = [];
         }
 
-        $this->checkCashAccount($value);
+        $this->calculateTotals();
     }
 
     private function checkCashAccount($accountId)
@@ -730,6 +730,20 @@ class CreateInvoiceForm extends Component
         unset($this->invoiceItems[$index]);
         $this->invoiceItems = array_values($this->invoiceItems);
         $this->calculateTotals();
+
+        // ✅ مسح تفاصيل الصنف المختار إذا تم حذفه من القائمة
+        $stillExists = false;
+        foreach ($this->invoiceItems as $item) {
+             if (($item['item_id'] ?? null) == $this->currentSelectedItem) {
+                 $stillExists = true; 
+                 break;
+             }
+        }
+        
+        if (!$stillExists) {
+            $this->currentSelectedItem = null;
+            $this->selectedItemData = [];
+        }
     }
 
     protected static $itemsCache = [];
@@ -754,7 +768,7 @@ class CreateInvoiceForm extends Component
             /** @var User|null $user */
             $user = Auth::user();
             if (!$user || !$user->can('prevent_transactions_without_stock')) {
-                $availableQty = \App\Models\OperationItems::where('item_id', $item->id)
+                $availableQty = OperationItems::where('item_id', $item->id)
                     ->where('detail_store', $this->acc2_id)
                     ->selectRaw('SUM(qty_in - qty_out) as total')
                     ->value('total') ?? 0;
@@ -819,7 +833,7 @@ class CreateInvoiceForm extends Component
             return ['error' => 'negative_price'];
         }
 
-        $vm = new \App\Helpers\ItemViewModel(null, $item, $unitId);
+        $vm = new ItemViewModel(null, $item, $unitId);
         $unitOptions = $vm->getUnitOptions();
         $availableUnits = collect($unitOptions)->map(function ($unit) {
             return [
@@ -1718,7 +1732,7 @@ class CreateInvoiceForm extends Component
 
             // ✅ التحقق من الباركود فقط إذا كان مختلف عن الكود التلقائي
             if ($barcode && $barcode != $defaultBarcode) {
-                $existingBarcode = \App\Models\Barcode::where('barcode', $finalBarcode)->exists();
+                $existingBarcode = Barcode::where('barcode', $finalBarcode)->exists();
 
                 if ($existingBarcode) {
                     $this->dispatch('error', [
@@ -1954,8 +1968,39 @@ class CreateInvoiceForm extends Component
         }
     }
 
+    public function getAcc1OptionsProperty()
+    {
+        return collect($this->acc1List ?? [])->map(function ($account) {
+            // Handle both object and array access just in case
+            $id = is_array($account) ? ($account['id'] ?? null) : ($account->id ?? null);
+            $name = is_array($account) ? ($account['aname'] ?? '') : ($account->aname ?? '');
+            $code = is_array($account) ? ($account['code'] ?? '') : ($account->code ?? '');
+            // Determine group based on code
+            $group = 'أخرى';
+            if (str_starts_with($code, '1103')) {
+                $group = 'العملاء';
+            } elseif (str_starts_with($code, '2101')) {
+                $group = 'الموردين';
+            } elseif (str_starts_with($code, '2102')) {
+                $group = 'الموظفين';
+            } elseif (str_starts_with($code, '1104')) {
+                $group = 'المخازن';
+            } elseif (str_starts_with($code, '53')) {
+                $group = 'المصروفات';
+            }
+            
+            return [
+                'value' => $id,
+                'label' => $name,
+                'group' => $group,
+            ];
+        })->values()->toArray();
+    }
+
     public function render()
     {
-        return view('livewire.invoices.create-invoice-form');
+        return view('livewire.invoices.create-invoice-form', [
+            'acc1Options' => $this->acc1Options
+        ]);
     }
 }

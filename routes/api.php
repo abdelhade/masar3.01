@@ -16,8 +16,3 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/invoice/items/get-item', [InvoiceItemController::class, 'getItemForInvoice'])->name('api.invoice.items.get-item');
     Route::get('/invoice/items/{id}/details', [InvoiceItemController::class, 'getItemDetails'])->name('api.invoice.items.details');
 });
-
-// AccHead search API - للبحث عن العملاء/الموردين في الفواتير
-Route::middleware(['web', 'auth'])->group(function () {
-    Route::get('/accounts/search', [\App\Http\Controllers\Api\AccHeadSearchController::class, 'search'])->name('api.accounts.search');
-});

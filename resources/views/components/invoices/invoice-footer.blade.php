@@ -69,7 +69,7 @@
                                     <div class="col-6 fs-6">{{ __('Price:') }}</div>
                                     <div class="col-6 text-primary fw-bold">
                                         <span class="badge bg-light text-dark">
-                                            {{ number_format($selectedItemData['price']) }}
+                                            {{ number_format($selectedItemData['price'], 2) }}
                                         </span>
                                     </div>
                                 </div>
@@ -79,7 +79,7 @@
                                     <div class="col-6 fs-6">{{ __('Last Purchase Price:') }}</div>
                                     <div class="col-6 text-success">
                                         <span class="badge bg-light text-dark">
-                                            {{ number_format($selectedItemData['last_purchase_price'] ?? 0) }}
+                                            {{ number_format($selectedItemData['last_purchase_price'] ?? 0, 2) }}
                                         </span>
                                     </div>
                                 </div>
@@ -89,7 +89,7 @@
                                     <div class="col-6 fs-6">{{ __('Average Purchase Price:') }}</div>
                                     <div class="col-6 text-success">
                                         <span class="badge bg-light text-dark main-num">
-                                            {{ number_format($selectedItemData['average_cost']) }}
+                                            {{ number_format($selectedItemData['average_cost'], 2) }}
                                         </span>
                                     </div>
                                 </div>
@@ -183,6 +183,7 @@
                             x-model.number="receivedFromClient"
                             @input="updateReceived()" 
                             :disabled="isCashAccount"
+                            :readonly="isCashAccount"
                             id="received-from-client"
                             class="form-control form-control-sm scnd"
                             :class="{ 'bg-light': isCashAccount }"
@@ -376,11 +377,14 @@
                     {{-- إضافة الباقي لا ينطبق على التحويلات --}}
                     <div class="row">
                         <div class="col-3 text-right font-weight-bold">{{ __('Remaining:') }}</div>
-                        <div class="col-3 text-left font-weight-bold text-danger" id="display-remaining" x-text="window.formatNumberFixed(Math.max(remaining || 0, 0))">
+                        <div class="col-3 text-left font-weight-bold" 
+                            :class="remaining > 0.01 ? 'text-danger' : (remaining < -0.01 ? 'text-success' : '')"
+                            id="display-remaining" 
+                            x-text="window.formatNumberFixed(remaining || 0)">
                             @php
                                 $remaining = $total_after_additional - $received_from_client;
                             @endphp
-                            {{ number_format(max($remaining, 0)) }}
+                            {{ number_format($remaining) }}
                         </div>
                     </div>
                 @endif {{-- إضافة الباقي لا ينطبق على التحويلات --}}

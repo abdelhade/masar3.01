@@ -4,15 +4,20 @@
         <section class="content">
             <form wire:submit.prevent="saveForm"
                 x-data="invoiceCalculations({
-                    invoiceItems: @js($invoiceItems ?? []),
-                    discountPercentage: @js($discount_percentage ?? 0),
-                    additionalPercentage: @js($additional_percentage ?? 0),
-                    receivedFromClient: @js($received_from_client ?? 0),
+                    invoiceItems: @entangle('invoiceItems'),
+                    discountPercentage: @entangle('discount_percentage'),
+                    additionalPercentage: @entangle('additional_percentage'),
+                    receivedFromClient: @entangle('received_from_client'),
+                    discountValue: @entangle('discount_value'),
+                    additionalValue: @entangle('additional_value'),
                     dimensionsUnit: @js($dimensionsUnit ?? 'cm'),
                     enableDimensionsCalculation: @js($enableDimensionsCalculation ?? false),
                     invoiceType: @js($type ?? 10),
-                    isCashAccount: @js($isCurrentAccountCash ?? false),
-                    editableFieldsOrder: @js($this->getEditableFieldsOrder())
+                    isCashAccount: @entangle('isCurrentAccountCash'),
+                    items: @entangle('invoiceItems'),
+                    acc1Id: @entangle('acc1_id'),
+                    editableFieldsOrder: @js($this->getEditableFieldsOrder()),
+                    currentBalance: @js($currentBalance ?? 0)
                 })"
                 @submit.prevent="
                     // ✅ 1. مزامنة جميع القيم من Alpine.js إلى Livewire

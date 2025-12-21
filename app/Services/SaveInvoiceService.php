@@ -69,7 +69,7 @@ class SaveInvoiceService
         if ($component->type == 10) {
             $customer = DB::table('acc_head')->where('id', $component->acc1_id)->first();
 
-            if ($customer && $customer->debit_limit !== null) {
+            if ($customer && isset($customer->debit_limit) && $customer->debit_limit !== null) {
                 // حساب الرصيد الحالي للعميل
                 $currentBalance = $customer->balance ?? 0;
 
