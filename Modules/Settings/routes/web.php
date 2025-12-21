@@ -8,6 +8,20 @@ use Modules\Settings\Http\Controllers\{
     DataExportController
 };
 
+// ==========================================
+// Currency API Endpoints
+// ==========================================
+Route::middleware(['auth'])->group(function () {
+    Route::get('currencies/available', [CurrencyController::class, 'getAvailableCurrencies'])
+        ->name('currencies.available');
+
+    Route::get('currencies/active', [CurrencyController::class, 'getActiveCurrencies'])
+        ->name('currencies.active');
+
+    Route::get('currencies/convert', [CurrencyController::class, 'getConversionRate'])
+        ->name('currencies.convert');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('mysettings', [SettingsController::class, 'index'])
@@ -48,18 +62,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('currencies/available', [CurrencyController::class, 'getAvailableCurrencies'])
         ->name('currencies.available');
 
+    // Exchange Rate Management (no permission required - only auth)
     Route::post('currencies/{currency}/update-rate', [CurrencyController::class, 'updateRate'])
-        ->name('currencies.update-rate')
-        ->middleware('permission:edit Exchange Rates');
+        ->name('currencies.update-rate');
 
     Route::post('currencies/{currency}/fetch-live-rate', [CurrencyController::class, 'fetchLiveRate'])
-        ->name('currencies.fetch-live-rate')
-        ->middleware('permission:edit Exchange Rates');
+        ->name('currencies.fetch-live-rate');
 
     Route::post('currencies/{currency}/update-mode', [CurrencyController::class, 'updateMode'])
-        ->name('currencies.update-mode')
-        ->middleware('permission:edit Exchange Rates');
+        ->name('currencies.update-mode');
 
+    // CRUD Routes (لازم تيجي بعد الـ Specific Routes)
     Route::resource('currencies', CurrencyController::class)
         ->names('currencies');
 });

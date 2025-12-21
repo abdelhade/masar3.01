@@ -213,6 +213,8 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
                                     'X-CSRF-TOKEN': document.querySelector(
                                         'meta[name="csrf-token"]').content
                                 },
@@ -220,7 +222,13 @@
                                     rate_mode: mode
                                 })
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('text/html')) {
+                                    throw new Error('{{ __("Session expired. Please refresh the page.") }}');
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 if (data.success) {
                                     // Update label text
@@ -262,11 +270,25 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
                                     'X-CSRF-TOKEN': document.querySelector(
                                         'meta[name="csrf-token"]').content
                                 }
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                // Check if response is HTML (authentication error)
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('text/html')) {
+                                    throw new Error('{{ __("Session expired. Please refresh the page and login again.") }}');
+                                }
+                                if (!response.ok) {
+                                    return response.json().then(err => {
+                                        throw new Error(err.message || '{{ __("Request failed") }}');
+                                    });
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 if (data.success) {
                                     // ✅ استخدم decimal_places من الـ data-attribute
@@ -337,6 +359,8 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
                                     'X-CSRF-TOKEN': document.querySelector(
                                         'meta[name="csrf-token"]').content
                                 },
@@ -344,7 +368,13 @@
                                     rate: rate
                                 })
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('text/html')) {
+                                    throw new Error('{{ __("Session expired. Please refresh the page.") }}');
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 if (data.success) {
                                     Swal.fire({

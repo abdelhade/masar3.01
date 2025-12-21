@@ -20,7 +20,7 @@ class CurrencyController extends Controller
         $this->middleware('permission:create Currencies')->only(['create', 'store']);
         $this->middleware('permission:edit Currencies')->only(['edit', 'update']);
         $this->middleware('permission:delete Currencies')->only(['destroy']);
-        $this->middleware('permission:edit Exchange Rates')->only(['updateRate', 'fetchLiveRate', 'updateMode']);
+        // Exchange rate methods: updateRate, fetchLiveRate, updateMode - no permission required
     }
 
     /**
@@ -204,7 +204,7 @@ class CurrencyController extends Controller
             }
 
             if ($baseCurrency === 'USD') {
-                $response = Http::timeout(10)->get('https://api.currencyapi.com/v3/latest', [
+                $response = Http::timeout(30)->get('https://api.currencyapi.com/v3/latest', [
                     'apikey' => $apiKey,
                     'base_currency' => 'USD',
                     'currencies' => $targetCurrency
@@ -218,7 +218,7 @@ class CurrencyController extends Controller
                     }
                 }
             } else {
-                $response = Http::timeout(10)->get('https://api.currencyapi.com/v3/latest', [
+                $response = Http::timeout(30)->get('https://api.currencyapi.com/v3/latest', [
                     'apikey' => $apiKey,
                     'base_currency' => 'USD',
                     'currencies' => "{$baseCurrency},{$targetCurrency}"
@@ -367,6 +367,73 @@ class CurrencyController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('Rate mode updated successfully')
+        ]);
+    }
+
+    /**
+     * Get conversion rate between currencies
+     */
+    public function getConversionRate(Request $request)
+    {
+        $request->validate([
+            'from' => 'required|exists:currencies,code',
+            'to' => 'required|exists:currencies,code',
+            'amount' => 'nullable|numeric|min:0'
+        ]);
+
+        $fromCurrency = Currency::where('code', $request->from)->firstOrFail();
+        $toCurrency = Currency::where('code', $request->to)->firstOrFail();
+
+        // If same currency, no conversion needed
+        if ($fromCurrency->id === $toCurrency->id) {
+            return response()->json([
+                'success' => true,
+                'rate' => 1,
+                'amount' => $request->amount ?? 0,
+                'converted' => $request->amount ?? 0,
+                'from' => $fromCurrency->code,
+                'to' => $toCurrency->code
+            ]);
+        }
+
+        $defaultCurrency = Currency::default()->first();
+
+        // Get rates
+        $fromRate = $fromCurrency->is_default ? 1 : ($fromCurrency->latestRate->rate ?? 1);
+        $toRate = $toCurrency->is_default ? 1 : ($toCurrency->latestRate->rate ?? 1);
+
+        // Calculate conversion rate
+        // Convert: from -> default -> to
+        $conversionRate = $toRate / $fromRate;
+
+        $amount = $request->amount ?? 0;
+        $converted = $amount * $conversionRate;
+
+        return response()->json([
+            'success' => true,
+            'rate' => round($conversionRate, 8),
+            'amount' => $amount,
+            'converted' => round($converted, $toCurrency->decimal_places),
+            'from' => $fromCurrency->code,
+            'to' => $toCurrency->code,
+            'from_symbol' => $fromCurrency->symbol,
+            'to_symbol' => $toCurrency->symbol
+        ]);
+    }
+
+    /**
+     * Get all active currencies for dropdown
+     */
+    public function getActiveCurrencies()
+    {
+        $currencies = Currency::active()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('code')
+            ->get(['id', 'code', 'name', 'symbol', 'decimal_places', 'is_default']);
+
+        return response()->json([
+            'success' => true,
+            'currencies' => $currencies
         ]);
     }
 }
