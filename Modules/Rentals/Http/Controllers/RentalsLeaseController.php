@@ -2,21 +2,25 @@
 
 namespace Modules\Rentals\Http\Controllers;
 
-use Exception;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\JournalDetail;
+use App\Models\JournalHead;
+use App\Models\OperHead;
+use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
-use RealRashid\SweetAlert\Facades\Alert;
-use App\Models\{OperHead, JournalHead, JournalDetail};
 use Modules\Rentals\Http\Requests\RentalsLeaseRequest;
-use Modules\Rentals\Models\{RentalsUnit, RentalsLease};
+use Modules\Rentals\Models\RentalsLease;
+use Modules\Rentals\Models\RentalsUnit;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class RentalsLeaseController extends Controller
 {
     public function index()
     {
         $leases = RentalsLease::with('unit', 'client')->paginate(20);
+
         return view('rentals::leases.index', compact('leases'));
     }
 
@@ -24,6 +28,7 @@ class RentalsLeaseController extends Controller
     {
         $paymantAccount = AccHead::where('code', 'like', '42%')->where('is_basic', 0)->get();
         $units = RentalsUnit::pluck('name', 'id');
+
         return view('rentals::leases.create', compact('units', 'paymantAccount'));
     }
 
@@ -39,7 +44,7 @@ class RentalsLeaseController extends Controller
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'pro_date' => now()->toDateString(),
-                'info' => 'عقد إيجار للوحدة #' . $request->unit_id . ' للعميل #' . $request->client_id,
+                'info' => 'عقد إيجار للوحدة #'.$request->unit_id.' للعميل #'.$request->client_id,
                 'pro_value' => $request->rent_amount,
                 'fat_net' => $request->rent_amount,
                 'acc1' => $request->client_id ?? 0,
@@ -85,17 +90,21 @@ class RentalsLeaseController extends Controller
 
             DB::commit();
             Alert::toast(__('Lease contract saved successfully'), 'success');
+
             return redirect()->route('rentals.leases.index');
         } catch (\Exception) {
             DB::rollBack();
             Alert::toast(__('An error occurred while saving the contract'), 'error');
+
             return back()->withInput();
         }
     }
 
     public function show($id)
     {
-        return view('rentals::show');
+        $lease = RentalsLease::with(['unit.building', 'client', 'account'])->findOrFail($id);
+
+        return view('rentals::leases.show', compact('lease'));
     }
 
     public function edit($id)
@@ -103,6 +112,7 @@ class RentalsLeaseController extends Controller
         $lease = RentalsLease::findOrFail($id);
         $paymantAccount = AccHead::where('code', 'like', '42%')->where('is_basic', 0)->get();
         $units = RentalsUnit::pluck('name', 'id');
+
         return view('rentals::leases.edit', compact('lease', 'units', 'paymantAccount'));
     }
 
@@ -120,7 +130,7 @@ class RentalsLeaseController extends Controller
                     'start_date' => $request->start_date,
                     'end_date' => $request->end_date,
                     'pro_date' => now()->toDateString(),
-                    'info' => 'تعديل عقد إيجار للوحدة #' . $request->unit_id . ' للعميل #' . $request->client_id,
+                    'info' => 'تعديل عقد إيجار للوحدة #'.$request->unit_id.' للعميل #'.$request->client_id,
                     'pro_value' => $request->rent_amount,
                     'fat_net' => $request->rent_amount,
                     'acc1' => $request->client_id ?? 0,
@@ -164,10 +174,12 @@ class RentalsLeaseController extends Controller
 
             DB::commit();
             Alert::toast(__('Lease contract updated successfully'), 'success');
+
             return redirect()->route('rentals.leases.index');
         } catch (\Exception) {
             DB::rollBack();
             Alert::toast(__('An error occurred while updating the contract'), 'error');
+
             return back()->withInput();
         }
     }
@@ -178,9 +190,11 @@ class RentalsLeaseController extends Controller
             $lease = RentalsLease::findOrFail($id);
             $lease->delete();
             Alert::toast(__('Lease deleted successfully'), 'success');
+
             return redirect()->route('rentals.leases.index');
         } catch (Exception) {
             Alert::toast(__('An error occurred while deleting the contract'), 'error');
+
             return redirect()->back();
         }
     }

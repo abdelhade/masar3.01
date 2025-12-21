@@ -2,21 +2,31 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Modules\Branches\Models\Branch;
-use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-use Spatie\Permission\Traits\HasPermissions;
-use Illuminate\Foundation\Auth\Access\Authorizable;
 use Modules\Inquiries\Models\UserInquiryPreference;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Permission\Traits\HasPermissions;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     // HasRoles trait required by Spatie package but not actively used
     // Permissions are assigned directly via model_has_permissions table
-    use HasFactory, HasPermissions, HasRoles, Notifiable, Authorizable;
+    use Authorizable, HasFactory, HasPermissions, HasRoles, LogsActivity, Notifiable;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'is_active'])
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn (string $eventName) => "تم {$eventName} المستخدم");
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -62,7 +72,7 @@ class User extends Authenticatable
     {
         return Str::of($this->name)
             ->explode(' ')
-            ->map(fn(string $name) => Str::of($name)->substr(0, 1))
+            ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
 
@@ -88,7 +98,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-
     public function getEmployeeIdAttribute()
     {
         return $this->employee?->id;
@@ -106,7 +115,7 @@ class User extends Authenticatable
 
     public function receivesBroadcastNotificationsOn()
     {
-        return 'App.Models.User.' . $this->id;
+        return 'App.Models.User.'.$this->id;
     }
 
     public function inquiryPreferences()

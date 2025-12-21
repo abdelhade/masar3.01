@@ -3,6 +3,7 @@
 use Livewire\Volt\Component;
 use App\Models\NoteDetails;
 use App\Models\Note;
+use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     public $noteId;
@@ -32,14 +33,33 @@ new class extends Component {
     {
         $this->noteId = $noteId;
 
-        $this->noteDetails = NoteDetails::where('note_id', $noteId)->get();
+        $this->loadNoteDetails();
         $parentNote = Note::find($this->noteId);
         if ($parentNote) {
             $this->parentNoteName = $parentNote->name;
         }
     }
+
+    public function loadNoteDetails(): void
+    {
+        $this->noteDetails = NoteDetails::where('note_id', $this->noteId)
+            ->orderBy('id')
+            ->get();
+    }
+    private function getPermissionPrefix(): string
+    {
+        return match ($this->noteId) {
+            1 => 'groups', // Groups
+            2 => 'Categories', // Categories
+            default => 'items', // fallback
+        };
+    }
+
     public function createNoteDetails()
     {
+        $permission = 'create ' . $this->getPermissionPrefix();
+        abort_unless(Auth::user()->can($permission), 403);
+
         $this->resetValidation('noteDetailsName');
         $this->reset(['noteDetailsName', 'noteDetailsId']);
         $this->isNoteDetailsEdit = false;
@@ -49,6 +69,9 @@ new class extends Component {
 
     public function editNoteDetails(NoteDetails $noteDetails)
     {
+        $permission = 'edit ' . $this->getPermissionPrefix();
+        abort_unless(Auth::user()->can($permission), 403);
+
         $this->noteDetailsId = $noteDetails->id;
         $this->noteDetailsName = $noteDetails->name;
         $this->isNoteDetailsEdit = true;
@@ -58,6 +81,10 @@ new class extends Component {
 
     public function saveNoteDetails()
     {
+        $permissionPrefix = $this->getPermissionPrefix();
+        $permission = ($this->isNoteDetailsEdit) ? 'edit ' . $permissionPrefix : 'create ' . $permissionPrefix;
+        abort_unless(Auth::user()->can($permission), 403);
+
         $validated = $this->validate(['noteDetailsName' => 'required|string|max:60|unique:note_details,name,' . $this->noteDetailsId]);
         if ($this->isNoteDetailsEdit) {
             $noteDetails = NoteDetails::find($this->noteDetailsId);
@@ -79,13 +106,21 @@ new class extends Component {
             ]);
             session()->flash('success', 'تم إضافة تفاصيل الملاحظة بنجاح');
         }
+        
+        // Clear cache to ensure filters show updated data
+        \Cache::forget('note_groups');
+        \Cache::forget('note_categories');
+        
         $this->showModal = false;
         $this->dispatch('closeModal');
-        $this->noteDetails = NoteDetails::where('note_id', $this->noteId)->get() ?? [];
+        $this->loadNoteDetails();
     }
 
     public function deleteNoteDetails(NoteDetails $noteDetails)
     {
+        $permission = 'delete ' . $this->getPermissionPrefix();
+        abort_unless(Auth::user()->can($permission), 403);
+
         // حذف السجلات المرتبطة من جدول item_notes
         \DB::table('item_notes')
             ->where('note_id', $this->noteId)
@@ -93,8 +128,13 @@ new class extends Component {
             ->delete();
 
         $noteDetails->delete();
+        
+        // Clear cache to ensure filters show updated data
+        \Cache::forget('note_groups');
+        \Cache::forget('note_categories');
+        
         session()->flash('success', 'تم حذف تفاصيل الملاحظة بنجاح');
-        $this->noteDetails = NoteDetails::where('note_id', $this->noteId)->get() ?? [];
+        $this->loadNoteDetails();
     }
 }; ?>
 
@@ -112,12 +152,19 @@ new class extends Component {
         @endif
         <div class="col-lg-12">
 
-            {{-- @can('إضافة ' . $parentNoteName) --}}
+            @php
+                $permissionPrefix = match($noteId) {
+                    1 => 'groups',
+                    2 => 'Categories',
+                    default => 'items',
+                };
+            @endphp
+            @can('create ' . $permissionPrefix)
                 <button wire:click="createNoteDetails" type="button" class="btn btn-main font-hold fw-bold m-2">
                     {{ __('Add New') }}
                     <i class="fas fa-plus me-2"></i>
                 </button>
-            {{-- @endcan --}}
+            @endcan
 
             <div class="card">
                 <div class="card-header">
@@ -133,26 +180,40 @@ new class extends Component {
                                 <tr>
                                     <th class="font-hold fw-bold">#</th>
                                     <th class="font-hold fw-bold">الاسم</th>
-                                    @canany(['تعديل ' . $parentNoteName, 'حذف ' . $parentNoteName])
+                                    @php
+                                        $permissionPrefix = match($noteId) {
+                                            1 => 'groups',
+                                            2 => 'Categories',
+                                            default => 'items',
+                                        };
+                                    @endphp
+                                    @canany(['edit ' . $permissionPrefix, 'delete ' . $permissionPrefix])
                                         <th class="font-hold fw-bold">العمليات</th>
                                     @endcanany
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($noteDetails as $noteDetail)
+                                @forelse ($noteDetails as $noteDetail)
                                     <tr>
                                         <td class="font-hold fw-bold">{{ $loop->iteration }}</td>
                                         <td class="font-hold fw-bold">{{ $noteDetail->name }}</td>
 
-                                        @canany(['تعديل ' . $parentNoteName, 'حذف ' . $parentNoteName])
+                                        @php
+                                            $permissionPrefix = match($noteId) {
+                                                1 => 'groups',
+                                                2 => 'Categories',
+                                                default => 'items',
+                                            };
+                                        @endphp
+                                        @canany(['edit ' . $permissionPrefix, 'delete ' . $permissionPrefix])
                                             <td>
-                                                @can('تعديل ' . $parentNoteName)
+                                                @can('edit ' . $permissionPrefix)
                                                     <a wire:click="editNoteDetails({{ $noteDetail->id }})">
                                                         <i class="las la-pen text-success font-20"></i>
                                                     </a>
                                                 @endcan
 
-                                                @can('حذف ' . $parentNoteName)
+                                                @can('delete ' . $permissionPrefix)
                                                     <a wire:click="deleteNoteDetails({{ $noteDetail->id }})"
                                                         onclick="confirm('هل أنت متأكد من الحذف؟') || event.stopImmediatePropagation()">
                                                         <i class="las la-trash-alt text-danger font-20"></i>
@@ -161,7 +222,21 @@ new class extends Component {
                                             </td>
                                         @endcanany
                                     </tr>
-                                @endforeach
+                                @empty
+                                    @php
+                                        $permissionPrefix = match($noteId) {
+                                            1 => 'groups',
+                                            2 => 'Categories',
+                                            default => 'items',
+                                        };
+                                        $colspan = (auth()->user()->can('edit ' . $permissionPrefix) || auth()->user()->can('delete ' . $permissionPrefix)) ? '3' : '2';
+                                    @endphp
+                                    <tr>
+                                        <td colspan="{{ $colspan }}" class="text-center font-hold fw-bold">
+                                            لا توجد بيانات
+                                        </td>
+                                    </tr>
+                                @endforelse
 
                             </tbody>
                         </table>

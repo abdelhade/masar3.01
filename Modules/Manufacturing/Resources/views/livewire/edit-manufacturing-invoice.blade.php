@@ -621,12 +621,13 @@
                                                                                         <td>
                                                                                             <input type="number"
                                                                                                 id="raw_unit_cost_{{ $index }}"
-                                                                                                wire:model.live.debounce.300="selectedRawMaterials.{{ $index }}.average_cost"
-                                                                                                min="0"
-                                                                                                step="0.01"
-                                                                                                class="form-control form-control-sm cost-input"
+                                                                                                value="{{ number_format($material['average_cost'] ?? 0, 2) }}"
+                                                                                                readonly
+                                                                                                disabled
+                                                                                                class="form-control form-control-sm cost-input bg-light"
                                                                                                 style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                                                placeholder="{{ __('Cost Price') }}">
+                                                                                                placeholder="{{ __('Average Cost') }}"
+                                                                                                title="{{ __('Average cost cannot be modified in manufacturing invoices') }}">
                                                                                         </td>
                                                                                         <td>
                                                                                             <input type="text"

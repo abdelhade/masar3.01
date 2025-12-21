@@ -23,5 +23,6 @@
     "Installments": true,
     "MyResources": true,
     "Recruitment": true,
-    "Fleet": true
+    "Fleet": true,
+    "ActivityLog": true
 }

@@ -17,10 +17,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/expenses/store', [ExpenseManagementController::class, 'store'])
         ->name('expenses.store');
 
-    // API endpoint لاستدعاء المصروفات حسب نوع الحساب
-    Route::get('/expenses/by-account-type', [ExpenseManagementController::class, 'getExpensesByAccountType'])
-        ->name('expenses.by-account-type');
-
     // تقارير المصروفات
     Route::get('/reports/general-expenses-report', [ExpenseReportController::class, 'generalExpensesReport'])
         ->name('reports.general-expenses-report');

@@ -93,11 +93,15 @@ new class extends Component {
         });
 
         $this->groups = Cache::remember('note_groups', 3600, function () {
-            return NoteDetails::where('note_id', 1)->pluck('name', 'id');
+            return NoteDetails::where('note_id', 1)
+                ->orderBy('id')
+                ->pluck('name', 'id');
         });
 
         $this->categories = Cache::remember('note_categories', 3600, function () {
-            return NoteDetails::where('note_id', 2)->pluck('name', 'id');
+            return NoteDetails::where('note_id', 2)
+                ->orderBy('id')
+                ->pluck('name', 'id');
         });
 
         // Initialize note visibility - all notes visible by default
@@ -766,11 +770,21 @@ new class extends Component {
                                                         $thumbnail = $item->getFirstMedia('item-thumbnail');
                                                     @endphp
                                                     @if($thumbnail)
-                                                        <img src="{{ $thumbnail->getUrl('thumb') }}" 
+                                                        @php
+                                                            // Use Media Library's URL method which handles encoding
+                                                            $thumbUrl = $thumbnail->getUrl('thumb');
+                                                            $previewUrl = $thumbnail->getUrl('preview');
+                                                        @endphp
+                                                        <img src="{{ $thumbUrl }}" 
                                                              alt="{{ $item->name }}" 
                                                              class="img-thumbnail"
                                                              style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
-                                                             onclick="window.open('{{ $thumbnail->getUrl('preview') }}', '_blank')">
+                                                             loading="lazy"
+                                                             onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                                             onclick="window.open('{{ $previewUrl }}', '_blank')">
+                                                        <div class="text-muted" style="width: 50px; height: 50px; display: none; align-items: center; justify-content: center; border: 1px solid #dee2e6; border-radius: 0.25rem;">
+                                                            <i class="fas fa-image fa-2x"></i>
+                                                        </div>
                                                     @else
                                                         <div class="text-muted" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; border-radius: 0.25rem;">
                                                             <i class="fas fa-image fa-2x"></i>
@@ -856,12 +870,7 @@ new class extends Component {
                                             @if($visibleColumns['barcode'])
                                                 <td class="font-hold fw-bold text-center">
                                                     <template x-if="currentBarcodes.length > 0">
-                                                        <select class="form-select font-hold fw-bold font-14"
-                                                            style="min-width: 100px;">
-                                                            <template x-for="barcode in currentBarcodes" :key="barcode.id">
-                                                                <option :value="barcode.barcode" x-text="barcode.barcode"></option>
-                                                            </template>
-                                                        </select>
+                                                        <span class="font-hold fw-bold font-14" x-text="currentBarcodes.map(b => b.barcode).join(', ')"></span>
                                                     </template>
                                                     <template x-if="currentBarcodes.length === 0">
                                                         <span class="font-hold fw-bold font-14">{{ __('common.no_data_found') }}</span>

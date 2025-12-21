@@ -2,23 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\LoginSession;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserMonitoringController extends Controller
 {
     use AuthorizesRequests;
 
-       public function __construct()
+    public function __construct()
     {
         $this->middleware('can:view login-history')->only(['loginHistory']);
         $this->middleware('can:view activity-logs')->only(['activityLog']);
-        $this->middleware('can:view active-sessions')->only(['activeSessions' , 'terminateSession']);
+        $this->middleware('can:view active-sessions')->only(['activeSessions', 'terminateSession']);
         $this->middleware('can:delete Users')->only(['destroy']);
     }
 
@@ -63,39 +61,21 @@ class UserMonitoringController extends Controller
             ]);
 
             Alert::toast('تم إنهاء الجلسة بنجاح', 'success');
+
             return redirect()->back();
         } catch (\Exception $e) {
             Alert::toast('حدث خطأ أثناء إنهاء الجلسة', 'error');
+
             return redirect()->back();
         }
     }
 
     /**
      * سجل النشاطات
+     * Redirect to the new ActivityLog module
      */
     public function activityLog(Request $request)
     {
-        $query = LoginSession::with('user')
-            ->whereNotNull('logout_at')
-            ->orderBy('logout_at', 'desc');
-
-        // Filter by user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('login_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('login_at', '<=', $request->date_to);
-        }
-
-        $activities = $query->paginate(20);
-        $users = User::orderBy('name')->get();
-
-        return view('users.monitoring.activity-log', compact('activities', 'users'));
+        return redirect()->route('activitylog.index', $request->all());
     }
-
 }

@@ -79,10 +79,12 @@
                             @endphp
                             @if ($activeLease)
                                 <div class="alert alert-light p-2">
-                                    <small class="text-success">
-                                        <i class="fas fa-user me-1"></i>
-                                        {{ __('Rented to Mr./Ms.') }} {{ $activeLease->client->name }}
-                                    </small><br>
+                                    @if ($activeLease->client)
+                                        <small class="text-success">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ __('Rented to Mr./Ms.') }} {{ $activeLease->client->cname }}
+                                        </small><br>
+                                    @endif
                                     <small class="text-muted">
                                         <i class="fas fa-calendar me-1"></i>
                                         {{ __('Until') }} {{ $activeLease->end_date->format('Y/m/d') }}

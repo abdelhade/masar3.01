@@ -1,0 +1,70 @@
+/* YouTube-style Progress Bar Loader Styles */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 99999;
+    background: transparent;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.page-loader.active {
+    opacity: 1;
+}
+
+.loader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #34d3a3 0%, #28a745 50%, #34d3a3 100%);
+    background-size: 200% 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(52, 211, 163, 0.5);
+    animation: shimmer 1.5s infinite;
+}
+
+.page-loader.active .loader-bar {
+    width: 30%;
+    animation: loading 2s ease-in-out infinite;
+}
+
+.page-loader.completing .loader-bar {
+    width: 100%;
+    transition: width 0.4s ease;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes loading {
+    0% {
+        width: 0%;
+    }
+    50% {
+        width: 70%;
+    }
+    100% {
+        width: 90%;
+    }
+}
+
+/* Custom Form Control Focus Styles */
+.form-control:focus,
+select.form-control:focus,
+textarea.form-control:focus,
+.custom-select:focus,
+input.form-control:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+    outline: 0;
+}
+

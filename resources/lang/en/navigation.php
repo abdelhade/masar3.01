@@ -27,6 +27,7 @@ return [
     'items' => 'Items',
     'units' => 'Units',
     'prices' => 'Prices',
+    'groups' => 'Groups',
     'categories' => 'Categories',
     'item_movement_report' => 'Item Movement Report',
     'item_management' => 'Items Management',

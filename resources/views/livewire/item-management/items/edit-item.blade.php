@@ -22,7 +22,7 @@ new class extends Component {
     public $prices;
     public $notes;
     public $hasVaribals = false;
-    public $creating = true;
+    public $creating = false;
 
     public $item = [
         'type' => null,

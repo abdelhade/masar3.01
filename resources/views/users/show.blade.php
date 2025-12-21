@@ -41,10 +41,29 @@
         <div class="row">
             <div class="col-12">
                 <div class="card printable-content">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-user"></i> {{ __('User Information') }}</h5>
+                    <div class="card-header bg-white p-0 border-bottom">
+                        <ul class="nav nav-tabs card-header-tabs" id="userTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-4 py-3" id="info-tab" data-bs-toggle="tab"
+                                    data-bs-target="#info-data" type="button" role="tab">
+                                    <i class="fas fa-user me-2"></i>
+                                    {{ __('User Information') }}
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-4 py-3" id="projects-tab" data-bs-toggle="tab"
+                                    data-bs-target="#projects-data" type="button" role="tab">
+                                    <i class="fas fa-project-diagram me-2"></i>
+                                    {{ __('المشاريع') }}
+                                </button>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-0">
+                        <div class="tab-content" id="userTabsContent">
+                            <!-- معلومات المستخدم -->
+                            <div class="tab-pane fade show active" id="info-data" role="tabpanel">
+                                <div class="p-4">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">{{ __('Name') }}:</label>
@@ -114,6 +133,84 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">{{ __('Updated At') }}:</label>
                                 <div class="form-control-static">{{ $user->updated_at ? \Carbon\Carbon::parse($user->updated_at)->format('Y-m-d H:i') : __('N/A') }}</div>
+                            </div>
+                        </div>
+                                </div>
+                            </div>
+
+                            <!-- المشاريع -->
+                            <div class="tab-pane fade" id="projects-data" role="tabpanel">
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h6 class="m-0 fw-bold text-primary">
+                                            <i class="fas fa-project-diagram me-2"></i>
+                                            {{ __('المشاريع') }}
+                                        </h6>
+                                    </div>
+                                    @if ($userProjects->isNotEmpty())
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-bordered align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="text-center">#</th>
+                                                        <th class="text-start">{{ __('projects.name') }}</th>
+                                                        <th class="text-start">{{ __('projects.client') }}</th>
+                                                        <th class="text-center">{{ __('general.status') }}</th>
+                                                        <th class="text-center">{{ __('projects.start_date') }}</th>
+                                                        <th class="text-center">{{ __('projects.end_date') }}</th>
+                                                        <th class="text-center">{{ __('general.actions') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($userProjects as $index => $project)
+                                                        <tr>
+                                                            <td class="text-center">{{ $index + 1 }}</td>
+                                                            <td class="text-start">{{ $project->name }}</td>
+                                                            <td class="text-start">{{ $project->client?->cname ?? '-' }}</td>
+                                                            <td class="text-center">
+                                                                @php
+                                                                    $statusClass = match($project->status) {
+                                                                        'pending' => 'bg-warning',
+                                                                        'in_progress' => 'bg-info',
+                                                                        'completed' => 'bg-success',
+                                                                        'cancelled' => 'bg-danger',
+                                                                        default => 'bg-secondary',
+                                                                    };
+                                                                    $statusText = match($project->status) {
+                                                                        'pending' => 'قيد الانتظار',
+                                                                        'in_progress' => 'قيد التنفيذ',
+                                                                        'completed' => 'مكتمل',
+                                                                        'cancelled' => 'ملغي',
+                                                                        default => 'غير معروف',
+                                                                    };
+                                                                @endphp
+                                                                <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
+                                                            </td>
+                                                            <td class="text-center">{{ $project->start_date?->format('Y-m-d') ?? '-' }}</td>
+                                                            <td class="text-center">{{ $project->end_date?->format('Y-m-d') ?? '-' }}</td>
+                                                            <td class="text-center">
+                                                                <a href="{{ route('progress.projcet.show', $project->id) }}" 
+                                                                   class="btn btn-sm btn-primary" 
+                                                                   title="{{ __('View') }}">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            @if ($user->employee)
+                                                {{ __('لا توجد مشاريع مرتبطة بهذا المستخدم.') }}
+                                            @else
+                                                {{ __('هذا المستخدم غير مرتبط بموظف، لذلك لا توجد مشاريع متاحة.') }}
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -43,10 +43,20 @@
                                         <i class="fas fa-percentage"></i>
                                         <span>{{ __('Distribute Costs by Percentage') }}</span>
                                     </button>
-                                    <button @click="syncForSave(); $wire.saveInvoice()"
-                                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                                        <i class="fas fa-save"></i>
-                                        <span>{{ __('Save Invoice') }}</span>
+                                    <button 
+                                        x-on:click="if (!$wire.isSaving) { syncForSave(); $wire.saveInvoice(); }"
+                                        class="btn btn-success btn-sm d-flex align-items-center gap-1"
+                                        x-bind:disabled="$wire.isSaving"
+                                        wire:loading.attr="disabled"
+                                        wire:target="saveInvoice">
+                                        <span wire:loading.remove wire:target="saveInvoice">
+                                            <i class="fas fa-save"></i>
+                                            <span>{{ __('Save Invoice') }}</span>
+                                        </span>
+                                        <span wire:loading wire:target="saveInvoice">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <span>{{ __('Saving...') }}</span>
+                                        </span>
                                     </button>
                                 </div>
                             </div>
@@ -622,13 +632,13 @@
                                                                                                     <input
                                                                                                         type="number"
                                                                                                         id="raw_unit_cost_{{ $index }}"
-                                                                                                        x-model.number="rawMaterials[{{ $index }}].average_cost"
-                                                                                                        @input="updateRawMaterialTotal({{ $index }})"
-                                                                                                        min="0"
-                                                                                                        step="0.01"
-                                                                                                        class="form-control form-control-sm cost-input"
+                                                                                                        x-bind:value="rawMaterials[{{ $index }}].average_cost || 0"
+                                                                                                        readonly
+                                                                                                        disabled
+                                                                                                        class="form-control form-control-sm cost-input bg-light"
                                                                                                         style="padding:2px;height:30px;font-size: 0.9em;"
-                                                                                                        placeholder="{{ __('Cost Price') }}">
+                                                                                                        placeholder="{{ __('Average Cost') }}"
+                                                                                                        title="{{ __('Average cost cannot be modified in manufacturing invoices') }}">
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <input
@@ -985,9 +995,13 @@
                     title: d.title || '{{ __('Done!') }}',
                     text: d.text || '{{ __('Operation completed successfully') }}',
                     icon: d.icon || 'success',
-                    confirmButtonText: '{{ __('OK') }}'
+                    confirmButtonText: '{{ __('OK') }}',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
                 }).then(() => {
-                    if (d.reload) location.reload();
+                    if (d.reload || d.reload === true) {
+                        window.location.reload();
+                    }
                 });
             });
 

@@ -1033,234 +1033,138 @@ new class extends Component {
 
 <div>
     {{-- form --}}
-    <div class="">
-        <div class="">
-            <h5 class="">
-                {{ __('items.add_new_item') }}</h5>
+    <div class="card">
+        <div class="text-center py-3" style="background: linear-gradient(135deg, #34d3a3 0%, #1aa1c4 100%); color: white; border-radius: 0.5rem 0.5rem 0 0;">
+            <h5 class="card-title font-hold fw-bold font-20 text-white mb-0">
+                {{ __('items.add_new_item') }}
+            </h5>
         </div>
-        @include('livewire.item-management.items.partials.alerts')
-        <div class="">
+        <div class="card-body">
+            @include('livewire.item-management.items.partials.alerts')
             <form wire:submit.prevent="save" wire:loading.attr="disabled" wire:target="save"
                 wire:loading.class="opacity-50">
                 
-                @php
-                    $tabs = [
-                        'basic' => [
-                            'icon' => 'fa-info-circle',
-                            'label' => __('items.basic_information'),
-                            'errors' => ['item.name', 'item.type', 'item.code', 'item.info', 'item.notes']
-                        ],
-                        'units' => [
-                            'icon' => 'fa-cubes',
-                            'label' => __('items.units_and_prices'),
-                            'errors' => ['unitRows']
-                        ],
-                        'variations' => [
-                            'icon' => 'fa-layer-group',
-                            'label' => __('items.variations'),
-                            'errors' => ['selectedVaribalCombinations', 'combinationUnitRows']
-                        ],
-                        'images' => [
-                            'icon' => 'fa-images',
-                            'label' => __('items.item_images'),
-                            'errors' => ['itemThumbnail', 'itemImages']
-                        ],
-                    ];
-                @endphp
-
-                <!-- Navigation Tabs - Bootstrap -->
-                <ul class="nav nav-tabs mb-3" role="tablist" id="itemFormTabs">
-                    @foreach($tabs as $tabKey => $tab)
-                        <li class="nav-item" role="presentation" wire:key="tab-nav-{{ $tabKey }}">
-                            <button class="nav-link font-hold fw-bold @if($activeTab === $tabKey) active @endif @if($errors->hasAny($tab['errors'])) text-danger @endif"
-                                    id="{{ $tabKey }}-tab"
-                                    data-bs-toggle="tab"
-                                    data-bs-target="#{{ $tabKey }}-content"
-                                    type="button"
-                                    role="tab"
-                                    wire:click="$set('activeTab', '{{ $tabKey }}')"
-                                    aria-controls="{{ $tabKey }}-content"
-                                    aria-selected="{{ $activeTab === $tabKey ? 'true' : 'false' }}">
-                                <i class="fas {{ $tab['icon'] }} me-2"></i>{{ $tab['label'] }}
-                                @if($errors->hasAny($tab['errors']))
-                                    @php
-                                        $errorCount = 0;
-                                        foreach($tab['errors'] as $errorKey) {
-                                            if($errors->has($errorKey)) {
-                                                $errorCount++;
-                                            } elseif(str_contains($errorKey, '.')) {
-                                                // Handle nested errors like unitRows.*.cost
-                                                $baseKey = explode('.', $errorKey)[0];
-                                                if($errors->hasAny([$baseKey . '.*'])) {
-                                                    $errorCount += count(array_filter($errors->get($baseKey . '.*', [])));
-                                                }
-                                            }
-                                        }
-                                    @endphp
-                                    @if($errorCount > 0)
-                                        <span class="badge bg-danger ms-2" wire:key="error-badge-{{ $tabKey }}">{{ $errorCount }}</span>
-                                    @endif
-                                @endif
-                            </button>
-                        </li>
-                    @endforeach
-                </ul>
-
-                <!-- Tab Content -->
-                <div class="tab-content" id="itemFormTabsContent">
-                    <!-- Basic Information Tab -->
-                    <div wire:key="tab-content-basic"
-                         class="tab-pane fade @if($activeTab === 'basic') show active @endif"
-                         id="basic-content"
-                         role="tabpanel"
-                         aria-labelledby="basic-tab"
-                         tabindex="0">
-                        <fieldset class="shadow-sm">
-                            <div class="col-md-12 p-3">
-                                <div class="row">
-                                    <div class="col-md-1 mb-3">
-                                        <label for="code" class="form-label font-hold fw-bold">{{ __('items.item_code') }}</label>
-                                        <input type="text" wire:model.live="item.code"
-                                            class="form-control font-hold fw-bold" id="code"
-                                            value="{{ $item['code'] }}" readonly disabled>
-                                        @error('item.code')
-                                            <span class="text-danger font-hold fw-bold">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-1 mb-3">
-                                        <label for="type" class="form-label font-hold fw-bold">{{ __('items.item_type') }}</label>
-                                        <select wire:model="item.type" class="form-select font-hold fw-bold"
-                                            id="type">
+                <!-- Basic Information Section -->
+                <fieldset class="shadow-sm mb-2" style="border: 2px solid #80e6cb; border-radius: 0.5rem;">
+                    <div class="col-md-12 p-2">
+                        <div class="row">
+                            <div class="col-md-1 mb-2">
+                                <label for="code" class="form-label font-hold fw-bold">{{ __('items.item_code') }}</label>
+                                <input type="text" wire:model.live="item.code"
+                                    class="form-control font-hold fw-bold" id="code"
+                                    value="{{ $item['code'] }}" readonly disabled>
+                                @error('item.code')
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="col-md-1 mb-2">
+                                <label for="type" class="form-label font-hold fw-bold">{{ __('items.item_type') }}</label>
+                                <select wire:model="item.type" class="form-select font-hold fw-bold"
+                                    id="type">
+                                    <option class="font-hold fw-bold" value="">{{ __('common.select') }}</option>
+                                    @foreach (ItemType::cases() as $type)
+                                        <option class="font-hold fw-bold" value="{{ $type->value }}">
+                                            {{ $type->label() }}</option>
+                                    @endforeach
+                                </select>
+                                @error('item.type')
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="name" class="form-label font-hold fw-bold">{{ __('items.item_name') }}</label>
+                                <input type="text" wire:model="item.name"
+                                    class="form-control font-hold fw-bold frst" id="item-name" x-ref="nameInput"
+                                    @if (!$creating) disabled readonly @endif>
+                                @error('item.name')
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            @foreach ($notes as $note)
+                                <div class="col-md-2 mb-2">
+                                    <label for="type"
+                                        class="form-label font-hold fw-bold">{{ $note->name }}</label>
+                                    <div class="input-group">
+                                        <button type="button" class="btn btn-outline-success font-hold fw-bold"
+                                            wire:click="openModal('note_detail', {{ $note->id }})"
+                                            @if (!$creating) disabled @endif title="{{ __('items.add_new') }}">
+                                            <i class="las la-plus"></i>
+                                        </button>
+                                        <select wire:model="item.notes.{{ $note->id }}"
+                                            @if (!$creating) disabled readonly @endif
+                                            class="form-select font-hold fw-bold"
+                                            id="note-{{ $note->id }}">
                                             <option class="font-hold fw-bold" value="">{{ __('common.select') }}</option>
-                                            @foreach (ItemType::cases() as $type)
-                                                <option class="font-hold fw-bold" value="{{ $type->value }}">
-                                                    {{ $type->label() }}</option>
+                                            @foreach ($note->noteDetails as $noteDetail)
+                                                <option class="font-hold fw-bold"
+                                                    value="{{ $noteDetail->name }}">
+                                                    {{ $noteDetail->name }}
+                                                </option>
                                             @endforeach
                                         </select>
-                                        @error('item.type')
-                                            <span class="text-danger font-hold fw-bold">{{ $message }}</span>
-                                        @enderror
                                     </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label for="name" class="form-label font-hold fw-bold">{{ __('items.item_name') }}</label>
-                                        <input type="text" wire:model="item.name"
-                                            class="form-control font-hold fw-bold frst" id="item-name" x-ref="nameInput"
-                                            @if (!$creating) disabled readonly @endif>
-                                        @error('item.name')
-                                            <span class="text-danger font-hold fw-bold">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    @foreach ($notes as $note)
-                                        <div class="col-md-2 mb-3">
-                                            <label for="type"
-                                                class="form-label font-hold fw-bold">{{ $note->name }}</label>
-                                            <div class="input-group">
-                                                <button type="button" class="btn btn-outline-success font-hold fw-bold"
-                                                    wire:click="openModal('note_detail', {{ $note->id }})"
-                                                    @if (!$creating) disabled @endif title="{{ __('items.add_new') }}">
-                                                    <i class="las la-plus"></i>
-                                                </button>
-                                                <select wire:model="item.notes.{{ $note->id }}"
-                                                    @if (!$creating) disabled readonly @endif
-                                                    class="form-select font-hold fw-bold"
-                                                    id="note-{{ $note->id }}">
-                                                    <option class="font-hold fw-bold" value="">{{ __('common.select') }}</option>
-                                                    @foreach ($note->noteDetails as $noteDetail)
-                                                        <option class="font-hold fw-bold"
-                                                            value="{{ $noteDetail->name }}">
-                                                            {{ $noteDetail->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            @error("item.notes.{$note->id}")
-                                                <span class="text-danger font-hold fw-bold">{{ $message }}</span>
-                                            @enderror
-                                        </div>
-                                    @endforeach
-                                    <div class="col-md-12 mb-3">
-                                        <label for="Details" class="form-label font-hold fw-bold">{{ __('items.item_description') }}</label>
-                                        <textarea wire:model="item.info" class="form-control font-hold fw-bold" id="description" rows="2"
-                                            @if (!$creating) disabled readonly @endif></textarea>
-                                        @error('item.details')
-                                            <span class="text-danger font-hold fw-bold">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    {{-- check box for decision if item will have varibals --}}
-                                    <div class="col-md-1 mb-3">
-                                        <input type="checkbox" wire:model.live="hasVaribals" class="form-check-input"
-                                            id="hasVaribals">
-                                        <label for="hasVaribals" class="form-label font-hold fw-bold">{{ __('items.has_variations') }}</label>
-                                    </div>
+                                    @error("item.notes.{$note->id}")
+                                        <span class="text-danger font-hold fw-bold">{{ $message }}</span>
+                                    @enderror
                                 </div>
+                            @endforeach
+                            <div class="col-md-12 mb-2">
+                                <label for="Details" class="form-label font-hold fw-bold">{{ __('items.item_description') }}</label>
+                                <textarea wire:model="item.info" class="form-control font-hold fw-bold" id="description" rows="2"
+                                    @if (!$creating) disabled readonly @endif></textarea>
+                                @error('item.details')
+                                    <span class="text-danger font-hold fw-bold">{{ $message }}</span>
+                                @enderror
                             </div>
-                        </fieldset>
-                    </div>
-
-                    <!-- Units & Prices Tab -->
-                    <div wire:key="tab-content-units"
-                         class="tab-pane fade @if($activeTab === 'units') show active @endif"
-                         id="units-content"
-                         role="tabpanel"
-                         aria-labelledby="units-tab"
-                         tabindex="0">
-                        <fieldset class="shadow-sm">
-                            <div class="col-md-12 p-3">
-                                @include('livewire.item-management.items.partials.units-repeater')
+                            {{-- check box for decision if item will have varibals --}}
+                            <div class="col-md-1 mb-2">
+                                <input type="checkbox" wire:model.live="hasVaribals" class="form-check-input"
+                                    id="hasVaribals">
+                                <label for="hasVaribals" class="form-label font-hold fw-bold">{{ __('items.has_variations') }}</label>
                             </div>
-                        </fieldset>
+                        </div>
                     </div>
+                </fieldset>
 
-                    <!-- Variations Tab -->
-                    <div wire:key="tab-content-variations"
-                         class="tab-pane fade @if($activeTab === 'variations') show active @endif"
-                         id="variations-content"
-                         role="tabpanel"
-                         aria-labelledby="variations-tab"
-                         tabindex="0">
-                        <fieldset class="shadow-sm">
-                            <div class="col-md-12 p-3">
-                                @include('livewire.item-management.items.partials.varibals-grid')
-                                @include('livewire.item-management.items.partials.combination-units')
-                            </div>
-                        </fieldset>
+                <!-- Units & Prices Section -->
+                <fieldset class="shadow-sm mb-2" style="border: 2px solid #80e6cb; border-radius: 0.5rem;">
+                    <div class="col-md-12 p-2">
+                        @include('livewire.item-management.items.partials.units-repeater')
                     </div>
+                </fieldset>
 
-                    <!-- Images Tab -->
-                    <div wire:key="tab-content-images"
-                         class="tab-pane fade @if($activeTab === 'images') show active @endif"
-                         id="images-content"
-                         role="tabpanel"
-                         aria-labelledby="images-tab"
-                         tabindex="0">
-                        <fieldset class="shadow-sm">
-                            <legend class="p-3 mb-0">
-                                <h6 class="font-hold fw-bold mb-0">{{ __('items.item_images') }}</h6>
-                            </legend>
-                            <div class="col-md-12 p-3">
-                                @include('livewire.item-management.items.partials.image-upload')
-                            </div>
-                        </fieldset>
+                <!-- Variations Section -->
+                <fieldset class="shadow-sm mb-2" style="border: 2px solid #80e6cb; border-radius: 0.5rem;">
+                    <div class="col-md-12 p-2">
+                        @include('livewire.item-management.items.partials.varibals-grid')
+                        @include('livewire.item-management.items.partials.combination-units')
                     </div>
-                </div>
+                </fieldset>
 
-                <div class="container-fluid mt-3">
+                <!-- Images Section -->
+                <fieldset class="shadow-sm mb-2" style="border: 2px solid #80e6cb; border-radius: 0.5rem;">
+                    <div class="col-md-12 p-2">
+                        @include('livewire.item-management.items.partials.image-upload')
+                    </div>
+                </fieldset>
+
+                <div class="container-fluid mt-2">
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
                         @if ($creating)
-                            <button type="button" class="btn btn-lg  font-hold "
+                            <button type="button" class="btn btn-lg btn-outline-secondary font-hold fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
                                 {{ __('common.back') }} ( {{ __('common.cancel') }} )
                             </button>
                             <button type="submit" class="btn btn-lg btn-main font-hold fw-bold"
                                 wire:loading.attr="disabled" wire:target="save">{{ __('common.save') }}</button>
                         @else
-                            <button type="button" class="btn btn-lg btn-secondary font-hold fw-bold"
+                            <button type="button" class="btn btn-lg btn-outline-secondary font-hold fw-bold"
                                 onclick="window.location.href='{{ route('items.index') }}'">
                                 {{ __('common.back') }}
                             </button>
-                            <button type="button" class="btn btn-lg btn-info font-hold fw-bold"
+                            <button type="button" class="btn btn-lg btn-main font-hold fw-bold"
                                 wire:click="createNew">{{ __('common.new') }}</button>
-                            <button type="button" class="btn btn-lg btn-warning font-hold fw-bold"
+                            <button type="button" class="btn btn-lg btn-main font-hold fw-bold"
                                 wire:click="createNewFromCurrent">{{ __('items.new_from_current_item') }}</button>
                         @endif
                     </div>

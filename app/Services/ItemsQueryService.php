@@ -17,7 +17,7 @@ class ItemsQueryService
             ->with([
                 'units' => function ($query) {
                     $query->select('units.id', 'units.name')
-                          ->orderBy('item_units.u_val');
+                        ->orderBy('item_units.u_val');
                 },
                 'prices' => function ($query) {
                     $query->select('prices.id', 'prices.name');
@@ -28,13 +28,16 @@ class ItemsQueryService
                 'notes' => function ($query) {
                     $query->select('notes.id', 'notes.name');
                 },
+                'media' => function ($query) {
+                    $query->where('collection_name', 'item-thumbnail');
+                },
             ])
             ->when($search, function ($query) use ($search) {
                 $query
-                    ->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('code', 'like', '%' . $search . '%')
+                    ->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('code', 'like', '%'.$search.'%')
                     ->orWhereHas('barcodes', function ($q) use ($search) {
-                        $q->where('barcode', 'like', '%' . $search . '%');
+                        $q->where('barcode', 'like', '%'.$search.'%');
                     });
             })
             ->when($selectedGroup, function ($query) use ($selectedGroup) {
@@ -53,7 +56,7 @@ class ItemsQueryService
                         });
                 });
             });
-            
+
     }
 
     /**
@@ -99,14 +102,14 @@ class ItemsQueryService
 
         // Get quantities per item
         $quantities = DB::table('operation_items')
-            ->select('item_id', 
+            ->select('item_id',
                 DB::raw('SUM(qty_in) as total_in'),
                 DB::raw('SUM(qty_out) as total_out'),
                 DB::raw('SUM(qty_in) - SUM(qty_out) as net_quantity')
             )
             ->whereIn('item_id', $itemIds)
             ->where('isdeleted', 0)
-            ->when($warehouseId, fn($q) => $q->where('detail_store', $warehouseId))
+            ->when($warehouseId, fn ($q) => $q->where('detail_store', $warehouseId))
             ->groupBy('item_id')
             ->get()
             ->keyBy('item_id');
@@ -121,6 +124,7 @@ class ItemsQueryService
                 ->get()
                 ->sum(function ($item) use ($quantities) {
                     $qty = $quantities[$item->id]->net_quantity ?? 0;
+
                     return $qty * $item->average_cost;
                 });
         } elseif ($priceType === 'cost') {
@@ -129,11 +133,12 @@ class ItemsQueryService
                 ->select('item_id', DB::raw('MAX(cost_price) as last_cost'))
                 ->whereIn('item_id', $itemIds)
                 ->where('isdeleted', 0)
-                ->when($warehouseId, fn($q) => $q->where('detail_store', $warehouseId))
+                ->when($warehouseId, fn ($q) => $q->where('detail_store', $warehouseId))
                 ->groupBy('item_id')
                 ->get()
                 ->sum(function ($item) use ($quantities) {
                     $qty = $quantities[$item->item_id]->net_quantity ?? 0;
+
                     return $qty * $item->last_cost;
                 });
         } else {
@@ -145,6 +150,7 @@ class ItemsQueryService
                 ->get()
                 ->sum(function ($item) use ($quantities) {
                     $qty = $quantities[$item->item_id]->net_quantity ?? 0;
+
                     return $qty * $item->price;
                 });
         }
@@ -167,7 +173,7 @@ class ItemsQueryService
             ->select('item_id')
             ->whereIn('item_id', $itemIds)
             ->where('isdeleted', 0)
-            ->when($warehouseId, fn($q) => $q->where('detail_store', $warehouseId))
+            ->when($warehouseId, fn ($q) => $q->where('detail_store', $warehouseId))
             ->groupBy('item_id')
             ->havingRaw('SUM(qty_in) - SUM(qty_out) > 0')
             ->count();
@@ -184,15 +190,15 @@ class ItemsQueryService
         }
 
         $query = DB::table('operation_items as oi')
-            ->join('item_units as iu', function($join) {
+            ->join('item_units as iu', function ($join) {
                 $join->on('iu.item_id', '=', 'oi.item_id')
-                     ->on('iu.unit_id', '=', 'oi.unit_id');
+                    ->on('iu.unit_id', '=', 'oi.unit_id');
             })
             ->where('oi.isdeleted', 0)
             ->whereIn('oi.item_id', $itemIds)
             ->select([
                 'oi.item_id',
-                DB::raw('SUM((oi.qty_in - oi.qty_out) * iu.u_val) as base_qty')
+                DB::raw('SUM((oi.qty_in - oi.qty_out) * iu.u_val) as base_qty'),
             ])
             ->groupBy('oi.item_id');
 

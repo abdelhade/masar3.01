@@ -447,14 +447,14 @@
             if (hasChildren) {
                 // تحقق إذا كانت الحسابات الفرعية مخفية
                 const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
-                // إذا كانت الحسابات الفرعية مخفية، استخدم رصيد الحساب الرئيسي (totalWithChildren)
+                // إذا كانت الحسابات الفرعية مخفية، استخدم totalWithChildren (يشمل الأطفال)
                 // إذا كانت ظاهرة، تجاهل الحساب الرئيسي لأننا سنحسب الحسابات الفرعية
                 if (childrenRows.length === 0) {
-                    const balance = parseFloat(row.dataset.balance) || 0;
-                    total += balance;
+                    const totalWithChildren = parseFloat(row.dataset.totalWithChildren) || 0;
+                    total += totalWithChildren;
                 }
             } else {
-                // الحساب ليس له أطفال (leaf account)، احسبه مباشرة
+                // الحساب ليس له أطفال (leaf account)، استخدم balance مباشرة
                 const balance = parseFloat(row.dataset.balance) || 0;
                 total += balance;
             }
@@ -498,14 +498,14 @@
             if (hasChildren) {
                 // تحقق إذا كانت الحسابات الفرعية مخفية
                 const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
-                // إذا كانت الحسابات الفرعية مخفية، استخدم رصيد الحساب الرئيسي (totalWithChildren)
+                // إذا كانت الحسابات الفرعية مخفية، استخدم totalWithChildren (يشمل الأطفال)
                 // إذا كانت ظاهرة، تجاهل الحساب الرئيسي لأننا سنحسب الحسابات الفرعية
                 if (childrenRows.length === 0) {
-                    const balance = parseFloat(row.dataset.balance) || 0;
-                    totalLiabilities += balance;
+                    const totalWithChildren = parseFloat(row.dataset.totalWithChildren) || 0;
+                    totalLiabilities += totalWithChildren;
                 }
             } else {
-                // الحساب ليس له أطفال (leaf account)، احسبه مباشرة
+                // الحساب ليس له أطفال (leaf account)، استخدم balance مباشرة
                 const balance = parseFloat(row.dataset.balance) || 0;
                 totalLiabilities += balance;
             }
@@ -532,14 +532,14 @@
             if (hasChildren) {
                 // تحقق إذا كانت الحسابات الفرعية مخفية
                 const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
-                // إذا كانت الحسابات الفرعية مخفية، استخدم رصيد الحساب الرئيسي (totalWithChildren)
+                // إذا كانت الحسابات الفرعية مخفية، استخدم totalWithChildren (يشمل الأطفال)
                 // إذا كانت ظاهرة، تجاهل الحساب الرئيسي لأننا سنحسب الحسابات الفرعية
                 if (childrenRows.length === 0) {
-                    const balance = parseFloat(row.dataset.balance) || 0;
-                    totalEquity += balance;
+                    const totalWithChildren = parseFloat(row.dataset.totalWithChildren) || 0;
+                    totalEquity += totalWithChildren;
                 }
             } else {
-                // الحساب ليس له أطفال (leaf account)، احسبه مباشرة
+                // الحساب ليس له أطفال (leaf account)، استخدم balance مباشرة
                 const balance = parseFloat(row.dataset.balance) || 0;
                 totalEquity += balance;
             }
@@ -605,8 +605,8 @@
             if (hasChildren) {
                 const childrenRows = document.querySelectorAll(`tr.children-${accountId}:not(.d-none)`);
                 if (childrenRows.length === 0) {
-                    const balance = parseFloat(row.dataset.balance) || 0;
-                    totalAssets += balance;
+                    const totalWithChildren = parseFloat(row.dataset.totalWithChildren) || 0;
+                    totalAssets += totalWithChildren;
                 }
             } else {
                 const balance = parseFloat(row.dataset.balance) || 0;

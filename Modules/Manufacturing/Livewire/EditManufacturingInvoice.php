@@ -13,48 +13,91 @@ use Modules\Manufacturing\Services\ManufacturingInvoiceService;
 class EditManufacturingInvoice extends Component
 {
     public $currentStep = 1;
+
     public $showSaveTemplateModal = false;
+
     public $showLoadTemplateModal = false;
+
     public $templateName = '';
+
     public $templates = [];
+
     public $selectedTemplate = null;
+
     public $templateExpectedTime = '';
+
     public $actualTime = '';
+
     public $quantityMultiplier = 1;
+
     public $pro_id;
+
     public $order_id;
+
     public $stage_id;
+
     public $invoiceDate;
+
     public $description = '';
+
     public $selectedProducts = [];
+
     public $productsList = [];
+
     public $selectedRawMaterials = [];
+
     public $rawMaterialsList = [];
+
     public $additionalExpenses = [];
+
     public $productSearchTerm = '';
+
     public $productSearchResults;
+
     public $productSelectedResultIndex = -1;
+
     public $rawMaterialSearchTerm = '';
+
     public $rawMaterialSearchResults;
+
     public $rawMaterialSelectedResultIndex = -1;
+
     public $totalRawMaterialsCost = 0;
+
     public $totalProductsCost = 0;
+
     public $totalAdditionalExpenses = 0;
+
     public $totalManufacturingCost = 0;
+
     public $unitCostPerProduct = 0;
+
     public $OperatingAccount = '';
+
     public $rawAccount = '';
+
     public $expenseAccount;
+
     public $expenseAccountList = [];
+
     public $productAccount = '';
+
     public $Stors = [];
+
     public $OperatingCenter;
+
     public $patchNumber;
+
     public $employee;
+
     public $employeeList = [];
+
     public $activeTab = 'general_chat';
+
     public $originalInvoiceId;
+
     public $branch_id;
+
     public $branches;
 
     protected $rules = [
@@ -305,20 +348,21 @@ class EditManufacturingInvoice extends Component
 
             $quantity = $item->fat_quantity ?? $item->qty_out ?? 1;
 
-            $savedCost = $item->fat_price ?? null;
+            // ✅ استخدام average_cost من Item مباشرة (متوسط التكلفة الحالي)
+            $currentAverageCost = $rawMaterial->average_cost ?? 0;
 
-            // If fat_price is not available, calculate it from base price and conversion factor
-            if ($savedCost === null && $selectedUnitId) {
-                $basePrice = $item->item_price ?? $item->cost_price ?? $rawMaterial->average_cost ?? 0;
-                $selectedUnit = collect($unitsList)->firstWhere('id', $selectedUnitId);
-                $conversionFactor = $selectedUnit['available_qty'] ?? 1; // u_val is conversion factor
-                $savedCost = $basePrice * $conversionFactor;
-            }
+            // حساب التكلفة حسب الوحدة المختارة
+            $selectedUnit = collect($unitsList)->firstWhere('id', $selectedUnitId);
+            $conversionFactor = $selectedUnit['available_qty'] ?? 1;
 
-            // Fallback if still no cost
-            if (! $savedCost) {
-                $savedCost = $rawMaterial->average_cost ?? 0;
-            }
+            // إذا كانت الوحدة المختارة ليست الوحدة الأساسية، نحسب التكلفة بناءً على عامل التحويل
+            $unitCost = $currentAverageCost * $conversionFactor;
+
+            // استخدام التكلفة المحفوظة في الفاتورة إذا كانت موجودة، وإلا استخدام average_cost الحالي
+            $savedCost = $item->fat_price ?? $item->item_price ?? $unitCost;
+
+            // حساب total_cost
+            $totalCost = $item->detail_value ?? ($quantity * $savedCost);
 
             $this->selectedRawMaterials[] = [
                 'id' => uniqid(),
@@ -328,9 +372,9 @@ class EditManufacturingInvoice extends Component
                 'unit_id' => $selectedUnitId,
                 'unit_cost' => round($savedCost, 2),
                 'available_quantity' => $this->getAvailableQuantity($rawMaterial->id, $selectedUnitId),
-                'total_cost' => $item->detail_value ?? ($quantity * $savedCost),
+                'total_cost' => $totalCost,
                 'unitsList' => $unitsList,
-                'average_cost' => round($savedCost, 2),  // Cost per unit in selected unit
+                'average_cost' => round($currentAverageCost, 2),  // ✅ متوسط التكلفة من Item
             ];
         } catch (\Exception) {
 
@@ -378,7 +422,7 @@ class EditManufacturingInvoice extends Component
         $searchTerm = trim($value);
 
         // البحث عن الأصناف التي تطابق الباركود أولاً (أسرع)
-        $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', 'like', '%' . $searchTerm . '%')
+        $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', 'like', '%'.$searchTerm.'%')
             ->where('isdeleted', 0)
             ->limit(10)
             ->pluck('item_id')
@@ -386,10 +430,10 @@ class EditManufacturingInvoice extends Component
             ->toArray();
 
         // الكويري للبحث عن المنتجات - تحديد 10 نتائج فقط
-        $this->productSearchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+        $this->productSearchResults = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])
             ->select('id', 'name', 'average_cost')
             ->where(function ($query) use ($searchTerm, $itemIdsFromBarcode) {
-                $query->where('name', 'like', '%' . $searchTerm . '%');
+                $query->where('name', 'like', '%'.$searchTerm.'%');
                 if (! empty($itemIdsFromBarcode)) {
                     $query->orWhereIn('id', $itemIdsFromBarcode);
                 }
@@ -411,7 +455,7 @@ class EditManufacturingInvoice extends Component
         $searchTerm = trim($value);
 
         // البحث عن الأصناف التي تطابق الباركود أولاً (أسرع)
-        $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', 'like', '%' . $searchTerm . '%')
+        $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', 'like', '%'.$searchTerm.'%')
             ->where('isdeleted', 0)
             ->limit(10)
             ->pluck('item_id')
@@ -419,10 +463,10 @@ class EditManufacturingInvoice extends Component
             ->toArray();
 
         // الكويري للبحث عن المواد الخام - تحديد 10 نتائج فقط
-        $this->rawMaterialSearchResults = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val')])
+        $this->rawMaterialSearchResults = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val')])
             ->select('id', 'name', 'average_cost')
             ->where(function ($query) use ($searchTerm, $itemIdsFromBarcode) {
-                $query->where('name', 'like', '%' . $searchTerm . '%');
+                $query->where('name', 'like', '%'.$searchTerm.'%');
                 if (! empty($itemIdsFromBarcode)) {
                     $query->orWhereIn('id', $itemIdsFromBarcode);
                 }
@@ -435,7 +479,7 @@ class EditManufacturingInvoice extends Component
 
     public function addProductFromSearch($itemId)
     {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices', 'units'])->find($itemId);
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices', 'units'])->find($itemId);
         if (! $item) {
             return;
         }
@@ -575,18 +619,9 @@ class EditManufacturingInvoice extends Component
         })->toArray();
 
         $firstUnit = $unitsList[0] ?? null;
-        // Use unit cost if available, otherwise calculate from base average_cost and conversion factor
+        // ✅ استخدام average_cost من Item مباشرة (لا يمكن تعديله)
         $baseAverageCost = $item->average_cost ?? 0;
-        $unitCost = $firstUnit['cost'] ?? 0;
-        $conversionFactor = $firstUnit['available_qty'] ?? 1;
-
-        // If unit cost is not set, calculate it from base cost and conversion factor
-        if (! $unitCost && $baseAverageCost > 0) {
-            $unitCost = $baseAverageCost * $conversionFactor;
-        }
-
-        $averageCost = $unitCost; // Cost per unit in selected unit
-        $initialTotalCost = round(1 * $averageCost, 2);
+        $initialTotalCost = round(1 * $baseAverageCost, 2);
 
         $this->selectedRawMaterials[] = [
             'id' => uniqid(),
@@ -594,11 +629,11 @@ class EditManufacturingInvoice extends Component
             'name' => $item->name,
             'quantity' => 1,
             'unit_id' => $firstUnit['id'] ?? null,
-            'unit_cost' => round($unitCost, 2),
+            'unit_cost' => round($firstUnit['cost'] ?? 0, 2), // للمرجعية فقط
             'available_quantity' => $firstUnit['available_qty'] ?? 0,
             'total_cost' => $initialTotalCost,
             'unitsList' => $unitsList,
-            'average_cost' => round($averageCost, 2), // Cost per unit in selected unit
+            'average_cost' => round($baseAverageCost, 2), // ✅ متوسط التكلفة من Item (لا يتم تعديله)
         ];
 
         $this->rawMaterialSearchTerm = '';
@@ -650,36 +685,40 @@ class EditManufacturingInvoice extends Component
             $this->updateRawMaterialTotal($index);
         }
 
-        if ($field === 'average_cost') {
-            $averageCost = (float) $value;
-            $this->selectedRawMaterials[$index]['average_cost'] = $averageCost;
-            $this->updateRawMaterialTotal($index);
-        }
+        // ✅ لا يمكن تعديل average_cost - يتم جلبها من Item مباشرة
+        // if ($field === 'average_cost') {
+        //     $averageCost = (float) $value;
+        //     $this->selectedRawMaterials[$index]['average_cost'] = $averageCost;
+        //     $this->updateRawMaterialTotal($index);
+        // }
 
         $this->calculateTotals();
     }
 
     private function updateRawMaterialTotal($index)
     {
-        $totalRowCost = $this->selectedRawMaterials[$index]['average_cost'] * $this->selectedRawMaterials[$index]['quantity'];
-        $this->selectedRawMaterials[$index]['total_cost'] = $totalRowCost;
+        // ✅ استخدام average_cost من Item (لا يمكن تعديله)
+        $averageCost = $this->selectedRawMaterials[$index]['average_cost'] ?? 0;
+        $quantity = $this->selectedRawMaterials[$index]['quantity'] ?? 0;
+        $totalRowCost = $averageCost * $quantity;
+        $this->selectedRawMaterials[$index]['total_cost'] = round($totalRowCost, 2);
     }
 
     public function calculateTotals()
     {
         $this->totalProductsCost = collect($this->selectedProducts)
-            ->sum(fn($item) => is_numeric($item['total_cost']) ? (float) $item['total_cost'] : 0);
+            ->sum(fn ($item) => is_numeric($item['total_cost']) ? (float) $item['total_cost'] : 0);
 
         $this->totalRawMaterialsCost = collect($this->selectedRawMaterials)
-            ->sum(fn($item) => is_numeric($item['total_cost']) ? (float) $item['total_cost'] : 0);
+            ->sum(fn ($item) => is_numeric($item['total_cost']) ? (float) $item['total_cost'] : 0);
 
         $this->totalAdditionalExpenses = collect($this->additionalExpenses)
-            ->sum(fn($item) => is_numeric($item['amount']) ? (float) $item['amount'] : 0);
+            ->sum(fn ($item) => is_numeric($item['amount']) ? (float) $item['amount'] : 0);
 
         $this->totalManufacturingCost = $this->totalRawMaterialsCost + $this->totalAdditionalExpenses;
 
         $totalProductQuantity = collect($this->selectedProducts)
-            ->sum(fn($item) => is_numeric($item['quantity']) ? (float) $item['quantity'] : 0);
+            ->sum(fn ($item) => is_numeric($item['quantity']) ? (float) $item['quantity'] : 0);
 
         $this->unitCostPerProduct = $totalProductQuantity > 0 ?
             $this->totalManufacturingCost / $totalProductQuantity : 0;
@@ -708,7 +747,7 @@ class EditManufacturingInvoice extends Component
             return;
         }
 
-        $totalPercentage = collect($this->selectedProducts)->sum(fn($product) => (float) ($product['cost_percentage'] ?? 0));
+        $totalPercentage = collect($this->selectedProducts)->sum(fn ($product) => (float) ($product['cost_percentage'] ?? 0));
         $isSumValid = abs($totalPercentage - 100) < 0.1;
 
         if (! $isSumValid) {
@@ -742,8 +781,28 @@ class EditManufacturingInvoice extends Component
 
     private function updateCurrentPrices()
     {
+        // ✅ Batch loading لتقليل N+1 queries
+        $productIds = collect($this->selectedProducts)->pluck('product_id')->unique()->filter()->values()->toArray();
+        $rawMaterialIds = collect($this->selectedRawMaterials)->pluck('item_id')->unique()->filter()->values()->toArray();
+
+        $productsMap = [];
+        $rawMaterialsMap = [];
+
+        if (! empty($productIds)) {
+            $productsMap = Item::whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        if (! empty($rawMaterialIds)) {
+            $rawMaterialsMap = Item::with('units')
+                ->whereIn('id', $rawMaterialIds)
+                ->get()
+                ->keyBy('id');
+        }
+
         foreach ($this->selectedProducts as $index => $product) {
-            $item = Item::find($product['product_id']);
+            $item = $productsMap[$product['product_id']] ?? null;
             if ($item) {
                 $currentAverageCost = $item->average_cost ?? 0;
                 $this->selectedProducts[$index]['average_cost'] = $currentAverageCost;
@@ -752,11 +811,12 @@ class EditManufacturingInvoice extends Component
         }
 
         foreach ($this->selectedRawMaterials as $index => $rawMaterial) {
-            $item = Item::with('units')->find($rawMaterial['item_id']);
+            $item = $rawMaterialsMap[$rawMaterial['item_id']] ?? null;
             if ($item) {
+                // ✅ استخدام average_cost من Item مباشرة (لا يمكن تعديله)
                 $averageCost = $item->average_cost ?? 0;
-                $this->selectedRawMaterials[$index]['average_cost'] = $averageCost;
-                $this->selectedRawMaterials[$index]['total_cost'] = $averageCost * $rawMaterial['quantity'];
+                $this->selectedRawMaterials[$index]['average_cost'] = round($averageCost, 2);
+                $this->selectedRawMaterials[$index]['total_cost'] = round($averageCost * $rawMaterial['quantity'], 2);
 
                 if ($rawMaterial['unit_id']) {
                     $unit = $item->units->where('id', $rawMaterial['unit_id'])->first();
@@ -1006,7 +1066,7 @@ class EditManufacturingInvoice extends Component
         } catch (\Exception $e) {
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
-                'text' => 'حدث خطأ أثناء تحميل النموذج: ' . $e->getMessage(),
+                'text' => 'حدث خطأ أثناء تحميل النموذج: '.$e->getMessage(),
                 'icon' => 'error',
             ]);
         }
@@ -1129,11 +1189,10 @@ class EditManufacturingInvoice extends Component
         foreach ($this->selectedProducts as $product) {
             OperationItems::create([
                 'pro_tybe' => 63,
-                'pro_id' => $this->nextProId ?? 0, // Fallback if nextProId is not set
-                'item_id' => $product['product_id'],
-                'notes' => 'نموذج تصنيع ' . $this->templateName,
-                'detail_store' => $this->productAccount,
                 'pro_id' => $operation->id,
+                'item_id' => $product['product_id'],
+                'notes' => 'نموذج تصنيع '.$this->templateName,
+                'detail_store' => $this->productAccount,
                 'is_stock' => 1,
                 'additional' => $product['cost_percentage'],
                 'fat_price' => $this->totalProductsCost,
@@ -1147,14 +1206,12 @@ class EditManufacturingInvoice extends Component
         foreach ($this->selectedRawMaterials as $raw) {
             OperationItems::create([
                 'pro_tybe' => 63,
-                'pro_id' => $this->nextProId ?? 0, // Fallback
+                'pro_id' => $operation->id,
                 'item_id' => $raw['item_id'],
-                'notes' => 'نموذج تصنيع ' . $this->templateName,
+                'notes' => 'نموذج تصنيع '.$this->templateName,
                 'unit_id' => $raw['unit_id'],
                 'detail_store' => $this->productAccount,
-                'pro_id' => $operation->id,
                 'is_stock' => 1,
-                // 'additional' => $raw['cost_percentage'],
                 'item_price' => $raw['average_cost'],
                 'fat_price' => $this->totalRawMaterialsCost,
                 'fat_quantity' => $raw['quantity'],
@@ -1171,7 +1228,7 @@ class EditManufacturingInvoice extends Component
                     'op_id' => $operation->id,
                     'amount' => $expense['amount'],
                     'account_id' => $expense['account_id'] ?? $this->expenseAccount,
-                    'description' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - نموذج: ' . $this->templateName,
+                    'description' => 'مصروف إضافي: '.($expense['description'] ?? 'غير محدد').' - نموذج: '.$this->templateName,
                 ]);
             }
         }

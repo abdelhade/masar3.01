@@ -4,15 +4,16 @@ namespace App\Providers;
 
 use App\Models\Item;
 use App\Models\JournalDetail;
+use App\Models\NoteDetails;
 use App\Observers\ItemObserver;
+use App\Observers\JournalDetailObserver;
+use App\Observers\NoteDetailsObserver;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
-use App\Observers\JournalDetailObserver;
 use Modules\Settings\Models\PublicSetting;
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,8 +31,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
-            if (!Schema::hasTable('public_settings'))
+            if (! Schema::hasTable('public_settings')) {
                 return;
+            }
             $settings = Cache::rememberForever('public_settings', function () {
                 return PublicSetting::pluck('value', 'key')->toArray();
             });
@@ -41,8 +43,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Paginator::useBootstrapFive();
-        //JournalDetail::observe(classes: JournalDetailObserver::class);
+        // JournalDetail::observe(classes: JournalDetailObserver::class);
         Item::observe(ItemObserver::class);
+        NoteDetails::observe(NoteDetailsObserver::class);
         // Model::automaticallyEagerLoadRelationships();
     }
 }

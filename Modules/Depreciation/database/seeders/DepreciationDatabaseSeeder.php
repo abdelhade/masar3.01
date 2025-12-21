@@ -10,6 +10,7 @@ class DepreciationDatabaseSeeder extends Seeder
     {
         $this->call([
             DepreciationItemsSeeder::class,
+            DepreciationPermissionsSeeder::class,
         ]);
     }
 }

@@ -299,8 +299,8 @@
                                 <td>{{ $asset->accHead->branch->name ?? '-' }}</td>
                                 <td>
                                     @switch($asset->depreciation_method)
-                                        @case('straight_line')
-                                            <span class="badge bg-info">{{ __('القسط الثابت') }}</span>
+                                    زطط
+                                    <div class="+++255456غ لا"></div>          <span class="badge bg-info">{{ __('القسط الثابت') }}</span>
                                             @break
                                         @case('double_declining')
                                             <span class="badge bg-warning">{{ __('الرصيد المتناقص المضاعف') }}</span>
@@ -962,18 +962,47 @@
 
 @push('styles')
 <style>
+    /* Dark Brown Text Color - Apply to all text */
+    div,
+    h1, h2, h3, h4, h5, h6,
+    p, span, a, label, small, strong,
+    th, td, li,
+    .text-primary, .text-success, .text-warning, .text-info, 
+    .text-danger, .text-muted, .text-secondary, .text-dark, .text-white,
+    .card-body, .card-header, .card-title, .modal-title, .modal-body,
+    .form-label, .btn, .badge,
+    input, select, textarea {
+        color: #5D4037 !important; /* Dark brown color */
+    }
+    
+    /* Keep button text readable but maintain dark brown */
+    .btn.btn-primary, .btn.btn-success, .btn.btn-warning, 
+    .btn.btn-info, .btn.btn-danger, .btn.btn-secondary {
+        color: #5D4037 !important;
+    }
+    
+    /* Keep badges readable */
+    .badge {
+        color: #5D4037 !important;
+    }
+    
+    /* Links should also be dark brown */
+    a {
+        color: #5D4037 !important;
+    }
+    
+    a:hover {
+        color: #3E2723 !important; /* Darker brown on hover */
+    }
+    
     /* Mint Green Color */
     .bg-mint-green {
         background-color: #a7f3d0 !important;
-        color: #212529;
+        color: #5D4037 !important;
     }
     
     .bg-mint-green .text-dark {
-        color: #212529 !important;
-    }
-    
-    .text-white {
-        color: #ffffff !important;
+        color: #5D4037 !important;
     }
     
     .progress {
@@ -982,7 +1011,7 @@
     
     .progress-bar {
         background-color: #007bff;
-        color: white;
+        color: #5D4037 !important;
         font-size: 11px;
         line-height: 15px;
     }

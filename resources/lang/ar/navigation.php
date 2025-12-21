@@ -28,6 +28,7 @@ return [
     'items' => 'الأصناف',
     'units' => 'الوحدات',
     'prices' => 'الأسعار',
+    'groups' => 'المجموعات',
     'categories' => 'التصنيفات',
     'item_movement_report' => 'تقرير حركة صنف',
     'item_management' => 'إدارة الأصناف',

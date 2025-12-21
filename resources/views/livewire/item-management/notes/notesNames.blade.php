@@ -16,7 +16,11 @@ new class extends Component {
     <!--  -->
     @foreach ($notes as $noteId => $name)
         @php
-            $permission = 'عرض ' . $name;
+            $permission = match($noteId) {
+                1 => 'view groups',
+                2 => 'view Categories',
+                default => 'view items',
+            };
         @endphp
 
         @can($permission)

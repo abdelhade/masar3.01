@@ -2,26 +2,28 @@
 
 namespace Modules\Rentals\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Modules\Rentals\Models\{RentalsUnit, RentalsBuilding};
-use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Rentals\Http\Requests\RentalsBuildingRequest;
+use Modules\Rentals\Models\RentalsBuilding;
+use Modules\Rentals\Models\RentalsUnit;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class RentalsBuildingController extends Controller
 {
-
     public function index()
     {
         $buildings = RentalsBuilding::all();
         $units = RentalsUnit::all();
+
         return view('rentals::buildings.index', compact('buildings', 'units'));
     }
 
     public function create()
     {
         $branches = userBranches();
+
         return view('rentals::buildings.create', compact('branches'));
     }
 
@@ -31,23 +33,28 @@ class RentalsBuildingController extends Controller
             $data = $request->validated();
             RentalsBuilding::create($data);
             Alert::toast(__('Building added successfully'), 'success');
+
             return redirect()->route('rentals.buildings.index');
         } catch (Exception) {
             Alert::toast(__('An error occurred while adding the building'), 'error');
+
             return redirect()->back();
         }
     }
 
     public function show($id)
     {
-        $building = RentalsBuilding::findOrFail($id);
-        $units = RentalsUnit::where('building_id', $id)->get();
-        return view('rentals::buildings.show', compact('building', 'units'));
+        $building = RentalsBuilding::with([
+            'units.leases.client',
+        ])->findOrFail($id);
+
+        return view('rentals::buildings.show', compact('building'));
     }
 
     public function edit($id)
     {
         $building = RentalsBuilding::findOrFail($id);
+
         return view('rentals::buildings.edit', compact('building'));
     }
 
@@ -58,9 +65,11 @@ class RentalsBuildingController extends Controller
             $building = RentalsBuilding::findOrFail($id);
             $building->update($data);
             Alert::toast(__('Building data updated successfully'), 'success');
+
             return redirect()->route('rentals.buildings.index');
         } catch (Exception) {
             Alert::toast(__('An error occurred while updating building data'), 'error');
+
             return redirect()->back();
         }
     }
@@ -72,9 +81,11 @@ class RentalsBuildingController extends Controller
             $building->units()->delete();
             $building->delete();
             Alert::toast(__('Building deleted successfully'), 'success');
+
             return redirect()->route('rentals.buildings.index');
         } catch (Exception) {
             Alert::toast(__('An error occurred while deleting the building'), 'error');
+
             return redirect()->back();
         }
     }

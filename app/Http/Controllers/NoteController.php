@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Note;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Note;
-
 
 class NoteController extends Controller
 {
@@ -13,21 +12,30 @@ class NoteController extends Controller
     {
         // $this->middleware('can:عرض المجموعات')->only(['index', 'noteDetails']);
     }
+
     public function index()
     {
         return view('item-management.notes.manage-notes');
     }
+
     public function noteDetails($noteId)
-{
-    $user = Auth::user(); // تعريف المستخدم الحالي
+    {
+        $user = Auth::user();
 
-    $note = Note::findOrFail($noteId); // جلب النوت أو إظهار 404 لو مش موجودة
+        $note = Note::findOrFail($noteId);
 
-    if (! $user->can('عرض ' . $note->name)) {
-        abort(403, 'غير مصرح لك بالوصول لهذه الصفحة');
+        // Check permissions based on note type
+        // Note ID 1 = Groups, Note ID 2 = Categories
+        $permission = match ($noteId) {
+            1 => 'view groups',
+            2 => 'view Categories',
+            default => 'view items', // fallback for other notes
+        };
+
+        if (! $user->can($permission)) {
+            abort(403, 'غير مصرح لك بالوصول لهذه الصفحة');
+        }
+
+        return view('item-management.notes.note-details', compact('noteId'));
     }
-
-    return view('item-management.notes.note-details', compact('noteId'));
-}
-
 }

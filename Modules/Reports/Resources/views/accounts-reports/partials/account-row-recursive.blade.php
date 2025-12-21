@@ -13,7 +13,9 @@
     }
     $buttonClasses = 'collapse-toggle me-2';
     $parentIdentifier = isset($parentId) ? (string) $parentId : '';
-    $balanceValue = (float) ($account->totalWithChildren ?? $account->balance ?? 0);
+    // استخدام balance للعرض في الجدول، و totalWithChildren للبيانات عند طي الحسابات الفرعية
+    $balanceValue = (float) ($account->balance ?? 0);
+    $totalWithChildrenValue = (float) ($account->totalWithChildren ?? $account->balance ?? 0);
     $section = $section ?? null;
 @endphp
 
@@ -23,6 +25,7 @@
     data-parent-id="{{ $parentIdentifier }}"
     data-has-children="{{ $hasChildren ? 1 : 0 }}"
     data-balance="{{ $balanceValue }}"
+    data-total-with-children="{{ $totalWithChildrenValue }}"
     @if($section) data-section="{{ $section }}" @endif>
     <td class="align-middle">
         @if($hasChildren)
@@ -54,7 +57,7 @@
         @endif
     </td>
     <td class="text-end align-middle {{ $isBasic ? 'fw-bold text-primary' : 'text-dark' }}">
-        {{ number_format($account->totalWithChildren ?? $account->balance ?? 0, 2) }}
+        {{ number_format($balanceValue, 2) }}
     </td>
 </tr>
 

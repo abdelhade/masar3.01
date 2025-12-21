@@ -8,10 +8,10 @@ use App\Models\JournalDetail;
 use App\Models\JournalHead;
 use App\Models\OperationItems;
 use App\Models\OperHead;
+use App\Services\RecalculationServiceHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\RecalculationServiceHelper;
 
 class ManufacturingInvoiceService
 {
@@ -209,10 +209,65 @@ class ManufacturingInvoiceService
                 'is_template' => $isTemplate ? 1 : 0, // إضافة هذا الحقل إذا كان موجوداً في الجدول
             ]);
 
+            // ✅ Batch loading للـ unit factors و base unit IDs لتقليل N+1 queries
+            $rawMaterialItemIds = collect($component->selectedRawMaterials)
+                ->pluck('item_id')
+                ->unique()
+                ->filter()
+                ->values()
+                ->toArray();
+
+            $unitFactorsMap = [];
+            $baseUnitIdsMap = [];
+
+            if (! empty($rawMaterialItemIds)) {
+                // Batch load جميع unit factors
+                $allUnitFactors = DB::table('item_units')
+                    ->whereIn('item_id', $rawMaterialItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->get()
+                    ->groupBy('item_id');
+
+                // Batch load جميع base unit IDs
+                $baseUnits = DB::table('item_units')
+                    ->whereIn('item_id', $rawMaterialItemIds)
+                    ->where('u_val', 1)
+                    ->select('item_id', 'unit_id')
+                    ->get()
+                    ->keyBy('item_id');
+
+                // Fallback: أول وحدة (أصغر u_val)
+                $fallbackUnits = DB::table('item_units')
+                    ->whereIn('item_id', $rawMaterialItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->orderBy('u_val', 'asc')
+                    ->get()
+                    ->groupBy('item_id')
+                    ->map(function ($units) {
+                        return $units->first();
+                    });
+
+                // بناء Maps للوصول السريع
+                foreach ($allUnitFactors as $itemId => $units) {
+                    foreach ($units as $unit) {
+                        $unitFactorsMap[$itemId.'_'.$unit->unit_id] = $unit->u_val ?? 1;
+                    }
+                }
+
+                foreach ($rawMaterialItemIds as $itemId) {
+                    $baseUnitIdsMap[$itemId] = $baseUnits->get($itemId)?->unit_id
+                        ?? $fallbackUnits->get($itemId)?->unit_id
+                        ?? null;
+                }
+            }
+
             foreach ($component->selectedRawMaterials as $raw) {
                 $displayUnitId = $raw['unit_id'] ?? null;
-                $unitFactor = $this->getUnitFactor($raw['item_id'], $displayUnitId);
-                $baseUnitId = $this->getBaseUnitId($raw['item_id'], $displayUnitId);
+                // ✅ استخدام Map بدلاً من استعلام منفصل
+                $unitFactor = $displayUnitId
+                    ? ($unitFactorsMap[$raw['item_id'].'_'.$displayUnitId] ?? 1)
+                    : 1;
+                $baseUnitId = $baseUnitIdsMap[$raw['item_id']] ?? $displayUnitId;
 
                 $originalQty = $raw['quantity'];
                 $baseQty = $originalQty * $unitFactor;
@@ -239,20 +294,93 @@ class ManufacturingInvoiceService
                 ]);
             }
 
-            foreach ($component->selectedProducts as $product) {
+            // ✅ Batch loading للـ products items و units
+            $productItemIds = collect($component->selectedProducts)
+                ->pluck('product_id')
+                ->unique()
+                ->filter()
+                ->values()
+                ->toArray();
 
-                $item = Item::find($product['product_id']);
+            $productItemsMap = [];
+            $productUnitFactorsMap = [];
+            $productBaseUnitIdsMap = [];
 
-                $displayUnitId = $product['unit_id'] ?? null;
-                $unitFactor = $this->getUnitFactor($product['product_id'], $displayUnitId);
-                if (! $displayUnitId && $item) {
-                    $defaultUnit = $item->units()->orderBy('pivot_u_val', 'asc')->first();
-                    if ($defaultUnit) {
-                        $displayUnitId = $defaultUnit->id;
-                        $unitFactor = $defaultUnit->pivot->u_val ?? 1;
+            if (! empty($productItemIds)) {
+                // Batch load جميع products
+                $productItemsMap = Item::whereIn('id', $productItemIds)
+                    ->with(['units' => fn ($q) => $q->orderBy('pivot_u_val', 'asc')])
+                    ->get()
+                    ->keyBy('id');
+
+                // Batch load unit factors للـ products
+                $allProductUnitFactors = DB::table('item_units')
+                    ->whereIn('item_id', $productItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->get()
+                    ->groupBy('item_id');
+
+                // Batch load base unit IDs
+                $productBaseUnits = DB::table('item_units')
+                    ->whereIn('item_id', $productItemIds)
+                    ->where('u_val', 1)
+                    ->select('item_id', 'unit_id')
+                    ->get()
+                    ->keyBy('item_id');
+
+                $productFallbackUnits = DB::table('item_units')
+                    ->whereIn('item_id', $productItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->orderBy('u_val', 'asc')
+                    ->get()
+                    ->groupBy('item_id')
+                    ->map(function ($units) {
+                        return $units->first();
+                    });
+
+                foreach ($allProductUnitFactors as $itemId => $units) {
+                    foreach ($units as $unit) {
+                        $productUnitFactorsMap[$itemId.'_'.$unit->unit_id] = $unit->u_val ?? 1;
                     }
                 }
-                $baseUnitId = $this->getBaseUnitId($product['product_id'], $displayUnitId);
+
+                foreach ($productItemIds as $itemId) {
+                    $productBaseUnitIdsMap[$itemId] = $productBaseUnits->get($itemId)?->unit_id
+                        ?? $productFallbackUnits->get($itemId)?->unit_id
+                        ?? null;
+                }
+            }
+
+            // ✅ Batch load old quantities لجميع المنتجات في استعلام واحد
+            $oldQuantitiesMap = [];
+            if (! empty($productItemIds) && ! $isTemplate) {
+                $oldQuantities = OperationItems::whereIn('item_id', $productItemIds)
+                    ->where('is_stock', 1)
+                    ->selectRaw('item_id, SUM(qty_in - qty_out) as total')
+                    ->groupBy('item_id')
+                    ->pluck('total', 'item_id')
+                    ->toArray();
+
+                $oldQuantitiesMap = $oldQuantities;
+            }
+
+            foreach ($component->selectedProducts as $product) {
+                $item = $productItemsMap[$product['product_id']] ?? null;
+
+                $displayUnitId = $product['unit_id'] ?? null;
+
+                // ✅ استخدام Map بدلاً من استعلام منفصل
+                if (! $displayUnitId && $item && $item->units->isNotEmpty()) {
+                    $defaultUnit = $item->units->first();
+                    $displayUnitId = $defaultUnit->id;
+                    $unitFactor = $defaultUnit->pivot->u_val ?? 1;
+                } else {
+                    $unitFactor = $displayUnitId
+                        ? ($productUnitFactorsMap[$product['product_id'].'_'.$displayUnitId] ?? 1)
+                        : 1;
+                }
+
+                $baseUnitId = $productBaseUnitIdsMap[$product['product_id']] ?? $displayUnitId;
 
                 $originalQty = $product['quantity'];
                 $baseQty = $originalQty * $unitFactor;
@@ -279,19 +407,9 @@ class ManufacturingInvoiceService
                     'branch_id' => $component->branch_id,
                 ]);
 
-                // Update average cost for products (using base units)
+                // ✅ Update average cost using batch loaded data
                 if (! $isTemplate && $item) {
-                    $oldQtyInBase = OperationItems::where('operation_items.item_id', $product['product_id'])
-                        ->where('operation_items.is_stock', 1)
-                        ->leftJoin('item_units', function ($join) {
-                            $join->on('operation_items.item_id', '=', 'item_units.item_id')
-                                ->on('operation_items.unit_id', '=', 'item_units.unit_id');
-                        })
-                        // ->selectRaw('SUM((qty_in - qty_out) * COALESCE(item_units.u_val, 1)) as total')
-                        // ✅ الكميات مخزنة بالفعل بالوحدة الأساسية
-                        ->selectRaw('SUM(qty_in - qty_out) as total')
-                        ->value('total') ?? 0;
-
+                    $oldQtyInBase = $oldQuantitiesMap[$product['product_id']] ?? 0;
                     $oldAverage = $item->average_cost ?? 0;
 
                     // Calculate total cost and quantity in base units
@@ -316,7 +434,7 @@ class ManufacturingInvoiceService
                         'op_id' => $operation->id,
                         'amount' => $expense['amount'],
                         'account_id' => $expense['account_id'],
-                        'description' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - فاتورة: ' . $component->pro_id,
+                        'description' => 'مصروف إضافي: '.($expense['description'] ?? 'غير محدد').' - فاتورة: '.$component->pro_id,
                     ]);
                 }
             }
@@ -472,7 +590,7 @@ class ManufacturingInvoiceService
             // مهم: فاتورة التصنيع تحتوي على:
             // 1. خامات (qty_out > 0) - تتأثر بمتوسط التكلفة من فواتير المشتريات
             // 2. منتجات (qty_in > 0) - تتأثر بتكلفة الخامات في نفس فاتورة التصنيع
-            if (!$isTemplate) {
+            if (! $isTemplate) {
                 try {
                     // جمع جميع الأصناف المتأثرة (خامات + منتجات)
                     $allItemIds = $operation->operationItems()
@@ -482,34 +600,44 @@ class ManufacturingInvoiceService
                         ->values()
                         ->toArray();
 
-                    if (!empty($allItemIds)) {
+                    if (! empty($allItemIds)) {
                         // إعادة حساب average_cost للمنتجات (لأن فاتورة التصنيع تؤثر على average_cost للمنتجات)
                         RecalculationServiceHelper::recalculateAverageCost($allItemIds, $component->invoiceDate);
-                        
+
                         // إعادة حساب الأرباح والقيود فقط للفواتير التي بعد تاريخ فاتورة التصنيع
                         // (مع مراعاة الوقت في نفس اليوم)
                         RecalculationServiceHelper::recalculateProfitsAndJournals(
-                            $allItemIds, 
+                            $allItemIds,
                             $component->invoiceDate,
                             $operation->id, // currentInvoiceId - لاستثناء فاتورة التصنيع الحالية
                             $operation->created_at?->format('Y-m-d H:i:s') // currentInvoiceCreatedAt - لمقارنة الفواتير في نفس اليوم
                         );
                     }
                 } catch (\Exception $e) {
-                    Log::error('Error recalculating after manufacturing invoice creation: ' . $e->getMessage());
-                    Log::error('Stack trace: ' . $e->getTraceAsString());
+                    Log::error('Error recalculating after manufacturing invoice creation: '.$e->getMessage());
+                    Log::error('Stack trace: '.$e->getTraceAsString());
                     // لا نوقف العملية، فقط نسجل الخطأ
                 }
             }
 
-            $component->dispatch('success-swal', title: 'تم الحفظ!', text: 'تم حفظ فاتورة التصنيع بنجاح.', icon: 'success');
+            $component->dispatch('success-swal', [
+                'title' => 'تم الحفظ!',
+                'text' => 'تم حفظ فاتورة التصنيع بنجاح.',
+                'icon' => 'success',
+                'reload' => true,
+            ]);
 
             return $operation->id;
         } catch (\Exception $e) {
             DB::rollBack();
-            $component->dispatch('error-swal', title: 'خطأ !', text: 'حدث خطا اثناء الحفظ.', icon: 'error');
+            $component->isSaving = false;
+            $component->dispatch('error-swal', [
+                'title' => 'خطأ !',
+                'text' => 'حدث خطا اثناء الحفظ: '.$e->getMessage(),
+                'icon' => 'error',
+            ]);
 
-            return back()->withInput();
+            return false;
         }
     }
 
@@ -565,11 +693,62 @@ class ManufacturingInvoiceService
                 'manufacturing_stage_id' => $component->stage_id,
             ]);
 
+            // ✅ Batch loading للـ unit factors و base unit IDs لتقليل N+1 queries
+            $rawMaterialItemIds = collect($component->selectedRawMaterials)
+                ->pluck('item_id')
+                ->unique()
+                ->filter()
+                ->values()
+                ->toArray();
+
+            $unitFactorsMap = [];
+            $baseUnitIdsMap = [];
+
+            if (! empty($rawMaterialItemIds)) {
+                $allUnitFactors = DB::table('item_units')
+                    ->whereIn('item_id', $rawMaterialItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->get()
+                    ->groupBy('item_id');
+
+                $baseUnits = DB::table('item_units')
+                    ->whereIn('item_id', $rawMaterialItemIds)
+                    ->where('u_val', 1)
+                    ->select('item_id', 'unit_id')
+                    ->get()
+                    ->keyBy('item_id');
+
+                $fallbackUnits = DB::table('item_units')
+                    ->whereIn('item_id', $rawMaterialItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->orderBy('u_val', 'asc')
+                    ->get()
+                    ->groupBy('item_id')
+                    ->map(function ($units) {
+                        return $units->first();
+                    });
+
+                foreach ($allUnitFactors as $itemId => $units) {
+                    foreach ($units as $unit) {
+                        $unitFactorsMap[$itemId.'_'.$unit->unit_id] = $unit->u_val ?? 1;
+                    }
+                }
+
+                foreach ($rawMaterialItemIds as $itemId) {
+                    $baseUnitIdsMap[$itemId] = $baseUnits->get($itemId)?->unit_id
+                        ?? $fallbackUnits->get($itemId)?->unit_id
+                        ?? null;
+                }
+            }
+
             // 4. إنشاء بيانات المواد الخام الجديدة
             foreach ($component->selectedRawMaterials as $raw) {
                 $displayUnitId = $raw['unit_id'] ?? null;
-                $unitFactor = $this->getUnitFactor($raw['item_id'], $displayUnitId);
-                $baseUnitId = $this->getBaseUnitId($raw['item_id'], $displayUnitId);
+                // ✅ استخدام Map بدلاً من استعلام منفصل
+                $unitFactor = $displayUnitId
+                    ? ($unitFactorsMap[$raw['item_id'].'_'.$displayUnitId] ?? 1)
+                    : 1;
+                $baseUnitId = $baseUnitIdsMap[$raw['item_id']] ?? $displayUnitId;
 
                 $originalQty = $raw['quantity'];
                 $baseQty = $originalQty * $unitFactor;
@@ -596,20 +775,91 @@ class ManufacturingInvoiceService
                 ]);
             }
 
-            // 5. إنشاء بيانات المنتجات الجديدة
-            foreach ($component->selectedProducts as $product) {
-                $item = Item::find($product['product_id']);
+            // ✅ Batch loading للـ products
+            $productItemIds = collect($component->selectedProducts)
+                ->pluck('product_id')
+                ->unique()
+                ->filter()
+                ->values()
+                ->toArray();
 
-                $displayUnitId = $product['unit_id'] ?? null;
-                $unitFactor = $this->getUnitFactor($product['product_id'], $displayUnitId);
-                if (! $displayUnitId && $item) {
-                    $defaultUnit = $item->units()->orderBy('pivot_u_val', 'asc')->first();
-                    if ($defaultUnit) {
-                        $displayUnitId = $defaultUnit->id;
-                        $unitFactor = $defaultUnit->pivot->u_val ?? 1;
+            $productItemsMap = [];
+            $productUnitFactorsMap = [];
+            $productBaseUnitIdsMap = [];
+
+            if (! empty($productItemIds)) {
+                $productItemsMap = Item::whereIn('id', $productItemIds)
+                    ->with(['units' => fn ($q) => $q->orderBy('pivot_u_val', 'asc')])
+                    ->get()
+                    ->keyBy('id');
+
+                $allProductUnitFactors = DB::table('item_units')
+                    ->whereIn('item_id', $productItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->get()
+                    ->groupBy('item_id');
+
+                $productBaseUnits = DB::table('item_units')
+                    ->whereIn('item_id', $productItemIds)
+                    ->where('u_val', 1)
+                    ->select('item_id', 'unit_id')
+                    ->get()
+                    ->keyBy('item_id');
+
+                $productFallbackUnits = DB::table('item_units')
+                    ->whereIn('item_id', $productItemIds)
+                    ->select('item_id', 'unit_id', 'u_val')
+                    ->orderBy('u_val', 'asc')
+                    ->get()
+                    ->groupBy('item_id')
+                    ->map(function ($units) {
+                        return $units->first();
+                    });
+
+                foreach ($allProductUnitFactors as $itemId => $units) {
+                    foreach ($units as $unit) {
+                        $productUnitFactorsMap[$itemId.'_'.$unit->unit_id] = $unit->u_val ?? 1;
                     }
                 }
-                $baseUnitId = $this->getBaseUnitId($product['product_id'], $displayUnitId);
+
+                foreach ($productItemIds as $itemId) {
+                    $productBaseUnitIdsMap[$itemId] = $productBaseUnits->get($itemId)?->unit_id
+                        ?? $productFallbackUnits->get($itemId)?->unit_id
+                        ?? null;
+                }
+            }
+
+            // ✅ Batch load old quantities
+            $oldQuantitiesMap = [];
+            if (! empty($productItemIds)) {
+                $oldQuantities = OperationItems::whereIn('item_id', $productItemIds)
+                    ->where('is_stock', 1)
+                    ->selectRaw('item_id, SUM(qty_in - qty_out) as total')
+                    ->groupBy('item_id')
+                    ->pluck('total', 'item_id')
+                    ->toArray();
+
+                $oldQuantitiesMap = $oldQuantities;
+            }
+
+            // 5. إنشاء بيانات المنتجات الجديدة
+            foreach ($component->selectedProducts as $product) {
+                $item = $productItemsMap[$product['product_id']] ?? null;
+
+                $displayUnitId = $product['unit_id'] ?? null;
+
+                // ✅ استخدام Map بدلاً من استعلام منفصل
+                if (! $displayUnitId && $item && $item->units->isNotEmpty()) {
+                    $defaultUnit = $item->units->first();
+                    $displayUnitId = $defaultUnit->id;
+                    $unitFactor = $defaultUnit->pivot->u_val ?? 1;
+                } else {
+                    $unitFactor = $displayUnitId
+                        ? ($productUnitFactorsMap[$product['product_id'].'_'.$displayUnitId] ?? 1)
+                        : 1;
+                }
+
+                $baseUnitId = $productBaseUnitIdsMap[$product['product_id']] ?? $displayUnitId;
 
                 $originalQty = $product['quantity'];
                 $baseQty = $originalQty * $unitFactor;
@@ -618,15 +868,7 @@ class ManufacturingInvoiceService
                 $basePrice = $unitFactor > 0 ? $originalPrice / $unitFactor : $originalPrice;
 
                 if ($item) {
-                    $oldQtyInBase = OperationItems::where('operation_items.item_id', $product['product_id'])
-                        ->where('operation_items.is_stock', 1)
-                        ->leftJoin('item_units', function ($join) {
-                            $join->on('operation_items.item_id', '=', 'item_units.item_id')
-                                ->on('operation_items.unit_id', '=', 'item_units.unit_id');
-                        })
-                        ->selectRaw('SUM(qty_in - qty_out) as total')
-                        ->value('total') ?? 0;
-
+                    $oldQtyInBase = $oldQuantitiesMap[$product['product_id']] ?? 0;
                     $oldAverage = $item->average_cost ?? 0;
                     $totalCost = ($oldQtyInBase * $oldAverage) + ($baseQty * $basePrice);
                     $totalQuantity = $oldQtyInBase + $baseQty;
@@ -666,7 +908,7 @@ class ManufacturingInvoiceService
                     'op_id' => $operation->id,
                     'amount' => $expense['amount'],
                     'account_id' => $expense['account_id'],
-                    'description' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - فاتورة: ' . $component->pro_id,
+                    'description' => 'مصروف إضافي: '.($expense['description'] ?? 'غير محدد').' - فاتورة: '.$component->pro_id,
                 ]);
             }
             // }
@@ -819,22 +1061,22 @@ class ManufacturingInvoiceService
             DB::commit();
 
             // إعادة حساب average_cost والأرباح والقيود بعد التعديل
-            if (!empty($oldItemIds) && !empty($oldOperationDate)) {
+            if (! empty($oldItemIds) && ! empty($oldOperationDate)) {
                 try {
                     // استخدام Helper لاختيار تلقائي للطريقة المناسبة (Queue/Stored Procedure/PHP)
                     // إعادة حساب average_cost (فاتورة التصنيع تؤثر على average_cost للمنتجات)
                     RecalculationServiceHelper::recalculateAverageCost($oldItemIds, $oldOperationDate);
-                    
+
                     // إعادة حساب الأرباح والقيود للفواتير المتأثرة (فقط التي بعد تاريخ الفاتورة القديمة)
                     RecalculationServiceHelper::recalculateProfitsAndJournals(
-                        $oldItemIds, 
+                        $oldItemIds,
                         $oldOperationDate,
                         null, // لا نستثني أي فاتورة عند التعديل
                         null  // لا نحتاج created_at عند التعديل
                     );
                 } catch (\Exception $e) {
-                    Log::error('Error recalculating after manufacturing invoice update: ' . $e->getMessage());
-                    Log::error('Stack trace: ' . $e->getTraceAsString());
+                    Log::error('Error recalculating after manufacturing invoice update: '.$e->getMessage());
+                    Log::error('Stack trace: '.$e->getTraceAsString());
                     // لا نوقف العملية، فقط نسجل الخطأ
                 }
             }
@@ -846,39 +1088,55 @@ class ManufacturingInvoiceService
             return $operation->id;
         } catch (\Exception $e) {
             DB::rollBack();
-            $component->dispatch('error-swal', title: 'خطأ!', text: 'حدث خطأ أثناء تعديل الفاتورة: ' . $e->getMessage(), icon: 'error');
+            $component->dispatch('error-swal', title: 'خطأ!', text: 'حدث خطأ أثناء تعديل الفاتورة: '.$e->getMessage(), icon: 'error');
 
             return false;
         }
     }
 
+    /**
+     * ✅ محسّن: استخدام Cache لتقليل استعلامات قاعدة البيانات
+     * هذه الدالة لا تزال مستخدمة في بعض الأماكن القديمة
+     */
     private function getUnitFactor(int $itemId, ?int $unitId): float
     {
         if (! $unitId) {
             return 1;
         }
 
-        return DB::table('item_units')
-            ->where('item_id', $itemId)
-            ->where('unit_id', $unitId)
-            ->value('u_val') ?? 1;
+        $cacheKey = "unit_factor_{$itemId}_{$unitId}";
+
+        return cache()->remember($cacheKey, 3600, function () use ($itemId, $unitId) {
+            return DB::table('item_units')
+                ->where('item_id', $itemId)
+                ->where('unit_id', $unitId)
+                ->value('u_val') ?? 1;
+        });
     }
 
+    /**
+     * ✅ محسّن: استخدام Cache لتقليل استعلامات قاعدة البيانات
+     * هذه الدالة لا تزال مستخدمة في بعض الأماكن القديمة
+     */
     private function getBaseUnitId(int $itemId, ?int $fallbackUnitId = null): ?int
     {
-        $baseUnitId = DB::table('item_units')
-            ->where('item_id', $itemId)
-            ->where('u_val', 1)
-            ->value('unit_id');
+        $cacheKey = "base_unit_id_{$itemId}";
 
-        if (! $baseUnitId) {
+        return cache()->remember($cacheKey, 3600, function () use ($itemId, $fallbackUnitId) {
             $baseUnitId = DB::table('item_units')
                 ->where('item_id', $itemId)
-                ->orderBy('u_val', 'asc')
+                ->where('u_val', 1)
                 ->value('unit_id');
-        }
 
-        return $baseUnitId ?? $fallbackUnitId;
+            if (! $baseUnitId) {
+                $baseUnitId = DB::table('item_units')
+                    ->where('item_id', $itemId)
+                    ->orderBy('u_val', 'asc')
+                    ->value('unit_id');
+            }
+
+            return $baseUnitId ?? $fallbackUnitId;
+        });
     }
 
     /**
@@ -888,7 +1146,7 @@ class ManufacturingInvoiceService
     {
         try {
             $operation = OperHead::with('operationItems')->find($invoiceId);
-            if (!$operation || $operation->pro_type != 59) {
+            if (! $operation || $operation->pro_type != 59) {
                 return false;
             }
 
@@ -912,27 +1170,27 @@ class ManufacturingInvoiceService
             DB::commit();
 
             // إعادة حساب average_cost والأرباح والقيود بعد الحذف
-            if (!empty($itemIds) && !empty($operationDate)) {
+            if (! empty($itemIds) && ! empty($operationDate)) {
                 try {
                     // استخدام Helper لاختيار تلقائي للطريقة المناسبة (Queue/Stored Procedure/PHP)
                     // في حالة الحذف، نحسب من جميع الفواتير غير المحذوفة (لا من fromDate فقط)
                     RecalculationServiceHelper::recalculateAverageCost(
-                        $itemIds, 
+                        $itemIds,
                         $operationDate,
                         false, // forceQueue
                         true   // isDelete - مهم جداً!
                     );
-                    
+
                     // إعادة حساب الأرباح والقيود للفواتير المتأثرة (فقط التي بعد تاريخ الفاتورة المحذوفة)
                     RecalculationServiceHelper::recalculateProfitsAndJournals(
-                        $itemIds, 
+                        $itemIds,
                         $operationDate,
                         null, // لا نستثني أي فاتورة عند الحذف (لأن الفاتورة محذوفة بالفعل)
                         null  // لا نحتاج created_at عند الحذف
                     );
                 } catch (\Exception $e) {
-                    Log::error('Error recalculating after manufacturing invoice delete: ' . $e->getMessage());
-                    Log::error('Stack trace: ' . $e->getTraceAsString());
+                    Log::error('Error recalculating after manufacturing invoice delete: '.$e->getMessage());
+                    Log::error('Stack trace: '.$e->getTraceAsString());
                     // لا نوقف العملية، فقط نسجل الخطأ
                 }
             }
@@ -940,7 +1198,8 @@ class ManufacturingInvoiceService
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting manufacturing invoice: ' . $e->getMessage());
+            Log::error('Error deleting manufacturing invoice: '.$e->getMessage());
+
             return false;
         }
     }

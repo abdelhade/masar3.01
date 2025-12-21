@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Modules\Authorization\Models\Permission;
 use Modules\Branches\Models\Branch;
+use Modules\Progress\Models\ProjectProgress;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class UserController extends Controller
@@ -84,7 +85,15 @@ class UserController extends Controller
         $user->load(['permissions', 'branches', 'roles']);
         $permissions = Permission::all()->groupBy('category');
 
-        return view('users.show', compact('user', 'permissions'));
+        // جلب المشاريع المرتبطة بالمستخدم من خلال الموظف
+        $userProjects = collect();
+        if ($user->employee) {
+            $userProjects = ProjectProgress::whereHas('employees', function ($query) use ($user) {
+                $query->where('employees.id', $user->employee->id);
+            })->with(['client', 'type'])->get();
+        }
+
+        return view('users.show', compact('user', 'permissions', 'userProjects'));
     }
 
     public function edit(User $user)
@@ -153,41 +162,41 @@ class UserController extends Controller
             if ($request->has('permissions')) {
                 // جلب الصلاحيات المرسلة من النموذج
                 $submittedPermissions = Permission::whereIn('id', $request->permissions)->get();
-                
+
                 \Log::info('Submitted permissions:', [
                     'ids' => $request->permissions,
                     'count' => $submittedPermissions->count(),
                     'option_types' => $submittedPermissions->pluck('option_type')->toArray(),
                 ]);
-                
+
                 // تحديد نوع الصلاحيات المرسلة (option_type)
                 $submittedOptionTypes = $submittedPermissions->pluck('option_type')->unique()->toArray();
-                
+
                 // جلب الصلاحيات الحالية للمستخدم
                 $currentPermissions = $user->permissions()->get();
-                
+
                 \Log::info('Current permissions:', [
                     'count' => $currentPermissions->count(),
                     'option_types' => $currentPermissions->pluck('option_type')->unique()->toArray(),
                 ]);
-                
+
                 // الاحتفاظ بالصلاحيات التي لم يتم إرسالها (من option_type مختلف)
                 $permissionsToKeep = $currentPermissions->filter(function ($permission) use ($submittedOptionTypes) {
                     return ! in_array($permission->option_type, $submittedOptionTypes);
                 });
-                
+
                 \Log::info('Permissions to keep:', [
                     'count' => $permissionsToKeep->count(),
                     'option_types' => $permissionsToKeep->pluck('option_type')->unique()->toArray(),
                 ]);
-                
+
                 // دمج الصلاحيات المحفوظة مع الصلاحيات الجديدة
                 $allPermissions = $permissionsToKeep->merge($submittedPermissions)->pluck('name')->toArray();
-                
+
                 \Log::info('All permissions to sync:', [
                     'count' => count($allPermissions),
                 ]);
-                
+
                 $user->syncPermissions($allPermissions);
             }
 

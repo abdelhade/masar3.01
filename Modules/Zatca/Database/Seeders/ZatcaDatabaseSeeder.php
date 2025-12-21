@@ -11,6 +11,8 @@ class ZatcaDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            ZatcaPermissionsSeeder::class,
+        ]);
     }
 }

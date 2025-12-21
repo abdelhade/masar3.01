@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Modules\Authorization\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
         // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         // Define all permissions organized by category
         $permissions = [
@@ -57,6 +59,18 @@ class PermissionSeeder extends Seeder
             'create prices',
             'edit prices',
             'delete prices',
+
+            // Groups Management
+            'view groups',
+            'create groups',
+            'edit groups',
+            'delete groups',
+
+            // Categories Management
+            'view Categories',
+            'create Categories',
+            'edit Categories',
+            'delete Categories',
 
             // Variable Management
             'view varibals',
@@ -346,8 +360,42 @@ class PermissionSeeder extends Seeder
         ];
 
         // Create permissions
+        $hasOptionType = Schema::hasColumn('permissions', 'option_type');
+
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+            $createData = [];
+            $updateData = [];
+
+            // Set option_type = '1' for all permissions (normal permissions, not selective)
+            if ($hasOptionType) {
+                $createData['option_type'] = '1';
+            }
+
+            $permissionModel = Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web'], $createData);
+
+            // Update option_type if it's not set correctly
+            if ($hasOptionType && $permissionModel->option_type !== '1') {
+                $updateData['option_type'] = '1';
+            }
+
+            // Set category for groups and categories permissions to 'items'
+            // Only update permissions that end with exactly "groups" or "categories" (2 words total)
+            // AND only if category is null (don't override existing categories from other seeders)
+            $permissionLower = strtolower(trim($permission));
+            $words = explode(' ', $permissionLower);
+
+            // Check if permission has exactly 2 words and ends with "groups" or "categories"
+            if (count($words) === 2 && ($words[1] === 'groups' || $words[1] === 'categories')) {
+                // Only update if category is null (not set by other seeders)
+                if ($permissionModel->category === null) {
+                    $updateData['category'] = 'items';
+                }
+            }
+
+            // Update permission if there are changes
+            if (! empty($updateData)) {
+                $permissionModel->update($updateData);
+            }
         }
 
         $this->command->info('Permissions created successfully!');

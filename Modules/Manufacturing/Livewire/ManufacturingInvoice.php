@@ -2,65 +2,106 @@
 
 namespace Modules\Manufacturing\Livewire;
 
-use Livewire\Component;
+use App\Models\Expense;
+use App\Models\Item;
+use App\Models\OperationItems;
+use App\Models\OperHead;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 use Modules\Accounts\Models\AccHead;
-use App\Models\{Item, OperHead, OperationItems, Expense};
 use Modules\Manufacturing\Services\ManufacturingInvoiceService;
 
 class ManufacturingInvoice extends Component
 {
     public $showSaveTemplateModal = false;
+
     public $showLoadTemplateModal = false;
+
     public $templateName = '';
+
     public $templates = [];
+
     public $selectedTemplate = null;
 
     public $templateExpectedTime = '';
+
     public $actualTime = '';
+
     public $quantityMultiplier = 1;
 
     public $currentStep = 1;
+
     public $pro_id;
+
     public $nextProId;
+
     public $invoiceDate;
+
     public $description = '';
+
     public $selectedProducts = [];
+
     public $productsList = [];
+
     public $selectedRawMaterials = [];
+
     public $rawMaterialsList = [];
+
     public $additionalExpenses = [];
+
     public $productSearchTerm = '';
+
     public $productSearchResults;
+
     public $productSelectedResultIndex = -1;
+
     public $rawMaterialSearchTerm = '';
+
     public $rawMaterialSearchResults;
+
     public $rawMaterialSelectedResultIndex = -1;
+
     public $totalRawMaterialsCost = 0;
+
     public $totalProductsCost = 0;
+
     public $totalAdditionalExpenses = 0;
+
     public $totalManufacturingCost = 0;
+
     public $unitCostPerProduct = 0;
+
     public $OperatingAccount = '';
+
     public $rawAccount = '';
 
     public $expenseAccount;
+
     public $expenseAccountList = [];
 
     public $branch_id;
+
     public $branches;
 
     public $order_id;
+
     public $stage_id;
 
     public $productAccount = '';
+
     public $Stors = [];
+
     public $OperatingCenter;
+
     public $patchNumber;
+
     public $employee;
+
     public $employeeList = [];
+
     public $activeTab = 'general_chat';
 
+    public $isSaving = false;
 
     // protected $rules = [
     //     'invoiceDate' => 'required|date',
@@ -158,22 +199,22 @@ class ManufacturingInvoice extends Component
         $searchTerm = trim($value);
 
         // استخدام cache للنتائج المتكررة
-        $cacheKey = 'product_search_' . md5($searchTerm);
+        $cacheKey = 'product_search_'.md5($searchTerm);
 
-        $this->productSearchResults = cache()->remember($cacheKey, 60, function() use ($searchTerm) {
+        $this->productSearchResults = cache()->remember($cacheKey, 60, function () use ($searchTerm) {
             // البحث المحسّن بدون joins غير ضرورية
             $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', $searchTerm)
-                ->orWhere('barcode', 'like', $searchTerm . '%')
+                ->orWhere('barcode', 'like', $searchTerm.'%')
                 ->where('isdeleted', 0)
                 ->limit(5)
                 ->pluck('item_id')
                 ->toArray();
 
             return Item::select('id', 'name', 'average_cost')
-                ->where(function($query) use ($searchTerm, $itemIdsFromBarcode) {
-                    $query->where('name', 'like', $searchTerm . '%')
-                          ->orWhere('name', 'like', '% ' . $searchTerm . '%');
-                    if (!empty($itemIdsFromBarcode)) {
+                ->where(function ($query) use ($searchTerm, $itemIdsFromBarcode) {
+                    $query->where('name', 'like', $searchTerm.'%')
+                        ->orWhere('name', 'like', '% '.$searchTerm.'%');
+                    if (! empty($itemIdsFromBarcode)) {
                         $query->orWhereIn('id', $itemIdsFromBarcode);
                     }
                 })
@@ -194,21 +235,21 @@ class ManufacturingInvoice extends Component
         $searchTerm = trim($value);
 
         // استخدام cache للنتائج المتكررة
-        $cacheKey = 'raw_material_search_' . md5($searchTerm);
+        $cacheKey = 'raw_material_search_'.md5($searchTerm);
 
-        $this->rawMaterialSearchResults = cache()->remember($cacheKey, 60, function() use ($searchTerm) {
+        $this->rawMaterialSearchResults = cache()->remember($cacheKey, 60, function () use ($searchTerm) {
             $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', $searchTerm)
-                ->orWhere('barcode', 'like', $searchTerm . '%')
+                ->orWhere('barcode', 'like', $searchTerm.'%')
                 ->where('isdeleted', 0)
                 ->limit(5)
                 ->pluck('item_id')
                 ->toArray();
 
             return Item::select('id', 'name', 'average_cost')
-                ->where(function($query) use ($searchTerm, $itemIdsFromBarcode) {
-                    $query->where('name', 'like', $searchTerm . '%')
-                          ->orWhere('name', 'like', '% ' . $searchTerm . '%');
-                    if (!empty($itemIdsFromBarcode)) {
+                ->where(function ($query) use ($searchTerm, $itemIdsFromBarcode) {
+                    $query->where('name', 'like', $searchTerm.'%')
+                        ->orWhere('name', 'like', '% '.$searchTerm.'%');
+                    if (! empty($itemIdsFromBarcode)) {
                         $query->orWhereIn('id', $itemIdsFromBarcode);
                     }
                 })
@@ -219,8 +260,10 @@ class ManufacturingInvoice extends Component
 
     public function addProductFromSearch($itemId)
     {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices', 'units'])->find($itemId);
-        if (!$item) return;
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices', 'units'])->find($itemId);
+        if (! $item) {
+            return;
+        }
 
         // التحقق من وجود المنتج في القائمة
         $existingProductIndex = null;
@@ -242,6 +285,7 @@ class ManufacturingInvoice extends Component
             $this->calculateTotals();
 
             $this->dispatch('focusProductQuantity', $existingProductIndex);
+
             return;
         }
 
@@ -257,7 +301,7 @@ class ManufacturingInvoice extends Component
             'total_cost' => $averageCost, // إجمالي بناءً على السعر
             'average_cost' => $averageCost, // سعر التكلفة الأخير
             'cost_percentage' => 0,
-            'user_modified_percentage' => false
+            'user_modified_percentage' => false,
         ];
         $this->productSearchTerm = '';
         $this->productSearchResults = collect();
@@ -282,12 +326,10 @@ class ManufacturingInvoice extends Component
     // تم نقل معظم هذه العمليات إلى client-side باستخدام Alpine.js
     // public function updatedSelectedProducts - MOSTLY MOVED TO CLIENT-SIDE
 
-
-
     public function addRawMaterialFromSearch($itemId)
     {
         $item = Item::with('units')->find($itemId);
-        if (!$item) {
+        if (! $item) {
             return;
         }
 
@@ -314,6 +356,7 @@ class ManufacturingInvoice extends Component
 
             $this->calculateTotals();
             $this->dispatch('focusRawMaterialQuantity', $existingMaterialIndex);
+
             return;
         }
 
@@ -323,7 +366,7 @@ class ManufacturingInvoice extends Component
                 'id' => $unit->id,
                 'name' => $unit->name,
                 'cost' => $unit->pivot->cost ?? 0,
-                'available_qty' => $unit->pivot->u_val ?? 0
+                'available_qty' => $unit->pivot->u_val ?? 0,
             ];
         })->toArray();
 
@@ -344,7 +387,7 @@ class ManufacturingInvoice extends Component
             'total_cost' => $initialTotalCost,
             'unitsList' => $unitsList,
             'base_cost' => $averageCost, // ✅ تخزين التكلفة الأساسية (للوحدة الصغرى)
-            'average_cost' => $averageCost * ($firstUnit['available_qty'] ?? 1) // ✅ حساب التكلفة بناءً على الوحدة المختارة
+            'average_cost' => round($averageCost, 2), // ✅ متوسط التكلفة من Item (لا يتم تعديله)
         ];
 
         // إعادة تعيين حقول البحث
@@ -389,8 +432,6 @@ class ManufacturingInvoice extends Component
     // تم نقل هذه الدالة إلى client-side باستخدام Alpine.js للسرعة
     // public function adjustCostsByPercentage() - MOVED TO CLIENT-SIDE
 
-
-
     // تم نقل هذه الدالة إلى client-side باستخدام Alpine.js
     // private function updateRawMaterialTotal($index) - MOVED TO CLIENT-SIDE
 
@@ -399,18 +440,18 @@ class ManufacturingInvoice extends Component
     {
         // حساب سريع للإجماليات فقط عند الحاجة
         $this->totalProductsCost = collect($this->selectedProducts)
-            ->sum(fn($item) => (float)($item['total_cost'] ?? 0));
+            ->sum(fn ($item) => (float) ($item['total_cost'] ?? 0));
 
         $this->totalRawMaterialsCost = collect($this->selectedRawMaterials)
-            ->sum(fn($item) => (float)($item['total_cost'] ?? 0));
+            ->sum(fn ($item) => (float) ($item['total_cost'] ?? 0));
 
         $this->totalAdditionalExpenses = collect($this->additionalExpenses)
-            ->sum(fn($item) => (float)($item['amount'] ?? 0));
+            ->sum(fn ($item) => (float) ($item['amount'] ?? 0));
 
         $this->totalManufacturingCost = $this->totalRawMaterialsCost + $this->totalAdditionalExpenses;
 
         $totalProductQuantity = collect($this->selectedProducts)
-            ->sum(fn($item) => (float)($item['quantity'] ?? 0));
+            ->sum(fn ($item) => (float) ($item['quantity'] ?? 0));
 
         $this->unitCostPerProduct = $totalProductQuantity > 0 ?
             $this->totalManufacturingCost / $totalProductQuantity : 0;
@@ -420,7 +461,7 @@ class ManufacturingInvoice extends Component
     {
         $this->additionalExpenses[] = [
             'description' => '',
-            'amount' => 0
+            'amount' => 0,
         ];
         $this->calculateTotalsAndDistribute();
     }
@@ -476,7 +517,7 @@ class ManufacturingInvoice extends Component
                         'display_name' => "{$name} ({$value} ج.م - {$date})",
                         'pro_date' => $template->pro_date,
                         'pro_value' => $template->pro_value,
-                        'emp_id' => $template->emp_id
+                        'emp_id' => $template->emp_id,
                     ];
                 })
                 ->toArray();
@@ -485,8 +526,8 @@ class ManufacturingInvoice extends Component
         } catch (\Exception $e) {
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
-                'text' => 'حدث خطأ أثناء تحميل النماذج: ' . $e->getMessage(),
-                'icon' => 'error'
+                'text' => 'حدث خطأ أثناء تحميل النماذج: '.$e->getMessage(),
+                'icon' => 'error',
             ]);
         }
     }
@@ -496,20 +537,22 @@ class ManufacturingInvoice extends Component
 
     public function loadTemplate()
     {
-        if (!$this->selectedTemplate) {
+        if (! $this->selectedTemplate) {
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
                 'text' => 'يرجى اختيار نموذج أولاً.',
-                'icon' => 'error'
+                'icon' => 'error',
             ]);
+
             return;
         }
 
         try {
             // 1. العثور على النموذج الرئيسي
             $template = OperHead::find($this->selectedTemplate);
-            if (!$template) {
+            if (! $template) {
                 $this->dispatch('error-swal', ['title' => 'خطأ!', 'text' => 'النموذج غير موجود.', 'icon' => 'error']);
+
                 return;
             }
 
@@ -542,16 +585,22 @@ class ManufacturingInvoice extends Component
                 $this->additionalExpenses[] = [
                     'amount' => $expense->amount,
                     'account_id' => $expense->account_id,
-                    'description' => trim($originalDescription)
+                    'description' => trim($originalDescription),
                 ];
             }
 
             // 5. تحديث باقي البيانات
             $this->updateCurrentPrices();
             $this->description = $template->info ?? '';
-            if ($template->emp_id) $this->employee = $template->emp_id;
-            if ($template->acc2) $this->rawAccount = $template->acc2;
-            if ($template->acc1) $this->productAccount = $template->acc1;
+            if ($template->emp_id) {
+                $this->employee = $template->emp_id;
+            }
+            if ($template->acc2) {
+                $this->rawAccount = $template->acc2;
+            }
+            if ($template->acc1) {
+                $this->productAccount = $template->acc1;
+            }
 
             // توزيع النسب تلقائياً إذا لم تكن محددة
             $this->distributePercentagesEqually();
@@ -562,8 +611,8 @@ class ManufacturingInvoice extends Component
         } catch (\Exception $e) {
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
-                'text' => 'حدث خطأ أثناء تحميل النموذج: ' . $e->getMessage(),
-                'icon' => 'error'
+                'text' => 'حدث خطأ أثناء تحميل النموذج: '.$e->getMessage(),
+                'icon' => 'error',
             ]);
         }
     }
@@ -576,7 +625,7 @@ class ManufacturingInvoice extends Component
         try {
             // Get the manufacturing order
             $order = \Modules\Manufacturing\Models\ManufacturingOrder::find($this->order_id);
-            if (!$order || !$order->item_id) {
+            if (! $order || ! $order->item_id) {
                 return;
             }
 
@@ -585,7 +634,7 @@ class ManufacturingInvoice extends Component
             // We look for templates that have the same item in their operation items
             $template = OperHead::where('pro_type', 63)
                 ->where('is_manager', 1)
-                ->whereHas('operationItems', function($query) use ($order) {
+                ->whereHas('operationItems', function ($query) use ($order) {
                     $query->where('item_id', $order->item_id);
                 })
                 ->orderBy('created_at', 'desc')
@@ -600,19 +649,19 @@ class ManufacturingInvoice extends Component
                 $this->dispatch('success-swal', [
                     'title' => 'تم تحميل النموذج!',
                     'text' => 'تم تحميل نموذج التصنيع تلقائياً بناءً على الصنف في أمر الإنتاج.',
-                    'icon' => 'success'
+                    'icon' => 'success',
                 ]);
             }
         } catch (\Exception $e) {
             // Silently fail - if no template found, user can create invoice manually
-            \Log::info('Could not auto-load template: ' . $e->getMessage());
+            \Log::info('Could not auto-load template: '.$e->getMessage());
         }
     }
 
     private function isProduct($item)
     {
         // المنتجات: لها item_id وليست مصروفات ولا تحتوي على unit_id
-        return !is_null($item->item_id) &&
+        return ! is_null($item->item_id) &&
             is_null($item->unit_id) &&
             $item->fat_tax != 999 &&
             $item->detail_store == $this->productAccount;
@@ -622,9 +671,12 @@ class ManufacturingInvoice extends Component
     {
         try {
             $item = Item::with('units')->find($itemId);
-            if (!$item || !$unitId) return 0;
+            if (! $item || ! $unitId) {
+                return 0;
+            }
 
             $unit = $item->units->where('id', $unitId)->first();
+
             return $unit ? $unit->pivot->u_val : 0;
         } catch (\Exception $e) {
             return 0;
@@ -637,7 +689,7 @@ class ManufacturingInvoice extends Component
             // البحث عن المنتج في الجدول الأصلي باستخدام item_id
             $product = Item::find($item->item_id); // بدلاً من OperationItems::find
 
-            if (!$product) {
+            if (! $product) {
                 // إذا لم يوجد في جدول Item، ابحث في جدول آخر حسب نظامك
                 return;
             }
@@ -655,6 +707,7 @@ class ManufacturingInvoice extends Component
             ];
         } catch (\Exception $e) {
             $this->dispatch('error', title: 'خطأ', text: 'حدث خطأ أثناء تحميل المنتجات.', icon: 'error');
+
             return null;
         }
     }
@@ -664,14 +717,16 @@ class ManufacturingInvoice extends Component
         try {
             // هذا صحيح - المواد الخام تأتي من جدول Item
             $rawMaterial = Item::with('units')->find($item->item_id);
-            if (!$rawMaterial) return;
+            if (! $rawMaterial) {
+                return;
+            }
 
             $unitsList = $rawMaterial->units->map(function ($unit) {
                 return [
                     'id' => $unit->id,
                     'name' => $unit->name,
                     'cost' => $unit->pivot->cost ?? 0,
-                    'available_qty' => $unit->pivot->u_val ?? 0
+                    'available_qty' => $unit->pivot->u_val ?? 0,
                 ];
             })->toArray();
 
@@ -681,8 +736,8 @@ class ManufacturingInvoice extends Component
                         'id' => 1,
                         'name' => 'قطعة',
                         'cost' => $item->cost_price ?? 0,
-                        'available_qty' => 0
-                    ]
+                        'available_qty' => 0,
+                    ],
                 ];
             }
 
@@ -698,10 +753,11 @@ class ManufacturingInvoice extends Component
                 'available_quantity' => $this->getAvailableQuantity($rawMaterial->id, $selectedUnitId),
                 'total_cost' => $item->total_cost ?? 0,
                 'unitsList' => $unitsList,
-                'average_cost' => $rawMaterial->average_cost ?? 0
+                'average_cost' => $rawMaterial->average_cost ?? 0,
             ];
         } catch (\Exception $e) {
             $this->dispatch('error', title: 'خطأ', text: 'حدث خطأ أثناء تحميل المواد الخام.', icon: 'error');
+
             return null;
         }
     }
@@ -754,9 +810,29 @@ class ManufacturingInvoice extends Component
 
     private function updateCurrentPrices()
     {
+        // ✅ Batch loading لتقليل N+1 queries
+        $productIds = collect($this->selectedProducts)->pluck('product_id')->unique()->filter()->values()->toArray();
+        $rawMaterialIds = collect($this->selectedRawMaterials)->pluck('item_id')->unique()->filter()->values()->toArray();
+
+        $productsMap = [];
+        $rawMaterialsMap = [];
+
+        if (! empty($productIds)) {
+            $productsMap = Item::whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        if (! empty($rawMaterialIds)) {
+            $rawMaterialsMap = Item::with('units')
+                ->whereIn('id', $rawMaterialIds)
+                ->get()
+                ->keyBy('id');
+        }
+
         // تحديث أسعار المنتجات باستخدام average_cost
         foreach ($this->selectedProducts as $index => $product) {
-            $item = Item::find($product['product_id']);
+            $item = $productsMap[$product['product_id']] ?? null;
             if ($item) {
                 $currentAverageCost = $item->average_cost ?? 0;
                 $this->selectedProducts[$index]['average_cost'] = $currentAverageCost;
@@ -767,7 +843,7 @@ class ManufacturingInvoice extends Component
 
         // ✅ تحديث أسعار المواد الخام باستخدام average_cost
         foreach ($this->selectedRawMaterials as $index => $rawMaterial) {
-            $item = Item::with('units')->find($rawMaterial['item_id']);
+            $item = $rawMaterialsMap[$rawMaterial['item_id']] ?? null;
             if ($item) {
                 $averageCost = $item->average_cost ?? 0;
                 $this->selectedRawMaterials[$index]['average_cost'] = $averageCost;
@@ -787,7 +863,7 @@ class ManufacturingInvoice extends Component
                                 'id' => $unit->id,
                                 'name' => $unit->name,
                                 'cost' => $unit->pivot->cost ?? 0,
-                                'available_qty' => $unit->pivot->u_val ?? 0
+                                'available_qty' => $unit->pivot->u_val ?? 0,
                             ];
                         })->toArray();
 
@@ -810,8 +886,9 @@ class ManufacturingInvoice extends Component
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
                 'text' => 'يرجى إدخال اسم النموذج.',
-                'icon' => 'error'
+                'icon' => 'error',
             ]);
+
             return;
         }
 
@@ -832,12 +909,12 @@ class ManufacturingInvoice extends Component
             'pro_type' => 63,
         ]);
 
-        foreach ($this->selectedProducts as  $product) {
+        foreach ($this->selectedProducts as $product) {
             OperationItems::create([
                 'pro_tybe' => 63,
                 'pro_id' => $this->nextProId,
                 'item_id' => $product['product_id'],
-                'notes' => 'نموذج تصنيع ' . $this->templateName,
+                'notes' => 'نموذج تصنيع '.$this->templateName,
                 'detail_store' => $this->productAccount,
                 'pro_id' => $operation->id,
                 'is_stock' => 1,
@@ -855,7 +932,7 @@ class ManufacturingInvoice extends Component
                 'pro_tybe' => 63,
                 'pro_id' => $this->nextProId,
                 'item_id' => $raw['item_id'],
-                'notes' => 'نموذج تصنيع ' . $this->templateName,
+                'notes' => 'نموذج تصنيع '.$this->templateName,
                 'unit_id' => $raw['unit_id'],
                 'detail_store' => $this->productAccount,
                 'pro_id' => $operation->id,
@@ -877,7 +954,7 @@ class ManufacturingInvoice extends Component
                     'op_id' => $operation->id,
                     'amount' => $expense['amount'],
                     'account_id' => $expense['account_id'] ?? $this->expenseAccount,
-                    'description' => 'مصروف إضافي: ' . ($expense['description'] ?? 'غير محدد') . ' - نموذج: ' . $this->templateName,
+                    'description' => 'مصروف إضافي: '.($expense['description'] ?? 'غير محدد').' - نموذج: '.$this->templateName,
                 ]);
             }
         }
@@ -906,7 +983,9 @@ class ManufacturingInvoice extends Component
     public function distributePercentagesEqually()
     {
         $count = count($this->selectedProducts);
-        if ($count === 0) return;
+        if ($count === 0) {
+            return;
+        }
 
         // تحقق من وجود نسب محددة مسبقاً
         $hasExistingPercentages = false;
@@ -918,7 +997,9 @@ class ManufacturingInvoice extends Component
         }
 
         // إذا كانت هناك نسب محددة، لا تعيد توزيعها
-        if ($hasExistingPercentages) return;
+        if ($hasExistingPercentages) {
+            return;
+        }
 
         $percentage = round(100 / $count, 2);
         $remainder = round(100 - ($percentage * $count), 2);
@@ -939,8 +1020,9 @@ class ManufacturingInvoice extends Component
             $this->dispatch('error-swal', [
                 'title' => 'خطأ!',
                 'text' => 'لا توجد منتجات لتوزيع التكلفة عليها',
-                'icon' => 'error'
+                'icon' => 'error',
             ]);
+
             return;
         }
 
@@ -948,8 +1030,8 @@ class ManufacturingInvoice extends Component
         $totalCost = $this->totalManufacturingCost;
 
         foreach ($this->selectedProducts as $index => &$product) {
-            $percentage = (float)($product['cost_percentage'] ?? 0);
-            $quantity = (float)($product['quantity'] ?? 1);
+            $percentage = (float) ($product['cost_percentage'] ?? 0);
+            $quantity = (float) ($product['quantity'] ?? 1);
 
             if ($percentage > 0 && $quantity > 0) {
                 // حساب التكلفة المخصصة لهذا المنتج
@@ -968,7 +1050,7 @@ class ManufacturingInvoice extends Component
         $this->dispatch('success-swal', [
             'title' => 'تم!',
             'text' => 'تم توزيع التكاليف بنجاح',
-            'icon' => 'success'
+            'icon' => 'success',
         ]);
     }
 
@@ -976,12 +1058,16 @@ class ManufacturingInvoice extends Component
     public function updatedSelectedRawMaterials($value, $key)
     {
         $parts = explode('.', $key);
-        if (count($parts) !== 2) return;
+        if (count($parts) !== 2) {
+            return;
+        }
 
-        $index = (int)$parts[0];
+        $index = (int) $parts[0];
         $field = $parts[1];
 
-        if (!isset($this->selectedRawMaterials[$index])) return;
+        if (! isset($this->selectedRawMaterials[$index])) {
+            return;
+        }
 
         if ($field === 'quantity' || $field === 'average_cost') {
             $this->updateRawMaterialTotal($index);
@@ -993,12 +1079,16 @@ class ManufacturingInvoice extends Component
     public function updatedSelectedProducts($value, $key)
     {
         $parts = explode('.', $key);
-        if (count($parts) !== 2) return;
+        if (count($parts) !== 2) {
+            return;
+        }
 
-        $index = (int)$parts[0];
+        $index = (int) $parts[0];
         $field = $parts[1];
 
-        if (!isset($this->selectedProducts[$index])) return;
+        if (! isset($this->selectedProducts[$index])) {
+            return;
+        }
 
         // فقط حساب الإجماليات بدون تغيير التكاليف
         if ($field === 'quantity') {
@@ -1009,11 +1099,13 @@ class ManufacturingInvoice extends Component
     // Method لحساب إجمالي المنتج - فقط عند توزيع التكاليف
     private function updateProductTotal($index)
     {
-        if (!isset($this->selectedProducts[$index])) return;
+        if (! isset($this->selectedProducts[$index])) {
+            return;
+        }
 
         $product = &$this->selectedProducts[$index];
-        $quantity = (float)($product['quantity'] ?? 0);
-        $averageCost = (float)($product['average_cost'] ?? 0);
+        $quantity = (float) ($product['quantity'] ?? 0);
+        $averageCost = (float) ($product['average_cost'] ?? 0);
 
         // فقط عند توزيع التكاليف يتم حساب الإجمالي
         if ($averageCost > 0) {
@@ -1025,9 +1117,11 @@ class ManufacturingInvoice extends Component
     public function updatedAdditionalExpenses($value, $key)
     {
         $parts = explode('.', $key);
-        if (count($parts) !== 2) return;
+        if (count($parts) !== 2) {
+            return;
+        }
 
-        $index = (int)$parts[0];
+        $index = (int) $parts[0];
         $field = $parts[1];
 
         if ($field === 'amount') {
@@ -1038,11 +1132,13 @@ class ManufacturingInvoice extends Component
     // Method مطلوبة لحساب إجمالي المواد الخام
     private function updateRawMaterialTotal($index)
     {
-        if (!isset($this->selectedRawMaterials[$index])) return;
+        if (! isset($this->selectedRawMaterials[$index])) {
+            return;
+        }
 
         $material = &$this->selectedRawMaterials[$index];
-        $quantity = (float)($material['quantity'] ?? 0);
-        $averageCost = (float)($material['average_cost'] ?? 0);
+        $quantity = (float) ($material['quantity'] ?? 0);
+        $averageCost = (float) ($material['average_cost'] ?? 0);
 
         $material['total_cost'] = round($quantity * $averageCost, 2);
     }
@@ -1051,21 +1147,24 @@ class ManufacturingInvoice extends Component
     public function searchProducts($term)
     {
         try {
-            if (strlen(trim($term)) < 1) return [];
+            if (strlen(trim($term)) < 1) {
+                return [];
+            }
 
             $searchTerm = trim($term);
 
             $results = Item::select('id', 'name', 'average_cost', 'code')
-                ->where(function($query) use ($searchTerm) {
-                    $query->where('name', 'like', '%' . $searchTerm . '%')
-                          ->orWhere('code', 'like', '%' . $searchTerm . '%');
+                ->where(function ($query) use ($searchTerm) {
+                    $query->where('name', 'like', '%'.$searchTerm.'%')
+                        ->orWhere('code', 'like', '%'.$searchTerm.'%');
                 })
                 ->limit(10)
                 ->get();
 
             return $results->toArray();
         } catch (\Exception $e) {
-            \Log::error('Product search error: ' . $e->getMessage());
+            \Log::error('Product search error: '.$e->getMessage());
+
             return [];
         }
     }
@@ -1074,29 +1173,54 @@ class ManufacturingInvoice extends Component
     public function searchRawMaterials($term)
     {
         try {
-            if (strlen(trim($term)) < 1) return [];
+            if (strlen(trim($term)) < 1) {
+                return [];
+            }
 
             $searchTerm = trim($term);
 
             $results = Item::select('id', 'name', 'average_cost', 'code')
-                ->where(function($query) use ($searchTerm) {
-                    $query->where('name', 'like', '%' . $searchTerm . '%')
-                          ->orWhere('code', 'like', '%' . $searchTerm . '%');
+                ->where(function ($query) use ($searchTerm) {
+                    $query->where('name', 'like', '%'.$searchTerm.'%')
+                        ->orWhere('code', 'like', '%'.$searchTerm.'%');
                 })
                 ->limit(10)
                 ->get();
 
             return $results->toArray();
         } catch (\Exception $e) {
-            \Log::error('Raw material search error: ' . $e->getMessage());
+            \Log::error('Raw material search error: '.$e->getMessage());
+
             return [];
         }
     }
 
     public function saveInvoice()
     {
-        $service = new ManufacturingInvoiceService();
-        return $service->saveManufacturingInvoice($this);
+        // منع الحفظ المتكرر
+        if ($this->isSaving) {
+            return;
+        }
+
+        $this->isSaving = true;
+
+        try {
+            $service = new ManufacturingInvoiceService;
+            $result = $service->saveManufacturingInvoice($this);
+
+            // إذا نجح الحفظ، سيتم إرسال success-swal من الـ Service مع reload flag
+            // لا نعيد تعيين isSaving هنا لأن الصفحة ستعيد التحميل
+            return $result;
+        } catch (\Exception $e) {
+            $this->isSaving = false;
+            $this->dispatch('error-swal', [
+                'title' => 'خطأ!',
+                'text' => 'حدث خطأ أثناء الحفظ: '.$e->getMessage(),
+                'icon' => 'error',
+            ]);
+
+            return false;
+        }
     }
 
     // Method مطلوبة لـ Alpine.js
@@ -1112,6 +1236,7 @@ class ManufacturingInvoice extends Component
             'totalManufacturingCost' => $this->totalManufacturingCost,
         ]);
     }
+
     public function render()
     {
         return view('manufacturing::livewire.manufacturing-invoice');

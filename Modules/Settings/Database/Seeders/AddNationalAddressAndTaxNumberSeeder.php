@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Settings\Database\seeders;
+namespace Modules\Settings\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Settings\Models\Category;
@@ -21,7 +21,7 @@ class AddNationalAddressAndTaxNumberSeeder extends Seeder
                 'key' => 'national_address',
                 'input_type' => 'text',
                 'category_id' => $companyCategory->id,
-                'value' => ''
+                'value' => '',
             ]
         );
 
@@ -32,7 +32,7 @@ class AddNationalAddressAndTaxNumberSeeder extends Seeder
                 'key' => 'tax_number',
                 'input_type' => 'text',
                 'category_id' => $companyCategory->id,
-                'value' => ''
+                'value' => '',
             ]
         );
     }

@@ -401,6 +401,43 @@
     @endif
 </div>
 
+@push('styles')
+<style>
+    /* Dark Brown Text Color - Apply to all text */
+    div,
+    h1, h2, h3, h4, h5, h6,
+    p, span, a, label, small, strong,
+    th, td, li,
+    .text-primary, .text-success, .text-warning, .text-info, 
+    .text-danger, .text-muted, .text-secondary, .text-dark, .text-white,
+    .card-body, .card-header, .card-title, .modal-title, .modal-body,
+    .form-label, .btn, .badge,
+    input, select, textarea {
+        color: #5D4037 !important; /* Dark brown color */
+    }
+    
+    /* Keep button text readable but maintain dark brown */
+    .btn.btn-primary, .btn.btn-success, .btn.btn-warning, 
+    .btn.btn-info, .btn.btn-danger, .btn.btn-secondary {
+        color: #5D4037 !important;
+    }
+    
+    /* Keep badges readable */
+    .badge {
+        color: #5D4037 !important;
+    }
+    
+    /* Links should also be dark brown */
+    a {
+        color: #5D4037 !important;
+    }
+    
+    a:hover {
+        color: #3E2723 !important; /* Darker brown on hover */
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
     document.addEventListener('livewire:initialized', () => {

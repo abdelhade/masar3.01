@@ -59,23 +59,6 @@
                         @csrf
 
                         <div class="row">
-                            <!-- نوع الحساب (فلتر) -->
-                            <div class="col-md-6 mb-3">
-                                <label for="account_type_filter" class="form-label fw-medium">
-                                    <i class="fas fa-filter text-muted me-1"></i>
-                                    نوع الحساب
-                                </label>
-                                <select name="account_type_filter" id="account_type_filter" class="form-select">
-                                    <option value="">جميع أنواع الحسابات</option>
-                                    @foreach($accountTypes as $type)
-                                    <option value="{{ $type->id }}" {{ $selectedAccountType == $type->id ? 'selected' : '' }}>
-                                        {{ $type->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                <small class="form-text text-muted">اختر نوع الحساب لتصفية بنود المصروفات</small>
-                            </div>
-
                             <!-- حساب المصروف -->
                             <div class="col-md-6 mb-3">
                                 <label for="expense_account_id" class="form-label fw-medium">
@@ -99,7 +82,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="payment_account_id" class="form-label fw-medium">
                                     <i class="fas fa-wallet text-muted me-1"></i>
-                                    الدفع من (حسابات النقدية والمصروفات) <span class="text-danger">*</span>
+                                    الدفع من (النقدية والبنوك) <span class="text-danger">*</span>
                                 </label>
                                 <select name="payment_account_id" id="payment_account_id" class="form-select expense-select2 @error('payment_account_id') is-invalid @enderror" required>
                                     <option value="">ابحث أو اختر حساب الدفع...</option>
@@ -273,8 +256,6 @@
 @push('scripts')
 <script>
 (function() {
-    let expenseSelect2 = null;
-
     function initSelect2() {
         // التحقق من توفر jQuery و Select2
         if (typeof jQuery === 'undefined' || typeof jQuery.fn.select2 === 'undefined') {
@@ -283,7 +264,7 @@
         }
 
         // تهيئة Select2 لقائمة حسابات المصروفات
-        expenseSelect2 = jQuery('#expense_account_id').select2({
+        jQuery('#expense_account_id').select2({
             placeholder: 'ابحث أو اختر بند المصروف...',
             allowClear: true,
             width: '100%',
@@ -297,7 +278,7 @@
             }
         });
 
-        // تهيئة Select2 لقائمة حسابات الدفع (النقدية والمصروفات)
+        // تهيئة Select2 لقائمة حسابات الدفع (النقدية والبنوك)
         jQuery('#payment_account_id').select2({
             placeholder: 'ابحث أو اختر حساب الدفع...',
             allowClear: true,
@@ -328,84 +309,11 @@
         });
     }
 
-    // دالة لتحميل المصروفات حسب نوع الحساب
-    function loadExpensesByAccountType(accountTypeId) {
-        const expenseSelect = jQuery('#expense_account_id');
-        
-        // إظهار حالة التحميل
-        expenseSelect.prop('disabled', true);
-        expenseSelect.next('.select2-container').addClass('opacity-50');
-
-        if (!accountTypeId) {
-            // إذا لم يتم اختيار نوع، إعادة تحميل الصفحة بدون فلتر
-            window.location.href = '{{ route("expenses.create") }}';
-            return;
-        }
-
-        // استدعاء API
-        fetch(`{{ route('expenses.by-account-type') }}?acctype=${accountTypeId}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // مسح الخيارات الحالية
-                expenseSelect.empty();
-                expenseSelect.append('<option value="">ابحث أو اختر بند المصروف...</option>');
-
-                // إضافة الخيارات الجديدة
-                if (data.accounts && data.accounts.length > 0) {
-                    data.accounts.forEach(account => {
-                        expenseSelect.append(
-                            `<option value="${account.id}">${account.display}</option>`
-                        );
-                    });
-                } else {
-                    expenseSelect.append('<option value="">لا توجد حسابات متاحة</option>');
-                }
-
-                // تحديث Select2
-                if (expenseSelect2) {
-                    expenseSelect2.trigger('change');
-                }
-            } else {
-                alert('حدث خطأ: ' + (data.message || 'فشل تحميل المصروفات'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('حدث خطأ أثناء تحميل المصروفات');
-        })
-        .finally(() => {
-            // إعادة تفعيل الحقل
-            expenseSelect.prop('disabled', false);
-            expenseSelect.next('.select2-container').removeClass('opacity-50');
-        });
-    }
-
     // البدء في التهيئة عندما تكون الصفحة جاهزة
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            initSelect2();
-            
-            // إضافة مستمع لتغيير نوع الحساب
-            jQuery('#account_type_filter').on('change', function() {
-                const accountTypeId = jQuery(this).val();
-                loadExpensesByAccountType(accountTypeId);
-            });
-        });
+        document.addEventListener('DOMContentLoaded', initSelect2);
     } else {
         initSelect2();
-        
-        // إضافة مستمع لتغيير نوع الحساب
-        jQuery('#account_type_filter').on('change', function() {
-            const accountTypeId = jQuery(this).val();
-            loadExpensesByAccountType(accountTypeId);
-        });
     }
 })();
 </script>

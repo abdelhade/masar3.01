@@ -11,7 +11,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
-use Modules\Accounts\Models\AccountsType;
 
 class ExpenseManagementController extends Controller
 {
@@ -84,42 +83,21 @@ class ExpenseManagementController extends Controller
      */
     public function create()
     {
-        // الحصول على أنواع الحسابات المتاحة للمصروفات
-        // البحث عن أنواع الحسابات التي تستخدم فعلياً للمصروفات (acc_type = 7 أو 16)
-        $accountTypes = AccountsType::where(function ($q) {
-            $q->whereIn('id', [7, 16])
-                ->orWhereIn('name', ['expenses', 'depreciation-expenses']);
+        // جلب المصروفات فقط (الكود 57% أو acc_type = 7)
+        $expenseAccounts = AccHead::where(function ($q) {
+            $q->where('code', 'like', '57%')
+                ->orWhere('acc_type', '7');
         })
-            ->orderBy('name')
+            ->where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->orderBy('aname')
             ->get();
-
-        // تحميل المصروفات حسب نوع الحساب المحدد (إن وجد)
-        $selectedAccountType = request('acctype');
-        $expenseAccounts = collect();
-
-        if ($selectedAccountType) {
-            $expenseAccounts = AccHead::where('acc_type', $selectedAccountType)
-                ->where('isdeleted', 0)
-                ->where('is_basic', 0)
-                ->orderBy('aname')
-                ->get();
-        } else {
-            // افتراضياً: تحميل المصروفات من الكود 57% أو acc_type = 7 أو 16
-            $expenseAccounts = AccHead::where(function ($q) {
-                $q->where('code', 'like', '57%')
-                    ->orWhereIn('acc_type', ['7', '16']);
-            })
-                ->where('isdeleted', 0)
-                ->where('is_basic', 0)
-                ->orderBy('aname')
-                ->get();
-        }
 
         $costCenters = CostCenter::orderBy('cname')->get();
 
-        // حسابات الصناديق والبنوك للدفع منها
+        // حسابات النقدية والبنوك فقط للدفع منها
         $paymentAccounts = AccHead::where(function ($q) {
-            $q->where('code', 'like', '11%') // الصناديق
+            $q->where('code', 'like', '11%') // النقدية (الصناديق)
                 ->orWhere('code', 'like', '12%'); // البنوك
         })
             ->where('isdeleted', 0)
@@ -130,43 +108,8 @@ class ExpenseManagementController extends Controller
         return view('reports::expenses.create-expense', compact(
             'expenseAccounts',
             'costCenters',
-            'paymentAccounts',
-            'accountTypes',
-            'selectedAccountType'
+            'paymentAccounts'
         ));
-    }
-
-    /**
-     * API endpoint لاستدعاء المصروفات حسب نوع الحساب
-     */
-    public function getExpensesByAccountType(Request $request)
-    {
-        $accountType = $request->input('acctype');
-
-        if (! $accountType) {
-            return response()->json([
-                'success' => false,
-                'message' => 'نوع الحساب مطلوب',
-            ], 400);
-        }
-
-        $expenseAccounts = AccHead::where('acc_type', $accountType)
-            ->where('isdeleted', 0)
-            ->where('is_basic', 0)
-            ->orderBy('aname')
-            ->get(['id', 'code', 'aname']);
-
-        return response()->json([
-            'success' => true,
-            'accounts' => $expenseAccounts->map(function ($account) {
-                return [
-                    'id' => $account->id,
-                    'code' => $account->code,
-                    'name' => $account->aname,
-                    'display' => "{$account->code} - {$account->aname}",
-                ];
-            }),
-        ]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Modules\Accounts\database\seeders\AccHeadSeeder;
 use Modules\Accounts\database\seeders\AccountsTypesSeeder;
+use Modules\ActivityLog\Database\Seeders\ActivityLogPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\PermissionSeeder;
 use Modules\Authorization\Database\Seeders\PermissionSelectiveOptionsSeeder;
@@ -31,11 +32,19 @@ use Modules\POS\database\seeders\POSPermissionsSeeder;
 use Modules\Quality\database\seeders\QualityModulePermissionsSeeder;
 use Modules\Recruitment\database\seeders\RecruitmentPermissionsSeeder;
 use Modules\Rentals\database\seeders\RentalsPermissionsSeeder;
-use Modules\Settings\Database\seeders\AddNationalAddressAndTaxNumberSeeder;
+use Modules\Settings\Database\Seeders\AddNationalAddressAndTaxNumberSeeder;
 use Modules\Settings\Database\Seeders\InvoiceOptionsSeeder;
 use Modules\Settings\Database\Seeders\SettingSeeder;
 use Modules\Settings\Database\Seeders\SystemSettingsSeeder;
 use Modules\Shipping\Database\Seeders\ShippingPermissionsSeeder;
+use Modules\Services\Database\Seeders\ServicesPermissionsSeeder;
+use Modules\Depreciation\Database\Seeders\DepreciationPermissionsSeeder;
+use Modules\Reports\Database\Seeders\ReportsPermissionsSeeder;
+use Modules\Settings\Database\Seeders\SettingsPermissionsSeeder;
+use Modules\Zatca\Database\Seeders\ZatcaPermissionsSeeder;
+use Modules\Notifications\Database\Seeders\NotificationsPermissionsSeeder;
+use Modules\App\Database\Seeders\AppPermissionsSeeder;
+use Modules\Branches\database\seeders\BranchesPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -103,6 +112,15 @@ class DatabaseSeeder extends Seeder
             MaintenancePermissionsSeeder::class,
             FleetPermissionsSeeder::class,
             AddNationalAddressAndTaxNumberSeeder::class,
+            ActivityLogPermissionsSeeder::class,
+            ServicesPermissionsSeeder::class,
+            DepreciationPermissionsSeeder::class,
+            ReportsPermissionsSeeder::class,
+            SettingsPermissionsSeeder::class,
+            ZatcaPermissionsSeeder::class,
+            NotificationsPermissionsSeeder::class,
+            AppPermissionsSeeder::class,
+            BranchesPermissionsSeeder::class,
         ]);
     }
 }
