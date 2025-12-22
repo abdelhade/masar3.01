@@ -12,11 +12,12 @@ function registerCurrencyConverter() {
         sourceField: config.sourceField || null,
         targetField: config.targetField || null,
         editableRate: config.editableRate !== false, // Default true
+        useInverseRate: (config.useInverseRate !== undefined) ? config.useInverseRate : true,
 
         // Data
         currencies: [],
-        conversionRate: 1,
-        customRate: null, // User-entered custom rate
+        conversionRate: 1, // Store the raw rate (Base -> Target)
+        customRate: null,  // This will store the Rate or Price depending on useInverseRate
         convertedAmount: 0,
         loading: false,
         error: null,
@@ -35,6 +36,19 @@ function registerCurrencyConverter() {
             if (this.fromCurrency && this.toCurrency) {
                 await this.convert();
             }
+
+            // UNIFIED PRECISION WATCHER
+            this.$watch("customRate", (value) => {
+                if (value !== null && value !== undefined && !this.loading) {
+                    const rounded = parseFloat(Number(value).toFixed(3));
+                    if (value !== rounded) {
+                        this.customRate = rounded;
+                    }
+                }
+            });
+            
+            // Re-convert if parameter changes
+            this.$watch("amount", () => this.convertWithCustomRate());
         },
 
         // Fetch active currencies
@@ -154,11 +168,8 @@ function registerCurrencyConverter() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.conversionRate = data.rate;
-                    this.customRate = data.rate; // Set custom rate to API rate
+                    this.processIncomingRate(data.rate);
                     this.lastRateUpdate = new Date().toLocaleString("ar-EG");
-
-                    // Auto-convert with new rate
                     this.convertWithCustomRate();
                 } else {
                     throw new Error(data.message || "فشل جلب السعر");
@@ -216,16 +227,11 @@ function registerCurrencyConverter() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.conversionRate = data.rate;
-                    // Only set customRate if not already set by user
-                    if (
-                        this.customRate === null ||
-                        this.customRate === undefined
-                    ) {
-                        this.customRate = data.rate;
-                    }
-                    this.convertedAmount = data.converted;
                     this.lastRateUpdate = new Date().toLocaleString("ar-EG");
+                    this.processIncomingRate(data.rate);
+                    
+                    // Local recalculation
+                    this.convertWithCustomRate();
 
                     this.updateTargetField();
                     this.dispatchConversionEvent(data);
@@ -239,26 +245,61 @@ function registerCurrencyConverter() {
             }
         },
 
+        // Internal helper to handle rate conversion and precision
+        processIncomingRate(rawRate) {
+            this.conversionRate = rawRate;
+            
+            if (this.useInverseRate && rawRate > 0) {
+                // Invert the rate (1 EGP = 0.02 USD -> 1 USD = 50 EGP)
+                this.customRate = parseFloat((1 / rawRate).toFixed(3));
+            } else {
+                this.customRate = parseFloat(Number(rawRate).toFixed(3));
+            }
+        },
+
         // Convert using custom (user-entered) rate
         convertWithCustomRate() {
-            const rate = this.customRate || this.conversionRate;
-            if (!rate || rate <= 0) {
+            // Force precision on customRate
+            if (this.customRate !== null && this.customRate !== undefined) {
+                this.customRate = parseFloat(Number(this.customRate).toFixed(3));
+            }
+
+            const activeRate = this.customRate;
+            if (!activeRate || activeRate <= 0) {
                 this.convertedAmount = 0;
+                this.updateTargetField();
                 return;
             }
 
-            this.convertedAmount = this.amount * rate;
+            if (this.useInverseRate) {
+                // Result (Target) = Amount (Base) / Price
+                this.convertedAmount = this.amount / activeRate;
+            } else {
+                // Result (Target) = Amount (Base) * Rate
+                this.convertedAmount = this.amount * activeRate;
+            }
+
+            // Force decimals on converted amount based on target currency
+            const targetCurrency = this.currencies.find(c => c.code === this.toCurrency);
+            const decimals = targetCurrency ? targetCurrency.decimal_places : 2;
+            this.convertedAmount = parseFloat(this.convertedAmount.toFixed(decimals));
 
             this.updateTargetField();
 
-            // Dispatch event
+            // Dispatch event with normalized rate
+            let systemRate = activeRate;
+            if (this.useInverseRate) {
+                systemRate = activeRate > 0 ? 1 / activeRate : 0;
+            }
+
             this.$dispatch("currency-converted", {
                 from: this.fromCurrency,
                 to: this.toCurrency,
-                rate: rate,
+                rate: systemRate,
                 amount: this.amount,
                 converted: this.convertedAmount,
-                isCustomRate: this.customRate !== this.conversionRate,
+                isCustomRate: true,
+                displayRate: activeRate
             });
         },
 
@@ -292,12 +333,12 @@ function registerCurrencyConverter() {
             return currency?.symbol || code;
         },
 
-        // Format amount
+        // Format amount for display
         formatAmount(amount, currencyCode) {
             const currency = this.currencies.find(
                 (c) => c.code === currencyCode
             );
-            const decimals = currency?.decimal_places || 2;
+            const decimals = (currency && currency.decimal_places !== undefined) ? currency.decimal_places : 2;
             return parseFloat(amount || 0).toFixed(decimals);
         },
 
@@ -307,17 +348,12 @@ function registerCurrencyConverter() {
             this.fromCurrency = this.toCurrency;
             this.toCurrency = temp;
 
-            // Invert the rate if set
-            if (this.customRate && this.customRate > 0) {
-                this.customRate = 1 / this.customRate;
-            }
-
             this.convert();
         },
 
         // Reset custom rate to API rate
         resetRate() {
-            this.customRate = this.conversionRate;
+            this.processIncomingRate(this.conversionRate);
             this.convertWithCustomRate();
         },
     }));
@@ -325,29 +361,9 @@ function registerCurrencyConverter() {
     return true;
 }
 
-// Strategy 1: livewire:init
-document.addEventListener("livewire:init", () => {
+// Register as early as possible
+if (typeof Alpine !== "undefined") {
     registerCurrencyConverter();
-});
-
-// Strategy 2: alpine:init
-document.addEventListener("alpine:init", () => {
-    registerCurrencyConverter();
-});
-
-// Strategy 3: DOMContentLoaded with retry
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(() => {
-            if (!registerCurrencyConverter()) {
-                setTimeout(registerCurrencyConverter, 500);
-            }
-        }, 100);
-    });
-} else {
-    setTimeout(() => {
-        if (!registerCurrencyConverter()) {
-            setTimeout(registerCurrencyConverter, 500);
-        }
-    }, 100);
 }
+document.addEventListener("alpine:init", registerCurrencyConverter);
+document.addEventListener("livewire:init", registerCurrencyConverter);

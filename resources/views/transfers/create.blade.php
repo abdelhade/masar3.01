@@ -151,10 +151,10 @@
                     </div>
 
                     {{-- عمود الـ Currency Converter --}}
-                    <div class="col-lg-3">
-                        <x-settings::currency-converter :inline="false" sourceField="#pro_value" :showAmount="true"
+                    {{-- <div class="col-lg-3">
+                        <x-settings::currency-converter-mini :inline="false" sourceField="#pro_value" :showAmount="true"
                             :showResult="true" />
-                    </div>
+                    </div> --}}
                 </div>
             </form>
         </section>
@@ -164,11 +164,6 @@
 {{-- Debug Scripts --}}
 @push('scripts')
     <script>
-        // Test 1: Check if Alpine is loaded
-        if (typeof Alpine !== 'undefined') {} else {
-            console.error('❌ Alpine.js is NOT loaded!');
-        }
-
         // Test 2: Check if currency-converter.js is loaded
         setTimeout(() => {
             // Test the API endpoint directly
