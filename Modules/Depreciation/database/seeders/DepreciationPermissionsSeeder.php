@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Depreciation\Database\Seeders;
+namespace Modules\Depreciation\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Authorization\Models\Permission;

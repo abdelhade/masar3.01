@@ -2,6 +2,7 @@
 
 namespace Modules\Installments\Models;
 
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -9,6 +10,7 @@ class InstallmentPlan extends Model
 {
     protected $fillable = [
         'client_id',
+        'acc_head_id',
         'invoice_id',
         'total_amount',
         'down_payment',
@@ -36,5 +38,10 @@ class InstallmentPlan extends Model
     public function client()
     {
         return $this->belongsTo(\App\Models\Client::class);
+    }
+
+    public function account()
+    {
+        return $this->belongsTo(AccHead::class, 'acc_head_id');
     }
 }

@@ -5,11 +5,18 @@ namespace Modules\Installments\Livewire;
 use Carbon\Carbon;
 use App\Models\Client;
 use Livewire\Component;
+use Modules\Accounts\Models\AccHead;
 use Modules\Installments\Models\InstallmentPlan;
 
 class CreateInstallmentPlan extends Component
 {
     public $clientId;
+    public $accHeadId;
+    public $accountBalance = 0;
+    public $totalInstallmentPlans = 0;
+    public $availableBalance = 0;
+    public $existingPlans = [];
+    public $showBalanceWarning = false;
     public $totalAmount = 10000;
     public $downPayment = 0;
     public $amountToBeInstalled = 10000;
@@ -26,7 +33,56 @@ class CreateInstallmentPlan extends Component
 
     public function updated($propertyName)
     {
+        if ($propertyName === 'accHeadId') {
+            $this->updateAccountBalance();
+        }
+
+        if ($propertyName === 'totalAmount' && $this->accHeadId) {
+            $this->updateAccountBalance();
+
+            // Check if amount exceeds available balance
+            if ($this->totalAmount > $this->availableBalance) {
+                $this->dispatch('amount-exceeds-balance', [
+                    'amount' => $this->totalAmount,
+                    'balance' => $this->availableBalance,
+                    'accountBalance' => $this->accountBalance,
+                    'existingPlansTotal' => $this->totalInstallmentPlans,
+                    'existingPlansCount' => count($this->existingPlans),
+                ]);
+            }
+        }
+
         $this->calculateInstallments();
+    }
+
+    public function updateAccountBalance()
+    {
+        if ($this->accHeadId) {
+            $account = AccHead::find($this->accHeadId);
+            $this->accountBalance = $account ? $account->calculateCurrentBalance() : 0;
+
+            // Get existing installment plans for this account
+            $this->existingPlans = InstallmentPlan::where('acc_head_id', $this->accHeadId)
+                ->where('status', '!=', 'cancelled')
+                ->select('id', 'total_amount', 'status', 'created_at')
+                ->get()
+                ->toArray();
+
+            // Calculate total amount in existing plans
+            $this->totalInstallmentPlans = InstallmentPlan::where('acc_head_id', $this->accHeadId)
+                ->where('status', '!=', 'cancelled')
+                ->sum('total_amount');
+
+            // Calculate available balance
+            $this->availableBalance = $this->accountBalance - $this->totalInstallmentPlans;
+            $this->showBalanceWarning = $this->availableBalance <= 0;
+        } else {
+            $this->accountBalance = 0;
+            $this->totalInstallmentPlans = 0;
+            $this->availableBalance = 0;
+            $this->existingPlans = [];
+            $this->showBalanceWarning = false;
+        }
     }
 
     public function calculateInstallments()
@@ -46,8 +102,44 @@ class CreateInstallmentPlan extends Component
 
     public function save()
     {
+        // Get account balance for validation
+        $account = AccHead::find($this->accHeadId);
+        $accountBalance = $account ? $account->calculateCurrentBalance() : 0;
+
+        // Calculate existing plans total
+        $existingPlansTotal = InstallmentPlan::where('acc_head_id', $this->accHeadId)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
+        $availableBalance = $accountBalance - $existingPlansTotal;
+
+        // Get existing plans for error message
+        $existingPlans = InstallmentPlan::where('acc_head_id', $this->accHeadId)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+
+        // Check if amount exceeds available balance
+        if ($this->totalAmount > $availableBalance) {
+            $errorMessage = 'قيمة التقسيط (' . number_format($this->totalAmount, 2) . ' [جنيه]) أكبر من الرصيد المتاح (' . number_format($availableBalance, 2) . ' ريال)';
+
+            if ($existingPlans->count() > 0) {
+                $errorMessage .= "\n\n" . 'تفاصيل الحساب:';
+                $errorMessage .= "\n" . '• إجمالي الرصيد: ' . number_format($accountBalance, 2) . ' ريال';
+                $errorMessage .= "\n" . '• عدد الخطط الموجودة: ' . $existingPlans->count();
+                $errorMessage .= "\n" . '• إجمالي الخطط الموجودة: ' . number_format($existingPlansTotal, 2) . ' ريال';
+                $errorMessage .= "\n" . '• المتاح للتقسيط: ' . number_format($availableBalance, 2) . ' ريال';
+            }
+
+            $this->dispatch('validation-error', [
+                'title' => 'خطأ في المبلغ',
+                'text' => $errorMessage,
+                'html' => true,
+            ]);
+            return;
+        }
+
         $this->validate([
-            'clientId' => 'required|exists:clients,id', // تأكد من اسم الجدول والحقل
+            'accHeadId' => 'required|exists:acc_head,id',
             'totalAmount' => 'required|numeric|min:0',
             'downPayment' => 'required|numeric|min:0|lte:totalAmount',
             'numberOfInstallments' => 'required|integer|min:1',
@@ -58,7 +150,7 @@ class CreateInstallmentPlan extends Component
         $this->calculateInstallments();
 
         $plan = InstallmentPlan::create([
-            'client_id' => $this->clientId,
+            'acc_head_id' => $this->accHeadId,
             'total_amount' => $this->totalAmount,
             'down_payment' => $this->downPayment,
             'amount_to_be_installed' => $this->amountToBeInstalled,
@@ -91,14 +183,32 @@ class CreateInstallmentPlan extends Component
         }
 
         session()->flash('message', 'تم إنشاء خطة التقسيط بنجاح.');
-        return $this->redirect('/installments/plans/' . $plan->id, navigate: true);
+
+        $this->dispatch('save-success', [
+            'title' => 'تم الحفظ بنجاح',
+            'text' => 'تم إنشاء خطة التقسيط بنجاح',
+            'planId' => $plan->id,
+        ]);
     }
 
     public function render()
     {
-        $clients = Client::all();
+        $clients = $this->getClientAccounts();
         return view('installments::livewire.create-installment-plan', [
             'clients' => $clients,
+            'existingPlans' => $this->existingPlans,
         ]);
+    }
+
+    /**
+     * Get client accounts from acc_head tree (code 1103)
+     */
+    private function getClientAccounts()
+    {
+        return AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->where('code', 'like', '1103%')
+            ->select('id', 'aname', 'code')
+            ->get();
     }
 }

@@ -12,6 +12,23 @@
             ['label' => __('Installment Plans')],
         ],
     ])
+    
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-lg-12">
             @can('create Installment Plans')
@@ -41,7 +58,7 @@
                                 @forelse ($installmentPlans as $plan)
                                     <tr class="text-center">
                                         <td> {{ $plan->id }} </td>
-                                        <td>{{ $plan->client->cname ?? 'N/A' }}</td>
+                                        <td>{{ $plan->account->aname ?? 'N/A' }} ({{ $plan->account->code ?? '' }})</td>
                                         <td>{{ number_format($plan->total_amount, 2) }}</td>
                                         <td>{{ $plan->number_of_installments }}</td>
                                         <td>{{ $plan->start_date->format('Y-m-d') }}</td>
@@ -52,6 +69,25 @@
                                                     href="{{ route('installments.plans.show', $plan->id) }}">
                                                     <i class="las la-eye"></i>
                                                 </a>
+                                            @endcan
+
+                                            @can('edit Installment Plans')
+                                                <a href="{{ route('installments.plans.edit', $plan->id) }}"
+                                                    class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endcan
+
+                                            @can('delete Installment Plans')
+                                                <form action="{{ route('installments.plans.destroy', $plan->id) }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('هل أنت متأكد من حذف هذه الخطة؟ سيتم حذف جميع الأقساط والقيود المحاسبية المرتبطة بها.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
                                             @endcan
                                         </td>
                                     </tr>

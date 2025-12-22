@@ -16,6 +16,14 @@ Route::middleware(['auth', 'web'])->group(function () {
         ->name('installments.plans.show')
         ->middleware('can:view Installment Plans');
 
+    Route::get('/installments/plans/{plan}/edit', [InstallmentController::class, 'edit'])
+        ->name('installments.plans.edit')
+        ->middleware('can:edit Installment Plans');
+
+    Route::delete('/installments/plans/{plan}', [InstallmentController::class, 'destroy'])
+        ->name('installments.plans.destroy')
+        ->middleware('can:delete Installment Plans');
+
     Route::get('/installments/payments/overdue', [InstallmentController::class, 'overduePayments'])
         ->name('installments.payments.overdue')
         ->middleware('can:view Overdue Installments');

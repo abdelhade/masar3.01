@@ -6,12 +6,26 @@
 
     <!-- Plan Summary -->
     <div class="card">
-        <div class="card-header">
-            <h4 class="card-title">{{ __('Plan Summary') }}</h4>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0">{{ __('Plan Summary') }}</h4>
+            <div>
+                @can('edit Installment Plans')
+                    <a href="{{ route('installments.plans.edit', $plan->id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> {{ __('Edit Plan') }}
+                    </a>
+                @endcan
+                
+                @can('delete Installment Plans')
+                    <button wire:click="deletePlan" wire:confirm="{{ __('Are you sure you want to delete this plan?') }} {{ __('All installments and journal entries will be deleted') }}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> {{ __('Delete Plan') }}
+                    </button>
+                @endcan
+            </div>
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-4"><strong>{{ __('Client') }}:</strong> {{ $plan->client->name ?? 'N/A' }}</div>
+                <div class="col-md-4"><strong>{{ __('Client') }}:</strong> {{ $plan->account->aname ?? 'N/A' }}
+                    ({{ $plan->account->code ?? '' }})</div>
                 <div class="col-md-4"><strong>{{ __('Current Balance') }}:</strong>
                     {{ number_format($plan->amount_to_be_installed - $plan->payments->sum('amount_paid'), 2) }}</div>
                 <div class="col-md-4"><strong>{{ __('Status') }}:</strong> <span
@@ -58,12 +72,32 @@
                                 </td>
                                 <td>
                                     @if ($payment->status != 'paid')
-                                        <button class="btn btn-success btn-sm"
-                                            wire:click="openPaymentModal({{ $payment->id }})">
-                                            {{ __('Record Payment') }}
-                                        </button>
+                                        @can('edit Installment Plans')
+                                            <button class="btn btn-success btn-sm"
+                                                wire:click="openPaymentModal({{ $payment->id }})">
+                                                <i class="fas fa-check"></i> {{ __('Record Payment') }}
+                                            </button>
+                                        @endcan
+                                        
+                                        @can('delete Installment Plans')
+                                            <button class="btn btn-danger btn-sm"
+                                                wire:click="deletePayment({{ $payment->id }})"
+                                                wire:confirm="{{ __('Are you sure you want to delete this installment?') }}">
+                                                <i class="fas fa-trash"></i> {{ __('Delete') }}
+                                            </button>
+                                        @endcan
                                     @else
-                                        <i class="fas fa-check-circle text-success"></i>
+                                        <span class="badge bg-success me-2">
+                                            <i class="fas fa-check-circle"></i> {{ __('Paid') }}
+                                        </span>
+                                        
+                                        @can('edit Installment Plans')
+                                            <button class="btn btn-warning btn-sm"
+                                                wire:click="cancelPayment({{ $payment->id }})"
+                                                wire:confirm="{{ __('Are you sure you want to cancel this payment?') }} {{ __('The associated journal entry will be deleted') }}">
+                                                <i class="fas fa-undo"></i> {{ __('Cancel') }}
+                                            </button>
+                                        @endcan
                                     @endif
                                 </td>
                             </tr>
@@ -141,6 +175,36 @@
 
             @this.on('close-modal', (event) => {
                 modal.hide();
+            });
+
+            // Listen for payment success
+            Livewire.on('payment-success', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire({
+                    icon: 'success',
+                    title: d.title || 'نجح',
+                    text: d.text,
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#28a745',
+                    customClass: {
+                        popup: 'text-end'
+                    }
+                });
+            });
+
+            // Listen for payment error
+            Livewire.on('payment-error', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire({
+                    icon: 'error',
+                    title: d.title || 'خطأ',
+                    text: d.text,
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#d33',
+                    customClass: {
+                        popup: 'text-end'
+                    }
+                });
             });
         });
     </script>

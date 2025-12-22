@@ -47,7 +47,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            @can('view Overdue Installments')
+                                            @can('view Installment Plans')
                                                 <a class="btn btn-info btn-sm"
                                                     href="{{ route('installments.plans.show', $payment->plan->id) }}">
                                                     {{ __('View Plan') }}

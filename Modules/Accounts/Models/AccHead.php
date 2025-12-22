@@ -267,6 +267,17 @@ class AccHead extends Model
     }
 
     /**
+     * حساب الرصيد الحالي للحساب من القيود المحاسبية
+     */
+    public function calculateCurrentBalance(): float
+    {
+        $debit = $this->journalDetails()->sum('debit');
+        $credit = $this->journalDetails()->sum('credit');
+        
+        return $debit - $credit;
+    }
+
+    /**
      * الحصول على مستوى الحساب في الشجرة
      */
     public function getLevel()

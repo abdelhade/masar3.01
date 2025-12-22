@@ -5,6 +5,7 @@ namespace Modules\Installments\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Support\Renderable;
 use Modules\Installments\Models\InstallmentPlan;
 use Modules\Installments\Models\InstallmentPayment;
@@ -47,7 +48,8 @@ class InstallmentController extends Controller
      */
     public function edit($id)
     {
-        return view('installments::edit');
+        $plan = InstallmentPlan::with('payments', 'account')->findOrFail($id);
+        return view('installments::edit', compact('plan'));
     }
 
     /**
@@ -58,7 +60,60 @@ class InstallmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id) {}
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $plan = InstallmentPlan::with('payments')->findOrFail($id);
+
+            // Cancel all paid payments (delete their journal entries)
+            $paidPayments = $plan->payments()->where('status', 'paid')->get();
+            foreach ($paidPayments as $payment) {
+                $this->deleteJournalEntry($payment, $plan);
+            }
+
+            // Delete all payments
+            $plan->payments()->delete();
+
+            // Delete the plan
+            $plan->delete();
+
+            DB::commit();
+
+            return redirect()->route('installments.plans.index')
+                ->with('success', 'تم حذف الخطة وجميع الأقساط والقيود المحاسبية بنجاح');
+        } catch (\Exception) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'حدث خطأ أثناء حذف الخطة: ' );
+        }
+    }
+
+    /**
+     * Delete journal entry for a payment
+     */
+    private function deleteJournalEntry($payment, $plan)
+    {
+        // Find the OperHead for this payment
+        $operHead = \App\Models\OperHead::where('acc1', 'like', '%')
+            ->where('acc2', $plan->acc_head_id)
+            ->where('details', 'like', "%قسط رقم {$payment->installment_number}%")
+            ->where('details', 'like', "%خطة رقم {$plan->id}%")
+            ->first();
+
+        if ($operHead) {
+            // Delete JournalDetails
+            \App\Models\JournalDetail::where('op_id', $operHead->id)->delete();
+
+            // Delete JournalHead
+            \App\Models\JournalHead::where('op_id', $operHead->id)->delete();
+
+            // Delete OperHead
+            $operHead->delete();
+        }
+    }
 
     public function overduePayments()
     {
