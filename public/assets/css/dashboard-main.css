@@ -67,27 +67,8 @@ body::after {
     background-repeat: repeat;
     pointer-events: none;
     z-index: 0;
-    animation: doodleFloat 20s ease-in-out infinite;
 }
 
-@keyframes doodleFloat {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg);
-        opacity: 0.6;
-    }
-    25% {
-        transform: translate(10px, -15px) rotate(2deg);
-        opacity: 0.7;
-    }
-    50% {
-        transform: translate(-5px, 10px) rotate(-1deg);
-        opacity: 0.65;
-    }
-    75% {
-        transform: translate(15px, 5px) rotate(1deg);
-        opacity: 0.7;
-    }
-}
 
 /* ========================================
    Animated Doodles Container
@@ -112,218 +93,58 @@ body::after {
 .doodle-1 {
     top: 10%;
     left: 5%;
-    animation: floatDoodle1 25s ease-in-out infinite;
 }
 
 .doodle-2 {
     top: 30%;
     right: 8%;
-    animation: floatDoodle2 20s ease-in-out infinite;
 }
 
 .doodle-3 {
     bottom: 15%;
     left: 10%;
-    animation: floatDoodle3 30s ease-in-out infinite;
 }
 
 .doodle-4 {
     top: 50%;
     right: 15%;
-    animation: floatDoodle4 22s ease-in-out infinite;
 }
 
 .doodle-5 {
     bottom: 25%;
     right: 5%;
-    animation: floatDoodle5 28s ease-in-out infinite;
 }
 
 .doodle-6 {
     top: 70%;
     left: 20%;
-    animation: floatDoodle6 24s ease-in-out infinite;
 }
 
 .doodle-7 {
     top: 15%;
     right: 25%;
-    animation: floatDoodle7 18s ease-in-out infinite;
 }
 
 .doodle-8 {
     bottom: 30%;
     right: 15%;
-    animation: floatDoodle8 22s ease-in-out infinite;
 }
 
 .doodle-9 {
     top: 60%;
     left: 35%;
-    animation: floatDoodle9 16s ease-in-out infinite;
 }
 
 .doodle-10 {
     bottom: 20%;
     left: 10%;
-    animation: floatDoodle10 20s ease-in-out infinite;
 }
 
-@keyframes floatDoodle1 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    25% {
-        transform: translate(30px, -20px) rotate(5deg) scale(1.05);
-    }
-    50% {
-        transform: translate(-15px, 25px) rotate(-3deg) scale(0.95);
-    }
-    75% {
-        transform: translate(20px, 15px) rotate(2deg) scale(1.02);
-    }
-}
-
-@keyframes floatDoodle2 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    33% {
-        transform: translate(-25px, 30px) rotate(-4deg) scale(1.08);
-    }
-    66% {
-        transform: translate(20px, -15px) rotate(3deg) scale(0.92);
-    }
-}
-
-@keyframes floatDoodle3 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    20% {
-        transform: translate(40px, -30px) rotate(6deg) scale(1.1);
-    }
-    40% {
-        transform: translate(-20px, 20px) rotate(-4deg) scale(0.9);
-    }
-    60% {
-        transform: translate(25px, 35px) rotate(3deg) scale(1.05);
-    }
-    80% {
-        transform: translate(-30px, -10px) rotate(-2deg) scale(0.98);
-    }
-}
-
-@keyframes floatDoodle4 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    30% {
-        transform: translate(-30px, 25px) rotate(-5deg) scale(1.06);
-    }
-    60% {
-        transform: translate(15px, -20px) rotate(4deg) scale(0.94);
-    }
-}
-
-@keyframes floatDoodle5 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    25% {
-        transform: translate(35px, 20px) rotate(5deg) scale(1.07);
-    }
-    50% {
-        transform: translate(-25px, -30px) rotate(-3deg) scale(0.93);
-    }
-    75% {
-        transform: translate(20px, 25px) rotate(2deg) scale(1.03);
-    }
-}
-
-@keyframes floatDoodle6 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    33% {
-        transform: translate(-20px, 35px) rotate(-4deg) scale(1.09);
-    }
-    66% {
-        transform: translate(30px, -25px) rotate(4deg) scale(0.91);
-    }
-}
-
-@keyframes floatDoodle7 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    25% {
-        transform: translate(25px, -30px) rotate(8deg) scale(1.1);
-    }
-    50% {
-        transform: translate(-20px, 20px) rotate(-5deg) scale(0.9);
-    }
-    75% {
-        transform: translate(15px, 25px) rotate(3deg) scale(1.05);
-    }
-}
-
-@keyframes floatDoodle8 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    30% {
-        transform: translate(-35px, 30px) rotate(-6deg) scale(1.08);
-    }
-    60% {
-        transform: translate(25px, -20px) rotate(5deg) scale(0.92);
-    }
-}
-
-@keyframes floatDoodle9 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    20% {
-        transform: translate(30px, -25px) rotate(10deg) scale(1.12);
-    }
-    40% {
-        transform: translate(-25px, 30px) rotate(-8deg) scale(0.88);
-    }
-    60% {
-        transform: translate(20px, 20px) rotate(5deg) scale(1.06);
-    }
-    80% {
-        transform: translate(-15px, -15px) rotate(-3deg) scale(0.94);
-    }
-}
-
-@keyframes floatDoodle10 {
-    0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    25% {
-        transform: translate(-30px, 35px) rotate(-7deg) scale(1.09);
-    }
-    50% {
-        transform: translate(35px, -25px) rotate(7deg) scale(0.91);
-    }
-    75% {
-        transform: translate(-20px, 15px) rotate(-4deg) scale(1.04);
-    }
-}
-
-/* Doodles hover effect */
-.doodle:hover {
-    opacity: 0.25;
-    transition: opacity 0.3s ease;
-}
 
 /* Responsive doodles */
 @media (max-width: 1024px) {
     .doodle {
         opacity: 0.1;
-        transform: scale(0.8);
     }
 }
 
@@ -351,7 +172,7 @@ body::after {
 .apps-grid {
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 1.5rem;
     max-width: 100%;
 }
 
@@ -363,25 +184,7 @@ body::after {
     border-radius: 0;
     padding: 0 0 2rem 0;
     margin-bottom: 1rem;
-    box-shadow: none;
-    transition: all 0.3s ease;
-    animation: groupFadeIn 0.5s ease;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-@keyframes groupFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.app-group:hover {
-    border-bottom-color: rgba(52, 211, 163, 0.2);
 }
 
 .app-group:last-child {
@@ -397,23 +200,7 @@ body::after {
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid rgba(52, 211, 163, 0.15);
-    position: relative;
-}
-
-.group-header::before {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #34d3a3 0%, #1aa1c4 100%);
-    transition: width 0.5s ease;
-}
-
-.app-group:hover .group-header::before {
-    width: 60%;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .group-icon-wrapper {
@@ -423,13 +210,6 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.app-group:hover .group-icon-wrapper {
-    transform: scale(1.05);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 .group-title {
@@ -438,29 +218,6 @@ body::after {
     font-weight: 600;
     color: #2d3748;
     flex-grow: 1;
-    transition: all 0.3s ease;
-    position: relative;
-    text-transform: none;
-    letter-spacing: 0.2px;
-}
-
-.group-title::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #34d3a3 0%, #1aa1c4 100%);
-    transition: width 0.3s ease;
-}
-
-.app-group:hover .group-title {
-    color: #239d77;
-}
-
-.app-group:hover .group-title::after {
-    width: 100%;
 }
 
 .group-count {
@@ -475,25 +232,7 @@ body::after {
     justify-content: center;
     font-size: 0.875rem;
     font-weight: 700;
-    box-shadow: 0 3px 12px rgba(52, 211, 163, 0.4);
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    animation: countPulse 2s ease-in-out infinite;
-}
-
-@keyframes countPulse {
-    0%, 100% {
-        box-shadow: 0 3px 12px rgba(52, 211, 163, 0.4);
-    }
-    50% {
-        box-shadow: 0 3px 12px rgba(52, 211, 163, 0.4),
-                    0 0 0 8px rgba(52, 211, 163, 0);
-    }
-}
-
-.app-group:hover .group-count {
-    transform: scale(1.2);
-    box-shadow: 0 6px 20px rgba(52, 211, 163, 0.6);
-    animation: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .group-toggle {
@@ -505,21 +244,11 @@ body::after {
     justify-content: center;
     background: rgba(52, 211, 163, 0.1);
     cursor: pointer;
-    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
 .group-toggle:hover {
     background: rgba(52, 211, 163, 0.2);
-    transform: scale(1.15);
-}
-
-.group-toggle:active {
-    transform: scale(0.95);
-}
-
-.toggle-icon {
-    transition: transform 0.3s ease;
 }
 
 /* Collapsed state */
@@ -535,8 +264,6 @@ body::after {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1rem;
-    transition: all 0.3s ease, max-height 0.3s ease, opacity 0.3s ease;
-    overflow: visible;
 }
 
 /* Mobile first - 2 columns */
@@ -588,23 +315,20 @@ body::after {
 .app-card {
     position: relative;
     background: rgb(255, 255, 255);
-    border: 2px solid transparent;
-    border-radius: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
     padding: 0.875rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.10);
     margin: 0;
     text-decoration: none;
     color: inherit;
-    overflow: hidden;
     min-height: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    -webkit-tap-highlight-color: transparent;
+    transition: all 0.3s ease;
 }
 
 /* Neumorphism Theme Overrides */
@@ -615,8 +339,20 @@ body.theme-neumorphism-lite .app-card {
 }
 
 body.theme-neumorphism-lite .app-card:hover {
-    box-shadow: var(--neu-shadow-large, 12px 12px 24px rgba(0, 0, 0, 0.12), -12px -12px 24px rgba(255, 255, 255, 1));
-    transform: translateY(-8px) scale(1.05);
+    background: #00695C;
+    border-color: #00695C;
+}
+
+body.theme-neumorphism-lite .app-card:hover .app-name {
+    color: white;
+}
+
+body.theme-neumorphism-lite .app-card:hover .app-icon {
+    background-color: transparent;
+}
+
+body.theme-neumorphism-lite .app-card:hover .app-icon i {
+    color: white !important;
 }
 
 body.theme-neumorphism-lite .app-card::before {
@@ -686,42 +422,21 @@ body.theme-neumorphism-lite .app-group:hover {
     border-bottom-color: rgba(52, 211, 163, 0.3);
 }
 
-.app-card::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #34d3a3, #1aa1c4, #34d3a3);
-    border-radius: 0.875rem;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s;
-    background-size: 300% 300%;
-    animation: gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.app-card:hover::before {
-    opacity: 1;
-}
-
 .app-card:hover {
-    transform: translateY(-8px) scale(1.08);
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4), 
-                0 0 30px rgba(59, 130, 246, 0.2),
-                0 0 0 4px rgba(52, 211, 163, 0.1);
+    background: #00695C;
+    border-color: #00695C;
 }
 
-.app-card:active {
-    transform: translateY(-4px) scale(1.02);
+.app-card:hover .app-name {
+    color: white;
+}
+
+.app-card:hover .app-icon {
+    background-color: transparent;
+}
+
+.app-card:hover .app-icon i {
+    color: white !important;
 }
 
 /* ========================================
@@ -736,41 +451,10 @@ body.theme-neumorphism-lite .app-group:hover {
     justify-content: center;
     margin: 0 auto 0.625rem auto;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    position: relative;
 }
 
-.app-icon::after {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 0.65rem;
-    background: inherit;
-    opacity: 0;
-    filter: blur(8px);
-    transition: opacity 0.3s;
-    z-index: -1;
-}
-
-.app-card:hover .app-icon {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.app-card:hover .app-icon::after {
-    opacity: 0.6;
-}
-
-.app-card:active .app-icon {
-    transform: scale(1.05) rotate(10deg);
-    animation: iconBounce 0.4s ease;
-}
-
-@keyframes iconBounce {
-    0%, 100% { transform: scale(1.05) rotate(10deg); }
-    25% { transform: scale(1.25) rotate(-5deg); }
-    50% { transform: scale(1.3) rotate(5deg); }
-    75% { transform: scale(1.2) rotate(-2deg); }
+.app-icon i {
+    transition: color 0.3s ease;
 }
 
 /* ========================================
@@ -782,15 +466,7 @@ body.theme-neumorphism-lite .app-group:hover {
     line-height: 1.3;
     color: #2d3748;
     font-family: 'Cairo', 'Segoe UI', sans-serif;
-    transition: all 0.3s ease;
-    position: relative;
-    letter-spacing: 0.01em;
-}
-
-.app-card:hover .app-name {
-    color: #239d77;
-    transform: scale(1.02);
-    font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 /* ========================================
@@ -806,28 +482,19 @@ body.theme-neumorphism-lite .app-group:hover {
     padding: 3px 10px;
     border-radius: 12px;
     font-weight: 700;
-    box-shadow: 0 3px 10px rgba(52, 211, 163, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     z-index: 10;
-    animation: badgePulse 2s ease-in-out infinite;
-}
-
-@keyframes badgePulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); box-shadow: 0 5px 15px rgba(52, 211, 163, 0.6); }
 }
 
 /* ========================================
    Header Section
    ======================================== */
 .header-section {
-    background: linear-gradient(135deg, #239d77 0%, #1a7d5f 50%, #2ba88a 100%);
-    border-radius: 2rem;
-    padding: 3rem 2rem;
-    margin-bottom: 3rem;
+    background: #239d77;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(35, 157, 119, 0.4);
-    position: relative;
-    overflow: hidden;
 }
 
 /* ========================================
@@ -879,14 +546,10 @@ body.theme-neumorphism-lite .app-group:hover {
     border-radius: 50px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .user-info:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .user-icon {
@@ -1027,21 +690,16 @@ body.theme-neumorphism-lite .app-group:hover {
 .search-input {
     width: 100%;
     padding: 0.75rem 1rem 0.75rem 3rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    background: white;
     font-size: 0.95rem;
     font-family: 'Cairo', 'Segoe UI', sans-serif;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .search-input:focus {
     outline: none;
-    border-color: #ffd700;
-    background: white;
-    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
-    transform: translateY(-2px);
+    border-color: #239d77;
 }
 
 .search-input::placeholder {
@@ -1223,7 +881,16 @@ body.theme-neumorphism-lite .app-group:hover {
     }
 
     .app-card:hover {
-        transform: translateY(-4px) scale(1.05);
+        background: #00695C;
+        border-color: #00695C;
+    }
+
+    .app-card:hover .app-name {
+        color: white;
+    }
+
+    .app-card:hover .app-icon i {
+        color: white !important;
     }
 
     .app-icon {
@@ -1422,7 +1089,17 @@ body.theme-neumorphism-lite .app-group:hover {
 /* Touch device improvements */
 @media (hover: none) and (pointer: coarse) {
     .app-card:hover {
+        background: #00695C;
+        border-color: #00695C;
         transform: none;
+    }
+
+    .app-card:hover .app-name {
+        color: white;
+    }
+
+    .app-card:hover .app-icon i {
+        color: white !important;
     }
 
     .app-card:active {

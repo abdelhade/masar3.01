@@ -1,320 +1,209 @@
-<div class="container" x-data="manufacturingCalculator()" x-init="initFromLivewire()">
+<div class="container-fluid" x-data="manufacturingCalculator()" x-init="initFromLivewire()">
     @if ($currentStep === 1)
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+        <!-- Fixed Header -->
+        <div class="card border-0 shadow-sm mb-3" style="position: sticky; top: 0; z-index: 1000; background: white;">
+            <div class="card-body py-2">
+                <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                    <div>
+                        <h1 class="h4 fw-bold text-dark mb-1">{{ __('Manufacturing Invoice') }}</h1>
+                        <div class="d-flex flex-wrap gap-4 text-muted small">
                             <div>
-                                <h1 class="h3 fw-bold text-dark mb-2">{{ __('Manufacturing Invoice') }}</h1>
-                                <div class="d-flex flex-wrap gap-4 text-muted small">
-                                    <div>
-                                        <span class="fw-semibold">{{ __('Invoice Number') }}:</span>
-                                        <span class="text-primary fw-bold">{{ $pro_id }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="fw-semibold">{{ __('Date') }}:</span>
-                                        <span>{{ $invoiceDate }}</span>
-                                    </div>
-                                </div>
+                                <span class="fw-semibold">{{ __('Invoice Number') }}:</span>
+                                <span class="text-primary fw-bold">{{ $pro_id }}</span>
                             </div>
-
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <div class="min-w-200">
-                                    <x-branches::branch-select :branches="$branches" model="branch_id" />
-                                </div>
-
-                                @if (setting('manufacture_enable_template_saving'))
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <button wire:click="openSaveTemplateModal" class="btn btn-outline-info btn-sm">
-                                            <i class="fas fa-save me-1"></i>{{ __('Save as Template') }}
-                                        </button>
-                                        <button wire:click="openLoadTemplateModal"
-                                            class="btn btn-outline-warning btn-sm">
-                                            <i class="fas fa-folder-open me-1"></i>{{ __('Select Template') }}
-                                        </button>
-                                    </div>
-                                @endif
-
-                                <div class="d-flex flex-wrap gap-2">
-                                    <button wire:click="distributeCostsByPercentage"
-                                        class="btn btn-primary btn-sm d-flex align-items-center gap-1"
-                                        @if(count($selectedProducts) === 0) disabled @endif>
-                                        <i class="fas fa-percentage"></i>
-                                        <span>{{ __('Distribute Costs by Percentage') }}</span>
-                                    </button>
-                                    <button 
-                                        x-on:click="if (!$wire.isSaving) { syncForSave(); $wire.saveInvoice(); }"
-                                        class="btn btn-success btn-sm d-flex align-items-center gap-1"
-                                        x-bind:disabled="$wire.isSaving"
-                                        wire:loading.attr="disabled"
-                                        wire:target="saveInvoice">
-                                        <span wire:loading.remove wire:target="saveInvoice">
-                                            <i class="fas fa-save"></i>
-                                            <span>{{ __('Save Invoice') }}</span>
-                                        </span>
-                                        <span wire:loading wire:target="saveInvoice">
-                                            <i class="fas fa-spinner fa-spin"></i>
-                                            <span>{{ __('Saving...') }}</span>
-                                        </span>
-                                    </button>
-                                </div>
+                            <div>
+                                <span class="fw-semibold">{{ __('Date') }}:</span>
+                                <span>{{ $invoiceDate }}</span>
                             </div>
                         </div>
+                    </div>
 
-                        <div x-show="products.length > 0" class="alert alert-info mt-3 mb-0 d-flex align-items-center gap-2 py-2">
-                            <i class="fas fa-info-circle"></i>
-                            <span class="small">
-                                {{ __('Total raw materials and expenses will be distributed') }}
-                                (<span x-text="formatCurrency(totalExpenses)"></span>)
-                                {{ __('on products based on specified percentages') }}
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="min-w-200">
+                            <x-branches::branch-select :branches="$branches" model="branch_id" />
+                        </div>
+
+                        @if (setting('manufacture_enable_template_saving'))
+                            <button wire:click="openSaveTemplateModal" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-save me-1"></i>{{ __('Save Template') }}
+                            </button>
+                            <button wire:click="openLoadTemplateModal" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-folder-open me-1"></i>{{ __('Load Template') }}
+                            </button>
+                        @endif
+
+                        <button wire:click="distributeCostsByPercentage"
+                            class="btn btn-primary btn-sm"
+                            @if(count($selectedProducts) === 0) disabled @endif>
+                            <i class="fas fa-percentage me-1"></i>
+                            <span>{{ __('Distribute Costs') }}</span>
+                        </button>
+                        <button 
+                            x-on:click="if (!$wire.isSaving) { syncForSave(); $wire.saveInvoice(); }"
+                            class="btn btn-success btn-sm"
+                            x-bind:disabled="$wire.isSaving"
+                            wire:loading.attr="disabled"
+                            wire:target="saveInvoice">
+                            <span wire:loading.remove wire:target="saveInvoice">
+                                <i class="fas fa-save me-1"></i>
+                                <span>{{ __('Save Invoice') }}</span>
                             </span>
-                        </div>
+                            <span wire:loading wire:target="saveInvoice">
+                                <i class="fas fa-spinner fa-spin me-1"></i>
+                                <span>{{ __('Saving...') }}</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
 
-                @if (
-                    (count($selectedProducts) > 0 || count($selectedRawMaterials) > 0) &&
-                        (!empty($templateExpectedTime) || $selectedTemplate))
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-3">
-                                    <label class="form-label small text-muted">{{ __('Expected Time') }}</label>
-                                    <input type="text" wire:model="templateExpectedTime"
-                                        class="form-control form-control-sm" readonly>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small text-muted">{{ __('Actual Time') }}</label>
-                                    <input type="text" wire:model="actualTime" class="form-control form-control-sm"
-                                        id="actualTimePicker">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small text-muted">{{ __('Quantity Multiplier') }}</label>
-                                    <input type="number" wire:model="quantityMultiplier"
-                                        class="form-control form-control-sm" min="0.1" step="0.1" value="1">
-                                </div>
-                                <div class="col-md-3">
-                                    <button @click="applyQuantityMultiplier($wire.quantityMultiplier)" class="btn btn-info btn-sm w-100">
-                                        <i class="fas fa-calculator me-1"></i>{{ __('Apply') }}
-                                    </button>
-                                </div>
+                <div x-show="products.length > 0" class="alert alert-info mt-2 mb-0 d-flex align-items-center gap-2 py-1 small">
+                    <i class="fas fa-info-circle"></i>
+                    <span>
+                        {{ __('Total raw materials and expenses will be distributed') }}
+                        (<span x-text="formatCurrency(totalExpenses)" class="fw-bold"></span>)
+                        {{ __('on products based on specified percentages') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        @if ($showSaveTemplateModal)
+            <div class="modal fade show" style="display: block;">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">{{ __('Save as Manufacturing Template') }}</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>{{ __('Template Name') }}</label>
+                                <input type="text" wire:model="templateName" class="form-control">
                             </div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>{{ __('Expected Production Time') }}</label>
+                                <input type="text" wire:model="templateExpectedTime"
+                                    class="form-control" id="timepicker">
+                            </div>
+                        </div>
+
+                        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                        <script>
+                            flatpickr("#timepicker", {
+                                enableTime: true,
+                                noCalendar: true,
+                                dateFormat: "H:i",
+                                time_24hr: true
+                            });
+                        </script>
+
+                        <div class="modal-footer">
+                            <button wire:click="saveAsTemplate"
+                                class="btn btn-primary">{{ __('Save') }}</button>
+                            <button wire:click="closeSaveTemplateModal"
+                                class="btn btn-secondary">{{ __('Cancel') }}</button>
                         </div>
                     </div>
-                @endif
+                </div>
+            </div>
+        @endif
 
-
-                        <!-- مودال حفظ النموذج -->
-                        @if ($showSaveTemplateModal)
-                            <div class="modal fade show" style="display: block;">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">{{ __('Save as Manufacturing Template') }}</h5>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="form-group">
-                                                <label>{{ __('Template Name') }}</label>
-                                                <input type="text" wire:model="templateName" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="form-group">
-                                                <label>{{ __('Expected Production Time') }}</label>
-                                                <input type="text" wire:model="templateExpectedTime"
-                                                    class="form-control" id="timepicker">
-                                            </div>
-                                        </div>
-
-                                        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-                                        <script>
-                                            flatpickr("#timepicker", {
-                                                enableTime: true,
-                                                noCalendar: true,
-                                                dateFormat: "H:i",
-                                                time_24hr: true
-                                            });
-                                        </script>
-
-                                        <div class="modal-footer">
-                                            <button wire:click="saveAsTemplate"
-                                                class="btn btn-primary">{{ __('Save') }}</button>
-                                            <button wire:click="closeSaveTemplateModal"
-                                                class="btn btn-secondary">{{ __('Cancel') }}</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- مودال تحميل النموذج -->
-                        @if ($showLoadTemplateModal)
-                            <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-primary text-white">
-                                            <h5 class="modal-title">
-                                                <i class="fas fa-folder-open me-2"></i>
-                                                {{ __('Select Manufacturing Template') }}
-                                            </h5>
-                                            <button type="button" class="btn-close btn-close-white"
-                                                wire:click="closeLoadTemplateModal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            @if (count($templates) > 0)
-                                                <div class="mb-3">
-                                                    <label
-                                                        class="form-label fw-bold">{{ __('Choose Template') }}:</label>
-                                                    <select wire:model.debounce.300ms="selectedTemplate"
-                                                        class="form-select form-select-lg">
-                                                        <option value="">{{ __('-- Select Template --') }}
-                                                        </option>
-                                                        @foreach ($templates as $template)
-                                                            <option value="{{ $template['id'] }}">
-                                                                {{ $template['display_name'] }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-
-                                                @if ($selectedTemplate)
-                                                    <div class="alert alert-info">
-                                                        <i class="fas fa-info-circle me-2"></i>
-                                                        <strong>{{ __('Note') }}:</strong>
-                                                        {{ __('All products and materials saved in this template will be loaded') }}.
-                                                    </div>
-                                                @endif
-
-                                                {{-- معاينة سريعة للنموذج المختار --}}
-                                                @if ($selectedTemplate)
-                                                    <div class="card">
-                                                        <div class="card-header">
-                                                            <h6 class="mb-0">{{ __('Template Preview') }}</h6>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            @php
-                                                                $currentTemplate = collect($templates)->firstWhere(
-                                                                    'id',
-                                                                    $selectedTemplate,
-                                                                );
-                                                            @endphp
-                                                            @if ($currentTemplate)
-                                                                <p class="mb-1">
-                                                                    <strong>{{ __('Date') }}:</strong>
-                                                                    {{ $currentTemplate['pro_date'] }}
-                                                                </p>
-                                                                <p class="mb-0">
-                                                                    <strong>{{ __('Value') }}:</strong>
-                                                                    {{ number_format($currentTemplate['pro_value'], 2) }}
-                                                                    {{ __('EGP') }}
-                                                                </p>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @endif
-                                            @else
-                                                <div class="text-center py-4">
-                                                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                                                    <h5 class="text-muted">{{ __('No Saved Templates') }}</h5>
-                                                    <p class="text-muted">
-                                                        {{ __('Save a template first to load it later') }}</p>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <div class="modal-footer">
-                                            @if (count($templates) > 0)
-                                                <button wire:click="loadTemplate" class="btn btn-primary px-4"
-                                                    {{ !$selectedTemplate ? 'disabled' : '' }}>
-                                                    <i class="fas fa-download me-2"></i>
-                                                    {{ __('Load Template') }}
-                                                </button>
-                                            @endif
-                                            <button wire:click="closeLoadTemplateModal"
-                                                class="btn btn-secondary px-4">
-                                                <i class="fas fa-times me-2"></i>
-                                                {{ __('Cancel') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="row">
-                            <div class="card-body">
-                                <div class="row">
-
-                                    <div class="col-lg-2">
-                                        <label class="form-label" style="font-size: 1em;">{{ __('Account') }}</label>
-                                        <select wire:model="OperatingAccount" class="form-control form-control-sm"
-                                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                                            @foreach ($OperatingCenter as $keyOperation => $valueOperation)
-                                                <option value="{{ $keyOperation }}">{{ $valueOperation }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('OperatingAccount')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-lg-2">
-                                        <label class="form-label"
-                                            style="font-size: 1em;">{{ __('Employee') }}</label>
-                                        <select wire:model="employee" class="form-control form-control-sm"
-                                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                                            @foreach ($employeeList as $keyEmployee => $valueEmployee)
-                                                <option value="{{ $keyEmployee }}">{{ $valueEmployee }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('employee')
-                                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-lg-2">
-                                        <label for="pro_date" class="form-label"
-                                            style="font-size: 1em;">{{ __('Date') }}</label>
-                                        <input type="date" wire:model="invoiceDate"
-                                            class="form-control form-control-sm @error('pro_date') is-invalid @enderror"
-                                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                                        @error('pro_date')
-                                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-lg-2">
-                                        <label for="pro_date" class="form-label"
-                                            style="font-size: 1em;">{{ __('Invoice Number') }}</label>
-                                        <input type="text" wire:model="pro_id"
-                                            class="form-control form-control-sm @error('pro_id') is-invalid @enderror"
-                                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;" readonly>
-                                        @error('pro_id')
-                                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-lg-2">
-                                        <label for="patchNumber" class="form-label"
-                                            style="font-size: 1em;">{{ __('Batch Number') }}</label>
-                                        <input type="text" wire:model="patchNumber"
-                                            class="form-control form-control-sm "
-                                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                                    </div>
-
-                                    <div class="col-lg-2">
-                                        <label for="description" class="form-label"
-                                            style="font-size: 1em;">{{ __('Operation Description') }}</label>
-                                        <input type="text" wire:model="description"
-                                            class="form-control form-control-sm"
-                                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;">
-                                    </div>
-
-                                </div>
-                            </div>
+        @if ($showLoadTemplateModal)
+            <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-folder-open me-2"></i>
+                                {{ __('Select Manufacturing Template') }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white"
+                                wire:click="closeLoadTemplateModal"></button>
                         </div>
-                        <hr style=" border: none; border-top: 12px solid #1908da; margin: 0.1rem 0;">
+                        <div class="modal-body">
+                            @if (count($templates) > 0)
+                                <div class="mb-3">
+                                    <label
+                                        class="form-label fw-bold">{{ __('Choose Template') }}:</label>
+                                    <select wire:model.debounce.300ms="selectedTemplate"
+                                        class="form-select form-select-lg">
+                                        <option value="">{{ __('-- Select Template --') }}
+                                        </option>
+                                        @foreach ($templates as $template)
+                                            <option value="{{ $template['id'] }}">
+                                                {{ $template['display_name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
+                                @if ($selectedTemplate)
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>{{ __('Note') }}:</strong>
+                                        {{ __('All products and materials saved in this template will be loaded') }}.
+                                    </div>
+                                @endif
+
+                                @if ($selectedTemplate)
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">{{ __('Template Preview') }}</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            @php
+                                                $currentTemplate = collect($templates)->firstWhere(
+                                                    'id',
+                                                    $selectedTemplate,
+                                                );
+                                            @endphp
+                                            @if ($currentTemplate)
+                                                <p class="mb-1">
+                                                    <strong>{{ __('Date') }}:</strong>
+                                                    {{ $currentTemplate['pro_date'] }}
+                                                </p>
+                                                <p class="mb-0">
+                                                    <strong>{{ __('Value') }}:</strong>
+                                                    {{ number_format($currentTemplate['pro_value'], 2) }}
+                                                    {{ __('EGP') }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">{{ __('No Saved Templates') }}</h5>
+                                    <p class="text-muted">
+                                        {{ __('Save a template first to load it later') }}</p>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            @if (count($templates) > 0)
+                                <button wire:click="loadTemplate" class="btn btn-primary px-4"
+                                    {{ !$selectedTemplate ? 'disabled' : '' }}>
+                                    <i class="fas fa-download me-2"></i>
+                                    {{ __('Load Template') }}
+                                </button>
+                            @endif
+                            <button wire:click="closeLoadTemplateModal"
+                                class="btn btn-secondary px-4">
+                                <i class="fas fa-times me-2"></i>
+                                {{ __('Cancel') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="row" style="margin-bottom: 140px;">
+            <div class="col-12">
                         <!-- قسم المنتجات المصنعة -->
                         <div class="mb-9 card" style="max-height: 200px; overflow-y: auto; overflow-x: hidden;">
                             <!-- حقل البحث للمنتجات المصنعة -->
@@ -799,74 +688,80 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-
-                    <div class="row">
-                        <div class="col-5">
-                            <div class="row gx-2 align-items-end">
+        <!-- Fixed Footer -->
+        <div class="card border-0 shadow-lg" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; background: white; margin: 0;">
+            <div class="card-body py-2">
+                <div class="container-fluid">
+                    <div class="row g-2 align-items-center">
+                        <!-- Input Costs -->
+                        <div class="col-md-6">
+                            <div class="row g-2">
                                 <div class="col-4">
-                                    <label
-                                        class="form-label small text-gray-600">{{ __('Raw Materials Cost') }}</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalRawMaterialsCost, 2) }} ج.م"
-                                        readonly>
+                                    <label class="form-label small text-muted mb-0">
+                                        <i class="fas fa-cubes me-1 text-primary"></i>{{ __('Raw Materials') }}
+                                    </label>
+                                    <div class="fw-bold text-primary">
+                                        {{ number_format($totalRawMaterialsCost, 2) }} ج.م
+                                    </div>
                                 </div>
-
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">{{ __('Expenses Cost') }}</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalAdditionalExpenses, 2) }} ج.م"
-                                        readonly>
+                                    <label class="form-label small text-muted mb-0">
+                                        <i class="fas fa-money-bill-wave me-1 text-warning"></i>{{ __('Expenses') }}
+                                    </label>
+                                    <div class="fw-bold text-warning">
+                                        {{ number_format($totalAdditionalExpenses, 2) }} ج.م
+                                    </div>
                                 </div>
-
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">{{ __('Total Cost') }}</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm text-success fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalManufacturingCost, 2) }} ج.م"
-                                        readonly>
+                                    <label class="form-label small text-muted mb-0">
+                                        <i class="fas fa-coins me-1 text-success"></i>{{ __('Total Cost') }}
+                                    </label>
+                                    <div class="fw-bold text-success fs-6">
+                                        {{ number_format($totalManufacturingCost, 2) }} ج.م
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-2">
-                        </div>
-
-                        <div class="col-5">
-                            <div class="row gx-2 align-items-end">
+                        <!-- Output Costs -->
+                        <div class="col-md-6">
+                            <div class="row g-2">
                                 <div class="col-4">
-                                    <label
-                                        class="form-label small text-gray-600">{{ __('Finished Products') }}</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm text-blue-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;"
-                                        value="{{ number_format($totalProductsCost, 2) }} ج.م"
-                                        readonly>
+                                    <label class="form-label small text-muted mb-0">
+                                        <i class="fas fa-box me-1 text-success"></i>{{ __('Finished Products') }}
+                                    </label>
+                                    <div class="fw-bold text-success">
+                                        {{ number_format($totalProductsCost, 2) }} ج.م
+                                    </div>
                                 </div>
-
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">{{ __('Standard Cost') }}</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm text-purple-600 fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalAdditionalExpenses) }} {{ __('EGP') }}" readonly --}}>
+                                    <label class="form-label small text-muted mb-0">
+                                        <i class="fas fa-ruler me-1 text-info"></i>{{ __('Standard Cost') }}
+                                    </label>
+                                    <div class="fw-bold text-info">
+                                        --
+                                    </div>
                                 </div>
-
                                 <div class="col-4">
-                                    <label class="form-label small text-gray-600">{{ __('Cost Difference') }}</label>
-                                    <input type="text" class="form-control form-control-sm  fw-bold py-1 px-2"
-                                        style="font-size: 0.75rem;" {{-- value="{{ number_format($totalManufacturingCost) }} {{ __('EGP') }}" readonly --}}>
+                                    <label class="form-label small text-muted mb-0">
+                                        <i class="fas fa-balance-scale me-1 text-danger"></i>{{ __('Difference') }}
+                                    </label>
+                                    <div class="fw-bold text-danger">
+                                        --
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
+        </div>
+
+        <!-- Spacer for fixed footer -->
+        <div style="height: 120px;"></div>
         </div>
     @endif
 </div>

@@ -1,5 +1,12 @@
 // Alpine.js Manufacturing Calculator Component
-document.addEventListener('alpine:init', () => {
+// Support both alpine:init event and direct initialization
+function initManufacturingCalculator() {
+    if (typeof Alpine === 'undefined') {
+        // Alpine not loaded yet, wait for it
+        setTimeout(initManufacturingCalculator, 100);
+        return;
+    }
+
     Alpine.data('manufacturingCalculator', () => ({
         products: [],
         rawMaterials: [],
@@ -255,10 +262,9 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }));
-});
 
-// Product Search Component
-Alpine.data('productSearch', () => ({
+    // Product Search Component
+    Alpine.data('productSearch', () => ({
     searchTerm: '',
     results: [],
     selectedIndex: -1,
@@ -266,14 +272,37 @@ Alpine.data('productSearch', () => ({
     showNoResults: false,
     
     init() {
-        this.$watch('searchTerm', value => {
-            if (!value || value.trim().length < 1) {
+        // Initialize with empty state
+        this.results = [];
+        this.selectedIndex = -1;
+        this.showNoResults = false;
+        this.isLoading = false;
+        
+        // Watch for changes (only triggers on actual changes, not initial value)
+        this.$watch('searchTerm', (value, oldValue) => {
+            // Skip initialization - only trigger on actual changes
+            if (oldValue === undefined) {
+                return;
+            }
+            
+            // Skip if value hasn't actually changed
+            if (value === oldValue) {
+                return;
+            }
+            
+            // Skip if value is empty or too short
+            if (!value || value.trim().length < 2) {
                 this.results = [];
                 this.selectedIndex = -1;
                 this.showNoResults = false;
+                this.isLoading = false;
                 return;
             }
-            this.debouncedSearch(value);
+            
+            // Only search if user actually typed something (value changed and is valid)
+            if (value.trim().length >= 2) {
+                this.debouncedSearch(value);
+            }
         });
     },
     
@@ -282,17 +311,33 @@ Alpine.data('productSearch', () => ({
     }, 300),
     
     async performSearch(term) {
+        const trimmedTerm = term.trim();
+        if (trimmedTerm.length < 2) {
+            this.results = [];
+            this.selectedIndex = -1;
+            this.showNoResults = false;
+            this.isLoading = false;
+            return;
+        }
+        
+        // Check if $wire is available
+        if (!this.$wire) {
+            console.warn('Livewire wire not available yet');
+            this.isLoading = false;
+            return;
+        }
+        
         this.isLoading = true;
         this.showNoResults = false;
         try {
-            const response = await this.$wire.call('searchProducts', term);
+            const response = await this.$wire.call('searchProducts', trimmedTerm);
             this.results = response || [];
             this.selectedIndex = -1;
-            this.showNoResults = this.results.length === 0 && term.trim().length > 0;
+            this.showNoResults = this.results.length === 0 && trimmedTerm.length >= 2;
         } catch (error) {
             console.error('Search error:', error);
             this.results = [];
-            this.showNoResults = true;
+            this.showNoResults = trimmedTerm.length >= 2; // Only show if term is valid
         } finally {
             this.isLoading = false;
         }
@@ -318,15 +363,19 @@ Alpine.data('productSearch', () => ({
     },
     
     selectItem(item) {
+        if (!this.$wire) {
+            console.warn('Livewire wire not available');
+            return;
+        }
         this.$wire.call('addProductFromSearch', item.id);
         this.searchTerm = '';
         this.results = [];
         this.selectedIndex = -1;
     }
-}));
+    }));
 
-// Raw Material Search Component
-Alpine.data('rawMaterialSearch', () => ({
+    // Raw Material Search Component
+    Alpine.data('rawMaterialSearch', () => ({
     searchTerm: '',
     results: [],
     selectedIndex: -1,
@@ -334,14 +383,37 @@ Alpine.data('rawMaterialSearch', () => ({
     showNoResults: false,
     
     init() {
-        this.$watch('searchTerm', value => {
-            if (!value || value.trim().length < 1) {
+        // Initialize with empty state
+        this.results = [];
+        this.selectedIndex = -1;
+        this.showNoResults = false;
+        this.isLoading = false;
+        
+        // Watch for changes (only triggers on actual changes, not initial value)
+        this.$watch('searchTerm', (value, oldValue) => {
+            // Skip initialization - only trigger on actual changes
+            if (oldValue === undefined) {
+                return;
+            }
+            
+            // Skip if value hasn't actually changed
+            if (value === oldValue) {
+                return;
+            }
+            
+            // Skip if value is empty or too short
+            if (!value || value.trim().length < 2) {
                 this.results = [];
                 this.selectedIndex = -1;
                 this.showNoResults = false;
+                this.isLoading = false;
                 return;
             }
-            this.debouncedSearch(value);
+            
+            // Only search if user actually typed something (value changed and is valid)
+            if (value.trim().length >= 2) {
+                this.debouncedSearch(value);
+            }
         });
     },
     
@@ -350,17 +422,33 @@ Alpine.data('rawMaterialSearch', () => ({
     }, 300),
     
     async performSearch(term) {
+        const trimmedTerm = term.trim();
+        if (trimmedTerm.length < 2) {
+            this.results = [];
+            this.selectedIndex = -1;
+            this.showNoResults = false;
+            this.isLoading = false;
+            return;
+        }
+        
+        // Check if $wire is available
+        if (!this.$wire) {
+            console.warn('Livewire wire not available yet');
+            this.isLoading = false;
+            return;
+        }
+        
         this.isLoading = true;
         this.showNoResults = false;
         try {
-            const response = await this.$wire.call('searchRawMaterials', term);
+            const response = await this.$wire.call('searchRawMaterials', trimmedTerm);
             this.results = response || [];
             this.selectedIndex = -1;
-            this.showNoResults = this.results.length === 0 && term.trim().length > 0;
+            this.showNoResults = this.results.length === 0 && trimmedTerm.length >= 2;
         } catch (error) {
             console.error('Search error:', error);
             this.results = [];
-            this.showNoResults = true;
+            this.showNoResults = trimmedTerm.length >= 2; // Only show if term is valid
         } finally {
             this.isLoading = false;
         }
@@ -386,10 +474,44 @@ Alpine.data('rawMaterialSearch', () => ({
     },
     
     selectItem(item) {
+        if (!this.$wire) {
+            console.warn('Livewire wire not available');
+            return;
+        }
         this.$wire.call('addRawMaterialFromSearch', item.id);
         this.searchTerm = '';
         this.results = [];
         this.selectedIndex = -1;
     }
-}));
+    }));
+}
+
+// Initialize when Alpine is ready
+let initialized = false;
+
+function tryInit() {
+    if (initialized) return;
+    
+    if (typeof Alpine !== 'undefined' && typeof Alpine.data === 'function') {
+        initManufacturingCalculator();
+        initialized = true;
+    }
+}
+
+// Try immediate initialization if Alpine is already loaded
+tryInit();
+
+// Listen for alpine:init event
+document.addEventListener('alpine:init', function() {
+    tryInit();
+});
+
+// Fallback: try initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(tryInit, 100);
+    });
+} else {
+    setTimeout(tryInit, 100);
+}
 

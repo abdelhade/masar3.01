@@ -71,6 +71,34 @@
                     }
                 }
             });
+
+            // SweetAlert2 Success Handler
+            Livewire.on('success-swal', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire({
+                    title: d.title || '{{ __('general.success') }}',
+                    text: d.text || '{{ __('messages.operation_completed') }}',
+                    icon: d.icon || 'success',
+                    confirmButtonText: '{{ __('common.ok') }}',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(() => {
+                    if (d.reload || d.reload === true) {
+                        window.location.reload();
+                    }
+                });
+            });
+
+            // SweetAlert2 Error Handler
+            Livewire.on('error-swal', (data) => {
+                const d = Array.isArray(data) ? data[0] : data;
+                Swal.fire({
+                    title: d.title || '{{ __('general.error') }}',
+                    text: d.text || '{{ __('messages.unexpected_error') }}',
+                    icon: d.icon || 'error',
+                    confirmButtonText: '{{ __('common.ok') }}'
+                });
+            });
         });
 
 

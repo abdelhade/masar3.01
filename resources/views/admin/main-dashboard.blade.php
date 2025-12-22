@@ -295,110 +295,118 @@
         ])
 
         <div class="apps-grid">
-
-            <div class="app-group" data-group-index="0">
-                <div class="group-header">
-                    <div class="group-icon-wrapper" style="background: #34d3a320;">
-                        <i data-lucide="settings" style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
-                    </div>
-                    <h2 class="group-title">الإعدادات الأساسية</h2>
-                </div>
-
-                <div class="group-apps-grid">
-                    {{-- البيانات الاساسيه --}}
-                    @canany([
-                        'view Clients',
-                        'view Suppliers',
-                        'view Funds',
-                        'view Banks',
-                        'view Employees',
-                        'view
-                        warhouses',
-                        'view Expenses',
-                        'view Revenues',
-                        'view various_creditors',
-                        'view various_debtors',
-                        'view
-                        partners',
-                        'view current_partners',
-                        'view assets',
-                        'view rentables',
-                        'view check-portfolios-incoming',
-                        'view basicData-statistics',
-                        ])
-                        <a href="{{ route('accounts.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="chart-bar-increasing"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">البيانات الاساسيه</p>
-                        </a>
-                    @endcanany
-
-                    {{-- الاصناف --}}
-                    @canany([
-                        'view items',
-                        'view units',
-                        'view prices',
-                        'view notes-names',
-                        'view varibals',
-                        'view
-                        varibalsValues',
-                        ])
-                        <a href="{{ route('items.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="boxes"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">الاصناف</p>
-                        </a>
-                    @endcanany
-                    {{-- الصلاحيات --}}
-                    @canany(['view roles', 'view branches', 'view settings', 'view login-history', 'view active-sessions',
-                        'view activity-logs'])
-                        <a href="{{ route('users.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="key" style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">الصلاحيات</p>
-                        </a>
-                    @endcanany
-
-                    {{-- الاعدادات --}}
-                    @can('view settings')
-                        <a href="{{ route('export-settings') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="settings"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">الاعدادات</p>
-                        </a>
-                    @endcan
-
-                    {{-- التقارير --}}
-                    <a href="{{ route('reports.overall') }}" class="app-card">
+            <!-- الإعدادات الأساسية -->
+            @canany([
+                'view Clients',
+                'view Suppliers',
+                'view Funds',
+                'view Banks',
+                'view Employees',
+                'view warhouses',
+                'view Expenses',
+                'view Revenues',
+                'view various_creditors',
+                'view various_debtors',
+                'view partners',
+                'view current_partners',
+                'view assets',
+                'view rentables',
+                'view check-portfolios-incoming',
+                'view basicData-statistics',
+                'view items',
+                'view units',
+                'view prices',
+                'view notes-names',
+                'view varibals',
+                'view varibalsValues',
+                'view roles',
+                'view branches',
+                'view settings',
+                'view login-history',
+                'view active-sessions',
+                'view activity-logs',
+            ])
+            <div class="group-apps-grid">
+                {{-- البيانات الاساسيه --}}
+                @canany([
+                    'view Clients',
+                    'view Suppliers',
+                    'view Funds',
+                    'view Banks',
+                    'view Employees',
+                    'view warhouses',
+                    'view Expenses',
+                    'view Revenues',
+                    'view various_creditors',
+                    'view various_debtors',
+                    'view partners',
+                    'view current_partners',
+                    'view assets',
+                    'view rentables',
+                    'view check-portfolios-incoming',
+                    'view basicData-statistics',
+                ])
+                    <a href="{{ route('accounts.index') }}" class="app-card">
                         <div class="app-icon" style="background-color: white;">
-                            <i data-lucide="file-bar-chart"
+                            <i data-lucide="chart-bar-increasing"
                                 style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
                         </div>
-                        <p class="app-name">التقارير</p>
+                        <p class="app-name">البيانات الاساسيه</p>
                     </a>
+                @endcanany
 
-                </div>
+                {{-- الاصناف --}}
+                @canany([
+                    'view items',
+                    'view units',
+                    'view prices',
+                    'view notes-names',
+                    'view varibals',
+                    'view varibalsValues',
+                ])
+                    <a href="{{ route('items.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="boxes"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">الاصناف</p>
+                    </a>
+                @endcanany
+
+                {{-- الصلاحيات --}}
+                @canany(['view roles', 'view branches', 'view settings', 'view login-history', 'view active-sessions',
+                    'view activity-logs'])
+                    <a href="{{ route('users.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="key" style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">الصلاحيات</p>
+                    </a>
+                @endcanany
+
+                {{-- الاعدادات --}}
+                @can('view settings')
+                    <a href="{{ route('export-settings') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="settings"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">الاعدادات</p>
+                    </a>
+                @endcan
+
+                {{-- التقارير --}}
+                <a href="{{ route('reports.overall') }}" class="app-card">
+                    <div class="app-icon" style="background-color: white;">
+                        <i data-lucide="file-bar-chart"
+                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                    </div>
+                    <p class="app-name">التقارير</p>
+                </a>
             </div>
+            @endcanany
 
-        @endcanany
-
-
-        <!-- مجموعة ادارة المبيعات -->
-        <div class="app-group" data-group-index="1">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="shopping-bag"
-                        style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title"> ادارة المبيعات</h2>
-            </div>
+            <!-- إدارة المبيعات -->
             <div class="group-apps-grid">
                 {{-- crm --}}
                 <a href="{{ route('statistics.index') }}" class="app-card">
@@ -433,16 +441,8 @@
                     <p class="app-name">ادارة المستأجرات</p>
                 </a>
             </div>
-        </div>
 
-        <!-- مجموعة المحاسبة والمالية -->
-        <div class="app-group" data-group-index="2">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="wallet" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title">المحاسبة والمالية</h2>
-            </div>
+            <!-- المحاسبة والمالية -->
             <div class="group-apps-grid">
                 {{-- ادارة الحسابات --}}
                 <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}" class="app-card">
@@ -494,17 +494,8 @@
                     <p class="app-name">إدارة الشيكات</p>
                 </a>
             </div>
-        </div>
 
-        <!-- مجموعة ادارة المخزون و التصنيع -->
-        <div class="app-group" data-group-index="3">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="shopping-bag"
-                        style="color: #239d77; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title"> ادارة المخزون و التصنيع</h2>
-            </div>
+            <!-- ادارة المخزون و التصنيع -->
             <div class="group-apps-grid">
                 {{-- ادارة المخزون --}}
                 <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-card">
@@ -569,19 +560,9 @@
                     <p class="app-name">إدارة الأسطول</p>
                 </a>
                 @endcan
-
-
             </div>
-        </div>
 
-        <!-- مجموعة المشاريع والإنتاج -->
-        <div class="app-group" data-group-index="4">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="kanban" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title">المشاريع والإنتاج</h2>
-            </div>
+            <!-- المشاريع والإنتاج -->
             <div class="group-apps-grid">
                 {{-- المشاريع  --}}
                 <a href="{{ route('projects.index') }}" class="app-card">
@@ -616,16 +597,8 @@
                     <p class="app-name">إدارة الموارد</p>
                 </a>
             </div>
-        </div>
 
-        <!-- مجموعة الموارد البشرية -->
-        <div class="app-group" data-group-index="5">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="users" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title">الموارد البشرية</h2>
-            </div>
+            <!-- الموارد البشرية -->
             <div class="group-apps-grid">
                 {{-- الموارد البشريه --}}
                 <a href="{{ route('employees.index') }}" class="app-card">
@@ -644,16 +617,8 @@
                     <p class="app-name">بصمه الموبايل</p>
                 </a>
             </div>
-        </div>
 
-        <!-- مجموعة الخدمات والعمليات -->
-        <div class="app-group" data-group-index="6">
-            <div class="group-header">
-                <div class="group-icon-wrapper" style="background: #34d3a320;">
-                    <i data-lucide="truck" style="color: #34d3a3; width: 20px; height: 20px; stroke-width: 2;"></i>
-                </div>
-                <h2 class="group-title">الخدمات والعمليات</h2>
-            </div>
+            <!-- الخدمات والعمليات -->
             <div class="group-apps-grid">
                 {{-- ادارة المستأجرات  --}}
                 <a href="{{ route('rentals.buildings.index') }}" class="app-card">
@@ -681,8 +646,7 @@
                 </a>
             </div>
         </div>
-
-    </div>
+    @endcanany
 </div>
 
 <script>
@@ -696,13 +660,11 @@
         const searchInput = document.getElementById('searchInput');
         const searchCount = document.getElementById('searchCount');
         const appCards = document.querySelectorAll('.app-card');
-        const appGroups = document.querySelectorAll('.app-group');
 
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase().trim();
                 let visibleCount = 0;
-                let visibleGroups = 0;
 
                 // Search in app cards
                 appCards.forEach(function(card) {
@@ -715,23 +677,6 @@
                         } else {
                             card.style.display = 'none';
                         }
-                    }
-                });
-
-                // Hide/show groups based on visible cards
-                appGroups.forEach(function(group) {
-                    const groupCards = group.querySelectorAll('.app-card');
-                    const visibleCards = Array.from(groupCards).filter(function(card) {
-                        return card.style.display !== 'none';
-                    });
-
-                    if (visibleCards.length > 0 || searchTerm === '') {
-                        group.style.display = '';
-                        if (visibleCards.length > 0) {
-                            visibleGroups++;
-                        }
-                    } else {
-                        group.style.display = 'none';
                     }
                 });
 

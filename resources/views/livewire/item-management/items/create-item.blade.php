@@ -419,7 +419,12 @@ new class extends Component {
     {
         // Transaction committed successfully
         $this->creating = false;
-        session()->flash('success', __('items.item_created_successfully'));
+        $this->dispatch('success-swal', [
+            'title' => __('general.success'),
+            'text' => __('items.item_created_successfully'),
+            'icon' => 'success',
+            'reload' => false,
+        ]);
     }
 
     private function handleError(\Exception $e)
@@ -431,7 +436,11 @@ new class extends Component {
             'item' => $this->item,
             'unit_rows' => $this->unitRows,
         ]);
-        session()->flash('error', __('items.error_saving_item'));
+        $this->dispatch('error-swal', [
+            'title' => __('general.error'),
+            'text' => __('items.error_saving_item'),
+            'icon' => 'error',
+        ]);
     }
 
     public function edit($itemId)
@@ -605,7 +614,11 @@ new class extends Component {
                 // Refresh units list
                 $this->units = Unit::all();
                 
-                session()->flash('success', __('items.unit_created_successfully'));
+                $this->dispatch('success-swal', [
+                    'title' => __('general.success'),
+                    'text' => __('items.unit_created_successfully'),
+                    'icon' => 'success',
+                ]);
             } elseif ($this->modalType === 'note_detail' && $this->modalData['note_id']) {
                 // Create new note detail
                 $noteDetail = NoteDetails::create([
@@ -616,7 +629,11 @@ new class extends Component {
                 // Refresh notes list
                 $this->notes = Note::with('noteDetails')->get();
                 
-                session()->flash('success', __('items.note_detail_added_successfully', ['name' => $this->modalData['name']]));
+                $this->dispatch('success-swal', [
+                    'title' => __('general.success'),
+                    'text' => __('items.note_detail_added_successfully', ['name' => $this->modalData['name']]),
+                    'icon' => 'success',
+                ]);
             }
 
             DB::commit();
@@ -628,7 +645,11 @@ new class extends Component {
                 'modal_type' => $this->modalType,
                 'modal_data' => $this->modalData,
             ]);
-            session()->flash('error', __('items.error_saving_modal_data'));
+            $this->dispatch('error-swal', [
+                'title' => __('general.error'),
+                'text' => __('items.error_saving_modal_data'),
+                'icon' => 'error',
+            ]);
         }
     }
 
@@ -698,7 +719,11 @@ new class extends Component {
             $key = 'text_' . time() . '_' . rand(1000, 9999);
             $this->selectedVaribalCombinations[$key] = trim($this->newCombinationText);
             $this->newCombinationText = '';
-            session()->flash('success', __('items.combination_added_successfully'));
+            $this->dispatch('success-swal', [
+                'title' => __('general.success'),
+                'text' => __('items.combination_added_successfully'),
+                'icon' => 'success',
+            ]);
         }
     }
 
@@ -706,7 +731,11 @@ new class extends Component {
     {
         if (isset($this->selectedVaribalCombinations[$key])) {
             unset($this->selectedVaribalCombinations[$key]);
-            session()->flash('success', __('items.combination_removed_successfully'));
+            $this->dispatch('success-swal', [
+                'title' => __('general.success'),
+                'text' => __('items.combination_removed_successfully'),
+                'icon' => 'success',
+            ]);
         }
     }
 
@@ -723,7 +752,11 @@ new class extends Component {
         if ($this->editingCombinationKey && !empty(trim($this->editingCombinationText))) {
             $this->selectedVaribalCombinations[$this->editingCombinationKey] = trim($this->editingCombinationText);
             $this->cancelEditingCombination();
-            session()->flash('success', __('items.combination_updated_successfully'));
+            $this->dispatch('success-swal', [
+                'title' => __('general.success'),
+                'text' => __('items.combination_updated_successfully'),
+                'icon' => 'success',
+            ]);
         }
     }
 
@@ -1040,7 +1073,6 @@ new class extends Component {
             </h5>
         </div>
         <div class="card-body">
-            @include('livewire.item-management.items.partials.alerts')
             <form wire:submit.prevent="save" wire:loading.attr="disabled" wire:target="save"
                 wire:loading.class="opacity-50">
                 

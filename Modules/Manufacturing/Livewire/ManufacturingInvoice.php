@@ -912,11 +912,10 @@ class ManufacturingInvoice extends Component
         foreach ($this->selectedProducts as $product) {
             OperationItems::create([
                 'pro_tybe' => 63,
-                'pro_id' => $this->nextProId,
+                'pro_id' => $operation->id,
                 'item_id' => $product['product_id'],
                 'notes' => 'نموذج تصنيع '.$this->templateName,
                 'detail_store' => $this->productAccount,
-                'pro_id' => $operation->id,
                 'is_stock' => 1,
                 'additional' => $product['cost_percentage'],
                 'fat_price' => $this->totalProductsCost,
@@ -930,12 +929,11 @@ class ManufacturingInvoice extends Component
         foreach ($this->selectedRawMaterials as $raw) {
             OperationItems::create([
                 'pro_tybe' => 63,
-                'pro_id' => $this->nextProId,
+                'pro_id' => $operation->id,
                 'item_id' => $raw['item_id'],
                 'notes' => 'نموذج تصنيع '.$this->templateName,
                 'unit_id' => $raw['unit_id'],
                 'detail_store' => $this->productAccount,
-                'pro_id' => $operation->id,
                 'is_stock' => 1,
                 // 'additional' => $raw['cost_percentage'],
                 'item_price' => $raw['average_cost'],
@@ -1143,23 +1141,40 @@ class ManufacturingInvoice extends Component
         $material['total_cost'] = round($quantity * $averageCost, 2);
     }
 
-    // البحث السريع للمنتجات
+    // البحث السريع للمنتجات (محسّن مع cache وbarcode)
     public function searchProducts($term)
     {
         try {
-            if (strlen(trim($term)) < 1) {
+            if (empty(trim($term)) || strlen(trim($term)) < 2) {
                 return [];
             }
 
             $searchTerm = trim($term);
 
-            $results = Item::select('id', 'name', 'average_cost', 'code')
-                ->where(function ($query) use ($searchTerm) {
-                    $query->where('name', 'like', '%'.$searchTerm.'%')
-                        ->orWhere('code', 'like', '%'.$searchTerm.'%');
-                })
-                ->limit(10)
-                ->get();
+            // استخدام cache للنتائج المتكررة
+            $cacheKey = 'product_search_'.md5($searchTerm);
+
+            $results = cache()->remember($cacheKey, 60, function () use ($searchTerm) {
+                // البحث في الباركود أولاً
+                $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', $searchTerm)
+                    ->orWhere('barcode', 'like', $searchTerm.'%')
+                    ->where('isdeleted', 0)
+                    ->limit(5)
+                    ->pluck('item_id')
+                    ->toArray();
+
+                return Item::select('id', 'name', 'average_cost', 'code')
+                    ->where(function ($query) use ($searchTerm, $itemIdsFromBarcode) {
+                        $query->where('name', 'like', $searchTerm.'%')
+                            ->orWhere('name', 'like', '% '.$searchTerm.'%')
+                            ->orWhere('code', 'like', '%'.$searchTerm.'%');
+                        if (! empty($itemIdsFromBarcode)) {
+                            $query->orWhereIn('id', $itemIdsFromBarcode);
+                        }
+                    })
+                    ->limit(10)
+                    ->get();
+            });
 
             return $results->toArray();
         } catch (\Exception $e) {
@@ -1169,23 +1184,40 @@ class ManufacturingInvoice extends Component
         }
     }
 
-    // البحث السريع للمواد الخام
+    // البحث السريع للمواد الخام (محسّن مع cache وbarcode)
     public function searchRawMaterials($term)
     {
         try {
-            if (strlen(trim($term)) < 1) {
+            if (empty(trim($term)) || strlen(trim($term)) < 2) {
                 return [];
             }
 
             $searchTerm = trim($term);
 
-            $results = Item::select('id', 'name', 'average_cost', 'code')
-                ->where(function ($query) use ($searchTerm) {
-                    $query->where('name', 'like', '%'.$searchTerm.'%')
-                        ->orWhere('code', 'like', '%'.$searchTerm.'%');
-                })
-                ->limit(10)
-                ->get();
+            // استخدام cache للنتائج المتكررة
+            $cacheKey = 'raw_material_search_'.md5($searchTerm);
+
+            $results = cache()->remember($cacheKey, 60, function () use ($searchTerm) {
+                // البحث في الباركود أولاً
+                $itemIdsFromBarcode = \App\Models\Barcode::where('barcode', $searchTerm)
+                    ->orWhere('barcode', 'like', $searchTerm.'%')
+                    ->where('isdeleted', 0)
+                    ->limit(5)
+                    ->pluck('item_id')
+                    ->toArray();
+
+                return Item::select('id', 'name', 'average_cost', 'code')
+                    ->where(function ($query) use ($searchTerm, $itemIdsFromBarcode) {
+                        $query->where('name', 'like', $searchTerm.'%')
+                            ->orWhere('name', 'like', '% '.$searchTerm.'%')
+                            ->orWhere('code', 'like', '%'.$searchTerm.'%');
+                        if (! empty($itemIdsFromBarcode)) {
+                            $query->orWhereIn('id', $itemIdsFromBarcode);
+                        }
+                    })
+                    ->limit(10)
+                    ->get();
+            });
 
             return $results->toArray();
         } catch (\Exception $e) {

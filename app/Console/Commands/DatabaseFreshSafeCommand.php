@@ -275,6 +275,42 @@ class DatabaseFreshSafeCommand extends Command
         }
     }
 
+    private function hasIdColumn(string $tableName): bool
+    {
+        try {
+            $columns = DB::select("SHOW COLUMNS FROM `{$tableName}` WHERE Field = 'id'");
+
+            return count($columns) > 0;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    private function getPrimaryKeyColumns(string $tableName): array
+    {
+        try {
+            $keys = DB::select("SHOW KEYS FROM `{$tableName}` WHERE Key_name = 'PRIMARY'");
+
+            // Sort by Seq_in_index to ensure correct order
+            usort($keys, fn ($a, $b) => $a->Seq_in_index <=> $b->Seq_in_index);
+
+            return array_map(fn ($key) => $key->Column_name, $keys);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    private function getFirstColumn(string $tableName): ?string
+    {
+        try {
+            $columns = DB::select("SHOW COLUMNS FROM `{$tableName}` LIMIT 1");
+
+            return ! empty($columns) ? $columns[0]->Field : null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     private function backupTableData($handle, string $tableName, int $rowCount): void
     {
         fwrite($handle, "\n-- Table: {$tableName} ({$rowCount} rows)\n");
@@ -302,12 +338,34 @@ class DatabaseFreshSafeCommand extends Command
         $chunkProgress->setFormat('    %current%/%max% [%bar%] %percent:3s%%');
         $chunkProgress->start();
 
-        DB::table($tableName)
-            ->orderBy('id')
-            ->chunkById($this->chunkSize, function ($rows) use ($handle, $tableName, $chunkProgress) {
-                $this->writeTableData($handle, $tableName, $rows);
-                $chunkProgress->advance();
-            });
+        // Check if table has 'id' column for efficient chunking
+        if ($this->hasIdColumn($tableName)) {
+            // Use chunkById for tables with id column (more efficient)
+            DB::table($tableName)
+                ->orderBy('id')
+                ->chunkById($this->chunkSize, function ($rows) use ($handle, $tableName, $chunkProgress) {
+                    $this->writeTableData($handle, $tableName, $rows);
+                    $chunkProgress->advance();
+                });
+        } else {
+            // Use regular chunk for tables without id column (composite keys, etc.)
+            // Get first primary key column for ordering (or first column if no primary key)
+            $primaryKeyColumns = $this->getPrimaryKeyColumns($tableName);
+            $orderColumn = ! empty($primaryKeyColumns) ? $primaryKeyColumns[0] : $this->getFirstColumn($tableName);
+
+            // Validate orderColumn is not empty
+            if (empty($orderColumn)) {
+                throw new \Exception("Cannot determine order column for table: {$tableName}");
+            }
+
+            // Always use orderBy with chunk (required by Laravel)
+            DB::table($tableName)
+                ->orderBy($orderColumn)
+                ->chunk($this->chunkSize, function ($rows) use ($handle, $tableName, $chunkProgress) {
+                    $this->writeTableData($handle, $tableName, $rows);
+                    $chunkProgress->advance();
+                });
+        }
 
         $chunkProgress->finish();
         $this->newLine();
