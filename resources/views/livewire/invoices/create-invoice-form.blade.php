@@ -67,30 +67,35 @@
                         @endif
                     @endif
 
-                    <div class="col-lg-3 mb-3" style="position: relative;">
-
-                        <label>{{ __('Search Item') }}</label>
-
-                        <div x-data="invoiceSearch({
+                    <div class="col-lg-3 mb-3" style="position: relative;" 
+                        x-data="invoiceSearch({
                             invoiceType: {{ $type }},
                             branchId: '{{ $branch_id ?? '' }}',
                             priceType: {{ $selectedPriceType ?? 1 }},
                             storeId: '{{ $acc2_id ?? '' }}',
                             currentItems: @js($invoiceItems ?? [])
                         })" 
-                        style="position: relative;"
                         wire:ignore.self>
+                        <label>{{ __('Search Item') }}</label>
+
+                        <div style="position: relative;">
 
                             {{-- ✅ تم إزالة @keydown.enter.prevent و @keydown.arrow-down/up - keydownHandler في init() يتعامل مع جميع مفاتيح التنقل --}}
-                            <input type="text" 
-                                x-model="searchTerm" 
-                                @input.debounce.50ms="if (searchTerm && searchTerm.length >= 1) { showResults = true; } search();"
-                                @keydown.escape="clearSearch(true)"
-                                x-on:focus="handleSearchFocus()"
-                                class="form-control frst" 
-                                id="search-input"
-                                placeholder="{{ __('Search by item name...') }}" 
-                                autocomplete="off">
+                            <div class="input-group">
+                                <input type="text" 
+                                    x-model="searchTerm" 
+                                    @input.debounce.50ms="if (searchTerm && searchTerm.length >= 1) { showResults = true; } search();"
+                                    @keydown.escape="clearSearch(true)"
+                                    x-on:focus="handleSearchFocus()"
+                                    class="form-control frst" 
+                                    id="search-input"
+                                    placeholder="{{ __('Search by item name...') }}" 
+                                    autocomplete="off">
+                                
+                                <button class="btn btn-outline-secondary" type="button" @click="loadItems(false)" title="{{ __('Refresh Items Data') }}">
+                                    <i class="fas fa-sync-alt" :class="{'fa-spin': loading}"></i>
+                                </button>
+                            </div>
 
                             {{-- Loading spinner --}}
                             <div x-show="loading" x-cloak
@@ -140,20 +145,15 @@
 
                     <div class="col-lg-3 mb-3">
                         <label>{{ __('Search by Barcode') }}</label>
-                        <input type="text" wire:model.live="barcodeTerm" class="form-control" id="barcode-search"
-                            placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
-                            wire:keydown.enter.prevent="addItemByBarcode" />
-                        @if (strlen($barcodeTerm) > 0 && !empty($barcodeSearchResults) && count($barcodeSearchResults) > 0)
-                            <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                                @foreach ($barcodeSearchResults as $index => $item)
-                                    <li class="list-group-item list-group-item-action"
-                                        wire:click="addItemFromSearchFast({{ $item->id }})">
-                                        {{ $item->name }} ({{ $item->code }})
-                                    </li>
-                                @endforeach
-                            </ul>
-                            {{-- @elseif (strlen($barcodeTerm) > 0) --}}
-                        @endif
+                        {{-- ✅ حقل الباركود يستخدم نفس invoiceSearch component من الحقل السابق (x-data على parent div) --}}
+                        <input type="text" 
+                            x-model="barcodeTerm" 
+                            class="form-control" 
+                            id="barcode-search"
+                            placeholder="{{ __('Enter Barcode ') }}" 
+                            autocomplete="off"
+                            @keydown.enter.prevent="handleBarcodeEnter()" 
+                        />
                     </div>
                     @if (setting('invoice_select_price_type'))
                         {{-- اختيار نوع السعر العام للفاتورة --}}
@@ -205,6 +205,9 @@
     </div>
 </div>
 @push('scripts')
+    {{-- Fuse.js for Client-Side Fuzzy Search --}}
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
+
     {{-- ✅ Include Shared Invoice Scripts Component --}}
     @include('components.invoices.invoice-scripts')
 @endpush

@@ -283,9 +283,15 @@
         // ========================================
         // invoiceSearch Component
         // ========================================
+        // ========================================
+        // invoiceSearch Component (Client-Side Refactored)
+        // ========================================
         Alpine.data('invoiceSearch', (config) => ({
             searchTerm: '',
+            barcodeTerm: '',
             searchResults: [],
+            allItems: [], // Stores all items fetched from API
+            fuse: null,   // Fuse.js instance
             loading: false,
             showResults: false,
             selectedIndex: -1,
@@ -298,12 +304,22 @@
             
             // Internal state
             _keydownHandler: null,
-            _searchDebounceTimer: null,
+            _refreshInterval: null,
+            lastUpdated: null,
 
-            init() {
-                console.log('invoiceSearch init - config:', config);
+            async init() {
+                console.log('invoiceSearch (Client-Side) init - config:', config);
                 
-                // مراقبة تغييرات invoiceItems من Livewire
+                // 1. Load Items from API
+                await this.loadItems();
+                
+                // 2. Setup Background Refresh (Every 60 seconds)
+                this._refreshInterval = setInterval(() => {
+                    console.log('⏰ Auto-refreshing items data...');
+                    this.loadItems(true);
+                }, 60000);
+
+                // 3. Watch for Livewire changes
                 if (this.$wire) {
                     this.$watch('$wire.invoiceItems', (items) => {
                         this.currentItems = items || [];
@@ -313,6 +329,57 @@
                 this.$nextTick(() => {
                     this.setupKeyboardNavigation();
                 });
+            },
+
+            async loadItems(isBackground = false) {
+                if (!isBackground) this.loading = true;
+                
+                console.log(isBackground ? '🔄 loadItems (Background)...' : '🚀 loadItems (Manual)...', { branch: this.branchId, type: this.invoiceType });
+                
+                try {
+                    const response = await fetch(`/api/items/lite?branch_id=${this.branchId}&type=${this.invoiceType}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (!isBackground) { // Only log error prominently if manual
+                            const text = await response.text();
+                            console.error('❌ loadItems: Server Error:', text);
+                            throw new Error('Failed to fetch items: ' + response.status);
+                        }
+                        return;
+                    }
+                    
+                    const newData = await response.json();
+                    
+                    // Only update if we got data
+                    if (Array.isArray(newData)) {
+                        this.allItems = newData;
+                        this.lastUpdated = new Date();
+                        
+                        // Re-Initialize Fuse.js
+                        if (window.Fuse) {
+                            const options = {
+                                keys: ['name', 'code', 'barcode'], 
+                                threshold: 0.3,
+                                ignoreLocation: true
+                            };
+                            this.fuse = new Fuse(this.allItems, options);
+                            console.log(`✅ Items refreshed. Count: ${this.allItems.length}. Time: ${this.lastUpdated.toLocaleTimeString()}`);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('🔥 loadItems: Error:', error);
+                    if (!isBackground) {
+                         Swal.fire({ icon: 'error', title: 'خطأ', text: 'فشل تحديث البيانات' });
+                    }
+                } finally {
+                    if (!isBackground) this.loading = false;
+                }
             },
             
             /**
@@ -326,75 +393,45 @@
                 const keydownHandler = (e) => {
                     const searchTerm = component.searchTerm || '';
                     const searchResults = Array.isArray(component.searchResults) ? component.searchResults : [];
-                    const isLoading = component.loading || false;
-                    
-                    // انتظار انتهاء التحميل
-                    if (isLoading && ['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) {
-                        setTimeout(() => keydownHandler(e), 100);
-                        return;
-                    }
                     
                     if (e.key === 'ArrowDown') {
                         e.preventDefault();
-                        e.stopPropagation();
                         requestAnimationFrame(() => {
-                            if (searchResults.length > 0 || searchTerm.length > 0) {
-                                component.selectNext();
-                            }
+                            if (searchResults.length > 0 || searchTerm.length > 0) component.selectNext();
                         });
                     } else if (e.key === 'ArrowUp') {
                         e.preventDefault();
-                        e.stopPropagation();
                         requestAnimationFrame(() => {
-                            if (searchResults.length > 0 || searchTerm.length > 0) {
-                                component.selectPrevious();
-                            }
+                            if (searchResults.length > 0 || searchTerm.length > 0) component.selectPrevious();
                         });
                     } else if (e.key === 'Enter') {
                         e.preventDefault();
-                        e.stopPropagation();
                         requestAnimationFrame(() => {
-                            if (searchResults.length > 0 || searchTerm.length > 0) {
-                                component.addSelectedItem();
-                            }
+                            if (searchResults.length > 0 || searchTerm.length > 0) component.addSelectedItem();
                         });
                     } else if (e.key === 'Escape') {
                         e.preventDefault();
-                        e.stopPropagation();
                         component.clearSearch(true);
                     }
                 };
                 
-                // إزالة الـ listener القديم
                 if (this._keydownHandler) {
                     searchInput.removeEventListener('keydown', this._keydownHandler, true);
                 }
-                
-                // إضافة الـ listener الجديد
                 searchInput.addEventListener('keydown', keydownHandler, true);
                 this._keydownHandler = keydownHandler;
             },
             
             handleSearchFocus() {
-                const hasSearchTerm = this.searchTerm?.length > 0;
-                const hasResults = this.searchResults?.length > 0;
-                
-                if (hasSearchTerm || hasResults) {
+                if ((this.searchTerm && this.searchTerm.length > 0) || this.searchResults.length > 0) {
                     this.showResults = true;
-                    if (hasResults && this.selectedIndex < 0) {
-                        this.selectedIndex = 0;
-                        this.isCreateNewItemSelected = false;
-                    } else if (hasSearchTerm && !hasResults) {
-                        this.selectedIndex = 0;
-                        this.isCreateNewItemSelected = true;
-                    }
                 }
             },
 
             /**
-             * البحث عن الأصناف - مع debounce
+             * البحث عن الأصناف Use Fuse.js
              */
-            async search() {
+            search() {
                 if (!this.searchTerm || this.searchTerm.length < 2) {
                     this.searchResults = [];
                     this.showResults = false;
@@ -403,43 +440,75 @@
                     return;
                 }
 
-                this.loading = true;
                 this.showResults = true;
-
-                try {
-                    // استخدام Livewire method للبحث
-                    const data = await this.$wire.call('searchItems', this.searchTerm);
-                    this.searchResults = Array.isArray(data) ? data : [];
+                
+                if (this.fuse) {
+                    // Client-Side Search
+                    const results = this.fuse.search(this.searchTerm);
+                    // Map back to item and limit results
+                    this.searchResults = results.map(result => result.item).slice(0, 50);
                     
                     if (this.searchResults.length > 0) {
                         this.selectedIndex = 0;
                         this.isCreateNewItemSelected = false;
-                    } else if (this.searchTerm.length > 0) {
+                    } else {
+                        // No results -> Suggest creation
                         this.selectedIndex = 0;
                         this.isCreateNewItemSelected = true;
                     }
-                } catch (error) {
-                    console.error('Search error:', error);
-                    this.searchResults = [];
-                    this.isCreateNewItemSelected = this.searchTerm.length > 0;
-                } finally {
-                    this.loading = false;
+                }
+            },
+
+            /**
+             * معالجة إدخال الباركود (Client-Side)
+             */
+            handleBarcodeEnter() {
+                if (!this.barcodeTerm || !this.barcodeTerm.trim()) return;
+                
+                const term = this.barcodeTerm.trim();
+                console.log('🔍 Searching for barcode:', term, 'in', this.allItems.length, 'items');
+                
+                // البحث في المصفوفة المحلية
+                // item.barcode should be an array of strings
+                const foundItem = this.allItems.find(item => {
+                    if (!item.barcode) return false;
+                    // Handle both array and string formats
+                    if (Array.isArray(item.barcode)) {
+                        return item.barcode.includes(term);
+                    } else if (typeof item.barcode === 'string') {
+                        return item.barcode === term;
+                    }
+                    return false;
+                });
+
+                if (foundItem) {
+                    // إذا وجد الصنف -> إضافة سريعة
+                    console.log('✅ Barcode found locally:', foundItem.name, foundItem);
+                    this.barcodeTerm = ''; // تفريغ الحقل فوراً
+                    this.addItemFast(foundItem);
+                } else {
+                    console.log('⚠️ Barcode not found locally:', term);
+                    // إذا لم يوجد -> فتح نافذة إنشاء صنف جديد
+                    // Trigger Livewire event listener 'prompt-create-item-from-barcode'
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.dispatch('prompt-create-item-from-barcode', { barcode: term });
+                    } else {
+                        // Fallback: dispatch custom event
+                        window.dispatchEvent(new CustomEvent('prompt-create-item-from-barcode', { detail: { barcode: term } }));
+                    }
+                    this.barcodeTerm = ''; // تفريغ الحقل بعد إظهار الرسالة
                 }
             },
 
             selectNext() {
                 const totalItems = this.searchResults.length;
-                
                 if (totalItems === 0 && this.searchTerm?.length > 0) {
                     this.selectedIndex = 0;
                     this.isCreateNewItemSelected = true;
-                    this.showResults = true;
                     return;
                 }
-                
                 if (totalItems > 0) {
                     this.isCreateNewItemSelected = false;
-                    this.showResults = true;
                     this.selectedIndex = this.selectedIndex < totalItems - 1 ? this.selectedIndex + 1 : 0;
                     this.scrollToSelected();
                 }
@@ -447,17 +516,13 @@
 
             selectPrevious() {
                 const totalItems = this.searchResults.length;
-                
                 if (totalItems === 0 && this.searchTerm?.length > 0) {
                     this.selectedIndex = 0;
                     this.isCreateNewItemSelected = true;
-                    this.showResults = true;
                     return;
                 }
-                
                 if (totalItems > 0) {
                     this.isCreateNewItemSelected = false;
-                    this.showResults = true;
                     this.selectedIndex = this.selectedIndex > 0 ? this.selectedIndex - 1 : totalItems - 1;
                     this.scrollToSelected();
                 }
@@ -477,41 +542,43 @@
                     this.createNewItem();
                     return;
                 }
-                
                 if (this.selectedIndex >= 0 && this.searchResults[this.selectedIndex]) {
                     this.addItemFast(this.searchResults[this.selectedIndex]);
                 }
             },
 
             /**
-             * إضافة صنف للفاتورة (سريع - يستخدم Livewire)
+             * إضافة صنف للفاتورة (يرسل ID للسيرفر فقط)
              */
             async addItemFast(item) {
                 if (!item?.id) return;
                 
-                // ✅ إخفاء النتائج فوراً لمنع الوميض (Flickering)
+                // 1. UI Optimization: Hide results immediately
                 this.showResults = false;
-                this.loading = true;
+                this.searchTerm = ''; // Clear search immediately
+                
+                this.loading = true; // Show spinner if needed (optional)
                 
                 try {
+                    // 2. Call Server to Add Item (Calculations happen there)
                     const result = await this.$wire.call('addItemFromSearchFast', item.id);
                     
                     if (result?.success) {
-                        // تحديث الحسابات
-                        window.handleCalculateRowTotal(result.index);
-                        
-                        // مسح البحث والتركيز على الكمية
-                        this.$nextTick(() => {
-                            setTimeout(() => {
-                                this.clearSearch(false);
-                                
-                                const quantityField = document.getElementById(`quantity-${result.index}`);
-                                if (quantityField) {
-                                    quantityField.focus();
-                                    quantityField.select();
-                                }
-                            }, 200);
-                        });
+                        // 3. Update Row Total Calculation
+                        if (result.index !== undefined) {
+                            window.handleCalculateRowTotal(result.index);
+                            
+                            // 4. Focus Quantity Field
+                            this.$nextTick(() => {
+                                setTimeout(() => {
+                                    const quantityField = document.getElementById(`quantity-${result.index}`);
+                                    if (quantityField) {
+                                        quantityField.focus();
+                                        quantityField.select(); // Select content for easy overwrite
+                                    }
+                                }, 100);
+                            });
+                        }
                     }
                 } catch (error) {
                     console.error('Error adding item:', error);
@@ -525,38 +592,27 @@
                 }
             },
 
-            /**
-             * إنشاء صنف جديد
-             */
             async createNewItem() {
                 if (!this.searchTerm?.trim()) return;
                 
-                // ✅ إخفاء النتائج فوراً
                 this.showResults = false;
                 const itemName = this.searchTerm.trim();
-                this.clearSearch();
+                this.searchTerm = '';
                 
                 try {
                     const result = await this.$wire.call('createNewItem', itemName);
                     
-                    if (result?.success || result?.index !== undefined) {
+                    if (result?.success && result.index !== undefined) {
                         this.$nextTick(() => {
                             setTimeout(() => {
                                 const quantityField = document.getElementById(`quantity-${result.index}`);
-                                if (quantityField) {
-                                    quantityField.focus();
-                                    quantityField.select();
-                                }
+                                if (quantityField) quantityField.focus();
                             }, 200);
                         });
                     }
                 } catch (error) {
                     console.error('Error creating item:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'خطأ',
-                        text: 'فشل في إنشاء الصنف: ' + (error.message || '')
-                    });
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'فشل في إنشاء الصنف' });
                 }
             },
 
@@ -567,19 +623,17 @@
                 this.selectedIndex = -1;
                 this.isCreateNewItemSelected = false;
                 
-                this.$nextTick(() => {
-                    const searchInput = document.getElementById('search-input');
-                    if (searchInput) {
-                        searchInput.value = '';
-                        if (focusSearch) {
-                            setTimeout(() => searchInput.focus(), 50);
-                        }
-                    }
-                });
+                if (focusSearch) {
+                    this.$nextTick(() => {
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput) searchInput.focus();
+                    });
+                }
             },
             
             reinitializeSearch() {
-                this.searchTerm = this.searchTerm || '';
+                // No-op for client side usually, or maybe re-fetch items?
+                // For now, just ensure keynav works.
                 this.$nextTick(() => {
                     setTimeout(() => this.setupKeyboardNavigation(), 150);
                 });

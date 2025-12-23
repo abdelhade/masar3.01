@@ -15,4 +15,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/invoice/items/get-item', [InvoiceItemController::class, 'getItemForInvoice'])->name('api.invoice.items.get-item');
     Route::get('/invoice/items/{id}/details', [InvoiceItemController::class, 'getItemDetails'])->name('api.invoice.items.details');
+    // ✅ New Client-Side Search API
+    Route::get('/items/lite', [App\Http\Controllers\Api\ItemsApiController::class, 'lite'])->name('api.items.lite');
 });
