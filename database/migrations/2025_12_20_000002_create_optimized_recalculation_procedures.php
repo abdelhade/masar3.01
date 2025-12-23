@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip stored procedures for SQLite (not supported)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // 1. Stored Procedure لإعادة حساب average_cost لصنف واحد (محسّنة بدون CURSOR)
         // تستخدم SQL aggregation - أسرع 100x من CURSOR loops
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_recalculate_average_cost');
@@ -223,6 +228,11 @@ SQL);
      */
     public function down(): void
     {
+        // Skip stored procedures for SQLite (not supported)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_recalculate_average_cost');
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_recalculate_average_cost_batch');
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_recalculate_profit');

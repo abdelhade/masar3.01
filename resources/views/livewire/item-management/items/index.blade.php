@@ -1,30 +1,35 @@
 <?php
 
-use Livewire\Volt\Component;
 use App\Models\Item;
-use App\Models\Price;
 use App\Models\Note;
 use App\Models\NoteDetails;
-use App\Support\ItemDataTransformer;
-use Modules\Accounts\Models\AccHead;
 use App\Models\OperationItems;
-use Livewire\WithPagination;
-use Livewire\Attributes\Locked;
-use Livewire\Attributes\Computed;
+use App\Models\Price;
 use App\Services\ItemsQueryService;
+use App\Support\ItemDataTransformer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Volt\Component;
+use Livewire\WithPagination;
+use Modules\Accounts\Models\AccHead;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     public $selectedUnit = [];
+
     public $displayItemData = [];
+
     public $perPage = 100; // Flexible pagination
 
     // Lazy-loaded data caches
     public $loadedPriceData = [];
+
     public $loadedNoteData = [];
 
     // Base quantities cache for current page
@@ -32,18 +37,27 @@ new class extends Component {
 
     #[Locked]
     public $priceTypes;
+
     #[Locked]
     public $noteTypes;
+
     public $search = '';
+
     #[Locked]
     public $warehouses;
+
     public $selectedWarehouse = null;
+
     public $selectedPriceType = '';
+
     #[Locked]
     public $groups;
+
     public $selectedGroup = null;
+
     #[Locked]
     public $categories;
+
     public $selectedCategory = null;
 
     // Column visibility settings
@@ -71,6 +85,7 @@ new class extends Component {
     public function isReportsPage(): bool
     {
         $url = request()->fullUrl() ?? url()->current() ?? '';
+
         return str_contains($url, 'reports');
     }
 
@@ -118,14 +133,14 @@ new class extends Component {
     #[Computed]
     public function items()
     {
-        $queryService = new ItemsQueryService();
-        $items = $queryService->buildFilteredQuery($this->search, (int)$this->selectedGroup, (int)$this->selectedCategory)
+        $queryService = new ItemsQueryService;
+        $items = $queryService->buildFilteredQuery($this->search, (int) $this->selectedGroup, (int) $this->selectedCategory)
             ->paginate($this->perPage);
 
         // Load base quantities for all items in current page
         $this->baseQuantities = $queryService->getBaseQuantitiesForItems(
             $items->pluck('id')->all(),
-            (int)$this->selectedWarehouse
+            (int) $this->selectedWarehouse
         );
 
         // Pre-calculate display data for all items in current page
@@ -137,7 +152,7 @@ new class extends Component {
     protected function prepareDisplayData($items)
     {
         foreach ($items as $item) {
-            if (!isset($this->selectedUnit[$item->id])) {
+            if (! isset($this->selectedUnit[$item->id])) {
                 $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
                 $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
             }
@@ -147,7 +162,7 @@ new class extends Component {
             $baseQty = $this->baseQuantities[$itemId] ?? 0;
             $this->displayItemData[$itemId] = ItemDataTransformer::getItemDataForAlpine(
                 $item,
-                (int)$this->selectedWarehouse,
+                (int) $this->selectedWarehouse,
                 $baseQty
             );
         }
@@ -155,51 +170,52 @@ new class extends Component {
 
     public function getTotalQuantityProperty()
     {
-        if (!$this->selectedPriceType) {
+        if (! $this->selectedPriceType) {
             return 0;
         }
 
-        $queryService = new ItemsQueryService();
+        $queryService = new ItemsQueryService;
+
         return $queryService->getTotalQuantity(
             $this->search,
-            (int)$this->selectedGroup,
-            (int)$this->selectedCategory,
-            (int)$this->selectedWarehouse
+            (int) $this->selectedGroup,
+            (int) $this->selectedCategory,
+            (int) $this->selectedWarehouse
         );
     }
 
     public function getTotalAmountProperty()
     {
-        if (!$this->selectedPriceType) {
+        if (! $this->selectedPriceType) {
             return 0;
         }
 
-        $queryService = new ItemsQueryService();
+        $queryService = new ItemsQueryService;
+
         return $queryService->getTotalAmount(
             $this->search,
-            (int)$this->selectedGroup,
-            (int)$this->selectedCategory,
+            (int) $this->selectedGroup,
+            (int) $this->selectedCategory,
             $this->selectedPriceType,
-            (int)$this->selectedWarehouse
+            (int) $this->selectedWarehouse
         );
     }
-
 
     public function getTotalItemsProperty()
     {
-        if (!$this->selectedPriceType) {
+        if (! $this->selectedPriceType) {
             return 0;
         }
 
-        $queryService = new ItemsQueryService();
+        $queryService = new ItemsQueryService;
+
         return $queryService->getTotalItems(
             $this->search,
-            (int)$this->selectedGroup,
-            (int)$this->selectedCategory,
-            (int)$this->selectedWarehouse
+            (int) $this->selectedGroup,
+            (int) $this->selectedCategory,
+            (int) $this->selectedWarehouse
         );
     }
-
 
     public function updatedSearch()
     {
@@ -271,6 +287,7 @@ new class extends Component {
 
         if ($itemIds->isEmpty()) {
             $this->loadedPriceData[$priceId] = [];
+
             return;
         }
 
@@ -297,6 +314,7 @@ new class extends Component {
 
         if ($itemIds->isEmpty()) {
             $this->loadedNoteData[$noteId] = [];
+
             return;
         }
 
@@ -308,7 +326,6 @@ new class extends Component {
 
         $this->loadedNoteData[$noteId] = $notes;
     }
-
 
     public function getVisibleColumnsCountProperty()
     {
@@ -341,8 +358,6 @@ new class extends Component {
         return $count;
     }
 
-
-
     public function edit($itemId)
     {
         redirect()->route('items.edit', $itemId);
@@ -354,6 +369,7 @@ new class extends Component {
         $operationItems = OperationItems::where('item_id', $itemId)->get();
         if ($operationItems->count() > 0) {
             session()->flash('error', __('items.cannot_delete_item_used_in_operations'));
+
             return;
         }
         $item = Item::with('units', 'prices', 'notes', 'barcodes')->find($itemId);
@@ -377,7 +393,6 @@ new class extends Component {
         $this->dispatch('print-items');
     }
 
-
     public function updateVisibility($columns, $prices, $notes)
     {
         // Update columns
@@ -387,7 +402,7 @@ new class extends Component {
         $previousPrices = $this->visiblePrices;
         $this->visiblePrices = $prices;
         foreach ($prices as $priceId => $isVisible) {
-            if ($isVisible && !($previousPrices[$priceId] ?? false)) {
+            if ($isVisible && ! ($previousPrices[$priceId] ?? false)) {
                 // Newly visible - lazy load
                 $this->loadPriceColumn($priceId);
             }
@@ -397,7 +412,7 @@ new class extends Component {
         $previousNotes = $this->visibleNotes;
         $this->visibleNotes = $notes;
         foreach ($notes as $noteId => $isVisible) {
-            if ($isVisible && !($previousNotes[$noteId] ?? false)) {
+            if ($isVisible && ! ($previousNotes[$noteId] ?? false)) {
                 // Newly visible - lazy load
                 $this->loadNoteColumn($noteId);
             }
@@ -767,11 +782,21 @@ new class extends Component {
                                             @if($visibleColumns['image'])
                                                 <td class="font-hold text-center">
                                                     @php
-                                                        $thumbnail = $item->getFirstMedia('item-thumbnail');
+                                                        // Use eager loaded media first, fallback to getFirstMedia if not loaded
+                                                        // This matches how images are saved in create-item.blade.php using toMediaCollection('item-thumbnail')
+                                                        $thumbnail = null;
+                                                        if ($item->relationLoaded('media')) {
+                                                            $thumbnail = $item->media->where('collection_name', 'item-thumbnail')->first();
+                                                        }
+                                                        // Fallback to getFirstMedia if eager loading didn't work
+                                                        if (!$thumbnail) {
+                                                            $thumbnail = $item->getFirstMedia('item-thumbnail');
+                                                        }
                                                     @endphp
                                                     @if($thumbnail)
                                                         @php
                                                             // Use Media Library's URL method which handles encoding
+                                                            // Same as create-item.blade.php: toMediaCollection('item-thumbnail')
                                                             $thumbUrl = $thumbnail->getUrl('thumb');
                                                             $previewUrl = $thumbnail->getUrl('preview');
                                                         @endphp

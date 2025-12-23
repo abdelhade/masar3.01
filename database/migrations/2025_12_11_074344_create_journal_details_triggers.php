@@ -14,6 +14,11 @@ return new class extends Migration
 
     public function up(): void
     {
+        // Skip stored procedures and triggers for SQLite (not supported)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // 1. نمسح أي حاجة قديمة أولاً (مهم جدًا للتطوير)
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_update_parent_balances');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_details_after_insert');
@@ -164,17 +169,16 @@ return new class extends Migration
 
 
     public function down(): void
-
     {
+        // Skip stored procedures and triggers for SQLite (not supported)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
 
         DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_details_after_insert');
-
         DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_details_after_update');
-
         DB::unprepared('DROP TRIGGER IF EXISTS trg_journal_details_after_delete');
-
         DB::unprepared('DROP PROCEDURE IF EXISTS sp_update_parent_balances');
-
     }
 
 };

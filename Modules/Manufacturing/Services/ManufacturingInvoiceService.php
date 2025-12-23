@@ -660,6 +660,7 @@ class ManufacturingInvoiceService
 
             // حفظ معلومات الفاتورة القديمة قبل الحذف
             $oldOperationDate = $operation->pro_date;
+            $oldOperationCreatedAt = $operation->created_at?->format('Y-m-d H:i:s');
             $oldItemIds = $operation->operationItems()
                 ->where('is_stock', 1)
                 ->pluck('item_id')
@@ -1061,18 +1062,29 @@ class ManufacturingInvoiceService
             DB::commit();
 
             // إعادة حساب average_cost والأرباح والقيود بعد التعديل
+            // مهم: استخدام التاريخ والوقت معاً لضمان الترتيب الزمني الصحيح
             if (! empty($oldItemIds) && ! empty($oldOperationDate)) {
                 try {
+                    // جمع جميع الأصناف المتأثرة (القديمة + الجديدة)
+                    $newItemIds = $operation->operationItems()
+                        ->where('is_stock', 1)
+                        ->pluck('item_id')
+                        ->unique()
+                        ->toArray();
+
+                    $allAffectedItemIds = array_unique(array_merge($oldItemIds, $newItemIds));
+
                     // استخدام Helper لاختيار تلقائي للطريقة المناسبة (Queue/Stored Procedure/PHP)
                     // إعادة حساب average_cost (فاتورة التصنيع تؤثر على average_cost للمنتجات)
-                    RecalculationServiceHelper::recalculateAverageCost($oldItemIds, $oldOperationDate);
+                    RecalculationServiceHelper::recalculateAverageCost($allAffectedItemIds, $oldOperationDate);
 
-                    // إعادة حساب الأرباح والقيود للفواتير المتأثرة (فقط التي بعد تاريخ الفاتورة القديمة)
+                    // إعادة حساب الأرباح والقيود للفواتير المتأثرة
+                    // استخدام التاريخ والوقت معاً لضمان معالجة الفواتير في نفس اليوم بالترتيب الصحيح
                     RecalculationServiceHelper::recalculateProfitsAndJournals(
-                        $oldItemIds,
+                        $allAffectedItemIds,
                         $oldOperationDate,
-                        null, // لا نستثني أي فاتورة عند التعديل
-                        null  // لا نحتاج created_at عند التعديل
+                        $operation->id, // استثناء الفاتورة الحالية من إعادة الحساب
+                        $oldOperationCreatedAt // استخدام الوقت الأصلي للفاتورة لمقارنة الفواتير في نفس اليوم
                     );
                 } catch (\Exception $e) {
                     Log::error('Error recalculating after manufacturing invoice update: '.$e->getMessage());
@@ -1152,6 +1164,7 @@ class ManufacturingInvoiceService
 
             // حفظ معلومات الفاتورة قبل الحذف
             $operationDate = $operation->pro_date;
+            $operationCreatedAt = $operation->created_at?->format('Y-m-d H:i:s');
             $itemIds = $operation->operationItems()
                 ->where('is_stock', 1)
                 ->pluck('item_id')
@@ -1170,6 +1183,7 @@ class ManufacturingInvoiceService
             DB::commit();
 
             // إعادة حساب average_cost والأرباح والقيود بعد الحذف
+            // مهم: استخدام التاريخ والوقت معاً لضمان الترتيب الزمني الصحيح
             if (! empty($itemIds) && ! empty($operationDate)) {
                 try {
                     // استخدام Helper لاختيار تلقائي للطريقة المناسبة (Queue/Stored Procedure/PHP)
@@ -1181,12 +1195,13 @@ class ManufacturingInvoiceService
                         true   // isDelete - مهم جداً!
                     );
 
-                    // إعادة حساب الأرباح والقيود للفواتير المتأثرة (فقط التي بعد تاريخ الفاتورة المحذوفة)
+                    // إعادة حساب الأرباح والقيود للفواتير المتأثرة
+                    // استخدام التاريخ والوقت معاً لمعالجة الفواتير بعد الفاتورة المحذوفة (بما في ذلك نفس اليوم)
                     RecalculationServiceHelper::recalculateProfitsAndJournals(
                         $itemIds,
                         $operationDate,
                         null, // لا نستثني أي فاتورة عند الحذف (لأن الفاتورة محذوفة بالفعل)
-                        null  // لا نحتاج created_at عند الحذف
+                        $operationCreatedAt // استخدام الوقت لمعالجة الفواتير في نفس اليوم بالترتيب الصحيح
                     );
                 } catch (\Exception $e) {
                     Log::error('Error recalculating after manufacturing invoice delete: '.$e->getMessage());

@@ -84,7 +84,7 @@
                             {{-- ✅ تم إزالة @keydown.enter.prevent و @keydown.arrow-down/up - keydownHandler في init() يتعامل مع جميع مفاتيح التنقل --}}
                             <input type="text" 
                                 x-model="searchTerm" 
-                                @input.debounce.300ms="if (searchTerm && searchTerm.length >= 2) { showResults = true; } search();"
+                                @input.debounce.50ms="if (searchTerm && searchTerm.length >= 1) { showResults = true; } search();"
                                 @keydown.escape="clearSearch(true)"
                                 x-on:focus="handleSearchFocus()"
                                 class="form-control frst" 

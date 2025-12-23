@@ -40,10 +40,10 @@ return new class extends Migration
         // Add indexes to attendances table for better performance
         Schema::table('attendances', function (Blueprint $table) {
             // Index for finding attendances by employee and date range
-            $table->index(['employee_id', 'date'], 'idx_employee_date');
+            $table->index(['employee_id', 'date'], 'idx_attendances_employee_date');
             
             // Index for date range queries
-            $table->index('date', 'idx_date');
+            $table->index('date', 'idx_attendances_date');
         });
     }
 
@@ -65,8 +65,8 @@ return new class extends Migration
         });
 
         Schema::table('attendances', function (Blueprint $table) {
-            $table->dropIndex('idx_employee_date');
-            $table->dropIndex('idx_date');
+            $table->dropIndex('idx_attendances_employee_date');
+            $table->dropIndex('idx_attendances_date');
         });
     }
 };

@@ -50,22 +50,44 @@ return new class extends Migration
     }
 
     /**
-     * Check if index exists
+     * Check if index exists (database-agnostic)
      */
     private function indexExists(string $table, string $index): bool
     {
         $connection = Schema::getConnection();
-        $databaseName = $connection->getDatabaseName();
+        $driver = $connection->getDriverName();
 
-        $result = $connection->select(
-            'SELECT COUNT(*) as count 
-             FROM information_schema.statistics 
-             WHERE table_schema = ? 
-             AND table_name = ? 
-             AND index_name = ?',
-            [$databaseName, $table, $index]
-        );
+        try {
+            if ($driver === 'sqlite') {
+                // SQLite: Check using pragma index_list
+                $indexes = $connection->select("PRAGMA index_list({$table})");
+                foreach ($indexes as $idx) {
+                    if ($idx->name === $index) {
+                        return true;
+                    }
+                }
 
-        return $result[0]->count > 0;
+                return false;
+            } elseif ($driver === 'mysql') {
+                // MySQL: Use information_schema
+                $databaseName = $connection->getDatabaseName();
+                $result = $connection->select(
+                    'SELECT COUNT(*) as count 
+                     FROM information_schema.statistics 
+                     WHERE table_schema = ? 
+                     AND table_name = ? 
+                     AND index_name = ?',
+                    [$databaseName, $table, $index]
+                );
+
+                return $result[0]->count > 0;
+            } else {
+                // For other databases, assume index doesn't exist (safe default)
+                return false;
+            }
+        } catch (\Exception $e) {
+            // If check fails, assume index doesn't exist
+            return false;
+        }
     }
 };

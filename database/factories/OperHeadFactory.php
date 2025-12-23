@@ -13,8 +13,8 @@ class OperHeadFactory extends Factory
     {
         return [
             'pro_id'        => $this->faker->numberBetween(1, 10000),
-            'pro_type' => \App\Models\ProType::inRandomOrder()->value('id'),
-            'branch_id'     => $this->faker->numberBetween(1, 50),
+            'pro_type' => 59, // Default to manufacturing invoice type
+            'branch_id'     => 1, // Default branch ID
             'is_stock'      => $this->faker->boolean,
             'is_finance'    => $this->faker->boolean,
             'is_manager'    => $this->faker->boolean,
@@ -33,7 +33,7 @@ class OperHeadFactory extends Factory
             'fat_net'       => $this->faker->randomFloat(2, 100, 200000),
             'user'          => 1,
             'tenant'        => 1,
-            'branch'        => 1,
+            // 'branch'        => 1, // Removed: column doesn't exist (removed in migration 2025_09_14_183413)
             'status'        => 1,
             'paid_from_client' => $this->faker->randomFloat(2, 0, 50000),
         ];

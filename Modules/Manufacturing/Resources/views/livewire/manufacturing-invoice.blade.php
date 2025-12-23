@@ -6,17 +6,19 @@
             <div class="card-body py-2">
                 <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                     <div>
-                        <h1 class="h4 fw-bold text-dark mb-1">{{ __('Manufacturing Invoice') }}</h1>
-                        <div class="d-flex flex-wrap gap-4 text-muted small">
-                            <div>
+                        <h1 class="h4 fw-bold text-dark mb-1 d-flex align-items-center gap-3 flex-wrap">
+                            <span>{{ __('Manufacturing Invoice') }}</span>
+                            <span class="text-muted small fw-normal">|</span>
+                            <span class="text-muted small">
                                 <span class="fw-semibold">{{ __('Invoice Number') }}:</span>
                                 <span class="text-primary fw-bold">{{ $pro_id }}</span>
-                            </div>
-                            <div>
+                            </span>
+                            <span class="text-muted small fw-normal">|</span>
+                            <span class="text-muted small">
                                 <span class="fw-semibold">{{ __('Date') }}:</span>
                                 <span>{{ $invoiceDate }}</span>
-                            </div>
-                        </div>
+                            </span>
+                        </h1>
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center gap-2">
@@ -25,33 +27,36 @@
                         </div>
 
                         @if (setting('manufacture_enable_template_saving'))
-                            <button wire:click="openSaveTemplateModal" class="btn btn-outline-info btn-sm">
-                                <i class="fas fa-save me-1"></i>{{ __('Save Template') }}
+                            <button wire:click="openSaveTemplateModal" 
+                                class="btn btn-primary btn-sm"
+                                title="{{ __('Save Template') }}">
+                                <i class="fas fa-save"></i>
                             </button>
-                            <button wire:click="openLoadTemplateModal" class="btn btn-outline-warning btn-sm">
-                                <i class="fas fa-folder-open me-1"></i>{{ __('Load Template') }}
+                            <button wire:click="openLoadTemplateModal" 
+                                class="btn btn-primary btn-sm"
+                                title="{{ __('Load Template') }}">
+                                <i class="fas fa-folder-open"></i>
                             </button>
                         @endif
 
                         <button wire:click="distributeCostsByPercentage"
                             class="btn btn-primary btn-sm"
-                            @if(count($selectedProducts) === 0) disabled @endif>
-                            <i class="fas fa-percentage me-1"></i>
-                            <span>{{ __('Distribute Costs') }}</span>
+                            @if(count($selectedProducts) === 0) disabled @endif
+                            title="{{ __('Distribute Costs by Percentage') }}">
+                            <i class="fas fa-percentage"></i>
                         </button>
                         <button 
                             x-on:click="if (!$wire.isSaving) { syncForSave(); $wire.saveInvoice(); }"
-                            class="btn btn-success btn-sm"
+                            class="btn btn-primary btn-sm"
                             x-bind:disabled="$wire.isSaving"
                             wire:loading.attr="disabled"
-                            wire:target="saveInvoice">
+                            wire:target="saveInvoice"
+                            title="{{ __('Save Invoice') }}">
                             <span wire:loading.remove wire:target="saveInvoice">
-                                <i class="fas fa-save me-1"></i>
-                                <span>{{ __('Save Invoice') }}</span>
+                                <i class="fas fa-save"></i>
                             </span>
                             <span wire:loading wire:target="saveInvoice">
-                                <i class="fas fa-spinner fa-spin me-1"></i>
-                                <span>{{ __('Saving...') }}</span>
+                                <i class="fas fa-spinner fa-spin"></i>
                             </span>
                         </button>
                     </div>
@@ -205,9 +210,9 @@
         <div class="row" style="margin-bottom: 140px;">
             <div class="col-12">
                         <!-- قسم المنتجات المصنعة -->
-                        <div class="mb-9 card" style="max-height: 200px; overflow-y: auto; overflow-x: hidden;">
+                        <div class="mb-9 card" style="max-height: 200px; overflow-y: auto; overflow-x: hidden; position: relative;">
                             <!-- حقل البحث للمنتجات المصنعة -->
-                            <div class="row">
+                            <div class="row" style="position: sticky; top: 0; z-index: 10; background: white; padding: 10px 0; margin: 0;">
                                 <div class="col-lg-3 mb-0" style="position: relative; z-index: 999;" x-data="productSearch()">
                                     <input type="text" x-model="searchTerm" id="product_search"
                                         class="form-control form-control-sm frst"
@@ -385,9 +390,9 @@
                                                             <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'general_chat' ? 'active show' : '' }}"
                                                                 id="general_chat">
                                                                 <div class="mb-8 card"
-                                                                    style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
+                                                                    style="max-height: 250px; overflow-y: auto; overflow-x: hidden; position: relative;">
                                                                     <!-- حقل البحث للمواد الخام -->
-                                                                    <div class="row p-3">
+                                                                    <div class="row p-3" style="position: sticky; top: 0; z-index: 10; background: white; margin: 0;">
                                                                         <div class="col-lg-3 mb-2" style="position: relative;" x-data="rawMaterialSearch()">
                                                                             <input type="text"
                                                                                 x-model="searchTerm"

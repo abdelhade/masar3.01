@@ -7,6 +7,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Skip stored procedures for SQLite (not supported)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::unprepared('DROP PROCEDURE IF EXISTS RecalculateItemCost');
 
         DB::unprepared(<<<SQL

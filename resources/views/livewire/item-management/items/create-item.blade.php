@@ -1,55 +1,79 @@
 <?php
 
-use Livewire\Volt\Component;
-use App\Models\Unit;
-use App\Models\Price;
+use App\Enums\ItemType;
 use App\Models\Item;
-use Modules\Accounts\Models\AccHead;
 use App\Models\Note;
 use App\Models\NoteDetails;
+use App\Models\Price;
+use App\Models\Unit;
 use App\Models\Varibal;
-use App\Models\VaribalValue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Validate;
-use App\Enums\ItemType;
+use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
 
-new class extends Component {
+new class extends Component
+{
     use WithFileUploads;
 
     //
     public $creating = true;
-    
+
     // Image properties
     public $itemThumbnail = null;
+
     public $itemImages = [];
+
     public $existingThumbnail = null;
+
     public $existingImages = [];
+
     public $units;
+
     public $prices;
+
     public $notes;
+
     public $additionalBarcodes = [];
+
     public $hasVaribals = false;
+
     public $varibals = [];
+
     public $varibalValues = [];
+
     public $selectedVaribalCombinations = [];
+
     public $newCombinationText = '';
+
     public $editingCombinationKey = null;
+
     public $editingCombinationText = '';
+
     public $selectedRowVaribal = null;
+
     public $selectedColVaribal = null;
+
     public $combinationUnitRows = [];
+
     public $activeCombination = null;
+
     public $showBarcodeModal = false;
+
     public $currentBarcodeUnitIndex = null;
+
     public $currentBarcodeCombination = null;
+
     public $modalBarcodeData = [];
 
     // Modal properties
     public $showModal = false;
+
     public $modalType = ''; // 'unit' or 'note'
+
     public $modalTitle = '';
+
     public $modalData = [
         'name' => '',
         'note_id' => null,
@@ -63,6 +87,7 @@ new class extends Component {
         'info' => '',
         'notes' => [],
     ];
+
     // For managing item units
     public $unitRows = [];
 
@@ -84,7 +109,7 @@ new class extends Component {
     {
         return [
             'item.name' => 'required|min:3|unique:items,name',
-            'item.type' => 'required|in:' . implode(',', array_column(ItemType::cases(), 'value')),
+            'item.type' => 'required|in:'.implode(',', array_column(ItemType::cases(), 'value')),
             'item.*.notes.*' => 'nullable|exists:note_details,id',
             'unitRows.*.barcodes.*' => 'nullable|unique:barcodes,barcode|string|distinct|max:25',
             'unitRows.*.cost' => 'required|numeric|min:0|distinct',
@@ -102,10 +127,9 @@ new class extends Component {
             'unitRows.*.u_val' => 'required|numeric|min:0.0001|distinct',
             'unitRows.*.unit_id' => 'required|exists:units,id|distinct',
             'unitRows.*.prices.*' => 'required|numeric|min:0',
-            // Image validation
+            // Image validation - validation will be handled with try-catch in save() method
             'itemThumbnail' => 'nullable|image|max:2048',
             'itemImages.*' => 'nullable|image|max:2048',
-            // 'unitRows.*.barcodes.*' => 'required|string|distinct|max:25|unique:barcodes,barcode',
         ];
     }
 
@@ -157,7 +181,7 @@ new class extends Component {
             'prices' => [],
         ];
         if (count($this->unitRows) > 1) {
-            $this->unitRows[count($this->unitRows) - 2]['barcodes'][] = $this->item['code'] . (count($this->unitRows) - 1);
+            $this->unitRows[count($this->unitRows) - 2]['barcodes'][] = $this->item['code'].(count($this->unitRows) - 1);
         }
     }
 
@@ -194,25 +218,40 @@ new class extends Component {
     public function save()
     {
         $this->prepareBarcodes();
-        $this->validate();
+
+        try {
+            $this->validate();
+        } catch (\League\Flysystem\UnableToRetrieveMetadata $e) {
+            // Handle case where temporary file metadata cannot be retrieved
+            // This can happen if the file was cleaned up before validation
+            // Clear the file references to prevent re-validation errors
+            $this->itemThumbnail = null;
+            $this->itemImages = [];
+
+            // Retry validation without file validation
+            $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Re-throw validation exceptions so they can be handled normally
+            throw $e;
+        }
 
         try {
             DB::beginTransaction();
-            
+
             if ($this->hasVaribals && count($this->selectedVaribalCombinations) > 0) {
                 // Save items with variations
                 $this->saveItemsWithVariations();
             } else {
                 // Save single item
-            $itemModel = Item::create($this->item);
-            $this->attachUnits($itemModel);
-            $this->setAverageCostFromBaseUnit($itemModel);
-            $this->createBarcodes($itemModel);
-            $this->attachPrices($itemModel);
-            $this->attachNotes($itemModel);
-            $this->saveItemImages($itemModel);
+                $itemModel = Item::create($this->item);
+                $this->attachUnits($itemModel);
+                $this->setAverageCostFromBaseUnit($itemModel);
+                $this->createBarcodes($itemModel);
+                $this->attachPrices($itemModel);
+                $this->attachNotes($itemModel);
+                $this->saveItemImages($itemModel);
             }
-            
+
             DB::commit();
             $this->handleSuccess();
         } catch (\Exception $e) {
@@ -238,7 +277,7 @@ new class extends Component {
         }
 
         // Save additional images
-        if (!empty($this->itemImages) && is_array($this->itemImages)) {
+        if (! empty($this->itemImages) && is_array($this->itemImages)) {
             foreach ($this->itemImages as $image) {
                 if ($image && method_exists($image, 'getRealPath')) {
                     $itemModel->addMedia($image->getRealPath())
@@ -253,23 +292,23 @@ new class extends Component {
     {
         $baseCode = $this->item['code'];
         $combinationIndex = 1;
-        
+
         foreach ($this->selectedVaribalCombinations as $combinationKey => $combination) {
             // Create item name with variation
             $itemName = $this->getCombinationDisplayName($combinationKey);
-            
+
             // Create unique code for each combination
             $combinationSuffix = str_pad($combinationIndex, 2, '0', STR_PAD_LEFT);
-            $uniqueCode = $baseCode . $combinationSuffix;
-            
+            $uniqueCode = $baseCode.$combinationSuffix;
+
             // Create item data
             $itemData = $this->item;
             $itemData['name'] = $itemName;
             $itemData['code'] = $uniqueCode;
-            
+
             // Create the item
             $itemModel = Item::create($itemData);
-            
+
             // Attach units, barcodes, prices, and notes for this combination
             if (isset($this->combinationUnitRows[$combinationKey])) {
                 $this->attachCombinationUnits($itemModel, $combinationKey);
@@ -277,7 +316,7 @@ new class extends Component {
                 $this->createCombinationBarcodes($itemModel, $combinationKey);
                 $this->attachCombinationPrices($itemModel, $combinationKey);
             }
-            
+
             $this->attachNotes($itemModel);
             $combinationIndex++;
         }
@@ -299,17 +338,17 @@ new class extends Component {
     {
         $barcodesToCreate = [];
         $baseCode = $itemModel->code;
-        
+
         foreach ($this->combinationUnitRows[$combinationKey] as $unitRowIndex => $unitRow) {
-            if (!empty($unitRow['barcodes'])) {
+            if (! empty($unitRow['barcodes'])) {
                 foreach ($unitRow['barcodes'] as $barcodeIndex => $barcode) {
-                    if (!empty($barcode)) {
+                    if (! empty($barcode)) {
                         $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $barcode];
                     }
                 }
             } else {
                 // Generate unique barcode for each unit in each combination
-                $uniqueBarcode = $baseCode . ($unitRowIndex + 1);
+                $uniqueBarcode = $baseCode.($unitRowIndex + 1);
                 $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $uniqueBarcode];
             }
         }
@@ -323,13 +362,14 @@ new class extends Component {
         if ($combinationIndex === false) {
             $combinationIndex = 0;
         }
+
         return str_pad($combinationIndex + 1, 2, '0', STR_PAD_LEFT);
     }
 
     private function attachCombinationPrices($itemModel, $combinationKey)
     {
         foreach ($this->combinationUnitRows[$combinationKey] as $unitRow) {
-            $prices = collect($unitRow['prices'])->mapWithKeys(fn($price, $id) => [$id => ['unit_id' => $unitRow['unit_id'], 'price' => $price]])->all();
+            $prices = collect($unitRow['prices'])->mapWithKeys(fn ($price, $id) => [$id => ['unit_id' => $unitRow['unit_id'], 'price' => $price]])->all();
             foreach ($prices as $price_id => $price) {
                 $itemModel->prices()->attach($price_id, ['unit_id' => $price['unit_id'], 'price' => $price['price']]);
             }
@@ -340,7 +380,7 @@ new class extends Component {
     {
         foreach ($this->unitRows as $unitRowIndex => &$unitRow) {
             if (empty($unitRow['barcodes'])) {
-                $this->unitRows[$unitRowIndex]['barcodes'][] = $this->item['code'] . ($unitRowIndex + 1);
+                $this->unitRows[$unitRowIndex]['barcodes'][] = $this->item['code'].($unitRowIndex + 1);
             }
         }
         unset($unitRow);
@@ -367,12 +407,12 @@ new class extends Component {
         // Reload item with units to get the pivot data
         $itemModel->refresh();
         $itemModel->load('units');
-        
+
         // Find the base unit (u_val = 1)
         $baseUnit = $itemModel->units->first(function ($unit) {
             return isset($unit->pivot) && $unit->pivot->u_val == 1;
         });
-        
+
         if ($baseUnit && isset($baseUnit->pivot->cost)) {
             // Set average_cost to the cost of the base unit
             $itemModel->update(['average_cost' => $baseUnit->pivot->cost]);
@@ -383,14 +423,14 @@ new class extends Component {
     {
         $barcodesToCreate = [];
         foreach ($this->unitRows as $unitRowIndex => $unitRow) {
-            if (!empty($unitRow['barcodes'])) {
+            if (! empty($unitRow['barcodes'])) {
                 foreach ($unitRow['barcodes'] as $barcode) {
-                    if (!empty($barcode)) {
+                    if (! empty($barcode)) {
                         $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $barcode];
                     }
                 }
             } else {
-                $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $this->item['code'] . $unitRowIndex + 1];
+                $barcodesToCreate[] = ['unit_id' => $unitRow['unit_id'], 'barcode' => $this->item['code'].$unitRowIndex + 1];
             }
         }
         $itemModel->barcodes()->createMany($barcodesToCreate);
@@ -399,7 +439,7 @@ new class extends Component {
     private function attachPrices($itemModel)
     {
         foreach ($this->unitRows as $unitRow) {
-            $prices = collect($unitRow['prices'])->mapWithKeys(fn($price, $id) => [$id => ['unit_id' => $unitRow['unit_id'], 'price' => $price]])->all();
+            $prices = collect($unitRow['prices'])->mapWithKeys(fn ($price, $id) => [$id => ['unit_id' => $unitRow['unit_id'], 'price' => $price]])->all();
             foreach ($prices as $price_id => $price) {
                 $itemModel->prices()->attach($price_id, ['unit_id' => $price['unit_id'], 'price' => $price['price']]);
             }
@@ -409,7 +449,7 @@ new class extends Component {
     private function attachNotes($itemModel)
     {
         $notesData = collect($this->item['notes'] ?? [])
-            ->mapWithKeys(fn($noteDetailName, $noteId) => [$noteId => ['note_detail_name' => $noteDetailName]])
+            ->mapWithKeys(fn ($noteDetailName, $noteId) => [$noteId => ['note_detail_name' => $noteDetailName]])
             ->all();
         $itemModel->notes()->attach($notesData);
         // Notes synced successfully
@@ -445,19 +485,19 @@ new class extends Component {
 
     public function edit($itemId)
     {
-        // 
+        //
     }
 
     public function addAdditionalBarcode($unitRowIndex)
     {
-        $this->dispatch('open-modal', 'add-barcode-modal.' . $unitRowIndex);
+        $this->dispatch('open-modal', 'add-barcode-modal.'.$unitRowIndex);
     }
 
     public function addBarcodeField($unitRowIndex)
     {
         $this->unitRows[$unitRowIndex]['barcodes'][] = '';
-        //auto focus on the last input
-        $this->dispatch('auto-focus', 'unitRows.' . $unitRowIndex . '.barcodes.' . (count($this->unitRows[$unitRowIndex]['barcodes']) - 1));
+        // auto focus on the last input
+        $this->dispatch('auto-focus', 'unitRows.'.$unitRowIndex.'.barcodes.'.(count($this->unitRows[$unitRowIndex]['barcodes']) - 1));
     }
 
     public function removeBarcodeField($unitRowIndex, $barcodeIndex)
@@ -471,7 +511,7 @@ new class extends Component {
         // $this->validate([
         //     'unitRows.*.barcodes.*' => 'required|string|distinct',
         // ]);
-        $this->dispatch('close-modal', 'add-barcode-modal.' . $unitRowIndex);
+        $this->dispatch('close-modal', 'add-barcode-modal.'.$unitRowIndex);
     }
 
     public function cancelBarcodeUpdate($unitRowIndex)
@@ -480,7 +520,7 @@ new class extends Component {
         //     'additionalBarcodes',
         //     // , 'editingBarcodeIndex'
         // );
-        $this->dispatch('close-modal', 'add-barcode-modal.' . $unitRowIndex);
+        $this->dispatch('close-modal', 'add-barcode-modal.'.$unitRowIndex);
     }
 
     /**
@@ -518,7 +558,7 @@ new class extends Component {
 
     public function showBarcodes($index)
     {
-        $this->dispatch('open-modal', 'add-barcode-modal.' . $index);
+        $this->dispatch('open-modal', 'add-barcode-modal.'.$index);
     }
 
     public function createNew()
@@ -553,7 +593,7 @@ new class extends Component {
     {
         $this->modalType = $type;
         $this->resetModalData();
-        
+
         if ($type === 'unit') {
             $this->modalTitle = __('items.create_new_unit');
         } elseif ($type === 'note_detail' && $noteId) {
@@ -561,7 +601,7 @@ new class extends Component {
             $this->modalTitle = __('items.add_new_note_detail', ['note' => $note->name]);
             $this->modalData['note_id'] = $noteId;
         }
-        
+
         $this->showModal = true;
     }
 
@@ -595,10 +635,10 @@ new class extends Component {
         }
 
         $this->validate($rules, [
-            'modalData.name.required' => __('common.name') . ' ' . __('validation.required'),
-            'modalData.name.min' => __('common.name') . ' ' . __('validation.min.string', ['min' => 1]),
-            'modalData.name.max' => __('common.name') . ' ' . __('validation.max.string', ['max' => 255]),
-            'modalData.name.unique' => __('common.name') . ' ' . __('validation.unique'),
+            'modalData.name.required' => __('common.name').' '.__('validation.required'),
+            'modalData.name.min' => __('common.name').' '.__('validation.min.string', ['min' => 1]),
+            'modalData.name.max' => __('common.name').' '.__('validation.max.string', ['max' => 255]),
+            'modalData.name.unique' => __('common.name').' '.__('validation.unique'),
         ]);
 
         try {
@@ -610,10 +650,10 @@ new class extends Component {
                     'name' => $this->modalData['name'],
                     'code' => Unit::max('code') + 1 ?? 1,
                 ]);
-                
+
                 // Refresh units list
                 $this->units = Unit::all();
-                
+
                 $this->dispatch('success-swal', [
                     'title' => __('general.success'),
                     'text' => __('items.unit_created_successfully'),
@@ -625,10 +665,10 @@ new class extends Component {
                     'note_id' => $this->modalData['note_id'],
                     'name' => $this->modalData['name'],
                 ]);
-                
+
                 // Refresh notes list
                 $this->notes = Note::with('noteDetails')->get();
-                
+
                 $this->dispatch('success-swal', [
                     'title' => __('general.success'),
                     'text' => __('items.note_detail_added_successfully', ['name' => $this->modalData['name']]),
@@ -656,8 +696,8 @@ new class extends Component {
     // Varibal management methods
     public function toggleVaribalCombination($rowVaribalId, $rowValueId, $colVaribalId, $colValueId)
     {
-        $key = $rowVaribalId . '_' . $rowValueId . '_' . $colVaribalId . '_' . $colValueId;
-        
+        $key = $rowVaribalId.'_'.$rowValueId.'_'.$colVaribalId.'_'.$colValueId;
+
         if (isset($this->selectedVaribalCombinations[$key])) {
             unset($this->selectedVaribalCombinations[$key]);
         } else {
@@ -672,14 +712,15 @@ new class extends Component {
 
     public function isVaribalCombinationSelected($rowVaribalId, $rowValueId, $colVaribalId, $colValueId)
     {
-        $key = $rowVaribalId . '_' . $rowValueId . '_' . $colVaribalId . '_' . $colValueId;
+        $key = $rowVaribalId.'_'.$rowValueId.'_'.$colVaribalId.'_'.$colValueId;
+
         return isset($this->selectedVaribalCombinations[$key]);
     }
 
     public function getVaribalCombinations()
     {
         $combinations = [];
-        
+
         if (empty($this->selectedVaribalCombinations)) {
             return $combinations;
         }
@@ -692,11 +733,11 @@ new class extends Component {
                 $colVaribal = $this->varibals->find($combination['col_varibal_id']);
                 $rowValue = $rowVaribal ? $rowVaribal->varibalValues->find($combination['row_value_id']) : null;
                 $colValue = $colVaribal ? $colVaribal->varibalValues->find($combination['col_value_id']) : null;
-                
+
                 if ($rowValue && $colValue) {
                     $combinations[] = [
                         'key' => $key,
-                        'display' => $rowValue->value . ' - ' . $colValue->value,
+                        'display' => $rowValue->value.' - '.$colValue->value,
                         'type' => 'grid',
                     ];
                 }
@@ -715,8 +756,8 @@ new class extends Component {
 
     public function addTextCombination()
     {
-        if (!empty(trim($this->newCombinationText))) {
-            $key = 'text_' . time() . '_' . rand(1000, 9999);
+        if (! empty(trim($this->newCombinationText))) {
+            $key = 'text_'.time().'_'.rand(1000, 9999);
             $this->selectedVaribalCombinations[$key] = trim($this->newCombinationText);
             $this->newCombinationText = '';
             $this->dispatch('success-swal', [
@@ -749,7 +790,7 @@ new class extends Component {
 
     public function saveEditingCombination()
     {
-        if ($this->editingCombinationKey && !empty(trim($this->editingCombinationText))) {
+        if ($this->editingCombinationKey && ! empty(trim($this->editingCombinationText))) {
             $this->selectedVaribalCombinations[$this->editingCombinationKey] = trim($this->editingCombinationText);
             $this->cancelEditingCombination();
             $this->dispatch('success-swal', [
@@ -780,7 +821,7 @@ new class extends Component {
 
     public function updatedHasVaribals()
     {
-        if (!$this->hasVaribals) {
+        if (! $this->hasVaribals) {
             // Reset all combinations when varibals are disabled
             $this->selectedVaribalCombinations = [];
             $this->selectedRowVaribal = null;
@@ -803,32 +844,34 @@ new class extends Component {
 
     public function getRowVaribalValues()
     {
-        if (!$this->selectedRowVaribal) {
+        if (! $this->selectedRowVaribal) {
             return collect();
         }
         $varibal = $this->varibals->find($this->selectedRowVaribal);
+
         return $varibal ? $varibal->varibalValues : collect();
     }
 
     public function getColVaribalValues()
     {
-        if (!$this->selectedColVaribal) {
+        if (! $this->selectedColVaribal) {
             return collect();
         }
         $varibal = $this->varibals->find($this->selectedColVaribal);
+
         return $varibal ? $varibal->varibalValues : collect();
     }
 
     public function selectCombination($combinationKey)
     {
         $this->activeCombination = $combinationKey;
-        
+
         // Initialize unit rows for this combination if not exists
-        if (!isset($this->combinationUnitRows[$combinationKey])) {
+        if (! isset($this->combinationUnitRows[$combinationKey])) {
             $this->combinationUnitRows[$combinationKey] = [];
             $this->addCombinationUnitRow($combinationKey);
         }
-        
+
         // Ensure each combination has completely independent data
         $this->ensureCombinationDataIndependence($combinationKey);
     }
@@ -836,16 +879,16 @@ new class extends Component {
     private function ensureCombinationDataIndependence($combinationKey)
     {
         // Make sure each combination has its own independent data structure
-        if (!isset($this->combinationUnitRows[$combinationKey])) {
+        if (! isset($this->combinationUnitRows[$combinationKey])) {
             $this->combinationUnitRows[$combinationKey] = [];
         }
-        
+
         // Initialize empty arrays for each combination if not exists
         foreach ($this->combinationUnitRows[$combinationKey] as $index => $unitRow) {
-            if (!isset($this->combinationUnitRows[$combinationKey][$index]['barcodes'])) {
+            if (! isset($this->combinationUnitRows[$combinationKey][$index]['barcodes'])) {
                 $this->combinationUnitRows[$combinationKey][$index]['barcodes'] = [];
             }
-            if (!isset($this->combinationUnitRows[$combinationKey][$index]['prices'])) {
+            if (! isset($this->combinationUnitRows[$combinationKey][$index]['prices'])) {
                 $this->combinationUnitRows[$combinationKey][$index]['prices'] = [];
             }
         }
@@ -859,10 +902,10 @@ new class extends Component {
 
     public function addCombinationUnitRow($combinationKey)
     {
-        if (!isset($this->combinationUnitRows[$combinationKey])) {
+        if (! isset($this->combinationUnitRows[$combinationKey])) {
             $this->combinationUnitRows[$combinationKey] = [];
         }
-        
+
         // Create completely independent data for this combination
         $newUnitRow = [
             'unit_id' => $this->units->first()->id,
@@ -871,23 +914,23 @@ new class extends Component {
             'barcodes' => [],
             'prices' => [],
         ];
-        
+
         // Initialize prices array for this combination only
         foreach ($this->prices as $price) {
             $newUnitRow['prices'][$price->id] = 0;
         }
-        
+
         // Add initial barcode for the new unit
         $unitIndex = count($this->combinationUnitRows[$combinationKey]);
         $combinationSuffix = $this->getCombinationSuffix($combinationKey);
-        $uniqueBarcode = $this->item['code'] . $combinationSuffix . ($unitIndex + 1);
+        $uniqueBarcode = $this->item['code'].$combinationSuffix.($unitIndex + 1);
         $newUnitRow['barcodes'][] = $uniqueBarcode;
-        
+
         // Ensure barcodes array is properly initialized
-        if (!isset($newUnitRow['barcodes'])) {
+        if (! isset($newUnitRow['barcodes'])) {
             $newUnitRow['barcodes'] = [];
         }
-        
+
         $this->combinationUnitRows[$combinationKey][] = $newUnitRow;
     }
 
@@ -900,7 +943,7 @@ new class extends Component {
         // Only validate base unit (index 0) - calculations moved to client-side
         if ($index == 0 && isset($this->combinationUnitRows[$combinationKey][$index]['u_val'])) {
             $this->validate([
-                'combinationUnitRows.' . $combinationKey . '.0.u_val' => [
+                'combinationUnitRows.'.$combinationKey.'.0.u_val' => [
                     'required',
                     'numeric',
                     'min:1',
@@ -935,12 +978,12 @@ new class extends Component {
 
     public function addCombinationBarcode($combinationKey, $unitRowIndex)
     {
-        if (!isset($this->combinationUnitRows[$combinationKey][$unitRowIndex])) {
+        if (! isset($this->combinationUnitRows[$combinationKey][$unitRowIndex])) {
             return;
         }
 
         $barcodeIndex = count($this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes']);
-        $uniqueBarcode = $this->item['code'] . ($unitRowIndex + 1) . ($barcodeIndex + 1);
+        $uniqueBarcode = $this->item['code'].($unitRowIndex + 1).($barcodeIndex + 1);
         $this->combinationUnitRows[$combinationKey][$unitRowIndex]['barcodes'][] = $uniqueBarcode;
     }
 
@@ -967,7 +1010,7 @@ new class extends Component {
     public function closeBarcodeModal()
     {
         // closeBarcodeModal invoked
-        
+
         $this->showBarcodeModal = false;
         $this->dispatch('close-modal', 'barcodeModal');
         $this->currentBarcodeCombination = null;
@@ -978,15 +1021,15 @@ new class extends Component {
     public function addModalBarcode()
     {
         // addModalBarcode invoked
-        
-        if (!is_array($this->modalBarcodeData)) {
+
+        if (! is_array($this->modalBarcodeData)) {
             $this->modalBarcodeData = [];
         }
         // Reassign to trigger Livewire re-render reliably
         $this->modalBarcodeData = array_values(array_merge($this->modalBarcodeData, ['']));
-        
+
         // Added modal barcode
-        
+
         // Optional: focus last input
         // $this->dispatch('auto-focus', 'modalBarcodeInput.' . (count($this->modalBarcodeData) - 1));
     }
@@ -994,11 +1037,11 @@ new class extends Component {
     public function removeModalBarcode($index)
     {
         // removeModalBarcode invoked
-        
+
         if (isset($this->modalBarcodeData[$index])) {
             unset($this->modalBarcodeData[$index]);
             $this->modalBarcodeData = array_values($this->modalBarcodeData);
-            
+
             // Removed modal barcode
 
             // Component will re-render via state change
@@ -1008,9 +1051,9 @@ new class extends Component {
     public function saveAdditionalBarcodes()
     {
         // saveAdditionalBarcodes invoked
-        
+
         if ($this->currentBarcodeCombination && $this->currentBarcodeUnitIndex !== null) {
-            $unit =& $this->combinationUnitRows[$this->currentBarcodeCombination][$this->currentBarcodeUnitIndex];
+            $unit = &$this->combinationUnitRows[$this->currentBarcodeCombination][$this->currentBarcodeUnitIndex];
             $existing = $unit['barcodes'] ?? [];
             $base = $existing[0] ?? null;
             $additional = [];
@@ -1021,9 +1064,9 @@ new class extends Component {
                 }
             }
             $additional = array_values(array_unique($additional));
-            $unit['barcodes'] = array_values(array_filter(array_merge([$base], $additional), fn($b) => $b !== null && $b !== ''));
+            $unit['barcodes'] = array_values(array_filter(array_merge([$base], $additional), fn ($b) => $b !== null && $b !== ''));
         }
-        
+
         $this->closeBarcodeModal();
     }
 
@@ -1040,6 +1083,7 @@ new class extends Component {
         if ($this->activeCombination && isset($this->combinationUnitRows[$this->activeCombination])) {
             return $this->combinationUnitRows[$this->activeCombination];
         }
+
         return [];
     }
 
@@ -1048,18 +1092,19 @@ new class extends Component {
         if (isset($this->selectedVaribalCombinations[$combinationKey])) {
             $combination = $this->selectedVaribalCombinations[$combinationKey];
             if (is_string($combination)) {
-                return $this->item['name'] . ' - ' . $combination;
+                return $this->item['name'].' - '.$combination;
             } elseif (isset($combination['row_varibal_id'])) {
                 $rowVaribal = $this->varibals->find($combination['row_varibal_id']);
                 $colVaribal = $this->varibals->find($combination['col_varibal_id']);
                 $rowValue = $rowVaribal ? $rowVaribal->varibalValues->find($combination['row_value_id']) : null;
                 $colValue = $colVaribal ? $colVaribal->varibalValues->find($combination['col_value_id']) : null;
-                
+
                 if ($rowValue && $colValue) {
-                    return $this->item['name'] . ' - ' . $rowValue->value . ' - ' . $colValue->value;
+                    return $this->item['name'].' - '.$rowValue->value.' - '.$colValue->value;
                 }
             }
         }
+
         return $this->item['name'];
     }
 }; ?>

@@ -396,123 +396,149 @@
                 @endcan
 
                 {{-- التقارير --}}
-                <a href="{{ route('reports.overall') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="file-bar-chart"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">التقارير</p>
-                </a>
+                @canany(['view DailyWorkAnalysis', 'view Chart-of-Accounts', 'view balance-sheet', 'view Profit-Loss', 'view Sales-Reports', 'view Purchasing-Reports', 'view Inventory-Reports', 'view Expenses-Reports'])
+                    <a href="{{ route('reports.overall') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="file-bar-chart"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">التقارير</p>
+                    </a>
+                @endcanany
             </div>
             @endcanany
 
             <!-- إدارة المبيعات -->
             <div class="group-apps-grid">
                 {{-- crm --}}
-                <a href="{{ route('statistics.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="user-cog"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">CRM</p>
-                </a>
+                @canany(['view CRM', 'view CRM Statistics'])
+                    <a href="{{ route('statistics.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="user-cog"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">CRM</p>
+                    </a>
+                @endcanany
                 {{-- المبيعات --}}
-                <a href="{{ route('invoices.index', ['type' => 10]) }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="trending-up"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">المبيعات</p>
-                </a>
+                @can('view Sales Invoice')
+                    <a href="{{ route('invoices.index', ['type' => 10]) }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="trending-up"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">المبيعات</p>
+                    </a>
+                @endcan
                 {{-- pos --}}
-                <a href="{{ route('pos.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="shopping-cart"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">نقطة البيع</p>
-                </a>
+                @can('view POS')
+                    <a href="{{ route('pos.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="shopping-cart"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">نقطة البيع</p>
+                    </a>
+                @endcan
                 {{-- ادارة المستأجرات --}}
-                <a href="{{ route('rentals.buildings.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="building"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">ادارة المستأجرات</p>
-                </a>
+                @can('view Rental-Management')
+                    <a href="{{ route('rentals.buildings.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="building"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">ادارة المستأجرات</p>
+                    </a>
+                @endcan
             </div>
 
             <!-- المحاسبة والمالية -->
             <div class="group-apps-grid">
                 {{-- ادارة الحسابات --}}
-                <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="file-text"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">أدارة الحسابات</p>
-                </a>
+                @can('view journals')
+                    <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="file-text"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">أدارة الحسابات</p>
+                    </a>
+                @endcan
                 {{-- ادارة المصروفات --}}
-                <a href="{{ route('expenses.dashboard') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="credit-card"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">ادارة المصروفات</p>
-                </a>
+                @can('view Expenses-Management')
+                    <a href="{{ route('expenses.dashboard') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="credit-card"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">ادارة المصروفات</p>
+                    </a>
+                @endcan
                 {{--   السندات الماليه --}}
-                <a href="{{ route('vouchers.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="receipt"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">السندات الماليه</p>
-                </a>
+                @canany(['view receipt vouchers', 'view payment vouchers', 'view exp-payment'])
+                    <a href="{{ route('vouchers.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="receipt"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">السندات الماليه</p>
+                    </a>
+                @endcanany
                 {{-- التحويلات  النقديه --}}
-                <a href="{{ route('transfers.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="arrow-left-right"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">التحويلات النقديه</p>
-                </a>
+                @can('view transfers')
+                    <a href="{{ route('transfers.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="arrow-left-right"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">التحويلات النقديه</p>
+                    </a>
+                @endcan
                 {{-- ادارة الدفعات -?user --}}
-                <a href="{{ route('installments.plans.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="tag"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">ادارة الدفعات</p>
-                </a>
+                @can('view Installment Plans')
+                    <a href="{{ route('installments.plans.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="tag"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">ادارة الدفعات</p>
+                    </a>
+                @endcan
                 {{-- ادارة الشيكات --}}
-                <a href="{{ route('checks.incoming') }}" class="app-card">
-                    <span class="new-badge">جديد 🎉</span>
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="file-check-2"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">إدارة الشيكات</p>
-                </a>
+                @can('view Checks')
+                    <a href="{{ route('checks.incoming') }}" class="app-card">
+                        <span class="new-badge">جديد 🎉</span>
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="file-check-2"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">إدارة الشيكات</p>
+                    </a>
+                @endcan
             </div>
 
             <!-- ادارة المخزون و التصنيع -->
             <div class="group-apps-grid">
                 {{-- ادارة المخزون --}}
-                <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="package"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">ادارة المخزون</p>
-                </a>
+                @canany(['view Inventory-Management', 'view Damaged Goods Invoice', 'view Dispatch Order', 'view Addition Order', 'view Store-to-Store Transfer'])
+                    <a href="{{ route('invoices.index', ['type' => 18]) }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="package"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">ادارة المخزون</p>
+                    </a>
+                @endcanany
                 {{-- التصنيع --}}
-                <a href="{{ route('manufacturing.create') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="factory"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">التصنيع</p>
-                </a>
+                @can('view Manufacturing Invoices')
+                    <a href="{{ route('manufacturing.create') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="factory"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">التصنيع</p>
+                    </a>
+                @endcan
                 {{-- إدارة الجودة --}}
                 @canany([
                     'view quality',
@@ -534,21 +560,25 @@
                     </a>
                 @endcanany
                 {{-- المشتريات --}}
-                <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="shopping-bag"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">المشتريات</p>
-                </a>
+                @can('view Purchase Invoice')
+                    <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="shopping-bag"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">المشتريات</p>
+                    </a>
+                @endcan
                 {{-- الصيانه --}}
-                <a href="{{ route('service.types.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="package"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">الصيانه</p>
-                </a>
+                @canany(['view Service Types', 'view Maintenances', 'view Periodic Maintenance', 'view Maintenance'])
+                    <a href="{{ route('service.types.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="package"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">الصيانه</p>
+                    </a>
+                @endcanany
                 {{-- إدارة الأسطول --}}
                 @can('view Fleet Dashboard')
                 <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" class="app-card">
@@ -565,85 +595,103 @@
             <!-- المشاريع والإنتاج -->
             <div class="group-apps-grid">
                 {{-- المشاريع  --}}
-                <a href="{{ route('projects.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="kanban"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">المشاريع</p>
-                </a>
+                @can('view projects')
+                    <a href="{{ route('projects.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="kanban"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">المشاريع</p>
+                    </a>
+                @endcan
                 {{-- التقدم اليومي --}}
-                <a href="{{ route('progress.projcet.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="bar-chart-3"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">التقدم اليومي</p>
-                </a>
+                @can('view Daily-Progress')
+                    <a href="{{ route('progress.projcet.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="bar-chart-3"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">التقدم اليومي</p>
+                    </a>
+                @endcan
                 {{-- عمليات الاصول  --}}
-                <a href="{{ route('depreciation.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="building"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">عمليات الاصول</p>
-                </a>
+                @can('view Asset-Operations')
+                    <a href="{{ route('depreciation.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="building"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">عمليات الاصول</p>
+                    </a>
+                @endcan
                 {{-- ادارة الموارد  --}}
-                <a href="{{ route('myresources.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="cog"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">إدارة الموارد</p>
-                </a>
+                @can('view MyResources')
+                    <a href="{{ route('myresources.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="cog"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">إدارة الموارد</p>
+                    </a>
+                @endcan
             </div>
 
             <!-- الموارد البشرية -->
             <div class="group-apps-grid">
                 {{-- الموارد البشريه --}}
-                <a href="{{ route('employees.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="users"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">الموارد البشريه</p>
-                </a>
+                @can('view Employees')
+                    <a href="{{ route('employees.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="users"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">الموارد البشريه</p>
+                    </a>
+                @endcan
                 {{-- بصمة الموبايل  --}}
-                <a href="{{ route('mobile.employee-login') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="fingerprint"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">بصمه الموبايل</p>
-                </a>
+                @can('view Mobile-fingerprint')
+                    <a href="{{ route('mobile.employee-login') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="fingerprint"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">بصمه الموبايل</p>
+                    </a>
+                @endcan
             </div>
 
             <!-- الخدمات والعمليات -->
             <div class="group-apps-grid">
                 {{-- ادارة المستأجرات  --}}
-                <a href="{{ route('rentals.buildings.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="building"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">ادارة المستأجرات</p>
-                </a>
+                @can('view Rental-Management')
+                    <a href="{{ route('rentals.buildings.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="building"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">ادارة المستأجرات</p>
+                    </a>
+                @endcan
                 {{-- أدارة الشحن --}}
-                <a href="{{ route('orders.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="truck"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">أدارة الشحن</p>
-                </a>
+                @can('view Orders')
+                    <a href="{{ route('orders.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="truck"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">أدارة الشحن</p>
+                    </a>
+                @endcan
                 {{-- Inquiries --}}
-                <a href="{{ route('inquiries.index') }}" class="app-card">
-                    <div class="app-icon" style="background-color: white;">
-                        <i data-lucide="layers"
-                            style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                    </div>
-                    <p class="app-name">Inquiries</p>
-                </a>
+                @can('view Inquiries')
+                    <a href="{{ route('inquiries.index') }}" class="app-card">
+                        <div class="app-icon" style="background-color: white;">
+                            <i data-lucide="layers"
+                                style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
+                        </div>
+                        <p class="app-name">Inquiries</p>
+                    </a>
+                @endcan
             </div>
         </div>
     @endcanany
