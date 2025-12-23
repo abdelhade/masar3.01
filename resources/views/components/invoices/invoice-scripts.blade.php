@@ -593,6 +593,8 @@
             invoiceItems: initialData.invoiceItems || [],
             discountPercentage: parseFloat(initialData.discountPercentage) || 0,
             additionalPercentage: parseFloat(initialData.additionalPercentage) || 0,
+            vatPercentage: parseFloat(initialData.vatPercentage) || parseFloat(initialData.defaultVatPercentage) || 0,
+            withholdingTaxPercentage: parseFloat(initialData.withholdingTaxPercentage) || parseFloat(initialData.defaultWithholdingTaxPercentage) || 0,
             receivedFromClient: parseFloat(initialData.receivedFromClient) || 0,
             dimensionsUnit: initialData.dimensionsUnit || 'cm',
             enableDimensionsCalculation: initialData.enableDimensionsCalculation || false,
@@ -607,12 +609,15 @@
             subtotal: 0,
             discountValue: 0,
             additionalValue: 0,
+            vatValue: 0,
+            withholdingTaxValue: 0,
             totalAfterAdditional: 0,
             remaining: 0,
             
             // Internal flags
             _discountValueFromPercentage: true,
             _additionalValueFromPercentage: true,
+            _vatValueFromPercentage: true,
             _calculateDebounceTimer: null,
             _updateDisplaysDebounceTimer: null,
 
@@ -659,6 +664,13 @@
                 });
                 this.$watch('additionalValue', () => {
                    if (!this._additionalValueFromPercentage) this.calculateFinalTotals();
+                });
+                this.$watch('vatPercentage', () => {
+                    this._vatValueFromPercentage = true;
+                    this.calculateFinalTotals();
+                });
+                this.$watch('vatValue', () => {
+                    if (!this._vatValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('receivedFromClient', () => this.calculateFinalTotals());
                 this.$watch('isCashAccount', () => this.calculateFinalTotals());
@@ -849,21 +861,35 @@
                     this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
                 }
                 
-                // 3. الإجمالي النهائي
-                this.totalAfterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));
+                const afterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));
+
+                // 3. حساب ضريبة القيمة المضافة (VAT) - readonly من الإعدادات
+                if (this.vatPercentage !== undefined && this.vatValue !== undefined) {
+                    this.vatValue = parseFloat(((afterAdditional * this.vatPercentage) / 100).toFixed(2));
+                }
+
+                // 4. حساب خصم المنبع - readonly من الإعدادات
+                if (this.withholdingTaxPercentage !== undefined && this.withholdingTaxValue !== undefined) {
+                    this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) / 100).toFixed(2));
+                }
                 
-                // 4. الحسابات النقدية
+                // 5. الإجمالي النهائي (بعد الضريبة وخصم المنبع)
+                const vatAmount = parseFloat(this.vatValue || 0);
+                const withholdingAmount = parseFloat(this.withholdingTaxValue || 0);
+                this.totalAfterAdditional = parseFloat((afterAdditional + vatAmount - withholdingAmount).toFixed(2));
+                
+                // 6. الحسابات النقدية
                 if (this.isCashAccount) {
                     this.receivedFromClient = this.totalAfterAdditional;
                     this.remaining = 0;
                 } 
-                // 5. الحسابات العادية
+                // 7. الحسابات العادية
                 else {
                     // للمحافظة على المبلغ المدفوع حتى لو أصبح الإجمالي صفراً (مثلاً عند حذف صنف)
                     this.remaining = parseFloat((this.totalAfterAdditional - this.receivedFromClient).toFixed(2));
                 }
                 
-                // 7. تحديث الرصيد والمتجر
+                // 8. تحديث الرصيد والمتجر
                 this.calculateBalance();
                 this.syncToStore();
             },
@@ -898,6 +924,16 @@
 
             updateAdditionalFromValue() {
                 this._additionalValueFromPercentage = false;
+                this.calculateFinalTotals();
+            },
+
+            updateVatFromPercentage() {
+                this._vatValueFromPercentage = true;
+                this.calculateFinalTotals();
+            },
+
+            updateVatFromValue() {
+                this._vatValueFromPercentage = false;
                 this.calculateFinalTotals();
             },
 
@@ -959,6 +995,10 @@
                     discount_value: this.discountValue,
                     additional_percentage: this.additionalPercentage,
                     additional_value: this.additionalValue,
+                    vat_percentage: this.vatPercentage,
+                    vat_value: this.vatValue,
+                    withholding_tax_percentage: this.withholdingTaxPercentage,
+                    withholding_tax_value: this.withholdingTaxValue,
                     received_from_client: this.receivedFromClient,
                     total_after_additional: this.totalAfterAdditional
                 };

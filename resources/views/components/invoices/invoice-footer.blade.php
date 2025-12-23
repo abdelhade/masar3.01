@@ -296,6 +296,87 @@
                                 id="additional-value">
                         </div>
                     </div>
+
+
+                    {{-- ضريبة القيمة المضافة (VAT) - يظهر فقط إذا كان مفعل --}}
+                    @if(setting('enable_vat_fields') == '1')
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-2 text-right font-weight-bold">
+                            <label style="font-size: 0.95em;">{{ __('VAT %') }}</label>
+                        </div>
+
+
+                        <div class="col-3">
+                            <div class="input-group">
+                                <input type="number" step="0.01" 
+                                    x-model.number="vatPercentage"
+                                    readonly
+                                    class="form-control form-control-sm bg-light"
+                                    style="font-size: 0.95em; height: 2em; padding: 2px 6px;" 
+                                    title="النسبة من الإعدادات">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-2 text-right font-weight-bold">
+                            <label for="vat_value" class="form-label"
+                                style="font-size: 0.95em;">{{ __('VAT Value') }}</label>
+                        </div>
+
+
+                        <div class="col-3">
+                            <input type="number" step="0.01" 
+                                x-model.number="vatValue"
+                                readonly
+                                class="form-control form-control-sm bg-light"
+                                style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
+                                id="vat-value"
+                                title="تُحسب تلقائياً">
+                        </div>
+                    </div>
+
+                    {{-- خصم المنبع - يظهر مع الضريبة --}}
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-2 text-right font-weight-bold">
+                            <label style="font-size: 0.95em;">{{ __('Withholding Tax %') }}</label>
+                        </div>
+
+
+                        <div class="col-3">
+                            <div class="input-group">
+                                <input type="number" step="0.01" 
+                                    x-model.number="withholdingTaxPercentage"
+                                    readonly
+                                    class="form-control form-control-sm bg-light"
+                                    style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
+                                    title="النسبة من الإعدادات">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-2 text-right font-weight-bold">
+                            <label for="withholding_tax_value" class="form-label"
+                                style="font-size: 0.95em;">{{ __('Withholding Tax Value') }}</label>
+                        </div>
+
+
+                        <div class="col-3">
+                            <input type="number" step="0.01" 
+                                x-model.number="withholdingTaxValue"
+                                readonly
+                                class="form-control form-control-sm bg-light"
+                                style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
+                                id="withholding-tax-value"
+                                title="تُحسب تلقائياً">
+                        </div>
+                    </div>
+                    @endif
                 @endif
                 <hr>
                 {{-- الإجمالي النهائي --}}

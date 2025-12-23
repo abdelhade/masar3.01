@@ -3,70 +3,106 @@
 namespace App\Livewire;
 
 use App\Enums\ItemType;
-use Livewire\Component;
 use App\Helpers\ItemViewModel;
-use Illuminate\Support\Collection;
-use App\Services\SaveInvoiceService;
-use Modules\Accounts\Models\AccHead;
 use App\Livewire\Traits\HandlesExpiryDates;
 use App\Livewire\Traits\HandlesInvoiceData;
-use Modules\Invoices\Models\InvoiceTemplate;
-use App\Models\{OperationItems, Item, Barcode, User};
+use App\Models\Barcode;
+use App\Models\Item;
+use App\Models\OperationItems;
+use App\Models\User;
+use App\Services\SaveInvoiceService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Livewire\Component;
+use Modules\Accounts\Models\AccHead;
+use Modules\Invoices\Models\InvoiceTemplate;
 
 class CreateInvoiceForm extends Component
 {
-    use HandlesInvoiceData, HandlesExpiryDates;
+    use HandlesExpiryDates, HandlesInvoiceData;
+
     public $type;
+
     public $acc1_id;
+
     public $acc2_id;
+
     public $emp_id;
+
     public $pro_date;
+
     public $accural_date;
+
     public $pro_id;
+
     public $serial_number;
+
     // ✅ تم نقل UI state properties إلى Alpine.js:
     // - barcodeSearchResults → Alpine.js (يمكن إضافة component للباركود)
     // - selectedBarcodeResultIndex → Alpine.js
     public $barcodeTerm = ''; // يمكن الاحتفاظ به فقط للـ mount
+
     public $barcodeSearchResults = []; // للتوافق مع Blade template حتى يتم تحويله بالكامل إلى Alpine.js
+
     public int $selectedBarcodeResultIndex = -1; // للتوافق مع الكود القديم
+
     public bool $addedFromBarcode = false;
+
     public $searchedTerm = '';
 
     public $cashClientIds = [];
+
     public $cashSupplierIds = [];
 
     public $isCreateNewItemSelected = false;
 
     public $currentBalance = 0;
+
     public $balanceAfterInvoice = 0;
+
     public $showBalance = false;
 
     public $priceTypes = [];
+
     public $selectedPriceType = 1;
+
     public $status = 0;
+
     public $selectedUnit = [];
 
     public $searchTerm = '';
+
     public $searchResults;
+
     public $selectedResultIndex = -1;
+
     public int $quantityClickCount = 0;
+
     public $lastQuantityFieldIndex = null;
 
     public $acc1List;
+
     public $acc2List;
+
     public $employees;
+
     public $deliverys;
+
     public $statues = [];
+
     public $delivery_id = null;
+
     public $nextProId;
+
     public $acc1Role;
+
     public $isCurrentAccountCash = false;
+
     public $acc2Role;
+
     public $cashAccounts;
 
     public $selectedRowIndex = -1;
@@ -83,21 +119,41 @@ class CreateInvoiceForm extends Component
     // - fieldOrder → Alpine.js (invoiceCalculations component)
 
     public $cash_box_id = '';
+
     public $received_from_client = 0;
+
     public $subtotal = 0;
+
     public $discount_percentage = 0;
+
     public $discount_value = 0;
+
     public $additional_percentage = 0;
+
     public $additional_value = 0;
+
     public $total_after_additional = 0;
+
+    public $vat_percentage = 0;
+
+    public $vat_value = 0;
+
+    public $withholding_tax_percentage = 0;
+
+    public $withholding_tax_value = 0;
+
     public $notes = '';
+
     public $settings = [];
 
     public $branch_id;
+
     public $branches;
+
     public $op2; // parent operation id when creating a child/converted operation
 
     public $currentSelectedItem = null;
+
     public $selectedItemData = [
         'name' => '',
         'code' => '',
@@ -107,16 +163,19 @@ class CreateInvoiceForm extends Component
         'cost' => 0,
         'barcode' => '',
         'category' => '',
-        'description' => ''
+        'description' => '',
     ];
 
     public $recommendedItems = [];
 
     public $availableTemplates;
+
     public $selectedTemplateId = null;
+
     public $currentTemplate = null;
 
     public $enableDimensionsCalculation = false;
+
     public $dimensionsUnit = 'cm'; // cm أو m
 
     public $titles = [
@@ -163,7 +222,7 @@ class CreateInvoiceForm extends Component
         $permissionName = 'create ' . ($this->titles[$type] ?? 'Unknown');
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$user || !$user->can($permissionName)) {
+        if (! $user || ! $user->can($permissionName)) {
             abort(403, 'You do not have permission to create ' . ($this->titles[$type] ?? 'this invoice type'));
         }
 
@@ -174,8 +233,6 @@ class CreateInvoiceForm extends Component
         $this->initializeInvoice($type, $hash);
         $this->loadTemplatesForType();
     }
-
-
 
     public function handleItemSelected($data)
     {
@@ -217,7 +274,9 @@ class CreateInvoiceForm extends Component
 
     public function calculateQuantityFromDimensions($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $item = $this->invoiceItems[$index];
         $length = (float) ($item['length'] ?? 0);
@@ -240,6 +299,7 @@ class CreateInvoiceForm extends Component
             $this->calculateTotals();
         }
     }
+
     /**
      * Get where conditions for acc1 based on invoice type
      */
@@ -269,6 +329,7 @@ class CreateInvoiceForm extends Component
 
         return $conditions;
     }
+
     /**
      * تغيير النموذج المختار
      */
@@ -276,12 +337,12 @@ class CreateInvoiceForm extends Component
     {
         $this->currentTemplate = InvoiceTemplate::find($templateId);
 
-        if (!$this->currentTemplate) {
+        if (! $this->currentTemplate) {
             $this->currentTemplate = InvoiceTemplate::getDefaultForType($this->type);
         }
 
         $this->dispatch('template-changed', [
-            'template' => $this->currentTemplate->toArray()
+            'template' => $this->currentTemplate->toArray(),
         ]);
     }
 
@@ -290,7 +351,7 @@ class CreateInvoiceForm extends Component
      */
     public function shouldShowColumn(string $columnKey): bool
     {
-        if (!$this->currentTemplate) {
+        if (! $this->currentTemplate) {
             return true; // إذا لم يكن هناك نموذج، أظهر كل الأعمدة
         }
 
@@ -302,7 +363,7 @@ class CreateInvoiceForm extends Component
      */
     public function getVisibleColumns(): array
     {
-        if (!$this->currentTemplate) {
+        if (! $this->currentTemplate) {
             return [];
         }
 
@@ -312,28 +373,28 @@ class CreateInvoiceForm extends Component
     /**
      * ✅ الحصول على ترتيب الحقول القابلة للتحرير ديناميكياً من Template
      * يُستخدم في Alpine.js للتنقل بالكيبورد بين الحقول
-     * 
+     *
      * @return array ترتيب أسماء الحقول القابلة للتحرير
      */
     public function getEditableFieldsOrder(): array
     {
         // الحقول القابلة للتحرير بالترتيب الافتراضي
         $defaultEditableFields = ['quantity', 'price', 'discount', 'sub_value'];
-        
-        if (!$this->currentTemplate) {
+
+        if (! $this->currentTemplate) {
             return $defaultEditableFields;
         }
 
         // جلب الأعمدة المرتبة من Template
         $orderedColumns = $this->currentTemplate->getOrderedColumns();
-        
+
         // فلترة الأعمدة للحصول على القابلة للتحرير فقط
         $editableColumns = array_filter($orderedColumns, function ($column) {
             return in_array($column, ['quantity', 'price', 'discount', 'sub_value']);
         });
 
         // إرجاع الحقول المرتبة أو الافتراضية إذا كانت فارغة
-        return !empty($editableColumns) ? array_values($editableColumns) : $defaultEditableFields;
+        return ! empty($editableColumns) ? array_values($editableColumns) : $defaultEditableFields;
     }
 
     public function handleAccountCreated($data)
@@ -371,7 +432,7 @@ class CreateInvoiceForm extends Component
         $this->dispatch('success', [
             'title' => 'نجح!',
             'text' => 'تم إضافة الحساب بنجاح وتم تحديده في الفاتورة.',
-            'icon' => 'success'
+            'icon' => 'success',
         ]);
     }
 
@@ -463,6 +524,7 @@ class CreateInvoiceForm extends Component
                         text: 'لا يمكن تفعيل "استخدام آخر سعر من اتفاقية تسعير" و "استخدام آخر سعر بيع" معاً. الرجاء إيقاف أحدهما من الإعدادات.',
                         icon: 'warning'
                     );
+
                     return;
                 }
 
@@ -493,7 +555,7 @@ class CreateInvoiceForm extends Component
     {
         $this->isCurrentAccountCash = false;
 
-        if (!$accountId) {
+        if (! $accountId) {
             return;
         }
 
@@ -639,13 +701,13 @@ class CreateInvoiceForm extends Component
             'price' => $price,
             'average_cost' => $item->average_cost ?? 0,
             'last_purchase_price' => $lastPurchasePrice, // إضافة السعر الأخير هنا
-            'description' => $item->description ?? ''
+            'description' => $item->description ?? '',
         ];
     }
 
     public function createItemFromPrompt($name, $barcode)
     {
-        Log::info('createItemFromPrompt called', ['name' => $name, 'barcode' => $barcode]);
+
         // ✅ استدعاء createNewItem وإرجاع النتيجة
         return $this->createNewItem($name, $barcode);
     }
@@ -662,7 +724,7 @@ class CreateInvoiceForm extends Component
             })
             ->first();
 
-        if (!$item) {
+        if (! $item) {
             // هذا الجزء يبقى كما هو لإظهار نافذة إنشاء صنف جديد
             return $this->dispatch('prompt-create-item-from-barcode', barcode: $barcode);
         }
@@ -680,11 +742,11 @@ class CreateInvoiceForm extends Component
             $this->lastQuantityFieldIndex = $index;
 
             // Notify user
-             if (isset($result['exists']) && $result['exists']) {
-                 $this->dispatch('alert', ['type' => 'info', 'message' => 'تم زيادة كمية الصنف.']);
-             } else {
-                 $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
-             }
+            if (isset($result['exists']) && $result['exists']) {
+                $this->dispatch('alert', ['type' => 'info', 'message' => 'تم زيادة كمية الصنف.']);
+            } else {
+                $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
+            }
 
             $this->dispatch('focus-quantity', ['index' => $index]);
         }
@@ -694,7 +756,7 @@ class CreateInvoiceForm extends Component
 
     public function handleQuantityEnter($index)
     {
-        if (!isset($this->invoiceItems[$index])) {
+        if (! isset($this->invoiceItems[$index])) {
             return;
         }
 
@@ -734,13 +796,13 @@ class CreateInvoiceForm extends Component
         // ✅ مسح تفاصيل الصنف المختار إذا تم حذفه من القائمة
         $stillExists = false;
         foreach ($this->invoiceItems as $item) {
-             if (($item['item_id'] ?? null) == $this->currentSelectedItem) {
-                 $stillExists = true; 
-                 break;
-             }
+            if (($item['item_id'] ?? null) == $this->currentSelectedItem) {
+                $stillExists = true;
+                break;
+            }
         }
-        
-        if (!$stillExists) {
+
+        if (! $stillExists) {
             $this->currentSelectedItem = null;
             $this->selectedItemData = [];
         }
@@ -756,10 +818,10 @@ class CreateInvoiceForm extends Component
     {
         $item = Item::with([
             'units' => fn($q) => $q->orderBy('pivot_u_val', 'asc'),
-            'prices'
+            'prices',
         ])->find($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return null;
         }
 
@@ -767,7 +829,7 @@ class CreateInvoiceForm extends Component
         if (in_array($this->type, [10, 12, 14, 16, 22])) {
             /** @var User|null $user */
             $user = Auth::user();
-            if (!$user || !$user->can('prevent_transactions_without_stock')) {
+            if (! $user || ! $user->can('prevent_transactions_without_stock')) {
                 $availableQty = OperationItems::where('item_id', $item->id)
                     ->where('detail_store', $this->acc2_id)
                     ->selectRaw('SUM(qty_in - qty_out) as total')
@@ -780,6 +842,7 @@ class CreateInvoiceForm extends Component
                         text: 'لا يوجد رصيد كافي من هذا الصنف في المخزن المحدد.',
                         icon: 'warning'
                     );
+
                     return ['error' => 'insufficient_stock'];
                 }
             }
@@ -797,9 +860,10 @@ class CreateInvoiceForm extends Component
         // إذا كان الصنف موجود
         if ($existingItemIndex !== null) {
             $this->lastQuantityFieldIndex = $existingItemIndex;
+
             return [
                 'exists' => true,
-                'index' => $existingItemIndex
+                'index' => $existingItemIndex,
             ];
         }
 
@@ -812,13 +876,14 @@ class CreateInvoiceForm extends Component
         if (in_array($this->type, [11, 15]) && $price == 0) {
             /** @var User|null $user */
             $user = Auth::user();
-            if (!$user || !$user->can('allow_purchase_with_zero_price')) {
+            if (! $user || ! $user->can('allow_purchase_with_zero_price')) {
                 $this->dispatch(
                     'error',
                     title: 'خطأ!',
                     text: 'لا يمكن أن يكون سعر الشراء صفرًا.',
                     icon: 'error'
                 );
+
                 return ['error' => 'zero_price'];
             }
         }
@@ -830,6 +895,7 @@ class CreateInvoiceForm extends Component
                 text: 'لا يمكن إدخال سعر سالب في الفاتورة.',
                 icon: 'error'
             );
+
             return ['error' => 'negative_price'];
         }
 
@@ -871,22 +937,21 @@ class CreateInvoiceForm extends Component
         return [
             'success' => true,
             'index' => $this->lastQuantityFieldIndex,
-            'item' => $newItem
+            'item' => $newItem,
         ];
     }
-
 
     /**
      * ✅ Livewire method محسّن للبحث عن الأصناف
      * يستخدم eager loading ويحسن الأداء بشكل كبير
-     * 
-     * @param string $term نص البحث
+     *
+     * @param  string  $term  نص البحث
      * @return array نتائج البحث (أول 7 أصناف)
      */
     public function searchItems(string $term): array
     {
         $searchTerm = trim($term);
-        
+
         // ✅ إرجاع array فارغ إذا كان البحث فارغ
         if (empty($searchTerm) || strlen($searchTerm) < 2) {
             return [];
@@ -909,7 +974,7 @@ class CreateInvoiceForm extends Component
                 ->where('items.isdeleted', 0)
                 ->where(function ($q) use ($searchTerm) {
                     $q->where('items.name', 'like', $searchTerm . '%')
-                      ->orWhere('items.code', 'like', $searchTerm . '%');
+                        ->orWhere('items.code', 'like', $searchTerm . '%');
                 });
 
             // ✅ تطبيق الفلاتر حسب نوع الفاتورة
@@ -923,7 +988,7 @@ class CreateInvoiceForm extends Component
             if ($this->branch_id) {
                 $query->where(function ($q) {
                     $q->where('items.branch_id', $this->branch_id)
-                      ->orWhereNull('items.branch_id');
+                        ->orWhereNull('items.branch_id');
                 });
             }
 
@@ -969,7 +1034,7 @@ class CreateInvoiceForm extends Component
                 });
 
             // ✅ بناء النتائج
-            $formatted = $items->map(function ($item) use ($unitsData, $pricesData, $selectedPriceId) {
+            $formatted = $items->map(function ($item) use ($unitsData, $pricesData) {
                 $units = $unitsData->get($item->id, collect());
                 $firstUnit = $units->first();
 
@@ -992,9 +1057,9 @@ class CreateInvoiceForm extends Component
                         return [
                             'id' => $unit->unit_id,
                             'name' => $unit->unit_name,
-                            'uval' => $unit->uval ?? 1
+                            'uval' => $unit->uval ?? 1,
                         ];
-                    })->toArray()
+                    })->toArray(),
                 ];
             })->toArray();
 
@@ -1006,10 +1071,10 @@ class CreateInvoiceForm extends Component
     {
         $item = Item::with([
             'units' => fn($q) => $q->orderBy('item_units.u_val', 'asc'), // ✅ صحح اسم الـ column
-            'prices'
+            'prices',
         ])->find($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return ['success' => false, 'message' => 'Item not found'];
         }
 
@@ -1030,15 +1095,15 @@ class CreateInvoiceForm extends Component
 
             // ✅ تحديث بيانات الصنف المختار تلقائياً (Auto-Select)
             $this->updateSelectedItemData(
-                $item, 
-                $this->invoiceItems[$existingItemIndex]['unit_id'], 
+                $item,
+                $this->invoiceItems[$existingItemIndex]['unit_id'],
                 $this->invoiceItems[$existingItemIndex]['price']
             );
 
             return [
                 'success' => true,
                 'exists' => true,
-                'index' => $existingItemIndex
+                'index' => $existingItemIndex,
             ];
         }
 
@@ -1087,7 +1152,7 @@ class CreateInvoiceForm extends Component
         return [
             'success' => true,
             'index' => $newIndex,
-            'item' => $newItem
+            'item' => $newItem,
         ];
     }
 
@@ -1117,15 +1182,9 @@ class CreateInvoiceForm extends Component
 
         return [
             'success' => true,
-            'index' => $newIndex
+            'index' => $newIndex,
         ];
     }
-
-
-
-
-
-
 
     public function updatedAcc2Id()
     {
@@ -1155,7 +1214,6 @@ class CreateInvoiceForm extends Component
         }
     }
 
-
     public function selectItemFromTable($itemId, $unitId, $price)
     {
         $item = Item::with(['units', 'prices'])->find($itemId);
@@ -1173,12 +1231,16 @@ class CreateInvoiceForm extends Component
 
     public function updateUnits($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
         $item = $this->items->firstWhere('id', $itemId);
 
-        if (! $item) return;
+        if (! $item) {
+            return;
+        }
 
         // إعداد الوحدات المتاحة
         $vm = new ItemViewModel(null, $item);
@@ -1194,7 +1256,7 @@ class CreateInvoiceForm extends Component
 
         // إذا لم يتم تحديد وحدة، اختر الأولى
         if (empty($this->invoiceItems[$index]['unit_id'])) {
-            $firstUnit = !empty($unitsCollection) ? $unitsCollection[0] : null;
+            $firstUnit = ! empty($unitsCollection) ? $unitsCollection[0] : null;
             if ($firstUnit) {
                 $this->invoiceItems[$index]['unit_id'] = $firstUnit['id'] ?? null;
             }
@@ -1205,20 +1267,26 @@ class CreateInvoiceForm extends Component
 
     public function updateQuantityForUnit($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
         $oldUnitId = $this->oldUnitId;
 
-        if (!$itemId || !$unitId || !$oldUnitId || $unitId == $oldUnitId) return;
+        if (! $itemId || ! $unitId || ! $oldUnitId || $unitId == $oldUnitId) {
+            return;
+        }
 
         $item = $this->items->firstWhere('id', $itemId);
         // ✅ إذا لم يتم العثور على الصنف في القائمة المحملة، قم بجلبه من قاعدة البيانات
-        if (!$item) {
+        if (! $item) {
             $item = Item::with(['units'])->find($itemId);
         }
-        if (!$item) return;
+        if (! $item) {
+            return;
+        }
 
         $oldUnit = $item->units->where('id', $oldUnitId)->first();
         $newUnit = $item->units->where('id', $unitId)->first();
@@ -1227,12 +1295,14 @@ class CreateInvoiceForm extends Component
             $oldUVal = $oldUnit->pivot->u_val ?? 1;
             $newUVal = $newUnit->pivot->u_val ?? 1;
 
-            if ($newUVal == 0) return; // Avoid division by zero
+            if ($newUVal == 0) {
+                return;
+            } // Avoid division by zero
 
             // Calculate conversion factor: old / new
             $conversionFactor = $oldUVal / $newUVal;
 
-            $currentQty = (float)($this->invoiceItems[$index]['quantity'] ?? 0);
+            $currentQty = (float) ($this->invoiceItems[$index]['quantity'] ?? 0);
             $newQty = $currentQty * $conversionFactor;
 
             $this->invoiceItems[$index]['quantity'] = round($newQty, 4);
@@ -1241,29 +1311,36 @@ class CreateInvoiceForm extends Component
 
     public function updatePriceForUnit($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
 
-        if (!$itemId || !$unitId) return;
+        if (! $itemId || ! $unitId) {
+            return;
+        }
 
         $item = $this->items->firstWhere('id', $itemId);
 
         // ✅ إذا لم يتم العثور على الصنف في القائمة المحملة (لأنه تم البحث عنه وإضافته)، قم بجلبه من قاعدة البيانات
-        if (!$item) {
+        if (! $item) {
             $item = Item::with(['units', 'prices'])->find($itemId);
         }
 
-        if (!$item) return;
+        if (! $item) {
+            return;
+        }
 
-        if ($this->type == 11 && (!setting('allow_purchase_price_change'))) {
+        if ($this->type == 11 && (! setting('allow_purchase_price_change'))) {
             $this->dispatch(
                 'error',
                 title: 'خطأ!',
                 text: 'غير مسموح بتغيير سعر البيع في فاتورة المشتريات.',
                 icon: 'error'
             );
+
             return;
         }
         // حساب السعر للوحدة المختارة
@@ -1280,6 +1357,7 @@ class CreateInvoiceForm extends Component
                 text: 'لا يمكن أن يكون السعر صفرًا في الفاتورة.',
                 icon: 'error'
             );
+
             return;
         }
 
@@ -1290,6 +1368,7 @@ class CreateInvoiceForm extends Component
                 text: 'لا يمكن إدخال سعر سالب في الفاتورة.',
                 icon: 'error'
             );
+
             return;
         }
 
@@ -1302,13 +1381,16 @@ class CreateInvoiceForm extends Component
     public function updatedInvoiceItems($value, $key)
     {
         $parts = explode('.', $key);
-        if (count($parts) < 2) return;
+        if (count($parts) < 2) {
+            return;
+        }
 
         $rowIndex = (int) $parts[0];
         $field = $parts[1];
 
         if (in_array($field, ['length', 'width', 'height', 'density']) && $this->enableDimensionsCalculation) {
             $this->calculateQuantityFromDimensions($rowIndex);
+
             return;
         }
 
@@ -1319,7 +1401,7 @@ class CreateInvoiceForm extends Component
             if (in_array($this->type, [10, 12, 14, 16, 22])) {
                 /** @var User|null $user */
                 $user = Auth::user();
-                if (!$user || !$user->can('prevent_transactions_without_stock')) {
+                if (! $user || ! $user->can('prevent_transactions_without_stock')) {
                     $itemId = $this->invoiceItems[$rowIndex]['item_id'] ?? null;
                     $requestedQty = (float) $value;
 
@@ -1342,7 +1424,7 @@ class CreateInvoiceForm extends Component
 
             if ($this->expiryDateMode !== 'disabled' && in_array($this->type, [10, 12, 14, 16, 22])) {
                 $isValid = $this->validateBatchQuantity($rowIndex);
-                if (!$isValid && $this->expiryDateMode === 'nearest_first') {
+                if (! $isValid && $this->expiryDateMode === 'nearest_first') {
                     $itemId = $this->invoiceItems[$rowIndex]['item_id'] ?? null;
                     $storeId = $this->acc2_id;
                     $requestedQuantity = (float) $value;
@@ -1427,7 +1509,7 @@ class CreateInvoiceForm extends Component
             // ✅ فحص صلاحية تغيير السعر
             /** @var User|null $user */
             $user = Auth::user();
-            if (!$user || !$user->can('allow_price_change')) {
+            if (! $user || ! $user->can('allow_price_change')) {
                 $this->dispatch(
                     'error',
                     title: 'خطأ!',
@@ -1441,23 +1523,25 @@ class CreateInvoiceForm extends Component
                 if ($item) {
                     $this->invoiceItems[$rowIndex]['price'] = $this->calculateItemPrice($item, $unitId, $this->selectedPriceType);
                 }
+
                 return;
             }
 
-            if ($this->type == 11 && !setting('allow_purchase_price_change')) {
+            if ($this->type == 11 && ! setting('allow_purchase_price_change')) {
                 $this->dispatch(
                     'error',
                     title: 'خطأ!',
                     text: 'غير مسموح بتغيير سعر الشراء في فاتورة المشتريات.',
                     icon: 'error'
                 );
+
                 return;
             }
         } elseif ($field === 'discount') {
             // ✅ فحص صلاحية تغيير الخصم
             /** @var User|null $user */
             $user = Auth::user();
-            if (!$user || !$user->can('allow_discount_change')) {
+            if (! $user || ! $user->can('allow_discount_change')) {
                 // $this->dispatch(
                 //     'error',
                 //     title: 'خطأ!',
@@ -1465,6 +1549,7 @@ class CreateInvoiceForm extends Component
                 //     icon: 'error'
                 // );
                 $this->invoiceItems[$rowIndex]['discount'] = 0;
+
                 return;
             }
         }
@@ -1485,7 +1570,7 @@ class CreateInvoiceForm extends Component
                 if (in_array($this->type, [11, 15])) {
                     /** @var User|null $user */
                     $user = Auth::user();
-                    if (!$user || !$user->can('allow_purchase_with_zero_price')) {
+                    if (! $user || ! $user->can('allow_purchase_with_zero_price')) {
                         $this->invoiceItems[$rowIndex]['price'] = 0;
                         $this->dispatch(
                             'error',
@@ -1504,15 +1589,18 @@ class CreateInvoiceForm extends Component
         $this->calculateBalanceAfterInvoice();
     }
 
-
     private function updatePriceToLastCustomerPrice($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
 
-        if (!$itemId || !$unitId || !$this->acc1_id) return;
+        if (! $itemId || ! $unitId || ! $this->acc1_id) {
+            return;
+        }
 
         // البحث عن آخر سعر بيع لهذا العميل لهذا الصنف مع نفس الوحدة
         $lastPrice = OperationItems::whereHas('operhead', function ($query) {
@@ -1534,12 +1622,16 @@ class CreateInvoiceForm extends Component
 
     private function updatePriceFromPricingAgreement($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
 
-        if (!$itemId || !$unitId || !$this->acc1_id) return;
+        if (! $itemId || ! $unitId || ! $this->acc1_id) {
+            return;
+        }
 
         // البحث عن آخر سعر من اتفاقية التسعير لهذا العميل لهذا الصنف مع نفس الوحدة
         $lastPrice = OperationItems::whereHas('operhead', function ($query) {
@@ -1568,6 +1660,7 @@ class CreateInvoiceForm extends Component
                 text: 'غير مسموح بتعديل الفئات السعرية في الفواتير.',
                 icon: 'error'
             );
+
             return;
         }
         foreach ($this->invoiceItems as $index => $item) {
@@ -1588,7 +1681,9 @@ class CreateInvoiceForm extends Component
 
     public function calculateQuantityFromSubValue($index)
     {
-        if (!isset($this->invoiceItems[$index])) return;
+        if (! isset($this->invoiceItems[$index])) {
+            return;
+        }
 
         if (($this->settings['allow_edit_invoice_value'] ?? '0') != '1') {
             $this->dispatch(
@@ -1597,6 +1692,7 @@ class CreateInvoiceForm extends Component
                 text: 'غير مسموح بتعديل قيمة الفاتورة.',
                 icon: 'error'
             );
+
             return;
         }
 
@@ -1610,6 +1706,7 @@ class CreateInvoiceForm extends Component
             $this->invoiceItems[$index]['sub_value'] = 0;
             $this->invoiceItems[$index]['quantity'] = 0;
             $this->calculateTotals();
+
             return;
         }
 
@@ -1719,7 +1816,7 @@ class CreateInvoiceForm extends Component
                 $result = $this->addItemFromSearchFast($existingItem->id);
                 $this->searchTerm = '';
                 $this->barcodeTerm = '';
-                
+
                 // Return the result so the frontend can use it
                 return $result;
             }
@@ -1738,7 +1835,7 @@ class CreateInvoiceForm extends Component
                     $this->dispatch('error', [
                         'title' => 'خطأ!',
                         'text' => 'الباركود "' . $finalBarcode . '" مستخدم من قبل. سيتم استخدام باركود تلقائي.',
-                        'icon' => 'error'
+                        'icon' => 'error',
                     ]);
 
                     // استخدم الكود التلقائي بدلاً من الباركود المكرر
@@ -1758,13 +1855,13 @@ class CreateInvoiceForm extends Component
             // إنشاء الباركود
             $newItem->barcodes()->create([
                 'barcode' => $finalBarcode,
-                'unit_id' => 1
+                'unit_id' => 1,
             ]);
 
             // إعادة تحميل الصنف مع الـ relationships
             $newItem = Item::with([
                 'units' => fn($q) => $q->orderBy('item_units.u_val', 'asc'),
-                'prices'
+                'prices',
             ])->find($newItem->id);
 
             // إضافة الصنف للفاتورة تلقائياً
@@ -1773,36 +1870,23 @@ class CreateInvoiceForm extends Component
             $this->searchTerm = '';
             $this->barcodeTerm = '';
 
-            // Return the result so the frontend can use it
-            Log::info('createNewItem - Item created and added to invoice', [
-                'item_id' => $newItem->id,
-                'item_name' => $name,
-                'result' => $result
-            ]);
-            
+
             return $result;
-        } catch (\Exception $e) {
-            Log::error('createNewItem error', [
-                'name' => $name,
-                'barcode' => $barcode,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+        } catch (\Exception) {
+
+
             $this->dispatch('error', [
                 'title' => 'خطأ!',
-                'text' => 'حدث خطأ: ' . $e->getMessage(),
-                'icon' => 'error'
+                'text' => 'حدث خطأ: ',
+                'icon' => 'error',
             ]);
-            
+
             // Return error result
             return [
                 'success' => false,
-                'message' => $e->getMessage()
             ];
         }
     }
-
 
     // ✅ تم نقل حسابات الخصم والإضافي إلى Alpine.js component (invoiceCalculations)
     // تم حذف: updatedDiscountPercentage, updatedDiscountValue, updatedAdditionalPercentage, updatedAdditionalValue
@@ -1842,8 +1926,8 @@ class CreateInvoiceForm extends Component
     /**
      * ✅ استقبال البيانات من Alpine.js قبل الحفظ
      * يُستدعى من @submit.prevent="syncToLivewire()" في النموذج
-     * 
-     * @param array $alpineData البيانات المحسوبة في Alpine.js
+     *
+     * @param  array  $alpineData  البيانات المحسوبة في Alpine.js
      */
     public function syncFromAlpine(array $alpineData): void
     {
@@ -1896,7 +1980,7 @@ class CreateInvoiceForm extends Component
         // ✅ 1. إعادة حساب جميع الإجماليات للتأكد من صحتها
         $this->recalculateSubValues();
         $this->calculateTotals();
-        
+
         // ✅ 2. Validation نهائي
         if (empty($this->invoiceItems)) {
             $this->dispatch(
@@ -1905,35 +1989,38 @@ class CreateInvoiceForm extends Component
                 text: 'يجب إضافة صنف واحد على الأقل.',
                 icon: 'error'
             );
+
             return null;
         }
-        
+
         // التحقق من صحة الأصناف
         foreach ($this->invoiceItems as $index => $item) {
             $quantity = (float) ($item['quantity'] ?? 0);
             $price = (float) ($item['price'] ?? 0);
-            
+
             if ($quantity <= 0) {
                 $this->dispatch(
                     'error',
                     title: 'خطأ!',
-                    text: "الكمية في الصف " . ($index + 1) . " يجب أن تكون أكبر من صفر.",
+                    text: 'الكمية في الصف ' . ($index + 1) . ' يجب أن تكون أكبر من صفر.',
                     icon: 'error'
                 );
+
                 return null;
             }
-            
+
             if ($price < 0) {
                 $this->dispatch(
                     'error',
                     title: 'خطأ!',
-                    text: "السعر في الصف " . ($index + 1) . " لا يمكن أن يكون سالباً.",
+                    text: 'السعر في الصف ' . ($index + 1) . ' لا يمكن أن يكون سالباً.',
                     icon: 'error'
                 );
+
                 return null;
             }
         }
-        
+
         if (($this->settings['allow_zero_invoice_total'] ?? '0') != '1' && $this->total_after_additional == 0) {
             $this->dispatch(
                 'error',
@@ -1941,11 +2028,12 @@ class CreateInvoiceForm extends Component
                 text: 'قيمة الفاتورة لا يمكن أن تكون صفرًا.',
                 icon: 'error'
             );
+
             return null;
         }
-        
+
         // ✅ 3. الحفظ
-        $service = new SaveInvoiceService();
+        $service = new SaveInvoiceService;
         $operationId = $service->saveInvoice($this);
 
         // If this save was a conversion from a previous operation, redirect back to the tracking view
@@ -1988,7 +2076,7 @@ class CreateInvoiceForm extends Component
             } elseif (str_starts_with($code, '53')) {
                 $group = 'المصروفات';
             }
-            
+
             return [
                 'value' => $id,
                 'label' => $name,
@@ -2000,7 +2088,7 @@ class CreateInvoiceForm extends Component
     public function render()
     {
         return view('livewire.invoices.create-invoice-form', [
-            'acc1Options' => $this->acc1Options
+            'acc1Options' => $this->acc1Options,
         ]);
     }
 }

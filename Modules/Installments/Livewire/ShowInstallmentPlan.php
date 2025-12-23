@@ -77,15 +77,15 @@ class ShowInstallmentPlan extends Component
             // Close modal and show success message
             $this->dispatch('close-modal', 'paymentModal');
             $this->dispatch('payment-success', [
-                'title' => 'تم التسجيل بنجاح',
-                'text' => 'تم تسجيل الدفعة وإنشاء القيد المحاسبي بنجاح',
+                'title' => __('Recorded Successfully'),
+                'text' => __('Payment recorded and journal entry created successfully'),
             ]);
         } catch (\Exception) {
             DB::rollBack();
 
             $this->dispatch('payment-error', [
-                'title' => 'خطأ',
-                'text' => 'حدث خطأ أثناء تسجيل الدفعة: ',
+                'title' => __('Error'),
+                'text' => __('An error occurred while recording the payment'),
             ]);
         }
     }
@@ -106,7 +106,7 @@ class ShowInstallmentPlan extends Component
                 ->first();
 
             if (!$cashAccount) {
-                throw new \Exception('لم يتم العثور على حساب الصندوق (1101)');
+                throw new \Exception(__('Cash account not found'));
             }
 
             // Create OperHead record
@@ -171,8 +171,8 @@ class ShowInstallmentPlan extends Component
 
             if ($payment->status === 'paid') {
                 $this->dispatch('payment-error', [
-                    'title' => 'خطأ',
-                    'text' => 'لا يمكن حذف قسط مدفوع. استخدم زر "إلغاء" بدلاً من ذلك',
+                    'title' => __('Error'),
+                    'text' => __('Cannot delete paid installment'),
                 ]);
                 return;
             }
@@ -181,13 +181,13 @@ class ShowInstallmentPlan extends Component
             $this->plan->refresh();
 
             $this->dispatch('payment-success', [
-                'title' => 'تم الحذف',
-                'text' => 'تم حذف القسط بنجاح',
+                'title' => __('Deleted Successfully'),
+                'text' => __('Installment deleted successfully'),
             ]);
         } catch (\Exception) {
             $this->dispatch('payment-error', [
-                'title' => 'خطأ',
-                'text' => 'حدث خطأ أثناء حذف القسط: ',
+                'title' => __('Error'),
+                'text' => __('An error occurred while deleting the installment'),
             ]);
         }
     }
@@ -204,8 +204,8 @@ class ShowInstallmentPlan extends Component
 
             if ($payment->status !== 'paid') {
                 $this->dispatch('payment-error', [
-                    'title' => 'خطأ',
-                    'text' => 'هذا القسط غير مدفوع',
+                    'title' => __('Error'),
+                    'text' => __('This installment is not paid'),
                 ]);
                 return;
             }
@@ -218,7 +218,7 @@ class ShowInstallmentPlan extends Component
                 'amount_paid' => 0,
                 'payment_date' => null,
                 'status' => 'pending',
-                'notes' => ($payment->notes ?? '') . ' [تم الإلغاء]',
+                'notes' => ($payment->notes ?? '') . ' ' . __('Cancelled'),
             ]);
 
             DB::commit();
@@ -226,15 +226,15 @@ class ShowInstallmentPlan extends Component
             $this->plan->refresh();
 
             $this->dispatch('payment-success', [
-                'title' => 'تم الإلغاء',
-                'text' => 'تم إلغاء الدفعة وحذف القيد المحاسبي بنجاح',
+                'title' => __('Cancelled Successfully'),
+                'text' => __('Payment cancelled and journal entry deleted successfully'),
             ]);
         } catch (\Exception) {
             DB::rollBack();
 
             $this->dispatch('payment-error', [
-                'title' => 'خطأ',
-                'text' => 'حدث خطأ أثناء إلغاء الدفعة: ',
+                'title' => __('Error'),
+                'text' => __('An error occurred while cancelling the payment'),
             ]);
         }
     }
@@ -289,14 +289,14 @@ class ShowInstallmentPlan extends Component
             DB::commit();
 
             // Redirect to plans index with success message
-            session()->flash('message', 'تم حذف الخطة وجميع الأقساط والقيود المحاسبية بنجاح');
+            session()->flash('message', __('Plan and all installments and journal entries deleted successfully'));
             return redirect()->route('installments.plans.index');
         } catch (\Exception) {
             DB::rollBack();
 
             $this->dispatch('payment-error', [
-                'title' => 'خطأ',
-                'text' => 'حدث خطأ أثناء حذف الخطة: ',
+                'title' => __('Error'),
+                'text' => __('An error occurred while deleting the plan'),
             ]);
         }
     }

@@ -43,11 +43,23 @@ class OperationConstraintsButton extends Component
             })
             ->get()
             ->map(function ($head) {
-                // جلب تفاصيل كل قيد (journal_id في journal_details يشير إلى journal_heads.id)
+                // جلب تفاصيل كل قيد مع اسم الحساب
                 $head->details = DB::table('journal_details')
-                    ->where('journal_id', $head->id)
-                    ->where('isdeleted', 0)
-                    ->get();
+                    ->leftJoin('acc_head', 'journal_details.account_id', '=', 'acc_head.id')
+                    ->select(
+                        'journal_details.*',
+                        'acc_head.aname as account_name'
+                    )
+                    ->where('journal_details.journal_id', $head->id)
+                    ->where('journal_details.isdeleted', 0)
+                    ->get()
+                    ->map(function ($detail) {
+                        // إذا لم يتم العثور على اسم الحساب، نحاول جلبه من جدول آخر أو نعرض رقم الحساب
+                        if (!$detail->account_name) {
+                            $detail->account_name = 'حساب #' . $detail->account_id;
+                        }
+                        return $detail;
+                    });
 
                 return $head;
             });

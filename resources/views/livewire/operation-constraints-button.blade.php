@@ -44,7 +44,7 @@
                                             <tbody class="bg-white divide-y divide-gray-200">
                                                 @foreach($head->details as $detail)
                                                     <tr>
-                                                        <td class="px-4 py-2 text-sm">{{ $detail->account_id }}</td>
+                                                        <td class="px-4 py-2 text-sm">{{ $detail->account_name ?? 'حساب #' . $detail->account_id }}</td>
                                                         <td class="px-4 py-2 text-sm">{{ $detail->debit > 0 ? number_format($detail->debit, 2) : '-' }}</td>
                                                         <td class="px-4 py-2 text-sm">{{ $detail->credit > 0 ? number_format($detail->credit, 2) : '-' }}</td>
                                                         <td class="px-4 py-2 text-sm">{{ $detail->info ?? '-' }}</td>

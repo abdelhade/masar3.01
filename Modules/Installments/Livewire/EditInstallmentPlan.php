@@ -113,8 +113,11 @@ class EditInstallmentPlan extends Component
         // Check if amount exceeds available balance
         if ($this->amount_to_be_installed > $this->availableBalance) {
             $this->dispatch('validation-error', [
-                'title' => 'خطأ في المبلغ',
-                'text' => "المبلغ المطلوب ({$this->amount_to_be_installed}) أكبر من الرصيد المتاح ({$this->availableBalance})",
+                'title' => __('Amount Error'),
+                'text' => __('The requested amount is greater than available balance', [
+                    'amount' => $this->amount_to_be_installed,
+                    'balance' => $this->availableBalance
+                ]),
             ]);
             return;
         }
@@ -131,16 +134,16 @@ class EditInstallmentPlan extends Component
             DB::commit();
 
             $this->dispatch('plan-updated', [
-                'title' => 'تم التحديث بنجاح',
-                'text' => 'تم تحديث خطة التقسيط بنجاح',
+                'title' => __('Updated Successfully'),
+                'text' => __('Installment plan updated successfully'),
                 'planId' => $this->plan->id,
             ]);
         } catch (\Exception) {
             DB::rollBack();
 
             $this->dispatch('validation-error', [
-                'title' => 'خطأ',
-                'text' => 'حدث خطأ أثناء تحديث الخطة: ',
+                'title' => __('Error'),
+                'text' => __('An error occurred while updating the plan'),
             ]);
         }
     }

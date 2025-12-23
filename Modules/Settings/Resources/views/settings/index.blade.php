@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    @can('view General Settings')
+    {{-- @can('view General Settings') --}}
         <div class="container-fluid p-3">
             <!-- Compact Header -->
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -75,6 +75,48 @@
                                                                 id="switch-{{ $setting->key }}"
                                                                 {{ $setting->value ? 'checked' : '' }}>
                                                         </div>
+                                                    @elseif ($setting->input_type === 'select' && $setting->key === 'purchase_discount_method')
+                                                        <select name="settings[{{ $setting->key }}]" class="form-select form-select-sm">
+                                                            <option value="1" {{ $setting->value == '1' ? 'selected' : '' }}>
+                                                                الخصم يُخصم من التكلفة
+                                                            </option>
+                                                            <option value="2" {{ $setting->value == '2' ? 'selected' : '' }}>
+                                                                الخصم كإيراد منفصل (الحالي)
+                                                            </option>
+                                                        </select>
+                                                    @elseif ($setting->input_type === 'select' && $setting->key === 'sales_discount_method')
+                                                        <select name="settings[{{ $setting->key }}]" class="form-select form-select-sm">
+                                                            <option value="1" {{ $setting->value == '1' ? 'selected' : '' }}>
+                                                                الطريقة الحالية (من ح/ خصم مسموح به إلى ح/ المبيعات)
+                                                            </option>
+                                                            <option value="2" {{ $setting->value == '2' ? 'selected' : '' }}>
+                                                                قيد عكسي (من ح/ خصم مسموح به إلى ح/ العميل)
+                                                            </option>
+                                                        </select>
+                                                    @elseif ($setting->input_type === 'select' && $setting->key === 'purchase_additional_method')
+                                                        <select name="settings[{{ $setting->key }}]" class="form-select form-select-sm">
+                                                            <option value="1" {{ $setting->value == '1' ? 'selected' : '' }}>
+                                                                يُضاف للتكلفة (الحالي)
+                                                            </option>
+                                                            <option value="2" {{ $setting->value == '2' ? 'selected' : '' }}>
+                                                                كمصروف منفصل (قيد عكسي)
+                                                            </option>
+                                                        </select>
+                                                    @elseif ($setting->input_type === 'select' && $setting->key === 'sales_additional_method')
+                                                        <select name="settings[{{ $setting->key }}]" class="form-select form-select-sm">
+                                                            <option value="1" {{ $setting->value == '1' ? 'selected' : '' }}>
+                                                                يُضاف للإيراد (الحالي)
+                                                            </option>
+                                                            <option value="2" {{ $setting->value == '2' ? 'selected' : '' }}>
+                                                                قيد منفصل للإضافي
+                                                            </option>
+                                                        </select>
+                                                    @elseif (in_array($setting->key, ['vat_sales_account_code', 'vat_purchase_account_code', 'withholding_tax_account_code']))
+                                                        <input type="text"
+                                                            name="settings[{{ $setting->key }}]" 
+                                                            value="{{ $setting->value }}"
+                                                            class="form-control form-control-sm"
+                                                            placeholder="أدخل كود الحساب">
                                                     @else
                                                         <input
                                                             type="{{ $setting->input_type === 'number' ? 'number' : $setting->input_type }}"
@@ -92,23 +134,23 @@
                 </div>
 
                 <!-- Compact Save Button -->
-                @can('edit General Settings')
+                {{-- @can('edit General Settings') --}}
                     <div class="d-flex justify-content-end mt-3 gap-2">
                         <button type="submit" class="btn btn-bg btn-primary btn-lg"
                             style="padding: 15px 40px; font-size: 18px; border-radius: 10px;">
                             <i class="bi bi-check-lg me-1"></i>{{ __('Save Changes') }}
                         </button>
                     </div>
-                @else
+                {{-- @else
                     <div class="alert alert-info mt-3">
                         <i class="bi bi-info-circle me-2"></i>{{ __('You have read-only access to these settings') }}
                     </div>
-                @endcan
+                @endcan --}}
             </form>
         </div>
-    @else
+    {{-- @else --}}
         {{-- No Permission Page --}}
-        <div class="container">
+        {{-- <div class="container">
             <div class="alert alert-danger text-center py-5">
                 <i class="fas fa-ban fa-3x mb-3"></i>
                 <h3>{{ __('Access Denied') }}</h3>
@@ -118,7 +160,7 @@
                 </a>
             </div>
         </div>
-    @endcan
+    @endcan --}}
 
     <style>
         /* Header Icon */
@@ -246,7 +288,16 @@
             font-size: 0.85rem;
         }
 
-        .setting-input .form-control:focus {
+        .setting-input .form-select {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            min-width: 250px;
+        }
+
+        .setting-input .form-control:focus,
+        .setting-input .form-select:focus {
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }

@@ -22,7 +22,9 @@ class EditInvoiceForm extends Component
     public $operationId;
 
     public $operation;
+
     public $type;
+
     public $acc1_id;
 
     protected $listeners = [
@@ -30,7 +32,6 @@ class EditInvoiceForm extends Component
         'branch-changed' => 'handleBranchChange',
         'batch-selected' => 'selectBatch',
     ];
-
 
     public $acc2_id;
 
@@ -135,6 +136,14 @@ class EditInvoiceForm extends Component
 
     public $total_after_additional = 0;
 
+    public $vat_percentage = 0;
+
+    public $vat_value = 0;
+
+    public $withholding_tax_percentage = 0;
+
+    public $withholding_tax_value = 0;
+
     public $notes = '';
 
     public $currentSelectedItem = null;
@@ -222,10 +231,14 @@ class EditInvoiceForm extends Component
         $this->additional_value = $this->operation->fat_plus ?? 0;
         $this->subtotal = $this->operation->fat_total ?? 0;
         $this->total_after_additional = $this->operation->fat_net ?? 0;
+        $this->vat_percentage = $this->operation->vat_percentage ?? 0;
+        $this->vat_value = $this->operation->vat_value ?? 0;
+        $this->withholding_tax_percentage = $this->operation->withholding_tax_percentage ?? 0;
+        $this->withholding_tax_value = $this->operation->withholding_tax_value ?? 0;
         $this->notes = $this->operation->info ?? '';
         $this->received_from_client = $this->operation->paid_from_client ?? 0;
 
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $this->items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
 
         $this->cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
@@ -323,21 +336,21 @@ class EditInvoiceForm extends Component
     /**
      * ✅ الحصول على ترتيب الحقول القابلة للتحرير ديناميكياً من Template
      * يُستخدم في Alpine.js للتنقل بالكيبورد بين الحقول
-     * 
+     *
      * @return array ترتيب أسماء الحقول القابلة للتحرير
      */
     public function getEditableFieldsOrder(): array
     {
         // الحقول القابلة للتحرير بالترتيب الافتراضي
         $defaultEditableFields = ['quantity', 'price', 'discount', 'sub_value'];
-        
+
         if (! $this->currentTemplate) {
             return $defaultEditableFields;
         }
 
         // جلب الأعمدة المرتبة من Template
         $orderedColumns = $this->currentTemplate->getOrderedColumns();
-        
+
         // فلترة الأعمدة للحصول على القابلة للتحرير فقط
         $editableColumns = array_filter($orderedColumns, function ($column) {
             return in_array($column, ['quantity', 'price', 'discount', 'sub_value']);
@@ -390,7 +403,9 @@ class EditInvoiceForm extends Component
 
     protected function loadBranchFilteredData($branchId)
     {
-        if (!$branchId) return;
+        if (! $branchId) {
+            return;
+        }
 
         $clientsAccounts = $this->getAccountsByCodeAndBranch('1103%', $branchId);
         $suppliersAccounts = $this->getAccountsByCodeAndBranch('2101%', $branchId);
@@ -427,7 +442,7 @@ class EditInvoiceForm extends Component
         // القيم المجمعة (للاستخدام عند تفعيل الإعداد)
         $mergedAccounts = null;
         if ($allowAllClientTypes) {
-             $mergedAccounts = collect()
+            $mergedAccounts = collect()
                 ->merge($clientsAccounts)
                 ->merge($suppliersAccounts)
                 ->merge($employeesAccounts)
@@ -459,8 +474,8 @@ class EditInvoiceForm extends Component
 
     protected function getAccountsByCodeAndBranch(string $code, $branchId)
     {
-        $cacheKey = $code . '_' . $branchId;
-        if (!isset(static::$accountCache[$cacheKey])) {
+        $cacheKey = $code.'_'.$branchId;
+        if (! isset(static::$accountCache[$cacheKey])) {
             static::$accountCache[$cacheKey] = AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
                 ->where('code', 'like', $code)
@@ -469,6 +484,7 @@ class EditInvoiceForm extends Component
                 ->orderBy('id')
                 ->get();
         }
+
         return static::$accountCache[$cacheKey];
     }
 
@@ -495,7 +511,7 @@ class EditInvoiceForm extends Component
             }
 
             $availableUnits = $item->units->map(
-                fn($unit) => (object) [
+                fn ($unit) => (object) [
                     'id' => $unit->id,
                     'name' => $unit->name,
                 ]
@@ -550,7 +566,7 @@ class EditInvoiceForm extends Component
             22 => [10, 14, 16],
         ];
         $allowedTypes = $conversionRules[$this->type] ?? array_keys($this->titles);
-        $allowedTypes = array_filter($allowedTypes, fn($type) => $type !== $this->type);
+        $allowedTypes = array_filter($allowedTypes, fn ($type) => $type !== $this->type);
 
         return array_intersect_key($this->titles, array_flip($allowedTypes));
     }
@@ -592,7 +608,7 @@ class EditInvoiceForm extends Component
         $this->updatePricesForNewType();
         $this->calculateTotals();
         $this->closeConvertModal();
-        Alert::toast('تم تحويل الفاتورة بنجاح من ' . $this->titles[$oldType] . ' إلى ' . $this->titles[$this->type], 'success');
+        Alert::toast('تم تحويل الفاتورة بنجاح من '.$this->titles[$oldType].' إلى '.$this->titles[$this->type], 'success');
     }
 
     // Direct edit mode - no need for enableEditing method
@@ -624,8 +640,9 @@ class EditInvoiceForm extends Component
 
     public function checkCashAccount($accountId)
     {
-        if (!$accountId) {
+        if (! $accountId) {
             $this->isCurrentAccountCash = false;
+
             return;
         }
 
@@ -674,10 +691,11 @@ class EditInvoiceForm extends Component
     {
         // ✅ استدعاء createNewItem وإرجاع النتيجة
         $this->createNewItem($name, $barcode);
+
         // ✅ إرجاع نتيجة نجاح (EditInvoiceForm لا يرجع index مثل CreateInvoiceForm)
         return [
             'success' => true,
-            'message' => 'تم إنشاء الصنف بنجاح'
+            'message' => 'تم إنشاء الصنف بنجاح',
         ];
     }
 
@@ -687,7 +705,7 @@ class EditInvoiceForm extends Component
         if (empty($barcode)) {
             return;
         }
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])
             ->whereHas('barcodes', function ($query) use ($barcode) {
                 $query->where('barcode', $barcode);
             })
@@ -779,12 +797,12 @@ class EditInvoiceForm extends Component
     public function updatedSearchTerm($value)
     {
         $this->selectedResultIndex = -1;
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
+        $this->items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();
         $this->searchResults = strlen($value) < 1
             ? collect()
             : Item::with(['units', 'prices'])
-            ->where('name', 'like', "%{$value}%")
-            ->take(5)->get();
+                ->where('name', 'like', "%{$value}%")
+                ->take(5)->get();
     }
 
     public function updatedBarcodeTerm($value)
@@ -792,8 +810,8 @@ class EditInvoiceForm extends Component
         $this->barcodeSearchResults = strlen($value) < 1
             ? collect()
             : Item::with(['units', 'prices'])
-            ->where('code', 'like', "%{$value}%")
-            ->take(5)->get();
+                ->where('code', 'like', "%{$value}%")
+                ->take(5)->get();
     }
 
     // public function addItemByBarcode()
@@ -820,7 +838,7 @@ class EditInvoiceForm extends Component
 
     public function addItemFromSearch($itemId)
     {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) {
             return;
         }
@@ -940,7 +958,7 @@ class EditInvoiceForm extends Component
         }
         $vm = new ItemViewModel(null, $item, $selectedUnitId = null);
         $opts = $vm->getUnitOptions();
-        $unitsCollection = collect($opts)->map(fn($entry) => (object) [
+        $unitsCollection = collect($opts)->map(fn ($entry) => (object) [
             'id' => $entry['value'],
             'name' => $entry['label'],
         ]);
@@ -1136,7 +1154,7 @@ class EditInvoiceForm extends Component
         $this->subtotal = collect($this->invoiceItems)->sum('sub_value');
         $discountPercentage = (float) ($this->discount_percentage ?? 0);
         $additionalPercentage = (float) ($this->additional_percentage ?? 0);
-        
+
         $this->discount_value = round(($this->subtotal * $discountPercentage) / 100, 2);
         $this->additional_value = round(($this->subtotal * $additionalPercentage) / 100, 2);
         $this->total_after_additional = round($this->subtotal - $this->discount_value + $this->additional_value, 2);
@@ -1224,8 +1242,8 @@ class EditInvoiceForm extends Component
     /**
      * ✅ استقبال البيانات من Alpine.js قبل الحفظ
      * يُستدعى من @submit.prevent="syncToLivewire()" في النموذج
-     * 
-     * @param array $alpineData البيانات المحسوبة في Alpine.js
+     *
+     * @param  array  $alpineData  البيانات المحسوبة في Alpine.js
      */
     public function syncFromAlpine(array $alpineData): void
     {
@@ -1281,49 +1299,54 @@ class EditInvoiceForm extends Component
                 'type' => 'error',
                 'message' => 'لا توجد فاتورة لتحريرها.',
             ]);
+
             return false;
         }
 
         // ✅ 1. إعادة حساب جميع الإجماليات للتأكد من صحتها
         $this->recalculateSubValues();
         $this->calculateTotals();
-        
+
         // ✅ 2. Validation نهائي
         if (empty($this->invoiceItems)) {
             $this->dispatch('alert', [
                 'type' => 'error',
                 'message' => 'يجب إضافة صنف واحد على الأقل.',
             ]);
+
             return false;
         }
-        
+
         // التحقق من صحة الأصناف
         foreach ($this->invoiceItems as $index => $item) {
             $quantity = (float) ($item['quantity'] ?? 0);
             $price = (float) ($item['price'] ?? 0);
-            
+
             if ($quantity <= 0) {
                 $this->dispatch('alert', [
                     'type' => 'error',
-                    'message' => "الكمية في الصف " . ($index + 1) . " يجب أن تكون أكبر من صفر.",
+                    'message' => 'الكمية في الصف '.($index + 1).' يجب أن تكون أكبر من صفر.',
                 ]);
+
                 return false;
             }
-            
+
             if ($price < 0) {
                 $this->dispatch('alert', [
                     'type' => 'error',
-                    'message' => "السعر في الصف " . ($index + 1) . " لا يمكن أن يكون سالباً.",
+                    'message' => 'السعر في الصف '.($index + 1).' لا يمكن أن يكون سالباً.',
                 ]);
+
                 return false;
             }
         }
-        
+
         if (($this->settings['allow_zero_invoice_total'] ?? '0') != '1' && $this->total_after_additional == 0) {
             $this->dispatch('alert', [
                 'type' => 'error',
                 'message' => 'قيمة الفاتورة لا يمكن أن تكون صفرًا.',
             ]);
+
             return false;
         }
 
@@ -1337,12 +1360,12 @@ class EditInvoiceForm extends Component
                 'message' => 'تم تحديث الفاتورة بنجاح.',
             ]);
             $this->mount($this->operationId);
+
             return $result;
         }
 
         return false;
     }
-
 
     public function getPaymentBadgeClass()
     {
@@ -1398,7 +1421,7 @@ class EditInvoiceForm extends Component
             $id = is_array($account) ? ($account['id'] ?? null) : ($account->id ?? null);
             $name = is_array($account) ? ($account['aname'] ?? '') : ($account->aname ?? '');
             $code = is_array($account) ? ($account['code'] ?? '') : ($account->code ?? '');
-            
+
             $group = 'أخرى';
             if (str_starts_with($code, '1103')) {
                 $group = 'العملاء';
@@ -1411,7 +1434,7 @@ class EditInvoiceForm extends Component
             } elseif (str_starts_with($code, '53')) {
                 $group = 'المصروفات';
             }
-            
+
             return [
                 'value' => $id,
                 'label' => $name,
@@ -1423,7 +1446,7 @@ class EditInvoiceForm extends Component
     public function render()
     {
         return view('livewire.invoices.edit-invoice-form', [
-            'acc1Options' => $this->acc1Options
+            'acc1Options' => $this->acc1Options,
         ]);
     }
 

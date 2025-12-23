@@ -14,11 +14,11 @@ class SettingsController extends Controller
     /**
      * Apply permissions middleware
      */
-    public function __construct()
-    {
-        $this->middleware('permission:view General Settings')->only(['index']);
-        $this->middleware('permission:edit General Settings')->only(['update']);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('permission:view General Settings')->only(['index']);
+    //     $this->middleware('permission:edit General Settings')->only(['update']);
+    // }
 
     /**
      * Display general settings page

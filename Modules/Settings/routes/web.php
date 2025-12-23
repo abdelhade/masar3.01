@@ -25,12 +25,12 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('mysettings', [SettingsController::class, 'index'])
-        ->name('mysettings.index')
-        ->middleware('permission:view General Settings');
+        ->name('mysettings.index');
+    // ->middleware('permission:view General Settings');
 
     Route::post('/mysettings/update', [SettingsController::class, 'update'])
-        ->name('mysettings.update')
-        ->middleware('permission:edit General Settings');
+        ->name('mysettings.update');
+        //->middleware('permission:edit General Settings');
 
     Route::get('/barcode-print-settings/edit', [BarcodePrintSettingController::class, 'edit'])
         ->name('barcode.print.settings.edit')

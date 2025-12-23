@@ -3,17 +3,25 @@
 namespace App\Services;
 
 use App\Models\Item;
-use App\Models\JournalDetail;
-use App\Models\JournalHead;
-use App\Models\OperationItems;
-use App\Models\OperHead;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Models\OperHead;
+use App\Models\JournalHead;
+use App\Models\JournalDetail;
+use App\Models\OperationItems;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Modules\Accounts\Models\AccHead;
+
 
 class SaveInvoiceService
 {
+    /**
+     * Get account ID by account code from settings
+     */
+    private function getAccountIdByCode(string $code): ?int
+    {
+        return AccHead::where('code', $code)->value('id');
+    }
     public function saveInvoice($component, $isEdit = false)
     {
         if (empty($component->invoiceItems)) {
@@ -134,7 +142,7 @@ class SaveInvoiceService
                     $component->dispatch(
                         'error',
                         title: 'خطا!',
-                        text: 'الكمية غير متوفرة للصنف: '.$itemName.' (المتاح: '.$availableQty.')',
+                        text: 'الكمية غير متوفرة للصنف: ' . $itemName . ' (المتاح: ' . $availableQty . ')',
                         icon: 'error'
                     );
 
@@ -180,6 +188,10 @@ class SaveInvoiceService
                 'status' => $component->status ?? 0,
                 'acc_fund' => $component->cash_box_id ?: 0,
                 'paid_from_client' => $component->received_from_client,
+                'vat_percentage' => $component->vat_percentage ?? 0,
+                'vat_value' => $component->vat_value ?? 0,
+                'withholding_tax_percentage' => $component->withholding_tax_percentage ?? 0,
+                'withholding_tax_value' => $component->withholding_tax_value ?? 0,
                 'user' => Auth::id(),
                 'branch_id' => $component->branch_id,
             ];
@@ -222,7 +234,7 @@ class SaveInvoiceService
                             $parent->workflow_state,
                             $operation->workflow_state,
                             Auth::id(),
-                            'convert_to_'.$operation->pro_type,
+                            'convert_to_' . $operation->pro_type,
                             $component->branch_id
                         );
 
@@ -248,7 +260,7 @@ class SaveInvoiceService
                                 $root->workflow_state,
                                 $this->getWorkflowStateByType($operation->pro_type),
                                 Auth::id(),
-                                'root_update_to_'.$operation->pro_type,
+                                'root_update_to_' . $operation->pro_type,
                                 $component->branch_id
                             );
                         }
@@ -289,7 +301,7 @@ class SaveInvoiceService
                         'cost_price' => $itemCost,
                         'item_discount' => $discount,
                         'detail_value' => $subValue,
-                        'notes' => $invoiceItem['notes'] ?? 'تحويل إلى مخزن '.$component->acc2_id,
+                        'notes' => $invoiceItem['notes'] ?? 'تحويل إلى مخزن ' . $component->acc2_id,
                         'is_stock' => 1,
                         'branch_id' => $component->branch_id,
                         'length' => $invoiceItem['length'] ?? null,
@@ -314,7 +326,7 @@ class SaveInvoiceService
                         'cost_price' => $itemCost,
                         'item_discount' => $discount,
                         'detail_value' => $subValue,
-                        'notes' => $invoiceItem['notes'] ?? 'تحويل من مخزن '.$component->acc1_id,
+                        'notes' => $invoiceItem['notes'] ?? 'تحويل من مخزن ' . $component->acc1_id,
                         'is_stock' => 1,
                         'branch_id' => $component->branch_id,
                         'length' => $invoiceItem['length'] ?? null,
@@ -367,13 +379,15 @@ class SaveInvoiceService
 
                 // تحديث متوسط التكلفة للمشتريات
                 if (in_array($component->type, [11, 12, 20])) {
-                    // ✅ تمرير $subValue الذي يمثل السعر قبل الخصم
+                    // ✅ تمرير المعاملات الجديدة لدعم الأوبشنات الثلاثة
                     $newAverageCost = $this->updateAverageCost(
                         $itemId,
                         $quantity,
                         $subValue,  // القيمة قبل الخصم على مستوى الصنف
                         $itemCost,
-                        $unitId
+                        $unitId,
+                        $component->discount_value ?? 0,  // قيمة الخصم الإجمالي
+                        $component->subtotal ?? 0  // الإجمالي الفرعي
                     );
                     $itemCost = $newAverageCost;
                 }
@@ -488,10 +502,9 @@ class SaveInvoiceService
                             null  // لا نحتاج created_at عند التعديل
                         );
                     }
-                } catch (\Exception $e) {
-                    Log::error('Error recalculating after invoice update: '.$e->getMessage());
-                    Log::error('Stack trace: '.$e->getTraceAsString());
-                    // لا نوقف العملية، فقط نسجل الخطأ
+                } catch (\Exception) {
+                    return false;
+
                 }
             } elseif (! $isEdit && in_array($component->type, [11, 12, 20, 59])) {
                 // حالة الإضافة: إعادة حساب من تاريخ الفاتورة الجديدة
@@ -509,23 +522,14 @@ class SaveInvoiceService
                         // إعادة حساب average_cost
                         RecalculationServiceHelper::recalculateAverageCost($newItemIds, $component->pro_date);
 
+
                         // ✅ إعادة حساب سلسلة التصنيع إذا كانت فاتورة مشتريات (Requirements 16.1, 16.2)
                         if (in_array($component->type, [11, 12, 20])) {
-                            Log::info('Triggering manufacturing chain recalculation after purchase invoice creation', [
-                                'operation_id' => $operation->id,
-                                'operation_type' => $component->type,
-                                'affected_items' => $newItemIds,
-                                'from_date' => $component->pro_date,
-                            ]);
 
                             RecalculationServiceHelper::recalculateManufacturingChain(
                                 $newItemIds,
                                 $component->pro_date
                             );
-
-                            Log::info('Manufacturing chain recalculation completed successfully', [
-                                'operation_id' => $operation->id,
-                            ]);
                         }
 
                         // إعادة حساب الأرباح والقيود فقط للفواتير التي بعد تاريخ الفاتورة المضافة
@@ -538,9 +542,7 @@ class SaveInvoiceService
                         );
                     }
                 } catch (\Exception $e) {
-                    Log::error('Error recalculating after invoice creation: '.$e->getMessage());
-                    Log::error('Stack trace: '.$e->getTraceAsString());
-                    // لا نوقف العملية، فقط نسجل الخطأ
+                    return false;
                 }
             }
 
@@ -555,12 +557,12 @@ class SaveInvoiceService
             return $operation->id;
         } catch (\Exception $e) {
             DB::rollBack();
-            logger()->error('خطأ أثناء حفظ الفاتورة: '.$e->getMessage());
+            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
             logger()->error($e->getTraceAsString());
             $component->dispatch(
                 'error',
                 title: 'خطأ!',
-                text: 'فشل في حفظ الفاتورة: '.$e->getMessage(),
+                text: 'فشل في حفظ الفاتورة: ' . $e->getMessage(),
                 icon: 'error'
             );
 
@@ -646,8 +648,7 @@ class SaveInvoiceService
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting invoice: '.$e->getMessage());
-            Log::error('Stack trace: '.$e->getTraceAsString());
+
             throw $e;
         }
     }
@@ -665,7 +666,7 @@ class SaveInvoiceService
         return $states[$proType] ?? 0;
     }
 
-    private function updateAverageCost($itemId, $quantity, $subValue, $currentCost, $unitId)
+    private function updateAverageCost($itemId, $quantity, $subValue, $currentCost, $unitId, $discountValue = 0, $subtotal = 0)
     {
         // 1. حساب الرصيد السابق بالوحدة الأساسية
         $oldQtyInBase = OperationItems::where('operation_items.item_id', $itemId)
@@ -685,13 +686,29 @@ class SaveInvoiceService
         // 4. حساب الكمية الجديدة بالوحدة الأساسية
         $newQtyInBase = $oldQtyInBase + $quantityInBase;
 
-        // ✅ 5. حساب القيمة قبل الخصم (استخدم subtotal بدون خصم)
-        // القيمة المُرسلة هنا ($subValue) هي بالفعل قبل الخصم
+        // 5. تحديد القيمة المستخدمة في حساب التكلفة حسب طريقة معالجة الخصم
+        $purchaseDiscountMethod = setting('purchase_discount_method', '2');
+        $valueForCost = $subValue; // القيمة الافتراضية (قبل الخصم)
+
+        if ($purchaseDiscountMethod == '1') {
+            // الأوبشن 1: الخصم يُخصم من التكلفة
+            // نحسب التكلفة بعد خصم نسبة الخصم من قيمة الصنف
+            if ($subtotal > 0 && $discountValue > 0) {
+                $itemDiscountRatio = $subValue / $subtotal; // نسبة هذا الصنف من الإجمالي
+                $itemDiscount = $discountValue * $itemDiscountRatio; // خصم هذا الصنف
+                $valueForCost = $subValue - $itemDiscount; // القيمة بعد الخصم
+            }
+        } else {
+            // الأوبشن 2: الخصم كإيراد منفصل - التكلفة قبل الخصم (الافتراضي)
+            $valueForCost = $subValue;
+        }
+
+        // 6. حساب التكلفة المتوسطة الجديدة
         if ($oldQtyInBase == 0 && $currentCost == 0) {
-            $newCost = $quantityInBase > 0 ? $subValue / $quantityInBase : 0;
+            $newCost = $quantityInBase > 0 ? $valueForCost / $quantityInBase : 0;
         } else {
             $oldValue = $oldQtyInBase * $currentCost;
-            $totalValue = $oldValue + $subValue; // ✅ القيمة قبل الخصم
+            $totalValue = $oldValue + $valueForCost;
             $newCost = $newQtyInBase > 0 ? $totalValue / $newQtyInBase : $currentCost;
         }
 
@@ -786,10 +803,52 @@ class SaveInvoiceService
 
         // الطرف المدين
         if ($debit) {
+            $debitAmount = $component->total_after_additional;
+
+            // للمشتريات: نحدد المبلغ حسب طريقة معالجة الخصم والإضافي
+            if (in_array($component->type, [11, 20])) {
+                $purchaseDiscountMethod = setting('purchase_discount_method', '2');
+                $purchaseAdditionalMethod = setting('purchase_additional_method', '1');
+
+                if ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '1') {
+                    // كلاهما يُضاف/يُخصم من التكلفة
+                    $debitAmount = $component->total_after_additional;
+                } elseif ($purchaseDiscountMethod == '2' && $purchaseAdditionalMethod == '1') {
+                    // الخصم منفصل، الإضافي للتكلفة
+                    $debitAmount = $component->subtotal + $component->additional_value;
+                } elseif ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '2') {
+                    // الخصم للتكلفة، الإضافي منفصل
+                    $debitAmount = $component->total_after_additional - $component->additional_value;
+                } else {
+                    // كلاهما منفصل
+                    $debitAmount = $component->subtotal;
+                }
+            }
+
+            // للمبيعات: نحدد المبلغ حسب طريقة معالجة الخصم والإضافي
+            if ($component->type == 10) {
+                $salesDiscountMethod = setting('sales_discount_method', '1');
+                $salesAdditionalMethod = setting('sales_additional_method', '1');
+
+                if ($salesDiscountMethod == '1' && $salesAdditionalMethod == '1') {
+                    // كلاهما في القيد الأساسي
+                    $debitAmount = $component->total_after_additional;
+                } elseif ($salesDiscountMethod == '2' && $salesAdditionalMethod == '1') {
+                    // الخصم منفصل، الإضافي في الأساسي
+                    $debitAmount = $component->subtotal + $component->additional_value;
+                } elseif ($salesDiscountMethod == '1' && $salesAdditionalMethod == '2') {
+                    // الخصم في الأساسي، الإضافي منفصل
+                    $debitAmount = $component->subtotal - $component->discount_value;
+                } else {
+                    // كلاهما منفصل
+                    $debitAmount = $component->subtotal;
+                }
+            }
+
             JournalDetail::create([
                 'journal_id' => $journalId,
                 'account_id' => $debit,
-                'debit' => $component->total_after_additional,
+                'debit' => $debitAmount,
                 'credit' => 0,
                 'type' => 1,
                 'info' => $component->notes,
@@ -801,28 +860,55 @@ class SaveInvoiceService
 
         // الطرف الدائن
         if ($credit) {
+            $creditAmount = $component->total_after_additional;
+
+            // للمشتريات: نحدد المبلغ حسب طريقة معالجة الخصم والإضافي
+            if (in_array($component->type, [11, 20])) {
+                $purchaseDiscountMethod = setting('purchase_discount_method', '2');
+                $purchaseAdditionalMethod = setting('purchase_additional_method', '1');
+
+                if ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '1') {
+                    // كلاهما يُضاف/يُخصم من التكلفة
+                    $creditAmount = $component->total_after_additional;
+                } elseif ($purchaseDiscountMethod == '2' && $purchaseAdditionalMethod == '1') {
+                    // الخصم منفصل، الإضافي للتكلفة
+                    $creditAmount = $component->subtotal + $component->additional_value;
+                } elseif ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '2') {
+                    // الخصم للتكلفة، الإضافي منفصل
+                    $creditAmount = $component->total_after_additional - $component->additional_value;
+                } else {
+                    // كلاهما منفصل
+                    $creditAmount = $component->subtotal;
+                }
+            }
+
+            // للمبيعات: نحدد المبلغ حسب طريقة معالجة الخصم والإضافي
+            if ($component->type == 10) {
+                $salesDiscountMethod = setting('sales_discount_method', '1');
+                $salesAdditionalMethod = setting('sales_additional_method', '1');
+
+                if ($salesDiscountMethod == '1' && $salesAdditionalMethod == '1') {
+                    // كلاهما في القيد الأساسي
+                    $creditAmount = $component->total_after_additional;
+                } elseif ($salesDiscountMethod == '2' && $salesAdditionalMethod == '1') {
+                    // الخصم منفصل، الإضافي في الأساسي
+                    $creditAmount = $component->subtotal + $component->additional_value;
+                } elseif ($salesDiscountMethod == '1' && $salesAdditionalMethod == '2') {
+                    // الخصم في الأساسي، الإضافي منفصل
+                    $creditAmount = $component->subtotal - $component->discount_value;
+                } else {
+                    // كلاهما منفصل
+                    $creditAmount = $component->subtotal;
+                }
+            }
+
             JournalDetail::create([
                 'journal_id' => $journalId,
                 'account_id' => $credit,
                 'debit' => 0,
-                'credit' => $component->total_after_additional - $component->additional_value,
+                'credit' => $creditAmount,
                 'type' => 1,
                 'info' => $component->notes,
-                'op_id' => $operation->id,
-                'isdeleted' => 0,
-                'branch_id' => $component->branch_id,
-            ]);
-        }
-
-        // قيد الإضافات إن وُجدت
-        if ($component->additional_value > 0) {
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => 69, // حساب الإضافات
-                'debit' => 0,
-                'credit' => $component->additional_value,
-                'type' => 1,
-                'info' => 'إضافات - '.$component->notes,
                 'op_id' => $operation->id,
                 'isdeleted' => 0,
                 'branch_id' => $component->branch_id,
@@ -835,56 +921,296 @@ class SaveInvoiceService
         }
         // قيد الخصم المسموح به للمبيعات
         if ($component->type == 10 && $component->discount_value > 0) {
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => 4103, // حساب خصم مسموح به (Discount Allowed)
-                'debit' => $component->discount_value,
-                'credit' => 0,
-                'type' => 1,
-                'info' => 'خصم مسموح به - '.$component->notes,
-                'op_id' => $operation->id,
-                'isdeleted' => 0,
-                'branch_id' => $component->branch_id,
-            ]);
+            $salesDiscountMethod = setting('sales_discount_method', '1');
 
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $component->acc1_id, // العميل
-                'debit' => 0,
-                'credit' => $component->discount_value,
-                'type' => 1,
-                'info' => 'خصم مسموح به - '.$component->notes,
-                'op_id' => $operation->id,
-                'isdeleted' => 0,
-                'branch_id' => $component->branch_id,
-            ]);
+            if ($salesDiscountMethod == '1') {
+                // الطريقة الحالية: من ح/ خصم مسموح به إلى ح/ المبيعات
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 49, // حساب خصم مسموح به (Discount Allowed)
+                    'debit' => $component->discount_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 47, // حساب المبيعات
+                    'debit' => 0,
+                    'credit' => $component->discount_value,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            } else {
+                // الطريقة الثانية: قيد عكسي - من ح/ خصم مسموح به إلى ح/ العميل
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 49, // حساب خصم مسموح به (Discount Allowed)
+                    'debit' => $component->discount_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // العميل
+                    'debit' => 0,
+                    'credit' => $component->discount_value,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+
         }
 
         // قيد الخصم المكتسب للمشتريات
         if (in_array($component->type, [11, 20]) && $component->discount_value > 0) {
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => $component->acc1_id, // المورد (مدين)
-                'debit' => $component->discount_value,
-                'credit' => 0,
-                'type' => 1,
-                'info' => 'خصم مكتسب - '.$component->notes,
-                'op_id' => $operation->id,
-                'isdeleted' => 0,
-                'branch_id' => $component->branch_id,
-            ]);
+            $purchaseDiscountMethod = setting('purchase_discount_method', '2');
 
-            JournalDetail::create([
-                'journal_id' => $journalId,
-                'account_id' => 4201, // حساب خصم مكتسب (Discount Received)
-                'debit' => 0,
-                'credit' => $component->discount_value,
-                'type' => 1,
-                'info' => 'خصم مكتسب - '.$component->notes,
-                'op_id' => $operation->id,
-                'isdeleted' => 0,
-                'branch_id' => $component->branch_id,
-            ]);
+            if ($purchaseDiscountMethod == '1') {
+                // الأوبشن 1: الخصم يُخصم من التكلفة - لا يوجد قيد منفصل للخصم
+                // لا نعمل أي قيد هنا
+            } else {
+                // الأوبشن 2: الخصم كإيراد منفصل (قيد عكسي) - الافتراضي
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // المورد (مدين)
+                    'debit' => $component->discount_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم مكتسب - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 54, // حساب خصم مكتسب (Discount Received)
+                    'debit' => 0,
+                    'credit' => $component->discount_value,
+                    'type' => 1,
+                    'info' => 'خصم مكتسب - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+        }
+
+        // قيد الإضافي للمشتريات
+        if (in_array($component->type, [11, 20]) && $component->additional_value > 0) {
+            $purchaseAdditionalMethod = setting('purchase_additional_method', '1');
+
+            if ($purchaseAdditionalMethod == '2') {
+                // الأوبشن 2: كمصروف منفصل (قيد عكسي)
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 69, // حساب الإضافات (مدين)
+                    'debit' => $component->additional_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'إضافات - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // المورد (دائن)
+                    'debit' => 0,
+                    'credit' => $component->additional_value,
+                    'type' => 1,
+                    'info' => 'إضافات - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+            // الأوبشن 1: يُضاف للتكلفة (الحالي) - القيد الحالي موجود بالفعل
+        }
+
+        // قيد الإضافي للمبيعات
+        if ($component->type == 10 && $component->additional_value > 0) {
+            $salesAdditionalMethod = setting('sales_additional_method', '1');
+
+            if ($salesAdditionalMethod == '2') {
+                // الأوبشن 2: قيد منفصل للإضافي
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // العميل (مدين)
+                    'debit' => $component->additional_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'إضافات - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 69, // حساب الإضافات (دائن)
+                    'debit' => 0,
+                    'credit' => $component->additional_value,
+                    'type' => 1,
+                    'info' => 'إضافات - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+            // الأوبشن 1: يُضاف للإيراد (الحالي) - القيد الحالي موجود بالفعل
+        }
+
+        // قيد ضريبة القيمة المضافة (إذا كانت مفعلة)
+        if (setting('enable_vat_fields') == '1' && $component->vat_value > 0) {
+            if ($component->type == 10) {
+                // مبيعات: الضريبة من العميل
+                // الحصول على كود الحساب من الإعدادات
+                $vatSalesAccountCode = setting('vat_sales_account_code', '21040101');
+                $vatSalesAccountId = $this->getAccountIdByCode($vatSalesAccountCode);
+
+                if (!$vatSalesAccountId) {
+                    return; // تخطي القيد إذا لم يتم العثور على الحساب
+                }
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // العميل (مدين)
+                    'debit' => $component->vat_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'ضريبة قيمة مضافة - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $vatSalesAccountId, // حساب ضريبة القيمة المضافة (دائن)
+                    'debit' => 0,
+                    'credit' => $component->vat_value,
+                    'type' => 1,
+                    'info' => 'ضريبة قيمة مضافة - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            } elseif (in_array($component->type, [11, 20])) {
+                // مشتريات: الضريبة للمورد
+                // الحصول على كود الحساب من الإعدادات
+                $vatPurchaseAccountCode = setting('vat_purchase_account_code', '21040102');
+                $vatPurchaseAccountId = $this->getAccountIdByCode($vatPurchaseAccountCode);
+
+                if (!$vatPurchaseAccountId) {
+                    return; // تخطي القيد إذا لم يتم العثور على الحساب
+                }
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $vatPurchaseAccountId, // حساب ضريبة مدفوعة (مدين)
+                    'debit' => $component->vat_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'ضريبة قيمة مضافة - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // المورد (دائن)
+                    'debit' => 0,
+                    'credit' => $component->vat_value,
+                    'type' => 1,
+                    'info' => 'ضريبة قيمة مضافة - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+        }
+
+        // قيد الخصم من المنبع (Withholding Tax) - إذا كانت مفعلة
+        if (setting('enable_vat_fields') == '1' && $component->withholding_tax_value > 0) {
+            // الحصول على كود الحساب من الإعدادات
+            $withholdingTaxAccountCode = setting('withholding_tax_account_code', '21040103');
+            $withholdingTaxAccountId = $this->getAccountIdByCode($withholdingTaxAccountCode);
+
+            if (!$withholdingTaxAccountId) {
+                return; // تخطي القيد إذا لم يتم العثور على الحساب
+            }
+
+            if ($component->type == 10) {
+                // مبيعات: الخصم من المنبع يُخصم من العميل
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $withholdingTaxAccountId, // حساب خصم من المنبع (مدين)
+                    'debit' => $component->withholding_tax_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم من المنبع - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // العميل (دائن)
+                    'debit' => 0,
+                    'credit' => $component->withholding_tax_value,
+                    'type' => 1,
+                    'info' => 'خصم من المنبع - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            } elseif (in_array($component->type, [11, 20])) {
+                // مشتريات: الخصم من المنبع يُخصم من المورد
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, // المورد (مدين)
+                    'debit' => $component->withholding_tax_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم من المنبع - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $withholdingTaxAccountId, // حساب خصم من المنبع (دائن)
+                    'debit' => 0,
+                    'credit' => $component->withholding_tax_value,
+                    'type' => 1,
+                    'info' => 'خصم من المنبع - ' . $component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+
         }
     }
 
@@ -927,7 +1253,7 @@ class SaveInvoiceService
                 'op_id' => $operation->id,
                 'pro_type' => $component->type,
                 'date' => $component->pro_date,
-                'details' => 'قيد تكلفة البضاعة - '.$component->notes,
+                'details' => 'قيد تكلفة البضاعة - ' . $component->notes,
                 'user' => Auth::id(),
                 'branch_id' => $component->branch_id,
             ]);
@@ -991,7 +1317,7 @@ class SaveInvoiceService
             'acc2' => $cashBoxId,
             'pro_value' => $voucherValue,
             'pro_date' => $component->pro_date,
-            'info' => 'سند '.$voucherType.' آلي مرتبط بعملية رقم '.$operation->id,
+            'info' => 'سند ' . $voucherType . ' آلي مرتبط بعملية رقم ' . $operation->id,
             'op2' => $operation->id,
             'is_journal' => 1,
             'is_stock' => 0,
@@ -1009,7 +1335,7 @@ class SaveInvoiceService
             'op2' => $operation->id,
             'pro_type' => $proType,
             'date' => $component->pro_date,
-            'details' => 'قيد سند '.$voucherType.' آلي',
+            'details' => 'قيد سند ' . $voucherType . ' آلي',
             'user' => Auth::id(),
             'branch_id' => $component->branch_id,
         ]);
@@ -1020,7 +1346,7 @@ class SaveInvoiceService
             'debit' => $voucherValue,
             'credit' => 0,
             'type' => 1,
-            'info' => 'سند '.$voucherType,
+            'info' => 'سند ' . $voucherType,
             'op_id' => $voucher->id,
             'isdeleted' => 0,
             'branch_id' => $component->branch_id,
@@ -1032,7 +1358,7 @@ class SaveInvoiceService
             'debit' => 0,
             'credit' => $voucherValue,
             'type' => 1,
-            'info' => 'سند '.$voucherType,
+            'info' => 'سند ' . $voucherType,
             'op_id' => $voucher->id,
             'isdeleted' => 0,
             'branch_id' => $component->branch_id,

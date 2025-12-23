@@ -131,7 +131,7 @@ class CreateInstallmentPlan extends Component
             }
 
             $this->dispatch('validation-error', [
-                'title' => 'خطأ في المبلغ',
+                'title' => __('Amount Error'),
                 'text' => $errorMessage,
                 'html' => true,
             ]);
@@ -182,11 +182,11 @@ class CreateInstallmentPlan extends Component
             }
         }
 
-        session()->flash('message', 'تم إنشاء خطة التقسيط بنجاح.');
+        session()->flash('message', __('Installment plan created successfully'));
 
         $this->dispatch('save-success', [
-            'title' => 'تم الحفظ بنجاح',
-            'text' => 'تم إنشاء خطة التقسيط بنجاح',
+            'title' => __('Saved Successfully'),
+            'text' => __('Installment plan created successfully'),
             'planId' => $plan->id,
         ]);
     }

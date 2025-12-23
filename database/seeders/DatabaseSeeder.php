@@ -121,6 +121,9 @@ class DatabaseSeeder extends Seeder
             NotificationsPermissionsSeeder::class,
             AppPermissionsSeeder::class,
             BranchesPermissionsSeeder::class,
+            PurchaseDiscountMethodSeeder::class,
+            VatAccountsSettingsSeeder::class,
+            PurchaseDiscountMethodSeeder::class,
         ]);
     }
 }
