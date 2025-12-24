@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Models;
 
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
-    use SoftDeletes;
 
     protected $fillable = [
         'order_number',
@@ -27,8 +27,6 @@ class Order extends Model
         'delivery_notes',
         'delivery_attempts',
         'branch_id',
-        'created_by',
-        'updated_by',
     ];
 
     protected $casts = [
@@ -38,21 +36,11 @@ class Order extends Model
         'delivered_at' => 'datetime',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
         
-        static::creating(function ($order) {
-            if (auth()->check()) {
-                $order->created_by = auth()->id();
-            }
-        });
-        
         static::updating(function ($order) {
-            if (auth()->check()) {
-                $order->updated_by = auth()->id();
-            }
-            
             if ($order->isDirty('delivery_status')) {
                 if ($order->delivery_status === 'assigned' && !$order->assigned_at) {
                     $order->assigned_at = now();
@@ -62,9 +50,11 @@ class Order extends Model
                 }
                 if ($order->delivery_status === 'delivered' && !$order->delivered_at) {
                     $order->delivered_at = now();
-                    $order->driver->increment('completed_deliveries');
-                    $order->driver->is_available = true;
-                    $order->driver->save();
+                    if ($order->driver) {
+                        $order->driver->increment('completed_deliveries');
+                        $order->driver->is_available = true;
+                        $order->driver->save();
+                    }
                 }
             }
         });

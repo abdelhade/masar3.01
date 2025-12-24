@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Models;
 
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Shipment extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'tracking_number',
         'shipping_company_id',
@@ -34,8 +33,6 @@ class Shipment extends Model
         'notes',
         'internal_notes',
         'branch_id',
-        'created_by',
-        'updated_by',
     ];
 
     protected $casts = [
@@ -52,28 +49,9 @@ class Shipment extends Model
         'package_value' => 'decimal:2',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-        
-        static::creating(function ($shipment) {
-            if (auth()->check()) {
-                $shipment->created_by = auth()->id();
-            }
-        });
-        
-        static::updating(function ($shipment) {
-            if (auth()->check()) {
-                $shipment->updated_by = auth()->id();
-            }
-            
-            if ($shipment->isDirty('status')) {
-                $shipment->statusHistory()->create([
-                    'status' => $shipment->status,
-                    'changed_by' => auth()->id(),
-                ]);
-            }
-        });
     }
 
     public function shippingCompany()
@@ -86,9 +64,9 @@ class Shipment extends Model
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
-    public function statusHistory()
+    public function orders()
     {
-        return $this->hasMany(ShipmentStatusHistory::class);
+        return $this->hasMany(Order::class);
     }
 
     public function ratings()
@@ -100,7 +78,7 @@ class Shipment extends Model
     {
         $baseCost = $this->shippingCompany->base_rate ?? 0;
         $weightCost = 0;
-        
+
         if ($zone) {
             $shippingZone = ShippingZone::where('code', $zone)->first();
             if ($shippingZone) {
@@ -108,23 +86,23 @@ class Shipment extends Model
                 $weightCost = $this->weight * $shippingZone->rate_per_kg;
             }
         }
-        
+
         $this->shipping_cost = $baseCost + $weightCost;
-        
+
         // حساب التأمين (1% من قيمة الطرد)
         if ($this->package_value) {
             $this->insurance_cost = $this->package_value * 0.01;
         }
-        
+
         // رسوم إضافية للشحن السريع
         if ($this->priority === 'express') {
             $this->additional_fees = $this->shipping_cost * 0.5;
         } elseif ($this->priority === 'urgent') {
             $this->additional_fees = $this->shipping_cost * 0.25;
         }
-        
+
         $this->total_cost = $this->shipping_cost + $this->insurance_cost + $this->additional_fees;
-        
+
         return $this->total_cost;
     }
 }

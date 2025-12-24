@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,12 +17,12 @@ class DriverRating extends Model
         'rated_by',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::created(function ($rating) {
             $rating->driver->updateRating();
         });
-        
+
         static::updated(function ($rating) {
             $rating->driver->updateRating();
         });

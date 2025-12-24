@@ -8,8 +8,7 @@ use Modules\Shipping\Http\Controllers\{
     OrderController,
     ShippingStatisticsController,
     ShippingZoneController,
-    DriverRatingController,
-    ShipmentTrackingController
+    DriverRatingController
 };
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -26,10 +25,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('orders.rate-driver');
     Route::post('orders/{order}/rate-driver', [DriverRatingController::class, 'store'])
         ->name('orders.rate-driver.store');
-    
-    Route::get('tracking', [ShipmentTrackingController::class, 'track'])
-        ->name('shipments.tracking');
 });
 
-Route::get('track/{trackingNumber}', [ShipmentTrackingController::class, 'show'])
-    ->name('shipments.track.show');

@@ -3,16 +3,12 @@
 namespace Modules\Rentals\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\JournalDetail;
-use App\Models\JournalHead;
-use App\Models\OperHead;
+use App\Models\{JournalDetail, JournalHead, OperHead};
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Auth, DB};
 use Modules\Accounts\Models\AccHead;
 use Modules\Rentals\Http\Requests\RentalsLeaseRequest;
-use Modules\Rentals\Models\RentalsLease;
-use Modules\Rentals\Models\RentalsUnit;
+use Modules\Rentals\Models\{RentalsLease, RentalsUnit};
 use RealRashid\SweetAlert\Facades\Alert;
 
 class RentalsLeaseController extends Controller
@@ -44,7 +40,7 @@ class RentalsLeaseController extends Controller
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'pro_date' => now()->toDateString(),
-                'info' => 'عقد إيجار للوحدة #'.$request->unit_id.' للعميل #'.$request->client_id,
+                'info' => 'عقد إيجار للوحدة #' . $request->unit_id . ' للعميل #' . $request->client_id,
                 'pro_value' => $request->rent_amount,
                 'fat_net' => $request->rent_amount,
                 'acc1' => $request->client_id ?? 0,
@@ -130,7 +126,7 @@ class RentalsLeaseController extends Controller
                     'start_date' => $request->start_date,
                     'end_date' => $request->end_date,
                     'pro_date' => now()->toDateString(),
-                    'info' => 'تعديل عقد إيجار للوحدة #'.$request->unit_id.' للعميل #'.$request->client_id,
+                    'info' => 'تعديل عقد إيجار للوحدة #' . $request->unit_id . ' للعميل #' . $request->client_id,
                     'pro_value' => $request->rent_amount,
                     'fat_net' => $request->rent_amount,
                     'acc1' => $request->client_id ?? 0,

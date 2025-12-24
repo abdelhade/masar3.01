@@ -88,11 +88,6 @@
                                                     title="{{ __('View Details') }}">
                                                     <i class="las la-eye"></i>
                                                 </a>
-                                                <a class="btn btn-info btn-icon-square-sm" 
-                                                    href="{{ route('shipments.tracking') }}?tracking_number={{ $shipment->tracking_number }}" 
-                                                    title="{{ __('Track') }}">
-                                                    <i class="las la-search-location"></i>
-                                                </a>
                                                 @can('edit Shipments')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('shipments.edit', $shipment) }}">

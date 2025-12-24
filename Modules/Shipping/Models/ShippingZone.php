@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Models;
 
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ShippingZone extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'name',
         'code',
@@ -19,8 +18,6 @@ class ShippingZone extends Model
         'estimated_days',
         'is_active',
         'branch_id',
-        'created_by',
-        'updated_by',
     ];
 
     protected $casts = [
@@ -29,21 +26,9 @@ class ShippingZone extends Model
         'is_active' => 'boolean',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-        
-        static::creating(function ($zone) {
-            if (auth()->check()) {
-                $zone->created_by = auth()->id();
-            }
-        });
-        
-        static::updating(function ($zone) {
-            if (auth()->check()) {
-                $zone->updated_by = auth()->id();
-            }
-        });
     }
 
     public function branch()

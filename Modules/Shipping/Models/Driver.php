@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Models;
 
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Driver extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'name',
         'phone',
@@ -23,8 +22,6 @@ class Driver extends Model
         'failed_deliveries',
         'notes',
         'branch_id',
-        'created_by',
-        'updated_by',
     ];
 
     protected $casts = [
@@ -32,21 +29,9 @@ class Driver extends Model
         'rating' => 'decimal:2',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-        
-        static::creating(function ($driver) {
-            if (auth()->check()) {
-                $driver->created_by = auth()->id();
-            }
-        });
-        
-        static::updating(function ($driver) {
-            if (auth()->check()) {
-                $driver->updated_by = auth()->id();
-            }
-        });
     }
 
     public function orders()
@@ -68,7 +53,7 @@ class Driver extends Model
     {
         $avgRating = $this->ratings()->avg('rating');
         $totalRatings = $this->ratings()->count();
-        
+
         $this->rating = round($avgRating, 2);
         $this->total_ratings = $totalRatings;
         $this->save();

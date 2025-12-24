@@ -26,7 +26,7 @@ class ShipmentController extends Controller
 
     public function show(Shipment $shipment)
     {
-        $shipment->load(['statusHistory.changedBy', 'shippingCompany']);
+        $shipment->load(['shippingCompany']);
         return view('shipping::shipments.show', compact('shipment'));
     }
 
@@ -59,6 +59,12 @@ class ShipmentController extends Controller
 
     public function destroy(Shipment $shipment)
     {
+        // Check if shipment has orders
+        if ($shipment->orders()->exists()) {
+            Alert::toast(__('Cannot delete shipment with existing orders.'), 'error');
+            return redirect()->route('shipments.index');
+        }
+        
         $shipment->delete();
         Alert::toast(__('Shipment deleted successfully.'), 'success');
         return redirect()->route('shipments.index');

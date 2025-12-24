@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Rentals\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Rentals\Enums\LeaseStatus;
+use Modules\Rentals\Models\RentalsLease;
 
 class RentalsLeaseRequest extends FormRequest
 {
@@ -14,8 +17,42 @@ class RentalsLeaseRequest extends FormRequest
 
     public function rules(): array
     {
+        $leaseId = $this->route('lease'); // للتعديل
+
         return [
-            'unit_id'        => ['required', 'exists:rentals_units,id'],
+            'unit_id'        => [
+                'required',
+                'exists:rentals_units,id',
+                function ($attribute, $value, $fail) use ($leaseId) {
+                    $startDate = $this->input('start_date');
+                    $endDate = $this->input('end_date');
+
+                    // التحقق من وجود عقد ساري في نفس الفترة
+                    $existingLease = RentalsLease::where('unit_id', $value)
+                        ->where('status', LeaseStatus::ACTIVE->value)
+                        ->when($leaseId, function ($query) use ($leaseId) {
+                            // استثناء العقد الحالي عند التعديل
+                            $query->where('id', '!=', $leaseId);
+                        })
+                        ->where(function ($query) use ($startDate, $endDate) {
+                            // التحقق من تداخل الفترات
+                            $query->whereBetween('start_date', [$startDate, $endDate])
+                                  ->orWhereBetween('end_date', [$startDate, $endDate])
+                                  ->orWhere(function ($q) use ($startDate, $endDate) {
+                                      $q->where('start_date', '<=', $startDate)
+                                        ->where('end_date', '>=', $endDate);
+                                  });
+                        })
+                        ->first();
+
+                    if ($existingLease) {
+                        $fail(__('هذه الوحدة لديها عقد إيجار ساري من :start إلى :end. لا يمكن إنشاء عقد جديد حتى ينتهي العقد الحالي.', [
+                            'start' => $existingLease->start_date->format('Y-m-d'),
+                            'end' => $existingLease->end_date->format('Y-m-d'),
+                        ]));
+                    }
+                }
+            ],
             'client_id'      => ['required', 'exists:acc_head,id'],
             'start_date'     => ['required', 'date'],
             'end_date'       => ['required', 'date', 'after:start_date'],

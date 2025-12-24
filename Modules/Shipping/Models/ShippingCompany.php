@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Shipping\Models;
 
 use Modules\Branches\Models\Branch;
@@ -17,7 +19,7 @@ class ShippingCompany extends Model
         'branch_id',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope(new \App\Models\Scopes\BranchScope);
     }
