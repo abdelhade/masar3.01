@@ -245,7 +245,12 @@
                         </div>
 
                         {{-- Map --}}
-                        <div id="mapPicker" style="height: 600px; width: 100%;"></div>
+                        <div class="position-relative">
+                             <input id="pac-input" class="form-control shadow-sm" type="text"
+                                placeholder="{{ __('Search for a location...') }}"
+                                style="position: absolute; top: 10px; left: 10px; z-index: 5; width: 300px; display: none;">
+                            <div id="mapPicker" style="height: 600px; width: 100%;"></div>
+                        </div>
 
                         {{-- Selected Location Info --}}
                         <div class="p-4 bg-light border-top">
@@ -286,6 +291,7 @@
         let geocoder;
         let selectedLocation = null;
         let currentMapType = '';
+        let autocomplete;
 
         // Livewire Events
         document.addEventListener('livewire:init', () => {
@@ -302,7 +308,15 @@
         // Initialize Map
         function initMapPicker(initialLat, initialLng, type) {
             const mapElement = document.getElementById('mapPicker');
+            const input = document.getElementById('pac-input');
+            
             if (!mapElement) return;
+
+            // Show input if hidden
+            if(input) {
+                input.style.display = 'block';
+                input.value = '';
+            }
 
             geocoder = new google.maps.Geocoder();
             selectedLocation = null;
@@ -327,6 +341,15 @@
                 gestureHandling: 'greedy'
             });
 
+            // Initialize Autocomplete
+            const options = {
+                fields: ["formatted_address", "geometry", "name"],
+                strictBounds: false,
+            };
+            
+            autocomplete = new google.maps.places.Autocomplete(input, options);
+            autocomplete.bindTo("bounds", map);
+
             const markerColor = type === 'from' ? '#28a745' : '#dc3545';
 
             marker = new google.maps.Marker({
@@ -346,6 +369,27 @@
                     strokeColor: '#ffffff',
                     strokeWeight: 2
                 }
+            });
+
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+
+                if (!place.geometry || !place.geometry.location) {
+                     // User entered the name of a Place that was not suggested and
+                    // pressed the Enter key, or the Place Details request failed.
+                    window.alert("No details available for input: '" + place.name + "'");
+                    return;
+                }
+
+                // If the place has a geometry, then present it on a map.
+                if (place.geometry.viewport) {
+                    map.fitBounds(place.geometry.viewport);
+                } else {
+                    map.setCenter(place.geometry.location);
+                    map.setZoom(17); 
+                }
+                
+                placeMarker(place.geometry.location);
             });
 
             map.addListener('click', (event) => placeMarker(event.latLng));
@@ -387,7 +431,7 @@
 
         function placeMarker(location) {
             marker.setPosition(location);
-            map.panTo(location);
+            // map.panTo(location); // Optional: Pan only if triggered by click/drag, autocomplete handles its own panning
 
             const lat = location.lat();
             const lng = location.lng();
@@ -407,6 +451,7 @@
                         lng
                     };
                     document.getElementById('selectedAddress').textContent = address;
+                    
                     document.getElementById('confirmLocationBtn').disabled = false;
                 } else {
                     selectedLocation = {
@@ -428,6 +473,7 @@
                     map = null;
                     marker = null;
                     selectedLocation = null;
+                    autocomplete = null;
                 }
             });
         });
@@ -584,6 +630,10 @@
             #mapPicker {
                 height: 400px !important;
             }
+        }
+
+        .pac-container {
+            z-index: 10000 !important;
         }
     </style>
 @endpush
