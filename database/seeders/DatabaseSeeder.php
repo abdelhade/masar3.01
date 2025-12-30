@@ -38,7 +38,6 @@ use Modules\Recruitment\database\seeders\RecruitmentPermissionsSeeder;
 use Modules\Rentals\database\seeders\RentalsPermissionsSeeder;
 use Modules\Reports\database\seeders\ReportsPermissionsSeeder;
 use Modules\Services\database\seeders\ServicesPermissionsSeeder;
-use Modules\Settings\Database\Seeders\AddNationalAddressAndTaxNumberSeeder;
 use Modules\Settings\Database\Seeders\InvoiceOptionsSeeder;
 use Modules\Settings\Database\Seeders\SettingSeeder;
 use Modules\Settings\Database\Seeders\SettingsPermissionsSeeder;
@@ -109,7 +108,6 @@ class DatabaseSeeder extends Seeder
             GiveAllPermissionsToAdminSeeder::class,
             MaintenancePermissionsSeeder::class,
             FleetPermissionsSeeder::class,
-            AddNationalAddressAndTaxNumberSeeder::class,
             ActivityLogPermissionsSeeder::class,
             ServicesPermissionsSeeder::class,
             DepreciationPermissionsSeeder::class,
@@ -121,7 +119,6 @@ class DatabaseSeeder extends Seeder
             BranchesPermissionsSeeder::class,
             PurchaseDiscountMethodSeeder::class,
             VatAccountsSettingsSeeder::class,
-            PurchaseDiscountMethodSeeder::class,
         ]);
     }
 }
