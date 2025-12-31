@@ -23,7 +23,7 @@ class RoleAndPermissionSeeder extends Seeder
             'Purchases' => ['Purchase Invoice', 'Purchase Return', 'Purchase Order'],
             'Inventory' => ['Stock Transfer', 'Stock Adjustment'],
             'POS' => ['POS System', 'POS Transaction', 'POS Reports', 'POS Settings'],
-            'Reports' => ['Financial Reports', 'Sales Reports', 'Inventory Reports'],
+            // 'Reports' => ['Financial Reports', 'Sales Reports', 'Inventory Reports'],
             'Settings' => ['System Settings'],
 
         ];

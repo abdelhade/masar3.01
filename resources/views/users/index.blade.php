@@ -13,7 +13,7 @@
         <div class="col-lg-12">
             @can('create Users')
                 <a href="{{ route('users.create') }}" type="button" class="btn btn-main">
-                    اضافه جديد
+                    {{ __('Add New User') }}
                     <i class="fas fa-plus me-2"></i>
                 </a>
             @endcan
@@ -23,8 +23,9 @@
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
-                        <x-table-export-actions table-id="users-table" filename="users-table" excel-label="{{ __('Export Excel') }}"
-                            pdf-label="{{ __('Export PDF') }}" print-label="{{ __('Print') }}" />
+                        <x-table-export-actions table-id="users-table" filename="users-table"
+                            excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                            print-label="{{ __('Print') }}" />
 
                         <table id="users-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
@@ -48,8 +49,7 @@
                                         <td class="font-hold fw-bold font-14 text-center">{{ $user->name }}</td>
                                         <td class="font-hold fw-bold font-14 text-center">{{ $user->email }}</td>
                                         <td class="font-hold fw-bold font-14 text-center">
-                                            <span
-                                                class="badge bg-primary">{{ $user->permissions->count() }}</span>
+                                            <span class="badge bg-primary">{{ $user->permissions->count() }}</span>
                                         </td>
                                         <td class="font-hold fw-bold font-14 text-center">
                                             @foreach ($user->branches as $branch)

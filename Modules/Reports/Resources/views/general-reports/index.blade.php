@@ -217,11 +217,8 @@
 
         <div class="search-box">
             <div class="input-group mb-3">
-                <input type="text" class="form-control frst form-control-lg"
-                    placeholder="{{ __('reports.search_report') }}"
-                    aria-label="{{ __('reports.search_reports') }}"
-                    id="report-filter"
-                    onkeyup="filterReports()">
+                <input type="text" class="form-control frst form-control-lg" placeholder="{{ __('reports.search_report') }}"
+                    aria-label="{{ __('reports.search_reports') }}" id="report-filter" onkeyup="filterReports()">
                 <button class="btn btn-primary" type="button">
                     <i class="fas fa-search"></i>
                 </button>
@@ -237,18 +234,26 @@
                         <span class="card-title">{{ __('reports.general_reports') }}</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('reports.overall') }}" class="report-link">
-                            <i class="fas fa-file-alt"></i>
-                            <span>{{ __('reports.daily_activity_analyzer') }}</span>
-                        </a>
-                        <a href="{{ route('reports.journal-summery') }}" class="report-link">
-                            <i class="fas fa-book"></i>
-                            <span>{{ __('reports.general_journal') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-journal-details') }}" class="report-link">
-                            <i class="fas fa-file-invoice"></i>
-                            <span>{{ __('reports.general_account_statement') }}</span>
-                        </a>
+                        @can('view Daily Activity Analyzer')
+                            <a href="{{ route('reports.overall') }}" class="report-link">
+                                <i class="fas fa-file-alt"></i>
+                                <span>{{ __('reports.daily_activity_analyzer') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view General Journal')
+                            <a href="{{ route('reports.journal-summery') }}" class="report-link">
+                                <i class="fas fa-book"></i>
+                                <span>{{ __('reports.general_journal') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view General Account Statement')
+                            <a href="{{ route('reports.general-journal-details') }}" class="report-link">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>{{ __('reports.general_account_statement') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -261,30 +266,47 @@
                         <span class="card-title">{{ __('reports.accounts_reports') }}</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('reports.accounts-tree') }}" class="report-link">
-                            <i class="fas fa-tree"></i>
-                            <span>{{ __('reports.accounts_tree') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-balance-sheet') }}" class="report-link">
-                            <i class="fas fa-balance-scale"></i>
-                            <span>{{ __('reports.balance_sheet') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-profit-loss-report') }}" class="report-link">
-                            <i class="fas fa-calculator"></i>
-                            <span>{{ __('reports.profit_loss_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-profit-loss-report-total') }}" class="report-link">
-                            <i class="fas fa-chart-line"></i>
-                            <span>{{ __('قائمة الدخل لإجمالي الفترة') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-account-balances') }}" class="report-link">
-                            <i class="fas fa-calculator"></i>
-                            <span>{{ __('reports.accounts_balance') }}</span>
-                        </a>
-                        <a href="{{ route('account-movement') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.account_movement_report') }}</span>
-                        </a>
+                        @can('view Accounts Tree')
+                            <a href="{{ route('reports.accounts-tree') }}" class="report-link">
+                                <i class="fas fa-tree"></i>
+                                <span>{{ __('reports.accounts_tree') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view Balance Sheet')
+                            <a href="{{ route('reports.general-balance-sheet') }}" class="report-link">
+                                <i class="fas fa-balance-scale"></i>
+                                <span>{{ __('reports.balance_sheet') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view Profit Loss Report')
+                            <a href="{{ route('reports.general-profit-loss-report') }}" class="report-link">
+                                <i class="fas fa-calculator"></i>
+                                <span>{{ __('reports.profit_loss_report') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view Income Statement Total')
+                            <a href="{{ route('reports.general-profit-loss-report-total') }}" class="report-link">
+                                <i class="fas fa-chart-line"></i>
+                                <span>{{ __('قائمة الدخل لإجمالي الفترة') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view Accounts Balance')
+                            <a href="{{ route('reports.general-account-balances') }}" class="report-link">
+                                <i class="fas fa-calculator"></i>
+                                <span>{{ __('reports.accounts_balance') }}</span>
+                            </a>
+                        @endcan
+
+                        @can('view Account Movement Report')
+                            <a href="{{ route('account-movement') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.account_movement_report') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -297,30 +319,37 @@
                         <span class="card-title">{{ __('reports.inventory_items_reports') }}</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('items.index') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.items_list_with_balances') }}</span>
-                        </a>
-                        <a href="{{ route('item-movement') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.item_movement') }}</span>
-                        </a>
-                        <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.items_list_with_min_max') }}</span>
-                        </a>
-                        <a href="{{ route('reports.items.inactive') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.inactive_items_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.items.with-stores') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.items_by_store_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.inventory-discrepancy-report') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>{{ __('reports.inventory_monitoring') }}</span>
-                        </a>
+                        @can('view Items Report')
+                            <a href="{{ route('items.index') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.items_list_with_balances') }}</span>
+                            </a>
+
+                            <a href="{{ route('item-movement') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.item_movement') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.get-items-max-min-quantity') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.items_list_with_min_max') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.items.inactive') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.inactive_items_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.items.with-stores') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.items_by_store_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.inventory-discrepancy-report') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.inventory_monitoring') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -333,38 +362,47 @@
                         <span class="card-title">{{ __('reports.sales_reports') }}</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('reports.sales.representative') }}" class="report-link">
-                            <i class="fas fa-user-tie"></i>
-                            <span>{{ __('reports.sales_by_representative') }}</span>
-                        </a>
-                        {{-- <a href="{{ route('reports.sales.daily') }}" class="report-link">
+                        @can('view Sales Report')
+                            <a href="{{ route('reports.sales.representative') }}" class="report-link">
+                                <i class="fas fa-user-tie"></i>
+                                <span>{{ __('reports.sales_by_representative') }}</span>
+                            </a>
+
+                            {{-- <a href="{{ route('reports.sales.daily') }}" class="report-link">
                             <i class="fas fa-calendar-day"></i>
                             <span>{{ __('reports.sales_daily_report') }}</span>
                         </a> --}}
-                        <a href="{{ route('reports.general-sales-total-report') }}" class="report-link">
-                            <i class="fas fa-chart-line"></i>
-                            <span>{{ __('reports.sales_total_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.sales.items') }}" class="report-link">
-                            <i class="fas fa-box-open"></i>
-                            <span>{{ __('reports.sales_items_report') }}</span>
-                        </a>
-                        <a href="{{ route('sales.invoice-report') }}" class="report-link">
-                            <i class="fas fa-file-invoice"></i>
-                            <span>{{ __('reports.sales_invoices_report') }}</span>
-                        </a>
-                        <a href="{{ route('sales-orders-report') }}" class="report-link">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>{{ __('reports.sales_orders_report') }}</span>
-                        </a>
-                        <a href="{{ route('purchase-quotations-reports') }}" class="report-link">
-                            <i class="fas fa-file-contract"></i>
-                            <span>{{ __('reports.customer_quotation_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-sales-report-by-address') }}" class="report-link">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>{{ __('reports.sales_by_address') }}</span>
-                        </a>
+
+                            <a href="{{ route('reports.general-sales-total-report') }}" class="report-link">
+                                <i class="fas fa-chart-line"></i>
+                                <span>{{ __('reports.sales_total_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.sales.items') }}" class="report-link">
+                                <i class="fas fa-box-open"></i>
+                                <span>{{ __('reports.sales_items_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('sales.invoice-report') }}" class="report-link">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>{{ __('reports.sales_invoices_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('sales-orders-report') }}" class="report-link">
+                                <i class="fas fa-shopping-bag"></i>
+                                <span>{{ __('reports.sales_orders_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('purchase-quotations-reports') }}" class="report-link">
+                                <i class="fas fa-file-contract"></i>
+                                <span>{{ __('reports.customer_quotation_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-sales-report-by-address') }}" class="report-link">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ __('reports.sales_by_address') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -377,26 +415,32 @@
                         <span class="card-title">{{ __('reports.purchase_reports') }}</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span>{{ __('reports.purchases_daily_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-purchases-total') }}" class="report-link">
-                            <i class="fas fa-chart-pie"></i>
-                            <span>{{ __('reports.purchases_total_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-purchases-items-report') }}" class="report-link">
-                            <i class="fas fa-boxes"></i>
-                            <span>{{ __('reports.purchases_items_report') }}</span>
-                        </a>
-                        <a href="{{ route('billing.invoice-report') }}" class="report-link">
-                            <i class="fas fa-boxes"></i>
-                            <span>{{ __('reports.purchases_invoices_report') }}</span>
-                        </a>
-                        <a href="{{ route('supplier-rfqs-report') }}" class="report-link">
-                            <i class="fas fa-boxes"></i>
-                            <span>{{ __('reports.supplier_quotation_report') }}</span>
-                        </a>
+                        @can('view Purchases Report')
+                            <a href="{{ route('reports.general-purchases-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>{{ __('reports.purchases_daily_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-purchases-total') }}" class="report-link">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>{{ __('reports.purchases_total_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-purchases-items-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span>{{ __('reports.purchases_items_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('billing.invoice-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span>{{ __('reports.purchases_invoices_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('supplier-rfqs-report') }}" class="report-link">
+                                <i class="fas fa-boxes"></i>
+                                <span>{{ __('reports.supplier_quotation_report') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -409,22 +453,27 @@
                         <span class="card-title">{{ __('reports.expenses_reports') }}</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('reports.expenses-balance-report') }}" class="report-link">
-                            <i class="fas fa-balance-scale-right"></i>
-                            <span>{{ __('reports.expenses_balance_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
-                            <i class="fas fa-file-invoice"></i>
-                            <span>{{ __('reports.general_expenses_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-expenses-daily-report') }}" class="report-link">
-                            <i class="fas fa-calendar-day"></i>
-                            <span>{{ __('reports.expenses_daily_report') }}</span>
-                        </a>
-                        <a href="{{ route('reports.general-cost-centers-report') }}" class="report-link">
-                            <i class="fas fa-project-diagram"></i>
-                            <span>{{ __('reports.cost_centers_report') }}</span>
-                        </a>
+                        @can('view Expenses Report')
+                            <a href="{{ route('reports.expenses-balance-report') }}" class="report-link">
+                                <i class="fas fa-balance-scale-right"></i>
+                                <span>{{ __('reports.expenses_balance_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-expenses-report') }}" class="report-link">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>{{ __('reports.general_expenses_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-expenses-daily-report') }}" class="report-link">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>{{ __('reports.expenses_daily_report') }}</span>
+                            </a>
+
+                            <a href="{{ route('reports.general-cost-centers-report') }}" class="report-link">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>{{ __('reports.cost_centers_report') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -441,10 +490,12 @@
                             <i class="fas fa-landmark"></i>
                             <span>{{ __('reports.cash_bank_report') }}</span>
                         </a> --}}
-                        <a href="{{ route('reports.general-cashbox-movement-report') }}" class="report-link">
-                            <i class="fas fa-cash-register"></i>
-                            <span>{{ __('reports.general_cashbox_movement_report') }}</span>
-                        </a>
+                        @can('view General Cashbox Movement Report')
+                            <a href="{{ route('reports.general-cashbox-movement-report') }}" class="report-link">
+                                <i class="fas fa-cash-register"></i>
+                                <span>{{ __('reports.general_cashbox_movement_report') }}</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -470,10 +521,12 @@
                         <span class="card-title">تقارير التصنيع</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('manufacturing.invoice.report') }}" class="report-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>تقارير فواتير التصنيع</span>
-                        </a>
+                        @can('view Manufacturing Invoices Report')
+                            <a href="{{ route('manufacturing.invoice.report') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>تقارير فواتير التصنيع</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -486,38 +539,41 @@
                         <span class="card-title">إدارة الجودة (QMS)</span>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('quality.dashboard') }}" class="report-link">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>لوحة تحكم الجودة</span>
-                        </a>
-                        <a href="{{ route('quality.inspections.index') }}" class="report-link">
-                            <i class="fas fa-clipboard-check"></i>
-                            <span>فحوصات الجودة</span>
-                        </a>
-                        <a href="{{ url('/quality/ncr') }}" class="report-link">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>تقارير عدم المطابقة (NCR)</span>
-                        </a>
-                        <a href="{{ url('/quality/capa') }}" class="report-link">
-                            <i class="fas fa-tools"></i>
-                            <span>إجراءات تصحيحية (CAPA)</span>
-                        </a>
-                        <a href="{{ url('/quality/batches') }}" class="report-link">
-                            <i class="fas fa-barcode"></i>
-                            <span>تتبع الدفعات</span>
-                        </a>
-                        <a href="{{ url('/quality/supplier-ratings') }}" class="report-link">
-                            <i class="fas fa-star"></i>
-                            <span>تقييم الموردين</span>
-                        </a>
-                        <a href="{{ url('/quality/certificates') }}" class="report-link">
-                            <i class="fas fa-certificate"></i>
-                            <span>الشهادات والامتثال</span>
-                        </a>
-                        <a href="{{ url('/quality/audits') }}" class="report-link">
-                            <i class="fas fa-search"></i>
-                            <span>التدقيق الداخلي</span>
-                        </a>
+                        @can('view Quality Report')
+                            <a href="{{ route('quality.dashboard') }}" class="report-link">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>لوحة تحكم الجودة</span>
+                            </a>
+
+                            <a href="{{ route('quality.inspections.index') }}" class="report-link">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>فحوصات الجودة</span>
+                            </a>
+                            <a href="{{ url('/quality/ncr') }}" class="report-link">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>تقارير عدم المطابقة (NCR)</span>
+                            </a>
+                            <a href="{{ url('/quality/capa') }}" class="report-link">
+                                <i class="fas fa-tools"></i>
+                                <span>إجراءات تصحيحية (CAPA)</span>
+                            </a>
+                            <a href="{{ url('/quality/batches') }}" class="report-link">
+                                <i class="fas fa-barcode"></i>
+                                <span>تتبع الدفعات</span>
+                            </a>
+                            <a href="{{ url('/quality/supplier-ratings') }}" class="report-link">
+                                <i class="fas fa-star"></i>
+                                <span>تقييم الموردين</span>
+                            </a>
+                            <a href="{{ url('/quality/certificates') }}" class="report-link">
+                                <i class="fas fa-certificate"></i>
+                                <span>الشهادات والامتثال</span>
+                            </a>
+                            <a href="{{ url('/quality/audits') }}" class="report-link">
+                                <i class="fas fa-search"></i>
+                                <span>التدقيق الداخلي</span>
+                            </a>
+                        @endcan
                     </div>
                 </div>
             </div>

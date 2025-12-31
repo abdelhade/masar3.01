@@ -64,10 +64,17 @@ class UserController extends Controller
     {
         try {
             $user = User::create($request->validated());
-            if ($request->filled('permissions')) {
-                $permissions = Permission::whereIn('id', $request->permissions)->pluck('name')->toArray();
+
+            // Get permissions from JSON field (same as update method)
+            $jsonPayload = $request->input('permissions_list', '[]');
+            $submittedIds = json_decode($jsonPayload, true);
+
+            if (is_array($submittedIds) && ! empty($submittedIds)) {
+                $submittedIds = array_map('intval', $submittedIds);
+                $permissions = Permission::whereIn('id', $submittedIds)->pluck('name')->toArray();
                 $user->givePermissionTo($permissions);
             }
+
             if ($request->filled('branches')) {
                 $user->branches()->sync($request->branches);
             }
@@ -142,15 +149,14 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|confirmed|min:6',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'integer|exists:permissions,id',
             'branches' => 'nullable|array',
             'branches.*' => 'integer|exists:branches,id',
         ]);
 
         try {
+            // 2. تحديث البيانات الأساسية
             $data = $request->only('name', 'email');
 
             if ($request->filled('password')) {
@@ -159,42 +165,50 @@ class UserController extends Controller
 
             $user->update($data);
 
-            // تزامن الصلاحيات - الاحتفاظ بالصلاحيات التي لا تندرج تحت النوعين 1 و 2
-            $submittedIds = $request->input('permissions', []);
-            $submittedPermissions = Permission::whereIn('id', $submittedIds)->get();
+            $jsonPayload = $request->input('permissions_list', '[]');
+            $submittedIds = json_decode($jsonPayload, true);
 
+            // تأكد أنها مصفوفة
+            if (!is_array($submittedIds)) {
+                $submittedIds = [];
+            }
+
+            // تحويل القيم إلى أرقام صحيحة للأمان
+            $submittedIds = array_map('intval', $submittedIds);
+
+            // التعامل مع option_type للحفاظ على الصلاحيات الأخرى
             $hasOptionType = Schema::hasColumn('permissions', 'option_type');
 
             if ($hasOptionType) {
-                // نحدد الأنواع التي يديرها هذا النموذج (1: صلاحيات، 2: خيارات)
-                $typesToUpdate = ['1', '2'];
+                $typesToUpdate = ['1', '2']; // الأنواع التي يديرها هذا الفورم
 
-                // إعادة تحميل المستخدم للحصول على الصلاحيات الحالية المحدثة
-                $user->refresh();
-
-                // جلب الصلاحيات الحالية للمستخدم (تتضمن option_type)
+                // جلب الصلاحيات الحالية للمستخدم
                 $currentPermissions = $user->permissions()->get();
 
-                // الاحتفاظ بالصلاحيات التي لا تندرج تحت الأنواع التي نقوم بتحديثها
-                $permissionsToKeep = $currentPermissions->filter(function ($permission) use ($typesToUpdate) {
+                // الفلترة: نحتفظ بأي صلاحية ليس لها نوع (null) أو نوعها غير موجود في الفورم
+                $permissionsToKeepIds = $currentPermissions->filter(function ($permission) use ($typesToUpdate) {
                     $optionType = $permission->option_type ?? null;
+
+                    // إذا لم يكن هناك نوع، نحتفظ بها (صلاحيات أساسية)
                     if ($optionType === null) {
-                        return false;
+                        return true;
                     }
 
+                    // إذا كان النوع ليس 1 ولا 2، نحتفظ بها
                     return ! in_array((string) $optionType, $typesToUpdate);
-                })->pluck('name')->toArray();
+                })->pluck('id')->toArray();
 
-                // دمج الصلاحيات المحفوظة مع الصلاحيات الجديدة (التي تم إرسالها)
-                $submittedPermissionNames = $submittedPermissions->pluck('name')->toArray();
-                $allPermissions = array_unique(array_merge($permissionsToKeep, $submittedPermissionNames));
+                // دمج المصفوفات (الصلاحيات القديمة + الجديدة المختارة)
+                $allPermissionIds = array_unique(array_merge($permissionsToKeepIds, $submittedIds));
 
-                $user->syncPermissions($allPermissions);
+                // المزامنة باستخدام IDs (أضمن وأسرع)
+                $user->permissions()->sync($allPermissionIds);
             } else {
-                $user->syncPermissions($submittedPermissions->pluck('name')->toArray());
+                // الطريقة العادية إذا لم يكن هناك option_type
+                $user->permissions()->sync($submittedIds);
             }
 
-            // تزامن الفروع
+            // 4. تزامن الفروع
             if ($request->filled('branches')) {
                 $user->branches()->sync($request->branches);
             } else {
@@ -202,12 +216,10 @@ class UserController extends Controller
             }
 
             Alert::toast('تم تحديث المستخدم بنجاح', 'success');
-
             return redirect()->route('users.index');
-        } catch (\Exception $e) {
-            Log::error('User update failed: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            Alert::toast('حدث خطأ أثناء تحديث المستخدم: '.$e->getMessage(), 'error');
-
+        } catch (\Exception) {
+            Log::error('User update failed: ');
+            Alert::toast('حدث خطأ أثناء تحديث المستخدم: ', 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -216,8 +228,10 @@ class UserController extends Controller
     {
         try {
             $user->delete();
+            $user->branches()->detach();
+            $user->permissions()->detach();
+            $user->roles()->detach();
             Alert::toast('تم حذف المستخدم بنجاح', 'success');
-
             return redirect()->route('users.index');
         } catch (\Exception) {
             Alert::toast('حدث خطأ أثناء حذف المستخدم: ', 'error');

@@ -225,5 +225,34 @@
     "Reports": "التقارير",
     "Inventory": "المخزون",
     "Purchases": "المشتريات",
-    "Sales": "المبيعات"
+    "Sales": "المبيعات",
+    "General Basic Reports": "التقارير العامة الأساسية",
+    "General Financial Reports": "التقارير العامة المالية",
+
+    "Accounts Basic Reports": "تقارير الحسابات الأساسية",
+    "Accounts Financial Reports": "تقارير الحسابات المالية",
+    "Accounts Management Reports": "تقارير إدارة الحسابات",
+
+    "Inventory Basic Reports": "تقارير المخزون الأساسية",
+    "Inventory Financial Reports": "تقارير المخزون المالية",
+    "Inventory Management Reports": "تقارير إدارة المخزون",
+
+    "Sales Basic Reports": "تقارير المبيعات الأساسية",
+    "Sales Financial Reports": "تقارير المبيعات المالية",
+    "Sales Management Reports": "تقارير إدارة المبيعات",
+
+    "Purchases Basic Reports": "تقارير المشتريات الأساسية",
+    "Purchases Financial Reports": "تقارير المشتريات المالية",
+    "Purchases Management Reports": "تقارير إدارة المشتريات",
+
+    "Expenses Basic Reports": "تقارير المصروفات الأساسية",
+    "Expenses Financial Reports": "تقارير المصروفات المالية",
+    "Expenses Management Reports": "تقارير إدارة المصروفات",
+
+    "Cash Financial Reports": "تقارير الخزينة المالية",
+
+    "Manufacturing Financial Reports": "تقارير التصنيع المالية",
+
+    "Quality Basic Reports": "تقارير الجودة الأساسية",
+    "Quality Management Reports": "تقارير إدارة الجودة"
 }

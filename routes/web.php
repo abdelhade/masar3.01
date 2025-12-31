@@ -173,7 +173,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('notes', NoteController::class)->names('notes')->only('index');
     Route::get('notes/{id}', [NoteController::class, 'noteDetails'])->name('notes.noteDetails');
     // 📁 Item Movement
-    Route::get('item-movement/{itemId?}/{warehouseId?}', [ItemController::class, 'itemMovementReport'])->name('item-movement');
     // 📁 Item Sales Report
     Route::get('item-sales', [ItemController::class, 'itemSalesReport'])->name('item-sales');
     // 📁 Item Purchase Report
