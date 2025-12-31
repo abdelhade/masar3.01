@@ -996,6 +996,36 @@
             },
 
             /**
+             * Calculate aggregated tax (VAT) from all items (for item-level tax mode)
+             * @returns {number} Sum of all item VAT values
+             */
+            calculateAggregatedTax() {
+                if (!this.items || !Array.isArray(this.items)) {
+                    return 0;
+                }
+                
+                return this.items.reduce((sum, item) => {
+                    const itemVat = parseFloat(item.item_vat || 0);
+                    return sum + itemVat;
+                }, 0);
+            },
+
+            /**
+             * Calculate aggregated withholding tax from all items (for item-level withholding tax mode)
+             * @returns {number} Sum of all item withholding tax values
+             */
+            calculateAggregatedTaxDiscount() {
+                if (!this.items || !Array.isArray(this.items)) {
+                    return 0;
+                }
+                
+                return this.items.reduce((sum, item) => {
+                    const itemWithholdingTax = parseFloat(item.item_withholding_tax || 0);
+                    return sum + itemWithholdingTax;
+                }, 0);
+            },
+
+            /**
              * ✅ مزامنة جميع القيم إلى Livewire (تُستدعى قبل الحفظ)
              * تزامن: الأصناف + الإجماليات + الخصم + الإضافي
              */

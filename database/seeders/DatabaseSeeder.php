@@ -27,6 +27,9 @@ use Modules\Reports\database\seeders\ReportsPermissionsSeeder;
 use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
 use Modules\Branches\database\seeders\BranchesPermissionsSeeder;
 use Modules\Services\database\seeders\ServicesPermissionsSeeder;
+use Modules\Settings\Database\Seeders\InvoiceOptionsSeeder;
+use Modules\Settings\Database\Seeders\SettingSeeder;
+
 use Modules\Settings\Database\Seeders\SettingsPermissionsSeeder;
 use Modules\Shipping\Database\Seeders\ShippingPermissionsSeeder;
 use Modules\Inquiries\database\seeders\InquiriesPermissionsSeeder;
@@ -78,7 +81,6 @@ class DatabaseSeeder extends Seeder
             // ItemSeeder::class,
             InvoiceOptionsSeeder::class,
             InvoiceTemplatesSeeder::class,
-            SystemSettingsSeeder::class,
             InvoiceDimensionsSeeder::class,
             LeadStatusSeeder::class,
             KpiSeeder::class,
@@ -112,7 +114,6 @@ class DatabaseSeeder extends Seeder
             GiveAllPermissionsToAdminSeeder::class,
             MaintenancePermissionsSeeder::class,
             FleetPermissionsSeeder::class,
-            AddNationalAddressAndTaxNumberSeeder::class,
             ActivityLogPermissionsSeeder::class,
             ServicesPermissionsSeeder::class,
             DepreciationPermissionsSeeder::class,
@@ -125,6 +126,7 @@ class DatabaseSeeder extends Seeder
             VatAccountsSettingsSeeder::class,
             PurchaseDiscountMethodSeeder::class,
             ReportPermissionsSeeder::class,
+
         ]);
     }
 }

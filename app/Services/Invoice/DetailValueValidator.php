@@ -16,6 +16,7 @@ use InvalidArgumentException;
  * 1. Detail value must not be negative
  * 2. Detail value must be within reasonable bounds (0 to 10x item price × quantity)
  * 3. Calculation must be accurate (matches formula within tolerance)
+ * 4. Exclusive mode rules: Either item-level OR invoice-level discounts/additional (not both)
  */
 class DetailValueValidator
 {
@@ -29,6 +30,100 @@ class DetailValueValidator
      * Detail value should not exceed (item_price × quantity × MAX_MULTIPLIER)
      */
     private const MAX_MULTIPLIER = 10.0;
+
+    /**
+     * Validate exclusive mode rules for discounts, additional charges, and taxes.
+     *
+     * Ensures that discounts/additional/taxes are applied at either item level OR invoice level, not both.
+     *
+     * @param array $itemData Item data containing discount/additional/tax fields
+     * @param array $invoiceData Invoice data containing discount/additional/tax fields and discount_mode
+     *
+     * @throws InvalidArgumentException if exclusive mode rules are violated
+     */
+    public function validateExclusiveMode(array $itemData, array $invoiceData): void
+    {
+        $discountMode = $invoiceData['discount_mode'] ?? 'invoice_level';
+
+        $itemDiscount = (float) ($itemData['item_discount'] ?? 0);
+        $itemAdditional = (float) ($itemData['additional'] ?? 0);
+        $itemVatPercentage = (float) ($itemData['item_vat_percentage'] ?? 0);
+        $itemVatValue = (float) ($itemData['item_vat_value'] ?? 0);
+        $itemWithholdingTaxPercentage = (float) ($itemData['item_withholding_tax_percentage'] ?? 0);
+        $itemWithholdingTaxValue = (float) ($itemData['item_withholding_tax_value'] ?? 0);
+
+        $invoiceDiscount = (float) ($invoiceData['fat_disc'] ?? 0);
+        $invoiceDiscountPer = (float) ($invoiceData['fat_disc_per'] ?? 0);
+        $invoiceAdditional = (float) ($invoiceData['fat_plus'] ?? 0);
+        $invoiceAdditionalPer = (float) ($invoiceData['fat_plus_per'] ?? 0);
+        $invoiceVatPercentage = (float) ($invoiceData['vat_percentage'] ?? 0);
+        $invoiceVatValue = (float) ($invoiceData['vat_value'] ?? 0);
+        $invoiceWithholdingTaxPercentage = (float) ($invoiceData['withholding_tax_percentage'] ?? 0);
+        $invoiceWithholdingTaxValue = (float) ($invoiceData['withholding_tax_value'] ?? 0);
+
+        if ($discountMode === 'item_level') {
+            // In item_level mode: Invoice-level discount/additional/taxes must be zero
+            if ($invoiceDiscount > 0 || $invoiceDiscountPer > 0 || $invoiceAdditional > 0 || $invoiceAdditionalPer > 0) {
+                throw new InvalidArgumentException(
+                    'في وضع الخصومات على مستوى الصنف، يجب أن تكون خصومات/إضافات الفاتورة صفر. ' .
+                    \sprintf(
+                        'القيم الحالية: خصم الفاتورة=%.2f، نسبة خصم الفاتورة=%.2f، إضافي الفاتورة=%.2f، نسبة إضافي الفاتورة=%.2f',
+                        $invoiceDiscount,
+                        $invoiceDiscountPer,
+                        $invoiceAdditional,
+                        $invoiceAdditionalPer
+                    )
+                );
+            }
+
+            // In item_level mode: Invoice-level taxes must be zero
+            if ($invoiceVatPercentage > 0 || $invoiceVatValue > 0 || $invoiceWithholdingTaxPercentage > 0 || $invoiceWithholdingTaxValue > 0) {
+                throw new InvalidArgumentException(
+                    'في وضع الخصومات على مستوى الصنف، يجب أن تكون ضرائب الفاتورة صفر. ' .
+                    \sprintf(
+                        'القيم الحالية: نسبة ضريبة القيمة المضافة=%.2f، قيمة ضريبة القيمة المضافة=%.2f، نسبة الخصم الضريبي=%.2f، قيمة الخصم الضريبي=%.2f',
+                        $invoiceVatPercentage,
+                        $invoiceVatValue,
+                        $invoiceWithholdingTaxPercentage,
+                        $invoiceWithholdingTaxValue
+                    )
+                );
+            }
+        } elseif ($discountMode === 'invoice_level') {
+            // In invoice_level mode: Item-level discount/additional/taxes must be zero
+            if ($itemDiscount > 0 || $itemAdditional > 0) {
+                throw new InvalidArgumentException(
+                    'في وضع الخصومات على مستوى الفاتورة، يجب أن تكون خصومات/إضافات الصنف صفر. ' .
+                    \sprintf(
+                        'القيم الحالية: خصم الصنف=%.2f، إضافي الصنف=%.2f',
+                        $itemDiscount,
+                        $itemAdditional
+                    )
+                );
+            }
+
+            // In invoice_level mode: Item-level taxes must be zero
+            if ($itemVatPercentage > 0 || $itemVatValue > 0 || $itemWithholdingTaxPercentage > 0 || $itemWithholdingTaxValue > 0) {
+                throw new InvalidArgumentException(
+                    'في وضع الخصومات على مستوى الفاتورة، يجب أن تكون ضرائب الصنف صفر. ' .
+                    \sprintf(
+                        'القيم الحالية: نسبة ضريبة القيمة المضافة=%.2f، قيمة ضريبة القيمة المضافة=%.2f، نسبة الخصم الضريبي=%.2f، قيمة الخصم الضريبي=%.2f',
+                        $itemVatPercentage,
+                        $itemVatValue,
+                        $itemWithholdingTaxPercentage,
+                        $itemWithholdingTaxValue
+                    )
+                );
+            }
+        } else {
+            throw new InvalidArgumentException(
+                \sprintf(
+                    'وضع الخصومات غير صحيح: %s. القيم المسموحة: item_level أو invoice_level',
+                    $discountMode
+                )
+            );
+        }
+    }
 
     /**
      * Validate calculated detail_value.

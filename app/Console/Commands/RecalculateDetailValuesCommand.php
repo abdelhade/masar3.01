@@ -291,8 +291,10 @@ class RecalculateDetailValuesCommand extends Command
         })->toArray();
 
         // Calculate invoice subtotal
+        // Note: Using default 'invoice_level' mode for backward compatibility
+        // TODO: Add discount_mode support when implementing settings
         try {
-            $invoiceSubtotal = $calculator->calculateInvoiceSubtotal($itemsData);
+            $invoiceSubtotal = $calculator->calculateInvoiceSubtotal($itemsData, 'invoice_level');
         } catch (\Exception $e) {
             Log::warning('Could not calculate invoice subtotal', [
                 'invoice_id' => $invoice->id,

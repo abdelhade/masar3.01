@@ -1,4 +1,10 @@
-<div class="row mt-4 p-3 bg-light">
+@php
+    // Inject InvoiceFormStateManager to get field states
+    $fieldStates = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
+    $jsConfig = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getJavaScriptConfig();
+@endphp
+
+<div class="row mt-4 p-3 bg-light" x-data="{ fieldStates: @js($fieldStates) }">
     @if (setting('invoice_show_item_details'))
         <div class="col-3">
             @if ($currentSelectedItem)
@@ -224,7 +230,9 @@
                                     @input="if (discountPercentage !== null && discountPercentage !== undefined) { discountPercentage = parseFloat(parseFloat(discountPercentage || 0).toFixed(2)); } updateDiscountFromPercentage()"
                                     id="discount-percentage" class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                    max="100">
+                                    max="100"
+                                    :disabled="!fieldStates.discount.invoice"
+                                    :class="{ 'bg-light': !fieldStates.discount.invoice }">
                                 <div class="input-group-append">
                                     <span class="input-group-text">%</span>
                                 </div>
@@ -243,7 +251,9 @@
                                 @input="updateDiscountFromValue()" @focus="$event.target.select()"
                                 class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                id="discount-value">
+                                id="discount-value"
+                                :disabled="!fieldStates.discount.invoice"
+                                :class="{ 'bg-light': !fieldStates.discount.invoice }">
                         </div>
 
 
@@ -263,7 +273,9 @@
                                     @input="if (additionalPercentage !== null && additionalPercentage !== undefined) { additionalPercentage = parseFloat(parseFloat(additionalPercentage || 0).toFixed(2)); } updateAdditionalFromPercentage()"
                                     id="additional-percentage" class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                    max="100">
+                                    max="100"
+                                    :disabled="!fieldStates.additional.invoice"
+                                    :class="{ 'bg-light': !fieldStates.additional.invoice }">
                                 <div class="input-group-append">
                                     <span class="input-group-text">%</span>
                                 </div>
@@ -282,13 +294,15 @@
                                 @input="updateAdditionalFromValue()" @focus="$event.target.select()"
                                 class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
-                                id="additional-value">
+                                id="additional-value"
+                                :disabled="!fieldStates.additional.invoice"
+                                :class="{ 'bg-light': !fieldStates.additional.invoice }">
                         </div>
                     </div>
 
 
                     {{-- ضريبة القيمة المضافة (VAT) - يظهر فقط إذا كان مفعل --}}
-                    @if (setting('enable_vat_fields') == '1')
+                    @if (isVatEnabled())
                         <div class="row mb-2 align-items-center">
                             <div class="col-2 text-right font-weight-bold">
                                 <label style="font-size: 0.95em;">{{ __('VAT %') }}</label>
@@ -300,7 +314,8 @@
                                     <input type="number" step="0.01" x-model.number="vatPercentage" readonly
                                         class="form-control form-control-sm bg-light"
                                         style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
-                                        title="النسبة من الإعدادات">
+                                        title="النسبة من الإعدادات"
+                                        :disabled="!fieldStates.vat.invoice">
                                     <div class="input-group-append">
                                         <span class="input-group-text">%</span>
                                     </div>
@@ -318,7 +333,8 @@
                                 <input type="number" step="0.01" x-model.number="vatValue" readonly
                                     class="form-control form-control-sm bg-light"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" id="vat-value"
-                                    title="تُحسب تلقائياً">
+                                    title="تُحسب تلقائياً"
+                                    :disabled="!fieldStates.vat.invoice">
                             </div>
                         </div>
 
@@ -334,7 +350,8 @@
                                     <input type="number" step="0.01" x-model.number="withholdingTaxPercentage"
                                         readonly class="form-control form-control-sm bg-light"
                                         style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
-                                        title="النسبة من الإعدادات">
+                                        title="النسبة من الإعدادات"
+                                        :disabled="!fieldStates.withholding_tax.invoice">
                                     <div class="input-group-append">
                                         <span class="input-group-text">%</span>
                                     </div>
@@ -352,11 +369,34 @@
                                 <input type="number" step="0.01" x-model.number="withholdingTaxValue" readonly
                                     class="form-control form-control-sm bg-light"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
-                                    id="withholding-tax-value" title="تُحسب تلقائياً">
+                                    id="withholding-tax-value" title="تُحسب تلقائياً"
+                                    :disabled="!fieldStates.withholding_tax.invoice">
                             </div>
                         </div>
                     @endif
                 @endif
+                
+                {{-- Aggregated Values Display (for item-level taxes) --}}
+                @if (isVatEnabled() || isWithholdingTaxEnabled())
+                    <div x-show="fieldStates.vat.showAggregated" x-cloak class="row mb-2 align-items-center border-top pt-2">
+                        <div class="col-5 text-right font-weight-bold text-info">
+                            <i class="fas fa-calculator"></i> {{ __('إجمالي الضريبة على الأصناف:') }}
+                        </div>
+                        <div class="col-3 text-left font-weight-bold text-info" x-text="window.formatNumberFixed(calculateAggregatedTax())">
+                            0.00
+                        </div>
+                    </div>
+                    
+                    <div x-show="fieldStates.withholding_tax.showAggregated" x-cloak class="row mb-2 align-items-center">
+                        <div class="col-5 text-right font-weight-bold text-info">
+                            <i class="fas fa-calculator"></i> {{ __('إجمالي خصم الضريبة على الأصناف:') }}
+                        </div>
+                        <div class="col-3 text-left font-weight-bold text-info" x-text="window.formatNumberFixed(calculateAggregatedTaxDiscount())">
+                            0.00
+                        </div>
+                    </div>
+                @endif
+                
                 <hr>
                 {{-- الإجمالي النهائي --}}
                 @if ($type != 21)

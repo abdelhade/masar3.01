@@ -10,12 +10,22 @@ This document outlines the requirements for properly handling discounts and addi
 - **Additional**: Additional charges applied to a specific item in an invoice
 - **Fat_Disc**: Total discount applied at the invoice level
 - **Fat_Plus**: Total additional charges applied at the invoice level
+- **Fat_Tax**: Total tax applied at the invoice level
+- **Item_Tax**: Tax applied to a specific item in an invoice
+- **Tax_Discount**: Discount on tax (خصم الضريبة)
 - **Detail_Value**: Final value of an item after all discounts and additions
 - **Average_Cost**: Weighted average cost calculated as SUM(detail_value) / SUM(qty_in - qty_out)
 - **Purchase_Invoice**: Invoice type 11 (increases inventory)
 - **Sales_Invoice**: Invoice type 12 (decreases inventory)
 - **Purchase_Return**: Return of purchased items
 - **Sales_Return**: Return of sold items
+- **Public_Settings**: System settings table storing configuration values
+- **Feature_Mode**: Configuration that determines where a feature can be applied (invoice_level, item_level, both, disabled)
+- **Aggregated_Values**: Sum of item-level values displayed in invoice footer
+- **Discount_Mode**: Setting that controls where discounts can be applied
+- **Additional_Mode**: Setting that controls where additional charges can be applied
+- **Tax_Mode**: Setting that controls where taxes can be applied
+- **Tax_Discount_Mode**: Setting that controls where tax discounts can be applied
 
 ## Requirements
 
@@ -163,6 +173,65 @@ This document outlines the requirements for properly handling discounts and addi
 4. THE System SHALL handle currency rate changes correctly
 5. THE System SHALL log currency conversions for audit purposes
 
+### Requirement 13: Granular Feature Control
+
+**User Story:** As a system administrator, I want to control where each feature (discount, additional, tax, tax discount) can be applied (invoice level, item level, both, or disabled), so that I can configure the system according to business needs.
+
+#### Acceptance Criteria
+
+1. THE System SHALL provide a setting for discount mode with options: 'invoice_level', 'item_level', 'both', 'disabled'
+2. THE System SHALL provide a setting for additional mode with options: 'invoice_level', 'item_level', 'both', 'disabled'
+3. THE System SHALL provide a setting for tax mode with options: 'invoice_level', 'item_level', 'both', 'disabled'
+4. THE System SHALL provide a setting for tax discount mode with options: 'invoice_level', 'item_level', 'both', 'disabled'
+5. THE System SHALL store all settings in the public_settings table with category_id = 2 (Invoices)
+6. THE System SHALL use 'select' input type for all mode settings
+7. WHEN a mode is set to 'invoice_level', THE System SHALL enable invoice-level field and disable item-level field
+8. WHEN a mode is set to 'item_level', THE System SHALL enable item-level field and disable invoice-level field
+9. WHEN a mode is set to 'both', THE System SHALL enable both invoice-level and item-level fields
+10. WHEN a mode is set to 'disabled', THE System SHALL disable both invoice-level and item-level fields
+11. THE System SHALL validate that at least one feature mode is not set to 'disabled'
+12. THE System SHALL apply mode settings dynamically when loading invoice forms
+
+### Requirement 14: Invoice Form Dynamic Control
+
+**User Story:** As a user, I want the invoice form to show only enabled features based on mode settings, so that I don't see disabled fields.
+
+#### Acceptance Criteria
+
+1. WHEN discount mode is 'invoice_level', THE System SHALL enable invoice discount field and disable item discount column
+2. WHEN discount mode is 'item_level', THE System SHALL disable invoice discount field and enable item discount column
+3. WHEN discount mode is 'both', THE System SHALL enable both invoice discount field and item discount column
+4. WHEN discount mode is 'disabled', THE System SHALL disable both invoice discount field and item discount column
+5. WHEN additional mode is 'invoice_level', THE System SHALL enable invoice additional field and disable item additional column
+6. WHEN additional mode is 'item_level', THE System SHALL disable invoice additional field and enable item additional column
+7. WHEN additional mode is 'both', THE System SHALL enable both invoice additional field and item additional column
+8. WHEN additional mode is 'disabled', THE System SHALL disable both invoice additional field and item additional column
+9. WHEN tax mode is 'invoice_level', THE System SHALL enable invoice tax field and disable item tax column
+10. WHEN tax mode is 'item_level', THE System SHALL disable invoice tax field and enable item tax column
+11. WHEN tax mode is 'both', THE System SHALL enable both invoice tax field and item tax column
+12. WHEN tax mode is 'disabled', THE System SHALL disable both invoice tax field and item tax column
+13. WHEN tax discount mode is 'invoice_level', THE System SHALL enable invoice tax discount field and disable item tax discount column
+14. WHEN tax discount mode is 'item_level', THE System SHALL disable invoice tax discount field and enable item tax discount column
+15. WHEN tax discount mode is 'both', THE System SHALL enable both invoice tax discount field and item tax discount column
+16. WHEN tax discount mode is 'disabled', THE System SHALL disable both invoice tax discount field and item tax discount column
+17. THE System SHALL apply disabled state using HTML disabled attribute or readonly attribute
+18. THE System SHALL check mode settings on page load and apply appropriate states
+19. THE System SHALL update field states dynamically when settings are changed
+
+### Requirement 15: Aggregated Values Display
+
+**User Story:** As a user, I want to see aggregated tax and tax discount values in the invoice footer when item-level taxes are enabled, so that I can verify the total tax amounts.
+
+#### Acceptance Criteria
+
+1. WHEN tax mode is 'item_level' or 'both', THE System SHALL display the sum of all item taxes in the invoice footer
+2. WHEN tax discount mode is 'item_level' or 'both', THE System SHALL display the sum of all item tax discounts in the invoice footer
+3. THE System SHALL calculate aggregated values dynamically as items are added or modified
+4. THE System SHALL display aggregated values in a clear, labeled format (e.g., "إجمالي الضريبة على الأصناف: XXX")
+5. THE System SHALL update aggregated values in real-time when item values change
+6. WHEN tax mode is 'invoice_level' or 'disabled', THE System SHALL NOT display item tax aggregated values
+7. WHEN tax discount mode is 'invoice_level' or 'disabled', THE System SHALL NOT display item tax discount aggregated values
+
 ## Calculation Formulas
 
 ### Item Detail Value Calculation
@@ -209,3 +278,42 @@ Where detail_value now properly includes all discounts and additions.
 - The issue is ensuring `detail_value` is calculated correctly to include all discounts and additions
 - The average cost calculation formula remains unchanged - it uses `detail_value`
 - The focus is on ensuring `detail_value` is accurate when invoices are created/modified/deleted
+
+## Feature Mode Options
+
+Each feature (discount, additional, tax, tax_discount) can be configured with one of four modes:
+
+### Mode: 'invoice_level'
+- **Invoice Field**: Enabled (editable)
+- **Item Column**: Disabled (hidden or readonly)
+- **Use Case**: Apply feature only at invoice level, distributed across items
+- **Example**: Single discount for entire invoice
+
+### Mode: 'item_level'
+- **Invoice Field**: Disabled (hidden or readonly)
+- **Item Column**: Enabled (editable)
+- **Use Case**: Apply feature individually to each item
+- **Example**: Different discount for each item
+- **Aggregated Display**: Show sum in invoice footer
+
+### Mode: 'both'
+- **Invoice Field**: Enabled (editable)
+- **Item Column**: Enabled (editable)
+- **Use Case**: Apply feature at both levels simultaneously
+- **Example**: Invoice discount + individual item discounts
+- **Aggregated Display**: Show sum of item-level values in footer
+
+### Mode: 'disabled'
+- **Invoice Field**: Disabled (hidden or readonly)
+- **Item Column**: Disabled (hidden or readonly)
+- **Use Case**: Feature not used in this installation
+- **Example**: System doesn't use tax discounts
+
+## Settings Keys
+
+The following settings keys will be used in `public_settings` table:
+
+- `discount_mode`: Controls discount application (default: 'invoice_level')
+- `additional_mode`: Controls additional charges application (default: 'invoice_level')
+- `tax_mode`: Controls tax application (default: 'invoice_level')
+- `tax_discount_mode`: Controls tax discount application (default: 'disabled')

@@ -1,3 +1,9 @@
+@php
+    // Inject InvoiceFormStateManager to get field states
+    $fieldStates = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
+    $jsConfig = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getJavaScriptConfig();
+@endphp
+
 <div>
     @section('formAction', 'create')
     <div class="content-wrapper">
@@ -23,7 +29,8 @@
                     items: @entangle('invoiceItems'),
                     acc1Id: @entangle('acc1_id'),
                     editableFieldsOrder: @js($this->getEditableFieldsOrder()),
-                    currentBalance: @js($currentBalance ?? 0)
+                    currentBalance: @js($currentBalance ?? 0),
+                    fieldStates: @js($fieldStates)
                 })"
                 @submit.prevent="
                     // ✅ 1. مزامنة جميع القيم من Alpine.js إلى Livewire
@@ -208,7 +215,7 @@
                     @livewire('installments::create-installment-from-invoice', [
                         'invoiceTotal' => $total_after_additional ?? 0,
                         'clientAccountId' => $acc1_id ?? null
-                    ], key('installment-modal'))
+                    ], key: 'installment-modal')
                 </div>
             @endif
 

@@ -1,3 +1,9 @@
+@php
+    // Inject InvoiceFormStateManager to get field states
+    $fieldStates = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
+    $jsConfig = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getJavaScriptConfig();
+@endphp
+
 <div>
     @section('formAction', 'edit')
     <div class="invoice-container">
@@ -24,7 +30,8 @@
                         items: @entangle('invoiceItems'),
                         acc1Id: @entangle('acc1_id'),
                         editableFieldsOrder: @js($this->getEditableFieldsOrder()),
-                        currentBalance: @js($currentBalance ?? 0)
+                        currentBalance: @js($currentBalance ?? 0),
+                        fieldStates: @js($fieldStates)
                     })"
                     @submit.prevent="
                         // ✅ 1. مزامنة جميع القيم من Alpine.js إلى Livewire
