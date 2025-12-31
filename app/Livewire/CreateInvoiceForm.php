@@ -1764,7 +1764,7 @@ class CreateInvoiceForm extends Component
         $baseTotal = round($this->subtotal - $this->discount_value + $this->additional_value, 2);
 
         // Calculate VAT and Withholding Tax if enabled
-        if (setting('enable_vat_fields') == '1') {
+        if (isVatEnabled() || isWithholdingTaxEnabled()) {
             $this->vat_value = round(($baseTotal * $this->vat_percentage) / 100, 2);
             $this->withholding_tax_value = round(($baseTotal * $this->withholding_tax_percentage) / 100, 2);
 

@@ -232,6 +232,103 @@ class RecalculateDetailValuesCommand extends Command
 }
 ```
 
+### 5. FeatureModeManager (NEW)
+
+**Purpose**: Manage feature mode settings and determine field availability.
+
+**Interface**:
+```php
+class FeatureModeManager
+{
+    /**
+     * Get the current mode for a feature.
+     *
+     * @param string $feature Feature name (discount, additional, tax, tax_discount)
+     * @return string Mode value (invoice_level, item_level, both, disabled)
+     */
+    public function getMode(string $feature): string;
+
+    /**
+     * Check if invoice-level field should be enabled for a feature.
+     *
+     * @param string $feature Feature name
+     * @return bool True if invoice field should be enabled
+     */
+    public function isInvoiceLevelEnabled(string $feature): bool;
+
+    /**
+     * Check if item-level field should be enabled for a feature.
+     *
+     * @param string $feature Feature name
+     * @return bool True if item field should be enabled
+     */
+    public function isItemLevelEnabled(string $feature): bool;
+
+    /**
+     * Check if aggregated values should be displayed for a feature.
+     *
+     * @param string $feature Feature name
+     * @return bool True if aggregated values should be shown
+     */
+    public function shouldShowAggregatedValues(string $feature): bool;
+
+    /**
+     * Get all feature modes as array.
+     *
+     * @return array Feature modes keyed by feature name
+     */
+    public function getAllModes(): array;
+
+    /**
+     * Validate mode value.
+     *
+     * @param string $mode Mode to validate
+     * @return bool True if valid
+     */
+    private function isValidMode(string $mode): bool;
+}
+```
+
+### 6. InvoiceFormStateManager (NEW)
+
+**Purpose**: Manage dynamic state of invoice form fields based on feature modes.
+
+**Interface**:
+```php
+class InvoiceFormStateManager
+{
+    private FeatureModeManager $featureModeManager;
+
+    public function __construct(FeatureModeManager $featureModeManager)
+    {
+        $this->featureModeManager = $featureModeManager;
+    }
+
+    /**
+     * Get field states for invoice form.
+     *
+     * @return array Field states with enabled/disabled status
+     */
+    public function getFieldStates(): array;
+
+    /**
+     * Get JavaScript configuration for dynamic form control.
+     *
+     * @return array JavaScript config with field states and modes
+     */
+    public function getJavaScriptConfig(): array;
+
+    /**
+     * Check if a specific field should be enabled.
+     *
+     * @param string $fieldType Type of field (invoice or item)
+     * @param string $feature Feature name
+     * @return bool True if field should be enabled
+     */
+    public function isFieldEnabled(string $fieldType, string $feature): bool;
+}
+```
+
 ## Data Models
 
 ### Existing Models (No Schema Changes)
@@ -258,7 +355,59 @@ The system uses existing database schema:
 - fat_net: decimal(15,2) - Net invoice value
 ```
 
-**Note**: No database schema changes required. We only change how `detail_value` is calculated.
+#### public_settings table (Feature Mode Settings)
+```sql
+- key: varchar(255) - Setting key
+- value: text - Setting value
+- category_id: int - Category (2 for Invoices)
+- label: varchar(255) - Display label
+- input_type: varchar(50) - Input type (select)
+```
+
+**Feature Mode Settings**:
+```php
+// discount_mode setting
+[
+    'key' => 'discount_mode',
+    'value' => 'invoice_level', // or 'item_level', 'both', 'disabled'
+    'category_id' => 2,
+    'label' => 'وضع الخصم',
+    'input_type' => 'select',
+    'options' => ['invoice_level', 'item_level', 'both', 'disabled']
+]
+
+// additional_mode setting
+[
+    'key' => 'additional_mode',
+    'value' => 'invoice_level',
+    'category_id' => 2,
+    'label' => 'وضع الإضافة',
+    'input_type' => 'select',
+    'options' => ['invoice_level', 'item_level', 'both', 'disabled']
+]
+
+// tax_mode setting
+[
+    'key' => 'tax_mode',
+    'value' => 'invoice_level',
+    'category_id' => 2,
+    'label' => 'وضع الضريبة',
+    'input_type' => 'select',
+    'options' => ['invoice_level', 'item_level', 'both', 'disabled']
+]
+
+// tax_discount_mode setting
+[
+    'key' => 'tax_discount_mode',
+    'value' => 'disabled',
+    'category_id' => 2,
+    'label' => 'وضع خصم الضريبة',
+    'input_type' => 'select',
+    'options' => ['invoice_level', 'item_level', 'both', 'disabled']
+]
+```
+
+**Note**: No database schema changes required. We only change how `detail_value` is calculated and add feature mode settings.
 
 ## Calculation Formulas
 
@@ -361,6 +510,26 @@ average_cost = SUM(detail_value) / SUM(qty_in - qty_out)
 *For any* invoice saved, the system should log all calculation details including original values, discounts, additions, and final detail_value.
 **Validates: Requirements 9.1, 9.2, 9.3**
 
+### Property 11: Feature Mode Consistency
+*For any* feature mode setting, when mode is 'invoice_level', item-level fields should be disabled and invoice-level fields should be enabled.
+**Validates: Requirements 13.7, 14.1**
+
+### Property 12: Feature Mode Both Enablement
+*For any* feature mode setting, when mode is 'both', both invoice-level and item-level fields should be enabled.
+**Validates: Requirements 13.9, 14.3**
+
+### Property 13: Feature Mode Disabled State
+*For any* feature mode setting, when mode is 'disabled', both invoice-level and item-level fields should be disabled.
+**Validates: Requirements 13.10, 14.4**
+
+### Property 14: Aggregated Values Display Condition
+*For any* feature with mode 'item_level' or 'both', aggregated values should be displayed in the invoice footer.
+**Validates: Requirements 15.1, 15.2**
+
+### Property 15: Aggregated Values Calculation Accuracy
+*For any* invoice with item-level taxes, the sum of all item tax values should equal the displayed aggregated tax value.
+**Validates: Requirements 15.3, 15.5**
+
 ## Error Handling
 
 ### Error Categories
@@ -453,6 +622,20 @@ try {
    - Test logging
    - Test error handling
 
+4. **FeatureModeManager Tests**
+   - Test getMode() for all features
+   - Test isInvoiceLevelEnabled() for all modes
+   - Test isItemLevelEnabled() for all modes
+   - Test shouldShowAggregatedValues() for all modes
+   - Test getAllModes() returns correct structure
+   - Test mode validation
+
+5. **InvoiceFormStateManager Tests**
+   - Test getFieldStates() for all mode combinations
+   - Test getJavaScriptConfig() structure
+   - Test isFieldEnabled() for all scenarios
+   - Test integration with FeatureModeManager
+
 ### Property-Based Tests
 
 1. **Distribution Sum Property** (Property 2, 3)
@@ -470,6 +653,15 @@ try {
 4. **Calculation Accuracy Property** (Property 4)
    - Generate random item and invoice data
    - Verify detail_value matches formula
+
+5. **Feature Mode Consistency Property** (Property 11, 12, 13)
+   - Generate random feature mode settings
+   - Verify field states match mode settings
+   - Test all mode combinations (invoice_level, item_level, both, disabled)
+
+6. **Aggregated Values Accuracy Property** (Property 15)
+   - Generate random invoices with item-level taxes
+   - Verify sum of item values equals aggregated display value
 
 ### Integration Tests
 
@@ -496,6 +688,20 @@ try {
    - Verify correct values are unchanged
    - Verify dry-run doesn't modify data
 
+5. **Feature Mode Integration Tests**
+   - Test invoice form with mode 'invoice_level'
+   - Test invoice form with mode 'item_level'
+   - Test invoice form with mode 'both'
+   - Test invoice form with mode 'disabled'
+   - Verify field states match settings
+   - Verify aggregated values display correctly
+
+6. **Settings Change Integration Tests**
+   - Change feature mode setting
+   - Reload invoice form
+   - Verify field states update correctly
+   - Test all mode transitions
+
 ## Implementation Notes
 
 ### Phase 1: Core Services (2-3 days)
@@ -515,13 +721,27 @@ try {
 2. Test on sample data
 3. Create backup before running on production
 
-### Phase 4: Testing & Validation (2 days)
+### Phase 4: Feature Mode System (2-3 days)
+1. Create `FeatureModeManager` service
+2. Create `InvoiceFormStateManager` service
+3. Update settings seeder with mode settings
+4. Write unit tests for new services
+5. Write property-based tests for mode consistency
+
+### Phase 5: Frontend Integration (2-3 days)
+1. Update invoice form Blade templates
+2. Add Alpine.js for dynamic field control
+3. Implement aggregated values display
+4. Add JavaScript for real-time updates
+5. Test all mode combinations
+
+### Phase 6: Testing & Validation (2 days)
 1. Run all tests
 2. Manual testing of various scenarios
 3. Performance testing
 4. Code review
 
-### Phase 5: Deployment (1 day)
+### Phase 7: Deployment (1 day)
 1. Deploy to staging
 2. Run historical data fix
 3. Verify results
@@ -594,6 +814,8 @@ try {
 2. How to verify detail_value calculations
 3. How to fix historical data
 4. Troubleshooting guide
+5. How to configure feature modes
+6. Understanding mode options (invoice_level, item_level, both, disabled)
 
 ### Developer Documentation
 
@@ -601,3 +823,190 @@ try {
 2. Calculation formula documentation
 3. Testing guide
 4. Deployment guide
+5. Feature mode system architecture
+6. Frontend integration guide
+
+## Feature Mode System Architecture
+
+### Overview
+
+The feature mode system provides granular control over where each feature (discount, additional, tax, tax_discount) can be applied in invoices.
+
+### Mode Options
+
+Each feature can be configured with one of four modes:
+
+1. **invoice_level**: Feature applies only at invoice level
+   - Invoice field: Enabled
+   - Item column: Disabled
+   - Aggregated display: Hidden
+
+2. **item_level**: Feature applies only at item level
+   - Invoice field: Disabled
+   - Item column: Enabled
+   - Aggregated display: Shown in footer
+
+3. **both**: Feature applies at both levels
+   - Invoice field: Enabled
+   - Item column: Enabled
+   - Aggregated display: Shown in footer (for item-level values)
+
+4. **disabled**: Feature is completely disabled
+   - Invoice field: Disabled
+   - Item column: Disabled
+   - Aggregated display: Hidden
+
+### Data Flow
+
+```
+Settings (public_settings)
+    ↓
+FeatureModeManager::getMode()
+    ↓
+InvoiceFormStateManager::getFieldStates()
+    ↓
+Blade Template (with Alpine.js)
+    ↓
+Dynamic Field Enable/Disable
+    ↓
+User Input
+    ↓
+SaveInvoiceService (validates based on mode)
+```
+
+### Frontend Implementation
+
+**Blade Template Example**:
+```blade
+@php
+    $fieldStates = app(InvoiceFormStateManager::class)->getFieldStates();
+    $jsConfig = app(InvoiceFormStateManager::class)->getJavaScriptConfig();
+@endphp
+
+<div x-data="invoiceForm(@js($jsConfig))">
+    <!-- Invoice Discount Field -->
+    <input 
+        type="number" 
+        name="fat_disc"
+        :disabled="!fieldStates.discount.invoice"
+        x-model="invoice.fat_disc"
+    />
+    
+    <!-- Item Discount Column -->
+    <td>
+        <input 
+            type="number"
+            :disabled="!fieldStates.discount.item"
+            x-model="item.discount"
+        />
+    </td>
+    
+    <!-- Aggregated Tax Display (shown only if item-level enabled) -->
+    <div x-show="fieldStates.tax.showAggregated">
+        <strong>إجمالي الضريبة على الأصناف:</strong>
+        <span x-text="calculateAggregatedTax()"></span>
+    </div>
+</div>
+```
+
+**Alpine.js Component**:
+```javascript
+function invoiceForm(config) {
+    return {
+        fieldStates: config.fieldStates,
+        invoice: {},
+        items: [],
+        
+        calculateAggregatedTax() {
+            return this.items.reduce((sum, item) => sum + (item.tax || 0), 0);
+        },
+        
+        isFieldEnabled(type, feature) {
+            return this.fieldStates[feature]?.[type] || false;
+        }
+    }
+}
+```
+
+### Backend Validation
+
+```php
+class SaveInvoiceService
+{
+    private FeatureModeManager $featureModeManager;
+    
+    public function validateInvoiceData($data): void
+    {
+        // Validate discount based on mode
+        $discountMode = $this->featureModeManager->getMode('discount');
+        
+        if ($discountMode === 'disabled') {
+            if (!empty($data['fat_disc']) || !empty($data['item_discount'])) {
+                throw new ValidationException('Discount is disabled');
+            }
+        }
+        
+        if ($discountMode === 'invoice_level') {
+            if (!empty($data['item_discount'])) {
+                throw new ValidationException('Item-level discount is not allowed');
+            }
+        }
+        
+        if ($discountMode === 'item_level') {
+            if (!empty($data['fat_disc'])) {
+                throw new ValidationException('Invoice-level discount is not allowed');
+            }
+        }
+        
+        // Similar validation for other features...
+    }
+}
+```
+
+### Settings Seeder
+
+```php
+class FeatureModeSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $modes = [
+            [
+                'key' => 'discount_mode',
+                'value' => 'invoice_level',
+                'label' => 'وضع الخصم',
+                'category_id' => 2,
+                'input_type' => 'select',
+            ],
+            [
+                'key' => 'additional_mode',
+                'value' => 'invoice_level',
+                'label' => 'وضع الإضافة',
+                'category_id' => 2,
+                'input_type' => 'select',
+            ],
+            [
+                'key' => 'tax_mode',
+                'value' => 'invoice_level',
+                'label' => 'وضع الضريبة',
+                'category_id' => 2,
+                'input_type' => 'select',
+            ],
+            [
+                'key' => 'tax_discount_mode',
+                'value' => 'disabled',
+                'label' => 'وضع خصم الضريبة',
+                'category_id' => 2,
+                'input_type' => 'select',
+            ],
+        ];
+        
+        foreach ($modes as $mode) {
+            PublicSetting::updateOrCreate(
+                ['key' => $mode['key']],
+                $mode
+            );
+        }
+    }
+}
+```

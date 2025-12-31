@@ -21,7 +21,7 @@
                             'sub_value' => __('Value'),
                         ];
                     @endphp
-                    <th class="font-hold fw-bold font-14 text-center" style="width: {{ $width }}%;">
+                    <th class="font-hold fw-bold font-14 text-center" style="width: {{ $width }}%">
                         {{ __($columnNames[$columnKey] ?? $columnKey) }}
                     </th>
                 @endif
@@ -296,14 +296,24 @@
 
                                     {{-- الخصم --}}
                                     @if ($this->shouldShowColumn('discount'))
+                                        @php
+                                            $fieldStates = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
+                                            $isDiscountItemEnabled = $fieldStates['discount']['item'] ?? false;
+                                            $hasDiscountPermission = auth()->user()->can('allow_discount_change');
+                                        @endphp
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" id="discount-{{ $index }}"
                                                 x-model.number="items[{{ $index }}].discount"
                                                 data-field="discount" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
-                                                class="form-control text-center invoice-discount invoice-field"
-                                                step="0.01" @if (!auth()->user()->can('allow_discount_change')) readonly @endif />
+                                                class="form-control text-center invoice-discount invoice-field {{ (!$isDiscountItemEnabled || !$hasDiscountPermission) ? 'bg-light' : '' }}"
+                                                style="font-size: 0.85em; height: 2em; padding: 1px 4px; {{ (!$isDiscountItemEnabled || !$hasDiscountPermission) ? 'cursor: not-allowed;' : '' }}"
+                                                step="0.01"
+                                                @if (!$hasDiscountPermission || !$isDiscountItemEnabled)
+                                                    readonly
+                                                @endif
+                                            />
                                         </td>
                                     @endif
 

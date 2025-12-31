@@ -39,7 +39,7 @@ class RecalculationServiceFactoryPropertyTest extends TestCase
         parent::setUp();
 
         // Disable global scopes that might interfere with tests
-        \App\Models\OperationItems::withoutGlobalScopes();
+        OperationItems::withoutGlobalScopes();
 
         Log::spy();
 
