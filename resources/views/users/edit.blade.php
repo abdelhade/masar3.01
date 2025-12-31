@@ -5,119 +5,120 @@
 @endsection
 
 @section('content')
-    <style>
-        /* --- Sidebar Styling --- */
-        .settings-nav {
-            width: 260px;
-            border-right: 1px solid #f1f5f9;
-            min-height: 700px;
-            padding: 20px 0;
-            background: #fff;
-        }
+    @push('styles')
+        <style>
+            /* --- Sidebar Styling --- */
+            .settings-nav {
+                width: 260px;
+                border-right: 1px solid #f1f5f9;
+                min-height: 700px;
+                padding: 20px 0;
+                background: #fff;
+            }
 
-        .settings-content {
-            flex: 1;
-            padding: 30px;
-            background: #fdfdfd;
-        }
+            .settings-content {
+                flex: 1;
+                padding: 30px;
+                background: #fdfdfd;
+            }
 
-        .main-nav-link {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #64748b;
-            font-weight: 600;
-            font-size: 0.95rem;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
+            .main-nav-link {
+                display: flex;
+                align-items: center;
+                padding: 15px 25px;
+                color: #64748b;
+                font-weight: 600;
+                font-size: 0.95rem;
+                border-left: 4px solid transparent;
+                transition: all 0.2s;
+                cursor: pointer;
+            }
 
-        .main-nav-link:hover {
-            background: #f8fafc;
-            color: #1e293b;
-        }
+            .main-nav-link:hover {
+                background: #f8fafc;
+                color: #1e293b;
+            }
 
-        .main-nav-link.active {
-            background: #eff6ff;
-            color: #3b82f6;
-            border-left-color: #3b82f6;
-        }
+            .main-nav-link.active {
+                background: #eff6ff;
+                color: #3b82f6;
+                border-left-color: #3b82f6;
+            }
 
-        .main-nav-link i {
-            font-size: 1.2rem;
-            width: 30px;
-            margin-right: 10px;
-        }
+            .main-nav-link i {
+                font-size: 1.2rem;
+                width: 30px;
+                margin-right: 10px;
+            }
 
-        /* --- Nested Tabs (Pills) --- */
-        .category-pills {
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f1f5f9;
-        }
+            /* --- Nested Tabs (Pills) --- */
+            .category-pills {
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f1f5f9;
+            }
 
-        .category-pills .nav-link {
-            border-radius: 20px;
-            padding: 8px 18px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #64748b;
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-        }
+            .category-pills .nav-link {
+                border-radius: 20px;
+                padding: 8px 18px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: #64748b;
+                background: #fff;
+                border: 1px solid #e2e8f0;
+                transition: all 0.2s;
+            }
 
-        .category-pills .nav-link:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
+            .category-pills .nav-link:hover {
+                background: #f1f5f9;
+                border-color: #cbd5e1;
+            }
 
-        .category-pills .nav-link.active {
-            background: #3b82f6;
-            color: #fff;
-            border-color: #3b82f6;
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-        }
+            .category-pills .nav-link.active {
+                background: #3b82f6;
+                color: #fff;
+                border-color: #3b82f6;
+                box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+            }
 
-        /* --- Table Styling --- */
-        .perm-table thead th {
-            background: #f8fafc;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 12px;
-            color: #475569;
-        }
+            /* --- Table Styling --- */
+            .perm-table thead th {
+                background: #f8fafc;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 12px;
+                color: #475569;
+            }
 
-        .perm-row:hover {
-            background: #f8fafc;
-        }
+            .perm-row:hover {
+                background: #f8fafc;
+            }
 
-        .perm-label {
-            font-weight: 500;
-            color: #334155;
-            font-size: 0.9rem;
-        }
+            .perm-label {
+                font-weight: 500;
+                color: #334155;
+                font-size: 0.9rem;
+            }
 
-        /* Checkbox */
-        .modern-check {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #cbd5e1;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+            /* Checkbox */
+            .modern-check {
+                width: 18px;
+                height: 18px;
+                border: 2px solid #cbd5e1;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: 0.2s;
+            }
 
-        .modern-check:checked {
-            background: #3b82f6;
-            border-color: #3b82f6;
-        }
-    </style>
-
+            .modern-check:checked {
+                background: #3b82f6;
+                border-color: #3b82f6;
+            }
+        </style>
+    @endpush
     @include('components.breadcrumb', [
         'title' => __('Edit User'),
         'items' => [['label' => __('Users'), 'url' => route('users.index')], ['label' => __('Edit')]],
@@ -138,7 +139,8 @@
                             <i class="fas fa-user-circle"></i>
                             <div>
                                 <div>{{ __('Profile Info') }}</div>
-                                <div class="small fw-normal opacity-75" style="font-size: 11px;">Name, Email & Branch</div>
+                                <div class="small fw-normal opacity-75" style="font-size: 11px;">
+                                    {{ __('Name, Email & Branch') }}</div>
                             </div>
                         </div>
 
@@ -146,7 +148,8 @@
                             <i class="fas fa-key"></i>
                             <div>
                                 <div>{{ __('Permissions') }}</div>
-                                <div class="small fw-normal opacity-75" style="font-size: 11px;">Manage Modules Access</div>
+                                <div class="small fw-normal opacity-75" style="font-size: 11px;">
+                                    {{ __('Manage Modules Access') }}</div>
                             </div>
                         </div>
 
@@ -154,7 +157,8 @@
                             <i class="fas fa-sliders-h"></i>
                             <div>
                                 <div>{{ __('System Options') }}</div>
-                                <div class="small fw-normal opacity-75" style="font-size: 11px;">Advanced Controls</div>
+                                <div class="small fw-normal opacity-75" style="font-size: 11px;">
+                                    {{ __('Advanced Controls') }}</div>
                             </div>
                         </div>
 
@@ -334,7 +338,6 @@
             </form>
         </div>
     </div>
-
 
     @push('scripts')
         <script>

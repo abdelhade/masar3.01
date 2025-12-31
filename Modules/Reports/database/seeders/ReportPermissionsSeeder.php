@@ -15,38 +15,36 @@ class ReportPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // مصفوفة المجموعات مع العناصر داخل كل مجموعة
         $groupedPermissions = [
             'Reports' => [
-                'General Basic Reports',
-                'General Financial Reports',
+                'Daily Activity Analyzer',        // محلل النشاط اليومي
+                'General Journal',                // اليومية العامة
+                'General Account Statement',      // كشف حساب عام
+                'Accounts Tree',                  // شجرة الحسابات
+                'Balance Sheet',                  // الميزانية العمومية
+                'Profit Loss Report',             // تقرير الأرباح والخسائر
+                'Income Statement Total',         // إجمالي قائمة الدخل
+                'Accounts Balance',               // أرصدة الحسابات
+                'Account Movement Report',        // تقرير حركة الحساب
 
-                'Accounts Basic Reports',
-                'Accounts Financial Reports',
-                'Accounts Management Reports',
+                'Items Report',       // قائمة الأصناف بالأرصدة
 
-                'Inventory Basic Reports',
-                'Inventory Financial Reports',
-                'Inventory Management Reports',
+                'Sales Report',        // المبيعات حسب مندوب البيع
 
-                'Sales Basic Reports',
-                'Sales Financial Reports',
-                'Sales Management Reports',
+                'Customer Quotation Report',      // تقرير عروض أسعار العملاء
+                'Supplier Quotation Report',      // تقرير عروض أسعار الموردين
 
-                'Purchases Basic Reports',
-                'Purchases Financial Reports',
-                'Purchases Management Reports',
+                'Purchases Report',         // تقرير المشتريات اليومي
 
-                'Expenses Basic Reports',
-                'Expenses Financial Reports',
-                'Expenses Management Reports',
+                'Expenses Report',        // تقرير أرصدة المصروفات
 
-                'Cash Financial Reports',
+                'Cost Centers Report',            // تقرير مراكز التكلفة
+                'General Cashbox Movement Report', // تقرير حركة الخزينة العامة
 
-                'Manufacturing Financial Reports',
+                'Manufacturing Invoices Report',  // تقرير فواتير التصنيع
 
-                'Quality Basic Reports',
-                'Quality Management Reports',
+                'Quality Report',              // لوحة تحكم الجودة
+
             ],
         ];
 
