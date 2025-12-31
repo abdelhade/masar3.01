@@ -89,7 +89,5 @@ class AccountsPermissionsSeeder extends Seeder
                 ['category' => 'Accounts']
             );
         }
-
-        $this->command->info('Accounts module permissions created successfully!');
     }
 }

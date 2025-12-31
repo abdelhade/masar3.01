@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\CRM\Database\Seeders;
+namespace Modules\Reports\database\seeders;
 
 use Illuminate\Database\Seeder;
 
-class CRMDatabaseSeeder extends Seeder
+class ReportDatabaseSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,8 +12,7 @@ class CRMDatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            LeadStatusSeeder::class,
-            CRMPermissionsSeeder::class,
+            ReportPermissionsSeeder::class,
         ]);
     }
 }

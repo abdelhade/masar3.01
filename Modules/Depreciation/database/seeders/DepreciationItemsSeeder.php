@@ -61,10 +61,10 @@ class DepreciationItemsSeeder extends Seeder
 
         foreach ($sampleItems as $index => $itemData) {
             $assetAccount = $assetAccounts->get($index);
-            
+
             // Calculate annual depreciation
             $annualDepreciation = ($itemData['cost'] - $itemData['salvage_value']) / $itemData['useful_life'];
-            
+
             // Calculate accumulated depreciation based on years passed
             $yearsUsed = now()->diffInYears($itemData['purchase_date']);
             $accumulatedDepreciation = min($yearsUsed * $annualDepreciation, $itemData['cost'] - $itemData['salvage_value']);
@@ -84,7 +84,5 @@ class DepreciationItemsSeeder extends Seeder
                 'is_active' => true,
             ]);
         }
-
-        $this->command->info('Sample depreciation items created successfully!');
     }
 }

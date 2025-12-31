@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Manufacturing\Database\Seeders;
+namespace Modules\Manufacturing\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -11,6 +11,8 @@ class ManufacturingDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            ManufacturingPermissionsSeeder::class,
+        ]);
     }
 }

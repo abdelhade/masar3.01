@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Modules\Invoices\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -49,8 +49,5 @@ class InvoicesPermissionsSeeder extends Seeder
                 }
             }
         }
-
-        // Note: Permissions are assigned directly to users via model_has_permissions table
-        // Roles are not used for permission assignment
     }
 }

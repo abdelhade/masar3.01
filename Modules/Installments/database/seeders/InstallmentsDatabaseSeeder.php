@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Installments\Database\Seeders;
+namespace Modules\Installments\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -11,6 +11,8 @@ class InstallmentsDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            InstallmentsPermissionsSeeder::class,
+        ]);
     }
 }

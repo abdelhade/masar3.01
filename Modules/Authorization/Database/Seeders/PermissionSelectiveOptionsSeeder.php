@@ -55,7 +55,5 @@ class PermissionSelectiveOptionsSeeder extends Seeder
                 );
             }
         }
-
-        $this->command?->info('Option type 2 permissions seeded successfully!');
     }
 }

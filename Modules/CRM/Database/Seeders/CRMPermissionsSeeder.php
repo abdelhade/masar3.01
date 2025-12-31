@@ -50,8 +50,5 @@ class CRMPermissionsSeeder extends Seeder
                 }
             }
         }
-
-        // Note: Permissions are assigned directly to users via model_has_permissions table
-        // Roles are not used for permission assignment
     }
 }

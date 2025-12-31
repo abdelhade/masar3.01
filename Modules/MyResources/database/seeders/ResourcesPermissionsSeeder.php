@@ -51,8 +51,6 @@ class ResourcesPermissionsSeeder extends Seeder
                 ['category' => 'MyResources Management']
             );
         }
-
-        $this->command->info('MyResources permissions created successfully!');
     }
 }
 

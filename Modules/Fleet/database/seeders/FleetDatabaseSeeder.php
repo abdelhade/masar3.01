@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Fleet\Database\Seeders;
+namespace Modules\Fleet\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -11,6 +11,8 @@ class FleetDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        FleetPermissionsSeeder::class;
-        }
+        $this->call([
+            FleetPermissionsSeeder::class
+        ]);
+    }
 }

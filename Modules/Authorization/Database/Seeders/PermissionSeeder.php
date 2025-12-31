@@ -397,7 +397,5 @@ class PermissionSeeder extends Seeder
                 $permissionModel->update($updateData);
             }
         }
-
-        $this->command->info('Permissions created successfully!');
     }
 }

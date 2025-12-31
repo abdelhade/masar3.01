@@ -32,6 +32,5 @@ class AttachUserToDefaultBranchSeeder extends Seeder
         // اربط اليوزر بالفرع (pivot)
         $user->branches()->syncWithoutDetaching([$branch->id]);
 
-        $this->command->info("User attached to default branch [{$branch->name}] successfully.");
     }
 }

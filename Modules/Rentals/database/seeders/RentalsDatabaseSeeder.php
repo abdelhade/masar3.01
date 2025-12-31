@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Rentals\Database\Seeders;
+namespace Modules\Rentals\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -11,6 +11,8 @@ class RentalsDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            RentalsPermissionsSeeder::class,
+        ]);
     }
 }

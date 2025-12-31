@@ -54,14 +54,5 @@ class RecruitmentPermissionsSeeder extends Seeder
                 }
             }
         }
-
-        $this->command->info('✅ تم إنشاء/تحديث صلاحيات وحدة التوظيف بنجاح!');
-        $this->command->info("📊 الصلاحيات الجديدة: {$totalCreated}");
-        $this->command->info("🔄 الصلاحيات الموجودة (تم تحديثها): {$totalSkipped}");
-        $this->command->info('📝 إجمالي الصلاحيات: ' . ($totalCreated + $totalSkipped));
-
-        // Note: Permissions are assigned directly to users via model_has_permissions table
-        // Roles are not used for permission assignment
     }
 }
-

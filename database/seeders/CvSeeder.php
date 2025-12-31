@@ -102,11 +102,5 @@ class CvSeeder extends Seeder
                     $cvData
                 );
         }
-
-        // ملاحظة: تم إزالة إنشاء البيانات العشوائية باستخدام Faker
-        // لأنها تسبب تكرار البيانات في كل مرة يتم تشغيل الـ seeder
-        // إذا كنت تريد بيانات تجريبية إضافية، يمكنك إضافتها يدوياً في مصفوفة $cvs أعلاه
-
-        $this->command->info('Created/Updated '.count($cvs).' CV records with sample data.');
     }
 }

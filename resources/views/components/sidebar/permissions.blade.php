@@ -30,7 +30,6 @@
     </li>
 @endcan
 
-
 <li class="nav-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
     <a class="nav-link" href="{{ route('roles.index') }}">
         <i class="fas fa-user-shield"></i>
@@ -41,8 +40,6 @@
     </a>
 </li>
 
-
-
 <hr class="my-3 border-secondary">
 <div class="sidebar-header mb-2">
     <h6 class="text-muted fw-bold px-3 mb-2">
@@ -51,15 +48,12 @@
     </h6>
 </div>
 
-
-
 <li class="nav-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
     <a class="nav-link" href="{{ route('branches.index') }}">
         <i class="fas fa-building"></i>
         <span>{{ __('Branches') }}</span>
     </a>
 </li>
-
 
 {{-- System Settings --}}
 

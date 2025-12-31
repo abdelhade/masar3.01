@@ -49,9 +49,9 @@ class ProgressPermissionsSeeder extends Seeder
                     }
                     if (! empty($updateData)) {
                         $permission->update($updateData);
-                    }
                 }
             }
+        }
         }
 
         // تحديث الصلاحيات القديمة للمشاريع التي ليس لها فئة
@@ -71,7 +71,5 @@ class ProgressPermissionsSeeder extends Seeder
                 }
             }
         }
-
-        $this->command->info('Progress module permissions created successfully!');
     }
 }

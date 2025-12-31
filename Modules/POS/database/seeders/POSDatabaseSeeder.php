@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\POS\Database\Seeders;
+namespace Modules\POS\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -14,7 +14,5 @@ class POSDatabaseSeeder extends Seeder
         $this->call([
             POSPermissionsSeeder::class,
         ]);
-        
-        $this->command->info('تم تشغيل جميع seeders الخاصة بوحدة POS بنجاح!');
     }
 }

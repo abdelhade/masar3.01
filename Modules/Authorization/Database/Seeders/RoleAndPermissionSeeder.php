@@ -23,7 +23,6 @@ class RoleAndPermissionSeeder extends Seeder
             'Purchases' => ['Purchase Invoice', 'Purchase Return', 'Purchase Order'],
             'Inventory' => ['Stock Transfer', 'Stock Adjustment'],
             'POS' => ['POS System', 'POS Transaction', 'POS Reports', 'POS Settings'],
-            // 'Reports' => ['Financial Reports', 'Sales Reports', 'Inventory Reports'],
             'Settings' => ['System Settings'],
 
         ];
@@ -43,9 +42,5 @@ class RoleAndPermissionSeeder extends Seeder
                 }
             }
         }
-
-        // Note: Roles are created but not assigned permissions
-        // Permissions are assigned directly to users via model_has_permissions table
-        // This maintains compatibility with Spatie package while using direct permission assignment
     }
 }

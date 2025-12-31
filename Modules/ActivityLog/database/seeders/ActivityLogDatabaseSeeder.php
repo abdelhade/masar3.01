@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\ActivityLog\Database\Seeders;
+namespace Modules\ActivityLog\database\seeders;
 
 use Illuminate\Database\Seeder;
 

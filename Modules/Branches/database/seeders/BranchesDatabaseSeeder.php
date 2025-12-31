@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Branches\Database\Seeders;
+namespace Modules\Branches\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -13,6 +13,8 @@ class BranchesDatabaseSeeder extends Seeder
     {
         $this->call([
             BranchesPermissionsSeeder::class,
+            BranchSeeder::class,
+            AttachUserToDefaultBranchSeeder::class,
         ]);
     }
 }

@@ -33,12 +33,12 @@ class GiveAllPermissionsToAdminSeeder extends Seeder
         // إعطاء جميع الصلاحيات للمستخدم
         $admin->syncPermissions($allPermissions);
 
-        $this->command->info("✅ تم إعطاء {$admin->name} جميع الصلاحيات بنجاح!");
-        $this->command->info("📊 إجمالي الصلاحيات: " . count($allPermissions));
-        $this->command->line('');
-        $this->command->table(
-            ['المستخدم', 'البريد الإلكتروني', 'عدد الصلاحيات'],
-            [[$admin->name, $admin->email, count($allPermissions)]]
-        );
+        // $this->command->info("✅ تم إعطاء {$admin->name} جميع الصلاحيات بنجاح!");
+        // $this->command->info("📊 إجمالي الصلاحيات: " . count($allPermissions));
+        // $this->command->line('');
+        // $this->command->table(
+        //     ['المستخدم', 'البريد الإلكتروني', 'عدد الصلاحيات'],
+        //     [[$admin->name, $admin->email, count($allPermissions)]]
+        // );
     }
 }

@@ -51,10 +51,5 @@ class ChecksPermissionsSeeder extends Seeder
                 ['category' => 'Accounts']
             );
         }
-
-        // Note: Permissions are assigned directly to users via model_has_permissions table
-        // Roles are not used for permission assignment
-
-        $this->command->info('Checks permissions created successfully!');
     }
 }

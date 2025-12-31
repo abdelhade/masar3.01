@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Progress\Database\Seeders;
+namespace Modules\Progress\database\seeders;
 
 use Illuminate\Database\Seeder;
 
