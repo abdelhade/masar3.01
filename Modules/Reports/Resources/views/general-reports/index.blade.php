@@ -518,13 +518,13 @@
                 <div class="report-card">
                     <div class="card-header">
                         <i class="fas fa-industry"></i>
-                        <span class="card-title">تقارير التصنيع</span>
+                        <span class="card-title">{{ __('Manufacturing Reports') }}</span>
                     </div>
                     <div class="card-body">
                         @can('view Manufacturing Invoices Report')
                             <a href="{{ route('manufacturing.invoice.report') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
-                                <span>تقارير فواتير التصنيع</span>
+                                <span>{{ __('Manufacturing Invoices Report') }}</span>
                             </a>
                         @endcan
                     </div>
@@ -536,42 +536,42 @@
                 <div class="report-card">
                     <div class="card-header">
                         <i class="fas fa-award"></i>
-                        <span class="card-title">إدارة الجودة (QMS)</span>
+                        <span class="card-title">{{ __('Quality Management System (QMS') }}</span>
                     </div>
                     <div class="card-body">
                         @can('view Quality Report')
                             <a href="{{ route('quality.dashboard') }}" class="report-link">
                                 <i class="fas fa-tachometer-alt"></i>
-                                <span>لوحة تحكم الجودة</span>
+                                <span>{{ __('Quality Dashboard') }}</span>
                             </a>
 
                             <a href="{{ route('quality.inspections.index') }}" class="report-link">
                                 <i class="fas fa-clipboard-check"></i>
-                                <span>فحوصات الجودة</span>
+                                <span>{{ __('Quality Inspections') }}</span>
                             </a>
                             <a href="{{ url('/quality/ncr') }}" class="report-link">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                <span>تقارير عدم المطابقة (NCR)</span>
+                                <span>{{ __('Non-Conformance Reports (NCR)') }}</span>
                             </a>
                             <a href="{{ url('/quality/capa') }}" class="report-link">
                                 <i class="fas fa-tools"></i>
-                                <span>إجراءات تصحيحية (CAPA)</span>
+                                <span>{{ __('Corrective Actions (CAPA)') }}</span>
                             </a>
                             <a href="{{ url('/quality/batches') }}" class="report-link">
                                 <i class="fas fa-barcode"></i>
-                                <span>تتبع الدفعات</span>
+                                <span>{{ __('Batch Tracking') }}</span>
                             </a>
                             <a href="{{ url('/quality/supplier-ratings') }}" class="report-link">
                                 <i class="fas fa-star"></i>
-                                <span>تقييم الموردين</span>
+                                <span>{{ __('Supplier Ratings') }}</span>
                             </a>
                             <a href="{{ url('/quality/certificates') }}" class="report-link">
                                 <i class="fas fa-certificate"></i>
-                                <span>الشهادات والامتثال</span>
+                                <span>{{ __('Certificates & Compliance') }}</span>
                             </a>
                             <a href="{{ url('/quality/audits') }}" class="report-link">
                                 <i class="fas fa-search"></i>
-                                <span>التدقيق الداخلي</span>
+                                <span>{{ __('Internal Audit') }}</span>
                             </a>
                         @endcan
                     </div>
