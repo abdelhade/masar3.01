@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Models\Item;
-use App\Models\OperHead;
-use App\Models\OperationItems;
-use App\Models\ProType;
-use App\Services\Consistency\AverageCostConsistencyChecker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
-use Modules\Branches\Models\Branch;
 use Tests\TestCase;
+use App\Models\Item;
+use App\Models\ProType;
+use App\Models\OperHead;
+use InvalidArgumentException;
+use App\Models\OperationItems;
+use Illuminate\Support\Facades\DB;
+use Modules\Branches\Models\Branch;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Invoices\Services\Consistency\AverageCostConsistencyChecker;
 
 class AverageCostConsistencyCheckerTest extends TestCase
 {
@@ -27,7 +27,7 @@ class AverageCostConsistencyCheckerTest extends TestCase
     {
         parent::setUp();
         $this->checker = new AverageCostConsistencyChecker();
-        
+
         // Create a branch first (required for ProType foreign key)
         $this->branch = Branch::create([
             'name' => 'Test Branch',
