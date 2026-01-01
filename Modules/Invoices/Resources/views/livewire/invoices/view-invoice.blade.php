@@ -10,6 +10,8 @@ new class extends Component {
     public $invoiceItems = [];
     public $acc1Role;
     public $acc2Role;
+    public $visibleColumns = [];
+    public $availableColumns = [];
 
     public function mount($operationId)
     {
@@ -19,7 +21,7 @@ new class extends Component {
 
     public function loadInvoice()
     {
-        $this->invoice = OperHead::with(['operationItems.item.units', 'operationItems.unit', 'operationItems.fat_unit', 'acc1Head', 'acc2Head', 'employee'])->findOrFail($this->operationId);
+        $this->invoice = OperHead::with(['operationItems.item.units', 'operationItems.unit', 'operationItems.fat_unit', 'acc1Head', 'acc2Head', 'employee', 'invoiceTemplate'])->findOrFail($this->operationId);
 
         // تحميل تفاصيل الفاتورة
         $this->invoiceItems = $this->invoice->operationItems
@@ -72,7 +74,22 @@ new class extends Component {
                      }
                 }
 
-                return [
+                
+                // --- Dynamic Columns Logic ---
+                $extraData = [];
+                // Initialize default columns to simplify checks in array
+                $defaults = ['length' => null, 'width' => null, 'height' => null, 'density' => null];
+
+                if ($this->invoice->template_id && $this->invoice->invoiceTemplate) {
+                     $cols = $this->invoice->invoiceTemplate->visible_columns ?? [];
+                     // Check if specific spatial columns are enabled in the template
+                     if (in_array('length', $cols)) $extraData['length'] = $detail->length;
+                     if (in_array('width', $cols)) $extraData['width'] = $detail->width;
+                     if (in_array('height', $cols)) $extraData['height'] = $detail->height;
+                     if (in_array('density', $cols)) $extraData['density'] = $detail->density;
+                }
+
+                return array_merge([
                     'item_id' => $item?->id,
                     'unit_id' => $unitId,
                     'name' => $item?->name ?? 'Unknown Item',
@@ -82,9 +99,20 @@ new class extends Component {
                     'sub_value' => $detail->detail_value ?? ($qty * ($detail->fat_price ?? $detail->item_price)),
                     'discount' => $detail->item_discount ?? 0,
                     'unit_name' => $unitName,
-                ];
+                    'unit' => $unitName, // Map for dynamic column 'unit'
+                ], $extraData);
             })
             ->toArray();
+        
+        // Determine Visible Columns for the View
+        if ($this->invoice->template_id && $this->invoice->invoiceTemplate) {
+            $this->visibleColumns = $this->invoice->invoiceTemplate->visible_columns ?? [];
+        } else {
+             // Default columns if no template is saved
+            $this->visibleColumns = ['item_name', 'unit', 'quantity', 'price', 'discount', 'sub_value'];
+        }
+        
+        $this->availableColumns = \Modules\Invoices\Models\InvoiceTemplate::availableColumns();
 
         // تحديد أدوار الحسابات
         $this->setAccountRoles();
@@ -278,13 +306,12 @@ new class extends Component {
                                         <thead>
                                             <tr>
                                                 <th class="text-center" width="50">#</th>
-                                                <th>الصنف</th>
+                                                <th>الصنف</th> <!-- item_name is always shown with extra info -->
                                                 <th>الباركود</th>
-                                                <th>الوحدة</th>
-                                                <th class="text-center">الكمية</th>
-                                                <th class="text-left">السعر</th>
-                                                <th class="text-left">الخصم</th>
-                                                <th class="text-left">القيمة</th>
+                                                @foreach($visibleColumns as $col)
+                                                    @continue($col === 'item_name') <!-- skip item_name as it is handled separately -->
+                                                    <th class="text-center">{{ $availableColumns[$col] ?? $col }}</th>
+                                                @endforeach
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -307,31 +334,23 @@ new class extends Component {
                                                         <code
                                                             class="text-dark">{{ $barcode?->barcode ?? 'غير محدد' }}</code>
                                                     </td>
-                                                    <td>
-                                                        <span>{{ $item['unit_name'] }}</span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span>{{ number_format($item['quantity']) }}</span>
-                                                    </td>
-                                                    <td class="text-left">
-                                                        <span
-                                                            class="text-success"><strong>{{ number_format($item['price'], 2) }}</strong>
-                                                            جنيه</span>
-                                                    </td>
-                                                    <td class="text-left">
-                                                        <span
-                                                            class="text-danger">{{ number_format($item['discount'], 2) }}
-                                                            جنيه</span>
-                                                    </td>
-                                                    <td class="text-left">
-                                                        <strong
-                                                            class="text-primary">{{ number_format($item['sub_value'], 2) }}
-                                                            جنيه</strong>
-                                                    </td>
+                                                    
+                                                    @foreach($visibleColumns as $col)
+                                                        @continue($col === 'item_name')
+                                                        @php
+                                                            $val = $item[$col] ?? '';
+                                                            if(is_numeric($val) && in_array($col, ['price', 'sub_value', 'discount'])) $val = number_format($val, 2);
+                                                            elseif(is_numeric($val)) $val = number_format($val);
+                                                        @endphp
+                                                        <td class="text-center">
+                                                            <span>{{ $val }}</span>
+                                                        </td>
+                                                    @endforeach
+
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="8" class="text-center py-4">
+                                                    <td colspan="{{ count($visibleColumns) + 3 }}" class="text-center py-4">
                                                         <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
                                                         <p class="text-muted">لا توجد أصناف في هذه الفاتورة</p>
                                                     </td>

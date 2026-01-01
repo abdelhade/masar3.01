@@ -229,6 +229,11 @@ class OperHead extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function invoiceTemplate()
+    {
+        return $this->belongsTo(\Modules\Invoices\Models\InvoiceTemplate::class, 'template_id');
+    }
+
     /**
      * Currency relationship
      * 

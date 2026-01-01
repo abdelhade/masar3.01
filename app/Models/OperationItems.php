@@ -36,6 +36,11 @@ class OperationItems extends Model
         return $this->belongsTo(Unit::class, 'unit_id', 'id');
     }
 
+    public function fat_unit()
+    {
+        return $this->belongsTo(Unit::class, 'fat_unit_id', 'id');
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);

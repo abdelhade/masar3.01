@@ -217,6 +217,7 @@ class SaveInvoiceService
                 'withholding_tax_value' => $component->withholding_tax_value ?? 0,
                 'user' => Auth::id(),
                 'branch_id' => $component->branch_id,
+                'template_id' => $component->selectedTemplateId ?? null,
             ];
 
             // تحديث الفاتورة الحالية أو إنشاء جديدة
