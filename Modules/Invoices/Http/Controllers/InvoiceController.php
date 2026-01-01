@@ -285,13 +285,11 @@ class InvoiceController extends Controller
                         $recalcData['invoiceDate']
                     );
                 } catch (\Exception $e) {
-                    Log::error('Error recalculating after invoice delete: ' . $e->getMessage());
-                    Log::error('Stack trace: ' . $e->getTraceAsString());
                     // لا نوقف العملية، فقط نسجل الخطأ
                 }
             }
 
-            Alert::toast('Operation deleted and costs recalculated successfully.', 'success');
+            Alert::toast(__('Operation deleted and costs recalculated successfully.'), 'success');
 
             return redirect()->back();
         } catch (\Exception $e) {
@@ -327,7 +325,7 @@ class InvoiceController extends Controller
 
         $acc1Role = in_array($operation->pro_type, [10, 12, 14, 16, 22, 26]) ? 'Debitor' : (in_array($operation->pro_type, [11, 13, 15, 17]) ? 'Creditor' : (in_array($operation->pro_type, [18, 19, 20, 21]) ? 'Debitor' : 'Undefined'));
 
-        return view('invoices.print-invoice-2', [
+        return view('invoices::invoices.print-invoice-2', [
             'pro_id' => $operation->pro_id,
             'pro_date' => $operation->pro_date,
             'accural_date' => $operation->accural_date,
@@ -361,7 +359,7 @@ class InvoiceController extends Controller
         $operation = OperHead::findOrFail($operationId);
         $type = $operation->pro_type;
 
-        return view('invoices.view-invoice', compact('operationId', 'type'));
+        return view('invoices::invoices.view-invoice', compact('operationId', 'type'));
     }
 
     public function salesStatistics()

@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\Item;
-use App\Models\OperationItems;
-use App\Models\OperHead;
-use App\Services\Config\RecalculationConfigManager;
-use App\Services\Validation\RecalculationInputValidator;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 use RuntimeException;
+use App\Models\OperHead;
+use InvalidArgumentException;
+use App\Models\OperationItems;
+use Illuminate\Support\Facades\DB;
+use Modules\Invoices\Services\Config\RecalculationConfigManager;
+use Modules\Invoices\Services\Validation\RecalculationInputValidator;
 
 /**
  * Handles cascading recalculation for manufacturing invoice chains.
@@ -69,20 +68,9 @@ class ManufacturingChainHandler
                 ->get()
                 ->toArray();
 
-            Log::info('Found affected manufacturing invoices', [
-                'raw_material_ids' => $rawMaterialItemIds,
-                'from_date' => $fromDate,
-                'affected_count' => count($affectedInvoices),
-            ]);
-
             return $affectedInvoices;
         } catch (\Exception $e) {
-            Log::error('Error finding affected manufacturing invoices', [
-                'error' => $e->getMessage(),
-                'raw_material_ids' => $rawMaterialItemIds,
-                'from_date' => $fromDate,
-            ]);
-            throw new RuntimeException('Failed to find affected manufacturing invoices: '.$e->getMessage(), 0, $e);
+            throw new RuntimeException('Failed to find affected manufacturing invoices: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -111,8 +99,8 @@ class ManufacturingChainHandler
                 ->get();
 
             // Separate raw materials (inputs) from products (outputs)
-            $rawMaterials = $items->filter(fn ($item) => $item->qty_out > 0)->values();
-            $products = $items->filter(fn ($item) => $item->qty_in > 0)->values();
+            $rawMaterials = $items->filter(fn($item) => $item->qty_out > 0)->values();
+            $products = $items->filter(fn($item) => $item->qty_in > 0)->values();
 
             return [
                 'invoice_id' => $manufacturingInvoiceId,
@@ -122,11 +110,7 @@ class ManufacturingChainHandler
                 'total_product_quantity' => $products->sum('qty_in'),
             ];
         } catch (\Exception $e) {
-            Log::error('Error retrieving manufacturing invoice details', [
-                'error' => $e->getMessage(),
-                'invoice_id' => $manufacturingInvoiceId,
-            ]);
-            throw new RuntimeException('Failed to retrieve manufacturing invoice details: '.$e->getMessage(), 0, $e);
+            throw new RuntimeException('Failed to retrieve manufacturing invoice details: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -154,9 +138,6 @@ class ManufacturingChainHandler
             $products = $details['products'];
 
             if ($products->isEmpty()) {
-                Log::warning('No products found in manufacturing invoice', [
-                    'invoice_id' => $manufacturingInvoiceId,
-                ]);
 
                 return [];
             }
@@ -189,11 +170,6 @@ class ManufacturingChainHandler
                 $totalProductQuantity = $products->sum('qty_in');
 
                 if ($totalProductQuantity <= 0) {
-                    Log::warning('Total product quantity is zero or negative', [
-                        'invoice_id' => $manufacturingInvoiceId,
-                        'total_quantity' => $totalProductQuantity,
-                    ]);
-
                     return [];
                 }
 
@@ -211,21 +187,9 @@ class ManufacturingChainHandler
                     ];
                 }
             }
-
-            Log::info('Updated product costs from raw materials', [
-                'invoice_id' => $manufacturingInvoiceId,
-                'total_raw_material_cost' => $totalRawMaterialCost,
-                'allocation_method' => $allocationMethod,
-                'updated_products_count' => count($updatedProducts),
-            ]);
-
             return $updatedProducts;
         } catch (\Exception $e) {
-            Log::error('Error updating product costs from raw materials', [
-                'error' => $e->getMessage(),
-                'invoice_id' => $manufacturingInvoiceId,
-            ]);
-            throw new RuntimeException('Failed to update product costs: '.$e->getMessage(), 0, $e);
+            throw new RuntimeException('Failed to update product costs: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -283,24 +247,12 @@ class ManufacturingChainHandler
                 // Remove duplicates from all updated items
                 $allUpdatedItems = array_unique($allUpdatedItems);
             });
-
-            Log::info('Manufacturing chain recalculation completed', [
-                'from_date' => $fromDate,
-                'processed_invoices' => $processedInvoices,
-                'updated_items_count' => count($allUpdatedItems),
-            ]);
-
             return [
                 'processed_invoices' => $processedInvoices,
                 'updated_items' => $allUpdatedItems,
             ];
         } catch (\Exception $e) {
-            Log::error('Error recalculating manufacturing chain', [
-                'error' => $e->getMessage(),
-                'invoice_ids' => $manufacturingInvoiceIds,
-                'from_date' => $fromDate,
-            ]);
-            throw new RuntimeException('Failed to recalculate manufacturing chain: '.$e->getMessage(), 0, $e);
+            throw new RuntimeException('Failed to recalculate manufacturing chain: ' . $e->getMessage(), 0, $e);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Validation;
+namespace Modules\Invoices\Services\Validation;
 
 use App\Models\Item;
 use InvalidArgumentException;

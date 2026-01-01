@@ -105,7 +105,7 @@
                                     @if ($this->shouldShowColumn('quantity'))
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.001" min="0"
-                                                id="quantity-{{ $index }}" 
+                                                id="quantity-{{ $index }}"
                                                 x-model.number="items[{{ $index }}].quantity"
                                                 data-field="quantity" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
@@ -297,7 +297,7 @@
                                     {{-- الخصم --}}
                                     @if ($this->shouldShowColumn('discount'))
                                         @php
-                                            $fieldStates = app(\App\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
+                                            $fieldStates = app(\Modules\Invoices\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
                                             $isDiscountItemEnabled = $fieldStates['discount']['item'] ?? false;
                                             $hasDiscountPermission = auth()->user()->can('allow_discount_change');
                                         @endphp

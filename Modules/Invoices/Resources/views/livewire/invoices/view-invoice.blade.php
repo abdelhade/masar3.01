@@ -19,24 +19,69 @@ new class extends Component {
 
     public function loadInvoice()
     {
-        $this->invoice = OperHead::with(['operationItems.item.units', 'operationItems.unit', 'acc1Head', 'acc2Head', 'employee'])->findOrFail($this->operationId);
+        $this->invoice = OperHead::with(['operationItems.item.units', 'operationItems.unit', 'operationItems.fat_unit', 'acc1Head', 'acc2Head', 'employee'])->findOrFail($this->operationId);
 
         // تحميل تفاصيل الفاتورة
         $this->invoiceItems = $this->invoice->operationItems
             ->map(function ($detail) {
                 $item = $detail->item;
-                $unit = $detail->unit;
+                $unit = $detail->fat_unit ?: $detail->unit;
+
+                // 1. Get Base Quantity (Stored in DB)
+                $baseQty = $detail->qty_in > 0 ? $detail->qty_in : $detail->qty_out;
+                $qty = $baseQty;
+                $unitName = $unit?->name ?? '---';
+                $unitId = $detail->fat_unit_id ?: $detail->unit_id;
+
+                // 2. Logic to Determine Display Quantity and Unit
+                if (isset($detail->fat_quantity) && $detail->fat_quantity > 0) {
+                    // Case A: fat_quantity (Display Qty) is saved. Use it.
+                    $qty = $detail->fat_quantity;
+
+                    // Case B: Unit ID might be missing or defaulted to base unit.
+                    // We deduce the correct unit by calculating the ratio (u_val) used.
+                    // u_val = Base Qty / Display Qty
+                    $impliedUVal = $qty > 0 ? $baseQty / $qty : 1;
+
+                    // Find a unit in the item's unit list that matches this u_val
+                    $deducedUnit = $item?->units->first(function ($u) use ($impliedUVal) {
+                        return abs(($u->pivot->u_val ?? 1) - $impliedUVal) < 0.001; 
+                    });
+
+                    if ($deducedUnit) {
+                        $unitName = $deducedUnit->name;
+                        $unitId = $deducedUnit->id;
+                    } else {
+                        // Fallback: If deduction failed, try to find the Base Unit (u_val = 1)
+                        $baseUnit = $item?->units->first(function ($u) {
+                            return abs(($u->pivot->u_val ?? 1) - 1.0) < 0.001; 
+                        });
+                        
+                        if ($baseUnit) {
+                             $unitName = $baseUnit->name;
+                             $unitId = $baseUnit->id;
+                        }
+                    }
+                    
+                } elseif ($unit && $item) {
+                     // Case C: No fat_quantity, but we have a unit. Recalculate display qty.
+                     $pivotUnit = $item->units->find($unit->id);
+                     $uVal = $pivotUnit?->pivot?->u_val ?? 1;
+                     if ($uVal > 0) {
+                         $qty = $baseQty / $uVal;
+                     }
+                }
 
                 return [
-                    'item_id' => $item->id,
-                    'unit_id' => $unit->id,
-                    'name' => $item->name,
-                    'code' => $item->code,
-                    'quantity' => $detail->qty_in > 0 ? $detail->qty_in : $detail->qty_out,
-                    'price' => $detail->item_price,
-                    'sub_value' => $detail->detail_value ?? ($detail->qty_in > 0 ? $detail->qty_in * $detail->item_price : $detail->qty_out * $detail->item_price),
+                    'item_id' => $item?->id,
+                    'unit_id' => $unitId,
+                    'name' => $item?->name ?? 'Unknown Item',
+                    'code' => $item?->code,
+                    'quantity' => $qty,
+                    'price' => $detail->fat_price ?? $detail->item_price,
+                    'sub_value' => $detail->detail_value ?? ($qty * ($detail->fat_price ?? $detail->item_price)),
                     'discount' => $detail->item_discount ?? 0,
-                    'unit_name' => $unit->name,
+                    'unit_name' => $unitName,
                 ];
             })
             ->toArray();
@@ -260,7 +305,7 @@ new class extends Component {
                                                                 ->first();
                                                         @endphp
                                                         <code
-                                                            class="text-dark">{{ $barcode->barcode ?? 'غير محدد' }}</code>
+                                                            class="text-dark">{{ $barcode?->barcode ?? 'غير محدد' }}</code>
                                                     </td>
                                                     <td>
                                                         <span>{{ $item['unit_name'] }}</span>

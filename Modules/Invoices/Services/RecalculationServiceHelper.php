@@ -8,9 +8,9 @@ use RuntimeException;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\Config;
 use App\Jobs\RecalculateAverageCostJob;
-use App\Services\Validation\RecalculationInputValidator;
 use App\Services\Manufacturing\ManufacturingChainHandler;
 use App\Services\Monitoring\RecalculationPerformanceMonitor;
+use Modules\Invoices\Services\Validation\RecalculationInputValidator;
 
 /**
  * Unified helper for average cost recalculation with automatic strategy selection.
