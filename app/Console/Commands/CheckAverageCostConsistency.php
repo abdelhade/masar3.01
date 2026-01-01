@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\Consistency\AverageCostConsistencyChecker;
+use Modules\Invoices\Services\Consistency\AverageCostConsistencyChecker;
 use Illuminate\Console\Command;
 
 class CheckAverageCostConsistency extends Command

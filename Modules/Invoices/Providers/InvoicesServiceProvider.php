@@ -7,6 +7,9 @@ use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Livewire\Livewire;
+use Modules\Invoices\Livewire\CreateInvoiceForm;
+use Modules\Invoices\Livewire\EditInvoiceForm;
 
 class InvoicesServiceProvider extends ServiceProvider
 {
@@ -28,6 +31,9 @@ class InvoicesServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+
+        Livewire::component('invoices.create-invoice-form', CreateInvoiceForm::class);
+        Livewire::component('invoices.edit-invoice-form', EditInvoiceForm::class);
     }
 
     /**

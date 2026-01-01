@@ -8,7 +8,6 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ErrandController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\CountryController;
-use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\VaribalController;
@@ -38,7 +37,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\HomeController;
 // ✅ تم حذف ItemSearchController - تم استبداله بـ Livewire method
 use App\Http\Controllers\WorkPermissionController;
-use App\Http\Controllers\InvoiceWorkflowController;
 use App\Http\Controllers\ProductionOrderController;
 use App\Http\Controllers\MobileAttendanceController;
 use App\Http\Controllers\InventoryStartBalanceController;
@@ -196,19 +194,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('users', UserController::class)->names('users');
 
-    // 📁 Invoice Route
-    Route::resource('invoices', InvoiceController::class)->names('invoices');
 
-    // list request orders (طلب احتياج)
-    Route::get('/invoices/requests', [InvoiceWorkflowController::class, 'index'])->name('invoices.requests.index');
-    Route::get('/invoices/track/search', [InvoiceWorkflowController::class, 'index'])->name('invoices.track.search');
-    Route::get('/invoices/track/{id}', [InvoiceWorkflowController::class, 'show'])->name('invoices.track');
-    Route::post('/invoices/confirm/{id}', [InvoiceWorkflowController::class, 'confirm'])->name('invoices.confirm');
 
-    // 📁 Invoice Print Route
-    Route::get('/invoice/print/{operation_id}', [InvoiceController::class, 'print'])->name('invoice.print');
-    // 📁 Invoice View Route
-    Route::get('invoice/view/{operationId}', [InvoiceController::class, 'view'])->name('invoice.view');
+
+
     // 📁 Transfer Route
 
     Route::get('/discounts/general-statistics', [DiscountController::class, 'generalStatistics'])->name('discounts.general-statistics');
@@ -245,10 +234,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pos-shifts/{shift}/close', [PosShiftController::class, 'close'])->name('pos-shifts.close');
     Route::post('pos-shifts/{shift}/close', [PosShiftController::class, 'closeConfirm'])->name('pos-shifts.close.confirm');
 
-    // invoice Statistics Routes
-    Route::get('/sales/statistics', [InvoiceController::class, 'salesStatistics'])->name('sales.statistics');
-    Route::get('/purchases/statistics', [InvoiceController::class, 'purchasesStatistics'])->name('purchases.statistics');
-    Route::get('/inventory/statistics', [InvoiceController::class, 'inventoryStatistics'])->name('inventory.statistics');
 
     Route::get('/items/statistics', [ItemController::class, 'getStatistics'])->name('items.statistics');
     Route::get('/items/statistics/refresh', [ItemController::class, 'refresh'])->name('items.statistics.refresh');
