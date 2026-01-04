@@ -32,13 +32,13 @@
                     </span>
                 @endif
                 @can('edit Inquiries')
-                    @if ($inquiry->assignedEngineers->contains(auth()->id()))
+                    @if ($inquiry->assignedEngineers->contains(auth()->id()) || auth()->user()->can('force_edit_inquiries'))
                         <a href="{{ route('inquiries.edit', $inquiry->id) }}" class="btn btn-primary">
-                            <i class="fas fa-edit me-1"></i>
-                            {{ __('Edit') }}
+                            <i class="fas fa-edit me-1"></i> Edit
                         </a>
                     @endif
                 @endcan
+
                 <a href="{{ route('inquiries.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left me-1"></i>
                     {{ __('Back') }}
