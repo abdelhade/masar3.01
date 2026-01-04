@@ -58,30 +58,33 @@ class BulkActionController extends Controller
                 }
 
                 if ($modelName === 'Inquiry') {
-                    // For Inquiries, only allow deleting if assigned to the engineer OR created by them (for drafts)
+                    // For Inquiries, allow deleting if assigned, created by them, OR has force delete permission
                     $query = $modelClass::whereIn('id', $ids);
 
-                    $query->where(function ($q) {
-                        // Check assigned engineers
-                        $q->whereHas('assignedEngineers', function ($sub) {
-                            $sub->where('users.id', auth()->id());
-                        })
-                            // OR check creator (for drafts)
-                            ->orWhere('created_by', auth()->id());
-                    });
+                    if (!auth()->user()->can('force_delete_inquiries')) {
+                        $query->where(function ($q) {
+                            // Check assigned engineers
+                            $q->whereHas('assignedEngineers', function ($sub) {
+                                $sub->where('users.id', auth()->id());
+                            })
+                                // OR check creator (for drafts)
+                                ->orWhere('created_by', auth()->id());
+                        });
 
-                    $authorizedIds = $query->pluck('id')->toArray();
+                        $authorizedIds = $query->pluck('id')->toArray();
 
-                    if (empty($authorizedIds)) {
-                        return response()->json(['success' => false, 'message' => __('No authorized items to delete')], 403);
+                        if (empty($authorizedIds)) {
+                            return response()->json(['success' => false, 'message' => 'No authorized items to delete'], 403);
+                        }
+
+                        $modelClass::whereIn('id', $authorizedIds)->delete();
+                        $deletedCount = count($authorizedIds);
+                    } else {
+                        $modelClass::whereIn('id', $ids)->delete();
+                        $deletedCount = count($ids);
                     }
-
-                    $modelClass::whereIn('id', $authorizedIds)->delete();
-                    $deletedCount = count($authorizedIds);
-                } else {
-                    $modelClass::whereIn('id', $ids)->delete();
-                    $deletedCount = count($ids);
                 }
+
 
                 return response()->json([
                     'success' => true,

@@ -407,8 +407,15 @@ class InquiriesController extends Controller
 
     public function edit($id)
     {
+        $inquiry = Inquiry::findOrFail($id);
+        if (!$inquiry->assignedEngineers->contains(auth()->id()) && !auth()->user()->can('force_edit_inquiries')) {
+            Alert::toast('You are not authorized to edit this Inquiry', 'error');
+            return redirect()->route('inquiries.index')->with('error', 'You are not authorized to edit this Inquiry');
+        }
+
         return view('inquiries::inquiries.edit', compact('id'));
     }
+
 
     public function update(Request $request, $id) {}
 
@@ -416,19 +423,25 @@ class InquiriesController extends Controller
     {
         try {
             $inquiry = Inquiry::findOrFail($id);
+            if (!$inquiry->assignedEngineers->contains(auth()->id()) && !auth()->user()->can('force_delete_inquiries')) {
+                Alert::toast('You are not authorized to delete this Inquiry', 'error');
+                return redirect()->route('inquiries.index')->with('error', 'You are not authorized to delete this Inquiry');
+            }
+
             $inquiry->clearMediaCollection();
             $inquiry->submittalChecklists()->detach();
             $inquiry->workConditions()->detach();
             $inquiry->projectDocuments()->detach();
             $inquiry->delete();
 
-            Alert::toast(__('Inquiry deleted successfully'), 'success');
-            return redirect()->route('inquiries.index')->with('success', __('Inquiry deleted successfully'));
+            Alert::toast('Inquiry deleted successfully', 'success');
+            return redirect()->route('inquiries.index')->with('success', 'Inquiry deleted successfully');
         } catch (Exception $e) {
-            Alert::toast(__('Inquiry not found'), 'error');
-            return redirect()->route('inquiries.index')->with('error', __('Inquiry not found'));
+            Alert::toast('Inquiry not found', 'error');
+            return redirect()->route('inquiries.index')->with('error', 'Inquiry not found');
         }
     }
+
 
     public function destroyDraft($id)
     {

@@ -312,202 +312,206 @@
             <x-inquiries::bulk-actions model="Modules\Inquiries\Models\Inquiry" permission="delete Inquiries">
                 <div class="card">
                     <div class="card-body">
-                    <x-table-export-actions table-id="inquiries-table" filename="inquiries"
-                        excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
-                        print-label="{{ __('Print') }}" />
+                        <x-table-export-actions table-id="inquiries-table" filename="inquiries"
+                            excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                            print-label="{{ __('Print') }}" />
 
-                    <div class="table-responsive">
-                        <table id="inquiries-table" class="table table-striped table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center">
-                                        <input type="checkbox" class="form-check-input" x-model="selectAll" @change="toggleAll">
-                                    </th>
-                                    @foreach ($visibleColumns as $column)
-                                        <th class="text-center">{{ $availableColumns[$column] ?? $column }}</th>
-                                    @endforeach
-                                    <th class="text-center">{{ __('Actions') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($inquiries as $inquiry)
+                        <div class="table-responsive">
+                            <table id="inquiries-table" class="table table-striped table-hover">
+                                <thead class="table-light">
                                     <tr>
-                                        <td class="text-center">
-                                            @can('delete Inquiries')
-                                                @if ($inquiry->assignedEngineers->contains(auth()->id()))
-                                                    <input type="checkbox" class="form-check-input bulk-checkbox" 
-                                                           value="{{ $inquiry->id }}" x-model="selectedIds">
-                                                @endif
-                                            @endcan
-                                        </td>
+                                        <th class="text-center">
+                                            <input type="checkbox" class="form-check-input" x-model="selectAll"
+                                                @change="toggleAll">
+                                        </th>
                                         @foreach ($visibleColumns as $column)
-                                            <td class="text-center">
-                                                @if ($column === 'id')
-                                                    <div class="d-flex align-items-center justify-content-center gap-2">
-                                                        {{ $inquiry->id }}
-                                                        @if ($inquiry->created_at->diffInHours(now()) < 48)
-                                                            <span class="badge bg-success pulse-badge">NEW</span>
-                                                        @endif
-                                                    </div>
-                                                @elseif($column === 'project')
-                                                    {{ $inquiry->project?->name ?? '-' }}
-                                                @elseif($column === 'client')
-                                                    {{ $inquiry->client?->cname ?? '-' }}
-                                                @elseif($column === 'main_contractor')
-                                                    {{ $inquiry->mainContractor?->cname ?? '-' }}
-                                                @elseif($column === 'consultant')
-                                                    {{ $inquiry->consultant?->cname ?? '-' }}
-                                                @elseif($column === 'owner')
-                                                    {{ $inquiry->owner?->cname ?? '-' }}
-                                                @elseif($column === 'assigned_engineer')
-                                                    {{ $inquiry->assignedEngineer?->cname ?? '-' }}
-                                                @elseif($column === 'inquiry_date')
-                                                    {{ $inquiry->inquiry_date?->format('Y-m-d') ?? '-' }}
-                                                @elseif($column === 'req_submittal_date')
-                                                    {{ $inquiry->req_submittal_date?->format('Y-m-d') ?? '-' }}
-                                                @elseif($column === 'project_start_date')
-                                                    {{ $inquiry->project_start_date?->format('Y-m-d') ?? '-' }}
-                                                @elseif($column === 'status')
-                                                    <span class="badge bg-{{ $inquiry->status->color() }}">
-                                                        {{ $inquiry->status->label() }}
-                                                    </span>
-                                                @elseif($column === 'status_for_kon')
-                                                    @if ($inquiry->status_for_kon)
-                                                        <span class="badge bg-{{ $inquiry->status_for_kon->color() }}">
-                                                            {{ $inquiry->status_for_kon->label() }}
-                                                        </span>
-                                                    @else
-                                                        -
-                                                    @endif
-                                                @elseif($column === 'quotation_state')
-                                                    @if ($inquiry->pricingStatus)
-                                                        <span class="badge"
-                                                            style="background-color: {{ $inquiry->pricingStatus->color }}">
-                                                            {{ __($inquiry->pricingStatus->name) }}
-                                                        </span>
-                                                        @if ($inquiry->pricing_reason)
-                                                            <i class="las la-info-circle text-info"
-                                                                data-bs-toggle="tooltip"
-                                                                title="{{ $inquiry->pricing_reason }}"></i>
-                                                        @endif
-                                                    @else
-                                                        -
-                                                    @endif
-                                                @elseif($column === 'work_type')
-                                                    {{ $inquiry->workType?->name ?? '-' }}
-                                                @elseif($column === 'inquiry_source')
-                                                    {{ $inquiry->inquirySource?->name ?? '-' }}
-                                                @elseif($column === 'city')
-                                                    {{ $inquiry->city?->name ?? '-' }}
-                                                @elseif($column === 'town')
-                                                    {{ $inquiry->town?->name ?? '-' }}
-                                                @elseif($column === 'total_project_value')
-                                                    {{ number_format($inquiry->total_project_value ?? 0, 2) }}
-                                                @elseif($column === 'client_priority')
-                                                    @if ($inquiry->client_priority)
-                                                        <span class="badge bg-{{ $inquiry->client_priority->color() }}">
-                                                            {{ $inquiry->client_priority->label() }}
-                                                        </span>
-                                                    @else
-                                                        -
-                                                    @endif
-                                                @elseif($column === 'kon_priority')
-                                                    @if ($inquiry->kon_priority)
-                                                        <span class="badge bg-{{ $inquiry->kon_priority->color() }}">
-                                                            {{ $inquiry->kon_priority->label() }}
-                                                        </span>
-                                                    @else
-                                                        -
-                                                    @endif
-                                                @elseif($column === 'project_difficulty')
-                                                    @php
-                                                        $diffColors = [
-                                                            1 => 'success',
-                                                            2 => 'info',
-                                                            3 => 'warning',
-                                                            4 => 'danger',
-                                                        ];
-                                                        $diffLabels = [
-                                                            1 => 'Easy',
-                                                            2 => 'Medium',
-                                                            3 => 'Hard',
-                                                            4 => 'Very Hard',
-                                                        ];
-                                                    @endphp
-                                                    <span
-                                                        class="badge bg-{{ $diffColors[$inquiry->project_difficulty] ?? 'secondary' }}">
-                                                        {{ __($diffLabels[$inquiry->project_difficulty] ?? 'N/A') }}
-                                                    </span>
-                                                @elseif($column === 'tender_number')
-                                                    {{ $inquiry->tender_number ?? '-' }}
-                                                @elseif($column === 'kon_title')
-                                                    {{ $inquiry->kon_title?->label() ?? '-' }}
-                                                @else
-                                                    {{ $inquiry->$column ?? '-' }}
-                                                @endif
-                                            </td>
+                                            <th class="text-center">{{ $availableColumns[$column] ?? $column }}</th>
                                         @endforeach
-                                        <td class="text-center">
-                                            <div class="btn-group">
-
-                                                @can('view Inquiries')
-                                                    <a class="btn btn-primary btn-sm"
-                                                        href="{{ route('inquiries.show', $inquiry->id) }}">
-                                                        <i class="las la-eye"></i>
-                                                    </a>
-                                                @endcan
-
-                                                @can('edit Inquiries')
-                                                    @if ($inquiry->assignedEngineers->contains(auth()->id()))
-                                                        <a href="{{ route('inquiries.edit', $inquiry->id) }}"
-                                                            class="btn btn-success btn-sm" title="{{ __('Edit') }}">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                    @endif
-                                                @endcan
-
+                                        <th class="text-center">{{ __('Actions') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($inquiries as $inquiry)
+                                        <tr>
+                                            <td class="text-center">
                                                 @can('delete Inquiries')
-                                                    @if ($inquiry->assignedEngineers->contains(auth()->id()))
-                                                        <form action="{{ route('inquiries.destroy', $inquiry->id) }}"
-                                                            method="POST" style="display:inline-block;"
-                                                            onsubmit="return confirm('{{ __('Are you sure you want to delete this item?') }}');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                                <i class="las la-trash"></i>
-                                                            </button>
-                                                        </form>
+                                                    @if ($inquiry->assignedEngineers->contains(auth()->id()) || auth()->user()->can('force_delete_inquiries'))
+                                                        <input type="checkbox" class="form-check-input bulk-checkbox"
+                                                            value="{{ $inquiry->id }}" x-model="selectedIds">
                                                     @endif
                                                 @endcan
+                                            </td>
+                                            @foreach ($visibleColumns as $column)
+                                                <td class="text-center">
+                                                    @if ($column === 'id')
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-center gap-2">
+                                                            {{ $inquiry->id }}
+                                                            @if ($inquiry->created_at->diffInHours(now()) < 48)
+                                                                <span class="badge bg-success pulse-badge">NEW</span>
+                                                            @endif
+                                                        </div>
+                                                    @elseif($column === 'project')
+                                                        {{ $inquiry->project?->name ?? '-' }}
+                                                    @elseif($column === 'client')
+                                                        {{ $inquiry->client?->cname ?? '-' }}
+                                                    @elseif($column === 'main_contractor')
+                                                        {{ $inquiry->mainContractor?->cname ?? '-' }}
+                                                    @elseif($column === 'consultant')
+                                                        {{ $inquiry->consultant?->cname ?? '-' }}
+                                                    @elseif($column === 'owner')
+                                                        {{ $inquiry->owner?->cname ?? '-' }}
+                                                    @elseif($column === 'assigned_engineer')
+                                                        {{ $inquiry->assignedEngineer?->cname ?? '-' }}
+                                                    @elseif($column === 'inquiry_date')
+                                                        {{ $inquiry->inquiry_date?->format('Y-m-d') ?? '-' }}
+                                                    @elseif($column === 'req_submittal_date')
+                                                        {{ $inquiry->req_submittal_date?->format('Y-m-d') ?? '-' }}
+                                                    @elseif($column === 'project_start_date')
+                                                        {{ $inquiry->project_start_date?->format('Y-m-d') ?? '-' }}
+                                                    @elseif($column === 'status')
+                                                        <span class="badge bg-{{ $inquiry->status->color() }}">
+                                                            {{ $inquiry->status->label() }}
+                                                        </span>
+                                                    @elseif($column === 'status_for_kon')
+                                                        @if ($inquiry->status_for_kon)
+                                                            <span
+                                                                class="badge bg-{{ $inquiry->status_for_kon->color() }}">
+                                                                {{ $inquiry->status_for_kon->label() }}
+                                                            </span>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    @elseif($column === 'quotation_state')
+                                                        @if ($inquiry->pricingStatus)
+                                                            <span class="badge"
+                                                                style="background-color: {{ $inquiry->pricingStatus->color }}">
+                                                                {{ __($inquiry->pricingStatus->name) }}
+                                                            </span>
+                                                            @if ($inquiry->pricing_reason)
+                                                                <i class="las la-info-circle text-info"
+                                                                    data-bs-toggle="tooltip"
+                                                                    title="{{ $inquiry->pricing_reason }}"></i>
+                                                            @endif
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    @elseif($column === 'work_type')
+                                                        {{ $inquiry->workType?->name ?? '-' }}
+                                                    @elseif($column === 'inquiry_source')
+                                                        {{ $inquiry->inquirySource?->name ?? '-' }}
+                                                    @elseif($column === 'city')
+                                                        {{ $inquiry->city?->name ?? '-' }}
+                                                    @elseif($column === 'town')
+                                                        {{ $inquiry->town?->name ?? '-' }}
+                                                    @elseif($column === 'total_project_value')
+                                                        {{ number_format($inquiry->total_project_value ?? 0, 2) }}
+                                                    @elseif($column === 'client_priority')
+                                                        @if ($inquiry->client_priority)
+                                                            <span
+                                                                class="badge bg-{{ $inquiry->client_priority->color() }}">
+                                                                {{ $inquiry->client_priority->label() }}
+                                                            </span>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    @elseif($column === 'kon_priority')
+                                                        @if ($inquiry->kon_priority)
+                                                            <span class="badge bg-{{ $inquiry->kon_priority->color() }}">
+                                                                {{ $inquiry->kon_priority->label() }}
+                                                            </span>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    @elseif($column === 'project_difficulty')
+                                                        @php
+                                                            $diffColors = [
+                                                                1 => 'success',
+                                                                2 => 'info',
+                                                                3 => 'warning',
+                                                                4 => 'danger',
+                                                            ];
+                                                            $diffLabels = [
+                                                                1 => 'Easy',
+                                                                2 => 'Medium',
+                                                                3 => 'Hard',
+                                                                4 => 'Very Hard',
+                                                            ];
+                                                        @endphp
+                                                        <span
+                                                            class="badge bg-{{ $diffColors[$inquiry->project_difficulty] ?? 'secondary' }}">
+                                                            {{ __($diffLabels[$inquiry->project_difficulty] ?? 'N/A') }}
+                                                        </span>
+                                                    @elseif($column === 'tender_number')
+                                                        {{ $inquiry->tender_number ?? '-' }}
+                                                    @elseif($column === 'kon_title')
+                                                        {{ $inquiry->kon_title?->label() ?? '-' }}
+                                                    @else
+                                                        {{ $inquiry->$column ?? '-' }}
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                            <td class="text-center">
+                                                <div class="btn-group">
 
-                                                @can('edit Inquiries')
-                                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#commentModal-{{ $inquiry->id }}">
-                                                        <i class="las la-comment"></i>
-                                                    </button>
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="{{ count($visibleColumns) + 3 }}" class="text-center">
-                                            <div class="alert alert-info py-3 mb-0">
-                                                <i class="las la-info-circle me-2"></i>
-                                                {{ __('No inquiries found') }}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                                    @can('view Inquiries')
+                                                        <a class="btn btn-primary btn-sm"
+                                                            href="{{ route('inquiries.show', $inquiry->id) }}">
+                                                            <i class="las la-eye"></i>
+                                                        </a>
+                                                    @endcan
 
-                    <!-- Pagination -->
-                    <div class="mt-3">
-                        {{ $inquiries->links() }}
+                                                    @can('edit Inquiries')
+                                                        @if ($inquiry->assignedEngineers->contains(auth()->id()) || auth()->user()->can('force_edit_inquiries'))
+                                                            <a href="{{ route('inquiries.edit', $inquiry->id) }}"
+                                                                class="btn btn-success btn-sm" title="Edit">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                        @endif
+                                                    @endcan
+
+                                                    @can('delete Inquiries')
+                                                        @if ($inquiry->assignedEngineers->contains(auth()->id()) || auth()->user()->can('force_delete_inquiries'))
+                                                            <form action="{{ route('inquiries.destroy', $inquiry->id) }}"
+                                                                method="POST" style="display:inline-block;"
+                                                                onsubmit="return confirm('Are you sure you want to delete this item?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                                    <i class="las la-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    @endcan
+
+                                                    @can('edit Inquiries')
+                                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#commentModal-{{ $inquiry->id }}">
+                                                            <i class="las la-comment"></i>
+                                                        </button>
+                                                    @endcan
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="{{ count($visibleColumns) + 3 }}" class="text-center">
+                                                <div class="alert alert-info py-3 mb-0">
+                                                    <i class="las la-info-circle me-2"></i>
+                                                    {{ __('No inquiries found') }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="mt-3">
+                            {{ $inquiries->links() }}
+                        </div>
                     </div>
-                </div>
             </x-inquiries::bulk-actions>
 
             <!-- Modal لإدارة الأعمدة -->
