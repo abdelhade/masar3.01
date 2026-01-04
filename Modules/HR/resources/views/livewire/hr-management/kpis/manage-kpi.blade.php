@@ -125,7 +125,7 @@ new class extends Component {
             </div>
 
             <div class="col-lg-6 mt-3">
-                @can('create KPIS')
+                @can('create KPIs')
                     <button type="button" class="btn btn-main font-hold fw-bold" data-bs-toggle="modal" data-bs-target="#kpiFormModal">
                         <i class="fas fa-plus me-2"></i>{{ __('hr.add_new_kpi') }}
                     </button>
@@ -151,7 +151,7 @@ new class extends Component {
                                     <th class="font-hold fw-bold">{{ __('hr.kpi_name') }}</th>
                                     <th class="font-hold fw-bold">{{ __('hr.description') }}</th>
                                     <th class="font-hold fw-bold">{{ __('hr.created_at') }}</th>
-                                    @canany(['edit KPIS', 'delete KPIS'])
+                                    @canany(['edit KPIs', 'delete KPIs'])
                                         <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                     @endcanany
 
@@ -159,16 +159,16 @@ new class extends Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($kpis as $kpi)
+                                @forelse($this->kpis as $kpi)
                                     <tr>
                                         <td>{{ $kpi->id }}</td>
                                         <td>{{ $kpi->name }}</td>
                                         <td>{{ $kpi->description }}</td>
                                         <td>{{ $kpi->created_at->format('Y-m-d') }}</td>
-                                        @canany(['edit KPIS', 'delete KPIS'])
+                                        @canany(['edit KPIs', 'delete KPIs'])
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    @can('edit KPIS')
+                                                    @can('edit KPIs')
                                                         <button type="button" 
                                                                 wire:click="edit({{ $kpi->id }})"
                                                                 class="btn btn-sm btn-success me-2" 
@@ -178,7 +178,7 @@ new class extends Component {
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                     @endcan
-                                                    @can('delete KPIS')
+                                                    @can('delete KPIs')
                                                         <button type="button" 
                                                                 wire:click="delete({{ $kpi->id }})"
                                                                 wire:confirm="{{ __('hr.confirm_delete_kpi') }}"
@@ -193,7 +193,7 @@ new class extends Component {
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ auth()->user()->canany(['edit KPIS', 'delete KPIS']) ? '5' : '4' }}" 
+                                        <td colspan="{{ auth()->user()->canany(['edit KPIs', 'delete KPIs']) ? '5' : '4' }}" 
                                             class="text-center font-hold fw-bold py-4">
                                             <div class="alert alert-info mb-0">
                                                 <i class="las la-info-circle me-2"></i>
@@ -206,7 +206,7 @@ new class extends Component {
                         </table>
                     </div>
                     <div class="mt-3">
-                        {{ $kpis->links('pagination::bootstrap-5') }}
+                        {{ $this->kpis->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>
