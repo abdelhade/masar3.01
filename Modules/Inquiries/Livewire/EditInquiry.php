@@ -1485,6 +1485,14 @@ class EditInquiry extends Component
             'projectDocuments' => $this->projectDocuments,
             'selectedQuotationUnits' => $this->selectedQuotationUnits,
             'tempComments' => $this->tempComments,
+            'selectedEngineers' => $this->selectedEngineers,
+            'selectedContacts' => $this->selectedContacts,
+            'assignEngineerDate' => $this->assignEngineerDate,
+            'pricingStatusId' => $this->pricingStatusId,
+            'quotationState' => $this->quotationState,
+            'projectSize' => $this->projectSize,
+            'clientPriority' => $this->clientPriority,
+            'konPriority' => $this->konPriority,
         ];
 
         $this->inquiry->update([
@@ -1545,6 +1553,7 @@ class EditInquiry extends Component
         $this->saveAllWorkTypes($this->inquiry);
 
         $this->inquiry->assignedEngineers()->sync($this->selectedEngineers);
+
 
         session()->flash('success', __('Draft updated successfully'));
         $this->dispatch('draftSaved', ['inquiryId' => $this->inquiry->id]);

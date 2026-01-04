@@ -319,87 +319,68 @@ class CreateInquiry extends Component
             'toLocation' => $this->toLocation,
             'toLocationLat' => $this->toLocationLat,
             'toLocationLng' => $this->toLocationLng,
+            'calculatedDistance' => $this->calculatedDistance,
             'calculatedDuration' => $this->calculatedDuration,
             'submittalChecklist' => $this->submittalChecklist,
             'workingConditions' => $this->workingConditions,
             'projectDocuments' => $this->projectDocuments,
             'selectedQuotationUnits' => $this->selectedQuotationUnits,
             'tempComments' => $this->tempComments,
+            'selectedEngineers' => $this->selectedEngineers,
+            'selectedContacts' => $this->selectedContacts,
+            'assignEngineerDate' => $this->assignEngineerDate,
+            'pricingStatusId' => $this->pricingStatusId,
+            'quotationState' => $this->quotationState,
+            'projectSize' => $this->projectSize,
+            'clientPriority' => $this->clientPriority,
+            'konPriority' => $this->konPriority,
         ];
 
         list($city, $town) = $this->storeLocationInDatabase();
 
+        $inquiryFields = [
+            'project_id' => $this->projectId,
+            'inquiry_date' => $this->inquiryDate,
+            'req_submittal_date' => $this->reqSubmittalDate,
+            'project_start_date' => $this->projectStartDate,
+            'city_id' => $city->id ?? null,
+            'town_id' => $town->id ?? null,
+            'town_distance' => $this->calculatedDistance,
+            'status' => $this->status,
+            'status_for_kon' => $this->statusForKon,
+            'kon_title' => $this->konTitle,
+            'work_type_id' => $this->getMainWorkTypeId(),
+            'final_work_type' => $this->finalWorkType,
+            'inquiry_source_id' => !empty($this->inquirySourceSteps) ? end($this->inquirySourceSteps) : null,
+            'final_inquiry_source' => $this->finalInquirySource,
+            'total_check_list_score' => $this->totalScore,
+            'project_difficulty' => $this->projectDifficulty,
+            'tender_number' => $this->tenderNo,
+            'tender_id' => $this->tenderId,
+            'estimation_start_date' => $this->estimationStartDate,
+            'estimation_finished_date' => $this->estimationFinishedDate,
+            'submitting_date' => $this->submittingDate,
+            'total_project_value' => $this->totalProjectValue,
+            'quotation_state' => $this->quotationState,
+            'rejection_reason' => $this->quotationStateReason,
+            'project_size_id' => $this->projectSize,
+            'client_priority' => $this->clientPriority,
+            'kon_priority' => $this->konPriority,
+            'type_note' => $this->type_note,
+            'assigned_engineer_date' => $this->assignEngineerDate,
+            'is_draft' => true,
+            'draft_data' => json_encode($draftData),
+            'last_draft_saved_at' => now(),
+        ];
+
         if ($this->inquiryId) {
             // تحديث المسودة الموجودة
             $inquiry = Inquiry::findOrFail($this->inquiryId);
-            $inquiry->update([
-                'project_id' => $this->projectId,
-                'inquiry_date' => $this->inquiryDate,
-                'req_submittal_date' => $this->reqSubmittalDate,
-                'project_start_date' => $this->projectStartDate,
-                'city_id' => $city->id ?? null,
-                'town_id' => $town->id ?? null,
-                'town_distance' => $this->calculatedDistance,
-                'status' => $this->status,
-                'status_for_kon' => $this->statusForKon,
-                'kon_title' => $this->konTitle,
-                'work_type_id' => $this->getMainWorkTypeId(),
-                'final_work_type' => $this->finalWorkType,
-                'inquiry_source_id' => !empty($this->inquirySourceSteps) ? end($this->inquirySourceSteps) : null,
-                'final_inquiry_source' => $this->finalInquirySource,
-                'total_check_list_score' => $this->totalScore,
-                'project_difficulty' => $this->projectDifficulty,
-                'tender_number' => $this->tenderNo,
-                'tender_id' => $this->tenderId,
-                'estimation_start_date' => $this->estimationStartDate,
-                'estimation_finished_date' => $this->estimationFinishedDate,
-                'submitting_date' => $this->submittingDate,
-                'total_project_value' => $this->totalProjectValue,
-                'quotation_state' => $this->quotationState,
-                'rejection_reason' => $this->quotationStateReason,
-                'project_size_id' => $this->projectSize,
-                'client_priority' => $this->clientPriority,
-                'kon_priority' => $this->konPriority,
-                'type_note' => $this->type_note,
-                'is_draft' => true,
-                'draft_data' => json_encode($draftData),
-                'last_draft_saved_at' => now(),
-            ]);
+            $inquiry->update($inquiryFields);
         } else {
             // إنشاء مسودة جديدة
-            $inquiry = Inquiry::create([
-                'project_id' => $this->projectId,
-                'inquiry_date' => $this->inquiryDate,
-                'req_submittal_date' => $this->reqSubmittalDate,
-                'project_start_date' => $this->projectStartDate,
-                'city_id' => $city->id ?? null,
-                'town_id' => $town->id ?? null,
-                'town_distance' => $this->calculatedDistance,
-                'status' => $this->status,
-                'status_for_kon' => $this->statusForKon,
-                'kon_title' => $this->konTitle,
-                'work_type_id' => $this->getMainWorkTypeId(),
-                'final_work_type' => $this->finalWorkType,
-                'inquiry_source_id' => !empty($this->inquirySourceSteps) ? end($this->inquirySourceSteps) : null,
-                'final_inquiry_source' => $this->finalInquirySource,
-                'total_check_list_score' => $this->totalScore,
-                'project_difficulty' => $this->projectDifficulty,
-                'tender_number' => $this->tenderNo,
-                'tender_id' => $this->tenderId,
-                'estimation_start_date' => $this->estimationStartDate,
-                'estimation_finished_date' => $this->estimationFinishedDate,
-                'submitting_date' => $this->submittingDate,
-                'total_project_value' => $this->totalProjectValue,
-                'quotation_state' => $this->quotationState,
-                'rejection_reason' => $this->quotationStateReason,
-                'project_size_id' => $this->projectSize,
-                'client_priority' => $this->clientPriority,
-                'kon_priority' => $this->konPriority,
-                'type_note' => $this->type_note,
-                'is_draft' => true,
-                'draft_data' => json_encode($draftData),
-                'last_draft_saved_at' => now(),
-            ]);
+            $inquiryFields['created_by'] = Auth::id();
+            $inquiry = Inquiry::create($inquiryFields);
 
             $this->inquiryId = $inquiry->id;
             $this->isDraft = true;
@@ -424,13 +405,13 @@ class CreateInquiry extends Component
             }
         }
 
-        // DB::commit();
-
-        // DB::commit();
+        // حفظ المهندسين
+        $this->saveAssignedEngineers($inquiry);
 
         session()->flash('success', __('Draft saved successfully'));
 
         $this->dispatch('draftSaved', ['inquiryId' => $inquiry->id]);
+
         // } catch (\Exception $e) {
         //     DB::rollBack();
         //     session()->flash('error', __('Error saving draft: ') . $e->getMessage());
