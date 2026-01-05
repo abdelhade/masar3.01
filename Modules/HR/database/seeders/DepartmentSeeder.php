@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
-use App\Models\Department;
+use Modules\HR\Models\Department;
 use Illuminate\Database\Seeder;
 
 class DepartmentSeeder extends Seeder

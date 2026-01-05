@@ -652,8 +652,8 @@
                                                             </div>
                                                         </div>
                                                     </div><!--end general chat-->
-                                                    @if (setting('manufacture_enable_expenses'))
                                                         <!-- تاب المصروفات -->
+                                                        
                                                         <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active show' : '' }}"
                                                             id="group_chat">
                                                             <div class="col-12">
@@ -785,7 +785,7 @@
                                                                 </div>
                                                             </div>
                                                         </div><!--end group chat-->
-                                                    @endif
+                                                  
                                                 </div><!--end tab-content-->
                                             </div>
                                         </div>

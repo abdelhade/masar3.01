@@ -200,7 +200,6 @@
                                                 <label for="branch_id">{{ __('الفرع') }}</label>
                                                 <select required class="form-control font-bold" name="branch_id"
                                                     id="branch_id">
-                                                    <option value="">{{ __('اختر الفرع') }}</option>
                                                     @foreach ($branches as $branch)
                                                         <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                                                     @endforeach
@@ -314,25 +313,25 @@
                                         <div class="row">
                                             <div class="col-md-4 mb-3">
                                                 <x-dynamic-search name="country_id" label="الدولة" column="title"
-                                                    model="App\Models\Country" placeholder="ابحث عن الدولة..."
+                                                    model="Modules\HR\Models\Country" placeholder="ابحث عن الدولة..."
                                                     :required="false" :class="'form-select'" />
                                             </div>
 
                                             <div class="col-md-4 mb-3">
                                                 <x-dynamic-search name="city_id" label="المدينة" column="title"
-                                                    model="App\Models\City" placeholder="ابحث عن المدينة..."
+                                                    model="Modules\HR\Models\City" placeholder="ابحث عن المدينة..."
                                                     :required="false" :class="'form-select'" />
                                             </div>
 
                                             <div class="col-md-4 mb-3">
                                                 <x-dynamic-search name="state_id" label="المنطقة" column="title"
-                                                    model="App\Models\State" placeholder="ابحث عن المنطقة..."
+                                                    model="Modules\HR\Models\State" placeholder="ابحث عن المنطقة..."
                                                     :required="false" :class="'form-select'" />
                                             </div>
 
                                             <div class="col-md-4 mb-3">
                                                 <x-dynamic-search name="town_id" label="الحي" column="title"
-                                                    model="App\Models\Town" placeholder="ابحث عن الحي..."
+                                                    model="Modules\HR\Models\Town" placeholder="ابحث عن الحي..."
                                                     :required="false" :class="'form-select'" />
                                             </div>
 

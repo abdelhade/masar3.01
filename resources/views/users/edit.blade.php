@@ -119,10 +119,10 @@
             }
         </style>
     @endpush
-    @include('components.breadcrumb', [
+    <!-- @include('components.breadcrumb', [
         'title' => __('Edit User'),
         'items' => [['label' => __('Users'), 'url' => route('users.index')], ['label' => __('Edit')]],
-    ])
+    ]) -->
 
     <div class="container-fluid pb-5">
         <div class="card border-0 shadow-sm overflow-hidden">
@@ -282,7 +282,17 @@
                                             <tbody>
                                                 @foreach ($grouped as $target => $actions)
                                                     <tr class="perm-row">
-                                                        <td class="ps-4 perm-label">{{ __(ucfirst($target)) }}</td>
+                                                        <td class="ps-4 perm-label">
+                                                            @php
+                                                                $transVal = __(ucfirst($target));
+                                                                if(is_array($transVal)) {
+                                                                    \Illuminate\Support\Facades\Log::warning("Permission target '$target' translates to array.");
+                                                                    echo ucfirst($target);
+                                                                } else {
+                                                                    echo $transVal;
+                                                                }
+                                                            @endphp
+                                                        </td>
                                                         @foreach (['view', 'create', 'edit', 'delete', 'print'] as $act)
                                                             <td class="text-center">
                                                                 @if (isset($actions[$act]))

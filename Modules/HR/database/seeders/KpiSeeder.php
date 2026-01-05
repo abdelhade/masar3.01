@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\HR\Models\Kpi;
 
 class KpiSeeder extends Seeder
 {
@@ -99,7 +100,7 @@ class KpiSeeder extends Seeder
         ];
 
         foreach ($kpis as $kpi) {
-            \App\Models\Kpi::firstOrCreate(
+            Kpi::firstOrCreate( // Changed from \App\Models\Kpi to Kpi
                 ['name' => $kpi['name']],
                 $kpi
             );

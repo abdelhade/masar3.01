@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
-use App\Models\Country;
+use Modules\HR\Models\Country;
 use Illuminate\Database\Seeder;
 
 class CountrySeeder extends Seeder

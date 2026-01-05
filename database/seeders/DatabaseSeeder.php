@@ -29,6 +29,20 @@ use Modules\Depreciation\database\seeders\DepreciationDatabaseSeeder;
 use Modules\Installments\database\seeders\InstallmentsDatabaseSeeder;
 use Modules\Manufacturing\database\seeders\ManufacturingDatabaseSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionDatabaseSeeder;
+use Modules\HR\Database\Seeders\AttendanceSeeder;
+use Modules\HR\Database\Seeders\CitySeeder;
+use Modules\HR\Database\Seeders\ContractTypeSeeder;
+use Modules\HR\Database\Seeders\CostCentersSeeder;
+use Modules\HR\Database\Seeders\CountrySeeder;
+use Modules\HR\Database\Seeders\CvSeeder;
+use Modules\HR\Database\Seeders\DepartmentSeeder;
+use Modules\HR\Database\Seeders\EmployeeSeeder;
+use Modules\HR\Database\Seeders\EmployeesJobSeeder;
+use Modules\HR\Database\Seeders\KpiSeeder;
+use Modules\HR\Database\Seeders\LeaveTypeSeeder;
+use Modules\HR\Database\Seeders\ShiftSeeder;
+use Modules\HR\Database\Seeders\StateSeeder;
+use Modules\HR\Database\Seeders\TownSeeder;
 
 class DatabaseSeeder extends Seeder
 {

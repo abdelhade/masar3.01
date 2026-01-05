@@ -5,7 +5,7 @@ namespace Modules\Invoices\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Item;
 use App\Models\User;
-use App\Models\Employee;
+use Modules\HR\Models\Employee;
 use App\Models\OperHead;
 use App\Models\JournalHead;
 use Illuminate\Http\Request;

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
+use Illuminate\Routing\Controller;
 
 class MobileAttendanceController extends Controller
 {

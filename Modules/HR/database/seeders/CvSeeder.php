@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
-use App\Models\Cv;
+use Modules\HR\Models\Cv;
 use Illuminate\Database\Seeder;
 
 class CvSeeder extends Seeder

@@ -376,7 +376,7 @@
                                         </a>
                                     </li>
 
-                                    @if (setting('manufacture_enable_expenses'))
+                                   
                                         <li class="nav-item">
                                             <a class="nav-link py-1 px-2 {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active' : '' }}"
                                                 id="group_chat_tab" data-bs-toggle="pill" href="#group_chat"
@@ -385,7 +385,7 @@
                                                 {{ __('Expenses') }}
                                             </a>
                                         </li>
-                                    @endif
+                                 
 
                                 </ul>
 
@@ -580,7 +580,6 @@
                                                                     </div>
                                                                 </div>
                                                             </div><!--end general chat-->
-                                                            @if (setting('manufacture_enable_expenses'))
                                                                 <!-- تاب المصروفات -->
                                                                 <div class="tab-pane fade {{ ($activeTab ?? 'general_chat') == 'group_chat' ? 'active show' : '' }}"
                                                                     id="group_chat">
@@ -701,7 +700,6 @@
                                                                         </div>
                                                                     </div>
                                                                 </div><!--end group chat-->
-                                                            @endif
                                                         </div><!--end tab-content-->
                                                     </div>
                                                 </div>

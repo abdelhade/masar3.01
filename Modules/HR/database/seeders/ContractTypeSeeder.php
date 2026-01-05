@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
-use App\Models\ContractType;
+use Modules\HR\Models\ContractType;
 use Illuminate\Database\Seeder;
 
 class ContractTypeSeeder extends Seeder

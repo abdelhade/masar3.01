@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
-use App\Models\LeaveType;
+use Modules\HR\Models\LeaveType;
 use Illuminate\Database\Seeder;
 
 class LeaveTypeSeeder extends Seeder

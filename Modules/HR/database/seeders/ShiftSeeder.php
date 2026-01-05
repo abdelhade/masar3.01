@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Modules\HR\Database\Seeders;
 
-use App\Models\Shift;
+use Modules\HR\Models\Shift;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
