@@ -17,6 +17,7 @@ class AccountsDatabaseSeeder extends Seeder
             AccountsTypesSeeder::class,
             AccHeadSeeder::class,
             AccountsPermissionsSeeder::class,
+            CostCentersSeeder::class,
         ]);
     }
 }

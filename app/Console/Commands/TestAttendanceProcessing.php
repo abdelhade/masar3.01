@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Employee;
-use App\Models\Department;
+use Modules\HR\Models\Employee;
+use Modules\HR\Models\Department;
 use App\Services\AttendanceProcessingService;
 use App\Services\SalaryCalculationService;
 use Carbon\Carbon;
@@ -107,11 +107,11 @@ class TestAttendanceProcessing extends Command
 
         foreach ($employees as $employee) {
             $this->info("Processing employee: {$employee->name}");
-            
+
             try {
                 $result = $attendanceService->processSingleEmployee($employee, $startDate, $endDate, 'Test processing');
                 $salaryData = $salaryService->calculateSalary($employee, $startDate, $endDate);
-                
+
                 $this->info("  - Processing ID: {$result['processing_id']}");
                 $this->info("  - Salary calculation ID: {$salaryData['calculation_id']}");
                 $this->info("  - Total salary: {$salaryData['salary_data']['total_salary']} SAR");
@@ -124,7 +124,7 @@ class TestAttendanceProcessing extends Command
     private function displayResults($result, $salaryData)
     {
         $summary = $result['summary'];
-        
+
         $this->table(
             ['Metric', 'Value'],
             [
@@ -151,4 +151,4 @@ class TestAttendanceProcessing extends Command
             );
         }
     }
-} 
+}

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\HR\database\seeders\HRDatabaseSeeder;
 use Modules\App\database\seeders\AppDatabaseSeeder;
 use Modules\CRM\Database\Seeders\CRMDatabaseSeeder;
 use Modules\POS\database\seeders\POSDatabaseSeeder;
@@ -16,10 +17,8 @@ use Modules\Invoices\database\seeders\InvoiceDatabaseSeeder;
 use Modules\Accounts\database\seeders\AccountsDatabaseSeeder;
 use Modules\Branches\database\seeders\BranchesDatabaseSeeder;
 use Modules\Progress\database\seeders\ProgressDatabaseSeeder;
-use Modules\Services\database\seeders\ServicesDatabaseSeeder;
 use Modules\Settings\Database\Seeders\SettingsDatabaseSeeder;
 use Modules\Shipping\Database\Seeders\ShippingDatabaseSeeder;
-use Modules\Authorization\Database\Seeders\HRPermissionsSeeder;
 use Modules\Inquiries\database\seeders\InquiriesDatabaseSeeder;
 use Modules\MyResources\database\seeders\ResourcesDatabaseSeeder;
 use Modules\ActivityLog\database\seeders\ActivityLogDatabaseSeeder;
@@ -29,20 +28,6 @@ use Modules\Depreciation\database\seeders\DepreciationDatabaseSeeder;
 use Modules\Installments\database\seeders\InstallmentsDatabaseSeeder;
 use Modules\Manufacturing\database\seeders\ManufacturingDatabaseSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionDatabaseSeeder;
-use Modules\HR\Database\Seeders\AttendanceSeeder;
-use Modules\HR\Database\Seeders\CitySeeder;
-use Modules\HR\Database\Seeders\ContractTypeSeeder;
-use Modules\HR\Database\Seeders\CostCentersSeeder;
-use Modules\HR\Database\Seeders\CountrySeeder;
-use Modules\HR\Database\Seeders\CvSeeder;
-use Modules\HR\Database\Seeders\DepartmentSeeder;
-use Modules\HR\Database\Seeders\EmployeeSeeder;
-use Modules\HR\Database\Seeders\EmployeesJobSeeder;
-use Modules\HR\Database\Seeders\KpiSeeder;
-use Modules\HR\Database\Seeders\LeaveTypeSeeder;
-use Modules\HR\Database\Seeders\ShiftSeeder;
-use Modules\HR\Database\Seeders\StateSeeder;
-use Modules\HR\Database\Seeders\TownSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -55,13 +40,12 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
         ]);
-
+        $this->call(BranchesDatabaseSeeder::class);
         $this->call(AccountsDatabaseSeeder::class);
         $this->call(ActivityLogDatabaseSeeder::class);
         $this->call(AppDatabaseSeeder::class);
         $this->call(RoleAndPermissionDatabaseSeeder::class);
         $this->call(ChecksDatabaseSeeder::class);
-        $this->call(BranchesDatabaseSeeder::class);
         $this->call(CRMDatabaseSeeder::class);
         $this->call(DepreciationDatabaseSeeder::class);
         $this->call(FleetDatabaseSeeder::class);
@@ -85,27 +69,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UpdateAccHeadAccTypeSeeder::class,
             ProTypesSeeder::class,
-            CostCentersSeeder::class,
             NoteSeeder::class,
             NoteDetailsSeeder::class,
             UnitSeeder::class,
             PriceSeeder::class,
-            DepartmentSeeder::class,
-            CountrySeeder::class,
-            StateSeeder::class,
-            CitySeeder::class,
-            TownSeeder::class,
-            EmployeesJobSeeder::class,
-            ShiftSeeder::class,
-            KpiSeeder::class,
-            EmployeeSeeder::class,
-            ContractTypeSeeder::class,
-            AttendanceSeeder::class,
-            CvSeeder::class,
-            LeaveTypeSeeder::class,
             VaribalSeeder::class,
-            HRPermissionsSeeder::class,
             GiveAllPermissionsToAdminSeeder::class,
         ]);
+        $this->call(HRDatabaseSeeder::class);
     }
 }

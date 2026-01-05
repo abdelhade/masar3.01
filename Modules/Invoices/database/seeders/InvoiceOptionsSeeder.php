@@ -47,6 +47,12 @@ class InvoiceOptionsSeeder extends Seeder
                 'input_type' => 'boolean',
                 'value' => '0',
             ],
+            [
+                'key' => 'invoice_show_recommended_items',
+                'label' => 'عرض العناصر الموصى بها للعميل في الفاتورة',
+                'input_type' => 'boolean',
+                'value' => '0',
+            ],
         ];
 
         // حفظ أو تحديث الإعدادات

@@ -1,11 +1,11 @@
 <?php
 
-namespace Database\Seeders;
+namespace Modules\HR\database\seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Employee;
-use App\Models\Attendance;
-use App\Models\Department;
+use Modules\HR\Models\Employee;
+use Modules\HR\Models\Attendance;
+use Modules\HR\Models\Department;
 use Carbon\Carbon;
 
 class AttendanceProcessingTestSeeder extends Seeder
@@ -30,7 +30,7 @@ class AttendanceProcessingTestSeeder extends Seeder
 
         // Get existing employees or create sample ones
         $employees = Employee::with('department')->take(10)->get();
-        
+
         if ($employees->count() < 5) {
             // Create sample employees if not enough exist
             $sampleEmployees = [
@@ -56,7 +56,7 @@ class AttendanceProcessingTestSeeder extends Seeder
                     ]);
                 }
             }
-            
+
             $employees = Employee::with('department')->take(10)->get();
         }
 
@@ -77,17 +77,17 @@ class AttendanceProcessingTestSeeder extends Seeder
     private function generateAttendanceForEmployee(Employee $employee, Carbon $startDate, Carbon $endDate): void
     {
         $currentDate = $startDate->copy();
-        
+
         while ($currentDate->lte($endDate)) {
             // Skip weekends (Friday and Saturday for most Middle Eastern countries)
             if (!in_array($currentDate->dayOfWeek, [5, 6])) { // 5=Friday, 6=Saturday
-                
+
                 // 85% chance of attendance
                 if (rand(1, 100) <= 85) {
                     $this->createAttendanceRecord($employee, $currentDate);
                 }
             }
-            
+
             $currentDate->addDay();
         }
     }
@@ -100,15 +100,15 @@ class AttendanceProcessingTestSeeder extends Seeder
         // Define normal working hours (8:00 AM to 4:00 PM)
         $normalCheckIn = '08:00:00';
         $normalCheckOut = '16:00:00';
-        
+
         // Add some variance to check-in time (-30 to +60 minutes)
         $checkInVariance = rand(-30, 60);
         $checkInTime = Carbon::parse($normalCheckIn)->addMinutes($checkInVariance)->format('H:i:s');
-        
-        // Add some variance to check-out time (-30 to +120 minutes)  
+
+        // Add some variance to check-out time (-30 to +120 minutes)
         $checkOutVariance = rand(-30, 120);
         $checkOutTime = Carbon::parse($normalCheckOut)->addMinutes($checkOutVariance)->format('H:i:s');
-        
+
         // Create check-in record
         Attendance::create([
             'employee_id' => $employee->id,

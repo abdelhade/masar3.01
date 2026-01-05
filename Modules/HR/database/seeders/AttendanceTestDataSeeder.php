@@ -1,12 +1,12 @@
 <?php
 
-namespace Database\Seeders;
+namespace Modules\HR\database\seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Employee;
-use App\Models\Department;
-use App\Models\Shift;
-use App\Models\Attendance;
+use Modules\HR\Models\Employee;
+use Modules\HR\Models\Department;
+use Modules\HR\Models\Shift;
+use Modules\HR\Models\Attendance;
 use Carbon\Carbon;
 
 class AttendanceTestDataSeeder extends Seeder
@@ -22,6 +22,7 @@ class AttendanceTestDataSeeder extends Seeder
         // Create shifts
         $shifts = [
             [
+                'name' => 'Morning Shift',
                 'shift_type' => 'morning',
                 'start_time' => '08:00:00',
                 'end_time' => '16:00:00',
@@ -29,6 +30,7 @@ class AttendanceTestDataSeeder extends Seeder
                 'notes' => 'Morning Shift (8:00-16:00)'
             ],
             [
+                'name' => 'evening Shift',
                 'shift_type' => 'evening',
                 'start_time' => '16:00:00',
                 'end_time' => '00:00:00',
@@ -36,6 +38,7 @@ class AttendanceTestDataSeeder extends Seeder
                 'notes' => 'Evening Shift (16:00-00:00)'
             ],
             [
+                'name' => 'Weekend Shift',
                 'shift_type' => 'night',
                 'start_time' => '09:00:00',
                 'end_time' => '17:00:00',
@@ -82,7 +85,7 @@ class AttendanceTestDataSeeder extends Seeder
         foreach ($employees as $empData) {
             $department = Department::where('title', $empData['department'])->first();
             $shift = Shift::where('shift_type', $empData['shift_type'])->first();
-            
+
             $employee = Employee::firstOrCreate(
                 ['email' => $empData['email']],
                 [
@@ -110,7 +113,7 @@ class AttendanceTestDataSeeder extends Seeder
 
         for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
             $dayOfWeek = $date->dayOfWeek;
-            
+
             // Only create attendance for working days (Monday to Friday)
             if ($dayOfWeek >= 1 && $dayOfWeek <= 5) {
                 // Create check-in record
@@ -167,4 +170,4 @@ class AttendanceTestDataSeeder extends Seeder
             ]);
         }
     }
-} 
+}

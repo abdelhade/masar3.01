@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\HR\Database\Seeders;
+namespace Modules\HR\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\HR\Models\Kpi;

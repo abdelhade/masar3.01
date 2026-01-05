@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Employee;
-use App\Models\Attendance;
-use App\Models\Shift;
-use App\Models\Department;
+use Modules\HR\Models\Employee;
+use Modules\HR\Models\Attendance;
+use Modules\HR\Models\Shift;
+use Modules\HR\Models\Department;
 use App\Services\SalaryCalculationService;
 use Carbon\Carbon;
 
@@ -57,7 +57,7 @@ class TestAttendanceData extends Command
             $this->info('📈 Processing Results:');
             $this->info('   Summary: ' . json_encode($result['summary']));
             $this->info('   Details count: ' . count($result['details']));
-            
+
             // Show first few details
             $details = array_slice($result['details'], 0, 5, true);
             foreach ($details as $date => $detail) {
@@ -67,4 +67,4 @@ class TestAttendanceData extends Command
 
         $this->info('✅ Test completed!');
     }
-} 
+}

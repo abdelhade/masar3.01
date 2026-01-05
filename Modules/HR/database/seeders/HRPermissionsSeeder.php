@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Authorization\Database\Seeders;
+namespace Modules\HR\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;

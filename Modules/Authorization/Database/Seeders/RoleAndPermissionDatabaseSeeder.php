@@ -17,7 +17,6 @@ class RoleAndPermissionDatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
             PermissionSelectiveOptionsSeeder::class,
             // PermissionSeeder::class,
-            HRPermissionsSeeder::class,
             // DashboardPermissionsSeeder::class,
         ]);
     }

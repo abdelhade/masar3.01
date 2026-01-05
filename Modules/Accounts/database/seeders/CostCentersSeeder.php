@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\HR\Database\Seeders;
+namespace Modules\Accounts\Database\Seeders;
 
 use App\Models\CostCenter;
 use Illuminate\Database\Seeder;

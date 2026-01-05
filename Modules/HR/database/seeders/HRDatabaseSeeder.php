@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\HR\Database\Seeders;
+namespace Modules\HR\database\seeders;
 
 use Illuminate\Database\Seeder;
 
@@ -11,6 +11,24 @@ class HRDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            HRPermissionsSeeder::class,
+            AttendanceProcessingTestSeeder::class,
+            AttendanceSeeder::class,
+            CitySeeder::class,
+            ContractTypeSeeder::class,
+            CountrySeeder::class,
+            CreateTestAttendanceData::class,
+            CvSeeder::class,
+            DepartmentSeeder::class,
+            EmployeeSeeder::class,
+            EmployeesJobSeeder::class,
+            KpiSeeder::class,
+            LeaveTypeSeeder::class,
+            ShiftSeeder::class,
+            StateSeeder::class,
+            TownSeeder::class,
+            AttendanceTestDataSeeder::class,
+        ]);
     }
 }
