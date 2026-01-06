@@ -53,6 +53,32 @@ class InvoiceOptionsSeeder extends Seeder
                 'input_type' => 'boolean',
                 'value' => '0',
             ],
+            [
+                'key' => 'invoice_show_item_details',
+                'label' => 'عرض تفاصيل الصنف في الفاتورة',
+                'input_type' => 'boolean',
+                'value' => '0',
+            ],
+            [
+                'key' => 'enable_installment_from_invoice',
+                'label' => 'تمكين التقسيط من الفاتورة',
+                'input_type' => 'boolean',
+                'value' => '0',
+            ],
+
+            [
+                'key' => 'invoice_use_due_date',
+                'label' => 'استخدام تاريخ الاستحقاق في الفواتير',
+                'input_type' => 'boolean',
+                'value' => '0',
+            ],
+
+            [
+                'key' => 'invoice_select_price_type',
+                'label' => 'السماح باختيار نوع السعر في الفواتير',
+                'input_type' => 'boolean',
+                'value' => '0',
+            ],
         ];
 
         // حفظ أو تحديث الإعدادات
