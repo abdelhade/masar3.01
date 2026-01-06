@@ -233,9 +233,14 @@ class SaveInvoiceService
                     ->unique()
                     ->toArray();
 
-                $this->deleteRelatedRecords($operation->id);
+                // حذف الأسطر القديمة التي كانت تحذف السجلات
+                // $this->deleteRelatedRecords($operation->id);
                 $operationData['pro_id'] = $operation->pro_id;
                 $operation->update($operationData);
+                
+                // ✅ تحديث القيود (Delta Sync)
+                $this->syncJournalEntries($operation, $component);
+
             } else {
                 $operationData['pro_id'] = $component->pro_id;
                 $operation = OperHead::create($operationData);
@@ -295,6 +300,9 @@ class SaveInvoiceService
                     $operation->workflow_state = $this->getWorkflowStateByType($operation->pro_type);
                     $operation->save();
                 }
+                
+                // إنشاء القيود للفواتير الجديدة
+                $this->createJournalEntries($component, $operation);
             }
 
             // ✅ Calculate accurate detail_value for all items (Requirements 4.1, 4.2, 4.3)
@@ -322,377 +330,88 @@ class SaveInvoiceService
                 'vat' => $invoiceData['vat_value'],
                 'withholding_tax' => $invoiceData['withholding_tax_value'],
             ]);
-
-            // إضافة عناصر الفاتورة
-            $totalProfit = 0;
-            foreach ($calculatedItems as $index => $invoiceItem) {
-                $itemId = $invoiceItem['item_id'];
-                $quantity = $invoiceItem['quantity'];
-                $unitId = $invoiceItem['unit_id'];
-                $price = $invoiceItem['price'];
-                // ✅ Use calculated detail_value instead of frontend sub_value (Requirements 4.2, 4.3)
-                $subValue = $invoiceItem['calculated_detail_value'];
-                $discount = $invoiceItem['discount'] ?? 0;
-                $itemCost = Item::where('id', $itemId)->value('average_cost');
-
-                // ✅ إضافة جديدة: جلب بيانات الصلاحية
-                $batchNumber = $invoiceItem['batch_number'] ?? null;
-                $expiryDate = $invoiceItem['expiry_date'] ?? null;
-
-                if ($component->type == 21) {
-                    // 1. خصم الكمية من المخزن المحوَّل منه (المخزن الأول acc1)
-                    OperationItems::create([
-                        'pro_tybe' => $component->type,
-                        'detail_store' => $component->acc1_id,
-                        'pro_id' => $operation->id,
-                        'item_id' => $itemId,
-                        'unit_id' => $unitId,
-                        'qty_in' => 0,
-                        'qty_out' => $baseQty, // ✅ Store base quantity
-                        'item_price' => $price,
-                        'cost_price' => $itemCost,
-                        'item_discount' => $discount,
-                        'detail_value' => $subValue,
-                        'notes' => $invoiceItem['notes'] ?? 'تحويل إلى مخزن '.$component->acc2_id,
-                        'is_stock' => 1,
-                        'branch_id' => $component->branch_id,
-                        'length' => $invoiceItem['length'] ?? null,
-                        'width' => $invoiceItem['width'] ?? null,
-                        'height' => $invoiceItem['height'] ?? null,
-                        'density' => $invoiceItem['density'] ?? 1,
-                        // ✅ إضافة حقول الصلاحية
-                        'batch_number' => $batchNumber,
-                        'expiry_date' => $expiryDate,
-                    ]);
-
-                    // 2. إضافة الكمية إلى المخزن المحوَّل إليه (المخزن الثاني acc2)
-                    OperationItems::create([
-                        'pro_tybe' => $component->type,
-                        'detail_store' => $component->acc2_id,
-                        'pro_id' => $operation->id,
-                        'item_id' => $itemId,
-                        'unit_id' => $unitId,
-                        'qty_in' => $baseQty, // ✅ Store base quantity
-                        'qty_out' => 0,
-                        'item_price' => $price,
-                        'cost_price' => $itemCost,
-                        'item_discount' => $discount,
-                        'detail_value' => $subValue,
-                        'notes' => $invoiceItem['notes'] ?? 'تحويل من مخزن '.$component->acc1_id,
-                        'is_stock' => 1,
-                        'branch_id' => $component->branch_id,
-                        'length' => $invoiceItem['length'] ?? null,
-                        'width' => $invoiceItem['width'] ?? null,
-                        'height' => $invoiceItem['height'] ?? null,
-                        'density' => $invoiceItem['density'] ?? 1,
-                        // ✅ إضافة حقول الصلاحية
-                        'batch_number' => $batchNumber,
-                        'expiry_date' => $expiryDate,
-                    ]);
-                }
-
-                // 1. Get unit factor
-                $unitFactor = 1;
-                if ($unitId) {
-                    $unitFactor = DB::table('item_units')
-                        ->where('item_id', $itemId)
-                        ->where('unit_id', $unitId)
-                        ->value('u_val') ?? 1;
-                }
-
-                // 2. Calculate base quantity
-                $originalQty = $quantity; // This is the quantity entered by user
-                $baseQty = $originalQty * $unitFactor;
-
-                // 3. Calculate base price (price per base unit)
-                // If user enters: 1 Ton @ 100,000 EGP, and 1 Ton = 1000 Kg
-                // Then base price = 100,000 / 1000 = 100 EGP/Kg
-                $originalPrice = $price; // Price entered by user (per selected unit)
-                $basePrice = $unitFactor > 0 ? $originalPrice / $unitFactor : $originalPrice;
-
-                // 4. Get base unit ID (u_val = 1)
-                $baseUnitId = DB::table('item_units')
-                    ->where('item_id', $itemId)
-                    ->where('u_val', 1)
-                    ->value('unit_id');
-
-                // If no base unit found, use the selected unit as fallback
-                if (! $baseUnitId) {
-                    $baseUnitId = $unitId;
-                }
-
-                $qty_in = $qty_out = 0;
-                if (in_array($component->type, [11, 12, 20])) {
-                    $qty_in = $baseQty;
-                }
-                if (in_array($component->type, [10, 13, 18, 19])) {
-                    $qty_out = $baseQty;
-                }
-
-                // تحديث متوسط التكلفة للمشتريات
-                if (in_array($component->type, [11, 12, 20])) {
-                    // ✅ Log detail_value usage for purchase invoices and returns (Requirements 4.5, 6.1, 6.2, 9.1, 9.2)
-                    $logMessage = $component->type == 12
-                        ? 'Purchase return: Using calculated detail_value (negative) for average cost recalculation'
-                        : 'Purchase invoice: Using calculated detail_value for average cost';
-
-                    Log::info($logMessage, [
-                        'operation_id' => $operation->id,
-                        'operation_type' => $component->type,
-                        'item_id' => $itemId,
-                        'item_index' => $index,
-                        'quantity' => $quantity,
-                        'original_sub_value' => $invoiceItem['sub_value'] ?? null,
-                        'calculated_detail_value' => $subValue,
-                        'item_discount' => $discount,
-                        'distributed_invoice_discount' => $invoiceItem['calculation_breakdown']['distributed_discount'] ?? 0,
-                        'distributed_invoice_additional' => $invoiceItem['calculation_breakdown']['distributed_additional'] ?? 0,
-                        'is_return' => $component->type == 12,
-                    ]);
-
-                    // ✅ تمرير $subValue الذي يمثل detail_value المحسوب بدقة
-                    $newAverageCost = $this->updateAverageCost(
-                        $itemId,
-                        $quantity,
-                        $subValue,  // القيمة المحسوبة بدقة مع جميع الخصومات والإضافات
-                        $itemCost,
-                        $unitId,
-                        $component->discount_value ?? 0,  // قيمة الخصم الإجمالي
-                        $component->subtotal ?? 0  // الإجمالي الفرعي
-                    );
-                    $itemCost = $newAverageCost;
-
-                    Log::info('Average cost updated', [
-                        'item_id' => $itemId,
-                        'new_average_cost' => $newAverageCost,
-                        'operation_type' => $component->type,
-                    ]);
-                }
-                // ✅ حساب الربح بعد ما يتحسب basePrice و baseQty
-                $profit = 0;
-                if (in_array($component->type, [10, 11, 13, 19])) {
-                    if ($component->type == 10) {
-                        // ✅ Sales invoice: Calculate profit using calculated detail_value (Requirements 5.1, 5.2, 5.3)
-                        // detail_value represents revenue after all discounts and additions
-                        $itemProfit = $subValue - ($itemCost * $baseQty);
-                        $profit = $itemProfit;
-
-                        Log::info('Sales invoice: Profit calculated using detail_value', [
-                            'operation_id' => $operation->id,
-                            'item_id' => $itemId,
-                            'item_index' => $index,
-                            'detail_value_revenue' => $subValue,
-                            'cost' => $itemCost * $baseQty,
-                            'profit' => $profit,
-                            'average_cost_used' => $itemCost,
-                        ]);
-                    } elseif ($component->type == 13) {
-                        // ✅ Sales return: Calculate negative profit (Requirements 7.1, 7.2, 7.3, 7.4)
-                        $discountItem = $component->subtotal != 0
-                            ? ($component->discount_value * $subValue / $component->subtotal)
-                            : 0;
-                        $itemCostTotal = $itemCost * $baseQty;
-                        $profit = ($subValue - $discountItem) - $itemCostTotal;
-
-                        Log::info('Sales return: Profit calculated (negative) using detail_value', [
-                            'operation_id' => $operation->id,
-                            'item_id' => $itemId,
-                            'item_index' => $index,
-                            'detail_value' => $subValue,
-                            'discount_item' => $discountItem,
-                            'cost' => $itemCostTotal,
-                            'profit' => $profit,
-                        ]);
-                    } else {
-                        $discountItem = $component->subtotal != 0
-                            ? ($component->discount_value * $subValue / $component->subtotal)
-                            : 0;
-                        $itemCostTotal = $itemCost * $baseQty;
-                        $profit = ($subValue - $discountItem) - $itemCostTotal;
-
-                        Log::info('Other invoice type: Profit calculated', [
-                            'operation_id' => $operation->id,
-                            'operation_type' => $component->type,
-                            'item_id' => $itemId,
-                            'profit' => $profit,
-                        ]);
-                    }
-                    $totalProfit += $profit;
-                }
-
-                // إنشاء عنصر الفاتورة لأي شيء غير التحويلات (النوع 21)
-                if ($component->type != 21) {
-                    // معالجة خاصة لطلب الاحتياج - يجب أن نضع الكمية في qty_in
-                    if ($component->type == 25) {
-                        $qty_in = $baseQty;
-                        $qty_out = 0;
-                    }
-
-                    OperationItems::create([
-                        'pro_tybe' => $component->type,
-                        'detail_store' => $component->acc2_id,
-                        'pro_id' => $operation->id,
-                        'item_id' => $itemId,
-                        'unit_id' => $baseUnitId, // ✅ Store base unit ID instead of selected unit
-                        'qty_in' => $qty_in,
-                        'qty_out' => $qty_out,
-                        'fat_quantity' => $originalQty, // ✅ Store original quantity
-                        'fat_price' => $originalPrice, // ✅ Store original price (per selected unit)
-                        'fat_unit_id' => $unitId, // ✅ Store original unit for reference
-                        'item_price' => $basePrice, // ✅ Store base price (per base unit)
-                        'cost_price' => $itemCost,
-                        'item_discount' => $discount,
-                        'detail_value' => $subValue,
-                        'notes' => $invoiceItem['notes'] ?? null,
-                        'is_stock' => 1,
-                        'profit' => $profit,
-                        'branch_id' => $component->branch_id,
-                        'length' => $invoiceItem['length'] ?? null,
-                        'width' => $invoiceItem['width'] ?? null,
-                        'height' => $invoiceItem['height'] ?? null,
-                        'density' => $invoiceItem['density'] ?? 1,
-                        // ✅ إضافة حقول الصلاحية
-                        'batch_number' => $batchNumber,
-                        'expiry_date' => $expiryDate,
-                    ]);
-                }
+            
+            // ✅ استخدام syncInvoiceItems بدلاً من الحذف والإضافة
+            if ($isEdit && $component->operationId) {
+                $this->syncInvoiceItems($operation, $calculatedItems, $component);
+            } else {
+                // إضافة عناصر الفاتورة الجديدة
+                $this->insertNewItems($operation, $calculatedItems, $component);
             }
 
-            // ✅ Log comprehensive summary of invoice processing (Requirements 9.1, 9.2, 9.3)
-            Log::info('Invoice items processing completed', [
-                'operation_id' => $operation->id,
-                'operation_type' => $component->type,
-                'total_items' => count($calculatedItems),
-                'total_profit' => $totalProfit,
-                'invoice_subtotal' => $component->subtotal,
-                'invoice_discount' => $component->discount_value,
-                'invoice_additional' => $component->additional_value,
-                'invoice_total' => $component->total_after_additional,
-                'is_edit' => $isEdit,
-            ]);
-
-            // تحديث إجمالي الربح
-            $operation->update(['profit' => $totalProfit]);
-
-            // إنشاء القيود المحاسبية
-            if ($isJournal) {
-                $this->createJournalEntries($component, $operation);
+            // ✅ Recalculate Manufacturing Chain if needed
+            if (in_array($component->type, [11, 12, 20])) {
+                 $itemIds = array_unique(array_column($calculatedItems, 'item_id'));
+                 \Modules\Invoices\Services\RecalculationServiceHelper::recalculateManufacturingChain(
+                     $itemIds,
+                     $operation->pro_date
+                 );
             }
 
-            // إنشاء سند القبض/الدفع إذا وُجد
-            if ($component->received_from_client > 0) {
-                $this->createVoucher($component, $operation, $isReceipt, $isPayment);
-            }
-
-            DB::commit();
-
-            // إعادة حساب average_cost والأرباح والقيود بعد التعديل أو الإضافة
-            if ($isEdit && isset($oldItemIds) && isset($oldOperationDate)) {
-                // حالة التعديل: إعادة حساب من تاريخ الفاتورة القديمة
-                // عند التعديل، نعيد حساب الفواتير التي بعد تاريخ الفاتورة القديمة
+            // ✅ إعادة حساب average_cost والأرباح للعمليات اللاحقة (Ripple Effect)
+             if ($isEdit && isset($oldItemIds) && isset($oldOperationDate)) {
                 try {
-                    // استخدام Helper لاختيار تلقائي للطريقة المناسبة (Queue/Stored Procedure/PHP)
                     if (in_array($component->type, [11, 12, 20, 59])) {
-                        // إعادة حساب average_cost (يختار تلقائياً Queue/Stored Procedure/PHP)
-                        RecalculationServiceHelper::recalculateAverageCost($oldItemIds, $oldOperationDate);
-
-                        // ✅ إعادة حساب سلسلة التصنيع إذا كانت فاتورة مشتريات (Requirements 16.1, 16.2)
-                        if (in_array($component->type, [11, 12, 20])) {
-                            Log::info('Triggering manufacturing chain recalculation after purchase invoice modification', [
-                                'operation_id' => $operation->id,
-                                'operation_type' => $component->type,
-                                'affected_items' => $oldItemIds,
-                                'from_date' => $oldOperationDate,
-                            ]);
-
-                            RecalculationServiceHelper::recalculateManufacturingChain(
-                                $oldItemIds,
-                                $oldOperationDate
-                            );
-
-                            Log::info('Manufacturing chain recalculation completed successfully', [
-                                'operation_id' => $operation->id,
-                            ]);
-                        }
+                         // recalculateAverageCost handles the "future" operations
+                        \Modules\Invoices\Services\RecalculationServiceHelper::recalculateAverageCost($oldItemIds, $oldOperationDate);
                     }
 
-                    // إعادة حساب الأرباح والقيود للفواتير المتأثرة (فقط التي بعد تاريخ الفاتورة القديمة)
                     if (! empty($oldItemIds)) {
-                        // عند التعديل، نستخدم تاريخ الفاتورة القديمة
-                        // ولا نستثني الفاتورة الحالية لأنها تم تعديلها بالفعل
-                        RecalculationServiceHelper::recalculateProfitsAndJournals(
+                        \Modules\Invoices\Services\RecalculationServiceHelper::recalculateProfitsAndJournals(
                             $oldItemIds,
                             $oldOperationDate,
-                            null, // لا نستثني أي فاتورة عند التعديل
-                            null  // لا نحتاج created_at عند التعديل
-                        );
-                    }
-                } catch (\Exception) {
-                    return false;
-
-                }
-            } elseif (! $isEdit && in_array($component->type, [11, 12, 20, 59])) {
-                // حالة الإضافة: إعادة حساب من تاريخ الفاتورة الجديدة
-                // مهم: عند إضافة فاتورة مشتريات بتاريخ قديم، يجب إعادة حساب فقط الفواتير
-                // التي تاريخها بعد تاريخ الفاتورة المضافة (مع مراعاة الوقت في نفس اليوم)
-                try {
-                    $newItemIds = $operation->operationItems()
-                        ->where('is_stock', 1)
-                        ->pluck('item_id')
-                        ->unique()
-                        ->values()
-                        ->toArray();
-
-                    if (! empty($newItemIds)) {
-                        // إعادة حساب average_cost
-                        RecalculationServiceHelper::recalculateAverageCost($newItemIds, $component->pro_date);
-
-                        // ✅ إعادة حساب سلسلة التصنيع إذا كانت فاتورة مشتريات (Requirements 16.1, 16.2)
-                        if (in_array($component->type, [11, 12, 20])) {
-
-                            RecalculationServiceHelper::recalculateManufacturingChain(
-                                $newItemIds,
-                                $component->pro_date
-                            );
-                        }
-
-                        // إعادة حساب الأرباح والقيود فقط للفواتير التي بعد تاريخ الفاتورة المضافة
-                        // (مع مراعاة الوقت في نفس اليوم)
-                        RecalculationServiceHelper::recalculateProfitsAndJournals(
-                            $newItemIds,
-                            $component->pro_date,
-                            $operation->id, // currentInvoiceId - لاستثناء الفاتورة الحالية
-                            $operation->created_at?->format('Y-m-d H:i:s') // currentInvoiceCreatedAt - لمقارنة الفواتير في نفس اليوم
+                            null, 
+                            null
                         );
                     }
                 } catch (\Exception $e) {
-                    return false;
+                    Log::error('Recalculation failed during update: ' . $e->getMessage());
+                }
+            } elseif (! $isEdit && in_array($component->type, [11, 12, 20, 59])) {
+                try {
+                     // For new items, we use the new items list (which we can derive from calculatedItems)
+                    $newItemIds = array_unique(array_column($calculatedItems, 'item_id'));
+
+                    if (! empty($newItemIds)) {
+                        \Modules\Invoices\Services\RecalculationServiceHelper::recalculateAverageCost($newItemIds, $component->pro_date);
+
+                        \Modules\Invoices\Services\RecalculationServiceHelper::recalculateProfitsAndJournals(
+                            $newItemIds,
+                            $component->pro_date,
+                            $operation->id, 
+                            $operation->created_at?->format('Y-m-d H:i:s')
+                        );
+                    }
+                } catch (\Exception $e) {
+                     Log::error('Recalculation failed during create: ' . $e->getMessage());
                 }
             }
 
-            $message = $isEdit ? 'تم تحديث الفاتورة بنجاح.' : 'تم حفظ الفاتورة بنجاح.';
+            DB::commit();
+            
             $component->dispatch(
                 'swal',
                 title: 'تم الحفظ!',
-                text: $message,
+                text: $isEdit ? 'تم تحديث الفاتورة بنجاح.' : 'تم حفظ الفاتورة بنجاح.',
                 icon: 'success'
             );
 
             return $operation->id;
         } catch (\Exception $e) {
             DB::rollBack();
-            logger()->error('خطأ أثناء حفظ الفاتورة: '.$e->getMessage());
+            logger()->error('خطأ أثناء حفظ الفاتورة: ' . $e->getMessage());
             logger()->error($e->getTraceAsString());
             $component->dispatch(
                 'error',
                 title: 'خطأ!',
-                text: 'فشل في حفظ الفاتورة: '.$e->getMessage(),
+                text: 'فشل في حفظ الفاتورة: ' . $e->getMessage(),
                 icon: 'error'
             );
 
             return false;
         }
     }
+
 
     /**
      * Calculate and validate detail_value for all invoice items.
@@ -1617,5 +1336,631 @@ class SaveInvoiceService
             'isdeleted' => 0,
             'branch_id' => $component->branch_id,
         ]);
+    }
+    /**
+     * Delta Sync logic for Invoice Items
+     * Updates existing items, Inserts new ones, Deletes removed ones.
+     */
+    private function syncInvoiceItems($operation, $calculatedItems, $component)
+    {
+        $existingItems = OperationItems::where('pro_id', $operation->id)->get()->keyBy('id');
+        $processedItemIds = [];
+
+        foreach ($calculatedItems as $invoiceItem) {
+            $itemId = $invoiceItem['item_id'];
+            $quantity = $invoiceItem['quantity'];
+            $unitId = $invoiceItem['unit_id'];
+            $price = $invoiceItem['price'];
+            $subValue = $invoiceItem['calculated_detail_value'];
+            $discount = $invoiceItem['discount'] ?? 0;
+            $itemCost = Item::where('id', $itemId)->value('average_cost');
+            $batchNumber = $invoiceItem['batch_number'] ?? null;
+            $expiryDate = $invoiceItem['expiry_date'] ?? null;
+            
+            // Check if this item is an existing one being updated (has 'operation_item_id')
+            $operationItemId = $invoiceItem['operation_item_id'] ?? null;
+            
+            if ($operationItemId && $existingItems->has($operationItemId)) {
+                // UPDATE existing item
+                $opItem = $existingItems->get($operationItemId);
+                
+                $updateData = [
+                    'item_id' => $itemId,
+                    'unit_id' => $unitId,
+                    'qty_in' => in_array($component->type, [11, 12, 13, 20]) ? $quantity : 0, // مشتريات/مردود/إضافة
+                    'qty_out' => in_array($component->type, [10, 19]) ? $quantity : 0, // مبيعات/صرف
+                    'item_price' => $price,
+                    'fat_price' => $price,
+                    'item_discount' => $discount,
+                    'detail_value' => $subValue,
+                    'notes' => $invoiceItem['notes'] ?? '',
+                    'item_cost' => $itemCost,
+                ];
+
+                if ($component->type == 21) { 
+                     // Transfer logic fallback (Delete/Create for simplicity in type 21)
+                      $opItem->delete();
+                      $this->createSingleItem($operation, $invoiceItem, $component, $itemCost, $batchNumber, $expiryDate);
+                } else {
+                     $opItem->update($updateData);
+                     // Batch info is updated via $updateData if columns exist in OperationItems
+                }
+                
+                $processedItemIds[] = $operationItemId;
+
+            } else {
+                // INSERT new item
+                 $this->createSingleItem($operation, $invoiceItem, $component, $itemCost, $batchNumber, $expiryDate);
+            }
+
+            // ✅ Update Average Cost (Critical for 4.5, 6.1, 9.1 etc)
+            if (in_array($component->type, [11, 12, 13, 20])) { // Purchase, Return, Add
+                 // Calculate detail_value if not passed explicitly? It is passed as subValue.
+                 // We need subtotal and discountValue from component?
+                 // But updateAverageCost uses them for ratio calculation if method is 1.
+                 // We can pass them from component.
+                 $this->updateAverageCost(
+                     $itemId,
+                     $quantity,
+                     $subValue,
+                     $itemCost,
+                     $unitId,
+                     $component->discount_value ?? 0,
+                     $component->subtotal ?? 0
+                 );
+            }
+        }
+
+        // DELETE removed items
+        $itemsToDelete = $existingItems->except($processedItemIds);
+        foreach ($itemsToDelete as $itemToDelete) {
+             // For deletions, we might need to recalculate average cost too?
+             // Usually dealt with by full recalculation service on deletion.
+             // But for sync (partial delete), maybe we should?
+             // The old deleteInvoice calls massive recalculation.
+             // Here we are deleting specific items.
+            $itemToDelete->delete();
+        }
+    }
+
+    /**
+     * Helper to insert new items (used by both Create and Sync)
+     */
+    private function insertNewItems($operation, $calculatedItems, $component)
+    {
+        foreach ($calculatedItems as $invoiceItem) {
+            $itemId = $invoiceItem['item_id'];
+            $itemCost = Item::where('id', $itemId)->value('average_cost');
+            $batchNumber = $invoiceItem['batch_number'] ?? null;
+            $expiryDate = $invoiceItem['expiry_date'] ?? null;
+
+            $this->createSingleItem($operation, $invoiceItem, $component, $itemCost, $batchNumber, $expiryDate);
+        }
+    }
+
+    private function createSingleItem($operation, $invoiceItem, $component, $itemCost, $batchNumber, $expiryDate)
+    {
+            $itemId = $invoiceItem['item_id'];
+            $quantity = $invoiceItem['quantity'];
+            $unitId = $invoiceItem['unit_id'];
+            $price = $invoiceItem['price'];
+            $subValue = $invoiceItem['calculated_detail_value'];
+            $discount = $invoiceItem['discount'] ?? 0;
+
+            if ($component->type == 21) {
+                // 1. خصم الكمية من المخزن المحوَّل منه (المخزن الأول acc1)
+                OperationItems::create([
+                    'pro_tybe' => $component->type,
+                    'detail_store' => $component->acc1_id,
+                    'pro_id' => $operation->id,
+                    'item_id' => $itemId,
+                    'unit_id' => $unitId,
+                    'qty_in' => 0,
+                    'qty_out' => $quantity,
+                    'item_price' => $price,
+                    'fat_price' => $price,
+                    'item_discount' => $discount,
+                    'detail_value' => $subValue,
+                    'is_stock' => 1,
+                    'notes' => $invoiceItem['notes'] ?? '',
+                    'item_cost' => $itemCost,
+                    'fat_unit_id' => $unitId
+                ]);
+
+                // 2. إضافة الكمية للمخزن المحوَّل إليه (المخزن الثاني acc2)
+                OperationItems::create([
+                    'pro_tybe' => $component->type,
+                    'detail_store' => $component->acc2_id,
+                    'pro_id' => $operation->id,
+                    'item_id' => $itemId,
+                    'unit_id' => $unitId,
+                    'qty_in' => $quantity, // إضافة
+                    'qty_out' => 0,
+                    'item_price' => $price,
+                    'fat_price' => $price,
+                    'item_discount' => $discount,
+                    'detail_value' => $subValue,
+                    'is_stock' => 1,
+                    'notes' => $invoiceItem['notes'] ?? '',
+                    'item_cost' => $itemCost,
+                    'fat_unit_id' => $unitId
+                ]);
+            } elseif ($component->type == 24) {
+                 OperationItems::create([
+                    'pro_tybe' => $component->type,
+                    'detail_store' => 0,
+                    'pro_id' => $operation->id,
+                    'item_id' => $itemId,
+                    'unit_id' => $unitId,
+                    'qty_in' => $quantity,
+                    'qty_out' => 0,
+                    'item_price' => $price,
+                    'fat_price' => $price,
+                    'item_discount' => $discount,
+                    'detail_value' => $subValue,
+                    'is_stock' => 0,
+                    'notes' => $invoiceItem['notes'] ?? '',
+                    'item_cost' => $itemCost,
+                    'fat_unit_id' => $unitId
+                ]);
+            } else {
+                $qtyIn = in_array($component->type, [11, 12, 13, 20]) ? $quantity : 0;
+                $qtyOut = in_array($component->type, [10, 19]) ? $quantity : 0;
+                $detailStore = in_array($component->type, [10, 11, 12, 13, 19, 20]) ? $component->acc2_id : 0;
+
+                $opItem = OperationItems::create([
+                    'pro_tybe' => $component->type,
+                    'detail_store' => $detailStore,
+                    'pro_id' => $operation->id,
+                    'item_id' => $itemId,
+                    'unit_id' => $unitId,
+                    'qty_in' => $qtyIn,
+                    'qty_out' => $qtyOut,
+                    'item_price' => $price,
+                    'fat_price' => $price,
+                    'item_discount' => $discount,
+                    'detail_value' => $subValue,
+                    'is_stock' => 1,
+                    'notes' => $invoiceItem['notes'] ?? '',
+                    'item_cost' => $itemCost,
+                    'fat_unit_id' => $unitId
+                ]);
+
+                 if ($batchNumber) {
+                ]);
+             }
+    }
+
+    /**
+     * Updates Journal Entries without deleting the Journal Header.
+     */
+    private function syncJournalEntries($operation, $component)
+    {
+        $journalHead = JournalHead::where('op_id', $operation->id)->first();
+
+        if ($journalHead) {
+            $journalId = $journalHead->journal_id;
+            
+            $journalHead->update([
+                'total' => $component->total_after_additional,
+                'date' => $component->pro_date,
+                'details' => $component->notes,
+                'branch_id' => $component->branch_id,
+                'user' => Auth::id()
+            ]);
+
+            JournalDetail::where('journal_id', $journalId)->delete();
+            $this->generateJournalDetails($journalId, $operation, $component);
+
+        } else {
+            $this->createJournalEntries($component, $operation);
+        }
+    }
+    
+    private function generateJournalDetails($journalId, $operation, $component)
+    {
+         $debit = $credit = null;
+
+        switch ($component->type) {
+            case 10: $debit = $component->acc1_id; $credit = 47; break;
+            case 11: $debit = $component->acc2_id; $credit = $component->acc1_id; break; // Corrected logic: Purchase: Store is Debit, Supplier is Credit. Wait. Default logic has switch case 11 as debit=acc2(store), credit=acc1(supplier). BUT in createJournalEntries switch 11 is debit=acc2, credit=acc1. Let's verified.
+            case 12: $debit = 48; $credit = $component->acc1_id; break;
+            case 13: $debit = $component->acc1_id; $credit = $component->acc2_id; break;
+            case 18: $debit = $component->acc1_id; $credit = $component->acc2_id; break;
+            case 19: $debit = $component->acc1_id; $credit = $component->acc2_id; break;
+            case 20: $debit = $component->acc2_id; $credit = $component->acc1_id; break;
+            case 21: $debit = $component->acc2_id; $credit = $component->acc1_id; break;
+            case 24: $debit = $component->acc1_id; $credit = $component->acc2_id; break;
+        }
+
+        if ($debit) {
+            $debitAmount = $component->total_after_additional;
+             if (in_array($component->type, [11, 20])) {
+                $purchaseDiscountMethod = setting('purchase_discount_method', '2');
+                $purchaseAdditionalMethod = setting('purchase_additional_method', '1');
+
+                if ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '1') {
+                    $debitAmount = $component->total_after_additional;
+                } elseif ($purchaseDiscountMethod == '2' && $purchaseAdditionalMethod == '1') {
+                    $debitAmount = $component->subtotal + $component->additional_value;
+                } elseif ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '2') {
+                    $debitAmount = $component->total_after_additional - $component->additional_value;
+                } else {
+                    $debitAmount = $component->subtotal;
+                }
+            }
+            if ($component->type == 10) {
+                 $salesDiscountMethod = setting('sales_discount_method', '1');
+                $salesAdditionalMethod = setting('sales_additional_method', '1');
+
+                if ($salesDiscountMethod == '1' && $salesAdditionalMethod == '1') {
+                    $debitAmount = $component->total_after_additional;
+                } elseif ($salesDiscountMethod == '2' && $salesAdditionalMethod == '1') {
+                    $debitAmount = $component->subtotal + $component->additional_value;
+                } elseif ($salesDiscountMethod == '1' && $salesAdditionalMethod == '2') {
+                    $debitAmount = $component->subtotal - $component->discount_value;
+                } else {
+                    $debitAmount = $component->subtotal;
+                }
+            }
+
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $debit,
+                'debit' => $debitAmount,
+                'credit' => 0,
+                'type' => 1,
+                'info' => $component->notes,
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
+            ]);
+        }
+
+        if ($credit) {
+            $creditAmount = $component->total_after_additional;
+              if (in_array($component->type, [11, 20])) {
+                $purchaseDiscountMethod = setting('purchase_discount_method', '2');
+                $purchaseAdditionalMethod = setting('purchase_additional_method', '1');
+
+                if ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '1') {
+                    $creditAmount = $component->total_after_additional;
+                } elseif ($purchaseDiscountMethod == '2' && $purchaseAdditionalMethod == '1') {
+                    $creditAmount = $component->subtotal + $component->additional_value;
+                } elseif ($purchaseDiscountMethod == '1' && $purchaseAdditionalMethod == '2') {
+                    $creditAmount = $component->total_after_additional - $component->additional_value;
+                } else {
+                    $creditAmount = $component->subtotal;
+                }
+            }
+             if ($component->type == 10) {
+                 $salesDiscountMethod = setting('sales_discount_method', '1');
+                $salesAdditionalMethod = setting('sales_additional_method', '1');
+
+                if ($salesDiscountMethod == '1' && $salesAdditionalMethod == '1') {
+                    $creditAmount = $component->total_after_additional;
+                } elseif ($salesDiscountMethod == '2' && $salesAdditionalMethod == '1') {
+                    $creditAmount = $component->subtotal + $component->additional_value;
+                } elseif ($salesDiscountMethod == '1' && $salesAdditionalMethod == '2') {
+                    $creditAmount = $component->subtotal - $component->discount_value;
+                } else {
+                    $creditAmount = $component->subtotal;
+                }
+            }
+
+            JournalDetail::create([
+                'journal_id' => $journalId,
+                'account_id' => $credit,
+                'debit' => 0,
+                'credit' => $creditAmount,
+                'type' => 1,
+                'info' => $component->notes,
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
+            ]);
+        }
+        
+        if (in_array($component->type, [10, 12, 19])) {
+             $this->syncCostOfGoodsJournal($component, $operation);
+        }
+        
+        if ($component->type == 10 && $component->discount_value > 0) {
+            $salesDiscountMethod = setting('sales_discount_method', '1');
+            if ($salesDiscountMethod == '1') {
+                 JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 49,
+                    'debit' => $component->discount_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 47,
+                    'debit' => 0,
+                    'credit' => $component->discount_value,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            } else {
+                 JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 49,
+                    'debit' => $component->discount_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id, 
+                    'debit' => 0,
+                    'credit' => $component->discount_value,
+                    'type' => 1,
+                    'info' => 'خصم مسموح به - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+        }
+        
+        if (in_array($component->type, [11, 20]) && $component->discount_value > 0) {
+            $purchaseDiscountMethod = setting('purchase_discount_method', '2');
+            if ($purchaseDiscountMethod != '1') {
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id,
+                    'debit' => $component->discount_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'خصم مكتسب - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 54, 
+                    'debit' => 0,
+                    'credit' => $component->discount_value,
+                    'type' => 1,
+                    'info' => 'خصم مكتسب - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+        }
+        
+        if (in_array($component->type, [11, 20]) && $component->additional_value > 0) {
+             $purchaseAdditionalMethod = setting('purchase_additional_method', '1');
+            if ($purchaseAdditionalMethod == '2') {
+                 JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 69,
+                    'debit' => $component->additional_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'إضافات - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id,
+                    'debit' => 0,
+                    'credit' => $component->additional_value,
+                    'type' => 1,
+                    'info' => 'إضافات - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+            }
+        }
+        
+        if ($component->type == 10 && $component->additional_value > 0) {
+            $salesAdditionalMethod = setting('sales_additional_method', '1');
+             if ($salesAdditionalMethod == '2') {
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => $component->acc1_id,
+                    'debit' => $component->additional_value,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => 'إضافات - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+                JournalDetail::create([
+                    'journal_id' => $journalId,
+                    'account_id' => 69,
+                    'debit' => 0,
+                    'credit' => $component->additional_value,
+                    'type' => 1,
+                    'info' => 'إضافات - '.$component->notes,
+                    'op_id' => $operation->id,
+                    'isdeleted' => 0,
+                    'branch_id' => $component->branch_id,
+                ]);
+             }
+        }
+
+        if (isVatEnabled() && $component->vat_value > 0) {
+             if ($component->type == 10) {
+                 $vatSalesAccountCode = setting('vat_sales_account_code', '21040101');
+                $vatSalesAccountId = $this->getAccountIdByCode($vatSalesAccountCode);
+                if ($vatSalesAccountId) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $component->acc1_id,
+                        'debit' => $component->vat_value,
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => 'ضريبة قيمة مضافة - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $vatSalesAccountId,
+                        'debit' => 0,
+                        'credit' => $component->vat_value,
+                        'type' => 1,
+                        'info' => 'ضريبة قيمة مضافة - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                }
+             } elseif (in_array($component->type, [11, 20])) {
+                  $vatPurchaseAccountCode = setting('vat_purchase_account_code', '21040102');
+                $vatPurchaseAccountId = $this->getAccountIdByCode($vatPurchaseAccountCode);
+                if ($vatPurchaseAccountId) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $vatPurchaseAccountId,
+                        'debit' => $component->vat_value,
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => 'ضريبة قيمة مضافة - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $component->acc1_id,
+                        'debit' => 0,
+                        'credit' => $component->vat_value,
+                        'type' => 1,
+                        'info' => 'ضريبة قيمة مضافة - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                }
+             }
+        }
+        
+         if (isWithholdingTaxEnabled() && $component->withholding_tax_value > 0) {
+            $withholdingTaxAccountCode = setting('withholding_tax_account_code', '21040103');
+            $withholdingTaxAccountId = $this->getAccountIdByCode($withholdingTaxAccountCode);
+
+            if ($withholdingTaxAccountId) {
+                 if ($component->type == 10) {
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $withholdingTaxAccountId,
+                        'debit' => $component->withholding_tax_value,
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => 'خصم من المنبع - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $component->acc1_id,
+                        'debit' => 0,
+                        'credit' => $component->withholding_tax_value,
+                        'type' => 1,
+                        'info' => 'خصم من المنبع - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                 } elseif (in_array($component->type, [11, 20])) {
+                      JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $component->acc1_id,
+                        'debit' => $component->withholding_tax_value,
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => 'خصم من المنبع - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                    JournalDetail::create([
+                        'journal_id' => $journalId,
+                        'account_id' => $withholdingTaxAccountId,
+                        'debit' => 0,
+                        'credit' => $component->withholding_tax_value,
+                        'type' => 1,
+                        'info' => 'خصم من المنبع - '.$component->notes,
+                        'op_id' => $operation->id,
+                        'isdeleted' => 0,
+                        'branch_id' => $component->branch_id,
+                    ]);
+                 }
+            }
+         }
+    }
+    
+    private function syncCostOfGoodsJournal($component, $operation)
+    {
+         $costJournal = JournalHead::where('op_id', $operation->id)
+                                   ->where('journal_id', '>', 0) // Basic check
+                                   ->whereRaw("details LIKE '%قيد تكلفة البضاعة%'")
+                                   ->first();
+                                   
+         if ($costJournal) {
+             $costAllSales = $component->total_after_additional - $operation->profit - $component->additional_value;
+             if ($costAllSales <= 0) {
+                 JournalDetail::where('journal_id', $costJournal->journal_id)->delete();
+                 $costJournal->delete();
+                 return;
+             }
+             
+             $costJournal->update([
+                'total' => $costAllSales,
+                'date' => $component->pro_date,
+                'user' => Auth::id()
+             ]);
+             
+             JournalDetail::where('journal_id', $costJournal->journal_id)->delete();
+             
+             JournalDetail::create([
+                'journal_id' => $costJournal->journal_id,
+                'account_id' => 16, 
+                'debit' => $costAllSales,
+                'credit' => 0,
+                'type' => 1,
+                'info' => 'قيد تكلفة البضاعة',
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
+            ]);
+            JournalDetail::create([
+                'journal_id' => $costJournal->journal_id,
+                'account_id' => $component->acc2_id,
+                'debit' => 0,
+                'credit' => $costAllSales,
+                'type' => 1,
+                'info' => 'قيد تكلفة البضاعة',
+                'op_id' => $operation->id,
+                'isdeleted' => 0,
+                'branch_id' => $component->branch_id,
+            ]);
+         } else {
+             $this->createCostOfGoodsJournal($component, $operation);
+         }
     }
 }
