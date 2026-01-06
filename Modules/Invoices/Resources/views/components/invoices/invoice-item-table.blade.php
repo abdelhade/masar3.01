@@ -106,7 +106,7 @@
                                         <td style="width: 10%; font-size: 1.2em;">
                                             <input type="number" step="0.001" min="0"
                                                 id="quantity-{{ $index }}"
-                                                x-model.number="items[{{ $index }}].quantity"
+                                                x-model.number="invoiceItems[{{ $index }}].quantity"
                                                 data-field="quantity" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
@@ -284,7 +284,7 @@
                                     @if ($this->shouldShowColumn('price'))
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" id="price-{{ $index }}"
-                                                x-model.number="items[{{ $index }}].price"
+                                                x-model.number="invoiceItems[{{ $index }}].price"
                                                 data-field="price" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
@@ -303,7 +303,7 @@
                                         @endphp
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" id="discount-{{ $index }}"
-                                                x-model.number="items[{{ $index }}].discount"
+                                                x-model.number="invoiceItems[{{ $index }}].discount"
                                                 data-field="discount" data-row="{{ $index }}"
                                                 @focus="$event.target.select()"
                                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
@@ -323,7 +323,7 @@
                                         <td style="width: 15%; font-size: 1.2em;">
                                             <input type="number" step="0.01" min="0"
                                                 id="sub_value-{{ $index }}"
-                                                x-model.number="items[{{ $index }}].sub_value"
+                                                x-model.number="invoiceItems[{{ $index }}].sub_value"
                                                 data-field="sub_value"
                                                 data-row="{{ $index }}"
                                                 @focus="$event.target.select()"

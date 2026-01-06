@@ -654,7 +654,6 @@
             enableDimensionsCalculation: initialData.enableDimensionsCalculation || false,
             invoiceType: initialData.invoiceType || 10,
             isCashAccount: initialData.isCashAccount || false,
-            items: initialData.items || [],
             editableFieldsOrder: initialData.editableFieldsOrder || ['unit', 'quantity', 'batch_number', 'expiry_date', 'length', 'width', 'height', 'density', 'price', 'discount', 'sub_value'],
             currentBalance: parseFloat(initialData.currentBalance) || 0,
             calculatedBalanceAfter: parseFloat(initialData.currentBalance) || 0,
@@ -669,7 +668,6 @@
             remaining: 0,
             
             // Internal flags (for logic control)
-            isInitialized: false,
             _discountValueFromPercentage: false,
             _additionalValueFromPercentage: false,
             _vatValueFromPercentage: false,
@@ -706,44 +704,35 @@
                 this.setupBalanceWatchers();
 
                 // ✅ مراقبة جميع المدخلات المؤثرة على الحسابات (Reactive Engine)
-                this.$watch('items', () => {
-                   if (!this.isInitialized) return;
+                this.$watch('invoiceItems', () => {
                    this.calculateTotalsFromData();
                 }, { deep: true });
                 
                 this.$watch('discountPercentage', () => {
-                    if (!this.isInitialized) return;
                     this._discountValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('discountValue', () => {
-                    if (!this.isInitialized) return;
                     if (!this._discountValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('additionalPercentage', () => {
-                    if (!this.isInitialized) return;
                     this._additionalValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('additionalValue', () => {
-                   if (!this.isInitialized) return;
                    if (!this._additionalValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('vatPercentage', () => {
-                    if (!this.isInitialized) return;
                     this._vatValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('vatValue', () => {
-                    if (!this.isInitialized) return;
                     if (!this._vatValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('receivedFromClient', () => {
-                    if (!this.isInitialized) return;
                     this.calculateFinalTotals();
                 });
                 this.$watch('isCashAccount', () => {
-                    if (!this.isInitialized) return;
                     this.calculateFinalTotals();
                 });
 
@@ -776,11 +765,6 @@
                 
                 // حساب أولي
                 this.calculateTotalsFromData();
-                
-                // Mark as initialized
-                this.$nextTick(() => {
-                    this.isInitialized = true;
-                });
                 
                 // ✅ إعداد التنقل بالأسهم
                 this.setupTableNavigation();
@@ -891,7 +875,7 @@
              */
             calculateTotalsFromData() {
                 let tempSubtotal = 0;
-                const items = this.items || [];
+                const items = this.invoiceItems || [];
                 
                 // حساب مجموع الصفوف
                 items.forEach(item => {

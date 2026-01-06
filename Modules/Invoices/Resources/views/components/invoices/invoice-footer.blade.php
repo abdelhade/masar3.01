@@ -427,8 +427,10 @@
                     @endif {{-- إضافة المدفوع من العميل لا ينطبق على التحويلات --}}
                     <div class="col-3 text-left">
                         @if (View::getSection('formAction') === 'edit')
-                            <button type="submit" class="btn btn-lg btn-main" wire:loading.attr="disabled">
-                                <i class="fas fa-save"></i> {{ __('Update Invoice') }}
+                            <button type="submit" class="btn btn-lg btn-main" wire:loading.attr="disabled" wire:target="updateForm">
+                                <span wire:loading wire:target="updateForm" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span wire:loading.remove wire:target="updateForm"><i class="fas fa-save"></i> {{ __('Update Invoice') }}</span>
+                                <span wire:loading wire:target="updateForm">{{ __('Updating...') }}</span>
                             </button>
                         @else
                             @canany(['create ' . $titles[$type], 'create invoices'])

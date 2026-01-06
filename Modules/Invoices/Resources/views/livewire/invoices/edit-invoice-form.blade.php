@@ -29,7 +29,6 @@
                         enableDimensionsCalculation: @js($enableDimensionsCalculation ?? false),
                         invoiceType: @js($type ?? 10),
                         isCashAccount: @entangle('isCurrentAccountCash'),
-                        items: @entangle('invoiceItems'),
                         acc1Id: @entangle('acc1_id'),
                         editableFieldsOrder: @js($this->getEditableFieldsOrder()),
                         currentBalance: @js($currentBalance ?? 0),

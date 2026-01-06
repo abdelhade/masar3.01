@@ -1750,33 +1750,33 @@ class CreateInvoiceForm extends Component
 
     public function calculateTotals()
     {
-        $validSubValues = collect($this->invoiceItems)->pluck('sub_value')->map(function ($value) {
-            return is_numeric($value) ? (float) $value : 0;
-        });
-
-        $this->subtotal = $validSubValues->sum();
-
-        $discountPercentage = (float) ($this->discount_percentage ?? 0);
-        $additionalPercentage = (float) ($this->additional_percentage ?? 0);
-
-        $this->discount_value = round(($this->subtotal * $discountPercentage) / 100, 2);
-        $this->additional_value = round(($this->subtotal * $additionalPercentage) / 100, 2);
-
-        // Calculate base total after discount and additional
-        $baseTotal = round($this->subtotal - $this->discount_value + $this->additional_value, 2);
-
-        // Calculate VAT and Withholding Tax if enabled
-        if (isVatEnabled() || isWithholdingTaxEnabled()) {
-            $this->vat_value = round(($baseTotal * $this->vat_percentage) / 100, 2);
-            $this->withholding_tax_value = round(($baseTotal * $this->withholding_tax_percentage) / 100, 2);
-
-            // Final total = base + VAT - withholding tax
-            $this->total_after_additional = round($baseTotal + $this->vat_value - $this->withholding_tax_value, 2);
-        } else {
-            $this->vat_value = 0;
-            $this->withholding_tax_value = 0;
-            $this->total_after_additional = $baseTotal;
+        // ✅ الحساب النهائي يتم في Alpine.js - هنا نقوم فقط بمطابقة القيم المرسلة
+        // لضمان عدم حدوث تضارب أثناء الـ Validation في SaveInvoiceService
+        
+        $this->subtotal = collect($this->invoiceItems)->sum('sub_value');
+        
+        // حساب القيم بناءً على النسب المئوية فقط إذا كانت القيم المرسلة صفرية
+        // وإلا نحافظ على القيم المرسلة كما هي (لدعم القيم الثابتة)
+        if ($this->subtotal > 0) {
+            if ($this->discount_value == 0 && ($this->discount_percentage ?? 0) > 0) {
+                $this->discount_value = round(($this->subtotal * $this->discount_percentage) / 100, 2);
+            }
+            if ($this->additional_value == 0 && ($this->additional_percentage ?? 0) > 0) {
+                $this->additional_value = round(($this->subtotal * $this->additional_percentage) / 100, 2);
+            }
+            
+            // حساب الضريبة والخصم الضريبي
+            if (($this->vat_value ?? 0) == 0 && ($this->vat_percentage ?? 0) > 0) {
+                 $this->vat_value = round((($this->subtotal - $this->discount_value + $this->additional_value) * $this->vat_percentage) / 100, 2);
+            }
+            if (($this->withholding_tax_value ?? 0) == 0 && ($this->withholding_tax_percentage ?? 0) > 0) {
+                 $this->withholding_tax_value = round((($this->subtotal - $this->discount_value + $this->additional_value) * $this->withholding_tax_percentage) / 100, 2);
+            }
         }
+
+        // الإجمالي النهائي
+        $calculatedTotal = $this->subtotal - $this->discount_value + $this->additional_value + ($this->vat_value ?? 0) - ($this->withholding_tax_value ?? 0);
+        $this->total_after_additional = round($calculatedTotal, 2);
 
         $this->checkCashAccount($this->acc1_id);
 
@@ -1951,24 +1951,20 @@ class CreateInvoiceForm extends Component
             $this->received_from_client = (float) $alpineData['received_from_client'];
         }
 
-        // مزامنة بيانات الأصناف إذا تم إرسالها
+        // مزامنة بيانات الأصناف
         if (isset($alpineData['invoiceItems']) && is_array($alpineData['invoiceItems'])) {
+            $newItems = [];
             foreach ($alpineData['invoiceItems'] as $index => $item) {
-                if (isset($this->invoiceItems[$index])) {
-                    if (isset($item['sub_value'])) {
-                        $this->invoiceItems[$index]['sub_value'] = (float) $item['sub_value'];
-                    }
-                    if (isset($item['quantity'])) {
-                        $this->invoiceItems[$index]['quantity'] = (float) $item['quantity'];
-                    }
-                    if (isset($item['price'])) {
-                        $this->invoiceItems[$index]['price'] = (float) $item['price'];
-                    }
-                    if (isset($item['discount'])) {
-                        $this->invoiceItems[$index]['discount'] = (float) $item['discount'];
-                    }
-                }
+                $existingItem = $this->invoiceItems[$index] ?? [];
+                
+                $newItems[$index] = array_merge($existingItem, [
+                    'quantity' => (float) ($item['quantity'] ?? $existingItem['quantity'] ?? 0),
+                    'price' => (float) ($item['price'] ?? $existingItem['price'] ?? 0),
+                    'discount' => (float) ($item['discount'] ?? $existingItem['discount'] ?? 0),
+                    'sub_value' => (float) ($item['sub_value'] ?? $existingItem['sub_value'] ?? 0),
+                ]);
             }
+            $this->invoiceItems = $newItems;
         }
     }
 
