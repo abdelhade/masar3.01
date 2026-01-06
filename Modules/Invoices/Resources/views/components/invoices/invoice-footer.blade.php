@@ -227,7 +227,8 @@
                         <div class="col-3">
                             <div class="input-group">
                                 <input type="number" step="0.01" x-model.number="discountPercentage"
-                                    @input="if (discountPercentage !== null && discountPercentage !== undefined) { discountPercentage = parseFloat(parseFloat(discountPercentage || 0).toFixed(2)); } updateDiscountFromPercentage()"
+                                    onclick="this.select()"
+                                    @input="updateDiscountFromPercentage()"
                                     id="discount-percentage" class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                     max="100" :disabled="!fieldStates.discount.invoice"
@@ -247,6 +248,7 @@
 
                         <div class="col-3">
                             <input type="number" step="0.01" x-model.number="discountValue"
+                                onclick="this.select()"
                                 @input="updateDiscountFromValue()" @focus="$event.target.select()"
                                 class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
@@ -268,7 +270,8 @@
                         <div class="col-3">
                             <div class="input-group">
                                 <input type="number" step="0.01" x-model.number="additionalPercentage"
-                                    @input="if (additionalPercentage !== null && additionalPercentage !== undefined) { additionalPercentage = parseFloat(parseFloat(additionalPercentage || 0).toFixed(2)); } updateAdditionalFromPercentage()"
+                                    onclick="this.select()"
+                                    @input="updateAdditionalFromPercentage()"
                                     id="additional-percentage" class="form-control form-control-sm"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
                                     max="100" :disabled="!fieldStates.additional.invoice"
@@ -288,6 +291,7 @@
 
                         <div class="col-3">
                             <input type="number" step="0.01" x-model.number="additionalValue"
+                                onclick="this.select()"
                                 @input="updateAdditionalFromValue()" @focus="$event.target.select()"
                                 class="form-control form-control-sm"
                                 style="font-size: 0.95em; height: 2em; padding: 2px 6px;" min="0"
@@ -308,6 +312,7 @@
                             <div class="col-3">
                                 <div class="input-group">
                                     <input type="number" step="0.01" x-model.number="vatPercentage" readonly
+                                        onclick="this.select()"
                                         class="form-control form-control-sm bg-light"
                                         style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
                                         title="النسبة من الإعدادات" :disabled="!fieldStates.vat.invoice">
@@ -326,7 +331,8 @@
 
                             <div class="col-3">
                                 <input type="number" step="0.01" x-model.number="vatValue" readonly
-                                    class="form-control form-control-sm bg-light"
+                                        onclick="this.select()"
+                                        class="form-control form-control-sm bg-light"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;" id="vat-value"
                                     title="تُحسب تلقائياً" :disabled="!fieldStates.vat.invoice">
                             </div>
@@ -342,6 +348,7 @@
                             <div class="col-3">
                                 <div class="input-group">
                                     <input type="number" step="0.01" x-model.number="withholdingTaxPercentage"
+                                        onclick="this.select()"
                                         readonly class="form-control form-control-sm bg-light"
                                         style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
                                         title="النسبة من الإعدادات" :disabled="!fieldStates.withholding_tax.invoice">
@@ -360,6 +367,7 @@
 
                             <div class="col-3">
                                 <input type="number" step="0.01" x-model.number="withholdingTaxValue" readonly
+                                    onclick="this.select()"
                                     class="form-control form-control-sm bg-light"
                                     style="font-size: 0.95em; height: 2em; padding: 2px 6px;"
                                     id="withholding-tax-value" title="تُحسب تلقائياً"

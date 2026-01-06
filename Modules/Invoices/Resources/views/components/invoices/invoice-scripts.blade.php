@@ -673,6 +673,7 @@
             _vatValueFromPercentage: false,
             _calculateDebounceTimer: null,
             _updateDisplaysDebounceTimer: null,
+            isInternalUpdate: false, // ✅ Lock to prevent watchers from firing on internal updates
 
             init() {
                 console.log('🚀 invoiceCalculations init start:', {
@@ -709,27 +710,34 @@
                 }, { deep: true });
                 
                 this.$watch('discountPercentage', () => {
+                    if (this.isInternalUpdate) return;
                     this._discountValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('discountValue', () => {
+                    if (this.isInternalUpdate) return;
                     if (!this._discountValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('additionalPercentage', () => {
+                    if (this.isInternalUpdate) return;
                     this._additionalValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('additionalValue', () => {
+                    if (this.isInternalUpdate) return;
                    if (!this._additionalValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('vatPercentage', () => {
+                    if (this.isInternalUpdate) return;
                     this._vatValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('vatValue', () => {
+                    if (this.isInternalUpdate) return;
                     if (!this._vatValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('receivedFromClient', () => {
+                    if (this.isInternalUpdate) return;
                     this.calculateFinalTotals();
                 });
                 this.$watch('isCashAccount', () => {
@@ -910,7 +918,10 @@
                 if (this._discountValueFromPercentage) {
                     this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100).toFixed(2));
                 } else if (this.subtotal > 0) {
+                    // We are updating FROM Value, so calculate Percentage. 
+                    this.isInternalUpdate = true;
                     this.discountPercentage = parseFloat(((this.discountValue / this.subtotal) * 100).toFixed(2));
+                    this.isInternalUpdate = false;
                 }
 
                 const afterDiscount = parseFloat((this.subtotal - this.discountValue).toFixed(2));
@@ -919,7 +930,10 @@
                 if (this._additionalValueFromPercentage) {
                     this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100).toFixed(2));
                 } else if (afterDiscount > 0) {
+                    // We are updating FROM Value, so calculate Percentage.
+                    this.isInternalUpdate = true;
                     this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
+                    this.isInternalUpdate = false;
                 }
                 
                 if (this.additionalValue > 0) {
@@ -930,12 +944,17 @@
 
                 // 3. حساب ضريبة القيمة المضافة (VAT) - readonly من الإعدادات
                 if (this.vatPercentage !== undefined && this.vatValue !== undefined) {
-                    this.vatValue = parseFloat(((afterAdditional * this.vatPercentage) / 100).toFixed(2));
+                    if (this._vatValueFromPercentage) {
+                         this.vatValue = parseFloat(((afterAdditional * this.vatPercentage) / 100).toFixed(2));
+                    } else if (afterAdditional > 0) {
+                         // Similar logic if VAT value was editable (it's readonly usually but just in case)
+                         // this.vatPercentage = ...
+                    }
                 }
 
                 // 4. حساب خصم المنبع - readonly من الإعدادات
                 if (this.withholdingTaxPercentage !== undefined && this.withholdingTaxValue !== undefined) {
-                    this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) / 100).toFixed(2));
+                     this.withholdingTaxValue = parseFloat(((afterAdditional * this.withholdingTaxPercentage) / 100).toFixed(2));
                 }
                 
                 // 5. الإجمالي النهائي (بعد الضريبة وخصم المنبع)

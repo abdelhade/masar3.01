@@ -1369,10 +1369,15 @@ class SaveInvoiceService
                     'unit_id' => $unitId,
                     'qty_in' => in_array($component->type, [11, 12, 13, 20]) ? $quantity : 0, // مشتريات/مردود/إضافة
                     'qty_out' => in_array($component->type, [10, 19]) ? $quantity : 0, // مبيعات/صرف
+                    'fat_quantity' => $quantity, // ✅ FIX: Ensure display quantity is updated
                     'item_price' => $price,
                     'fat_price' => $price,
                     'item_discount' => $discount,
-                    'detail_value' => $subValue,
+                    'detail_value' => ($price * $quantity) 
+                                    - $discount 
+                                    + ($invoiceItem['additional'] ?? 0) 
+                                    + ($invoiceItem['item_vat_value'] ?? 0) 
+                                    - ($invoiceItem['item_withholding_tax_value'] ?? 0), 
                     'notes' => $invoiceItem['notes'] ?? '',
                     'item_cost' => $itemCost,
                 ];
@@ -1519,14 +1524,15 @@ class SaveInvoiceService
                     'item_price' => $price,
                     'fat_price' => $price,
                     'item_discount' => $discount,
-                    'detail_value' => $subValue,
+                    'detail_value' => ($price * $quantity) 
+                                    - $discount 
+                                    + ($invoiceItem['additional'] ?? 0) 
+                                    + ($invoiceItem['item_vat_value'] ?? 0) 
+                                    - ($invoiceItem['item_withholding_tax_value'] ?? 0), 
                     'is_stock' => 1,
                     'notes' => $invoiceItem['notes'] ?? '',
                     'item_cost' => $itemCost,
                     'fat_unit_id' => $unitId
-                ]);
-
-                 if ($batchNumber) {
                 ]);
              }
     }
