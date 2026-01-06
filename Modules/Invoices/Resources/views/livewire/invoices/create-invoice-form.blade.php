@@ -19,6 +19,8 @@
                 vatValue: @entangle('vat_value'),
                 withholdingTaxPercentage: @entangle('withholding_tax_percentage'),
                 withholdingTaxValue: @entangle('withholding_tax_value'),
+                subtotal: @entangle('subtotal'),
+                totalAfterAdditional: @entangle('total_after_additional'),
                 defaultVatPercentage: @js(setting('default_vat_percentage', 0)),
                 defaultWithholdingTaxPercentage: @js(setting('default_withholding_tax_percentage', 0)),
                 dimensionsUnit: @js($dimensionsUnit ?? 'cm'),

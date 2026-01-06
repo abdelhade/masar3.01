@@ -664,13 +664,6 @@ class EditInvoiceForm extends Component
 
     public function updatedAcc1Id($value)
     {
-        // ✅ إعادة تعيين القيم عند تغيير الحساب
-        $this->discount_percentage = 0;
-        $this->discount_value = 0;
-        $this->additional_percentage = 0;
-        $this->additional_value = 0;
-        $this->received_from_client = 0;
-
         // ✅ تحديث العملة من الحساب المختار
         if ($value && isMultiCurrencyEnabled()) {
             $this->updateCurrencyFromAccount($value);
@@ -682,8 +675,8 @@ class EditInvoiceForm extends Component
         // ✅ إعادة حساب الإجماليات
         $this->calculateTotals();
 
-        // ✅ إرسال حدث للـ Alpine.js لتصفير القيم فوراً في الواجهة
-        $this->dispatch('reset-invoice-parameters');
+        // ✅ إرسال حدث للـ Alpine.js لتصفير القيم فوراً في الواجهة - تم التعطيل في وضع التعديل للحفاظ على البيانات
+        // $this->dispatch('reset-invoice-parameters');
 
         if ($this->showBalance) {
             $this->currentBalance = $this->getAccountBalance($value);

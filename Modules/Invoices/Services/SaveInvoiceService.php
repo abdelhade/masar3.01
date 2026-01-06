@@ -47,6 +47,7 @@ class SaveInvoiceService
      */
     public function saveInvoice(object $component, bool $isEdit = false): int|false
     {
+        
         if (empty($component->invoiceItems)) {
             $component->dispatch('error', title: 'خطا!', text: 'لا يمكن حفظ الفاتورة بدون أصناف.', icon: 'error');
 
@@ -709,15 +710,22 @@ class SaveInvoiceService
     private function calculateItemDetailValues(array $items, array $invoiceData): array
     {
         try {
-            // Get discount level from settings (default: 'invoice_level' for backward compatibility)
-            $discountLevel = setting('discount_level', 'invoice_level');
-            $invoiceData['discount_mode'] = $discountLevel; // Keep 'discount_mode' key for calculator compatibility
+            // Get all level settings from global helpers/settings
+            $levels = [
+                'discount_level' => (string) setting('discount_level', 'invoice_level'),
+                'additional_level' => (string) setting('additional_level', 'invoice_level'),
+                'vat_level' => (string) getVatLevel(),
+                'withholding_tax_level' => (string) getWithholdingTaxLevel(),
+            ];
+
+            // Merge levels into invoice data for calculator/validator
+            $invoiceDataWithLevels = \array_merge($invoiceData, $levels);
 
             // Transform items to match calculator expected format
             // Map Livewire field names to calculator expected names
             $transformedItems = array_map(function ($item) {
                 return [
-                    'item_price' => $item['price'] ?? 0,  // Map 'price' to 'item_price'
+                    'item_price' => $item['price'] ?? 0,
                     'quantity' => $item['quantity'] ?? 0,
                     'item_discount' => $item['discount'] ?? 0,
                     'additional' => $item['additional'] ?? 0,
@@ -729,7 +737,7 @@ class SaveInvoiceService
             }, $items);
 
             // Calculate invoice subtotal from all items
-            $invoiceSubtotal = $this->detailValueCalculator->calculateInvoiceSubtotal($transformedItems, $discountLevel);
+            $invoiceSubtotal = $this->detailValueCalculator->calculateInvoiceSubtotal($transformedItems, $levels);
 
             Log::info('Calculating detail values for invoice items', [
                 'item_count' => count($items),
@@ -738,28 +746,28 @@ class SaveInvoiceService
                 'invoice_additional' => $invoiceData['fat_plus'] ?? 0,
                 'vat' => $invoiceData['vat_value'] ?? 0,
                 'withholding_tax' => $invoiceData['withholding_tax_value'] ?? 0,
-                'discount_level' => $discountLevel,
+                'levels' => $levels,
             ]);
 
-            // Calculate detail_value for each item
             $calculatedItems = [];
             foreach ($items as $index => $item) {
                 // Use the transformed item data for calculation
                 $itemData = $transformedItems[$index];
 
-                // Validate exclusive mode rules
-                $this->detailValueValidator->validateExclusiveMode($itemData, $invoiceData);
+                // 2. Validate levels and modes
+                $this->detailValueValidator->validateLevels($itemData, $invoiceDataWithLevels);
 
-                // Calculate detail_value with distributed invoice discounts/additions
+                // 3. Calculate detail_value and breakdown
                 $calculation = $this->detailValueCalculator->calculate(
                     $itemData,
-                    $invoiceData,
+                    $invoiceDataWithLevels,
                     $invoiceSubtotal
                 );
 
-                // Validate the calculated detail_value
+                // 4. Validate final detail_value (Enhanced Multi-Level Validation)
                 $this->detailValueValidator->validate(
                     $calculation['detail_value'],
+                    (float) ($item['sub_value'] ?? 0),
                     $itemData,
                     $calculation
                 );
@@ -776,19 +784,17 @@ class SaveInvoiceService
                     'item_index' => $index,
                     'original_sub_value' => $item['sub_value'] ?? null,
                     'calculated_detail_value' => $calculation['detail_value'],
-                    'distributed_discount' => $calculation['distributed_discount'] ?? 0,
-                    'distributed_additional' => $calculation['distributed_additional'] ?? 0,
-                    'distributed_vat' => $calculation['invoice_level_vat'] ?? 0,
-                    'distributed_withholding_tax' => $calculation['invoice_level_withholding_tax'] ?? 0,
-                    'discount_level' => $discountLevel,
                     'breakdown' => $calculation,
                 ]);
             }
 
             Log::info('All detail values calculated successfully', [
                 'total_items' => count($calculatedItems),
-                'discount_level' => $discountLevel,
+                'levels' => $levels,
             ]);
+
+            // Level 5: Final Cross-Verification of Invoice Totals
+            $this->detailValueValidator->validateInvoiceTotals($calculatedItems, $invoiceData, $invoiceSubtotal);
 
             return $calculatedItems;
 

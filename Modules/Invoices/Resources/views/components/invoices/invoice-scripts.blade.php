@@ -645,11 +645,11 @@
         // ========================================
         Alpine.data('invoiceCalculations', (initialData) => ({
             invoiceItems: initialData.invoiceItems || [],
-            discountPercentage: parseFloat(initialData.discountPercentage) || 0,
-            additionalPercentage: parseFloat(initialData.additionalPercentage) || 0,
-            vatPercentage: parseFloat(initialData.vatPercentage) || parseFloat(initialData.defaultVatPercentage) || 0,
-            withholdingTaxPercentage: parseFloat(initialData.withholdingTaxPercentage) || parseFloat(initialData.defaultWithholdingTaxPercentage) || 0,
-            receivedFromClient: parseFloat(initialData.receivedFromClient) || 0,
+            discountPercentage: initialData.discountPercentage,
+            additionalPercentage: initialData.additionalPercentage,
+            vatPercentage: initialData.vatPercentage !== undefined ? initialData.vatPercentage : initialData.defaultVatPercentage,
+            withholdingTaxPercentage: initialData.withholdingTaxPercentage !== undefined ? initialData.withholdingTaxPercentage : initialData.defaultWithholdingTaxPercentage,
+            receivedFromClient: initialData.receivedFromClient,
             dimensionsUnit: initialData.dimensionsUnit || 'cm',
             enableDimensionsCalculation: initialData.enableDimensionsCalculation || false,
             invoiceType: initialData.invoiceType || 10,
@@ -659,27 +659,29 @@
             currentBalance: parseFloat(initialData.currentBalance) || 0,
             calculatedBalanceAfter: parseFloat(initialData.currentBalance) || 0,
             
-            // Calculated values
-            subtotal: 0,
-            discountValue: 0,
-            additionalValue: 0,
-            vatValue: 0,
-            withholdingTaxValue: 0,
-            totalAfterAdditional: 0,
+            // Calculated values (Initialized from initial data for edit mode support)
+            subtotal: initialData.subtotal !== undefined ? initialData.subtotal : 0,
+            discountValue: initialData.discountValue,
+            additionalValue: initialData.additionalValue,
+            vatValue: initialData.vatValue,
+            withholdingTaxValue: initialData.withholdingTaxValue,
+            totalAfterAdditional: initialData.totalAfterAdditional !== undefined ? initialData.totalAfterAdditional : 0,
             remaining: 0,
             
-            // Internal flags
-            _discountValueFromPercentage: true,
-            _additionalValueFromPercentage: true,
-            _vatValueFromPercentage: true,
+            // Internal flags (for logic control)
+            isInitialized: false,
+            _discountValueFromPercentage: false,
+            _additionalValueFromPercentage: false,
+            _vatValueFromPercentage: false,
             _calculateDebounceTimer: null,
             _updateDisplaysDebounceTimer: null,
 
             init() {
-                console.log('invoiceCalculations init', {
-                    isCashAccount: this.isCashAccount,
-                    totalAfterAdditional: this.totalAfterAdditional,
-                    receivedFromClient: this.receivedFromClient
+                console.log('🚀 invoiceCalculations init start:', {
+                    discountValue: this.discountValue,
+                    additionalValue: this.additionalValue,
+                    additionalPercentage: this.additionalPercentage,
+                    subtotal: this.subtotal
                 });
                 
                 // حفظ reference في window
@@ -704,40 +706,51 @@
                 this.setupBalanceWatchers();
 
                 // ✅ مراقبة جميع المدخلات المؤثرة على الحسابات (Reactive Engine)
-                this.$watch('items', () => this.calculateTotalsFromData(), { deep: true });
+                this.$watch('items', () => {
+                   if (!this.isInitialized) return;
+                   this.calculateTotalsFromData();
+                }, { deep: true });
+                
                 this.$watch('discountPercentage', () => {
+                    if (!this.isInitialized) return;
                     this._discountValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('discountValue', () => {
+                    if (!this.isInitialized) return;
                     if (!this._discountValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('additionalPercentage', () => {
+                    if (!this.isInitialized) return;
                     this._additionalValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('additionalValue', () => {
+                   if (!this.isInitialized) return;
                    if (!this._additionalValueFromPercentage) this.calculateFinalTotals();
                 });
                 this.$watch('vatPercentage', () => {
+                    if (!this.isInitialized) return;
                     this._vatValueFromPercentage = true;
                     this.calculateFinalTotals();
                 });
                 this.$watch('vatValue', () => {
+                    if (!this.isInitialized) return;
                     if (!this._vatValueFromPercentage) this.calculateFinalTotals();
                 });
-                this.$watch('receivedFromClient', () => this.calculateFinalTotals());
-                this.$watch('isCashAccount', () => this.calculateFinalTotals());
+                this.$watch('receivedFromClient', () => {
+                    if (!this.isInitialized) return;
+                    this.calculateFinalTotals();
+                });
+                this.$watch('isCashAccount', () => {
+                    if (!this.isInitialized) return;
+                    this.calculateFinalTotals();
+                });
 
-                // ✅ مراقبة تغيير العميل لتصفير الخصومات والمبالغ المدفوعة
+                // ✅ مراقبة تغيير العميل لتحديث الحسابات (بدون تصفير القيم المكتوبة يدوياً)
                 this.$watch('acc1Id', (newVal) => {
                     if (newVal) {
                         console.log('🔄 Account Changed:', newVal);
-                        this.discountPercentage = 0;
-                        this.discountValue = 0;
-                        this.additionalPercentage = 0;
-                        this.additionalValue = 0;
-                        this.receivedFromClient = 0;
                         
                         // ✅ ننتظر قليلاً للتأكد من أن حالة isCashAccount قد زامنت من Livewire
                         setTimeout(() => {
@@ -763,6 +776,11 @@
                 
                 // حساب أولي
                 this.calculateTotalsFromData();
+                
+                // Mark as initialized
+                this.$nextTick(() => {
+                    this.isInitialized = true;
+                });
                 
                 // ✅ إعداد التنقل بالأسهم
                 this.setupTableNavigation();
@@ -899,6 +917,11 @@
              * يضمن تزامن الخصم، الإضافي، المدفوع، والمتبقي
              */
             calculateFinalTotals() {
+                if (!this.subtotal && this.isInitialized) {
+                     // Only log if subtotal is missing after init
+                     console.log('⚠️ calculateFinalTotals: subtotal is 0');
+                }
+
                 // 1. حساب قيمة الخصم
                 if (this._discountValueFromPercentage) {
                     this.discountValue = parseFloat(((this.subtotal * this.discountPercentage) / 100).toFixed(2));
@@ -913,6 +936,10 @@
                     this.additionalValue = parseFloat(((afterDiscount * this.additionalPercentage) / 100).toFixed(2));
                 } else if (afterDiscount > 0) {
                     this.additionalPercentage = parseFloat(((this.additionalValue / afterDiscount) * 100).toFixed(2));
+                }
+                
+                if (this.additionalValue > 0) {
+                    console.log('✅ additionalValue confirmed:', this.additionalValue, 'per:', this.additionalPercentage);
                 }
                 
                 const afterAdditional = parseFloat((afterDiscount + this.additionalValue).toFixed(2));

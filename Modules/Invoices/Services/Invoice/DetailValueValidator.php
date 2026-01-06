@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Invoices\Services\Invoice;
 
 use InvalidArgumentException;
+use Modules\Invoices\Services\Invoice\DetailValueCalculator;
 
 /**
  * DetailValueValidator Service
@@ -32,98 +33,84 @@ class DetailValueValidator
     private const MAX_MULTIPLIER = 10.0;
 
     /**
-     * Validate exclusive mode rules for discounts, additional charges, and taxes.
+     * Validate levels for discounts, additional charges, and taxes.
      *
-     * Ensures that discounts/additional/taxes are applied at either item level OR invoice level, not both.
+     * Ensures that fields align with their configured level (item_level, invoice_level, both, disabled).
      *
      * @param array $itemData Item data containing discount/additional/tax fields
-     * @param array $invoiceData Invoice data containing discount/additional/tax fields and discount_mode
+     * @param array $invoiceData Invoice data containing discount/additional/tax fields and level settings
      *
-     * @throws InvalidArgumentException if exclusive mode rules are violated
+     * @throws InvalidArgumentException if level rules are violated
      */
-    public function validateExclusiveMode(array $itemData, array $invoiceData): void
+    public function validateLevels(array $itemData, array $invoiceData): void
     {
-        $discountMode = $invoiceData['discount_mode'] ?? 'invoice_level';
+        $discountLevel = $invoiceData['discount_level'] ?? 'invoice_level';
+        $additionalLevel = $invoiceData['additional_level'] ?? 'invoice_level';
+        $vatLevel = $invoiceData['vat_level'] ?? 'invoice_level';
+        $withholdingTaxLevel = $invoiceData['withholding_tax_level'] ?? 'invoice_level';
 
-        $itemDiscount = (float) ($itemData['item_discount'] ?? 0);
-        $itemAdditional = (float) ($itemData['additional'] ?? 0);
-        $itemVatPercentage = (float) ($itemData['item_vat_percentage'] ?? 0);
-        $itemVatValue = (float) ($itemData['item_vat_value'] ?? 0);
-        $itemWithholdingTaxPercentage = (float) ($itemData['item_withholding_tax_percentage'] ?? 0);
-        $itemWithholdingTaxValue = (float) ($itemData['item_withholding_tax_value'] ?? 0);
+        // 1. Validate Discounts
+        $this->validateComponentLevel(
+            'الخصم',
+            $discountLevel,
+            (float) ($itemData['item_discount'] ?? 0),
+            (float) ($invoiceData['fat_disc'] ?? 0) + (float) ($invoiceData['fat_disc_per'] ?? 0)
+        );
 
-        $invoiceDiscount = (float) ($invoiceData['fat_disc'] ?? 0);
-        $invoiceDiscountPer = (float) ($invoiceData['fat_disc_per'] ?? 0);
-        $invoiceAdditional = (float) ($invoiceData['fat_plus'] ?? 0);
-        $invoiceAdditionalPer = (float) ($invoiceData['fat_plus_per'] ?? 0);
-        $invoiceVatPercentage = (float) ($invoiceData['vat_percentage'] ?? 0);
-        $invoiceVatValue = (float) ($invoiceData['vat_value'] ?? 0);
-        $invoiceWithholdingTaxPercentage = (float) ($invoiceData['withholding_tax_percentage'] ?? 0);
-        $invoiceWithholdingTaxValue = (float) ($invoiceData['withholding_tax_value'] ?? 0);
+        // 2. Validate Additional Charges
+        $this->validateComponentLevel(
+            'الإضافي',
+            $additionalLevel,
+            (float) ($itemData['additional'] ?? 0),
+            (float) ($invoiceData['fat_plus'] ?? 0) + (float) ($invoiceData['fat_plus_per'] ?? 0)
+        );
 
-        if ($discountMode === 'item_level') {
-            // In item_level mode: Invoice-level discount/additional/taxes must be zero
-            if ($invoiceDiscount > 0 || $invoiceDiscountPer > 0 || $invoiceAdditional > 0 || $invoiceAdditionalPer > 0) {
-                throw new InvalidArgumentException(
-                    'في وضع الخصومات على مستوى الصنف، يجب أن تكون خصومات/إضافات الفاتورة صفر. ' .
-                    \sprintf(
-                        'القيم الحالية: خصم الفاتورة=%.2f، نسبة خصم الفاتورة=%.2f، إضافي الفاتورة=%.2f، نسبة إضافي الفاتورة=%.2f',
-                        $invoiceDiscount,
-                        $invoiceDiscountPer,
-                        $invoiceAdditional,
-                        $invoiceAdditionalPer
-                    )
-                );
-            }
+        // 3. Validate VAT
+        $this->validateComponentLevel(
+            'ضريبة القيمة المضافة',
+            $vatLevel,
+            (float) ($itemData['item_vat_percentage'] ?? 0) + (float) ($itemData['item_vat_value'] ?? 0),
+            (float) ($invoiceData['vat_percentage'] ?? 0) + (float) ($invoiceData['vat_value'] ?? 0)
+        );
 
-            // In item_level mode: Invoice-level taxes must be zero
-            if ($invoiceVatPercentage > 0 || $invoiceVatValue > 0 || $invoiceWithholdingTaxPercentage > 0 || $invoiceWithholdingTaxValue > 0) {
-                throw new InvalidArgumentException(
-                    'في وضع الخصومات على مستوى الصنف، يجب أن تكون ضرائب الفاتورة صفر. ' .
-                    \sprintf(
-                        'القيم الحالية: نسبة ضريبة القيمة المضافة=%.2f، قيمة ضريبة القيمة المضافة=%.2f، نسبة الخصم الضريبي=%.2f، قيمة الخصم الضريبي=%.2f',
-                        $invoiceVatPercentage,
-                        $invoiceVatValue,
-                        $invoiceWithholdingTaxPercentage,
-                        $invoiceWithholdingTaxValue
-                    )
-                );
-            }
-        } elseif ($discountMode === 'invoice_level') {
-            // In invoice_level mode: Item-level discount/additional/taxes must be zero
-            if ($itemDiscount > 0 || $itemAdditional > 0) {
-                throw new InvalidArgumentException(
-                    'في وضع الخصومات على مستوى الفاتورة، يجب أن تكون خصومات/إضافات الصنف صفر. ' .
-                    \sprintf(
-                        'القيم الحالية: خصم الصنف=%.2f، إضافي الصنف=%.2f',
-                        $itemDiscount,
-                        $itemAdditional
-                    )
-                );
-            }
+        // 4. Validate Withholding Tax
+        $this->validateComponentLevel(
+            'الخصم الضريبي',
+            $withholdingTaxLevel,
+            (float) ($itemData['item_withholding_tax_percentage'] ?? 0) + (float) ($itemData['item_withholding_tax_value'] ?? 0),
+            (float) ($invoiceData['withholding_tax_percentage'] ?? 0) + (float) ($invoiceData['withholding_tax_value'] ?? 0)
+        );
+    }
 
-            // In invoice_level mode: Item-level taxes must be zero
-            if ($itemVatPercentage > 0 || $itemVatValue > 0 || $itemWithholdingTaxPercentage > 0 || $itemWithholdingTaxValue > 0) {
-                throw new InvalidArgumentException(
-                    'في وضع الخصومات على مستوى الفاتورة، يجب أن تكون ضرائب الصنف صفر. ' .
-                    \sprintf(
-                        'القيم الحالية: نسبة ضريبة القيمة المضافة=%.2f، قيمة ضريبة القيمة المضافة=%.2f، نسبة الخصم الضريبي=%.2f، قيمة الخصم الضريبي=%.2f',
-                        $itemVatPercentage,
-                        $itemVatValue,
-                        $itemWithholdingTaxPercentage,
-                        $itemWithholdingTaxValue
-                    )
-                );
-            }
-        } else {
-            throw new InvalidArgumentException(
-                \sprintf(
-                    'وضع الخصومات غير صحيح: %s. القيم المسموحة: item_level أو invoice_level',
-                    $discountMode
-                )
-            );
+    /**
+     * Helper to validate a specific component (discount, additional, etc) against its level setting.
+     */
+    private function validateComponentLevel(string $label, string $level, float $itemValue, float $invoiceValue): void
+    {
+        switch ($level) {
+            case 'disabled':
+                if ($itemValue > 0 || $invoiceValue > 0) {
+                    throw new InvalidArgumentException("إعداد {$label} معطل، ولكن تم إرسال قيم. (صنف: {$itemValue}، فاتورة: {$invoiceValue})");
+                }
+                break;
+            case 'item_level':
+                if ($invoiceValue > 0) {
+                    throw new InvalidArgumentException("إعداد {$label} على مستوى الصنف فقط، ولكن تم إرسال قيمة على مستوى الفاتورة ({$invoiceValue}).");
+                }
+                break;
+            case 'invoice_level':
+                if ($itemValue > 0) {
+                    throw new InvalidArgumentException("إعداد {$label} على مستوى الفاتورة فقط، ولكن تم إرسال قيمة على مستوى الصنف ({$itemValue}).");
+                }
+                break;
+            case 'both':
+                // Both are allowed
+                break;
+            default:
+                throw new InvalidArgumentException("مستوى غير صحيح للإعداد {$label}: {$level}");
         }
     }
+
 
     /**
      * Validate calculated detail_value.
@@ -132,63 +119,69 @@ class DetailValueValidator
      * 1. Non-negativity: detail_value must be >= 0
      * 2. Reasonableness: detail_value must be within reasonable bounds
      * 3. Calculation accuracy: detail_value must match the formula
+     /**
+     * Validate calculated detail_value.
      *
-     * @param  float  $detailValue  Calculated detail value to validate
-     * @param  array  $itemData  Original item data containing:
-     *                           - item_price: float - Unit price
-     *                           - quantity: float - Quantity
-     *                           - item_discount: float - Item-level discount (optional)
-     *                           - additional: float - Item-level additional (optional)
-     * @param  array  $calculation  Calculation breakdown containing:
-     *                              - item_subtotal: float - Item value before invoice adjustments
-     *                              - distributed_discount: float - Invoice discount for this item
-     *                              - distributed_additional: float - Invoice additional for this item
+     * Performs a two-fold validation:
+     * 1. Base Integrity: Ensures frontend sub_value matches (Price * Qty - ItemDiscount + ItemAdditional).
+     * 2. Distribution Accuracy: Ensures calculated detail_value matches internal formula within tolerance.
      *
-     * @throws InvalidArgumentException if validation fails with descriptive error message
+     * @param  float  $calculatedDetailValue  The value calculated by Backend
+     * @param  float  $frontendSubValue  The sub_value provided by the UI
+     * @param  array  $itemData  Original item data
+     * @param  array  $calculation  Calculation breakdown
+     *
+     * @throws InvalidArgumentException if validation fails
      */
-    public function validate(float $detailValue, array $itemData, array $calculation): void
+    public function validate(float $calculatedDetailValue, float $frontendSubValue, array $itemData, array $calculation): void
     {
-        // Validation 1: Non-negativity check
-        if ($detailValue < 0) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'Detail value cannot be negative. Got: %.2f',
-                    $detailValue
-                )
-            );
+        // 1. Validation: Non-negativity
+        if ($calculatedDetailValue < 0) {
+            throw new InvalidArgumentException(sprintf('قيمة الصنف لا يمكن أن تكون سالبة. (%.2f)', $calculatedDetailValue));
         }
 
-        // Extract item data for validation
+        // 2. Validation: Base Integrity (Price * Qty vs Frontend SubValue)
+        // We verify that the row subtotal BEFORE global distribution matches the inputs.
         $itemPrice = (float) ($itemData['item_price'] ?? 0);
         $quantity = (float) ($itemData['quantity'] ?? 0);
+        $itemDiscount = (float) ($itemData['item_discount'] ?? 0);
+        $itemAdditional = (float) ($itemData['additional'] ?? 0);
+        $itemVatValue = (float) ($itemData['item_vat_value'] ?? 0);
+        $itemWithholdingTaxValue = (float) ($itemData['item_withholding_tax_value'] ?? 0);
 
-        // Validation 2: Reasonableness check
-        if (! $this->isReasonable($detailValue, $itemPrice, $quantity)) {
-            $maxReasonable = $itemPrice * $quantity * self::MAX_MULTIPLIER;
+        // Formula: (Price * Qty) - Discount + Additional + VAT - WithholdingTax
+        $expectedBase = ($itemPrice * $quantity) - $itemDiscount + $itemAdditional + $itemVatValue - $itemWithholdingTaxValue;
+
+        if (abs($expectedBase - $frontendSubValue) > self::TOLERANCE) {
             throw new InvalidArgumentException(
                 sprintf(
-                    'Detail value %.2f is unreasonable. Item price: %.2f, Quantity: %.2f, Max reasonable: %.2f',
-                    $detailValue,
+                    'تعارض في بيانات الصنف الأساسية. المتوقع لأساس الصنف: %.2f، المستلم من الواجهة: %.2f. (سعر: %.2f، كمية: %.2f، خصم: %.2f، إضافي: %.2f، ضريبة: %.2f، خصم منبع: %.2f)',
+                    $expectedBase,
+                    $frontendSubValue,
                     $itemPrice,
                     $quantity,
-                    $maxReasonable
+                    $itemDiscount,
+                    $itemAdditional,
+                    $itemVatValue,
+                    $itemWithholdingTaxValue
                 )
             );
         }
 
-        // Validation 3: Calculation accuracy check
-        if (! $this->verifyCalculation($detailValue, $calculation)) {
+        // 3. Validation: Calculation Accuracy (Backend Self-Check)
+        if (!$this->verifyCalculation($calculatedDetailValue, $calculation)) {
             $expected = $this->calculateExpectedValue($calculation);
             throw new InvalidArgumentException(
                 sprintf(
-                    'Detail value calculation mismatch. Expected: %.2f, Got: %.2f, Difference: %.4f',
+                    'خطأ في حساب توزيع قيم الفاتورة. المتوقع: %.2f، المحسوب: %.2f. (فرق: %.4f)',
                     $expected,
-                    $detailValue,
-                    abs($expected - $detailValue)
+                    $calculatedDetailValue,
+                    abs($expected - $calculatedDetailValue)
                 )
             );
         }
     }
+
 
     /**
      * Check if detail_value is within reasonable bounds.
@@ -259,10 +252,85 @@ class DetailValueValidator
         $itemSubtotal = (float) ($calculation['item_subtotal'] ?? 0);
         $distributedDiscount = (float) ($calculation['distributed_discount'] ?? 0);
         $distributedAdditional = (float) ($calculation['distributed_additional'] ?? 0);
+        $invoiceLevelVat = (float) ($calculation['invoice_level_vat'] ?? 0);
+        $invoiceLevelWithholdingTax = (float) ($calculation['invoice_level_withholding_tax'] ?? 0);
 
-        $expected = $itemSubtotal - $distributedDiscount + $distributedAdditional;
+        $expected = $itemSubtotal - $distributedDiscount + $distributedAdditional + $invoiceLevelVat - $invoiceLevelWithholdingTax;
 
         // Ensure non-negative (same as calculator)
         return max(0, $expected);
+    }
+
+    /**
+     * Validate the sum of all detail values against the total invoice amount.
+     *
+     * @param array $calculatedItems Items with calculated_detail_value
+     * @param array $invoiceData Invoice-level data
+     * @throws InvalidArgumentException if totals mismatch
+     */
+    public function validateInvoiceTotals(array $calculatedItems, array $invoiceData, float $invoiceSubtotal): void
+    {
+        $sumDetailValues = array_sum(array_map(fn($item) => (float)($item['calculated_detail_value'] ?? 0), $calculatedItems));
+
+        $expectedTotal = $invoiceSubtotal;
+
+        // 1. Calculate Expected Invoice-Level Discount
+        $invoiceDiscount = 0;
+        $fatDisc = (float) ($invoiceData['fat_disc'] ?? 0);
+        $fatDiscPer = (float) ($invoiceData['fat_disc_per'] ?? 0);
+        if ($fatDisc > 0) {
+            $invoiceDiscount = $fatDisc;
+        } elseif ($fatDiscPer > 0) {
+            $invoiceDiscount = $invoiceSubtotal * ($fatDiscPer / 100);
+        }
+        $expectedTotal -= $invoiceDiscount;
+
+        // 2. Calculate Expected Invoice-Level Additional
+        $invoiceAdditional = 0;
+        $fatPlus = (float) ($invoiceData['fat_plus'] ?? 0);
+        $fatPlusPer = (float) ($invoiceData['fat_plus_per'] ?? 0);
+        if ($fatPlus > 0) {
+            $invoiceAdditional = $fatPlus;
+        } elseif ($fatPlusPer > 0) {
+            $invoiceAdditional = $invoiceSubtotal * ($fatPlusPer / 100);
+        }
+        $expectedTotal += $invoiceAdditional;
+
+        // 3. Calculate Expected Invoice-Level VAT
+        $invoiceVat = 0;
+        $vatValue = (float) ($invoiceData['vat_value'] ?? 0);
+        $vatPercentage = (float) ($invoiceData['vat_percentage'] ?? 0);
+        if ($vatValue > 0) {
+            $invoiceVat = $vatValue;
+        } elseif ($vatPercentage > 0) {
+            $invoiceVat = $expectedTotal * ($vatPercentage / 100);
+        }
+        $expectedTotal += $invoiceVat;
+
+        // 4. Calculate Expected Invoice-Level Withholding Tax
+        $invoiceTax = 0;
+        $taxValue = (float) ($invoiceData['withholding_tax_value'] ?? 0);
+        $taxPercentage = (float) ($invoiceData['withholding_tax_percentage'] ?? 0);
+        if ($taxValue > 0) {
+            $invoiceTax = $taxValue;
+        } elseif ($taxPercentage > 0) {
+            $invoiceTax = ($expectedTotal - $invoiceVat) * ($taxPercentage / 100);
+        }
+        $expectedTotal -= $invoiceTax;
+
+        if (abs($sumDetailValues - $expectedTotal) > self::TOLERANCE * count($calculatedItems)) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'خطأ في إجمالي الفاتورة النهائي. المتوقع: %.2f، مجموع الأصناف: %.2f. (فرعي: %.2f، خصم فاتورة: %.2f، إضافي فاتورة: %.2f، ضريبة فاتورة: %.2f، خصم منبع: %.2f)',
+                    $expectedTotal,
+                    $sumDetailValues,
+                    $invoiceSubtotal,
+                    $invoiceDiscount,
+                    $invoiceAdditional,
+                    $invoiceVat,
+                    $invoiceTax
+                )
+            );
+        }
     }
 }
