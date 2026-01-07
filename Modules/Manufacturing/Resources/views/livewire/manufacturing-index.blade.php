@@ -192,10 +192,12 @@
                                         @endcan
                                         @can('delete Manufacturing Invoices')
                                             <button wire:click="confirmDelete({{ $invoice->id }})"
+                                                wire:confirm="Are you sure you want to delete this invoice?"
                                                 class="btn btn-danger" title="{{ __('Delete') }}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         @endcan
+
                                     </div>
                                 </td>
                             </tr>

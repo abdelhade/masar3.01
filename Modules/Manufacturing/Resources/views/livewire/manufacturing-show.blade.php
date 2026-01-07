@@ -3,7 +3,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-light">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">
                             <i class="fas fa-file-invoice me-2"></i>
@@ -103,7 +103,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-light">
                     <h6 class="mb-0">
                         <i class="fas fa-box me-2"></i>
                         {{ __('Manufactured Products') }}
@@ -132,7 +132,8 @@
                                             <td class="text-end">{{ number_format($product['unit_cost'], 2) }}
                                                 {{ __('EGP') }}</td>
                                             <td class="text-center">
-                                                <span class="badge bg-info">{{ number_format($product['cost_percentage'], 2) }}%</span>
+                                                <span
+                                                    class="badge bg-info">{{ number_format($product['cost_percentage'], 2) }}%</span>
                                             </td>
                                             <td class="text-end">
                                                 <strong
@@ -146,7 +147,8 @@
                                     <tr>
                                         <td colspan="4" class="text-end"><strong>{{ __('Total') }}:</strong></td>
                                         <td class="text-center">
-                                            <strong class="badge bg-primary">{{ number_format(collect($products)->sum('cost_percentage'), 2) }}%</strong>
+                                            <strong
+                                                class="badge bg-primary">{{ number_format(collect($products)->sum('cost_percentage'), 2) }}%</strong>
                                         </td>
                                         <td class="text-end">
                                             <strong
@@ -172,7 +174,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-light">
                     <h6 class="mb-0">
                         <i class="fas fa-cubes me-2"></i>
                         {{ __('Raw Materials') }}
@@ -238,7 +240,7 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-warning text-white">
+                    <div class="card-header bg-light">
                         <h6 class="mb-0">
                             <i class="fas fa-money-bill-wave me-2"></i>
                             {{ __('Additional Expenses') }}
@@ -291,8 +293,8 @@
     <!-- ملخص التكاليف -->
     <div class="row mb-4">
         <div class="col-md-6 offset-md-6">
-            <div class="card shadow-lg border-primary">
-                <div class="card-header bg-primary text-white">
+            <div class="card shadow-lg">
+                <div class="card-header bg-light">
                     <h6 class="mb-0">
                         <i class="fas fa-calculator me-2"></i>
                         {{ __('Cost Summary') }}
@@ -322,13 +324,13 @@
                             </td>
                         </tr>
                         @if (count($expenses) > 0)
-                        <tr>
-                            <td class="text-muted"><strong>{{ __('Additional Expenses') }}:</strong></td>
-                            <td class="text-end">
-                                <strong class="text-warning">{{ number_format($totals['expenses'], 2) }}
-                                    {{ __('EGP') }}</strong>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="text-muted"><strong>{{ __('Additional Expenses') }}:</strong></td>
+                                <td class="text-end">
+                                    <strong class="text-warning">{{ number_format($totals['expenses'], 2) }}
+                                        {{ __('EGP') }}</strong>
+                                </td>
+                            </tr>
                         @endif
                         <tr class="border-top">
                             <td class="text-muted"><strong>{{ __('Total Manufacturing Cost') }}:</strong></td>
@@ -345,9 +347,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-muted"><strong>{{ __('Total Cost Percentage Distribution') }}:</strong></td>
+                            <td class="text-muted"><strong>{{ __('Total Cost Percentage Distribution') }}:</strong>
+                            </td>
                             <td class="text-end">
-                                <strong class="badge bg-primary fs-6">{{ number_format(collect($products)->sum('cost_percentage'), 2) }}%</strong>
+                                <strong
+                                    class="badge bg-primary fs-6">{{ number_format(collect($products)->sum('cost_percentage'), 2) }}%</strong>
                             </td>
                         </tr>
                         <tr class="border-top bg-light">
