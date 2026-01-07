@@ -629,11 +629,12 @@ class EditManufacturingInvoice extends Component
             'name' => $item->name,
             'quantity' => 1,
             'unit_id' => $firstUnit['id'] ?? null,
-            'unit_cost' => round($firstUnit['cost'] ?? 0, 2), // للمرجعية فقط
+            'unit_cost' => round($baseAverageCost, 2), // ✅ Use average cost as unit cost
             'available_quantity' => $firstUnit['available_qty'] ?? 0,
             'total_cost' => $initialTotalCost,
             'unitsList' => $unitsList,
             'average_cost' => round($baseAverageCost, 2), // ✅ متوسط التكلفة من Item (لا يتم تعديله)
+            'base_cost' => $baseAverageCost, // ✅ Sync base_cost for JS compatibility if needed
         ];
 
         $this->rawMaterialSearchTerm = '';
@@ -664,14 +665,18 @@ class EditManufacturingInvoice extends Component
 
         if ($field === 'unit_id') {
             $unitId = $value;
+            $item = Item::with('units')->find($this->selectedRawMaterials[$index]['item_id']);
             $unit = collect($this->selectedRawMaterials[$index]['unitsList'])
                 ->firstWhere('id', $unitId);
-            if ($unit) {
-                $unitCost = round($unit['cost'] ?? 0, 2);
-                $this->selectedRawMaterials[$index]['unit_cost'] = $unitCost;
-                $this->selectedRawMaterials[$index]['available_quantity'] = $unit['available_qty'] ?? 0;
-                // Update average_cost to match unit_cost for consistency
-                $this->selectedRawMaterials[$index]['average_cost'] = $unitCost;
+            if ($unit && $item) {
+                $uVal = $unit['available_qty'] ?? 1;
+                $currentAverageCost = round($item->average_cost * $uVal, 2);
+
+                $this->selectedRawMaterials[$index]['unit_cost'] = $currentAverageCost;
+                $this->selectedRawMaterials[$index]['available_quantity'] = $uVal;
+                // Update average_cost to match unit's average cost for consistency
+                $this->selectedRawMaterials[$index]['average_cost'] = $currentAverageCost;
+                $this->selectedRawMaterials[$index]['base_cost'] = $item->average_cost;
                 $this->updateRawMaterialTotal($index);
             }
         }
@@ -815,14 +820,18 @@ class EditManufacturingInvoice extends Component
             if ($item) {
                 // ✅ استخدام average_cost من Item مباشرة (لا يمكن تعديله)
                 $averageCost = $item->average_cost ?? 0;
-                $this->selectedRawMaterials[$index]['average_cost'] = round($averageCost, 2);
-                $this->selectedRawMaterials[$index]['total_cost'] = round($averageCost * $rawMaterial['quantity'], 2);
+                $unit = $item->units->where('id', $rawMaterial['unit_id'])->first();
+                $uVal = $unit ? ($unit->pivot->u_val ?? 1) : 1;
+                $unitAverageCost = round($averageCost * $uVal, 2);
+
+                $this->selectedRawMaterials[$index]['average_cost'] = $unitAverageCost;
+                $this->selectedRawMaterials[$index]['unit_cost'] = $unitAverageCost;
+                $this->selectedRawMaterials[$index]['base_cost'] = $averageCost;
+                $this->selectedRawMaterials[$index]['total_cost'] = round($unitAverageCost * $rawMaterial['quantity'], 2);
 
                 if ($rawMaterial['unit_id']) {
-                    $unit = $item->units->where('id', $rawMaterial['unit_id'])->first();
                     if ($unit) {
-                        $currentQuantity = $unit->pivot->u_val ?? 0;
-                        $this->selectedRawMaterials[$index]['available_quantity'] = $currentQuantity;
+                        $this->selectedRawMaterials[$index]['available_quantity'] = $uVal;
 
                         $updatedUnitsList = $item->units->map(function ($unit) {
                             return [

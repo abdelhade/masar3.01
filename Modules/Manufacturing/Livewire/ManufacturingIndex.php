@@ -4,10 +4,12 @@ namespace Modules\Manufacturing\Livewire;
 
 use App\Models\Expense;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use App\Models\{OperHead, AccHead};
 use Modules\Branches\Models\Branch;
+use Modules\Manufacturing\Services\ManufacturingInvoiceService;
 
 class ManufacturingIndex extends Component
 {
@@ -46,28 +48,22 @@ class ManufacturingIndex extends Component
         }
     }
 
-    public function deleteInvoice($invoiceId)
+    #[On('deleteInvoice')]
+    public function deleteInvoice($invoiceId, ManufacturingInvoiceService $service)
     {
         try {
-            DB::beginTransaction();
+            $success = $service->deleteManufacturingInvoice((int) $invoiceId);
 
-            $invoice = OperHead::findOrFail($invoiceId);
-            $invoice->operationItems()->delete();
-            Expense::where('op_id', $invoiceId)->delete();
-
-            if ($invoice->journalHead) {
-                $invoice->journalHead->dets()->delete();
-                $invoice->journalHead->delete();
+            if ($success) {
+                $this->dispatch('success-swal', [
+                    'title' => __('Deleted!'),
+                    'text' => __('Manufacturing invoice deleted successfully'),
+                    'icon' => 'success'
+                ]);
+            } else {
+                throw new \Exception('Failed to delete');
             }
-            $invoice->delete();
-            DB::commit();
-            $this->dispatch('success-swal', [
-                'title' => __('Deleted!'),
-                'text' => __('Manufacturing invoice deleted successfully'),
-                'icon' => 'success'
-            ]);
         } catch (\Exception $e) {
-            DB::rollBack();
             $this->dispatch('error-swal', [
                 'title' => __('Error!'),
                 'text' => __('An error occurred while deleting'),
@@ -86,7 +82,6 @@ class ManufacturingIndex extends Component
             'cancelButtonText' => __('Cancel'),
             'invoiceId' => $invoiceId
         ]);
-        $this->deleteInvoice($invoiceId);
     }
 
     public function render()

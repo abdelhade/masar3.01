@@ -272,7 +272,7 @@ class ManufacturingInvoiceService
                 $originalQty = $raw['quantity'];
                 $baseQty = $originalQty * $unitFactor;
 
-                $originalPrice = $raw['unit_cost'];
+                $originalPrice = $raw['average_cost'] ?? $raw['unit_cost'] ?? 0;
                 $basePrice = $unitFactor > 0 ? $originalPrice / $unitFactor : $originalPrice;
 
                 OperationItems::create([
@@ -670,6 +670,7 @@ class ManufacturingInvoiceService
             // 2. حذف البيانات القديمة
             OperationItems::where('pro_id', $operation->id)->delete();
             Expense::where('op_id', $operation->id)->delete();
+            JournalDetail::where('op_id', $operation->id)->delete();
             JournalHead::where('op_id', $operation->id)->delete();
 
             // 3. تحديث بيانات الفاتورة الرئيسية
@@ -754,7 +755,7 @@ class ManufacturingInvoiceService
                 $originalQty = $raw['quantity'];
                 $baseQty = $originalQty * $unitFactor;
 
-                $originalPrice = $raw['unit_cost'];
+                $originalPrice = $raw['average_cost'] ?? $raw['unit_cost'] ?? 0;
                 $basePrice = $unitFactor > 0 ? $originalPrice / $unitFactor : $originalPrice;
 
                 OperationItems::create([

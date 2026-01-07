@@ -383,7 +383,7 @@ class ManufacturingInvoice extends Component
             'name' => $item->name,
             'quantity' => 1,
             'unit_id' => $firstUnit['id'] ?? null,
-            'unit_cost' => round($firstUnit['cost'] ?? 0, 2), // للمرجعية فقط
+            'unit_cost' => round($averageCost, 2), // ✅ Use average cost as unit cost
             'available_quantity' => $firstUnit['available_qty'] ?? 0,
             'total_cost' => $initialTotalCost,
             'unitsList' => $unitsList,
@@ -846,16 +846,17 @@ class ManufacturingInvoice extends Component
             $item = $rawMaterialsMap[$rawMaterial['item_id']] ?? null;
             if ($item) {
                 $averageCost = $item->average_cost ?? 0;
-                $this->selectedRawMaterials[$index]['average_cost'] = $averageCost;
+                $this->selectedRawMaterials[$index]['average_cost'] = round($averageCost, 2);
+                $this->selectedRawMaterials[$index]['unit_cost'] = round($averageCost, 2); // ✅ Update unit_cost too
+                $this->selectedRawMaterials[$index]['base_cost'] = $averageCost; // ✅ Sync base_cost for JS
 
                 // ✅ استخدام متوسط التكلفة في الحساب
-                $this->selectedRawMaterials[$index]['total_cost'] = $averageCost * $rawMaterial['quantity'];
+                $this->selectedRawMaterials[$index]['total_cost'] = round($averageCost * $rawMaterial['quantity'], 2);
 
                 if ($rawMaterial['unit_id']) {
                     $unit = $item->units->where('id', $rawMaterial['unit_id'])->first();
                     if ($unit) {
-                        $currentQuantity = $unit->pivot->u_val ?? 0;
-                        $this->selectedRawMaterials[$index]['available_quantity'] = $currentQuantity;
+                        $this->selectedRawMaterials[$index]['available_quantity'] = $unit->pivot->u_val ?? 0;
 
                         // تحديث قائمة الوحدات
                         $updatedUnitsList = $item->units->map(function ($unit) {

@@ -416,7 +416,7 @@
                                                             -
                                                         @endif
                                                     @elseif($column === 'kon_priority')
-                                                        @if ($inquiry->kon_priority)
+                                                        @if ($inquiry->kon_priority && is_object($inquiry->kon_priority))
                                                             <span class="badge bg-{{ $inquiry->kon_priority->color() }}">
                                                                 {{ $inquiry->kon_priority->label() }}
                                                             </span>

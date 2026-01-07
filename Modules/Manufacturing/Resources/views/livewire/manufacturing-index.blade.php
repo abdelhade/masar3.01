@@ -196,6 +196,7 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         @endcan
+
                                     </div>
                                 </td>
                             </tr>
