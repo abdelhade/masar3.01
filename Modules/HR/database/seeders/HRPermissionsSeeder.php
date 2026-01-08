@@ -25,7 +25,6 @@ class HRPermissionsSeeder extends Seeder
                 'Towns',
                 'Shifts',
                 'Hr-Employees',
-                'Employees',
                 'KPIs',
                 'Employee Evaluations',
                 'Contracts',

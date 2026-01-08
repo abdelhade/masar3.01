@@ -105,7 +105,7 @@ use Modules\HR\Http\Controllers\TownController;
 // Employee Login Routes
 Route::get('/mobile/employee-login', function () {
     return view('hr::mobile.employee-login');
-})->name('mobile.employee-login');
+})->name('mobile.employee-login')->middleware(['auth', 'can:view Mobile-fingerprint']);
 
 // Employee Auth API Routes
 Route::post('/api/employee/login', [EmployeeAuthController::class, 'login'])->name('api.employee.login');

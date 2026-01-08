@@ -66,7 +66,7 @@
 @endcan
 
 {{-- قسم إدارة الموظفين --}}
-@can('view Employees')
+@can('view Hr-Employees')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('employees.index') }}">
             <i class="ti-control-record"></i>{{ __('navigation.employees') }}
