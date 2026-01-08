@@ -60,6 +60,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProgressDatabaseSeeder::class);
         $this->call(QualityDatabaseSeeder::class);
         $this->call(RecruitmentDatabaseSeeder::class);
+        $this->call(HRDatabaseSeeder::class);
         $this->call(RentalsDatabaseSeeder::class);
         $this->call(ReportDatabaseSeeder::class);
         // $this->call(ServicesDatabaseSeeder::class);
@@ -76,6 +77,6 @@ class DatabaseSeeder extends Seeder
             VaribalSeeder::class,
             GiveAllPermissionsToAdminSeeder::class,
         ]);
-        $this->call(HRDatabaseSeeder::class);
+        
     }
 }

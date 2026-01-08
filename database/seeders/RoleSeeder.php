@@ -104,7 +104,7 @@ class RoleSeeder extends Seeder
             'create contracts',
             'edit contracts',
             'view contract types',
-            'view kpis',
+            'view KPIs',
             'view employee evaluations',
             'create employee evaluations',
         ];

@@ -210,7 +210,7 @@ return [
     'hr_settings' => 'إعدادات الموارد البشرية',
     'view_hr_settings' => 'عرض إعدادات الموارد البشرية',
     'edit_hr_settings' => 'تعديل إعدادات الموارد البشرية',
-    'leave_types' => 'أنواع الإجازات',
+    'mobile_fingerprint_login' => 'تسجيل دخول بصمة الموبايل',
     'cvs' => 'السير الذاتية',
     'cv_management' => 'السير الذاتية',
     'covenants' => 'عهد عمل',

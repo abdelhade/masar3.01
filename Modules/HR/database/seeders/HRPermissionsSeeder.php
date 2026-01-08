@@ -25,6 +25,7 @@ class HRPermissionsSeeder extends Seeder
                 'Towns',
                 'Shifts',
                 'Hr-Employees',
+                'Employees',
                 'KPIs',
                 'Employee Evaluations',
                 'Contracts',
@@ -60,6 +61,7 @@ class HRPermissionsSeeder extends Seeder
                 'Employee Advance Rejections',
                 'Employee Deduction Rejections',
                 'Employee Reward Rejections',
+                'Mobile-fingerprint',
             ],
         ];
 
@@ -85,19 +87,19 @@ class HRPermissionsSeeder extends Seeder
         }
 
         // إصلاح الصلاحيات القديمة: KPIS -> KPIs
-        $oldKpisPermissions = Permission::where('name', 'like', '% KPIS')->get();
-        foreach ($oldKpisPermissions as $oldPerm) {
-            $newName = str_replace(' KPIS', ' KPIs', $oldPerm->name);
-            $existingPerm = Permission::where('name', $newName)->where('guard_name', 'web')->first();
+        // $oldKpisPermissions = Permission::where('name', 'like', '% KPIS')->get();
+        // foreach ($oldKpisPermissions as $oldPerm) {
+        //     $newName = str_replace(' KPIS', ' KPIs', $oldPerm->name);
+        //     $existingPerm = Permission::where('name', $newName)->where('guard_name', 'web')->first();
 
-            if ($existingPerm) {
-                // إذا كانت الصلاحية الجديدة موجودة، احذف القديمة
-                $oldPerm->delete();
-            } else {
-                // إذا لم تكن موجودة، حدث الاسم
-                $oldPerm->update(['name' => $newName, 'category' => 'HR']);
-            }
-        }
+        //     if ($existingPerm) {
+        //         // إذا كانت الصلاحية الجديدة موجودة، احذف القديمة
+        //         $oldPerm->delete();
+        //     } else {
+        //         // إذا لم تكن موجودة، حدث الاسم
+        //         $oldPerm->update(['name' => $newName, 'category' => 'HR']);
+        //     }
+        // }
 
         // Note: Permissions are assigned directly to users via model_has_permissions table
         // Roles are not used for permission assignment

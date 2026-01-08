@@ -201,7 +201,7 @@ return [
     'hr_settings' => 'HR Settings',
     'view_hr_settings' => 'View HR Settings',
     'edit_hr_settings' => 'Edit HR Settings',
-    'leave_types' => 'Leave Types',
+    'mobile_fingerprint_login' => 'Mobile Fingerprint Login',
     'cvs' => 'CVs',
     'cv_management' => 'CV Management',
     'covenants' => 'Covenants',
