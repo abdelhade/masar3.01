@@ -13,7 +13,7 @@ new class extends Component {
     public function mount(int $employeeId): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('view Hr-Employees'), 403, __('hr.unauthorized_action'));
+        abort_unless(auth()->user()->can('view Employees'), 403, __('hr.unauthorized_action'));
 
         $this->employeeId = $employeeId;
     }
@@ -93,7 +93,7 @@ new class extends Component {
                         <i class="fas fa-user me-2"></i>{{ __('hr.view_employee') }}
                     </h5>
                     <div class="d-flex gap-2">
-                        @can('edit Hr-Employees')
+                        @can('edit Employees')
                             <a href="{{ route('employees.edit', $employeeId) }}" class="btn btn-success">
                                 <i class="fas fa-edit me-2"></i>{{ __('hr.edit') }}
                             </a>

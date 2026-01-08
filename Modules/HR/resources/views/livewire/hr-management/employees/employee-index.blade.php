@@ -44,7 +44,7 @@ new class extends Component {
     public function delete(int $id): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('delete Hr-Employees'), 403, __('hr.unauthorized_action'));
+        abort_unless(auth()->user()->can('delete Employees'), 403, __('hr.unauthorized_action'));
 
         // Rate limiting check
         $this->ensureIsNotRateLimited('delete');
@@ -113,7 +113,7 @@ new class extends Component {
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    @can('create Hr-Employees')
+                    @can('create Employees')
                         <a href="{{ route('employees.create') }}"
                             class="btn btn-main font-hold fw-bold position-relative"
                             x-data="{ loading: false }"
@@ -154,7 +154,7 @@ new class extends Component {
                                         <th class="font-hold fw-bold">{{ __('hr.department') }}</th>
                                         <th class="font-hold fw-bold">{{ __('hr.job') }}</th>
                                         <th class="font-hold fw-bold">{{ __('hr.status') }}</th>
-                                        @canany(['edit Hr-Employees', 'delete Hr-Employees', 'view Hr-Employees'])
+                                        @canany(['edit Employees', 'delete Employees', 'view Employees'])
                                             <th class="font-hold fw-bold">{{ __('hr.actions') }}</th>
                                         @endcanany
                                     </tr>
@@ -172,9 +172,9 @@ new class extends Component {
                                             </td>
                                             <td class="font-hold fw-bold">{{ $employee->status }}</td>
 
-                                            @canany(['edit Hr-Employees', 'delete Hr-Employees', 'view Hr-Employees'])
+                                            @canany(['edit Employees', 'delete Employees', 'view Employees'])
                                                 <td>
-                                                    @can('view Hr-Employees')
+                                                    @can('view Employees')
                                                         <a href="{{ route('employees.show', $employee->id) }}"
                                                             class="btn btn-info btn-sm me-1"
                                                             title="{{ __('hr.view') }}"
@@ -188,7 +188,7 @@ new class extends Component {
                                                             </span>
                                                         </a>
                                                     @endcan
-                                                    @can('edit Hr-Employees')
+                                                    @can('edit Employees')
                                                         <a href="{{ route('employees.edit', $employee->id) }}"
                                                             class="btn btn-success btn-sm me-1"
                                                             title="{{ __('hr.edit') }}"
@@ -202,7 +202,7 @@ new class extends Component {
                                                             </span>
                                                         </a>
                                                     @endcan
-                                                    @can('delete Hr-Employees')
+                                                    @can('delete Employees')
                                                         <button 
                                                             type="button"
                                                             class="btn btn-danger btn-sm"
@@ -224,7 +224,7 @@ new class extends Component {
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="{{ auth()->user()->canany(['edit Hr-Employees', 'delete Hr-Employees', 'view Hr-Employees']) ? '8' : '7' }}" 
+                                            <td colspan="{{ auth()->user()->canany(['edit Employees', 'delete Employees', 'view Employees']) ? '8' : '7' }}" 
                                                 class="text-center font-hold fw-bold py-4">
                                                 <div class="alert alert-info mb-0">
                                                     <i class="las la-info-circle me-2"></i>

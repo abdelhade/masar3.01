@@ -12,10 +12,10 @@ class EmployeeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:view Hr-Employees')->only(['index', 'show']);
-        $this->middleware('can:create Hr-Employees')->only(['create', 'store']);
-        $this->middleware('can:edit Hr-Employees')->only(['edit', 'update']);
-        $this->middleware('can:delete Hr-Employees')->only(['destroy']);
+        $this->middleware('can:view Employees')->only(['index', 'show']);
+        $this->middleware('can:create Employees')->only(['create', 'store']);
+        $this->middleware('can:edit Employees')->only(['edit', 'update']);
+        $this->middleware('can:delete Employees')->only(['destroy']);
     }
 
     /**
