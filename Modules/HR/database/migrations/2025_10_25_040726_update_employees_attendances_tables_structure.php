@@ -57,14 +57,14 @@ return new class extends Migration
             $table->dropColumn('project_code');
         });
 
-        // Remove project_code column from attendance_processing_details table
-        Schema::table('attendance_processing_details', function (Blueprint $table) {
-            $table->dropColumn('project_code');
-        });
-
         // Remove indexs (employee_id, attendance_date, project_code) from the attendance_processing_details tables
         Schema::table('attendance_processing_details', function (Blueprint $table) {
             $table->dropIndex('idx_attendance_processing_details_employee_date_project_code');
+        });
+
+        // Remove project_code column from attendance_processing_details table
+        Schema::table('attendance_processing_details', function (Blueprint $table) {
+            $table->dropColumn('project_code');
         });
     }
 };
