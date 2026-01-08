@@ -12,7 +12,7 @@ new class extends Component {
     public function mount(int $employeeId): void
     {
         // Authorization check
-        abort_unless(auth()->user()->can('edit Hr-Employees'), 403, __('hr.unauthorized_action'));
+        abort_unless(auth()->user()->can('edit Employees'), 403, __('hr.unauthorized_action'));
 
         $this->loadFormData();
         $this->loadEmployee($employeeId);

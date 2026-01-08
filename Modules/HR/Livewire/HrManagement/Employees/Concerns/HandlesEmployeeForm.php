@@ -337,7 +337,7 @@ trait HandlesEmployeeForm
     public function save()
     {
         // Authorization check
-        $permission = $this->isEdit ? 'edit Hr-Employees' : 'create Hr-Employees';
+        $permission = $this->isEdit ? 'edit Employees' : 'create Employees';
         /** @var User|null $user */
         $user = Auth::user();
         abort_unless($user?->can($permission) ?? false, 403, __('hr.unauthorized_action'));
