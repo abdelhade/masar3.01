@@ -634,7 +634,10 @@
         transform: translateY(-2px) scale(1.02);
         box-shadow: 0 6px 20px rgba(230, 23, 23, 0.4);
     }
-
+.form-control{
+    color: rgb(255, 251, 0);
+    background-color: rgb(255, 255, 255);
+}
     /* Button Sizes */
     .btn-sm {
         padding: var(--spacing-2) var(--spacing-4);

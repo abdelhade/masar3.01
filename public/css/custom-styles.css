@@ -56,7 +56,9 @@
         width: 90%;
     }
 }
-
+.form-control {
+    color: rgb(255, 255, 255) !important;
+}
 /* Custom Form Control Focus Styles */
 .form-control:focus,
 select.form-control:focus,

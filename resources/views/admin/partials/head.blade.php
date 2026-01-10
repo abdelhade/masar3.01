@@ -37,6 +37,7 @@
 
     <!-- Vite CSS only - JS is loaded in scripts.blade.php after Livewire/Alpine -->
     @vite(['resources/css/app.css'])
+    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
 
     @auth
         <meta name="user-id" content="{{ auth()->id() }}">
@@ -115,9 +116,22 @@
         textarea.form-control:focus,
         .custom-select:focus,
         input.form-control:focus {
-            border-color: #28a745 !important;
+            border-color: #00ff22ff !important;
+            background-color: #bbff00ff !important;
+            font-weight: bold !important;
             box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
             outline: 0;
+        }
+        .form-control{
+            border-color: #000000ff !important;
+            background-color: #f7ffd9ff !important;
+            font-weight: bold !important;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+            outline: 0; 
+        }
+        td{
+          padding: 0px !important;
+          margin: 0px !important;  
         }
     </style>
 </head>
