@@ -30,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('project-templates', ProjectTemplateController::class)->names('project.template');
     // Route::resource('project-items', ProjectItemController::class)->names('project.items');
     Route::get('/projects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'index'])->name('progress.project.index');
+    Route::post('/projects/quick-store', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'quickStore'])->name('progress.project.quickStore');
     Route::get('/projects/create', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'create'])->name('progress.project.create');
     Route::post('/projects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'store'])->name('progress.project.store');
     Route::get('/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'show'])->name('progress.project.show');

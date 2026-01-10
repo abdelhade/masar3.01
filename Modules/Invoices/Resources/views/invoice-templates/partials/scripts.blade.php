@@ -1,7 +1,18 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
-        $(document).ready(function() {
+        // Wait for jQuery to be loaded before executing
+        (function() {
+            function initInvoiceTemplates() {
+                // Check if jQuery is loaded
+                if (typeof jQuery === 'undefined' || typeof $ === 'undefined') {
+                    // Retry after a short delay
+                    setTimeout(initInvoiceTemplates, 100);
+                    return;
+                }
+                
+                // Use jQuery safely
+                jQuery(document).ready(function($) {
             // ============================================
              // 1️⃣ تفعيل السحب والإفلات (Drag & Drop)
             // ============================================
@@ -83,6 +94,11 @@
                 updateColumnOrder();
                 return true;
             });
-        });
+                });
+            }
+            
+            // Start initialization
+            initInvoiceTemplates();
+        })();
     </script>
 @endpush

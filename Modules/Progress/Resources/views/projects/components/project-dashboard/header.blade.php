@@ -3,7 +3,7 @@
         <div class="col-md-8">
             <h1 class="h3 mb-1 text-white fw-bold">{{ $project->name }}</h1>
             <p class="mb-0 text-white-50">
-                <i class="fas fa-building me-2"></i>{{ $project->client->name }}
+                <i class="fas fa-building me-2"></i>{{ $project->client->name ?? __('general.not_specified') }}
             </p>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">

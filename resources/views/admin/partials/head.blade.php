@@ -37,7 +37,7 @@
 
     <!-- Vite CSS only - JS is loaded in scripts.blade.php after Livewire/Alpine -->
     @vite(['resources/css/app.css'])
-    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
+    {{-- <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" /> --}}
 
     @auth
         <meta name="user-id" content="{{ auth()->id() }}">

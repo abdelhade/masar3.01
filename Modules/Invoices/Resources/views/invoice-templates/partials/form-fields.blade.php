@@ -208,7 +208,18 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
-        $(document).ready(function() {
+        // Wait for jQuery to be loaded before executing
+        (function() {
+            function initInvoiceTemplateForm() {
+                // Check if jQuery is loaded
+                if (typeof jQuery === 'undefined' || typeof $ === 'undefined') {
+                    // Retry after a short delay
+                    setTimeout(initInvoiceTemplateForm, 100);
+                    return;
+                }
+                
+                // Use jQuery safely
+                jQuery(document).ready(function($) {
             // تفعيل السحب والإفلات
             var sortable = new Sortable(document.getElementById('sortable-columns'), {
                 animation: 150,
@@ -253,6 +264,11 @@
                     $('#default_switch_' + typeId).prop('checked', false);
                 }
             });
-        });
+                });
+            }
+            
+            // Start initialization
+            initInvoiceTemplateForm();
+        })();
     </script>
 @endpush

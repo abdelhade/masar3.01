@@ -108,10 +108,17 @@
 
             // Sidebar state initialization
             initSidebarState();
+
+            // Initialize global event listeners
+            initGlobalEventListeners();
+
+            // Initialize number input formatting
+            initNumberInputs();
         }
 
         // Flag to prevent multiple event listener registrations
         let focusShortcutsInitialized = false;
+        let globalEventListenersInitialized = false;
 
         // Auto focus on first input with class "frst"
         function initAutoFocus() {
@@ -164,6 +171,98 @@
             
             focusShortcutsInitialized = true;
         }
+
+        // Global event listeners (F12, Enter navigation, Print buttons)
+        function initGlobalEventListeners() {
+            if (globalEventListenersInitialized) {
+                return;
+            }
+
+            document.addEventListener('keydown', function(e) {
+                // F12 key - Submit form
+                if (e.key === "F12") {
+                    e.preventDefault();
+                    const activeForm = document.querySelector('form');
+                    if (activeForm) {
+                        activeForm.submit();
+                    }
+                }
+
+                // Enter key - Navigate between fields
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    // Skip if we are in a textarea or on a button or special components that handle Enter
+                    if (e.target.tagName === 'TEXTAREA' || 
+                        e.target.tagName === 'BUTTON' || 
+                        (e.target.tagName === 'INPUT' && (e.target.type === 'submit' || e.target.type === 'button')) ||
+                        e.target.closest('.ts-control') || // TomSelect
+                        e.target.closest('.select2-container') // Select2
+                    ) {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    const formElements = Array.from(document.querySelectorAll('input, select, textarea, button'))
+                        .filter(el =>
+                            !el.disabled &&
+                            el.type !== 'hidden' &&
+                            el.type !== 'checkbox' &&
+                            el.type !== 'radio' &&
+                            el.offsetParent !== null
+                        );
+
+                    const currentIndex = formElements.indexOf(e.target);
+                    if (currentIndex > -1 && currentIndex < formElements.length - 1) {
+                        formElements[currentIndex + 1].focus();
+                    }
+                }
+            });
+
+            // Print button functionality
+            document.addEventListener('click', function(e) {
+                const printBtn = e.target.closest('.printbtn');
+                if (printBtn) {
+                    let targetId = printBtn.getAttribute('data-target');
+                    let content = document.getElementById(targetId)?.innerHTML;
+                    if (content) {
+                        let printWindow = window.open('', '', 'width=800,height=600');
+                        printWindow.document.write(content);
+                        printWindow.document.close();
+                        printWindow.print();
+                    }
+                }
+            });
+
+            globalEventListenersInitialized = true;
+        }
+
+        // Number input auto-select and formatting
+        function initNumberInputs() {
+            // Using delegation for dynamic elements (like in Livewire)
+            document.addEventListener('focusin', function(e) {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+                    e.target.select();
+                }
+            });
+
+            document.addEventListener('focusout', function(e) {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+                    let val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                        // Format to 2 decimal places as per original behavior
+                        e.target.value = val.toFixed(2);
+                    }
+                }
+            });
+        }
+
+        // Legacy function for old forms
+        window.disableButton = function() {
+            const submitBtn = document.getElementById("submitBtn");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+            }
+            return true; // Allows form submission to continue
+        };
 
         // Sidebar effects initialization
         function initSidebarEffects() {
