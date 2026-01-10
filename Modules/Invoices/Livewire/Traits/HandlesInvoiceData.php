@@ -81,9 +81,24 @@ trait HandlesInvoiceData
 
             $baseQty = $item->qty_in ?: $item->qty_out;
 
-            // القسمة على المعامل لترجع لأصلها (مثلاً 1000 كجم ÷ 1000 = 1 طن)
-            $quantity = ($uVal > 0) ? ($baseQty / $uVal) : $baseQty;
-            $price = $item->fat_price ?? $item->item_price;
+            // 2. Determine Display Quantity and Price
+            if (isset($item->fat_quantity) && $item->fat_quantity > 0) {
+                $quantity = $item->fat_quantity;
+                // fat_price is DISPLAY price - use directly
+                $price = $item->fat_price ?? ($item->item_price * $uVal);
+            } else {
+                // Get the stored base quantity
+                $baseQty = $item->qty_in > 0 ? $item->qty_in : $item->qty_out;
+                // Divide by u_val to get display quantity
+                $quantity = $uVal > 0 ? $baseQty / $uVal : $baseQty;
+                // fat_price is DISPLAY price, item_price is BASE price
+                if ($item->fat_price) {
+                    $price = $item->fat_price; // Display price (already for the selected unit)
+                } else {
+                    // Fallback: calculate from base price
+                    $price = $item->item_price * $uVal;
+                }
+            }
 
             // ✅ جلب آخر سعر شراء إذا كان التحويل من طلب احتياج لأمر شراء
             if ($isFromRequestOrder && $this->type == 15) {
@@ -95,7 +110,7 @@ trait HandlesInvoiceData
                     ->orderBy('created_at', 'desc')
                     ->value('item_price');
 
-                $price = $lastPurchasePrice ?? $item->item->average_cost ?? $price;
+                $price = $lastPurchasePrice ?? ($item->item->average_cost ? $item->item->average_cost * $uVal : $price);
             }
 
             $this->invoiceItems[] = [
@@ -104,6 +119,7 @@ trait HandlesInvoiceData
                 'unit_id' => $displayUnitId,
                 'quantity' => $quantity,
                 'price' => $price,
+                'item_price' => $item->item_price ?? 0, // ✅ Base Price - for Alpine.js unit change
                 'discount' => $item->item_discount ?? 0,
                 'sub_value' => $item->detail_value ?? ($price * $quantity),
                 'available_units' => $item->item->units->map(fn($unit) => (object)[

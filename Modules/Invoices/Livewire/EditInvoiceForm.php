@@ -312,7 +312,7 @@ class EditInvoiceForm extends Component
     {
         $this->currentTemplate = InvoiceTemplate::find($templateId);
 
-        if (! $this->currentTemplate) {
+        if (!$this->currentTemplate) {
             $this->currentTemplate = InvoiceTemplate::getDefaultForType($this->type);
         }
 
@@ -326,7 +326,7 @@ class EditInvoiceForm extends Component
      */
     public function shouldShowColumn(string $columnKey): bool
     {
-        if (! $this->currentTemplate) {
+        if (!$this->currentTemplate) {
             return true; // إذا لم يكن هناك نموذج، أظهر كل الأعمدة
         }
 
@@ -338,7 +338,7 @@ class EditInvoiceForm extends Component
      */
     public function getVisibleColumns(): array
     {
-        if (! $this->currentTemplate) {
+        if (!$this->currentTemplate) {
             return [];
         }
 
@@ -356,7 +356,7 @@ class EditInvoiceForm extends Component
         // الحقول القابلة للتحرير بالترتيب الافتراضي
         $defaultEditableFields = ['quantity', 'price', 'discount', 'sub_value'];
 
-        if (! $this->currentTemplate) {
+        if (!$this->currentTemplate) {
             return $defaultEditableFields;
         }
 
@@ -369,7 +369,7 @@ class EditInvoiceForm extends Component
         });
 
         // إرجاع الحقول المرتبة أو الافتراضية إذا كانت فارغة
-        return ! empty($editableColumns) ? array_values($editableColumns) : $defaultEditableFields;
+        return !empty($editableColumns) ? array_values($editableColumns) : $defaultEditableFields;
     }
 
     /**
@@ -451,7 +451,7 @@ class EditInvoiceForm extends Component
 
     protected function loadBranchFilteredData($branchId)
     {
-        if (! $branchId) {
+        if (!$branchId) {
             return;
         }
 
@@ -523,7 +523,7 @@ class EditInvoiceForm extends Component
     protected function getAccountsByCodeAndBranch(string $code, $branchId)
     {
         $cacheKey = $code . '_' . $branchId;
-        if (! isset(static::$accountCache[$cacheKey])) {
+        if (!isset(static::$accountCache[$cacheKey])) {
             static::$accountCache[$cacheKey] = AccHead::where('isdeleted', 0)
                 ->where('is_basic', 0)
                 ->where('code', 'like', $code)
@@ -554,32 +554,45 @@ class EditInvoiceForm extends Component
         $this->invoiceItems = [];
         foreach ($this->operation->operationItems as $operationItem) {
             $item = $operationItem->item;
-            if (! $item) {
+            if (!$item) {
                 continue;
             }
 
-            $availableUnits = $item->units->map(
-                fn($unit) => (object) [
-                    'id' => $unit->id,
-                    'name' => $unit->name,
-                ]
-            );
+            // 1. Get Available Units for this item (with u_val from pivot)
+            $availableUnits = $item->units->map(fn($unit) => (object)[
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'u_val' => $unit->pivot->u_val ?? 1 // ✅ Include u_val from pivot
+            ]);
 
+            // Get the last saved unit or fallback to first unit
             $displayUnitId = $operationItem->fat_unit_id ?: $operationItem->unit_id;
+            if (!$displayUnitId || !$availableUnits->where('id', $displayUnitId)->count()) {
+                $displayUnitId = $availableUnits->first()?->id;
+            }
 
-            // 1. Fetch the u_val (conversion factor)
-            $unit = $item->units->firstWhere('id', $displayUnitId);
-            $uVal = $unit?->pivot?->u_val ?? DB::table('item_units')
-                ->where('item_id', $item->id)
-                ->where('unit_id', $displayUnitId)
-                ->value('u_val') ?? 1;
+            // Get u_val for the display unit
+            $uVal = $availableUnits->where('id', $displayUnitId)->first()?->u_val ?? 1;
 
-            // 2. Get the stored base quantity (operation always stores base units)
-            $baseQty = $operationItem->qty_in > 0 ? $operationItem->qty_in : $operationItem->qty_out;
-
-            // 3. Divide by u_val to get display quantity
-            $quantity = $uVal > 0 ? $baseQty / $uVal : $baseQty;
-            $price = $operationItem->fat_price ?? $operationItem->item_price;
+            // 2. Determine Display Quantity and Price
+            // Prefer stored display values (fat_quantity, fat_price) if they exist
+            if (isset($operationItem->fat_quantity) && $operationItem->fat_quantity > 0) {
+                $quantity = $operationItem->fat_quantity;
+                // fat_price is now DISPLAY price - use directly
+                $price = $operationItem->fat_price ?? ($operationItem->item_price * $uVal);
+            } else {
+                // Fallback: Get the stored base quantity (operation always stores base units)
+                $baseQty = $operationItem->qty_in > 0 ? $operationItem->qty_in : $operationItem->qty_out;
+                // Divide by u_val to get display quantity
+                $quantity = $uVal > 0 ? $baseQty / $uVal : $baseQty;
+                // fat_price is DISPLAY price, item_price is BASE price
+                if ($operationItem->fat_price) {
+                    $price = $operationItem->fat_price; // Display price (already for the selected unit)
+                } else {
+                    // Fallback: calculate from base price
+                    $price = $operationItem->item_price * $uVal;
+                }
+            }
 
             $this->invoiceItems[] = [
                 'operation_item_id' => $operationItem->id,
@@ -588,6 +601,7 @@ class EditInvoiceForm extends Component
                 'name' => $item->name,
                 'quantity' => $quantity,
                 'price' => $price,
+                'item_price' => $operationItem->item_price ?? 0, // ✅ Base Price (للوحدة الأساسية) - for Alpine.js unit change
                 'sub_value' => $operationItem->detail_value ?? ($price * $quantity) - ($operationItem->item_discount ?? 0),
                 'discount' => $operationItem->item_discount ?? 0,
                 'available_units' => $availableUnits,
@@ -628,7 +642,7 @@ class EditInvoiceForm extends Component
 
     public function getConversionConfirmationMessage()
     {
-        if (! $this->selectedConvertType) {
+        if (!$this->selectedConvertType) {
             return '';
         }
         $fromType = $this->titles[$this->type] ?? 'غير محدد';
@@ -644,7 +658,7 @@ class EditInvoiceForm extends Component
 
     public function convertInvoice()
     {
-        if (! $this->selectedConvertType) {
+        if (!$this->selectedConvertType) {
             Alert::toast('يرجى اختيار نوع الفاتورة المراد التحويل إليها', 'error');
 
             return;
@@ -686,7 +700,7 @@ class EditInvoiceForm extends Component
 
     public function checkCashAccount($accountId)
     {
-        if (! $accountId) {
+        if (!$accountId) {
             $this->isCurrentAccountCash = false;
 
             return;
@@ -756,7 +770,7 @@ class EditInvoiceForm extends Component
                 $query->where('barcode', $barcode);
             })
             ->first();
-        if (! $item) {
+        if (!$item) {
             return $this->dispatch('prompt-create-item-from-barcode', barcode: $barcode);
         }
         $this->addedFromBarcode = true;
@@ -787,7 +801,7 @@ class EditInvoiceForm extends Component
 
     public function handleQuantityEnter($index)
     {
-        if (! isset($this->invoiceItems[$index])) {
+        if (!isset($this->invoiceItems[$index])) {
             return;
         }
         $this->quantityClickCount++;
@@ -847,8 +861,8 @@ class EditInvoiceForm extends Component
         $this->searchResults = strlen($value) < 1
             ? collect()
             : Item::with(['units', 'prices'])
-            ->where('name', 'like', "%{$value}%")
-            ->take(5)->get();
+                ->where('name', 'like', "%{$value}%")
+                ->take(5)->get();
     }
 
     public function updatedBarcodeTerm($value)
@@ -856,8 +870,8 @@ class EditInvoiceForm extends Component
         $this->barcodeSearchResults = strlen($value) < 1
             ? collect()
             : Item::with(['units', 'prices'])
-            ->where('code', 'like', "%{$value}%")
-            ->take(5)->get();
+                ->where('code', 'like', "%{$value}%")
+                ->take(5)->get();
     }
 
     // public function addItemByBarcode()
@@ -885,7 +899,7 @@ class EditInvoiceForm extends Component
     public function addItemFromSearch($itemId)
     {
         $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
-        if (! $item) {
+        if (!$item) {
             return;
         }
 
@@ -994,12 +1008,12 @@ class EditInvoiceForm extends Component
 
     public function updateUnits($index)
     {
-        if (! isset($this->invoiceItems[$index])) {
+        if (!isset($this->invoiceItems[$index])) {
             return;
         }
         $itemId = $this->invoiceItems[$index]['item_id'];
         $item = $this->items->firstWhere('id', $itemId);
-        if (! $item) {
+        if (!$item) {
             return;
         }
         $vm = new ItemViewModel(null, $item, $selectedUnitId = null);
@@ -1020,7 +1034,7 @@ class EditInvoiceForm extends Component
 
     public function updateQuantityForUnit($index)
     {
-        if (! isset($this->invoiceItems[$index])) {
+        if (!isset($this->invoiceItems[$index])) {
             return;
         }
 
@@ -1028,16 +1042,16 @@ class EditInvoiceForm extends Component
         $unitId = $this->invoiceItems[$index]['unit_id'];
         $oldUnitId = $this->oldUnitId;
 
-        if (! $itemId || ! $unitId || ! $oldUnitId || $unitId == $oldUnitId) {
+        if (!$itemId || !$unitId || !$oldUnitId || $unitId == $oldUnitId) {
             return;
         }
 
         $item = $this->items->firstWhere('id', $itemId);
         // ✅ إذا لم يتم العثور على الصنف في القائمة المحملة، قم بجلبه من قاعدة البيانات
-        if (! $item) {
+        if (!$item) {
             $item = Item::with(['units'])->find($itemId);
         }
-        if (! $item) {
+        if (!$item) {
             return;
         }
 
@@ -1064,22 +1078,22 @@ class EditInvoiceForm extends Component
 
     public function updatePriceForUnit($index)
     {
-        if (! isset($this->invoiceItems[$index])) {
+        if (!isset($this->invoiceItems[$index])) {
             return;
         }
         $itemId = $this->invoiceItems[$index]['item_id'];
         $unitId = $this->invoiceItems[$index]['unit_id'];
-        if (! $itemId || ! $unitId) {
+        if (!$itemId || !$unitId) {
             return;
         }
         $item = $this->items->firstWhere('id', $itemId);
 
         // ✅ إذا لم يتم العثور على الصنف في القائمة المحملة، قم بجلبه من قاعدة البيانات
-        if (! $item) {
+        if (!$item) {
             $item = Item::with(['units', 'prices'])->find($itemId);
         }
 
-        if (! $item) {
+        if (!$item) {
             return;
         }
         $currentPrice = (float) ($this->invoiceItems[$index]['price'] ?? 0);
@@ -1163,7 +1177,7 @@ class EditInvoiceForm extends Component
     public function calculateQuantityFromSubValue($index)
     {
         // ✅ الحساب في Alpine.js - هنا للتحقق فقط
-        if (! isset($this->invoiceItems[$index])) {
+        if (!isset($this->invoiceItems[$index])) {
             return;
         }
         $item = $this->invoiceItems[$index];
@@ -1198,9 +1212,9 @@ class EditInvoiceForm extends Component
     {
         // ✅ الحساب النهائي يتم في Alpine.js - هنا نقوم فقط بمطابقة القيم المرسلة
         // لضمان عدم حدوث تضارب أثناء الـ Validation في SaveInvoiceService
-        
+
         $this->subtotal = collect($this->invoiceItems)->sum('sub_value');
-        
+
         // حساب القيم بناءً على النسب المئوية فقط إذا كانت القيم المرسلة صفرية
         // وإلا نحافظ على القيم المرسلة كما هي (لدعم القيم الثابتة)
         if ($this->subtotal > 0) {
@@ -1210,13 +1224,13 @@ class EditInvoiceForm extends Component
             if ($this->additional_value == 0 && ($this->additional_percentage ?? 0) > 0) {
                 $this->additional_value = round(($this->subtotal * $this->additional_percentage) / 100, 2);
             }
-            
+
             // حساب الضريبة والخصم الضريبي
             if (($this->vat_value ?? 0) == 0 && ($this->vat_percentage ?? 0) > 0) {
-                 $this->vat_value = round((($this->subtotal - $this->discount_value + $this->additional_value) * $this->vat_percentage) / 100, 2);
+                $this->vat_value = round((($this->subtotal - $this->discount_value + $this->additional_value) * $this->vat_percentage) / 100, 2);
             }
             if (($this->withholding_tax_value ?? 0) == 0 && ($this->withholding_tax_percentage ?? 0) > 0) {
-                 $this->withholding_tax_value = round((($this->subtotal - $this->discount_value + $this->additional_value) * $this->withholding_tax_percentage) / 100, 2);
+                $this->withholding_tax_value = round((($this->subtotal - $this->discount_value + $this->additional_value) * $this->withholding_tax_percentage) / 100, 2);
             }
         }
 
@@ -1297,7 +1311,7 @@ class EditInvoiceForm extends Component
     public function checkSearchResults()
     {
         $searchTerm = trim($this->searchTerm);
-        if (! empty($searchTerm) && $this->searchResults->isEmpty()) {
+        if (!empty($searchTerm) && $this->searchResults->isEmpty()) {
             $this->searchedTerm = $searchTerm;
 
             return $this->dispatch('item-not-found', ['term' => $searchTerm, 'type' => 'search']);
@@ -1340,7 +1354,7 @@ class EditInvoiceForm extends Component
             $newItems = [];
             foreach ($alpineData['invoiceItems'] as $index => $item) {
                 $existingItem = $this->invoiceItems[$index] ?? [];
-                
+
                 $newItems[$index] = array_merge($existingItem, [
                     'quantity' => (float) ($item['quantity'] ?? $existingItem['quantity'] ?? 0),
                     'price' => (float) ($item['price'] ?? $existingItem['price'] ?? 0),
@@ -1355,7 +1369,7 @@ class EditInvoiceForm extends Component
     public function updateForm()
     {
         // تحقق من وجود العملية
-        if (! $this->operation || ! $this->operationId) {
+        if (!$this->operation || !$this->operationId) {
             $this->dispatch('alert', [
                 'type' => 'error',
                 'message' => 'لا توجد فاتورة لتحريرها.',

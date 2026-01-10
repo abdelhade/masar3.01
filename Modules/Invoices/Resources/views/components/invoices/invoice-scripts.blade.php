@@ -247,6 +247,7 @@
         
         /**
          * تحديث السعر عند تغيير الوحدة (client-side)
+         * ✅ New Logic: Calculate price from BASE PRICE instead of ratio
          */
         window.updatePriceClientSide = function(index, selectElement) {
             // جلب معامل التحويل للوحدة الجديدة
@@ -256,24 +257,58 @@
             
             if (newUVal === lastUVal) return;
             
-            // تحديث السعر بناءً على معامل التحويل
+            // ✅ Try to get the base price from Alpine state
+            let basePrice = null;
+            const form = selectElement.closest('form');
+            if (form && form._x_dataStack && form._x_dataStack[0]) {
+                const alpineComponent = form._x_dataStack[0];
+                if (alpineComponent.invoiceItems && alpineComponent.invoiceItems[index]) {
+                    // If item_price exists in invoiceItems, use it as base price
+                    basePrice = alpineComponent.invoiceItems[index].item_price;
+                }
+            }
+            
+            // حساب السعر الجديد
             const priceField = document.getElementById(`price-${index}`);
             if (priceField) {
-                const currentPrice = parseFloat(priceField.value) || 0;
-                const conversionFactor = newUVal / lastUVal;
-                const newPrice = currentPrice * conversionFactor;
-                priceField.value = newPrice.toFixed(2);
+                let newPrice;
                 
-                // تحديث Livewire
-                if (typeof Livewire !== 'undefined') {
-                    const component = Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'));
-                    if (component) {
-                        component.set(`invoiceItems.${index}.price`, newPrice, false);
-                    }
+                if (basePrice && basePrice > 0) {
+                    // ✅ Calculate from base price: newPrice = basePrice × newUVal
+                    newPrice = basePrice * newUVal;
+                } else {
+                    // ❌ Fallback: use ratio (old logic) - less accurate
+                    const currentPrice = parseFloat(priceField.value) || 0;
+                    const conversionFactor = newUVal / lastUVal;
+                    newPrice = currentPrice * conversionFactor;
+                    console.warn(`[Price Update] Base price not found for item ${index}, using ratio fallback`);
                 }
                 
-                // تحديث الإجمالي
-                window.handleCalculateRowTotal(index);
+                const finalPrice = parseFloat(newPrice.toFixed(2));
+                priceField.value = finalPrice;
+                
+                // تحديث Alpine.js مباشرة (هذا سيحفز الـ watcher لإعادة الحساب)
+                if (form && form._x_dataStack && form._x_dataStack[0]) {
+                    const alpineComponent = form._x_dataStack[0];
+                    if (alpineComponent.invoiceItems && alpineComponent.invoiceItems[index]) {
+                        // تحديث السعر والوحدة في Alpine state
+                        // السعر سيعيد تشغيل الحسابات تلقائياً بسبب watcher invoiceItems
+                        alpineComponent.invoiceItems[index].price = finalPrice;
+                        alpineComponent.invoiceItems[index].unit_id = selectElement.value;
+                        
+                        // تحديث Livewire (بدون request فوري)
+                        if (alpineComponent.$wire) {
+                            alpineComponent.$wire.set(`invoiceItems.${index}.price`, finalPrice, false);
+                            alpineComponent.$wire.set(`invoiceItems.${index}.unit_id`, selectElement.value, false);
+                        }
+                    } else {
+                        // Fallback: إذا لم نجد المكون في الـ stack
+                        window.handleCalculateRowTotal && window.handleCalculateRowTotal(index);
+                    }
+                } else {
+                    // Fallback التقليدي
+                    window.handleCalculateRowTotal && window.handleCalculateRowTotal(index);
+                }
             }
             
             // حفظ معامل التحويل الجديد

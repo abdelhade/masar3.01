@@ -1301,18 +1301,28 @@ class SaveInvoiceService
             // Check if this item is an existing one being updated (has 'operation_item_id')
             $operationItemId = $invoiceItem['operation_item_id'] ?? null;
 
+            // Fetch u_val explicitly
+            $uVal = DB::table('item_units')
+                ->where('item_id', $itemId)
+                ->where('unit_id', $unitId)
+                ->value('u_val') ?? 1;
+
             if ($operationItemId && $existingItems->has($operationItemId)) {
                 // UPDATE existing item
                 $opItem = $existingItems->get($operationItemId);
 
+                // Convert Display Quantity to Base Quantity
+                $baseQty = $quantity * $uVal; // Base Qty = Display Qty × Unit Value
+
                 $updateData = [
                     'item_id' => $itemId,
                     'unit_id' => $unitId,
-                    'qty_in' => in_array($component->type, [11, 12, 13, 20]) ? $quantity : 0, // مشتريات/مردود/إضافة
-                    'qty_out' => in_array($component->type, [10, 19]) ? $quantity : 0, // مبيعات/صرف
-                    'fat_quantity' => $quantity, // ✅ FIX: Ensure display quantity is updated
-                    'item_price' => $price,
-                    'fat_price' => $price,
+                    'unit_value' => $uVal, // ✅ Save unit_value
+                    'qty_in' => in_array($component->type, [11, 12, 13, 20]) ? $baseQty : 0, // ✅ Base Quantity
+                    'qty_out' => in_array($component->type, [10, 19]) ? $baseQty : 0, // ✅ Base Quantity
+                    'fat_quantity' => $quantity, // ✅ Display Quantity
+                    'item_price' => $uVal > 0 ? ($price / $uVal) : $price, // ✅ Base Price (للوحدة الأساسية)
+                    'fat_price' => $price, // ✅ Display Price (لوحدة العرض)
                     'item_discount' => $discount,
                     'detail_value' => ($price * $quantity)
                         - $discount
@@ -1340,10 +1350,6 @@ class SaveInvoiceService
 
             // ✅ Update Average Cost (Critical for 4.5, 6.1, 9.1 etc)
             if (in_array($component->type, [11, 12, 13, 20])) { // Purchase, Return, Add
-                // Calculate detail_value if not passed explicitly? It is passed as subValue.
-                // We need subtotal and discountValue from component?
-                // But updateAverageCost uses them for ratio calculation if method is 1.
-                // We can pass them from component.
                 $this->updateAverageCost(
                     $itemId,
                     $quantity,
@@ -1359,11 +1365,6 @@ class SaveInvoiceService
         // DELETE removed items
         $itemsToDelete = $existingItems->except($processedItemIds);
         foreach ($itemsToDelete as $itemToDelete) {
-            // For deletions, we might need to recalculate average cost too?
-            // Usually dealt with by full recalculation service on deletion.
-            // But for sync (partial delete), maybe we should?
-            // The old deleteInvoice calls massive recalculation.
-            // Here we are deleting specific items.
             $itemToDelete->delete();
         }
     }
@@ -1392,6 +1393,15 @@ class SaveInvoiceService
         $subValue = $invoiceItem['calculated_detail_value'];
         $discount = $invoiceItem['discount'] ?? 0;
 
+        // Fetch u_val explicitly
+        $uVal = DB::table('item_units')
+            ->where('item_id', $itemId)
+            ->where('unit_id', $unitId)
+            ->value('u_val') ?? 1;
+
+        // Convert Display Quantity to Base Quantity
+        $baseQty = $quantity * $uVal; // Base Qty = Display Qty × Unit Value
+
         if ($component->type == 21) {
             // 1. خصم الكمية من المخزن المحوَّل منه (المخزن الأول acc1)
             OperationItems::create([
@@ -1400,10 +1410,11 @@ class SaveInvoiceService
                 'pro_id' => $operation->id,
                 'item_id' => $itemId,
                 'unit_id' => $unitId,
+                'unit_value' => $uVal, // ✅ Save unit_value
                 'qty_in' => 0,
-                'qty_out' => $quantity,
-                'item_price' => $price,
-                'fat_price' => $price,
+                'qty_out' => $baseQty, // ✅ Base Quantity
+                'item_price' => $uVal > 0 ? ($price / $uVal) : $price, // ✅ Base Price
+                'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
                 'detail_value' => $subValue,
                 'is_stock' => 1,
@@ -1419,14 +1430,15 @@ class SaveInvoiceService
                 'pro_id' => $operation->id,
                 'item_id' => $itemId,
                 'unit_id' => $unitId,
-                'qty_in' => $quantity, // إضافة
+                'unit_value' => $uVal, // ✅ Save unit_value
+                'qty_in' => $baseQty, // ✅ Base Quantity
                 'qty_out' => 0,
-                'item_price' => $price,
-                'fat_price' => $price,
+                'item_price' => $uVal > 0 ? ($price / $uVal) : $price, // ✅ Base Price
+                'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
                 'detail_value' => $subValue,
                 'is_stock' => 1,
-                'notes' => $invoiceItem['notes'] ?? '',
+                'fat_quantity' => $quantity,
                 'item_cost' => $itemCost,
                 'fat_unit_id' => $unitId
             ]);
@@ -1437,10 +1449,11 @@ class SaveInvoiceService
                 'pro_id' => $operation->id,
                 'item_id' => $itemId,
                 'unit_id' => $unitId,
-                'qty_in' => $quantity,
+                'unit_value' => $uVal, // ✅ Save unit_value
+                'qty_in' => $baseQty, // ✅ Base Quantity
                 'qty_out' => 0,
-                'item_price' => $price,
-                'fat_price' => $price,
+                'item_price' => $uVal > 0 ? ($price / $uVal) : $price, // ✅ Base Price
+                'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
                 'detail_value' => $subValue,
                 'is_stock' => 0,
@@ -1449,8 +1462,8 @@ class SaveInvoiceService
                 'fat_unit_id' => $unitId
             ]);
         } else {
-            $qtyIn = in_array($component->type, [11, 12, 13, 20]) ? $quantity : 0;
-            $qtyOut = in_array($component->type, [10, 19]) ? $quantity : 0;
+            $qtyIn = in_array($component->type, [11, 12, 13, 20]) ? $baseQty : 0; // ✅ Base Quantity
+            $qtyOut = in_array($component->type, [10, 19]) ? $baseQty : 0; // ✅ Base Quantity
             $detailStore = in_array($component->type, [10, 11, 12, 13, 19, 20]) ? $component->acc2_id : 0;
 
             $opItem = OperationItems::create([
@@ -1459,10 +1472,11 @@ class SaveInvoiceService
                 'pro_id' => $operation->id,
                 'item_id' => $itemId,
                 'unit_id' => $unitId,
+                'unit_value' => $uVal, // ✅ Save unit_value
                 'qty_in' => $qtyIn,
                 'qty_out' => $qtyOut,
-                'item_price' => $price,
-                'fat_price' => $price,
+                'item_price' => $uVal > 0 ? ($price / $uVal) : $price, // ✅ Base Price
+                'fat_price' => $price, // ✅ Display Price
                 'item_discount' => $discount,
                 'detail_value' => ($price * $quantity)
                     - $discount
