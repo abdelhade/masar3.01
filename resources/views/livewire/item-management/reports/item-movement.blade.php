@@ -203,126 +203,38 @@ new class extends Component {
 }; ?>
 
 <div>
-    <div class="row">
+    <div class="row mb-3">
         <div class="col-12">
-            <div class="page-title-box">
-                <h4 class="page-title font-family-cairo fw-bold">{{ __('items.item_movement_report') }}</h4>
-            </div>
-        </div>
-    </div>
-
-    @if ($itemId)
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="page-title font-family-cairo fw-bold mb-0">
+                    @if ($itemId)
+                        {{ __('items.item_movement_report') }} - {{ $itemName }}
+                    @else
+                        {{ __('items.item_movement_report') }}
+                    @endif
+                </h4>
+                @if ($itemId)
                     <a href="{{ route('item-movement.print', [
                         'itemId' => $itemId,
                         'warehouseId' => $warehouseId,
                         'fromDate' => $fromDate,
                         'toDate' => $toDate,
                     ]) }}"
-                        target="_blank" class="btn btn-outline font-family-cairo fw-bold" style="text-decoration: none;">
+                        target="_blank" class="btn btn-outline-primary font-family-cairo fw-bold">
                         <i class="fas fa-print"></i>
                         {{ __('items.print_report') }}
                     </a>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-family-cairo fw-bold">{{ __('items.search_filters') }}</h4>
-            @if ($itemId)
-                <div class="d-flex align-items-center">
-                    <span
-                        class="font-family-cairo fw-bold me-2">{{ __('items.current_balance_for_item', ['item' => $itemName]) }}:</span>
-                    <span
-                        class="bg-soft-primary font-family-cairo fw-bold font-16">{{ number_format($this->totalQuantity) }}
-                        {{ Item::find($this->itemId)->units->first()->name }}</span>
-                </div>
-            @endif
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label for="item"
-                            class="form-label font-family-cairo fw-bold">{{ __('items.item') }}</label>
-                        <div class="dropdown" wire:click.outside="hideDropdown">
-                            <input type="text" class="form-control font-family-cairo fw-bold"
-                                placeholder="{{ __('items.search_for_item') }}"
-                                wire:model.live.debounce.300ms="searchTerm" wire:keydown.arrow-down.prevent="arrowDown"
-                                wire:keydown.arrow-up.prevent="arrowUp"
-                                wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
-                                onclick="this.select()">
-                            @if ($showDropdown && $this->searchResults->isNotEmpty())
-                                <ul class="dropdown-menu show" style="width: 100%;">
-                                    @foreach ($this->searchResults as $index => $item)
-                                        <li>
-                                            <a class="font-family-cairo fw-bold dropdown-item {{ $highlightedIndex === $index ? 'active' : '' }}"
-                                                href="#"
-                                                wire:click.prevent="selectItem({{ $item->id }}, '{{ $item->name }}')">
-                                                {{ $item->name }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $itemName)
-                                <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span
-                                            class="dropdown-item-text font-family-cairo fw-bold text-danger">{{ __('items.no_results_for_search') }}</span>
-                                    </li>
-                                </ul>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="warehouse"
-                            class="form-label font-family-cairo fw-bold">{{ __('items.warehouse') }}</label>
-                        <select wire:model.live="warehouseId" id="warehouse"
-                            class="form-select font-family-cairo fw-bold" style = "height: 50px;">
-                            <option class="font-family-cairo fw-bold" value="all">{{ __('items.all_warehouses') }}
-                            </option>
-                            @foreach ($warehouses as $id => $name)
-                                <option class="font-family-cairo fw-bold" value="{{ $id }}">
-                                    {{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="fromDate"
-                            class="form-label font-family-cairo fw-bold">{{ __('items.from_date') }}</label>
-                        <input type="date" wire:model.live="fromDate" id="fromDate"
-                            class="form-control font-family-cairo fw-bold">
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="toDate"
-                            class="form-label font-family-cairo fw-bold">{{ __('items.to_date') }}</label>
-                        <input type="date" wire:model.live="toDate" id="toDate"
-                            class="form-control font-family-cairo fw-bold">
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
 
     @if ($itemId)
         @php
-            $currentItem = Item::find($this->itemId);
-            $defaultUnitName = optional($currentItem?->units?->first())->name ?? '';
             $movementsCollection =
                 $movements instanceof \Illuminate\Contracts\Pagination\Paginator
                     ? collect($movements->items())
                     : collect($movements);
-            $incomingMovements = $movementsCollection->filter(fn($movement) => $movement->qty_in > 0);
-            $outgoingMovements = $movementsCollection->filter(fn($movement) => $movement->qty_out > 0);
 
             if ($this->warehouseId === 'all' || empty($this->warehouseId)) {
                 $balanceBefore =
@@ -346,7 +258,45 @@ new class extends Component {
 
             $runningBalance = $balanceBefore;
             $movementBalances = [];
-            foreach ($movementsCollection->sortBy('created_at') as $entry) {
+            
+            // حساب متوسط سعر الشراء لكل حركة بشكل محسّن
+            $sortedMovements = $movementsCollection->sortBy('created_at');
+            $averageCostsCache = [];
+            
+            // حساب التكلفة الإجمالية والكمية قبل بدء الحركات المحددة
+            $baseQuery = OperationItems::where('item_id', $this->itemId)
+                ->where('isdeleted', 0)
+                ->where('qty_in', '>', 0);
+            
+            if ($this->warehouseId !== 'all' && !empty($this->warehouseId)) {
+                $baseQuery->where('detail_store', $this->warehouseId);
+            }
+            
+            $purchasesBeforePeriod = $baseQuery->where('created_at', '<', $this->fromDate)->get();
+            $totalCost = $purchasesBeforePeriod->sum(function($item) {
+                // استخدام item_price إذا كان cost_price = 0 (للمشتريات)
+                $purchasePrice = ($item->cost_price ?? 0) > 0 ? ($item->cost_price ?? 0) : ($item->item_price ?? 0);
+                return $purchasePrice * ($item->qty_in ?? 0);
+            });
+            $totalQuantity = $purchasesBeforePeriod->sum('qty_in');
+            
+            // حساب متوسط التكلفة التراكمي لكل حركة (قبل معالجة الحركة)
+            foreach ($sortedMovements as $entry) {
+                // حفظ المتوسط الحالي قبل معالجة هذه الحركة
+                $fallbackPrice = ($entry->cost_price ?? 0) > 0 ? ($entry->cost_price ?? 0) : ($entry->item_price ?? 0);
+                $calculatedAverage = $totalQuantity > 0 ? ($totalCost / $totalQuantity) : $fallbackPrice;
+                $averageCostsCache[$entry->id] = (float)$calculatedAverage;
+                
+                // تحديث التكلفة والكمية بعد معالجة الحركة (للحركة القادمة)
+                if ($entry->qty_in > 0) {
+                    // استخدام item_price إذا كان cost_price = 0 (للمشتريات)
+                    $purchasePrice = ($entry->cost_price ?? 0) > 0 ? ($entry->cost_price ?? 0) : ($entry->item_price ?? 0);
+                    if ($purchasePrice > 0) {
+                        $totalCost += (float)$purchasePrice * (float)$entry->qty_in;
+                        $totalQuantity += (float)$entry->qty_in;
+                    }
+                }
+                
                 $movementBalances[$entry->id]['before'] = $runningBalance;
                 if ($entry->qty_in > 0) {
                     $runningBalance += $entry->qty_in;
@@ -357,66 +307,10 @@ new class extends Component {
             }
         @endphp
 
-        {{-- ✅ كروت الإحصائيات --}}
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-box-seam fs-1 text-success"></i>
-                        <h5 class="mt-2 font-family-cairo fw-bold">إجمالي الوارد</h5>
-                        <h3 class="text-success font-family-cairo fw-bold">
-                            {{ number_format($incomingMovements->sum('qty_in')) }}</h3>
-                        <small class="text-muted">{{ $defaultUnitName }}</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-box-arrow-up fs-1 text-danger"></i>
-                        <h5 class="mt-2 font-family-cairo fw-bold">إجمالي المنصرف</h5>
-                        <h3 class="text-danger font-family-cairo fw-bold">
-                            {{ number_format($outgoingMovements->sum('qty_out')) }}</h3>
-                        <small class="text-muted">{{ $defaultUnitName }}</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-calendar fs-1 text-primary"></i>
-                        <h5 class="mt-2 font-family-cairo fw-bold">عدد الحركات</h5>
-                        <h3 class="text-primary font-family-cairo fw-bold">{{ $movements->total() }}</h3>
-                        <small class="text-muted">حركة</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-speedometer2 fs-1 text-warning"></i>
-                        <h5 class="mt-2 font-family-cairo fw-bold">الرصيد الحالي</h5>
-                        <h3 class="text-warning font-family-cairo fw-bold">{{ number_format($this->totalQuantity) }}
-                        </h3>
-                        <small class="text-muted">{{ $defaultUnitName }}</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- ✅ جدول الحركات --}}
         <div class="card shadow-sm">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div class="card-header bg-light">
                 <h5 class="mb-0 font-family-cairo fw-bold">تفاصيل الحركات</h5>
-                <a href="{{ route('item-movement.print', [
-                    'itemId' => $itemId,
-                    'warehouseId' => $warehouseId,
-                    'fromDate' => $fromDate,
-                    'toDate' => $toDate,
-                ]) }}"
-                    target="_blank" class="btn btn-outline-primary btn-sm font-family-cairo">
-                    <i class="fas fa-print"></i> طباعة
-                </a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -428,6 +322,9 @@ new class extends Component {
                                 <th class="font-family-cairo fw-bold">المخزن</th>
                                 <th class="font-family-cairo fw-bold">الكمية الواردة</th>
                                 <th class="font-family-cairo fw-bold">الكمية المنصرفة</th>
+                                <th class="font-family-cairo fw-bold">سعر الفاتورة</th>
+                                <th class="font-family-cairo fw-bold">سعر الشراء المتوسط</th>
+                                <th class="font-family-cairo fw-bold">الربح</th>
                                 <th class="font-family-cairo fw-bold">الرصيد قبل</th>
                                 <th class="font-family-cairo fw-bold">الرصيد بعد</th>
                                 <th class="font-family-cairo fw-bold text-center">عرض</th>
@@ -438,7 +335,37 @@ new class extends Component {
                                 @php
                                     $before = $movementBalances[$movement->id]['before'] ?? 0;
                                     $after = $movementBalances[$movement->id]['after'] ?? 0;
-                                    $isIn = $movement->qty_in > 0;
+                                    
+                                    // سعر الفاتورة
+                                    $invoicePrice = (float)($movement->item_price ?? 0);
+                                    
+                                    // سعر الشراء المتوسط: للحركات الواردة (مشتريات) استخدم item_price أو cost_price، للمنصرفة (مبيعات) استخدم المتوسط
+                                    if ($movement->qty_in > 0) {
+                                        // حركة شراء: استخدم item_price إذا كان cost_price = 0
+                                        $costPrice = (float)($movement->cost_price ?? 0);
+                                        $itemPrice = (float)($movement->item_price ?? 0);
+                                        $averagePurchasePrice = $costPrice > 0 ? $costPrice : $itemPrice;
+                                    } else {
+                                        // حركة بيع: استخدم متوسط الشراء حتى وقت هذه الحركة من الـ cache
+                                        if (isset($averageCostsCache[$movement->id])) {
+                                            $averagePurchasePrice = (float)$averageCostsCache[$movement->id];
+                                        } else {
+                                            // Fallback: استخدم cost_price أو item_price
+                                            $fallbackCostPrice = (float)($movement->cost_price ?? 0);
+                                            $fallbackItemPrice = (float)($movement->item_price ?? 0);
+                                            $averagePurchasePrice = $fallbackCostPrice > 0 ? $fallbackCostPrice : $fallbackItemPrice;
+                                        }
+                                    }
+                                    
+                                    // الربح: فقط للحركات المنصرفة (مبيعات)
+                                    $profit = 0;
+                                    if ($movement->qty_out > 0 && $invoicePrice > 0 && $averagePurchasePrice > 0) {
+                                        // الربح = (سعر البيع - سعر الشراء المتوسط) × الكمية
+                                        $profit = ($invoicePrice - $averagePurchasePrice) * (float)$movement->qty_out;
+                                    } elseif (($movement->profit ?? 0) != 0) {
+                                        // إذا كان الربح محسوب مسبقاً في قاعدة البيانات
+                                        $profit = (float)($movement->profit ?? 0);
+                                    }
                                 @endphp
 <tr>
     <td class="font-family-cairo">{{ $movement->created_at->format('Y-m-d') }}</td>
@@ -451,13 +378,32 @@ new class extends Component {
         {{ optional(\Modules\Accounts\Models\AccHead::find($movement->detail_store))->aname ?? '—' }}
     </td>
     <td class="font-family-cairo fw-bold text-success">
-        {{ $movement->qty_in > 0 ? number_format($movement->qty_in) : '—' }}
+        {{ $movement->qty_in > 0 ? number_format($movement->qty_in, 2) : '—' }}
     </td>
     <td class="font-family-cairo fw-bold text-danger">
-        {{ $movement->qty_out > 0 ? number_format($movement->qty_out) : '—' }}
+        {{ $movement->qty_out > 0 ? number_format($movement->qty_out, 2) : '—' }}
     </td>
-    <td class="font-family-cairo">{{ number_format($before) }}</td>
-    <td class="font-family-cairo">{{ number_format($after) }}</td>
+    <td class="font-family-cairo fw-bold">
+        {{ $invoicePrice > 0 ? number_format($invoicePrice, 2) : '—' }}
+    </td>
+    <td class="font-family-cairo fw-bold">
+        @if($averagePurchasePrice > 0)
+            {{ number_format($averagePurchasePrice, 2) }}
+        @elseif($averagePurchasePrice == 0)
+            @if($movement->qty_in > 0 || $movement->qty_out > 0)
+                0.00
+            @else
+                —
+            @endif
+        @else
+            —
+        @endif
+    </td>
+    <td class="font-family-cairo fw-bold {{ $profit > 0 ? 'text-success' : ($profit < 0 ? 'text-danger' : '') }}">
+        {{ $profit != 0 ? number_format($profit, 2) : '—' }}
+    </td>
+    <td class="font-family-cairo">{{ number_format($before, 2) }}</td>
+    <td class="font-family-cairo">{{ number_format($after, 2) }}</td>
     <td class="text-center">
         <a href="{{ route('invoice.view', $movement->pro_id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
             <i class="fas fa-eye"></i>
@@ -466,7 +412,7 @@ new class extends Component {
 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted font-family-cairo">
+                                    <td colspan="11" class="text-center text-muted font-family-cairo">
                                         لا توجد حركات لهذا الصنف في الفترة المحددة.
                                     </td>
                                 </tr>
