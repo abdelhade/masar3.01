@@ -944,7 +944,7 @@ trait HandlesEmployeeForm
         // 2. حساب الجزاءات والخصومات (تحت 210402 - جزاءات وخصومات الموظفين)
         $this->createOrUpdateSubAccount(
             $employee,
-            '210402',
+            '4202',
             'جزاءات وخصومات '.$employee->name,
             'deductions'
         );
@@ -954,6 +954,38 @@ trait HandlesEmployeeForm
             $employee,
             '5303',
             'مكافآت وحوافز '.$employee->name,
+            'rewards'
+        );
+
+        // 4. حساب إضافى حضور (تحت 5304 - إضافى حضور)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '5304',
+            'إضافى حضور '.$employee->name,
+            'attendance'
+        );
+
+        // 5. حساب خصم حضور (تحت 4203 - خصم حضور)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '4203',
+            'خصم حضور '.$employee->name,
+            'absence'
+        );
+
+        // 6. حساب الجزاءات والخصومات المستحقه (تحت 210402 - جزاءات وخصومات الموظفين)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '110602',
+            'جزاءات وخصومات مستحقه '.$employee->name,
+            'deductions'
+        );
+
+        // 7. حساب المكافآت والحوافز (تحت 5303 - المكافآت والحوافز)
+        $this->createOrUpdateSubAccount(
+            $employee,
+            '2109',
+            'مكافآت وحوافز مستحقه '.$employee->name,
             'rewards'
         );
     }

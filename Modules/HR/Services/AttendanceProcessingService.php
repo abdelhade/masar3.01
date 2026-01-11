@@ -183,8 +183,8 @@ class AttendanceProcessingService
             'total_late_minutes' => $processedData['summary']['late_minutes'] ?? 0,
             'calculated_salary_for_day' => $processedData['salary_data']['daily_rate'] ?? 0,
             'calculated_salary_for_hour' => $processedData['salary_data']['hourly_rate'] ?? 0,
-            'employee_productivity_salary' => $processedData['salary_data']['basic_salary'] ?? 0,
-            'salary_due' => $processedData['salary_data']['overtime_salary'] ?? 0,
+            'employee_productivity_salary' => 0,
+            'salary_due' => $processedData['salary_data']['basic_salary'] ?? 0,
             'total_salary' => $processedData['salary_data']['total_salary'] ?? 0,
             'notes' => $notes,
         ]);
@@ -205,15 +205,7 @@ class AttendanceProcessingService
         ];
     }
 
-    /**
-     * Apply deductions and rewards for an attendance processing
-     * This is called when processing is approved
-     */
-    public function applyDeductionsAndRewards(int $attendanceProcessingId): void
-    {
-        $deductionService = app(\Modules\HR\Services\EmployeeDeductionRewardService::class);
-        $deductionService->applyDeductionsAndRewards($attendanceProcessingId);
-    }
+
 
     /**
      * Process attendance for a single employee

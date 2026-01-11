@@ -536,11 +536,23 @@
                             <div class="accordion accordion-flush" id="summaryAccordion">
                                 <div class="accordion-item border-0">
                                     <h2 class="accordion-header" id="summaryHeading">
-                                        <button class="accordion-button collapsed py-1 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#summaryCollapse" aria-expanded="false" aria-controls="summaryCollapse" style="font-size: 0.85rem;">
-                                            <i class="fas fa-calculator me-2"></i>
-                                            <span class="fw-bold">ملخص الخصومات والمكافآت والسلف</span>
+                                        <button class="accordion-button collapsed py-1 px-2 d-flex align-items-center gap-3 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#summaryCollapse" aria-expanded="false" aria-controls="summaryCollapse" style="font-size: 0.85rem;">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-calculator me-2 text-primary"></i>
+                                                <span class="fw-bold">ملخص الخصومات والمكافآت والسلف</span>
+                                            </div>
                                             @if(!empty($finalBalance))
-                                                <span class="badge bg-primary ms-2" style="font-size: 0.75rem;">صافي: {{ number_format($finalBalance['net_balance'] ?? 0, 2) }}</span>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="text-muted d-none d-md-inline" style="font-size: 0.75rem;">
+                                                        (راتب المدة: <span class="fw-bold">{{ number_format($finalBalance['net_period_salary'], 2) }}</span>)
+                                                        @if($finalBalance['rewards_settled'] > 0 || $finalBalance['deductions_settled'] > 0 || $finalBalance['advances_settled'] > 0)
+                                                            <span class="text-success ms-1">تسويات: {{ number_format($finalBalance['rewards_settled'] - $finalBalance['deductions_settled'] - $finalBalance['advances_settled'], 2) }}</span>
+                                                        @endif
+                                                    </span>
+                                                    <span class="badge bg-primary px-3 py-2" style="font-size: 0.85rem; border-radius: 50px;">
+                                                        صافي نهائي: {{ number_format($finalBalance['final_net'] ?? 0, 2) }}
+                                                    </span>
+                                                </div>
                                             @endif
                                         </button>
                                     </h2>
@@ -647,48 +659,110 @@
                                             {{-- Final Balance Summary --}}
                                             @if(!empty($finalBalance))
                                             <div class="card border-primary mt-2">
-                                                <div class="card-header bg-primary bg-opacity-10 py-1 px-2">
-                                                    <h6 class="mb-0 text-primary" style="font-size: 0.85rem;"><i class="fas fa-balance-scale"></i> صافي الراتب النهائي</h6>
+                                                <div class="card-header bg-primary bg-opacity-10 py-2 px-3">
+                                                    <h6 class="mb-0 text-primary fw-bold" style="font-size: 0.9rem;"><i class="fas fa-balance-scale"></i> تفاصيل الراتب والمستحقات</h6>
                                                 </div>
-                                                <div class="card-body p-2">
-                                                    <div class="row g-2">
-                                                        <div class="col-md-6">
-                                                            <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
-                                                                <span>الراتب من البصمات:</span>
-                                                                <strong>{{ number_format($finalBalance['attendance_salary'] ?? 0, 2) }}</strong>
+                                                <div class="card-body p-3">
+                                                    <div class="row g-4">
+                                                        {{-- Salary Components (Period) --}}
+                                                        <div class="col-md-6 border-end">
+                                                            <h6 class="text-muted mb-3 border-bottom pb-2 fw-bold">إجمالي راتب المدة</h6>
+                                                            
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span class="text-secondary small">الراتب الأساسي الشهري:</span>
+                                                                <span class="text-muted small">{{ number_format($finalBalance['basic_salary'] ?? 0, 2) }}</span>
                                                             </div>
-                                                            <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
-                                                                <span>الراتب المرن:</span>
-                                                                <strong>{{ number_format($finalBalance['flexible_salary'] ?? 0, 2) }}</strong>
+
+                                                            <div class="d-flex justify-content-between mb-2 border-bottom pb-1 bg-light px-2 rounded">
+                                                                <span class="text-primary fw-bold">راتب الحضور المستحق (أيام العمل):</span>
+                                                                <strong class="text-primary">{{ number_format($finalBalance['salary_due'] ?? 0, 2) }}</strong>
                                                             </div>
-                                                            <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
-                                                                <span>إجمالي الراتب:</span>
-                                                                <strong>{{ number_format($finalBalance['total_salary'] ?? 0, 2) }}</strong>
+
+                                                            <div class="d-flex justify-content-between mb-2 px-1">
+                                                                <span class="text-success small">إضافي حضور:</span>
+                                                                <strong class="text-success small">+{{ number_format($finalBalance['overtime_salary'] ?? 0, 2) }}</strong>
                                                             </div>
+                                                            <div class="d-flex justify-content-between mb-2 px-1">
+                                                                <span class="text-danger small">خصم حضور/غياب:</span>
+                                                                <strong class="text-danger small">-{{ number_format($finalBalance['attendance_deductions'] ?? 0, 2) }}</strong>
+                                                            </div>
+                                                            
+                                                            <div class="d-flex justify-content-between mt-3 pt-2 bg-primary bg-opacity-10 p-2 rounded border border-primary shadow-sm">
+                                                                <span class="fw-bold fs-6">إجمالي مستحق راتب المدة:</span>
+                                                                <strong class="text-white fs-5">{{ number_format($finalBalance['net_period_salary'] ?? 0, 2) }}</strong>
+                                                            </div>
+                                                            <small class="text-muted x-small d-block mt-1 text-center">(راتب الحضور + الإضافي - خصم الغياب)</small>
                                                         </div>
+
+                                                        {{-- External Balances & Settlement --}}
                                                         <div class="col-md-6">
-                                                            <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
-                                                                <span class="text-success">المكافآت:</span>
-                                                                <strong class="text-success">+{{ number_format($finalBalance['rewards'] ?? 0, 2) }}</strong>
-                                                            </div>
-                                                            <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
-                                                                <span class="text-danger">الخصومات:</span>
-                                                                <strong class="text-danger">-{{ number_format($finalBalance['deductions'] ?? 0, 2) }}</strong>
-                                                            </div>
-                                                            <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
-                                                                <span class="text-warning">السلف:</span>
-                                                                <strong class="text-warning">-{{ number_format($finalBalance['advances'] ?? 0, 2) }}</strong>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-12 mt-2 pt-2 border-top">
-                                                            <div class="alert alert-info mb-0 py-2">
-                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                    <span class="fw-bold" style="font-size: 0.9rem;">صافي الراتب النهائي:</span>
-                                                                    <strong class="fs-6">{{ number_format($finalBalance['net_balance'] ?? 0, 2) }}</strong>
+                                                            <h6 class="text-muted mb-3 border-bottom pb-2 fw-bold">تسوية المستحقات والسلف</h6>
+                                                            
+                                                            {{-- Rewards --}}
+                                                            <div class="mb-4 bg-light bg-opacity-50 p-2 rounded border" x-data="{ amount: 0 }">
+                                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                    <span class="fw-bold text-success"><i class="las la-gift"></i> المكافآت المسددة:</span>
+                                                                    <strong class="text-success fs-6">{{ number_format($finalBalance['rewards_settled'] ?? 0, 2) }}</strong>
                                                                 </div>
+                                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                     <small class="text-muted">المكافآت المتبقية (غير مسدد): <span class="fw-bold text-dark">{{ number_format($finalBalance['rewards_remaining'] ?? 0, 2) }}</span></small>
+                                                                </div>
+                                                                @if(($finalBalance['rewards_remaining'] ?? 0) > 0)
+                                                                    <div class="input-group input-group-sm mt-1 shadow-sm">
+                                                                        <input type="number" step="0.01" class="form-control border-success text-center fw-bold" x-model="amount" placeholder="المبلغ">
+                                                                        <button class="btn btn-success px-3" type="button" 
+                                                                                @click="$wire.payRewards(amount).then(() => { amount = 0 })"
+                                                                                wire:loading.attr="disabled">
+                                                                            <i class="las la-money-bill-wave"></i> صرف
+                                                                        </button>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+
+                                                            {{-- Deductions --}}
+                                                            <div class="mb-4 bg-light bg-opacity-50 p-2 rounded border" x-data="{ amount: 0 }">
+                                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                    <span class="fw-bold text-danger"><i class="las la-exclamation-circle"></i> الخصومات المسددة:</span>
+                                                                    <strong class="text-danger fs-6">{{ number_format($finalBalance['deductions_settled'] ?? 0, 2) }}</strong>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                     <small class="text-muted">الخصومات المتبقية (غير مسدد): <span class="fw-bold text-dark">{{ number_format($finalBalance['deductions_remaining'] ?? 0, 2) }}</span></small>
+                                                                </div>
+                                                                @if(($finalBalance['deductions_remaining'] ?? 0) > 0)
+                                                                    <div class="input-group input-group-sm mt-1 shadow-sm">
+                                                                        <input type="number" step="0.01" class="form-control border-danger text-center fw-bold" x-model="amount" placeholder="المبلغ">
+                                                                        <button class="btn btn-danger px-3" type="button" 
+                                                                                @click="$wire.applyDeductions(amount).then(() => { amount = 0 })"
+                                                                                wire:loading.attr="disabled">
+                                                                            <i class="las la-minus-circle"></i> خصم
+                                                                        </button>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+
+                                                            {{-- Advances --}}
+                                                            <div class="mb-3 bg-light bg-opacity-50 p-2 rounded border" x-data="{ amount: 0 }">
+                                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                    <span class="fw-bold text-warning"><i class="las la-hand-holding-usd text-dark"></i> السلف المسددة:</span>
+                                                                    <strong class="text-danger fs-6">{{ number_format($finalBalance['advances_settled'] ?? 0, 2) }}</strong>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                     <small class="text-muted">السلف المتبقية (غير مسدد): <span class="fw-bold text-dark">{{ number_format($finalBalance['advances_remaining'] ?? 0, 2) }}</span></small>
+                                                                </div>
+                                                                @if(($finalBalance['advances_remaining'] ?? 0) > 0)
+                                                                    <div class="input-group input-group-sm mt-1 shadow-sm">
+                                                                        <input type="number" step="0.01" class="form-control border-warning text-center fw-bold" x-model="amount" placeholder="المبلغ">
+                                                                        <button class="btn btn-warning px-3 text-dark fw-bold" type="button" 
+                                                                                @click="$wire.settleAdvance(amount).then(() => { amount = 0 })"
+                                                                                wire:loading.attr="disabled">
+                                                                            <i class="las la-file-invoice-dollar"></i> خصم
+                                                                        </button>
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     </div>
+
                                                 </div>
                                             </div>
                                             @endif

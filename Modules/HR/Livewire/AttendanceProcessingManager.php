@@ -274,31 +274,103 @@ class AttendanceProcessingManager extends Component
                 ->orderBy('attendance_date')
                 ->get();
 
-            // Load deductions, rewards, and advances for the period
+            $employee = $this->selectedProcessing->employee;
+            $processing = $this->selectedProcessing;
+
+            // Calculate salary components from processing data
+            $basicSalary = $employee->salary ?? 0;
+            
+            // Calculate overtime from processing
+            $overtimeAmount = 0;
+            if ($processing->overtime_work_minutes > 0 && $processing->calculated_salary_for_hour > 0) {
+                $overtimeHours = $processing->overtime_work_minutes / 60;
+                $overtimeMultiplier = $employee->additional_hour_calculation ?? 1.5;
+                $overtimeAmount = $overtimeHours * $processing->calculated_salary_for_hour * $overtimeMultiplier;
+            }
+            
+            // Calculate attendance deductions from processing
+            $attendanceDeductions = 0;
+            if ($processing->total_late_minutes > 0 && $processing->calculated_salary_for_hour > 0) {
+                $lateHourCalculation = $employee->late_hour_calculation ?? 1.0;
+                $attendanceDeductions += ($processing->total_late_minutes / 60) * $lateHourCalculation * $processing->calculated_salary_for_hour;
+            }
+            if ($processing->absent_days > 0 && $processing->calculated_salary_for_day > 0) {
+                $lateDayCalculation = $employee->late_day_calculation ?? 1.0;
+                $attendanceDeductions += $processing->absent_days * $lateDayCalculation * $processing->calculated_salary_for_day;
+            }
+            if ($processing->unpaid_leave_days > 0 && $processing->calculated_salary_for_day > 0) {
+                $attendanceDeductions += $processing->unpaid_leave_days * $processing->calculated_salary_for_day;
+            }
+
+            // Fetch balances from AccHead sub-accounts using service
+            /** @var \Modules\HR\Services\EmployeeDeductionRewardService $deductionService */
+            $deductionService = app(\Modules\HR\Services\EmployeeDeductionRewardService::class);
+            
+            $startDate = Carbon::parse($processing->period_start);
+            $endDate = Carbon::parse($processing->period_end);
+
+            $rewardsPayable = $deductionService->getRewardsPayableBalance($employee);
+            $deductionsReceivable = $deductionService->getDeductionsReceivableBalance($employee);
+            $advancesBalance = $deductionService->getAdvancesBalance($employee);
+
+            // Calculations based on User Request
+            // 1. Period Attendance Salary (Base calculated from days/attendance)
+            $salaryDueFromAttendance = round((float) ($processing->salary_due ?? 0), 2);
+            
+            // 2. Net Period Salary (Attendance + Overtime - Deductions)
+            $netPeriodSalary = $salaryDueFromAttendance + $overtimeAmount - $attendanceDeductions;
+
+            // Fetch settled amounts for the period
+            $rewardsSettled = $deductionService->getSettledRewards($employee, $startDate, $endDate);
+            $deductionsSettled = $deductionService->getSettledDeductions($employee, $startDate, $endDate);
+            $advancesSettled = $deductionService->getSettledAdvances($employee, $startDate, $endDate);
+
+            // 3. Final Net Calculation (Adding/Subtracting settled amounts from period net)
+            $finalNet = $netPeriodSalary + $rewardsSettled - $deductionsSettled - $advancesSettled;
+
+            // Build finalBalance array
+            $this->finalBalance = [
+                // Employee info
+                'basic_salary' => $basicSalary,
+                
+                // Period salary components
+                'salary_due' => $salaryDueFromAttendance,
+                'overtime_salary' => round((float) $overtimeAmount, 2),
+                'attendance_deductions' => round((float) $attendanceDeductions, 2),
+                'net_period_salary' => round((float) $netPeriodSalary, 2),
+                
+                // Settled amounts (Applied to this salary)
+                'rewards_settled' => round((float) $rewardsSettled, 2),
+                'deductions_settled' => round((float) $deductionsSettled, 2),
+                'advances_settled' => round((float) $advancesSettled, 2),
+                
+                // Remaining/Outstanding Balances (For display)
+                'rewards_remaining' => round((float) abs($rewardsPayable), 2),
+                'deductions_remaining' => round((float) abs($deductionsReceivable), 2),
+                'advances_remaining' => round((float) abs($advancesBalance), 2),
+                
+                // Final Net Salary to be paid
+                'final_net' => round((float) $finalNet, 2),
+            ];
+
+            // Load deductions, rewards, and advances for the period (for detail display)
             $startDate = Carbon::parse($this->selectedProcessing->period_start);
             $endDate = Carbon::parse($this->selectedProcessing->period_end);
 
             $deductionService = app(\Modules\HR\Services\EmployeeDeductionRewardService::class);
 
-            // Load deductions and rewards summary
+            // Load deductions and rewards summary (for history display)
             $this->deductionsRewardsSummary = $deductionService->getMonthlySummary(
-                $this->selectedProcessing->employee,
+                $employee,
                 $startDate,
                 $endDate
             );
 
-            // Load advances summary
-            $this->advancesSummary = \Modules\HR\Models\EmployeeAdvance::where('employee_id', $this->selectedProcessing->employee_id)
+            // Load advances summary (for history display)
+            $this->advancesSummary = \Modules\HR\Models\EmployeeAdvance::where('employee_id', $employee->id)
                 ->where('status', 'approved')
                 ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                 ->get();
-
-            // Load final balance
-            $this->finalBalance = $deductionService->getEmployeeAccountBalance(
-                $this->selectedProcessing->employee,
-                $startDate,
-                $endDate
-            );
 
             $this->showDetails = true;
 
@@ -334,37 +406,106 @@ class AttendanceProcessingManager extends Component
 
             $employee = Employee::with('account')->findOrFail($processing->employee_id);
 
-            // If total salary is negative (employee owes the company), don't create journal entry
-            // This means the employee was absent more than present, so no salary payment is due
-            if ($processing->total_salary >= 0) {
-                // If salary is positive or zero, create journal entry for payment using JournalService
-                $debitAccount = AccHead::where('code', '5301')->first();
-                if (! $debitAccount) {
-                    throw new \Exception('حساب رواتب الموظفين (5301) غير موجود');
-                }
+            if (! $employee->account) {
+                throw new \Exception('حساب الموظف الرئيسي غير موجود');
+            }
 
-                if (! $employee->account) {
-                    throw new \Exception('حساب الموظف غير موجود');
-                }
+            // Get salary expense account (5301)
+            $salaryExpenseAccount = AccHead::where('code', '5301')->first();
+            if (! $salaryExpenseAccount) {
+                throw new \Exception('حساب رواتب الموظفين (5301) غير موجود');
+            }
 
+            // Get employee's overtime account (sub-account under 5304)
+            $overtimeAccount = AccHead::where('accountable_type', Employee::class)
+                ->where('accountable_id', $employee->id)
+                ->where('aname', 'like', 'إضافى حضور%')
+                ->first();
+
+            // Get employee's deduction account (sub-account under 4203)
+            $deductionAccount = AccHead::where('accountable_type', Employee::class)
+                ->where('accountable_id', $employee->id)
+                ->where('aname', 'like', 'خصم حضور%')
+                ->first();
+
+            // Calculate salary components from processing data
+            // Basic salary = actual work hours * hourly rate
+            $basicSalary = $processing->salary_due ?? 0;
+            
+            // Overtime = overtime work hours * hourly rate * overtime multiplier
+            $overtimeAmount = 0;
+            if ($processing->overtime_work_minutes > 0 && $processing->calculated_salary_for_hour > 0) {
+                $overtimeHours = $processing->overtime_work_minutes / 60;
+                $overtimeMultiplier = $employee->additional_hour_calculation ?? 1.5;
+                $overtimeAmount = $overtimeHours * $processing->calculated_salary_for_hour * $overtimeMultiplier;
+            }
+            
+            // Deductions = late minutes deduction + absent days deduction
+            $deductionAmount = 0;
+            if ($processing->total_late_minutes > 0 && $processing->calculated_salary_for_hour > 0) {
+                $lateHourCalculation = $employee->late_hour_calculation ?? 1.0;
+                $deductionAmount += ($processing->total_late_minutes / 60) * $lateHourCalculation * $processing->calculated_salary_for_hour;
+            }
+            if ($processing->absent_days > 0 && $processing->calculated_salary_for_day > 0) {
+                $lateDayCalculation = $employee->late_day_calculation ?? 1.0;
+                $deductionAmount += $processing->absent_days * $lateDayCalculation * $processing->calculated_salary_for_day;
+            }
+            // Add unpaid leave deduction
+            if ($processing->unpaid_leave_days > 0 && $processing->calculated_salary_for_day > 0) {
+                $deductionAmount += $processing->unpaid_leave_days * $processing->calculated_salary_for_day;
+            }
+
+            // Net salary to employee = basic + overtime - deductions
+            $netSalary = $basicSalary + $overtimeAmount - $deductionAmount;
+
+            // Only create journal if there's something to record
+            if ($basicSalary > 0 || $overtimeAmount > 0 || $deductionAmount > 0) {
                 $journalService = app(JournalService::class);
+                $lines = [];
 
-                $lines = [
-                    [
-                        'account_id' => $debitAccount->id,
-                        'debit' => $processing->total_salary,
+                // Debit: Salary Expense (5301) - Basic salary
+                if ($basicSalary > 0) {
+                    $lines[] = [
+                        'account_id' => $salaryExpenseAccount->id,
+                        'debit' => $basicSalary,
                         'credit' => 0,
                         'type' => 1,
                         'info' => "راتب الموظف: {$employee->name} - معالجة #{$processingId}",
-                    ],
-                    [
-                        'account_id' => $employee->account->id,
+                    ];
+                }
+
+                // Debit: Overtime Account (5304/xxx) - Overtime salary
+                if ($overtimeAmount > 0 && $overtimeAccount) {
+                    $lines[] = [
+                        'account_id' => $overtimeAccount->id,
+                        'debit' => round($overtimeAmount, 2),
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => "إضافي حضور: {$employee->name} - معالجة #{$processingId}",
+                    ];
+                }
+
+                // Credit: Attendance Deduction Account (4203/xxx) - Deductions
+                if ($deductionAmount > 0 && $deductionAccount) {
+                    $lines[] = [
+                        'account_id' => $deductionAccount->id,
                         'debit' => 0,
-                        'credit' => $processing->total_salary,
+                        'credit' => round($deductionAmount, 2),
                         'type' => 0,
+                        'info' => "خصم حضور: {$employee->name} - معالجة #{$processingId}",
+                    ];
+                }
+
+                // Credit: Employee Main Account (2102/xxx) - Net salary payable
+                if ($netSalary != 0) {
+                    $lines[] = [
+                        'account_id' => $employee->account->id,
+                        'debit' => $netSalary < 0 ? abs($netSalary) : 0,
+                        'credit' => $netSalary > 0 ? $netSalary : 0,
+                        'type' => $netSalary > 0 ? 0 : 1,
                         'info' => "راتب الموظف: {$employee->name} - معالجة #{$processingId}",
-                    ],
-                ];
+                    ];
+                }
 
                 $meta = [
                     'pro_type' => 74,
@@ -381,9 +522,8 @@ class AttendanceProcessingManager extends Component
             $processing->status = 'approved';
             $processing->save();
 
-            // Apply deductions and rewards (create journal entries for them)
-            $attendanceProcessingService = app(AttendanceProcessingService::class);
-            $attendanceProcessingService->applyDeductionsAndRewards($processingId);
+            // Note: Deductions, rewards, and advances are now handled separately
+            // They are NOT applied automatically during salary approval
 
             DB::commit();
             $this->resetPage(); // Refresh pagination
@@ -442,6 +582,255 @@ class AttendanceProcessingManager extends Component
             session()->flash('error', __('hr.processing_not_found'));
         } catch (\Exception $e) {
             session()->flash('error', __('hr.error_deleting_processing', ['error' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * Settle advance from employee's salary (deduct from salary modal)
+     * Journal: Debit Employee Main, Credit Employee Advance
+     */
+    public function settleAdvance(float $amount): void
+    {
+        if (!$this->selectedProcessing) {
+            session()->flash('error', 'لا توجد معالجة محددة');
+            return;
+        }
+
+        if ($amount <= 0) {
+            session()->flash('error', 'المبلغ يجب أن يكون أكبر من صفر');
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            $employee = $this->selectedProcessing->employee;
+
+            // Get employee main account
+            $employeeMainAccount = $employee->account;
+            if (!$employeeMainAccount) {
+                throw new \Exception('حساب الموظف الرئيسي غير موجود');
+            }
+
+            // Get employee advance account
+            $advanceAccount = AccHead::where('accountable_type', Employee::class)
+                ->where('accountable_id', $employee->id)
+                ->where('aname', 'like', 'سلف%')
+                ->first();
+
+            if (!$advanceAccount) {
+                throw new \Exception('حساب سلف الموظف غير موجود');
+            }
+
+            $journalService = app(JournalService::class);
+
+            $lines = [
+                [
+                    'account_id' => $employeeMainAccount->id,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => "خصم سلفة من راتب: {$employee->name}",
+                ],
+                [
+                    'account_id' => $advanceAccount->id,
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'type' => 0,
+                    'info' => "سداد سلفة من راتب: {$employee->name}",
+                ],
+            ];
+
+            $journalDate = $this->selectedProcessing->period_end instanceof Carbon 
+                ? $this->selectedProcessing->period_end->format('Y-m-d') 
+                : Carbon::parse($this->selectedProcessing->period_end)->format('Y-m-d');
+
+            $meta = [
+                'pro_type' => 79,
+                'date' => $journalDate,
+                'info' => "خصم سلفة من راتب الموظف: {$employee->name}",
+                'emp_id' => $employee->id,
+            ];
+
+            Log::info("Settling Advance for emp {$employee->id} using date {$journalDate}");
+            $journalService->createJournal($lines, $meta);
+
+            DB::commit();
+            
+            // Refresh finalBalance
+            $this->viewProcessingDetails($this->selectedProcessing->id);
+            
+            session()->flash('success', 'تم خصم السلفة من الراتب بنجاح');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error settling advance: ' . $e->getMessage());
+            session()->flash('error', 'خطأ في خصم السلفة: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Apply deductions to employee's salary
+     * Journal: Debit Employee Main, Credit Deductions Receivable (110602)
+     */
+    public function applyDeductions(float $amount): void
+    {
+        if (!$this->selectedProcessing) {
+            session()->flash('error', 'لا توجد معالجة محددة');
+            return;
+        }
+
+        if ($amount <= 0) {
+            session()->flash('error', 'المبلغ يجب أن يكون أكبر من صفر');
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            $employee = $this->selectedProcessing->employee;
+
+            // Get employee main account
+            $employeeMainAccount = $employee->account;
+            if (!$employeeMainAccount) {
+                throw new \Exception('حساب الموظف الرئيسي غير موجود');
+            }
+
+            // Get employee deductions receivable account (110602)
+            $deductionsReceivableAccount = AccHead::where('accountable_type', Employee::class)
+                ->where('accountable_id', $employee->id)
+                ->where('aname', 'like', 'جزاءات وخصومات مستحقه%')
+                ->first();
+
+            if (!$deductionsReceivableAccount) {
+                throw new \Exception('حساب جزاءات وخصومات مستحقه الموظف غير موجود');
+            }
+
+            $journalService = app(JournalService::class);
+
+            $lines = [
+                [
+                    'account_id' => $employeeMainAccount->id,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => "تطبيق خصومات على راتب: {$employee->name}",
+                ],
+                [
+                    'account_id' => $deductionsReceivableAccount->id,
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'type' => 0,
+                    'info' => "تسوية جزاءات مستحقة: {$employee->name}",
+                ],
+            ];
+
+            $journalDate = $this->selectedProcessing->period_end instanceof Carbon 
+                ? $this->selectedProcessing->period_end->format('Y-m-d') 
+                : Carbon::parse($this->selectedProcessing->period_end)->format('Y-m-d');
+
+            $meta = [
+                'pro_type' => 75,
+                'date' => $journalDate,
+                'info' => "تطبيق خصومات على راتب الموظف: {$employee->name}",
+                'emp_id' => $employee->id,
+            ];
+
+            Log::info("Applying Deductions for emp {$employee->id} using date {$journalDate}");
+            $journalService->createJournal($lines, $meta);
+
+            DB::commit();
+            
+            // Refresh finalBalance
+            $this->viewProcessingDetails($this->selectedProcessing->id);
+            
+            session()->flash('success', 'تم تطبيق الخصومات على الراتب بنجاح');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error applying deductions: ' . $e->getMessage());
+            session()->flash('error', 'خطأ في تطبيق الخصومات: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Pay rewards to employee (add to salary)
+     * Journal: Debit Rewards Payable (2109), Credit Employee Main
+     */
+    public function payRewards(float $amount): void
+    {
+        if (!$this->selectedProcessing) {
+            session()->flash('error', 'لا توجد معالجة محددة');
+            return;
+        }
+
+        if ($amount <= 0) {
+            session()->flash('error', 'المبلغ يجب أن يكون أكبر من صفر');
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            $employee = $this->selectedProcessing->employee;
+
+            // Get employee main account
+            $employeeMainAccount = $employee->account;
+            if (!$employeeMainAccount) {
+                throw new \Exception('حساب الموظف الرئيسي غير موجود');
+            }
+
+            // Get employee rewards payable account (2109)
+            $rewardsPayableAccount = AccHead::where('accountable_type', Employee::class)
+                ->where('accountable_id', $employee->id)
+                ->where('aname', 'like', 'مكافآت وحوافز مستحقه%')
+                ->first();
+
+            if (!$rewardsPayableAccount) {
+                throw new \Exception('حساب مكافآت وحوافز مستحقه الموظف غير موجود');
+            }
+
+            $journalService = app(JournalService::class);
+
+            $lines = [
+                [
+                    'account_id' => $rewardsPayableAccount->id,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'type' => 1,
+                    'info' => "صرف مكافآت مستحقة: {$employee->name}",
+                ],
+                [
+                    'account_id' => $employeeMainAccount->id,
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'type' => 0,
+                    'info' => "إضافة مكافآت للراتب: {$employee->name}",
+                ],
+            ];
+
+            $journalDate = $this->selectedProcessing->period_end instanceof Carbon 
+                ? $this->selectedProcessing->period_end->format('Y-m-d') 
+                : Carbon::parse($this->selectedProcessing->period_end)->format('Y-m-d');
+
+            $meta = [
+                'pro_type' => 76,
+                'date' => $journalDate,
+                'info' => "صرف مكافآت للموظف: {$employee->name}",
+                'emp_id' => $employee->id,
+            ];
+
+            Log::info("Paying Rewards for emp {$employee->id} using date {$journalDate}");
+            $journalService->createJournal($lines, $meta);
+
+            DB::commit();
+            
+            // Refresh finalBalance
+            $this->viewProcessingDetails($this->selectedProcessing->id);
+            
+            session()->flash('success', 'تم صرف المكافآت للراتب بنجاح');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error paying rewards: ' . $e->getMessage());
+            session()->flash('error', 'خطأ في صرف المكافآت: ' . $e->getMessage());
         }
     }
 

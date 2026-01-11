@@ -663,7 +663,7 @@ class SalaryCalculationService
             ];
         }
 
-        // Process based on salary type
+        // Process based on salary type ساعات عمل فقط'
         switch ($salaryType) {
             case 'ساعات عمل فقط':
                 // 1. بصمة دخول في النطاق + أي بصمة خروج → يحسب اليوم كاملاً بدون أي إضافي

@@ -98,9 +98,20 @@ class AccHeadSeeder extends Seeder
             ['id' => 85, 'code' => '542', 'deletable' => 0, 'editable' => 0, 'aname' => 'مصاريف تمويليه أخري', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 83, 'is_basic' => 1, 'employees_expensses' => 0],
 
             // المكافآت والحوافز (تحت المصروفات - 53)
-            ['id' => 86, 'code' => '5303', 'deletable' => 0, 'editable' => 1, 'aname' => 'المكافآت والحوافز', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 22, 'is_basic' => 0, 'employees_expensses' => 1],
-            // جزاءات وخصومات الموظفين (تحت الدائنون الآخرون - 2104)
-            ['id' => 87, 'code' => '210402', 'deletable' => 0, 'editable' => 1, 'aname' => 'جزاءات وخصومات الموظفين', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 44, 'is_basic' => 0, 'employees_expensses' => 0],
+            ['id' => 86, 'code' => '5303', 'deletable' => 0, 'editable' => 0, 'aname' => 'المكافآت والحوافز', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 22, 'is_basic' => 1, 'employees_expensses' => 0],
+            // جزاءات وخصومات الموظفين (تحت الايؤادات الاخرى - )
+            ['id' => 87, 'code' => '4202', 'deletable' => 0, 'editable' => 0, 'aname' => 'جزاءات وخصومات الموظفين', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 14, 'is_basic' => 1, 'employees_expensses' => 0],
+
+             // إضافى حضور  (تحت المصروفات - 53)
+            ['id' => 88, 'code' => '5304', 'deletable' => 0, 'editable' => 0, 'aname' => 'إضافى حضور', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 22, 'is_basic' => 1, 'employees_expensses' => 0],
+            // خصم حضور (تحت الايؤادات الاخرى - )
+            ['id' => 89, 'code' => '4203', 'deletable' => 0, 'editable' => 0, 'aname' => 'خصم حضور', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 14, 'is_basic' => 1, 'employees_expensses' => 0],
+
+            // المكافآت والحوافز المستحقه (تحت دائنين اخرين - 53)
+            ['id' => 90, 'code' => '2109', 'deletable' => 0, 'editable' => 0, 'aname' => 'المكافآت والحوافز المستحقه', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 44, 'is_basic' => 1, 'employees_expensses' => 0],
+            // جزاءات وخصومات الموظفين المستحقه (تحت مدينين اخرين - )
+            ['id' => 91, 'code' => '110602', 'deletable' => 0, 'editable' => 0, 'aname' => 'جزاءات وخصومات الموظفين المستحقه', 'is_stock' => 0, 'is_fund' => 0, 'parent_id' => 28, 'is_basic' => 1, 'employees_expensses' => 0],
+
 
         ];
 

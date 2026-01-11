@@ -119,6 +119,7 @@ class JournalService
                 'user' => Auth::id(),
             ]);
 
+            $this->revertAccountBalances($oper->id);
             JournalDetail::query()->where('op_id', $oper->id)->delete();
             $this->upsertDetails($journalId, $oper->id, $lines);
         });
@@ -133,10 +134,29 @@ class JournalService
             $journalHead = JournalHead::query()->where('journal_id', $journalId)->lockForUpdate()->firstOrFail();
             $opId = (int) $journalHead->op_id;
 
+            // Revert account balances before deleting details
+            $this->revertAccountBalances($opId);
+
             JournalDetail::query()->where('op_id', $opId)->delete();
             JournalHead::query()->where('journal_id', $journalId)->delete();
             OperHead::query()->where('id', $opId)->delete();
         });
+    }
+
+    /**
+     * Helper to revert account balances for a given operation ID
+     */
+    private function revertAccountBalances(int $opId): void
+    {
+        $details = JournalDetail::query()->where('op_id', $opId)->get();
+        foreach ($details as $detail) {
+            $account = AccHead::query()->lockForUpdate()->find($detail->account_id);
+            if ($account) {
+                $account->debit -= $detail->debit;
+                $account->credit -= $detail->credit;
+                $account->save();
+            }
+        }
     }
 
     /**
@@ -176,14 +196,22 @@ class JournalService
     {
         foreach ($lines as $line) {
             $accountId = (int) $line['account_id'];
-            // Lock the account row to avoid race conditions if needed in future balance apps
-            AccHead::query()->lockForUpdate()->findOrFail($accountId);
+            // Lock the account row to avoid race conditions
+            $account = AccHead::query()->lockForUpdate()->findOrFail($accountId);
+
+            $debit = (float) ($line['debit'] ?? 0);
+            $credit = (float) ($line['credit'] ?? 0);
+
+            // Update account Debit/Credit totals
+            $account->debit += $debit;
+            $account->credit += $credit;
+            $account->save();
 
             JournalDetail::query()->create([
                 'journal_id' => $journalId,
                 'account_id' => $accountId,
-                'debit' => (float) ($line['debit'] ?? 0),
-                'credit' => (float) ($line['credit'] ?? 0),
+                'debit' => $debit,
+                'credit' => $credit,
                 'type' => (int) ($line['type'] ?? 0),
                 'info' => $line['info'] ?? null,
                 'op_id' => $opId,
