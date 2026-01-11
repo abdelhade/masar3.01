@@ -18,6 +18,7 @@ class InvoiceTemplatesSeeder extends Seeder
                 'description' => 'نموذج كامل لفواتير المبيعات يعرض جميع التفاصيل',
                 'visible_columns' => [
                     'item_name',
+                    'code',
                     'unit',
                     'quantity',
                     'price',
@@ -48,6 +49,7 @@ class InvoiceTemplatesSeeder extends Seeder
                 'description' => 'النموذج القياسي لفواتير المشتريات',
                 'visible_columns' => [
                     'item_name',
+                    'code',
                     'unit',
                     'quantity',
                     'price',
@@ -93,6 +95,7 @@ class InvoiceTemplatesSeeder extends Seeder
                 'description' => 'نموذج لأوامر البيع وعروض أسعار العملاء',
                 'visible_columns' => [
                     'item_name',
+                    'code',
                     'unit',
                     'quantity',
                     'price',
@@ -109,6 +112,7 @@ class InvoiceTemplatesSeeder extends Seeder
                 'description' => 'نموذج لأوامر الشراء وعروض أسعار الموردين',
                 'visible_columns' => [
                     'item_name',
+                    'code',
                     'unit',
                     'quantity',
                     'price',

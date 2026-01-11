@@ -598,6 +598,7 @@ class EditInvoiceForm extends Component
                 'operation_item_id' => $operationItem->id,
                 'item_id' => $item->id,
                 'unit_id' => $displayUnitId,
+                'code' => $item->code,
                 'name' => $item->name,
                 'quantity' => $quantity,
                 'price' => $price,

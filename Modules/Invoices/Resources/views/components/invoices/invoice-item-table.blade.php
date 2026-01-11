@@ -117,6 +117,7 @@
                             $width = $this->currentTemplate->getColumnWidth($columnKey);
                             $columnNames = [
                                 'item_name' => __('Item Name'),
+                                'code' => __('Code'),
                                 'unit' => __('Unit'),
                                 'quantity' => __('Quantity'),
                                 'batch_number' => __('Batch Number'),
@@ -140,6 +141,7 @@
         </thead>
 
         <tbody>
+
             @forelse ($invoiceItems as $index => $row)
                 <tr wire:key="invoice-row-{{ $row['item_id'] }}"
                     wire:click="selectItemFromTable({{ $row['item_id'] ?? 0 }}, {{ $row['unit_id'] ?? 'null' }}, {{ $row['price'] ?? 0 }})"
@@ -156,11 +158,12 @@
                     @endif
 
                     {{-- كود الصنف --}}
-                    @if ($this->shouldShowColumn('item_code'))
+                    {{-- كود الصنف --}}
+                    @if ($this->shouldShowColumn('code'))
                         <td style="width: 10%;">
                             <div class="static-text"
-                                title="{{ optional($items->firstWhere('id', $row['item_id']))->code ?? '-' }}">
-                                {{ optional($items->firstWhere('id', $row['item_id']))->code ?? '-' }}
+                                title="{{ $row['code'] ?? '-' }}">
+                                {{ $row['code'] ?? '-' }}
                             </div>
                         </td>
                     @endif

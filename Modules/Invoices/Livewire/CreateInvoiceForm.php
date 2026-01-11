@@ -908,6 +908,7 @@ class CreateInvoiceForm extends Component
         $newItem = [
             'item_id' => $item->id,
             'unit_id' => $unitId,
+            'code' => $item->code,
             'name' => $item->name,
             'quantity' => $quantity,
             'price' => $price,
@@ -1120,6 +1121,7 @@ class CreateInvoiceForm extends Component
         $newItem = [
             'item_id' => $item->id,
             'unit_id' => $unitId,
+            'code' => $item->code,
             'name' => $item->name,
             'quantity' => $quantity,
             'price' => $price,

@@ -115,6 +115,7 @@ trait HandlesInvoiceData
 
             $this->invoiceItems[] = [
                 'item_id' => $item->item_id,
+                'code' => $item->item->code,
                 'name' => $item->item->name,
                 'unit_id' => $displayUnitId,
                 'quantity' => $quantity,
@@ -199,6 +200,7 @@ trait HandlesInvoiceData
                     return [
                         'item_id' => $item['item_id'],
                         'unit_id' => $item['unit_id'],
+                        'code' => $item['code'] ?? '',
                         'name' => $item['name'],
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],

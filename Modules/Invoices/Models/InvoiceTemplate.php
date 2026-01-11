@@ -29,6 +29,7 @@ class InvoiceTemplate extends Model
     {
         return [
             'item_name' => 'اسم الصنف',
+            'code' => 'كود الصنف',
             'unit' => 'الوحدة',
             'quantity' => 'الكمية',
             'batch_number' => 'رقم الدفعة',      // ✅ جديد
@@ -107,10 +108,30 @@ class InvoiceTemplate extends Model
 
     public function getOrderedColumns(): array
     {
-        if (empty($this->column_order)) {
-            return $this->visible_columns ?? [];
-        }
+        // Define the fixed order that matches the blade file structure
+        $canonicalOrder = [
+            'item_name',
+            'code',
+            'unit',
+            'quantity',
+            'batch_number',
+            'expiry_date',
+            'length',
+            'width',
+            'height',
+            'density',
+            'price',
+            'discount',
+            'sub_value',
+        ];
 
-        return $this->column_order;
+        $visible = $this->visible_columns ?? [];
+        
+        // Return visible columns sorted by their position in canonicalOrder
+        // Columns not in canonicalOrder will be appended at the end
+        return collect($visible)->sortBy(function ($col) use ($canonicalOrder) {
+            $index = array_search($col, $canonicalOrder);
+            return $index === false ? 999 : $index;
+        })->values()->toArray();
     }
 }
