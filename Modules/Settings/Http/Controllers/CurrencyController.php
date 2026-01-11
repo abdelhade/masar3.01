@@ -214,6 +214,10 @@ class CurrencyController extends Controller
                     $data = $response->json();
 
                     if (isset($data['data'][$targetCurrency]['value'])) {
+                        // Correct Logic: How much Base (e.g. EGP) equals 1 Target (e.g. USD)
+                        // API returns: 1 USD = X Target.
+                        // If Base is EGP and Target is USD: We want 47 (EGP).
+                        // If API is based on USD, and target is EGP, it returns 47.
                         return $data['data'][$targetCurrency]['value'];
                     }
                 }
@@ -228,10 +232,14 @@ class CurrencyController extends Controller
                     $data = $response->json();
 
                     if (isset($data['data'][$baseCurrency]['value']) && isset($data['data'][$targetCurrency]['value'])) {
-                        $baseRate = $data['data'][$baseCurrency]['value'];
-                        $targetRate = $data['data'][$targetCurrency]['value'];
+                        $baseRate = $data['data'][$baseCurrency]['value']; // 1 USD = X Base
+                        $targetRate = $data['data'][$targetCurrency]['value']; // 1 USD = X Target
 
-                        return $targetRate / $baseRate;
+                        // Correct Logic: Value of 1 Target in Base
+                        // Example: Base=EGP (47), Target=GBP (60)
+                        // 1 GBP = (1/60) USD, 1 USD = 47 EGP -> 1 GBP = 47/60 EGP? No.
+                        // 1 USD = 47 EGP, 1 USD = 0.8 GBP -> 1 GBP = 47 / 0.8 = 58.75 EGP.
+                        return $baseRate / $targetRate;
                     }
                 }
             }
@@ -403,8 +411,9 @@ class CurrencyController extends Controller
         $toRate = $toCurrency->is_default ? 1 : ($toCurrency->latestRate->rate ?? 1);
 
         // Calculate conversion rate
-        // Convert: from -> default -> to
-        $conversionRate = $toRate / $fromRate;
+        // Correct Logic: (1 From = X Base) / (1 To = Y Base) -> 1 From = (X/Y) To
+        // Example: From=USD (47), To=GBP (60) -> 1 USD = 47/60 GBP = 0.78 GBP
+        $conversionRate = $fromRate / $toRate;
 
         $amount = $request->amount ?? 0;
         $converted = $amount * $conversionRate;

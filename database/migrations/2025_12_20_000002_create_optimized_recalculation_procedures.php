@@ -117,51 +117,62 @@ SQL);
             )
             BEGIN
                 DECLARE v_total_profit DECIMAL(15, 2) DEFAULT 0;
-                DECLARE v_fat_disc DECIMAL(10, 2);
-                DECLARE v_fat_total DECIMAL(10, 2);
+                DECLARE v_total_cost DECIMAL(15, 2) DEFAULT 0;
+                DECLARE v_fat_disc DECIMAL(15, 2);
+                DECLARE v_fat_total DECIMAL(15, 2);
+                DECLARE v_pro_type INT;
+                DECLARE v_pro_value DECIMAL(15, 2);
                 
-                -- جلب الخصم الإجمالي
-                SELECT fat_disc, fat_total
-                INTO v_fat_disc, v_fat_total
+                -- Get invoice head information
+                SELECT fat_disc, fat_total, pro_type, pro_value
+                INTO v_fat_disc, v_fat_total, v_pro_type, v_pro_value
                 FROM operhead
                 WHERE id = p_operation_id;
                 
-                -- حساب الربح الإجمالي
-                SELECT 
-                    IFNULL(SUM(
-                        (oi.detail_value - 
-                         CASE 
-                             WHEN v_fat_disc > 0 AND v_fat_total > 0 
-                             THEN (oi.detail_value * v_fat_disc / v_fat_total)
-                             ELSE 0 
-                         END) - 
-                        (COALESCE(i.average_cost, 0) * ABS(oi.qty_out - oi.qty_in))
-                    ), 0)
-                INTO v_total_profit
-                FROM operation_items oi
-                INNER JOIN items i ON oi.item_id = i.id
-                WHERE oi.pro_id = p_operation_id
-                    AND oi.is_stock = 1;
-                
-                -- تحديث الربح في operhead
-                UPDATE operhead 
-                SET profit = v_total_profit 
-                WHERE id = p_operation_id;
-                
-                -- تحديث الربح في operation_items
-                UPDATE operation_items oi
-                INNER JOIN items i ON oi.item_id = i.id
-                SET oi.profit = (
-                    (oi.detail_value - 
+                -- 1. Update cost in items for sales-like operations (Sales, Sales Return, Issue, Manufacturing)
+                IF v_pro_type IN (10, 12, 19, 59) THEN
+                    UPDATE operation_items oi
+                    INNER JOIN items i ON oi.item_id = i.id
+                    SET oi.cost_price = COALESCE(i.average_cost, 0)
+                    WHERE oi.pro_id = p_operation_id
+                        AND oi.is_stock = 1;
+                END IF;
+
+                -- 2. Update profit for each item
+                UPDATE operation_items
+                SET profit = (
+                    ((detail_value - 
                      CASE 
                          WHEN v_fat_disc > 0 AND v_fat_total > 0 
-                         THEN (oi.detail_value * v_fat_disc / v_fat_total)
+                         THEN (detail_value * v_fat_disc / v_fat_total)
                          ELSE 0 
-                     END) - 
-                    (COALESCE(i.average_cost, 0) * ABS(oi.qty_out - oi.qty_in))
+                     END) * IFNULL(currency_rate, 1)) - 
+                    (cost_price * ABS(qty_out - qty_in))
                 )
-                WHERE oi.pro_id = p_operation_id
-                    AND oi.is_stock = 1;
+                WHERE pro_id = p_operation_id
+                    AND is_stock = 1;
+
+                -- 3. Calculate total invoice cost
+                SELECT 
+                    IFNULL(SUM(cost_price * ABS(qty_out - qty_in)), 0)
+                INTO v_total_cost
+                FROM operation_items
+                WHERE pro_id = p_operation_id
+                    AND is_stock = 1;
+
+                -- 4. Calculate total profit
+                SET v_total_profit = IFNULL(v_pro_value, 0) - v_total_cost;
+
+                -- 5. Handle negative profit for sales returns (Type 12)
+                IF v_pro_type = 12 THEN
+                    SET v_total_profit = -v_total_profit;
+                END IF;
+
+                -- 6. Update operhead with final values
+                UPDATE operhead 
+                SET profit = v_total_profit,
+                    fat_cost = v_total_cost
+                WHERE id = p_operation_id;
             END
 SQL);
 

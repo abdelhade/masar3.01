@@ -256,10 +256,14 @@ function registerCurrencyConverter() {
             this.conversionRate = rawRate;
             
             if (this.useInverseRate && rawRate > 0) {
-                // Invert the rate (1 EGP = 0.02 USD -> 1 USD = 50 EGP)
+                // New Logic: rawRate IS the Price (Base/Target)
+                // Just use it as is for customRate (display)
+                this.customRate = parseFloat(Number(rawRate).toFixed(3));
+            } else if (rawRate > 0) {
+                // If not using inverse mode, then we display Target/Base
                 this.customRate = parseFloat((1 / rawRate).toFixed(3));
             } else {
-                this.customRate = parseFloat(Number(rawRate).toFixed(3));
+                this.customRate = 0;
             }
         },
 
@@ -294,7 +298,8 @@ function registerCurrencyConverter() {
 
             // Dispatch event with normalized rate
             let systemRate = activeRate;
-            if (this.useInverseRate) {
+            if (!this.useInverseRate) {
+                // If we were displaying Target/Base, invert it back for System (Base/Target)
                 systemRate = activeRate > 0 ? 1 / activeRate : 0;
             }
 

@@ -25,53 +25,41 @@ class ProfitAndJournalRecalculationServiceOptimized
     public function recalculateProfitForOperation(int $operationId): void
     {
         $operation = OperHead::find($operationId);
-        if (!$operation || !in_array($operation->pro_type, [10, 12, 13, 19, 59])) {
+        if (!$operation || !in_array($operation->pro_type, [10, 11, 12, 13, 19, 20, 59])) {
             return;
         }
 
-        // حساب الربح باستخدام single SQL query
-        $result = DB::selectOne("
-            SELECT
-                SUM(
-                    (oi.detail_value -
-                     CASE
-                         WHEN ? > 0 AND ? > 0
-                         THEN (oi.detail_value * ? / ?)
-                         ELSE 0
-                     END) -
-                    (COALESCE(i.average_cost, 0) * ABS(oi.qty_out - oi.qty_in))
-                ) as total_profit,
-                SUM(oi.id) as item_count
-            FROM operation_items oi
-            INNER JOIN items i ON oi.item_id = i.id
-            WHERE oi.pro_id = ?
-                AND oi.is_stock = 1
-        ", [
-            $operation->fat_disc ?? 0,
-            $operation->fat_total ?? 0,
-            $operation->fat_disc ?? 0,
-            $operation->fat_total ?? 0,
-            $operationId
-        ]);
+        // ✅ Update item_cost for sales-like items and calculate total invoice cost
+        $totalInvoiceCost = $this->updateOperationItemsProfit($operationId, $operation);
 
-        $totalProfit = (float) ($result->total_profit ?? 0);
+        // ✅ Profit Calculation (As requested: difference between total value and cost)
+        $profit = ($operation->pro_value ?? 0) - $totalInvoiceCost;
+        
+        // Handle negative profit for sales return (Type 12)
+        if ($operation->pro_type == 12) {
+            $profit = -$profit;
+        }
 
-        // تحديث الربح في operhead
+        // update operhead with final values
         DB::table('operhead')
             ->where('id', $operationId)
-            ->update(['profit' => $totalProfit]);
+            ->update([
+                'profit' => $totalProfit ?? $profit, // fallback just in case
+                'fat_cost' => $totalInvoiceCost,
+            ]);
 
-        // تحديث الربح في operation_items باستخدام batch update
-        $this->updateOperationItemsProfit($operationId, $operation);
-
-        Log::info("Recalculated profit for operation {$operationId}: {$totalProfit}");
+        Log::info("Recalculated profit and fat_cost for operation {$operationId}: Cost={$totalInvoiceCost}, Profit={$profit}");
     }
 
     /**
      * تحديث الربح في operation_items باستخدام batch update
      */
-    private function updateOperationItemsProfit(int $operationId, OperHead $operation): void
+    private function updateOperationItemsProfit(int $operationId, OperHead $operation): float
     {
+        // ✅ Types that should have their item_cost updated to the new average_cost (Sales-like)
+        $updateCostTypes = [10, 12, 19, 59];
+        $shouldUpdateCost = in_array($operation->pro_type, $updateCostTypes);
+
         // حساب الربح لكل صنف باستخدام single query
         $items = DB::select("
             SELECT
@@ -80,7 +68,9 @@ class ProfitAndJournalRecalculationServiceOptimized
                 oi.detail_value,
                 oi.qty_in,
                 oi.qty_out,
-                COALESCE(i.average_cost, 0) as average_cost,
+                oi.cost_price as stored_cost,
+                oi.currency_rate as line_currency_rate,
+                COALESCE(i.average_cost, 0) as current_average_cost,
                 ? as fat_disc,
                 ? as fat_total
             FROM operation_items oi
@@ -94,13 +84,16 @@ class ProfitAndJournalRecalculationServiceOptimized
         ]);
 
         if (empty($items)) {
-            return;
+            return 0;
         }
 
         // إعداد batch update
-        $cases = [];
-        $params = [];
+        $casesProfit = [];
+        $casesCost = [];
+        $paramsProfit = [];
+        $paramsCost = [];
         $ids = [];
+        $totalInvoiceCost = 0;
 
         foreach ($items as $item) {
             $discountItem = 0;
@@ -109,30 +102,51 @@ class ProfitAndJournalRecalculationServiceOptimized
             }
 
             $baseQty = abs($item->qty_out - $item->qty_in);
-            $itemCostTotal = $item->average_cost * $baseQty;
-            $profit = ($item->detail_value - $discountItem) - $itemCostTotal;
+            
+            // ✅ Determine which cost to use
+            $itemCost = $shouldUpdateCost ? (float)$item->current_average_cost : (float)$item->stored_cost;
+            $totalInvoiceCost += ($itemCost * $baseQty);
 
-            $cases[] = "WHEN ? THEN ?";
-            $params[] = $item->id;
-            $params[] = $profit;
+            // Item Profit = ((Net Value * Currency Rate) - Distributed Discount converted) - (Cost * Quantity)
+            // Note: In our current SaveInvoiceService, pro_value in OperHead is already in base currency (price*rate).
+            // But detail_value in operation_items is in foreign currency.
+            $netValueInBase = ($item->detail_value - $discountItem) * (float)($item->line_currency_rate ?? 1);
+            $profit = $netValueInBase - ($itemCost * $baseQty);
+
+            $casesProfit[] = "WHEN ? THEN ?";
+            $paramsProfit[] = $item->id;
+            $paramsProfit[] = $profit;
+
+            if ($shouldUpdateCost) {
+                $casesCost[] = "WHEN ? THEN ?";
+                $paramsCost[] = $item->id;
+                $paramsCost[] = $itemCost;
+            }
+
             $ids[] = $item->id;
         }
 
-        if (!empty($cases)) {
-            $casesSql = implode(' ', $cases);
+        if (!empty($casesProfit)) {
+            $casesProfitSql = implode(' ', $casesProfit);
             $idsPlaceholder = implode(',', array_fill(0, count($ids), '?'));
 
-            $sql = "
-                UPDATE operation_items
-                SET profit = CASE id
-                    {$casesSql}
-                END
-                WHERE id IN ({$idsPlaceholder})
-            ";
+            // Prepare update SQL
+            $updateSql = "UPDATE operation_items SET profit = CASE id {$casesProfitSql} END";
+            $updateParams = $paramsProfit;
 
-            $params = array_merge($params, $ids);
-            DB::update($sql, $params);
+            if (!empty($casesCost)) {
+                $casesCostSql = implode(' ', $casesCost);
+                $updateSql .= ", cost_price = CASE id {$casesCostSql} END";
+                $updateParams = array_merge($updateParams, $paramsCost);
+            }
+
+            $updateSql .= " WHERE id IN ({$idsPlaceholder})";
+            $updateParams = array_merge($updateParams, $ids);
+
+            DB::update($updateSql, $updateParams);
         }
+
+        return (float) $totalInvoiceCost;
     }
 
     /**
@@ -401,7 +415,7 @@ class ProfitAndJournalRecalculationServiceOptimized
         $profit = $operation->profit ?? 0;
         $totalAfterAdditional = $operation->pro_value ?? 0;
         $additionalValue = $operation->fat_plus ?? 0;
-        $costAllSales = $totalAfterAdditional - $profit - $additionalValue;
+        $costAllSales = $operation->fat_cost ?? ($totalAfterAdditional - $profit - $additionalValue);
 
         if ($costAllSales <= 0) {
             // حذف القيد إذا كانت التكلفة صفر أو سالبة
@@ -658,7 +672,7 @@ class ProfitAndJournalRecalculationServiceOptimized
         $profit = $operation->profit ?? 0;
         $totalAfterAdditional = $operation->pro_value ?? 0;
         $additionalValue = $operation->fat_plus ?? 0;
-        $costAllSales = $totalAfterAdditional - $profit - $additionalValue;
+        $costAllSales = $operation->fat_cost ?? ($totalAfterAdditional - $profit - $additionalValue);
 
         if ($costAllSales <= 0) {
             return;

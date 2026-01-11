@@ -274,7 +274,7 @@ trait HandlesInvoiceData
         // القيم المجمعة (للاستخدام عند تفعيل الإعداد)
         $mergedAccounts = null;
         if ($allowAllClientTypes) {
-             $mergedAccounts = collect()
+            $mergedAccounts = collect()
                 ->merge($clientsAccounts)
                 ->merge($suppliersAccounts)
                 ->merge($employeesAccounts)
@@ -388,10 +388,23 @@ trait HandlesInvoiceData
         $this->pro_date = now()->format('Y-m-d');
         $this->accural_date = now()->format('Y-m-d');
 
+        if (
+            setting('enable_vat_fields') == 1 &&
+            setting('vat_level') == 'invoice_level' &&
+            setting('withholding_tax_level') == 'invoice_level'
+        ) {
+
+            $this->vat_percentage = (float) (setting('default_vat_percentage') ?? 0);
+            $this->withholding_tax_percentage = (float) (setting('default_withholding_tax_percentage') ?? 0);
+        }
+
         $this->emp_id = $this->employees->first()->id ?? null;
         $this->cash_box_id = $this->cashAccounts->first()->id ?? null;
         $this->delivery_id = $this->deliverys->first()->id ?? null;
         $this->status = 0;
+
+        $this->currency_id = 1;
+        $this->currency_rate = 1;
 
         if (in_array($this->type, [10, 12, 14, 16, 22, 26])) {
             $this->acc1_id = !empty($this->cashClientIds) ? $this->cashClientIds[0] : ($this->acc1List->first()->id ?? null);

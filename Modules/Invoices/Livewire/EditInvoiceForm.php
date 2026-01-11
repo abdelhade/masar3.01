@@ -247,7 +247,7 @@ class EditInvoiceForm extends Component
         $this->withholding_tax_value = $this->operation->withholding_tax_value ?? 0;
         $this->notes = $this->operation->info ?? '';
         $this->received_from_client = $this->operation->paid_from_client ?? 0;
-        $this->currency_id = $this->operation->currency_id;
+        $this->currency_id = $this->operation->currency_id ?? 1;
         $this->currency_rate = $this->operation->currency_rate ?? 1;
 
         $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->get();

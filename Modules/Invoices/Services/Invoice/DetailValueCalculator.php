@@ -102,12 +102,17 @@ class DetailValueCalculator
         $invoiceLevelWithholdingTax = 0;
 
         if ($invoiceSubtotal > 0) {
+            // Important: We need the sum of all netAfterAdjustments as the new base for VAT distribution
+            $invoiceSubtotalAfterDistributions = $invoiceSubtotal - 
+                ((float)($invoiceData['fat_disc'] ?? 0) > 0 ? (float)($invoiceData['fat_disc'] ?? 0) : ($invoiceSubtotal * ((float)($invoiceData['fat_disc_per'] ?? 0) / 100))) +
+                ((float)($invoiceData['fat_plus'] ?? 0) > 0 ? (float)($invoiceData['fat_plus'] ?? 0) : ($invoiceSubtotal * ((float)($invoiceData['fat_plus_per'] ?? 0) / 100)));
+
             if ($vatLevel === 'invoice_level' || $vatLevel === 'both') {
-                $invoiceLevelVat = $this->distributeVat($netAfterAdjustments, $invoiceSubtotal, $invoiceData);
+                $invoiceLevelVat = $this->distributeVat($netAfterAdjustments, $invoiceSubtotalAfterDistributions, $invoiceData);
             }
 
             if ($withholdingTaxLevel === 'invoice_level' || $withholdingTaxLevel === 'both') {
-                $invoiceLevelWithholdingTax = $this->distributeWithholdingTax($netAfterAdjustments, $invoiceSubtotal, $invoiceData);
+                $invoiceLevelWithholdingTax = $this->distributeWithholdingTax($netAfterAdjustments, $invoiceSubtotalAfterDistributions, $invoiceData);
             }
         }
 
@@ -209,21 +214,21 @@ class DetailValueCalculator
         return $itemSubtotal * ($fatPlusPer / 100);
     }
 
-    private function distributeVat(float $netAfterAdjustments, float $invoiceSubtotal, array $invoiceData): float 
+    private function distributeVat(float $netAfterAdjustments, float $invoiceSubtotalAfterDistributions, array $invoiceData): float 
     {
         $vatValue = (float) ($invoiceData['vat_value'] ?? 0);
         $vatPercentage = (float) ($invoiceData['vat_percentage'] ?? 0);
         if ($vatValue <= 0 && $vatPercentage <= 0) return 0.0;
-        if ($vatValue > 0) return $vatValue * ($netAfterAdjustments / $invoiceSubtotal);
+        if ($vatValue > 0) return $vatValue * ($netAfterAdjustments / $invoiceSubtotalAfterDistributions);
         return $netAfterAdjustments * ($vatPercentage / 100);
     }
 
-    private function distributeWithholdingTax(float $netAfterAdjustments, float $invoiceSubtotal, array $invoiceData): float 
+    private function distributeWithholdingTax(float $netAfterAdjustments, float $invoiceSubtotalAfterDistributions, array $invoiceData): float 
     {
         $taxValue = (float) ($invoiceData['withholding_tax_value'] ?? 0);
         $taxPercentage = (float) ($invoiceData['withholding_tax_percentage'] ?? 0);
         if ($taxValue <= 0 && $taxPercentage <= 0) return 0.0;
-        if ($taxValue > 0) return $taxValue * ($netAfterAdjustments / $invoiceSubtotal);
+        if ($taxValue > 0) return $taxValue * ($netAfterAdjustments / $invoiceSubtotalAfterDistributions);
         return $netAfterAdjustments * ($taxPercentage / 100);
     }
 

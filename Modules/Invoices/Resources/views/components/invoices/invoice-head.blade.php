@@ -70,6 +70,9 @@
                     wire:key="currency-converter-{{ $currency_id }}-{{ $currency_rate }}" {{-- ربط التغيير العكسي (لو المستخدم غير العملة يدوياً) --}}
                     wire:model.live="currency_id" />
             </div>
+        @else
+            <input type="hidden" wire:model="currency_id" value="1">
+            <input type="hidden" wire:model="currency_rate" value="1">
         @endif
 
 

@@ -300,10 +300,14 @@ class DetailValueValidator
         $invoiceVat = 0;
         $vatValue = (float) ($invoiceData['vat_value'] ?? 0);
         $vatPercentage = (float) ($invoiceData['vat_percentage'] ?? 0);
+        
+        // Base for VAT is total after discount/additional
+        $vatBase = $invoiceSubtotal - $invoiceDiscount + $invoiceAdditional;
+
         if ($vatValue > 0) {
             $invoiceVat = $vatValue;
         } elseif ($vatPercentage > 0) {
-            $invoiceVat = $expectedTotal * ($vatPercentage / 100);
+            $invoiceVat = $vatBase * ($vatPercentage / 100);
         }
         $expectedTotal += $invoiceVat;
 
@@ -311,10 +315,14 @@ class DetailValueValidator
         $invoiceTax = 0;
         $taxValue = (float) ($invoiceData['withholding_tax_value'] ?? 0);
         $taxPercentage = (float) ($invoiceData['withholding_tax_percentage'] ?? 0);
+        
+        // Base for withholding tax is also the amount after discount/additional (and usually before VAT)
+        $taxBase = $vatBase;
+
         if ($taxValue > 0) {
             $invoiceTax = $taxValue;
         } elseif ($taxPercentage > 0) {
-            $invoiceTax = ($expectedTotal - $invoiceVat) * ($taxPercentage / 100);
+            $invoiceTax = $taxBase * ($taxPercentage / 100);
         }
         $expectedTotal -= $invoiceTax;
 

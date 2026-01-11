@@ -13,6 +13,7 @@ class SettingsDatabaseSeeder extends Seeder
     {
         $this->call([
             SettingSeeder::class,
+            CurrencySeeder::class,
             SettingsPermissionsSeeder::class,
         ]);
     }
