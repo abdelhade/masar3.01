@@ -41,6 +41,10 @@ Route::middleware(['auth'])->group(function () {
     // Regular Attendance Routes  
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('hr.attendance.index');
+
+    // Attendance Reports For Projects
+    Route::view('/attendance/reports/project-attendance', 'hr::hr-management.attendances.reports.project-attendance-report-container')
+        ->name('hr.attendance.reports.project');
     
     Route::get('/attendance/create', [AttendanceController::class, 'create'])
         ->name('hr.attendance.create');

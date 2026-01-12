@@ -502,6 +502,7 @@
                                             <th class="py-1 px-2" style="white-space: nowrap;">التاريخ</th>
                                             <th class="py-1 px-2" style="white-space: nowrap;">الحالة</th>
                                             <th class="py-1 px-2" style="white-space: nowrap;">نوع اليوم</th>
+                                            <th class="py-1 px-2" style="white-space: nowrap;">المشروع</th>
                                             <th class="py-1 px-2" style="white-space: nowrap;">وقت الدخول</th>
                                             <th class="py-1 px-2" style="white-space: nowrap;">وقت الخروج</th>
                                             <th class="py-1 px-2 text-end" style="white-space: nowrap;">ساعات أساسية</th>
@@ -517,6 +518,7 @@
                                                 <td class="py-1 px-2">{{ $detail->attendance_date->format('Y-m-d') }}</td>
                                                 <td class="py-1 px-2">{!! $detail->status_badge !!}</td>
                                                 <td class="py-1 px-2">{!! $detail->working_day_badge !!}</td>
+                                                <td class="py-1 px-2">{{ $detail->project_code }}</td>
                                                 <td class="py-1 px-2">{{ $detail->formatted_check_in_time }}</td>
                                                 <td class="py-1 px-2">{{ $detail->formatted_check_out_time }}</td>
                                                 <td class="py-1 px-2 text-end">{{ number_format($detail->attendance_basic_hours_count, 2) }}</td>
@@ -755,7 +757,7 @@
                                                                         <button class="btn btn-warning px-3 text-dark fw-bold" type="button" 
                                                                                 @click="$wire.settleAdvance(amount).then(() => { amount = 0 })"
                                                                                 wire:loading.attr="disabled">
-                                                                            <i class="las la-file-invoice-dollar"></i> خصم
+                                                                            <i class="las la-file-invoice-dollar"></i> سداد
                                                                         </button>
                                                                     </div>
                                                                 @endif

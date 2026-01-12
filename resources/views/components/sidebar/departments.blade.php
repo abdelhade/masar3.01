@@ -325,3 +325,12 @@
         </ul>
     </li>
 @endcanany
+
+{{-- route name:  hr.attendance.reports.project --}}
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('hr.attendance.reports.project') }}">
+        <i class="ti-control-record"></i>{{ __('hr.project_attendance_report') }}
+    </a>
+</li>
+    

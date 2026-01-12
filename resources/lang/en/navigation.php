@@ -267,4 +267,5 @@ return [
     'daily_progress' => 'Daily Progress',
     'work_items' => 'Work Items',
     'project_template' => 'Project Template',
+    'hr.attendance.reports.project' => 'Hours of Work Projects',
 ];
