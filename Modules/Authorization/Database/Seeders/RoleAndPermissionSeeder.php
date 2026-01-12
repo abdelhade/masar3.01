@@ -42,5 +42,11 @@ class RoleAndPermissionSeeder extends Seeder
                 }
             }
         }
+
+        // Ensure vouchers statistics permission exists
+        // Permission::firstOrCreate(
+        //     ['name' => 'view vouchers-statistics', 'guard_name' => 'web'],
+        //     ['category' => 'vouchers']
+        // );
     }
 }

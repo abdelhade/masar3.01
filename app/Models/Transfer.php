@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Modules\Branches\Models\Branch;
 use Modules\Accounts\Models\AccHead;
+use Modules\Settings\Models\Currency;
 use Illuminate\Database\Eloquent\Model;
 
 class Transfer extends Model
@@ -54,5 +55,10 @@ class Transfer extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
     }
 }

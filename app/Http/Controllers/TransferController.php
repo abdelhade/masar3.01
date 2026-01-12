@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JournalDetail;
-use App\Models\JournalHead;
 use App\Models\OperHead;
 use App\Models\Transfer;
+use App\Models\JournalHead;
 use Illuminate\Http\Request;
+use App\Models\JournalDetail;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Modules\Accounts\Models\AccHead;
+use Modules\Settings\Models\Currency;
 
 class TransferController extends Controller
 {
@@ -116,7 +117,8 @@ class TransferController extends Controller
 
     public function index()
     {
-        $transfers = Transfer::with('account1')->whereIn('pro_type', [3, 4, 5, 6]) // أنواع التحويل المطلوبة
+        $transfers = Transfer::with(['account1', 'currency']) // Eager load currency to prevent N+1 queries
+            ->whereIn('pro_type', [3, 4, 5, 6]) // أنواع التحويل المطلوبة
             ->where('isdeleted', 0) // تجاهل المحذوفة
             ->orderByDesc('pro_date') // الترتيب حسب التاريخ تنازلي
             ->get();
@@ -127,6 +129,8 @@ class TransferController extends Controller
     public function create(Request $request)
     {
         $branches = userBranches();
+        $allCurrencies = Currency::active()->with('latestRate')->get();
+
         // تقبل قيمة النوع مع شرطات أو underscores، وحوّلها إلى المفتاح المُستخدم داخل الخريطة
         $rawType = $request->get('type');
         $type = $rawType ? str_replace('-', '_', $rawType) : null;
@@ -178,43 +182,47 @@ class TransferController extends Controller
                 break;
         }
 
-        // حسابات "من حساب" حسب نوع التحويل
+        // حسابات "من حساب" حسب نوع التحويل - مع إضافة currency_id و balance
         $fromAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->when($fromAccountType, function ($query) use ($fromAccountType) {
                 return $query->where('acc_type', $fromAccountType);
             })
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
-        // حسابات "إلى حساب" حسب نوع التحويل
+        // حسابات "إلى حساب" حسب نوع التحويل - مع إضافة currency_id و balance
         $toAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->when($toAccountType, function ($query) use ($toAccountType) {
                 return $query->where('acc_type', $toAccountType);
             })
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات الصندوق (للاحتفاظ بالتوافق مع الكود القديم إن لزم)
         $cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', 3)
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات البنك (للاحتفاظ بالتوافق مع الكود القديم إن لزم)
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', 4)
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات الموظفين
         $employeeAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
-            ->select('id', 'aname')
+            ->select('id', 'aname', 'currency_id')
             ->get();
 
         // باقي الحسابات
@@ -223,7 +231,8 @@ class TransferController extends Controller
             ->where('is_fund', '!=', 1)
             ->where('is_stock', '!=', 1)
             ->orderBy('code')
-            ->select('id', 'aname', 'code')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'code', 'balance', 'currency_id')
             ->get();
 
         // مراكز التكلفة (إن وُجِدَت في التطبيق)
@@ -243,16 +252,41 @@ class TransferController extends Controller
             'pro_num' => 'nullable|string',
             'emp_id' => 'required|integer',
             'emp2_id' => 'nullable|integer',
-            'acc1' => 'required|integer',
-            'acc2' => 'required|integer',
-            'pro_value' => 'required|numeric', // نفس قيمة المدين والدائن
+            'acc1' => 'required|integer|exists:acc_head,id',
+            'acc2' => 'required|integer|exists:acc_head,id',
+            'pro_value' => 'required|numeric',
             'details' => 'nullable|string',
             'info' => 'nullable|string',
             'info2' => 'nullable|string',
             'info3' => 'nullable|string',
             'cost_center' => 'nullable|integer',
             'branch_id' => 'required|exists:branches,id',
+            'currency_id' => 'nullable|integer',
+            'currency_rate' => 'nullable|numeric',
         ]);
+
+        // التحقق من تطابق العملات في حالة تفعيل تعدد العملات
+        if (isMultiCurrencyEnabled()) {
+            $acc1 = AccHead::find($validated['acc1']);
+            $acc2 = AccHead::find($validated['acc2']);
+
+            if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
+                return back()->withErrors(['currency_mismatch' => 'عذراً، يجب أن يكون للحسابين نفس العملة لإتمام التحويل.'])->withInput();
+            }
+        }
+
+        // تحديد العملة وسعر الصرف - القيم الافتراضية id=1 و rate=1
+        $currencyId = (int) ($request->get('currency_id') ?? 1);
+        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
+
+        // التأكد من أن القيم صحيحة
+        if ($currencyId <= 0) $currencyId = 1;
+        if ($currencyRate <= 0) $currencyRate = 1;
+
+        // ضرب القيمة في سعر الصرف للحفظ والقيود
+        // pro_value المدخلة هي القيمة الأصلية (مثلاً 1000 دولار)
+        // baseValue هي القيمة الأساسية بعد الضرب (مثلاً 1000 * 47 = 47000)
+        $baseValue = (float) $validated['pro_value'] * $currencyRate;
 
         try {
             DB::beginTransaction();
@@ -269,7 +303,9 @@ class TransferController extends Controller
                 'pro_serial' => $request['pro_serial'] ?? null,
                 'acc1' => $validated['acc1'],
                 'acc2' => $validated['acc2'],
-                'pro_value' => $validated['pro_value'],
+                'pro_value' => $baseValue,
+                'currency_id' => $currencyId,
+                'currency_rate' => $currencyRate,
                 'details' => $validated['details'] ?? null,
                 'isdeleted' => 0,
                 'tenant' => 0,
@@ -297,7 +333,7 @@ class TransferController extends Controller
 
             $journalHead = JournalHead::create([
                 'journal_id' => $newJournalId,
-                'total' => $validated['pro_value'],
+                'total' => $baseValue,
                 'date' => $validated['pro_date'],
                 'op_id' => $oper->id,
                 'pro_type' => $validated['pro_type'],
@@ -310,7 +346,7 @@ class TransferController extends Controller
             JournalDetail::create([
                 'journal_id' => $newJournalId,
                 'account_id' => $validated['acc1'],
-                'debit' => $validated['pro_value'],
+                'debit' => $baseValue,
                 'credit' => 0,
                 'type' => 0,
                 'info' => $validated['info'] ?? null,
@@ -324,7 +360,7 @@ class TransferController extends Controller
                 'journal_id' => $newJournalId,
                 'account_id' => $validated['acc2'],
                 'debit' => 0,
-                'credit' => $validated['pro_value'],
+                'credit' => $baseValue,
                 'type' => 1,
                 'info' => $validated['info'] ?? null,
                 'op_id' => $oper->id,
@@ -334,17 +370,19 @@ class TransferController extends Controller
 
             DB::commit();
 
-            return redirect()->route('transfers.index')->with('success', 'تم حفظ السند والقيد بنجاح.');
+            return redirect()->route('transfers.index')->with('success', 'تم حفظ التحويل والقيد المحاسبي بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()])->withInput();
         }
     }
 
     public function edit($id)
     {
         $transfer = Transfer::findOrFail($id);
+        //$branches = userBranches();
+        $allCurrencies = Currency::active()->with('latestRate')->get();
 
         // تحديد نوع التحويل بناءً على pro_type
         $typeMap = [
@@ -380,43 +418,47 @@ class TransferController extends Controller
                 break;
         }
 
-        // حسابات "من حساب" حسب نوع التحويل
+        // حسابات "من حساب" حسب نوع التحويل - مع إضافة currency_id و balance
         $fromAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->when($fromAccountType, function ($query) use ($fromAccountType) {
                 return $query->where('acc_type', $fromAccountType);
             })
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
-        // حسابات "إلى حساب" حسب نوع التحويل
+        // حسابات "إلى حساب" حسب نوع التحويل - مع إضافة currency_id و balance
         $toAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->when($toAccountType, function ($query) use ($toAccountType) {
                 return $query->where('acc_type', $toAccountType);
             })
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات الصندوق (للاحتفاظ بالتوافق مع الكود القديم)
         $cashAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', 3)
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات البنك (للاحتفاظ بالتوافق مع الكود القديم)
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', 4)
-            ->select('id', 'aname')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات الموظفين
         $employeeAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
-            ->select('id', 'aname')
+            ->select('id', 'aname', 'currency_id')
             ->get();
 
         // باقي الحسابات
@@ -425,12 +467,13 @@ class TransferController extends Controller
             ->where('is_fund', '!=', 1)
             ->where('is_stock', '!=', 1)
             ->orderBy('code')
-            ->select('id', 'aname', 'code')
+            ->with('currency:id,name')
+            ->select('id', 'aname', 'code', 'balance', 'currency_id')
             ->get();
 
         // تأكد من أن الحسابات الحالية موجودة في القوائم حتى لو تغيرت التصنيفات
         if ($transfer->acc1) {
-            $acc1 = AccHead::select('id', 'aname')->find($transfer->acc1);
+            $acc1 = AccHead::with('currency:id,name')->select('id', 'aname', 'balance', 'currency_id')->find($transfer->acc1);
             if ($acc1 && ! $fromAccounts->contains('id', $acc1->id)) {
                 // ضع acc1 في fromAccounts كي يظهر في القوائم
                 $fromAccounts->push($acc1);
@@ -438,7 +481,7 @@ class TransferController extends Controller
         }
 
         if ($transfer->acc2) {
-            $acc2 = AccHead::select('id', 'aname')->find($transfer->acc2);
+            $acc2 = AccHead::with('currency:id,name')->select('id', 'aname', 'balance', 'currency_id')->find($transfer->acc2);
             if ($acc2 && ! $toAccounts->contains('id', $acc2->id)) {
                 // ضع acc2 في toAccounts كي يظهر في القوائم
                 $toAccounts->push($acc2);
@@ -447,13 +490,13 @@ class TransferController extends Controller
 
         // تأكد أن الموظف/المندوب موجودان في قائمة الحسابات الخاصة بالموظفين
         if ($transfer->emp_id) {
-            $e1 = AccHead::select('id', 'aname')->find($transfer->emp_id);
+            $e1 = AccHead::select('id', 'aname', 'currency_id')->find($transfer->emp_id);
             if ($e1 && ! $employeeAccounts->contains('id', $e1->id)) {
                 $employeeAccounts->push($e1);
             }
         }
         if ($transfer->emp2_id) {
-            $e2 = AccHead::select('id', 'aname')->find($transfer->emp2_id);
+            $e2 = AccHead::select('id', 'aname', 'currency_id')->find($transfer->emp2_id);
             if ($e2 && ! $employeeAccounts->contains('id', $e2->id)) {
                 $employeeAccounts->push($e2);
             }
@@ -477,6 +520,8 @@ class TransferController extends Controller
             'pro_id' => $transfer->pro_id,
             'pro_type' => $transfer->pro_type,
             'costCenters' => $costCenters,
+           //'branches' => $branches,
+            'allCurrencies' => $allCurrencies,
         ]);
     }
 
@@ -488,15 +533,40 @@ class TransferController extends Controller
             'pro_num' => 'nullable|string',
             'emp_id' => 'required|integer',
             'emp2_id' => 'nullable|integer',
-            'acc1' => 'required|integer',
-            'acc2' => 'required|integer',
+            'acc1' => 'required|integer|exists:acc_head,id',
+            'acc2' => 'required|integer|exists:acc_head,id',
             'pro_value' => 'required|numeric',
             'details' => 'nullable|string',
             'info' => 'nullable|string',
             'info2' => 'nullable|string',
             'info3' => 'nullable|string',
             'cost_center' => 'nullable|integer',
+            'currency_id' => 'nullable|integer|exists:currencies,id',
+            'currency_rate' => 'nullable|numeric',
         ]);
+
+        // التحقق من تطابق العملات في حالة تفعيل تعدد العملات
+        if (isMultiCurrencyEnabled()) {
+            $acc1 = AccHead::find($validated['acc1']);
+            $acc2 = AccHead::find($validated['acc2']);
+
+            if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
+                return back()->withErrors(['currency_mismatch' => 'عذراً، يجب أن يكون للحسابين نفس العملة لإتمام التحويل.'])->withInput();
+            }
+        }
+
+        // تحديد العملة وسعر الصرف - القيم الافتراضية id=1 و rate=1
+        $currencyId = (int) ($request->get('currency_id') ?? 1);
+        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
+
+        // التأكد من أن القيم صحيحة
+        if ($currencyId <= 0) $currencyId = 1;
+        if ($currencyRate <= 0) $currencyRate = 1;
+
+        // ضرب القيمة في سعر الصرف للحفظ والقيود
+        // pro_value المدخلة هي القيمة الأصلية (مثلاً 1000 دولار)
+        // baseValue هي القيمة الأساسية بعد الضرب (مثلاً 1000 * 47 = 47000)
+        $baseValue = (float) $validated['pro_value'] * $currencyRate;
 
         try {
             DB::beginTransaction();
@@ -509,7 +579,9 @@ class TransferController extends Controller
                 'pro_serial' => $request['pro_serial'] ?? null,
                 'acc1' => $validated['acc1'],
                 'acc2' => $validated['acc2'],
-                'pro_value' => $validated['pro_value'],
+                'pro_value' => $baseValue,
+                'currency_id' => $currencyId,
+                'currency_rate' => $currencyRate,
                 'details' => $validated['details'] ?? null,
                 'emp_id' => $validated['emp_id'],
                 'emp2_id' => $validated['emp2_id'] ?? null,
@@ -528,7 +600,7 @@ class TransferController extends Controller
             $journalHead = JournalHead::where('op_id', $oper->id)->first();
             if ($journalHead) {
                 $journalHead->update([
-                    'total' => $validated['pro_value'],
+                    'total' => $baseValue,
                     'date' => $validated['pro_date'],
                     'pro_type' => $validated['pro_type'],
                     'details' => $validated['details'] ?? null,
@@ -544,7 +616,7 @@ class TransferController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalId,
                     'account_id' => $validated['acc1'],
-                    'debit' => $validated['pro_value'],
+                    'debit' => $baseValue,
                     'credit' => 0,
                     'type' => 0,
                     'info' => $validated['info'] ?? null,
@@ -557,7 +629,7 @@ class TransferController extends Controller
                     'journal_id' => $journalId,
                     'account_id' => $validated['acc2'],
                     'debit' => 0,
-                    'credit' => $validated['pro_value'],
+                    'credit' => $baseValue,
                     'type' => 1,
                     'info' => $validated['info'] ?? null,
                     'op_id' => $oper->id,
@@ -567,11 +639,11 @@ class TransferController extends Controller
 
             DB::commit();
 
-            return redirect()->route('transfers.index')->with('success', 'تم تعديل السند بنجاح.');
+            return redirect()->route('transfers.index')->with('success', 'تم تعديل التحويل بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -627,7 +699,7 @@ class TransferController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
         }
     }
 

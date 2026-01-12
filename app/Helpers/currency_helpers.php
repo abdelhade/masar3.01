@@ -10,10 +10,9 @@ if (!function_exists('isMultiCurrencyEnabled')) {
 
     function isMultiCurrencyEnabled()
     {
-        // return Cache::rememberForever('multi_currency_enabled', function () {
         $setting = PublicSetting::where('key', 'multi_currency_enabled')->first();
-        return $setting && $setting->value == '1';
-        // });
+        if (!$setting) return false;
+        return in_array($setting->value, ['1', 'true', 1, true], true);
     }
 }
 /**

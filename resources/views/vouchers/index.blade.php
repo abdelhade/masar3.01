@@ -122,7 +122,12 @@
                             <th>رقم العملية</th>
                             <th>نوع العملية</th>
                             <th>البيان</th>
-                            <th>المبلغ</th>
+                            @if(isMultiCurrencyEnabled())
+                                <th>المبلغ (عملة أجنبية)</th>
+                                <th>المبلغ (عملة محلية)</th>
+                            @else
+                                <th>المبلغ</th>
+                            @endif
                             <th>الحساب</th>
                             <th>الحساب المقابل</th>
                             <th>الموظف</th>
@@ -184,7 +189,26 @@
                                     </span>
                                 </td>
                                 <td>{{ $voucher->details }}</td>
-                                <td class="h5 fw-bold">{{ number_format($voucher->pro_value, 2) }}</td>
+                                @if(isMultiCurrencyEnabled())
+                                    {{-- Column 1: Foreign Currency Amount --}}
+                                    <td class="h5 fw-bold">
+                                        @if($voucher->currency_id && $voucher->currency_rate > 1)
+                                            {{ number_format($voucher->pro_value / $voucher->currency_rate, 2) }}
+                                            {{ $voucher->currency?->name ?? '' }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    {{-- Column 2: Local Currency Amount (Base Value) --}}
+                                    <td class="h5 fw-bold">
+                                        {{ number_format($voucher->pro_value, 2) }}
+                                    </td>
+                                @else
+                                    {{-- Single column when multi-currency is disabled --}}
+                                    <td class="h5 fw-bold">
+                                        {{ number_format($voucher->pro_value, 2) }}
+                                    </td>
+                                @endif
                                 <td>{{ $voucher->account1->aname ?? '' }}</td>
                                 <td>{{ $voucher->account2->aname ?? '' }}</td>
                                 <td>{{ $voucher->emp1->aname ?? '' }}</td>

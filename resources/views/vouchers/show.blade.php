@@ -109,7 +109,12 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">{{ __('Amount') }}:</label>
                                 <div class="form-control-static">
-                                    <h4 class="mb-0">{{ number_format($voucher->pro_value ?? 0, 2) }}</h4>
+                                    <h4 class="mb-0">{{ $voucher->getFormattedAmount() }}</h4>
+                                    @if($voucher->currency_id && $voucher->currency_rate > 1)
+                                        <div class="text-muted small">
+                                            (العملة الأساسية: {{ number_format($voucher->pro_value ?? 0, 2) }})
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
