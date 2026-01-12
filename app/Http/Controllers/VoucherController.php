@@ -13,6 +13,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
+use Modules\Settings\Models\Currency;
 
 class VoucherController extends Controller
 {
@@ -24,9 +25,13 @@ class VoucherController extends Controller
             // ✅ حالة 1: إذا طلب عرض "جميع السندات"
             if ($type === 'all') {
                 // تحقق: هل عنده أي صلاحية من الثلاثة؟
-                if (! Auth::user()->can('view receipt vouchers') &&
-                    ! Auth::user()->can('view payment vouchers') &&
-                    ! Auth::user()->can('view exp-payment')) {
+                if (
+                    ! Auth::user()->can('view recipt') &&
+                    ! Auth::user()->can('view payment') &&
+                    ! Auth::user()->can('view exp-payment') &&
+                    ! Auth::user()->can('view multi-payment') &&
+                    ! Auth::user()->can('view multi-receipt')
+                ) {
 
                     abort(403, 'غير مصرح لك بعرض أي سندات');
                 }
@@ -34,8 +39,8 @@ class VoucherController extends Controller
                 // ✅ حالة 2: إذا طلب نوع محدد (receipt, payment, exp-payment)
                 // ربط كل نوع بصلاحيته المطلوبة
                 $permissionMap = [
-                    'receipt' => 'view receipt vouchers',           // سندات القبض
-                    'payment' => 'view payment vouchers',           // سندات الدفع
+                    'receipt' => 'view recipt',           // سندات القبض
+                    'payment' => 'view payment',           // سندات الدفع
                     'exp-payment' => 'view exp-payment',   // سندات المصاريف
                     'multi_payment' => 'view multi-payment',     // سندات دفع متعددة
                     'multi_receipt' => 'view multi-receipt',     // سندات قبض متعددة
@@ -69,10 +74,10 @@ class VoucherController extends Controller
             // إذا لم يتم تحديد نوع، التحقق من وجود أي صلاحية إنشاء
             if (! $type) {
                 $hasAnyCreatePermission = Auth::user()->can('create recipt') ||
-                                        Auth::user()->can('create payment') ||
-                                        Auth::user()->can('create exp-payment') ||
-                                        Auth::user()->can('create multi-payment') ||
-                                        Auth::user()->can('create multi-receipt');
+                    Auth::user()->can('create payment') ||
+                    Auth::user()->can('create exp-payment') ||
+                    Auth::user()->can('create multi-payment') ||
+                    Auth::user()->can('create multi-receipt');
 
                 if (! $hasAnyCreatePermission) {
                     abort(403, 'غير مصرح لك بإنشاء أي نوع من السندات');
@@ -158,7 +163,6 @@ class VoucherController extends Controller
 
             return $next($request);
         })->only(['destroy']);
-
     }
 
     public function index(Request $request)
@@ -264,6 +268,7 @@ class VoucherController extends Controller
 
         $pro_type = $proTypeMap[$type] ?? null;
         $branches = userBranches();
+        $allCurrencies = Currency::active()->with('latestRate')->get();
 
         // Determine next pro_id for the given pro_type
         $lastProId = OperHead::where('pro_type', $pro_type)->max('pro_id') ?? 0;
@@ -276,28 +281,28 @@ class VoucherController extends Controller
             ->orwhere('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '4')
-            ->select('id', 'aname', 'balance')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات البنوك
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '4')
-            ->select('id', 'aname', 'balance')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات الموظفين
         $employeeAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%') // غيّر الكود حسب النظام عندك
-            ->select('id', 'aname', 'balance')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات المصاريف (لـ exp-payment)
         $expensesAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '57%') // غيّر الكود حسب النظام عندك
-            ->select('id', 'aname', 'balance', 'code')
+            ->select('id', 'aname', 'balance', 'code', 'currency_id')
             ->orderBy('code')
             ->get();
 
@@ -305,7 +310,7 @@ class VoucherController extends Controller
         $paymentExpensesAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '7') // expenses
-            ->select('id', 'aname', 'balance', 'code')
+            ->select('id', 'aname', 'balance', 'code', 'currency_id')
             ->orderBy('code')
             ->get();
 
@@ -317,7 +322,7 @@ class VoucherController extends Controller
             ->where('is_basic', 0)
             ->where('is_fund', '!=', 1)
             ->where('is_stock', '!=', 1)
-            ->select('id', 'aname', 'code', 'balance')
+            ->select('id', 'aname', 'code', 'balance', 'currency_id')
             ->orderBy('code')
             ->get();
 
@@ -364,7 +369,33 @@ class VoucherController extends Controller
             'pro_num' => 'nullable|string',
             'cost_center' => 'nullable|integer|exists:cost_centers,id',
             'branch_id' => 'required|exists:branches,id',
+            'currency_id' => 'nullable|integer',
+            'currency_rate' => 'nullable|numeric',
         ]);
+
+        // التحقق من تطابق العملات في حالة تفعيل تعدد العملات
+        if (isMultiCurrencyEnabled()) {
+            $acc1 = AccHead::find($validated['acc1']);
+            $acc2 = AccHead::find($validated['acc2']);
+
+            if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
+                return back()->withErrors(['currency_mismatch' => 'عذراً، يجب أن يكون للحسابين نفس العملة لإتمام السند.'])->withInput();
+            }
+        }
+
+        // تحديد العملة وسعر الصرف - القيم الافتراضية id=1 و rate=1
+        $currencyId = (int) ($request->get('currency_id') ?? 1);
+        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
+
+        // التأكد من أن القيم صحيحة
+        if ($currencyId <= 0) $currencyId = 1;
+        if ($currencyRate <= 0) $currencyRate = 1;
+
+        // ضرب القيمة في سعر الصرف للحفظ والقيود
+        // pro_value المدخلة هي القيمة الأصلية (مثلاً 1000 دولار)
+        // baseValue هي القيمة الأساسية بعد الضرب (مثلاً 1000 * 47 = 47000)
+        $baseValue = (float) $validated['pro_value'] * $currencyRate;
+        // dd($request->all());
 
         try {
             DB::beginTransaction();
@@ -384,7 +415,9 @@ class VoucherController extends Controller
                 'pro_type' => $pro_type,
                 'acc1' => $validated['acc1'],
                 'acc2' => $validated['acc2'],
-                'pro_value' => $validated['pro_value'],
+                'pro_value' => $baseValue,
+                'currency_id' => $currencyId,
+                'currency_rate' => $currencyRate,
                 'details' => $request['details'] ?? null,
                 'pro_serial' => $request['pro_serial'] ?? null,
                 'pro_num' => $request['pro_num'] ?? null,
@@ -412,7 +445,7 @@ class VoucherController extends Controller
             $newJournalId = $lastJournalId + 1;
             $journalHead = JournalHead::create([
                 'journal_id' => $newJournalId,
-                'total' => $validated['pro_value'],
+                'total' => $baseValue,
                 'date' => $validated['pro_date'],
                 'op_id' => $oper->id,
                 'pro_type' => $pro_type,
@@ -425,7 +458,7 @@ class VoucherController extends Controller
             JournalDetail::create([
                 'journal_id' => $journalHead->journal_id,
                 'account_id' => $validated['acc1'],
-                'debit' => $validated['pro_value'],
+                'debit' => $baseValue,
                 'credit' => 0,
                 'type' => 0,
                 'info' => $request['details'] ?? null,
@@ -438,7 +471,7 @@ class VoucherController extends Controller
                 'journal_id' => $journalHead->journal_id,
                 'account_id' => $validated['acc2'],
                 'debit' => 0,
-                'credit' => $validated['pro_value'],
+                'credit' => $baseValue,
                 'type' => 1,
                 'info' => $request['details'] ?? null,
                 'op_id' => $oper->id,
@@ -452,7 +485,7 @@ class VoucherController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحفظ: '.$e->getMessage()])->withInput();
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -469,9 +502,9 @@ class VoucherController extends Controller
 
         // التحقق من الصلاحية
         $typePermissionMap = [
-            1 => 'view receipt vouchers',
-            2 => 'view payment vouchers',
-            101 => 'view payment vouchers',
+            1 => 'view recipt',
+            2 => 'view payment',
+            101 => 'view payment',
             3 => 'view exp-payment',
         ];
 
@@ -520,7 +553,11 @@ class VoucherController extends Controller
         ];
         $type = $typeMap[$voucher->pro_type] ?? 'receipt';
 
+        // ملاحظة: لا نقوم بتحويل pro_value هنا لأن القيمة المخزنة هي القيمة الأساسية
+        // التحويل يتم في الـ view للعرض فقط
+
         $branches = userBranches();
+        $allCurrencies = Currency::active()->with('latestRate')->get();
 
         // حسابات الصندوق
         $cashAccounts = AccHead::where('isdeleted', 0)
@@ -529,28 +566,28 @@ class VoucherController extends Controller
             ->orwhere('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '4')
-            ->select('id', 'aname', 'balance')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات البنوك
         $bankAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '4')
-            ->select('id', 'aname', 'balance')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات الموظفين
         $employeeAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '2102%')
-            ->select('id', 'aname', 'balance')
+            ->select('id', 'aname', 'balance', 'currency_id')
             ->get();
 
         // حسابات المصاريف (لـ exp-payment)
         $expensesAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('code', 'like', '57%')
-            ->select('id', 'aname', 'balance', 'code')
+            ->select('id', 'aname', 'balance', 'code', 'currency_id')
             ->orderBy('code')
             ->get();
 
@@ -558,7 +595,7 @@ class VoucherController extends Controller
         $paymentExpensesAccounts = AccHead::where('isdeleted', 0)
             ->where('is_basic', 0)
             ->where('acc_type', '7')
-            ->select('id', 'aname', 'balance', 'code')
+            ->select('id', 'aname', 'balance', 'code', 'currency_id')
             ->orderBy('code')
             ->get();
 
@@ -570,7 +607,7 @@ class VoucherController extends Controller
             ->where('is_basic', 0)
             ->where('is_fund', '!=', 1)
             ->where('is_stock', '!=', 1)
-            ->select('id', 'aname', 'code', 'balance')
+            ->select('id', 'aname', 'code', 'balance', 'currency_id')
             ->orderBy('code')
             ->get();
 
@@ -592,7 +629,8 @@ class VoucherController extends Controller
             'paymentExpensesAccounts',
             'costCenters',
             'projects',
-            'branches'
+            'branches',
+            'allCurrencies'
         ));
     }
 
@@ -629,7 +667,32 @@ class VoucherController extends Controller
             'cost_center' => 'nullable|integer',
             'project_id' => 'nullable|integer',
             'branch_id' => 'required|exists:branches,id',
+            'currency_id' => 'nullable|integer|exists:currencies,id',
+            'currency_rate' => 'nullable|numeric',
         ]);
+
+        // التحقق من تطابق العملات في حالة تفعيل تعدد العملات
+        if (isMultiCurrencyEnabled()) {
+            $acc1 = AccHead::find($validated['acc1']);
+            $acc2 = AccHead::find($validated['acc2']);
+
+            if ($acc1 && $acc2 && $acc1->currency_id != $acc2->currency_id) {
+                return back()->withErrors(['currency_mismatch' => 'عذراً، يجب أن يكون للحسابين نفس العملة لإتمام السند.'])->withInput();
+            }
+        }
+
+        // تحديد العملة وسعر الصرف - القيم الافتراضية id=1 و rate=1
+        $currencyId = (int) ($request->get('currency_id') ?? 1);
+        $currencyRate = (float) ($request->get('currency_rate') ?? 1);
+
+        // التأكد من أن القيم صحيحة
+        if ($currencyId <= 0) $currencyId = 1;
+        if ($currencyRate <= 0) $currencyRate = 1;
+
+        // ضرب القيمة في سعر الصرف للحفظ والقيود
+        // pro_value المدخلة هي القيمة الأصلية (مثلاً 1000 دولار)
+        // baseValue هي القيمة الأساسية بعد الضرب (مثلاً 1000 * 47 = 47000)
+        $baseValue = (float) $validated['pro_value'] * $currencyRate;
 
         try {
             DB::beginTransaction();
@@ -642,7 +705,9 @@ class VoucherController extends Controller
                 'pro_serial' => $validated['pro_serial'] ?? null,
                 'acc1' => $validated['acc1'],
                 'acc2' => $validated['acc2'],
-                'pro_value' => $validated['pro_value'],
+                'pro_value' => $baseValue,
+                'currency_id' => $currencyId,
+                'currency_rate' => $currencyRate,
                 'details' => $validated['details'] ?? null,
                 'emp_id' => $validated['emp_id'],
                 'emp2_id' => $validated['emp2_id'] ?? null,
@@ -663,7 +728,7 @@ class VoucherController extends Controller
             $journalHead = JournalHead::where('op_id', $oper->id)->first();
             if ($journalHead) {
                 $journalHead->update([
-                    'total' => $validated['pro_value'],
+                    'total' => $baseValue,
                     'date' => $validated['pro_date'],
                     'pro_type' => $validated['pro_type'],
                     'details' => $validated['details'] ?? null,
@@ -684,7 +749,7 @@ class VoucherController extends Controller
                 JournalDetail::create([
                     'journal_id' => $journalId,
                     'account_id' => $validated['acc1'],
-                    'debit' => $validated['pro_value'],
+                    'debit' => $baseValue,
                     'credit' => 0,
                     'type' => 0,
                     'info' => $validated['info'] ?? null,
@@ -698,7 +763,7 @@ class VoucherController extends Controller
                     'journal_id' => $journalId,
                     'account_id' => $validated['acc2'],
                     'debit' => 0,
-                    'credit' => $validated['pro_value'],
+                    'credit' => $baseValue,
                     'type' => 1,
                     'info' => $validated['info'] ?? null,
                     'op_id' => $oper->id,
@@ -713,7 +778,7 @@ class VoucherController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -758,7 +823,7 @@ class VoucherController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
         }
     }
 
