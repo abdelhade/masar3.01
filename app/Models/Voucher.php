@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Modules\Accounts\Models\AccHead;
+use Modules\Settings\Models\Currency;
 use Illuminate\Database\Eloquent\Model;
 
 class Voucher extends Model
 {
     protected $table = 'operhead';
     protected $guarded = [];
+
     public function scopeReceipts($query)
     {
         return $query->whereIn('pro_type', [1, 2]);
     }
+
     public function type()
     {
         return $this->belongsTo(\App\Models\ProType::class, 'pro_type');
@@ -37,8 +40,14 @@ class Voucher extends Model
     {
         return $this->belongsTo(AccHead::class, 'emp2_id');
     }
+
     public function user_id()
     {
         return $this->belongsTo(User::class, 'user'); // تأكد من اسم العمود في جدول transfers
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
     }
 }

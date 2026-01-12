@@ -175,7 +175,9 @@ class VoucherController extends Controller
             'exp-payment' => 3,
         ];
 
-        $query = Voucher::where('isdeleted', 0)->orderByDesc('pro_date');
+        $query = Voucher::where('isdeleted', 0)
+            ->with('currency') // Eager load currency to prevent N+1 queries
+            ->orderByDesc('pro_date');
 
         if ($type !== 'all') {
             if (in_array($type, ['multi_payment', 'multi_receipt'])) {

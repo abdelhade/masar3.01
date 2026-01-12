@@ -184,7 +184,22 @@
                                     </span>
                                 </td>
                                 <td>{{ $voucher->details }}</td>
-                                <td class="h5 fw-bold">{{ number_format($voucher->pro_value, 2) }}</td>
+                                <td class="h5 fw-bold">
+                                    @if(isMultiCurrencyEnabled() && $voucher->currency_id && $voucher->currency_rate > 1)
+                                        {{-- Display original amount with currency symbol --}}
+                                        <div>
+                                            {{ number_format($voucher->pro_value / $voucher->currency_rate, 2) }}
+                                            {{ $voucher->currency?->symbol ?? '' }}
+                                        </div>
+                                        {{-- Display base amount in smaller text --}}
+                                        <div class="text-muted small">
+                                            ({{ number_format($voucher->pro_value, 2) }} عملة أساسية)
+                                        </div>
+                                    @else
+                                        {{-- Display base amount only --}}
+                                        {{ number_format($voucher->pro_value, 2) }}
+                                    @endif
+                                </td>
                                 <td>{{ $voucher->account1->aname ?? '' }}</td>
                                 <td>{{ $voucher->account2->aname ?? '' }}</td>
                                 <td>{{ $voucher->emp1->aname ?? '' }}</td>
