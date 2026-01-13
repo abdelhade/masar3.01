@@ -72,6 +72,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('currencies/{currency}/update-mode', [CurrencyController::class, 'updateMode'])
         ->name('currencies.update-mode');
 
+    // Currency Exchange CRUD Routes
+    Route::resource('currency-exchange', \Modules\Settings\Http\Controllers\CurrencyExchangeController::class)
+        ->names('settings.currency-exchange');
+
     // CRUD Routes (لازم تيجي بعد الـ Specific Routes)
     Route::resource('currencies', CurrencyController::class)
         ->names('currencies');

@@ -24,4 +24,10 @@
         <i class="ti-control-record"></i>{{ __('Currencies') }}
     </a>
 </li>
+
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('settings.currency-exchange.index') }}">
+        <i class="ti-control-record"></i>{{ __('Currencies Exchange') }}
+    </a>
+</li>
 {{-- @endcan --}}
