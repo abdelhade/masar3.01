@@ -66,12 +66,35 @@
                                         <input type="date" name="pro_date" class="form-control"
                                             value="{{ date('Y-m-d') }}">
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-{{ isMultiCurrencyEnabled() ? '2' : '4' }}">
                                         <label class="form-label">المبلغ</label>
                                         <input type="number" step="0.01" name="pro_value" id="pro_value"
                                             class="form-control">
                                     </div>
-                                    <div class="col-md-4">
+
+                                    @if(isMultiCurrencyEnabled())
+                                        <div class="col-md-2">
+                                            <label class="form-label">العملة</label>
+                                            <select id="currency_selector" class="form-control">
+                                                <option value="">اختر العملة</option>
+                                                @foreach($allCurrencies as $currency)
+                                                    <option value="{{ $currency->id }}" 
+                                                            data-rate="{{ $currency->latestRate->rate ?? 1 }}"
+                                                            data-name="{{ $currency->name }}">
+                                                        {{ $currency->name }} ({{ number_format($currency->latestRate->rate ?? 1, 2) }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <label class="form-label">القيمة المحولة</label>
+                                            <input type="text" id="converted_amount" readonly 
+                                                class="form-control bg-light" placeholder="0.00">
+                                        </div>
+                                    @endif
+
+                                    <div class="col-md-{{ isMultiCurrencyEnabled() ? '2' : '4' }}">
                                         <label class="form-label">البيان</label>
                                         <input type="text" name="details" class="form-control">
                                     </div>
@@ -381,6 +404,45 @@
                 document.getElementById('currency_rate').value = currencyRate;
 
                 return true;
+            }
+
+            // Currency conversion calculation
+            const proValue = document.getElementById('pro_value');
+            const currencySelector = document.getElementById('currency_selector');
+            
+            if (proValue) {
+                proValue.addEventListener('input', calculateConvertedAmount);
+            }
+            
+            if (currencySelector) {
+                currencySelector.addEventListener('change', calculateConvertedAmount);
+            }
+
+            function calculateConvertedAmount() {
+                const multiCurrencyEnabled = {{ isMultiCurrencyEnabled() ? 'true' : 'false' }};
+                
+                if (!multiCurrencyEnabled) {
+                    return;
+                }
+
+                const amount = parseFloat(proValue.value) || 0;
+                const currencySelector = document.getElementById('currency_selector');
+                const convertedAmountField = document.getElementById('converted_amount');
+                
+                if (!currencySelector || !convertedAmountField) {
+                    return;
+                }
+
+                const selectedOption = currencySelector.options[currencySelector.selectedIndex];
+                const rate = parseFloat(selectedOption.dataset.rate) || 1;
+                const currencyId = currencySelector.value || '1';
+                
+                const convertedAmount = amount * rate;
+                convertedAmountField.value = convertedAmount.toFixed(2);
+                
+                // Update hidden fields
+                document.getElementById('currency_id').value = currencyId;
+                document.getElementById('currency_rate').value = rate;
             }
 
             // إضافة event listener على submit

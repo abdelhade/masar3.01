@@ -65,7 +65,7 @@
                     <hr>
 
                     <div class="row">
-                        <div class="col-lg-3">
+                        <div class="col-lg-{{ isMultiCurrencyEnabled() ? '2' : '3' }}">
                             <label>المبلغ</label>
                             @php
                                 // عرض القيمة الأصلية (قبل الضرب في سعر الصرف)
@@ -76,7 +76,33 @@
                             @endphp
                             <input type="number" step="0.01" name="pro_value" id="pro_value" class="form-control" value="{{ old('pro_value', number_format($displayValue, 2, '.', '')) }}" onblur="validateRequired(this)">
                         </div>
-                        <div class="col-lg-9">
+
+                        @if(isMultiCurrencyEnabled())
+                            <div class="col-lg-2">
+                                <label>العملة</label>
+                                <select id="currency_selector" class="form-control">
+                                    <option value="">اختر العملة</option>
+                                    @foreach($allCurrencies as $currency)
+                                        <option value="{{ $currency->id }}" 
+                                                data-rate="{{ $currency->latestRate->rate ?? 1 }}"
+                                                data-name="{{ $currency->name }}"
+                                                {{ $transfer->currency_id == $currency->id ? 'selected' : '' }}>
+                                            {{ $currency->name }} ({{ number_format($currency->latestRate->rate ?? 1, 2) }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <label>القيمة المحولة</label>
+                                <input type="text" id="converted_amount" readonly 
+                                    class="form-control bg-light" 
+                                    value="{{ number_format($transfer->pro_value, 2) }}" 
+                                    placeholder="0.00">
+                            </div>
+                        @endif
+
+                        <div class="col-lg-{{ isMultiCurrencyEnabled() ? '6' : '9' }}">
                             <label>البيان</label>
                             <input type="text" name="details" class="form-control" value="{{ old('details', $transfer->details ?? '') }}" onblur="validateRequired(this)">
                         </div>
@@ -435,6 +461,45 @@ document.addEventListener("DOMContentLoaded", function() {
         return true;
     }
 
+    // Currency conversion calculation
+    const proValue = document.getElementById('pro_value');
+    const currencySelector = document.getElementById('currency_selector');
+    
+    if (proValue) {
+        proValue.addEventListener('input', calculateConvertedAmount);
+    }
+    
+    if (currencySelector) {
+        currencySelector.addEventListener('change', calculateConvertedAmount);
+    }
+
+    function calculateConvertedAmount() {
+        const multiCurrencyEnabled = {{ isMultiCurrencyEnabled() ? 'true' : 'false' }};
+        
+        if (!multiCurrencyEnabled) {
+            return;
+        }
+
+        const amount = parseFloat(proValue.value) || 0;
+        const currencySelector = document.getElementById('currency_selector');
+        const convertedAmountField = document.getElementById('converted_amount');
+        
+        if (!currencySelector || !convertedAmountField) {
+            return;
+        }
+
+        const selectedOption = currencySelector.options[currencySelector.selectedIndex];
+        const rate = parseFloat(selectedOption.dataset.rate) || 1;
+        const currencyId = currencySelector.value || '1';
+        
+        const convertedAmount = amount * rate;
+        convertedAmountField.value = convertedAmount.toFixed(2);
+        
+        // Update hidden fields
+        document.getElementById('currency_id').value = currencyId;
+        document.getElementById('currency_rate').value = rate;
+    }
+
     // إضافة event listener على submit
     const form = document.getElementById('myForm');
     if (form) {
@@ -452,6 +517,9 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Update currency badges on page load
     updateCurrencyBadges();
+    
+    // Calculate converted amount on page load
+    calculateConvertedAmount();
 });
 </script>
 @endpush

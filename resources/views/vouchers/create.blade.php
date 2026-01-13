@@ -109,7 +109,33 @@
                                     </div>
                                 </div>
 
-                                <div class="col-lg-9">
+                                @if(isMultiCurrencyEnabled())
+                                    <div class="col-lg-3">
+                                        <div class="form-group">
+                                            <label for="currency_selector">العملة</label>
+                                            <select id="currency_selector" class="form-control">
+                                                <option value="">اختر العملة</option>
+                                                @foreach($allCurrencies as $currency)
+                                                    <option value="{{ $currency->id }}" 
+                                                            data-rate="{{ $currency->latestRate->rate ?? 1 }}"
+                                                            data-name="{{ $currency->name }}">
+                                                        {{ $currency->name }} ({{ number_format($currency->latestRate->rate ?? 1, 2) }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <div class="form-group">
+                                            <label for="converted_amount">القيمة المحولة (عملة أساسية)</label>
+                                            <input type="text" id="converted_amount" readonly 
+                                                class="form-control bg-light" placeholder="0.00">
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="col-lg-{{ isMultiCurrencyEnabled() ? '3' : '9' }}">
                                     <div class="form-group">
                                         <label for="details">البيان</label>
                                         <input type="text" name="details" class="form-control"
@@ -455,7 +481,43 @@
                         updateCurrencyBadges();
                     });
                 }
-                proValue.addEventListener("input", updateBalances);
+                proValue.addEventListener("input", function() {
+                    updateBalances();
+                    calculateConvertedAmount();
+                });
+
+                // Currency conversion calculation
+                const currencySelector = document.getElementById('currency_selector');
+                if (currencySelector) {
+                    currencySelector.addEventListener('change', calculateConvertedAmount);
+                }
+
+                function calculateConvertedAmount() {
+                    const multiCurrencyEnabled = {{ isMultiCurrencyEnabled() ? 'true' : 'false' }};
+                    
+                    if (!multiCurrencyEnabled) {
+                        return;
+                    }
+
+                    const amount = parseFloat(proValue.value) || 0;
+                    const currencySelector = document.getElementById('currency_selector');
+                    const convertedAmountField = document.getElementById('converted_amount');
+                    
+                    if (!currencySelector || !convertedAmountField) {
+                        return;
+                    }
+
+                    const selectedOption = currencySelector.options[currencySelector.selectedIndex];
+                    const rate = parseFloat(selectedOption.dataset.rate) || 1;
+                    const currencyId = currencySelector.value || '1';
+                    
+                    const convertedAmount = amount * rate;
+                    convertedAmountField.value = convertedAmount.toFixed(2);
+                    
+                    // Update hidden fields
+                    document.getElementById('currency_id').value = currencyId;
+                    document.getElementById('currency_rate').value = rate;
+                }
 
                 // Function to get currency ID from account
                 function getAccountCurrencyId(accountElement) {
