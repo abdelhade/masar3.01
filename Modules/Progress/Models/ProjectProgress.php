@@ -6,8 +6,11 @@ use App\Models\Client;
 use Modules\HR\Models\Employee;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class ProjectProgress extends Model
 {
+    use SoftDeletes;
     protected $table = 'projects';
 
     protected $guarded = ['id'];

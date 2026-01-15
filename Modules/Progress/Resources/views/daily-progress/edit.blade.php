@@ -7,16 +7,13 @@
 @section('content')
 <div class="container container-sm" style="max-width: 800px;">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0 fw-bold text-dark">
-            <i class="fas fa-edit text-primary me-2"></i> {{ __('general.edit_daily_progress') }}
-        </h4>
-        <a href="{{ route('daily_progress.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-            <i class="fas fa-arrow-left me-1"></i> {{ __('general.back_to_list') }}
-        </a>
-    </div>
-
-    <div class="card border-0 shadow-sm bg-white">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+             <h5 class="mb-0 text-white fw-bold"><i class="fas fa-edit me-2"></i> {{ __('general.edit_daily_progress') }}</h5>
+             <a href="{{ route('daily_progress.index') }}" class="btn btn-light btn-sm fw-bold text-primary">
+                <i class="fas fa-arrow-left me-1"></i> {{ __('general.back_to_list') }}
+            </a>
+        </div>
         <div class="card-body p-4">
             <form action="{{ route('daily_progress.update', $dailyProgress) }}" method="POST">
                 @csrf

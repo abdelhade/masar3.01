@@ -6,8 +6,11 @@ use Modules\HR\Models\Employee;
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class DailyProgress extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'project_id',
         'project_item_id',

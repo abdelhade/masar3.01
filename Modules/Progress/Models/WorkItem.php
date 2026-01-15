@@ -5,8 +5,11 @@ namespace Modules\Progress\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class WorkItem extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'name',
         'unit',

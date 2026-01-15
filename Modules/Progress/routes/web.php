@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Progress\Http\Controllers\DashboardController;
 use Modules\Progress\Http\Controllers\{
     DailyProgressController,
     WorkItemController,
@@ -14,8 +15,11 @@ use Modules\Progress\Http\Controllers\{
     ProjectController
 };
 
+Route::get('/progress/dashboard', [DashboardController::class, 'index'])->name('progress.dashboard')->middleware('auth');
+
 Route::middleware(['auth'])->group(function () {
     // Route::resource('projects', ProjectController::class);
+    // Dashboard route moved to top
     Route::resource('item-statuses', ItemStatusController::class)->names('item-statuses');
     Route::resource('project-types', ProjectTypeController::class)->names('project.types');
     Route::post('work-items/reorder', [WorkItemController::class, 'reorder'])->name('work.items.reorder');
@@ -60,5 +64,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
+
     Route::get('/daily-progress/executed-today', [DailyProgressController::class, 'executedToday']);
+
+    // Recycle Bin Routes
+    Route::get('/recycle-bin', [\Modules\Progress\Http\Controllers\RecycleBinController::class, 'index'])->name('progress.recycle_bin.index');
+    Route::post('/recycle-bin/{type}/{id}/restore', [\Modules\Progress\Http\Controllers\RecycleBinController::class, 'restore'])->name('progress.recycle_bin.restore');
+    Route::delete('/recycle-bin/{type}/{id}/force-delete', [\Modules\Progress\Http\Controllers\RecycleBinController::class, 'forceDelete'])->name('progress.recycle_bin.force_delete');
 });
