@@ -23,11 +23,20 @@
 
             
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-                        href="{{ route('dashboard') }}" data-title="{{ __('general.dashboard') }}">
-                        <i class="fas fa-home"></i> <span>{{ __('general.dashboard') }}</span>
+                    <a class="nav-link d-flex align-items-center gap-3"
+                        href="{{ route('admin.dashboard') }}" data-title="{{ __('general.home') }}">
+                        <i class="fas fa-home"></i> <span>{{ __('general.home') }}</span>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('progress.dashboard') ? 'active' : '' }}"
+                        href="{{ route('progress.dashboard') }}" data-title="{{ __('progress::dashboard.title') }}">
+                        <i class="fas fa-tachometer-alt"></i> <span>{{ __('progress::dashboard.title') }}</span>
+                    </a>
+                </li>
+                
+
 
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('projects.*') ? 'active' : '' }}"
@@ -109,6 +118,12 @@
 
 
 
+                <li class="nav-item">
+                     <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('progress.recycle_bin.*') ? 'active' : '' }}"
+                        href="{{ route('progress.recycle_bin.index') }}" data-title="{{ __('progress::dashboard.recycle_bin') }}">
+                        <i class="las la-trash"></i> <span>{{ __('progress::dashboard.recycle_bin') }}</span>
+                    </a>
+                </li>
         </ul>
     </div>
 </div>

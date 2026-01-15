@@ -1,75 +1,65 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Modules\Progress\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class ProgressPermissionsSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
         // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        
+        // 1. Clean up old namespaced permissions
+        Permission::where('name', 'like', 'progress.%')->delete();
 
-        // مصفوفة المجموعات مع العناصر داخل كل مجموعة
-        $groupedPermissions = [
-            'Progress' => [
-                'Projects',
-                'Project Types',
-                'Work Items',
-                'Project Templates',
-                'Project Items',
-                'Daily Progress',
-            ],
+        // 2. Define Matrix Permissions (Option Type 1)
+        // Format: 'target' => ['action1', 'action2', ...]
+        // We will create standard CRUD: view, create, edit, delete
+        
+        $matrixTargets = [
+            'progress-projects',
+            'progress-issues',
+            'daily-progress',
+            'progress-project-types',
+            'progress-project-templates',
+            'progress-work-items',
+            'progress-work-item-categories',
+            'progress-item-statuses',
+            'progress-dashboard'
         ];
 
-        // الأفعال القياسية
-        $actions = ['view', 'create', 'edit', 'delete', 'print'];
+        $actions = ['view', 'create', 'edit', 'delete'];
 
-        // إنشاء أو تحديث الصلاحيات
-        foreach ($groupedPermissions as $category => $items) {
-            foreach ($items as $base) {
-                foreach ($actions as $action) {
-                    $fullName = "$action $base";
-                    $permission = Permission::firstOrCreate(
-                        ['name' => $fullName, 'guard_name' => 'web'],
-                        ['category' => $category, 'option_type' => '1']
-                    );
-
-                    // تحديث الفئة و option_type إذا كانت موجودة بالفعل
-                    $updateData = [];
-                    if ($permission->category !== $category) {
-                        $updateData['category'] = $category;
-                    }
-                    if ($permission->option_type !== '1') {
-                        $updateData['option_type'] = '1';
-                    }
-                    if (! empty($updateData)) {
-                        $permission->update($updateData);
-                }
+        foreach ($matrixTargets as $target) {
+            foreach ($actions as $action) {
+                // Use the custom Permission model to access category/option_type
+                \Modules\Authorization\Models\Permission::updateOrCreate(
+                    [
+                        'name' => "{$action} {$target}", 
+                        'guard_name' => 'web'
+                    ],
+                    [
+                        'category' => 'Progress',
+                        'option_type' => '1',
+                        'description' => ucfirst($action) . " " . ucfirst(str_replace('-', ' ', $target))
+                    ]
+                );
             }
         }
-        }
 
-        // تحديث الصلاحيات القديمة للمشاريع التي ليس لها فئة
-        $oldProjectPermissions = ['view projects', 'create projects', 'edit projects', 'delete projects'];
-        foreach ($oldProjectPermissions as $permName) {
-            $permission = Permission::where('name', $permName)->where('guard_name', 'web')->first();
-            if ($permission) {
-                $updateData = [];
-                if ($permission->category !== 'Progress') {
-                    $updateData['category'] = 'Progress';
-                }
-                if ($permission->option_type !== '1') {
-                    $updateData['option_type'] = '1';
-                }
-                if (! empty($updateData)) {
-                    $permission->update($updateData);
-                }
-            }
+    
+
+        // 4. Assign all to Admin
+        $adminRole = Role::where('name', 'Admin')->first();
+        if ($adminRole) {
+            // Get all permissions in Progress category
+            $progressPermissions = \Modules\Authorization\Models\Permission::where('category', 'Progress')->current()->get();
+            $adminRole->givePermissionTo($progressPermissions);
         }
     }
 }

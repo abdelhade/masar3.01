@@ -24,11 +24,11 @@
         <div class="mx-auto" style="max-width: 1100px;" x-data="templateForm()" x-init="initData({{ json_encode($workItems) }}, {{ $initialItems }})">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>تعديل قالب مشروع: {{ $projectTemplate->name }}</h2>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white py-3">
+                            <h5 class="mb-0 text-white fw-bold"><i class="las la-edit me-2"></i>تعديل قالب مشروع: {{ $projectTemplate->name }}</h5>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body p-4">
                             <form action="{{ route('project.template.update', $projectTemplate->id) }}" method="POST" id="templateForm" @submit.prevent="submitForm">
                                 @csrf
                                 @method('PUT')
@@ -36,39 +36,45 @@
                                 {{-- Header Data --}}
                                 <div class="row mb-4">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label" for="name">اسم القالب <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="name" name="name"
-                                            placeholder="ادخل اسم القالب" value="{{ old('name', $projectTemplate->name) }}" required>
+                                        <label class="form-label fw-bold" for="name">اسم القالب <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                                placeholder="ادخل اسم القالب" value="{{ old('name', $projectTemplate->name) }}" required>
+                                            <span class="input-group-text bg-light text-muted"><i class="las la-file-alt"></i></span>
+                                        </div>
                                         @error('name')
                                             <small class="text-danger">{{ $message }}</small>
                                         @enderror
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label" for="project_type_id">نوع المشروع</label>
-                                        <select class="form-select" id="project_type_id" name="project_type_id">
-                                            <option value="">اختر نوع المشروع</option>
-                                            @foreach ($projectTypes as $type)
-                                                <option value="{{ $type->id }}" {{ old('project_type_id', $projectTemplate->project_type_id) == $type->id ? 'selected' : '' }}>
-                                                    {{ $type->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                        <label class="form-label fw-bold" for="project_type_id">نوع المشروع</label>
+                                        <div class="input-group">
+                                            <select class="form-select" id="project_type_id" name="project_type_id">
+                                                <option value="">اختر نوع المشروع</option>
+                                                @foreach ($projectTypes as $type)
+                                                    <option value="{{ $type->id }}" {{ old('project_type_id', $projectTemplate->project_type_id) == $type->id ? 'selected' : '' }}>
+                                                        {{ $type->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <span class="input-group-text bg-light text-muted"><i class="las la-shapes"></i></span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="mb-4">
-                                     <label class="form-label" for="description">وصف القالب</label>
+                                     <label class="form-label fw-bold" for="description">وصف القالب</label>
                                      <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $projectTemplate->description) }}</textarea>
                                 </div>
 
                                 <hr>
 
                                 {{-- Items Section --}}
-                                <div class="card mb-4 border-0 shadow-sm rounded-3">
-                                    <div class="card-header bg-light d-flex justify-content-between align-items-center rounded-top-3">
-                                        <h6 class="mb-0 fw-bold">{{ __('بنود القالب') }}</h6>
-                                        <span class="badge bg-primary px-3 py-2" x-text="items.length + ' بنود'"></span>
+                                <div class="card mb-4 border-0 shadow-sm">
+                                    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0 text-white fw-bold"><i class="las la-tasks me-2"></i>{{ __('بنود القالب') }}</h5>
+                                        <span class="badge bg-white text-primary rounded-pill px-3 py-2" x-text="items.length + ' بنود'"></span>
                                     </div>
                                     
                                     {{-- Search Bar --}}

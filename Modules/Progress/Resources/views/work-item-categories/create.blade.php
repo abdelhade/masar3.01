@@ -1,5 +1,7 @@
 @extends('progress::layouts.daily-progress')
 
+@section('title', 'إضافة تصنيف جديد')
+
 @section('content')
     @include('components.breadcrumb', [
         'title' => 'إضافة تصنيف جديد',
@@ -10,28 +12,41 @@
         ],
     ])
 
-    <div class="row">
+    <div class="row justify-content-center">
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between py-3">
+                    <h5 class="mb-0 text-white fw-bold">
+                        <i class="las la-plus-circle me-2"></i> إضافة تصنيف جديد
+                    </h5>
+                    <a href="{{ route('work-item-categories.index') }}" class="btn btn-sm btn-light text-primary fw-bold">
+                        <i class="las la-arrow-right me-1"></i> {{ __('general.back') }}
+                    </a>
+                </div>
+                <div class="card-body p-4">
                     <form action="{{ route('work-item-categories.store') }}" method="POST">
                         @csrf
 
-                        <div class="mb-3">
-                            <label for="name" class="form-label required">{{ __('general.name') }}</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
-                                value="{{ old('name') }}" required>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row g-4">
+                            <div class="col-lg-12">
+                                <label for="name" class="form-label fw-bold">{{ __('general.name') }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror" id="name" name="name"
+                                        value="{{ old('name') }}" placeholder="{{ __('general.name') }}" required>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-tag"></i></span>
+                                </div>
+                                @error('name')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <a href="{{ route('work-item-categories.index') }}" class="btn btn-secondary me-2">
-                                {{ __('general.cancel') }}
+                        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                            <a href="{{ route('work-item-categories.index') }}" class="btn btn-outline-secondary btn-lg me-2">
+                                <i class="las la-times"></i> {{ __('general.cancel') }}
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                {{ __('general.save') }}
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="las la-save"></i> {{ __('general.save') }}
                             </button>
                         </div>
                     </form>

@@ -12,31 +12,34 @@
 
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    <h2>{{ __('اضافة جديده') }}</h2>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 text-white fw-bold"><i class="las la-plus-circle me-2"></i>{{ __('اضافة جديده') }}</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form action="{{ route('project.types.store') }}" method="POST">
                         @csrf
                         <div class="row">
-                            <div class="mb-3 col-lg-4">
-                                <label class="form-label" for="name">{{ __('الاسم') }}</label>
-                                <input type="text" class="form-control" id="name" name="name"
-                                    placeholder="ادخل الاسم" value="{{ old('name') }}">
+                            <div class="mb-3 col-lg-12">
+                                <label class="form-label fw-bold" for="name">{{ __('الاسم') }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                        placeholder="ادخل الاسم" value="{{ old('name') }}">
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-file-alt"></i></span>
+                                </div>
                                 @error('name')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-start mt-4">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="las la-save"></i> {{ __('حفظ') }}
-                            </button>
-                            <a href="{{ route('project.types.index') }}" class="btn btn-danger">
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+                             <a href="{{ route('project.types.index') }}" class="btn btn-secondary px-4 btn-lg">
                                 <i class="las la-times"></i> {{ __('إلغاء') }}
                             </a>
+                            <button type="submit" class="btn btn-primary px-4 btn-lg">
+                                <i class="las la-save"></i> {{ __('حفظ') }}
+                            </button>
                         </div>
                     </form>
                 </div>

@@ -204,80 +204,104 @@
 <div class="modal fade" id="createIssueModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">New Issue</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white fw-bold"><i class="las la-plus-circle me-2"></i>New Issue</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('issues.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body p-4">
                      <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Project</label>
-                            <select name="project_id" class="form-select" required>
-                                <option value="">Select Project</option>
-                                @foreach($projects as $project)
-                                    <option value="{{ $project->id }}">{{ $project->name }}</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label fw-bold">Project</label>
+                            <div class="input-group">
+                                <select name="project_id" class="form-select" required>
+                                    <option value="">Select Project</option>
+                                    @foreach($projects as $project)
+                                        <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="input-group-text bg-light text-muted"><i class="las la-project-diagram"></i></span>
+                            </div>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Title</label>
-                            <input type="text" name="title" class="form-control" required>
+                            <label class="form-label fw-bold">Title</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="las la-heading"></i></span>
+                                <input type="text" name="title" class="form-control" required placeholder="Issue Title">
+                            </div>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Module</label>
-                            <input type="text" name="module" class="form-control" >
+                            <label class="form-label fw-bold">Module</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="las la-cube"></i></span>
+                                <input type="text" name="module" class="form-control" placeholder="Module Name">
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Priority</label>
-                            <select name="priority" class="form-select">
-                                <option value="Low">Low</option>
-                                <option value="Medium" selected>Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
+                            <label class="form-label fw-bold">Priority</label>
+                            <div class="input-group">
+                                <select name="priority" class="form-select">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                    <option value="Urgent">Urgent</option>
+                                </select>
+                                <span class="input-group-text bg-light text-muted"><i class="las la-flag"></i></span>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="New" selected>New</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Testing">Testing</option>
-                                <option value="Closed">Closed</option>
-                            </select>
+                            <label class="form-label fw-bold">Status</label>
+                            <div class="input-group">
+                                <select name="status" class="form-select">
+                                    <option value="New" selected>New</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Testing">Testing</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                                <span class="input-group-text bg-light text-muted"><i class="las la-info-circle"></i></span>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Assigned To</label>
-                            <select name="assigned_to" class="form-select">
-                                <option value="">Unassigned</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label fw-bold">Assigned To</label>
+                             <div class="input-group">
+                                <select name="assigned_to" class="form-select">
+                                    <option value="">Unassigned</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="input-group-text bg-light text-muted"><i class="las la-user"></i></span>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Deadline</label>
-                            <input type="date" name="deadline" class="form-control">
+                            <label class="form-label fw-bold">Deadline</label>
+                            <div class="input-group">
+                                <input type="date" name="deadline" class="form-control">
+                                <span class="input-group-text bg-light text-muted"><i class="las la-calendar"></i></span>
+                            </div>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea name="description" class="form-control" rows="3"></textarea>
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Detailed description..."></textarea>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Reproduce Steps</label>
-                            <textarea name="reproduce_steps" class="form-control" rows="3" placeholder="Steps to reproduce the issue"></textarea>
+                            <label class="form-label fw-bold">Reproduce Steps</label>
+                            <textarea name="reproduce_steps" class="form-control" rows="3" placeholder="1. Step one..."></textarea>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Attachments</label>
-                            <input type="file" name="attachments[]" class="form-control" multiple>
+                            <label class="form-label fw-bold">Attachments</label>
+                            <div class="input-group">
+                                <input type="file" name="attachments[]" class="form-control" multiple>
+                                <span class="input-group-text bg-light text-muted"><i class="las la-paperclip"></i></span>
+                            </div>
                             <small class="text-muted">Maximum file size: 10MB. Allowed types: JPG, PNG, PDF, DOC, XLS.</small>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary px-4"><i class="las la-save me-1"></i> Create Issue</button>
                 </div>
             </form>
         </div>

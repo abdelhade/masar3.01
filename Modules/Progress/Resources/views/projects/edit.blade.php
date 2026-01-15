@@ -25,54 +25,66 @@
             <div class="col-lg-10" style="max-width: 100%; min-width: 0;">
                 
                 <!-- Section 1: Basic Info -->
-                <div class="card card-premium border-0 shadow-sm mb-4">
-                    <div class="card-header-premium bg-white glass border-bottom">
-                        <h5 class="mb-0 text-gradient-primary fw-bold"><i class="las la-info-circle me-2"></i>البيانات الأساسية</h5>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-info-circle me-2"></i>البيانات الأساسية</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <label class="form-label fw-bold text-muted">اسم المشروع <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control form-control-premium form-control-lg" required x-model="form.name" placeholder="أدخل اسم المشروع المميز..." autofocus>
+                                <label class="form-label fw-bold">اسم المشروع <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" name="name" class="form-control form-control-lg" required x-model="form.name" placeholder="أدخل اسم المشروع المميز..." autofocus>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-project-diagram"></i></span>
+                                </div>
                             </div>
                             <div class="col-md-4">
-                                    <label class="form-label fw-bold">الحالة</label>
-                                    <select name="status" class="form-select form-control-premium form-select-lg" x-model="form.status">
-                                    <option value="pending">معلق (Pending)</option>
-                                    <option value="active">نشط (Active)</option>
-                                    <option value="completed">مكتمل (Completed)</option>
-                                </select>
+                                <label class="form-label fw-bold">الحالة</label>
+                                <div class="input-group">
+                                    <select name="status" class="form-select form-select-lg" x-model="form.status">
+                                        <option value="pending">معلق (Pending)</option>
+                                        <option value="active">نشط (Active)</option>
+                                        <option value="completed">مكتمل (Completed)</option>
+                                    </select>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-flag"></i></span>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">العميل <span class="text-danger">*</span></label>
-                                <select name="client_id" class="form-select form-control-premium" required x-model="form.client_id">
-                                    <option value="">-- اختر العميل --</option>
-                                    @foreach($clients as $client)
-                                        <option value="{{ $client->id }}">{{ $client->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group">
+                                    <select name="client_id" class="form-select" required x-model="form.client_id">
+                                        <option value="">-- اختر العميل --</option>
+                                        @foreach($clients as $client)
+                                            <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-user-tie"></i></span>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">نوع المشروع</label>
-                                <select name="project_type_id" class="form-select form-control-premium" x-model="form.project_type_id">
-                                    <option value="">-- اختر النوع --</option>
-                                    @foreach($projectTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group">
+                                    <select name="project_type_id" class="form-select" x-model="form.project_type_id">
+                                        <option value="">-- اختر النوع --</option>
+                                        @foreach($projectTypes as $type)
+                                            <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-shapes"></i></span>
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold">وصف المشروع</label>
-                                <textarea name="description" class="form-control form-control-premium" rows="4" x-model="form.description" placeholder="اكتب وصفاً مختصراً للمشروع وأهدافه..."></textarea>
+                                <textarea name="description" class="form-control" rows="4" x-model="form.description" placeholder="اكتب وصفاً مختصراً للمشروع وأهدافه..."></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Section 2: Schedule -->
-                <div class="card card-premium border-0 shadow-sm mb-4">
-                    <div class="card-header-premium bg-white py-3 border-bottom">
-                        <h5 class="mb-0 text-gradient-primary fw-bold"><i class="las la-calendar-alt me-2"></i>الجدول الزمني وإعدادات الدوام</h5>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-calendar-alt me-2"></i>الجدول الزمني وإعدادات الدوام</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-4">
@@ -82,12 +94,15 @@
                                         <h6 class="fw-bold mb-3 text-dark">تكوين التواريخ</h6>
                                         <div class="mb-3">
                                             <label class="form-label">تاريخ البدء <span class="text-danger">*</span></label>
-                                            <input type="date" name="start_date" class="form-control form-control-premium" required x-model="form.start_date" @change="calculateAllDates()">
+                                            <div class="input-group">
+                                                <input type="date" name="start_date" class="form-control" required x-model="form.start_date" @change="calculateAllDates()">
+                                                <span class="input-group-text bg-white text-muted"><i class="las la-calendar"></i></span>
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">تاريخ الانتهاء المتوقع</label>
                                             <div class="input-group">
-                                                <input type="text" class="form-control bg-white form-control-premium" readonly :value="calculatedEndDate || '-'" disabled>
+                                                <input type="text" class="form-control bg-white" readonly :value="calculatedEndDate || '-'" disabled>
                                                 <span class="input-group-text"><i class="las la-calculator"></i></span>
                                             </div>
                                             <small class="text-muted d-block mt-1">يُحسب تلقائياً بناءً على مدة البنود التالية.</small>
@@ -101,11 +116,17 @@
                                         <h6 class="fw-bold mb-3 text-dark">ساعات وأيام العمل</h6>
                                         <div class="mb-3">
                                             <label class="form-label">ساعات العمل اليومية</label>
-                                            <input type="number" name="daily_work_hours" class="form-control form-control-premium" min="1" max="24" x-model="form.daily_work_hours">
+                                            <div class="input-group">
+                                                <input type="number" name="daily_work_hours" class="form-control" min="1" max="24" x-model="form.daily_work_hours">
+                                                <span class="input-group-text bg-white text-muted"><i class="las la-clock"></i></span>
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">أيام العمل في الأسبوع</label>
-                                            <input type="text" class="form-control form-control-premium" readonly :value="7 - form.holidays.length + ' أيام'">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" readonly :value="7 - form.holidays.length + ' أيام'">
+                                                <span class="input-group-text bg-white text-muted"><i class="las la-calendar-week"></i></span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -151,10 +172,10 @@
                 </div>
 
                 <!-- Section 3: Items -->
-                <div class="card card-premium border-0 shadow-sm mb-4">
-                    <div class="card-header-premium bg-white glass d-flex justify-content-between align-items-center border-bottom">
-                        <h5 class="mb-0 text-gradient-primary fw-bold"><i class="las la-tasks me-2"></i>بنود ونطاق العمل</h5>
-                        <span class="badge bg-primary rounded-pill" x-text="items.length + ' بنود'"></span>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-tasks me-2"></i>بنود ونطاق العمل</h5>
+                        <span class="badge bg-white text-primary rounded-pill" x-text="items.length + ' بنود'"></span>
                     </div>
                     
                     <div class="card-body p-0">
@@ -495,14 +516,14 @@
                 </div>
 
                 <!-- Section 4: Team & Submit -->
-                <div class="card card-premium border-0 shadow-sm mb-4">
-                    <div class="card-header-premium bg-white glass border-bottom">
-                        <h5 class="mb-0 text-gradient-primary fw-bold"><i class="las la-users me-2"></i>فريق العمل والمكان</h5>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-users me-2"></i>فريق العمل والمكان</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-4">
                             <label class="form-label fw-bold">منطقة العمل (Working Zone)</label>
-                            <input type="text" name="working_zone" class="form-control form-control-premium form-control-lg" x-model="form.working_zone" placeholder="مثال: المنطقة الشمالية، المبنى الرئيسي...">
+                            <input type="text" name="working_zone" class="form-control form-control-lg" value="{{ old('working_zone', $project->working_zone) }}" x-model="form.working_zone" placeholder="مثال: المنطقة الشمالية، المبنى الرئيسي...">
                         </div>
                         
                         <hr class="my-4">
