@@ -105,7 +105,7 @@ class RentalsLeaseController extends Controller
 
     public function edit($id)
     {
-        $lease = RentalsLease::findOrFail($id);
+        $lease = RentalsLease::with('client')->findOrFail($id);
         $paymantAccount = AccHead::where('code', 'like', '42%')->where('is_basic', 0)->get();
         $units = RentalsUnit::pluck('name', 'id');
 
@@ -133,46 +133,48 @@ class RentalsLeaseController extends Controller
                     'acc2' => $request->acc_id,
                     'user' => Auth::id(),
                 ]);
-            }
-            $journalHead = JournalHead::where('op_id', $oper->id)->where('pro_type', 64)->first();
 
-            if ($journalHead) {
-                $journalHead->update([
-                    'total' => $oper->pro_value,
-                    'date' => $oper->pro_date,
-                    'details' => $oper->info,
-                    'user' => Auth::id(),
-                ]);
-            }
+                // Only update journal entries if $oper exists
+                $journalHead = JournalHead::where('op_id', $oper->id)->where('pro_type', 64)->first();
 
-            if ($journalHead) {
-                JournalDetail::where('journal_id', $journalHead->journal_id)->delete();
-                JournalDetail::create([
-                    'journal_id' => $journalHead->journal_id,
-                    'account_id' => $oper->acc1,
-                    'debit' => 0,
-                    'credit' => $oper->pro_value,
-                    'type' => 1,
-                    'info' => $oper->info,
-                    'op_id' => $oper->id,
-                ]);
+                if ($journalHead) {
+                    $journalHead->update([
+                        'total' => $oper->pro_value,
+                        'date' => $oper->pro_date,
+                        'details' => $oper->info,
+                        'user' => Auth::id(),
+                    ]);
 
-                JournalDetail::create([
-                    'journal_id' => $journalHead->journal_id,
-                    'account_id' => $oper->acc2,
-                    'debit' => $oper->pro_value,
-                    'credit' => 0,
-                    'type' => 1,
-                    'info' => $oper->info,
-                    'op_id' => $oper->id,
-                ]);
+                    // Delete old journal details and create new ones
+                    JournalDetail::where('journal_id', $journalHead->journal_id)->delete();
+                    
+                    JournalDetail::create([
+                        'journal_id' => $journalHead->journal_id,
+                        'account_id' => $oper->acc1,
+                        'debit' => 0,
+                        'credit' => $oper->pro_value,
+                        'type' => 1,
+                        'info' => $oper->info,
+                        'op_id' => $oper->id,
+                    ]);
+
+                    JournalDetail::create([
+                        'journal_id' => $journalHead->journal_id,
+                        'account_id' => $oper->acc2,
+                        'debit' => $oper->pro_value,
+                        'credit' => 0,
+                        'type' => 1,
+                        'info' => $oper->info,
+                        'op_id' => $oper->id,
+                    ]);
+                }
             }
 
             DB::commit();
             Alert::toast(__('Lease contract updated successfully'), 'success');
 
             return redirect()->route('rentals.leases.index');
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             DB::rollBack();
             Alert::toast(__('An error occurred while updating the contract'), 'error');
 

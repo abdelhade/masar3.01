@@ -51,9 +51,9 @@
 
                             {{-- Client --}}
                             <div class="col-md-6 mb-3">
-                                <x-dynamic-search name="client_id" label="{{ __('Client') }}" column="cname"
-                                    model="App\Models\Client" placeholder="{{ __('Search for client...') }}" :required="false"
-                                    :class="'form-select'" :selected="$lease->client_id" />
+                                <x-dynamic-search name="client_id" label="{{ __('Client') }}" column="aname"
+                                    model="Modules\Accounts\Models\AccHead" placeholder="{{ __('Search for client...') }}" :required="true"
+                                    :class="'form-select'" :filters="['acc_type' => 1, 'is_basic' => 0, 'isdeleted' => 0]" :selected="$lease->client_id" />
                             </div>
 
                             {{-- Start Date --}}
