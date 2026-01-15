@@ -16,6 +16,12 @@ use Carbon\Carbon;
 
 class ProjectController extends Controller
 {
+    public function __construct()
+    {
+        
+        $this->middleware('can:view progress-projects')->only('create', 'store');
+    }       
+
     public function create()
     {
         $clients = Client::all();

@@ -19,15 +19,14 @@ use Modules\Progress\Models\ProjectTemplate;
 class ProjectProgressController extends Controller
 {
 
-    // public function __construct()
-    // {
-    //     $this->middleware('can:projects-list')->only('index');
-    //     $this->middleware('can:projects-create')->only(['create', 'store']);
-    //     $this->middleware('can:projects-edit')->only(['edit', 'update']);
-    //     $this->middleware('can:projects-delete')->only('destroy');
-    //     $this->middleware('can:projects-view')->only('show');
-    //     // $this->middleware('can:projects-progress')->only('progress');
-    // }
+    public function __construct()
+    {
+        $this->middleware('can:view progress-projects')->only('index','show','progress','gantt');
+        $this->middleware('can:create progress-projects')->only(['create', 'store']);
+        $this->middleware('can:edit progress-projects')->only(['edit', 'update']);
+        $this->middleware('can:delete progress-projects')->only('destroy');
+        
+    }
 
     public function index()
     {

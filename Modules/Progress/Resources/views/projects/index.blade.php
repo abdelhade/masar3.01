@@ -18,15 +18,19 @@
             <h4 class="fw-bold text-dark">{{ __('projects.list') }}</h4>
         </div>
         <div class="d-flex gap-2">
+            @can('create progress-projects')
             <a href="{{ route('progress.project.create') }}" class="btn btn-primary btn-sm rounded-pill fw-bold shadow-sm">
                 <i class="las la-plus me-1"></i> إنشاء مشروع
             </a>
+            @endcan
+            @can('view progress-projects')
             <a href="{{ route('progress.project.index', ['status' => 'draft']) }}" class="btn btn-warning btn-sm rounded-pill text-dark fw-bold bg-opacity-10 border-warning">
                 <i class="las la-file-alt me-1"></i> المسودات 
                 @if(isset($draftsCount) && $draftsCount > 0)
                     <span class="badge bg-warning text-dark ms-1 rounded-circle">{{ $draftsCount }}</span>
                 @endif
             </a>
+            @endcan
         </div>
     </div>
 
@@ -267,12 +271,17 @@
                                 <button class="btn btn-outline-primary btn-sm px-2 rounded-3" title="copy" onclick="openCopyModal({{ $project->id }}, '{{ addslashes($project->name) }}')">
                                     <i class="las la-copy"></i>
                                 </button>
+                                @can('edit progress-projects')
                                 <a href="{{ route('progress.project.edit', $project->id) }}" class="btn btn-outline-success btn-sm px-2 rounded-3" title="Edit">
                                     <i class="las la-edit"></i>
                                 </a>
+                                @endcan
+                                @can('view progress-projects')
                                 <a href="{{ route('progress.project.show', $project->id) }}" class="btn btn-outline-info btn-sm px-2 rounded-3" title="View">
                                     <i class="las la-eye"></i>
                                 </a>
+                                @endcan
+                                @can('delete progress-projects')
                                 <form action="{{ route('progress.project.destroy', $project->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المشروع؟ سيتم حذف جميع البيانات المرتبطة به.')">
                                     @csrf
                                     @method('DELETE')
@@ -280,6 +289,7 @@
                                         <i class="las la-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
 
                             <!-- Large Details Button Right -->
@@ -419,18 +429,26 @@
                      <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">
                         <i class="las la-times me-1"></i> Close
                      </button>
+                     @can('view progress-projects')
                      <a href="#" id="btn_view" class="btn btn-primary text-white shadow-sm">
                         <i class="las la-eye me-1"></i> View
                      </a>
+                     @endcan
+                     @can('edit progress-projects')
                      <a href="#" id="btn_edit" class="btn btn-success text-white shadow-sm">
                         <i class="las la-edit me-1"></i> Edit
                      </a>
+                     @endcan
+                     @can('view progress-projects')
                      <a href="#" id="btn_report" class="btn btn-info text-white shadow-sm">
                         <i class="las la-file-alt me-1"></i> Progress Report
                      </a>
+                     @endcan
+                     @can('view progress-projects')
                      <a href="#" id="btn_gantt" class="btn btn-outline-primary shadow-sm">
                         <i class="las la-stream me-1"></i> Gantt Chart
                      </a>
+                     @endcan
                 </div>
             </div>
         </div>
