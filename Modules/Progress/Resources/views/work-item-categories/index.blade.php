@@ -15,10 +15,12 @@
         <div class="col-lg-12">
 
             {{-- زرار الإضافة --}}
+            @can('create progress-work-item-categories')
             <a href="{{ route('work-item-categories.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 إضافة تصنيف جديد
                 <i class="fas fa-plus me-2"></i>
             </a>
+            @endcan
 
             <br><br>
             {{-- الجدول --}}
@@ -43,11 +45,13 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $category->name }}</td>
                                         <td>
+                                            @can('edit progress-work-item-categories')
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('work-item-categories.edit', $category->id) }}">
                                                 <i class="las la-edit"></i>
                                             </a>
-
+                                            @endcan
+                                            @can('delete progress-work-item-categories')
                                             <form action="{{ route('work-item-categories.destroy', $category->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('{{ __('general.confirm_delete') }}');">
@@ -57,6 +61,7 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @empty

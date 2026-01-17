@@ -6,12 +6,12 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">Issues Management</h4>
+            <h4 class="mb-sm-0">{{ __('general.issues_management') }}</h4>
             <div class="page-title-right">
-                <a href="{{ route('issues.kanban') }}" class="btn btn-soft-primary btn-sm me-2"><i class="las la-columns me-1"></i> Kanban Board</a>
+                <a href="{{ route('issues.kanban') }}" class="btn btn-soft-primary btn-sm me-2"><i class="las la-columns me-1"></i> {{ __('general.kanban_board') }}</a>
                 <ol class="breadcrumb m-0 d-inline-flex">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Issues</li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('general.dashboard') }}</a></li>
+                    <li class="breadcrumb-item active">{{ __('general.issues') }}</li>
                 </ol>
             </div>
         </div>
@@ -25,7 +25,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1 overflow-hidden">
-                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">Open Issues</p>
+                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">{{ __('general.open_issues') }}</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-end justify-content-between mt-4">
@@ -47,7 +47,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1 overflow-hidden">
-                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">Closed Issues</p>
+                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">{{ __('general.closed_issues') }}</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-end justify-content-between mt-4">
@@ -69,7 +69,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1 overflow-hidden">
-                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">Overdue Issues</p>
+                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">{{ __('general.overdue_issues') }}</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-end justify-content-between mt-4">
@@ -91,7 +91,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1 overflow-hidden">
-                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">In Progress</p>
+                        <p class="text-white fw-bold fw-medium text-truncate mb-0 fs-16">{{ __('general.in_progress') }}</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-end justify-content-between mt-4">
@@ -115,30 +115,30 @@
         <form action="{{ route('issues.index') }}" method="GET">
             <div class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">{{ __('general.status') }}</label>
                     <select name="status" class="form-select">
-                        <option value="All">All</option>
-                        <option value="New" {{ request('status') == 'New' ? 'selected' : '' }}>New</option>
-                        <option value="In Progress" {{ request('status') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="Testing" {{ request('status') == 'Testing' ? 'selected' : '' }}>Testing</option>
-                        <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
+                        <option value="All">{{ __('general.all') }}</option>
+                        <option value="New" {{ request('status') == 'New' ? 'selected' : '' }}>{{ __('general.status_new') }}</option>
+                        <option value="In Progress" {{ request('status') == 'In Progress' ? 'selected' : '' }}>{{ __('general.in_progress') }}</option>
+                        <option value="Testing" {{ request('status') == 'Testing' ? 'selected' : '' }}>{{ __('general.testing') }}</option>
+                        <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>{{ __('general.status_closed') }}</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Priority</label>
+                    <label class="form-label">{{ __('general.priority') }}</label>
                     <select name="priority" class="form-select">
-                        <option value="All">All</option>
-                        <option value="Low" {{ request('priority') == 'Low' ? 'selected' : '' }}>Low</option>
-                        <option value="Medium" {{ request('priority') == 'Medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="High" {{ request('priority') == 'High' ? 'selected' : '' }}>High</option>
-                        <option value="Urgent" {{ request('priority') == 'Urgent' ? 'selected' : '' }}>Urgent</option>
+                        <option value="All">{{ __('general.all') }}</option>
+                        <option value="Low" {{ request('priority') == 'Low' ? 'selected' : '' }}>{{ __('general.low') }}</option>
+                        <option value="Medium" {{ request('priority') == 'Medium' ? 'selected' : '' }}>{{ __('general.medium') }}</option>
+                        <option value="High" {{ request('priority') == 'High' ? 'selected' : '' }}>{{ __('general.high') }}</option>
+                        <option value="Urgent" {{ request('priority') == 'Urgent' ? 'selected' : '' }}>{{ __('general.urgent') }}</option>
                     </select>
                 </div>
                 <!-- Project -->
                 <div class="col-md-2">
-                    <label class="form-label">Project</label>
+                    <label class="form-label">{{ __('general.project') }}</label>
                     <select name="project_id" class="form-select">
-                        <option value="All">All</option>
+                        <option value="All">{{ __('general.all') }}</option>
                         @foreach($projects as $project)
                             <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
                         @endforeach
@@ -146,9 +146,9 @@
                 </div>
                 <!-- Assigned To -->
                 <div class="col-md-2">
-                    <label class="form-label">Assigned To</label>
+                    <label class="form-label">{{ __('general.assigned_to') }}</label>
                      <select name="assigned_to" class="form-select">
-                        <option value="All">All</option>
+                        <option value="All">{{ __('general.all') }}</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ request('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                         @endforeach
@@ -156,33 +156,33 @@
                 </div>
                 <!-- Module -->
                  <div class="col-md-2">
-                    <label class="form-label">Module</label>
-                    <input type="text" name="module" class="form-control" placeholder="Module" value="{{ request('module') }}">
+                    <label class="form-label">{{ __('general.module') }}</label>
+                    <input type="text" name="module" class="form-control" placeholder="{{ __('general.module') }}" value="{{ request('module') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request('search') }}">
+                    <label class="form-label">{{ __('general.search') }}</label>
+                    <input type="text" name="search" class="form-control" placeholder="{{ __('general.search') }}..." value="{{ request('search') }}">
                 </div>
                 <!-- Deadlines -->
                 <div class="col-md-2">
-                    <label class="form-label">Deadline From</label>
+                    <label class="form-label">{{ __('general.deadline_from') }}</label>
                     <input type="date" name="deadline_from" class="form-control" value="{{ request('deadline_from') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Deadline To</label>
+                    <label class="form-label">{{ __('general.deadline_to') }}</label>
                     <input type="date" name="deadline_to" class="form-control" value="{{ request('deadline_to') }}">
                 </div>
 
                 <div class="col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-primary w-100"><i class="las la-filter"></i> Filter</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="las la-filter"></i> {{ __('general.filter') }}</button>
                 </div>
                  <div class="col-md-2 align-self-end">
-                    <a href="{{ route('issues.index') }}" class="btn btn-light w-100"><i class="las la-redo"></i> Reset</a>
+                    <a href="{{ route('issues.index') }}" class="btn btn-light w-100"><i class="las la-redo"></i> {{ __('general.reset') }}</a>
                 </div>
                 @can('create progress-issues')
                 <div class="col-md-3 align-self-end">
                     <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createIssueModal">
-                        <i class="las la-plus"></i> New Issue
+                        <i class="las la-plus"></i> {{ __('general.new_issue') }}
                     </button>
                 </div>
                 @endcan                                                                                        
@@ -199,13 +199,13 @@
                 <thead class="table-light">
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Title</th>
+                        <th scope="col">{{ __('general.title') }}</th>
                         {{-- <th scope="col">Project</th> --}}
-                        <th scope="col">Priority</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Assigned To</th>
-                        <th scope="col">Deadline</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col">{{ __('general.priority') }}</th>
+                        <th scope="col">{{ __('general.status') }}</th>
+                        <th scope="col">{{ __('general.assigned_to') }}</th>
+                        <th scope="col">{{ __('general.deadline') }}</th>
+                        <th scope="col">{{ __('general.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -238,7 +238,7 @@
                             @endphp
                             <span class="badge {{ $statusClass }}">{{ $issue->status }}</span>
                         </td>
-                        <td>{{ $issue->assignee->name ?? 'Unassigned' }}</td>
+                        <td>{{ $issue->assignee->name ?? __('general.unassigned') }}</td>
                         <td>{{ $issue->deadline }}</td>
                         <td>
                             @can('view progress-issues')
@@ -251,7 +251,7 @@
                             <form action="{{ route('issues.destroy', $issue->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-soft-danger" onclick="return confirm('Are you sure?')"><i class="las la-trash"></i></button>
+                                <button type="submit" class="btn btn-sm btn-soft-danger" onclick="return confirm('{{ __('general.confirm_delete') }}')"><i class="las la-trash"></i></button>
                             </form>
                             @endcan
                         </td>
@@ -261,7 +261,7 @@
 
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center">No issues found.</td>
+                        <td colspan="7" class="text-center">{{ __('general.no_records_found') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -278,7 +278,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">New Issue</h5>
+                <h5 class="modal-title">{{ __('general.new_issue') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('issues.store') }}" method="POST" enctype="multipart/form-data">
@@ -287,71 +287,71 @@
                      <div class="row">
                         <!-- Project -- Placeholder -->
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Project</label>
+                            <label class="form-label">{{ __('general.project') }}</label>
                             <select name="project_id" class="form-select" required>
-                                <option value="">Select Project</option>
+                                <option value="">{{ __('general.select_project') }}</option>
                                 @foreach($projects as $project)
                                     <option value="{{ $project->id }}">{{ $project->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Title</label>
+                            <label class="form-label">{{ __('general.title') }}</label>
                             <input type="text" name="title" class="form-control" required>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Module</label>
+                            <label class="form-label">{{ __('general.module') }}</label>
                             <input type="text" name="module" class="form-control" >
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Priority</label>
+                            <label class="form-label">{{ __('general.priority') }}</label>
                             <select name="priority" class="form-select">
-                                <option value="Low">Low</option>
-                                <option value="Medium" selected>Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
+                                <option value="Low">{{ __('general.low') }}</option>
+                                <option value="Medium" selected>{{ __('general.medium') }}</option>
+                                <option value="High">{{ __('general.high') }}</option>
+                                <option value="Urgent">{{ __('general.urgent') }}</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Status</label>
+                            <label class="form-label">{{ __('general.status') }}</label>
                             <select name="status" class="form-select">
-                                <option value="New" selected>New</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Testing">Testing</option>
-                                <option value="Closed">Closed</option>
+                                <option value="New" selected>{{ __('general.status_new') }}</option>
+                                <option value="In Progress">{{ __('general.in_progress') }}</option>
+                                <option value="Testing">{{ __('general.testing') }}</option>
+                                <option value="Closed">{{ __('general.status_closed') }}</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Assigned To</label>
+                            <label class="form-label">{{ __('general.assigned_to') }}</label>
                             <select name="assigned_to" class="form-select">
-                                <option value="">Unassigned</option>
+                                <option value="">{{ __('general.unassigned') }}</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}">{{ $user->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Deadline</label>
+                            <label class="form-label">{{ __('general.deadline') }}</label>
                             <input type="date" name="deadline" class="form-control">
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Description</label>
+                            <label class="form-label">{{ __('general.description') }}</label>
                             <textarea name="description" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Reproduce Steps</label>
-                            <textarea name="reproduce_steps" class="form-control" rows="3" placeholder="Steps to reproduce the issue"></textarea>
+                            <label class="form-label">{{ __('general.reproduce_steps') }}</label>
+                            <textarea name="reproduce_steps" class="form-control" rows="3" placeholder="{{ __('general.reproduce_steps') }}"></textarea>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Attachments</label>
+                            <label class="form-label">{{ __('general.attachments') }}</label>
                             <input type="file" name="attachments[]" class="form-control" multiple>
                             <small class="text-muted">Maximum file size: 10MB. Allowed types: JPG, PNG, PDF, DOC, XLS.</small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('general.close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('general.create') }}</button>
                 </div>
             </form>
         </div>

@@ -10,9 +10,11 @@
             <h4 class="mb-0  fw-bold">Item Statuses</h4>
         </div>
         <div>
+            @can('create progress-item-statuses')
             <a href="{{ route('item-statuses.create') }}" class="btn btn-success fw-bold rounded-pill px-4">
                 <i class="las la-plus me-1"></i> Add Item Status
             </a>
+            @endcan
         </div>
     </div>
 </div>
@@ -85,9 +87,12 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-inline-flex gap-2">
+                                        @can('edit progress-item-statuses')
                                         <a href="{{ route('item-statuses.edit', $status->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                             <i class="las la-pen me-1"></i> Edit
                                         </a>
+                                        @endcan
+                                        @can('delete progress-item-statuses')
                                         <form action="{{ route('item-statuses.destroy', $status->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
@@ -95,6 +100,7 @@
                                                 <i class="las la-trash me-1"></i> Delete
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

@@ -4,7 +4,7 @@
 <div class="containers-fluid p-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 text-primary">{{ __('progress::dashboard.title') }}</h2>
+        <h2 class="h4 text-primary">{{ __('general.dashboard_title') }}</h2>
     </div>
 
     <!-- Filters -->
@@ -14,20 +14,20 @@
                 <div class="row g-3">
                     <!-- Status Filter -->
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">{{ __('progress::dashboard.status') }}</label>
+                        <label class="form-label small text-muted">{{ __('general.status') }}</label>
                         <select name="status" class="form-select form-select-sm">
-                            <option value="All" {{ request('status') == 'All' ? 'selected' : '' }}>{{ __('progress::dashboard.all') }}</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>{{ __('progress::dashboard.active') }}</option>
-                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>{{ __('progress::dashboard.completed') }}</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('progress::dashboard.pending') }}</option>
+                            <option value="All" {{ request('status') == 'All' ? 'selected' : '' }}>{{ __('general.all') }}</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>{{ __('general.active') }}</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>{{ __('general.completed') }}</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('general.pending') }}</option>
                         </select>
                     </div>
 
                     <!-- Employee Filter -->
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">{{ __('progress::dashboard.employee') }}</label>
+                        <label class="form-label small text-muted">{{ __('general.employee') }}</label>
                         <select name="employee_id" class="form-select form-select-sm">
-                            <option value="">{{ __('progress::dashboard.select_employee') }}</option>
+                            <option value="">{{ __('general.select_employee') }}</option>
                             @foreach($employeesList as $emp)
                                 <option value="{{ $emp->id }}" {{ request('employee_id') == $emp->id ? 'selected' : '' }}>
                                     {{ $emp->name }}
@@ -38,9 +38,9 @@
 
                     <!-- Project Type Filter -->
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">{{ __('progress::dashboard.project_type') }}</label>
+                        <label class="form-label small text-muted">{{ __('general.project_type') }}</label>
                         <select name="project_type_id" class="form-select form-select-sm">
-                            <option value="">{{ __('progress::dashboard.select_type') }}</option>
+                            <option value="">{{ __('general.select_type') }}</option>
                             @foreach($projectTypesList as $type)
                                 <option value="{{ $type->id }}" {{ request('project_type_id') == $type->id ? 'selected' : '' }}>
                                     {{ $type->name }}
@@ -51,9 +51,9 @@
 
                     <!-- Project Filter -->
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">{{ __('progress::dashboard.project') }}</label>
+                        <label class="form-label small text-muted">{{ __('general.project') }}</label>
                         <select name="project_id" class="form-select form-select-sm">
-                            <option value="">{{ __('progress::dashboard.select_project') }}</option>
+                            <option value="">{{ __('general.select_project') }}</option>
                             @foreach($projectsList as $proj)
                                 <option value="{{ $proj->id }}" {{ request('project_id') == $proj->id ? 'selected' : '' }}>
                                     {{ $proj->name }}
@@ -64,9 +64,9 @@
 
                     <!-- Item Filter -->
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">{{ __('progress::dashboard.item') }}</label>
+                        <label class="form-label small text-muted">{{ __('general.item') }}</label>
                         <select name="item_id" class="form-select form-select-sm">
-                            <option value="">{{ __('progress::dashboard.select_item') }}</option>
+                            <option value="">{{ __('general.select_item') }}</option>
                             @foreach($itemsList as $item)
                                 <option value="{{ $item->id }}" {{ request('item_id') == $item->id ? 'selected' : '' }}>
                                     {{ $item->name }}
@@ -77,7 +77,7 @@
 
                     <!-- Date Range Filter -->
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">{{ __('progress::dashboard.last_days') }}</label>
+                        <label class="form-label small text-muted">{{ __('general.last_x_days') }}</label>
                         <input type="number" name="date_range" class="form-control form-control-sm" 
                                value="{{ request('date_range') }}" placeholder="e.g. 30">
                     </div>
@@ -85,10 +85,10 @@
                     <!-- Submit Button -->
                     <div class="col-12 text-end mt-2">
                         <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="las la-filter"></i> {{ __('progress::dashboard.filter') }}
+                            <i class="las la-filter"></i> {{ __('general.filter') }}
                         </button>
                         <a href="{{ route('progress.dashboard') }}" class="btn btn-secondary btn-sm">
-                            <i class="las la-sync"></i> {{ __('progress::dashboard.reset') }}
+                            <i class="las la-sync"></i> {{ __('general.reset') }}
                         </a>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
             <div class="card border-0 shadow-sm h-100 py-2">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-muted text-uppercase mb-1 small">{{ __('progress::dashboard.total_employees') }}</h6>
+                        <h6 class="text-muted text-uppercase mb-1 small">{{ __('general.total_employees') }}</h6>
                         <h3 class="mb-0 fw-bold">{{ $totalEmployees }}</h3>
                     </div>
                     <div class="icon-circle bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
@@ -115,7 +115,7 @@
             <div class="card border-0 shadow-sm h-100 py-2">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-muted text-uppercase mb-1 small">{{ __('progress::dashboard.total_projects') }}</h6>
+                        <h6 class="text-muted text-uppercase mb-1 small">{{ __('general.total_projects') }}</h6>
                         <h3 class="mb-0 fw-bold">{{ $totalProjects }}</h3>
                     </div>
                     <div class="icon-circle bg-success bg-opacity-10 text-success p-3 rounded-circle">
@@ -128,7 +128,7 @@
             <div class="card border-0 shadow-sm h-100 py-2">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-muted text-uppercase mb-1 small">{{ __('progress::dashboard.general_completion') }}</h6>
+                        <h6 class="text-muted text-uppercase mb-1 small">{{ __('general.overall_progress') }}</h6>
                         <h3 class="mb-0 fw-bold">{{ $overallCompletion }}%</h3>
                     </div>
                     <div class="icon-circle bg-info bg-opacity-10 text-info p-3 rounded-circle" style="width: 60px; height: 60px; position:relative;">
@@ -146,7 +146,7 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-bottom-0 pt-3">
-                    <h5 class="card-title fw-bold small text-uppercase">{{ __('progress::dashboard.planned_vs_actual') }}</h5>
+                    <h5 class="card-title fw-bold small text-uppercase">{{ __('general.planned_vs_actual_chart') }}</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="plannedVsActualChart" style="max-height: 300px;"></canvas>
@@ -158,7 +158,7 @@
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-bottom-0 pt-3">
-                    <h5 class="card-title fw-bold small text-uppercase">{{ __('progress::dashboard.status_distribution') }}</h5>
+                    <h5 class="card-title fw-bold small text-uppercase">{{ __('general.project_status_distribution') }}</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="statusChart" style="max-height: 300px;"></canvas>
@@ -172,7 +172,7 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                  <div class="card-header bg-white border-bottom-0 pt-3">
-                    <h5 class="card-title fw-bold small text-uppercase">{{ __('progress::dashboard.project_progress') }}</h5>
+                    <h5 class="card-title fw-bold small text-uppercase">{{ __('general.project_progress') }}</h5>
                 </div>
                 <div class="card-body">
                      <canvas id="projectsProgressChart" style="max-height: 300px;"></canvas>
@@ -184,17 +184,17 @@
     <!-- Projects Table -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
-            <h5 class="card-title mb-0 fw-bold">{{ __('progress::dashboard.projects_list') }}</h5>
+            <h5 class="card-title mb-0 fw-bold">{{ __('general.projects_list') }}</h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th class="border-0">{{ __('progress::dashboard.project_name') }}</th>
-                        <th class="border-0">{{ __('progress::dashboard.start_date') }}</th>
-                        <th class="border-0">{{ __('progress::dashboard.end_date') }}</th>
-                        <th class="border-0">{{ __('progress::dashboard.progress') }}</th>
-                        <th class="border-0">{{ __('progress::dashboard.status') }}</th>
+                        <th class="border-0">{{ __('general.project_name') }}</th>
+                        <th class="border-0">{{ __('general.start_date') }}</th>
+                        <th class="border-0">{{ __('general.end_date') }}</th>
+                        <th class="border-0">{{ __('general.progress') }}</th>
+                        <th class="border-0">{{ __('general.status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -227,7 +227,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">{{ __('progress::dashboard.no_projects_found') }}</td>
+                            <td colspan="5" class="text-center py-4 text-muted">{{ __('general.no_records_found') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -248,14 +248,14 @@
     document.addEventListener("DOMContentLoaded", function () {
         
         const labels = {
-            planned: "{{ __('progress::dashboard.planned') }}",
-            actual: "{{ __('progress::dashboard.actual') }}",
-            active: "{{ __('progress::dashboard.active') }}",
-            completed: "{{ __('progress::dashboard.completed') }}",
-            pending: "{{ __('progress::dashboard.pending') }}",
-            other: "{{ __('progress::dashboard.other') }}",
-            completion: "{{ __('progress::dashboard.completion_percentage') }}",
-            progress: "{{ __('progress::dashboard.progress') }}"
+            planned: "{{ __('general.planned') }}",
+            actual: "{{ __('general.actual') }}",
+            active: "{{ __('general.active') }}",
+            completed: "{{ __('general.completed') }}",
+            pending: "{{ __('general.pending') }}",
+            other: "{{ __('general.other') }}",
+            completion: "{{ __('general.completion_percentage') }}",
+            progress: "{{ __('general.progress') }}"
         };
 
         // 1. Planned vs Actual Chart

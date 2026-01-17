@@ -16,11 +16,13 @@
         <div class="collapse navbar-collapse " id="navbarNav">
             <ul
                 class="navbar-nav {{ ($currentLocale ?? session('locale', app()->getLocale())) == 'ar' ? 'me-auto' : 'ms-auto' }}">
+                @can('create daily-progress')
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('daily_progress.create') }}">
                         <i class="fas fa-calendar-day me-2"></i> {{ __('general.daily_progress') }}
                     </a>
                 </li>
+                @endcan
             </ul>
 
             <ul class="navbar-nav">

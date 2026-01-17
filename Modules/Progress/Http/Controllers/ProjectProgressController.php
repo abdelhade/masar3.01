@@ -338,7 +338,7 @@ class ProjectProgressController extends Controller
             $totalCompleted += $completedQuantity;
             
             // Prepare Chart Data
-            $chartDataLabels[] = $item->workItem->name;
+            $chartDataLabels[] = $item->workItem ? $item->workItem->name : __('general.unknown_item');
             $chartDataValues[] = $item->completion_percentage;
         }
 

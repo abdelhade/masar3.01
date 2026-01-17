@@ -8,12 +8,12 @@
     ])
     <div class="row">
         <div class="col-lg-12">
-            {{-- @can('إضافة مشروعات') --}}
+            @can('create progress-project-templates') 
             <a href="{{ route('project.template.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('قالب جديد') }}
                 <i class="fas fa-plus me-2"></i>
             </a>
-            {{-- @endcan --}}
+            @endcan
             <br>
             <br>
             <div class="card">
@@ -29,9 +29,10 @@
                                     <th>{{ __('نوع المشروع') }}</th>
                                     <th>{{ __('عدد البنود') }}</th>
                                     <th>{{ __('أُنشئ في') }}</th>
-                                    {{-- @canany(['تعديل مشروعات', 'حذف مشروعات']) --}}
+                                
+                                     @canany(['edit progress-project-templates', 'delete progress-project-templates']) 
                                     <th>{{ __('العمليات') }}</th>
-                                    {{-- @endcanany --}}
+                                    @endcanany 
                                 </tr>
                             </thead>
                             <tbody>
@@ -42,21 +43,21 @@
                                         <td>{{ $template->projectType->name ?? '-' }}</td>
                                         <td><span class="badge bg-info">{{ $template->items_count }}</span></td>
                                         <td>{{ $template->created_at->format('Y-m-d') }}</td>
-                                        {{-- @canany(['تعديل مشروعات', 'حذف مشروعات']) --}}
+                                        @canany(['edit progress-project-templates', 'delete progress-project-templates' , 'view progress-project-templates']) 
                                         <td>
-                                            {{-- @can('project-templates-view') --}}
+                                            @can('view progress-project-templates') 
                                             <a href="{{ route('project.template.show', $template->id) }}"
                                                 class="btn btn-primary btn-icon-square-sm" title="{{ __('general.view') }}">
                                                 <i class="fa fa-eye"></i>
                                             </a>
-                                            {{-- @endcan --}}
-                                            {{-- @can('تعديل مشروعات') --}}
+                                             @endcan
+                                             @can('edit progress-project-templates')
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('project.template.edit', $template->id) }}">
                                                 <i class="las la-edit"></i>
                                             </a>
-                                            {{-- @endcan
-                                                @can('حذف مشروعات') --}}
+                                            @endcan
+                                                @can('delete progress-project-templates') 
                                             <form action="{{ route('project.template.destroy', $template->id) }}"
                                                 method="POST" style="display:inline-block;"
                                                 onsubmit="return confirm('هل أنت متأكد من حذف هذا المشروع؟');">
@@ -66,9 +67,9 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
-                                            {{-- @endcan --}}
+                                             @endcan
                                         </td>
-                                        {{-- @endcanany --}}
+                                         @endcanany 
                                     </tr>
                                 @empty
                                     <tr>

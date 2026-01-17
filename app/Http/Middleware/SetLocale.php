@@ -28,7 +28,7 @@ class SetLocale
         }
 
         // السماح بلغات معينة فقط
-        if (! in_array($locale, ['ar', 'en', 'tr', 'fr'], true)) {
+        if (! in_array($locale, ['ar', 'en', 'ur', 'hi', 'tr', 'fr'], true)) {
             $locale = config('app.locale');
         }
 
