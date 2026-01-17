@@ -116,7 +116,7 @@
                                                             <div>
                                                                 <div class="d-flex align-items-center mb-1">
                                                                     <h6 class="mb-0 fw-bold text-dark me-2">{{ $progress->projectItem->workItem->name ?? '-' }}</h6>
-                                                                    @if($progress->projectItem->workItem->category)
+                                                                    @if($progress->projectItem->workItem?->category)
                                                                         <span class="badge bg-light text-secondary border small" style="font-size: 0.65rem;">
                                                                             {{ $progress->projectItem->workItem->category->name }}
                                                                         </span>

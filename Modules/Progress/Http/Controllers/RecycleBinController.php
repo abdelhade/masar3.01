@@ -16,6 +16,11 @@ use Modules\Progress\Models\Subproject;
 
 class RecycleBinController extends Controller
 {
+           public function __construct()
+    {
+        $this->middleware('can:view progress-recyclebin')->only('index');
+      
+    }
     public function index(Request $request)
     {
         $tab = $request->get('tab', 'projects');

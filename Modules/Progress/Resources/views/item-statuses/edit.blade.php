@@ -88,6 +88,9 @@
                                 <input type="number" name="order" class="form-control form-control-lg" value="{{ $itemStatus->order }}">
                                 <span class="input-group-text bg-light text-muted"><i class="las la-sort-amount-up"></i></span>
                             </div>
+                            @error('order')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <!-- Status -->

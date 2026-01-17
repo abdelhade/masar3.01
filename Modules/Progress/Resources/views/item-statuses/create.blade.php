@@ -96,9 +96,9 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold d-block">Status</label>
                             <div class="form-check form-switch form-switch-lg d-flex align-items-center p-0 m-0 gap-2">
+                                <input type="hidden" name="is_active" value="0">
                                 <input class="form-check-input m-0" type="checkbox" role="switch" id="isActive" name="is_active" value="1" checked style="width: 3em; height: 1.5em; margin-left: 0;">
                                 <label class="form-check-label" for="isActive">Active</label>
-                                <input type="hidden" name="is_active" value="0">
                             </div>
                         </div>
                     </div>

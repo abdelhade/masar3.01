@@ -15,12 +15,12 @@
         <div class="col-lg-12">
 
             {{-- زرار الإضافة --}}
-            {{-- @can('project-types-create') --}}
+           @can('create progress-work-items')
             <a href="{{ route('work.items.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('general.new_work_item') }}
                 <i class="fas fa-plus me-2"></i>
             </a>
-            {{-- @endcan --}}
+            @endcan 
             
             <form action="{{ route('work.items.index') }}" method="GET" class="mt-4 mb-4">
                 <div class="row">
@@ -72,9 +72,9 @@
                                     <th>{{ __('general.item_name') }}</th>
                                     <th>تصنيف البند</th>
                                     <th>{{ __('general.unit_of_measurement') }}</th>
-                                    {{-- @canany(['project-types-edit', 'project-types-delete']) --}}
+                                     @canany(['edit progress-work-items', 'delete progress-work-items'])
                                     <th>{{ __('general.actions') }}</th>
-                                    {{-- @endcanany --}}
+                                    @endcanany 
                                 </tr>
                             </thead>
                             <tbody>
@@ -87,15 +87,15 @@
                                         <td>{{ $workItem->name }}</td>
                                         <td>{{ $workItem->category?->name ?? '---' }}</td>
                                         <td>{{ $workItem->unit }}</td>
-                                        {{-- @canany(['project-types-edit', 'project-types-delete']) --}}
+                                         @canany(['edit progress-work-items', 'delete progress-work-items'])
                                         <td>
-                                            {{-- @can('project-types-edit') --}}
+                                            @can('edit progress-work-items')
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('work.items.edit', $workItem->id) }}">
                                                 <i class="las la-edit"></i>
                                             </a>
-                                            {{-- @endcan
-                                                @can('project-types-delete') --}}
+                                            @endcan
+                                                @can('delete progress-work-items') 
                                             <form action="{{ route('work.items.destroy', $workItem->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('{{ __('general.confirm_delete') }}');">
@@ -105,9 +105,9 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
-                                            {{-- @endcan --}}
+                                              @endcan 
                                         </td>
-                                        {{-- @endcanany --}}
+                                        @endcanany                 
                                     </tr>
                                 @empty
                                     <tr>

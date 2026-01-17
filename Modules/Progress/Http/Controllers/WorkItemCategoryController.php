@@ -11,6 +11,14 @@ class WorkItemCategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+            public function __construct()
+    {
+        $this->middleware('can:view progress-work-item-categories')->only(['index','show']);
+        $this->middleware('can:create progress-work-item-categories')->only(['create', 'store']);
+        $this->middleware('can:edit progress-work-item-categories')->only(['edit', 'update']);
+        $this->middleware('can:delete progress-work-item-categories')->only('destroy');
+    }
     public function index()
     {
         $categories = WorkItemCategory::latest()->get();

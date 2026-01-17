@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Exception;
 use Modules\Progress\Http\Requests\ProjectTypeRequest;
 use Modules\Progress\Models\ProjectType;
@@ -10,6 +10,14 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class ProjectTypeController extends Controller
 {
+        public function __construct()
+    {
+        $this->middleware('can:view progress-project-types')->only(['index','show']);
+        $this->middleware('can:create progress-project-types')->only(['create', 'store']);
+        $this->middleware('can:edit progress-project-types')->only(['edit', 'update']);
+        $this->middleware('can:delete progress-project-types')->only('destroy');
+    }
+
     public function index()
     {
         $types = ProjectType::paginate(20);

@@ -15,6 +15,13 @@ use Modules\Progress\Http\Requests\ProjectTemplateRequest;
 
 class ProjectTemplateController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view progress-project-templates')->only(['index','show']);
+        $this->middleware('can:create progress-project-templates')->only(['create', 'store']);
+        $this->middleware('can:edit progress-project-templates')->only(['edit', 'update']);
+        $this->middleware('can:delete progress-project-templates')->only('destroy');
+    }
     public function index()
     {
         $templates = ProjectTemplate::with('projectType')->withCount('items')

@@ -1,17 +1,19 @@
 @extends('progress::layouts.daily-progress')
 
-@section('title', 'Issues Kanban')
+@section('title', __('general.kanban_board'))
 
 @section('content')
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">Kanban Board ({{ $issues->count() }} Issues)</h4>
+            <h4 class="mb-sm-0">{{ __('general.kanban_board') }} <span class="badge bg-secondary ms-1">{{ $issues->count() }}</span></h4>
             <div class="page-title-right">
-                <a href="{{ route('issues.index') }}" class="btn btn-soft-secondary"><i class="las la-list me-1"></i> Table View</a>
-                <button type="button" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#createIssueModal">
-                     <i class="las la-plus me-1"></i> New Issue
-                </button>
+                <a href="{{ route('issues.index') }}" class="btn btn-soft-primary btn-sm me-2"><i class="las la-list me-1"></i> {{ __('general.table_view') }}</a>
+                <ol class="breadcrumb m-0 d-inline-flex">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('general.dashboard') }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('issues.index') }}">{{ __('general.issues') }}</a></li>
+                    <li class="breadcrumb-item active">{{ __('general.kanban_board') }}</li>
+                </ol>
             </div>
         </div>
     </div>
@@ -23,30 +25,30 @@
         <form action="{{ route('issues.kanban') }}" method="GET">
             <div class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">{{ __('general.status') }}</label>
                     <select name="status" class="form-select">
-                        <option value="All">All</option>
-                        <option value="New" {{ request('status') == 'New' ? 'selected' : '' }}>New</option>
-                        <option value="In Progress" {{ request('status') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="Testing" {{ request('status') == 'Testing' ? 'selected' : '' }}>Testing</option>
-                        <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
+                        <option value="All">{{ __('general.all') }}</option>
+                        <option value="New" {{ request('status') == 'New' ? 'selected' : '' }}>{{ __('general.status_new') }}</option>
+                        <option value="In Progress" {{ request('status') == 'In Progress' ? 'selected' : '' }}>{{ __('general.in_progress') }}</option>
+                        <option value="Testing" {{ request('status') == 'Testing' ? 'selected' : '' }}>{{ __('general.testing') }}</option>
+                        <option value="Closed" {{ request('status') == 'Closed' ? 'selected' : '' }}>{{ __('general.status_closed') }}</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Priority</label>
+                    <label class="form-label">{{ __('general.priority') }}</label>
                     <select name="priority" class="form-select">
-                        <option value="All">All</option>
-                        <option value="Low" {{ request('priority') == 'Low' ? 'selected' : '' }}>Low</option>
-                        <option value="Medium" {{ request('priority') == 'Medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="High" {{ request('priority') == 'High' ? 'selected' : '' }}>High</option>
-                        <option value="Urgent" {{ request('priority') == 'Urgent' ? 'selected' : '' }}>Urgent</option>
+                        <option value="All">{{ __('general.all') }}</option>
+                        <option value="Low" {{ request('priority') == 'Low' ? 'selected' : '' }}>{{ __('general.low') }}</option>
+                        <option value="Medium" {{ request('priority') == 'Medium' ? 'selected' : '' }}>{{ __('general.medium') }}</option>
+                        <option value="High" {{ request('priority') == 'High' ? 'selected' : '' }}>{{ __('general.high') }}</option>
+                        <option value="Urgent" {{ request('priority') == 'Urgent' ? 'selected' : '' }}>{{ __('general.urgent') }}</option>
                     </select>
                 </div>
                 <!-- Project -->
                 <div class="col-md-2">
-                    <label class="form-label">Project</label>
+                    <label class="form-label">{{ __('general.project') }}</label>
                     <select name="project_id" class="form-select">
-                        <option value="All">All</option>
+                        <option value="All">{{ __('general.all') }}</option>
                         @foreach($projects as $project)
                             <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
                         @endforeach
@@ -54,9 +56,9 @@
                 </div>
                 <!-- Assigned To -->
                 <div class="col-md-2">
-                    <label class="form-label">Assigned To</label>
+                    <label class="form-label">{{ __('general.assigned_to') }}</label>
                      <select name="assigned_to" class="form-select">
-                        <option value="All">All</option>
+                        <option value="All">{{ __('general.all') }}</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ request('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                         @endforeach
@@ -64,148 +66,130 @@
                 </div>
                 <!-- Module -->
                  <div class="col-md-2">
-                    <label class="form-label">Module</label>
-                    <input type="text" name="module" class="form-control" placeholder="Module" value="{{ request('module') }}">
+                    <label class="form-label">{{ __('general.module') }}</label>
+                    <input type="text" name="module" class="form-control" placeholder="{{ __('general.module') }}" value="{{ request('module') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request('search') }}">
+                    <label class="form-label">{{ __('general.search') }}</label>
+                    <input type="text" name="search" class="form-control" placeholder="{{ __('general.search') }}..." value="{{ request('search') }}">
                 </div>
                 <!-- Deadlines -->
                 <div class="col-md-2">
-                    <label class="form-label">Deadline From</label>
+                    <label class="form-label">{{ __('general.deadline_from') }}</label>
                     <input type="date" name="deadline_from" class="form-control" value="{{ request('deadline_from') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Deadline To</label>
+                    <label class="form-label">{{ __('general.deadline_to') }}</label>
                     <input type="date" name="deadline_to" class="form-control" value="{{ request('deadline_to') }}">
                 </div>
 
                 <div class="col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-primary w-100"><i class="las la-filter"></i> Filter</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="las la-filter"></i> {{ __('general.filter') }}</button>
                 </div>
                  <div class="col-md-2 align-self-end">
-                    <a href="{{ route('issues.kanban') }}" class="btn btn-light w-100"><i class="las la-redo"></i> Reset</a>
+                    <a href="{{ route('issues.kanban') }}" class="btn btn-light w-100"><i class="las la-redo"></i> {{ __('general.reset') }}</a>
                 </div>
+                @can('create progress-issues')
                 <div class="col-md-3 align-self-end">
                     <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createIssueModal">
-                        <i class="las la-plus"></i> New Issue
+                        <i class="las la-plus"></i> {{ __('general.new_issue') }}
                     </button>
                 </div>
+                @endcan
             </div>
         </form>
     </div>
 </div>
 
 <div class="row">
-    <!-- NEW Column -->
-    <div class="col-md-3">
-        <div class="card" style="background-color: #e3f2fd; border: 1px solid #90caf9;">
-            <div class="card-header bg-transparent">
-                <h5 class="card-title text-dark mb-0">New ({{ $issues->filter(fn($i) => trim($i->status) == 'New')->count() }})</h5>
-            </div>
-            <div class="card-body p-2" id="kanban-new" data-status="New" style="min-height: 400px;">
-                @foreach($issues as $issue)
-                    @if(trim($issue->status) == 'New')
-                    <div class="card mb-2 shadow-sm" data-id="{{ $issue->id }}" style="cursor: grab;">
-                        <div class="card-body p-3">
-                            <h6 class="fw-bold text-dark">{{ $issue->title }}</h6>
-                            <p class="text-muted small mb-2">{{ Str::limit($issue->description, 50) }}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-secondary">{{ $issue->priority }}</span>
-                                <small class="text-muted">{{ $issue->assignee->name ?? 'Unassigned' }}</small>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                @endforeach
-            </div>
-        </div>
-    </div>
+    @php
+        $statuses = [
+            'New' => ['label' => __('general.status_new'), 'class' => 'border-primary'],
+            'In Progress' => ['label' => __('general.in_progress'), 'class' => 'border-info'],
+            'Testing' => ['label' => __('general.testing'), 'class' => 'border-warning'],
+            'Closed' => ['label' => __('general.status_closed'), 'class' => 'border-success']
+        ];
+    @endphp
 
-    <!-- IN PROGRESS Column -->
-    <div class="col-md-3">
-        <div class="card" style="background-color: #fff3e0; border: 1px solid #ffcc80;">
-             <div class="card-header bg-transparent">
-                <h5 class="card-title text-dark mb-0">In Progress ({{ $issues->filter(fn($i) => trim($i->status) == 'In Progress')->count() }})</h5>
+    @foreach($statuses as $key => $status)
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h5 class="card-title mb-0">{{ $status['label'] }} <span class="badge bg-secondary rounded-pill ms-1">{{ $issues->where('status', $key)->count() }}</span></h5>
             </div>
-            <div class="card-body p-2" id="kanban-inprogress" data-status="In Progress" style="min-height: 400px;">
-                 @foreach($issues as $issue)
-                    @if(trim($issue->status) == 'In Progress')
-                    <div class="card mb-2 shadow-sm" data-id="{{ $issue->id }}" style="cursor: grab;">
+            <div class="card-body" id="kanban-{{ strtolower(str_replace(' ', '-', $key)) }}" data-status="{{ $key }}" style="height: calc(100vh - 280px); overflow-y: auto;">
+                <div class="vstack gap-3">
+                    @forelse($issues->where('status', $key) as $issue)
+                    <div class="card mb-0 shadow-sm border-start border-3 {{ $status['class'] }}" data-id="{{ $issue->id }}" style="cursor: grab;">
                         <div class="card-body p-3">
-                            <h6 class="fw-bold text-dark">{{ $issue->title }}</h6>
-                             <p class="text-muted small mb-2">{{ Str::limit($issue->description, 50) }}</p>
-                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-secondary">{{ $issue->priority }}</span>
-                                <small class="text-muted">{{ $issue->assignee->name ?? 'Unassigned' }}</small>
+                             <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-soft-secondary text-secondary">#{{ $issue->id }}</span>
+                                @php
+                                    $priorityClass = match($issue->priority) {
+                                        'Low' => 'bg-info',
+                                        'Medium' => 'bg-warning',
+                                        'High' => 'bg-danger',
+                                        'Urgent' => 'bg-dark',
+                                        default => 'bg-secondary'
+                                    };
+                                @endphp
+                                <span class="badge {{ $priorityClass }}">{{ $issue->priority }}</span>
+                            </div>
+                            <h6 class="fs-15 mb-2"><a href="{{ route('issues.show', $issue->id) }}" class="text-reset">{{ $issue->title }}</a></h6>
+                            <p class="text-muted fs-12 mb-2 text-truncate">{{ $issue->project->name ?? 'N/A' }}</p>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                <div class="d-flex align-items-center" title="{{ __('general.assigned_to') }}: {{ $issue->assignee->name ?? __('general.unassigned') }}">
+                                     @if($issue->assignee)
+                                        <div class="avatar-xs" title="{{ $issue->assignee->name }}">
+                                            <span class="avatar-title rounded-circle bg-soft-primary text-primary fs-10">
+                                                {{ substr($issue->assignee->name, 0, 2) }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="avatar-xs" title="{{ __('general.unassigned') }}">
+                                            <span class="avatar-title rounded-circle bg-soft-secondary text-secondary fs-10">
+                                                <i class="las la-user-slash"></i>
+                                            </span>
+                                        </div>
+                                    @endif
+                                    <span class="ms-2 fs-12 text-muted">{{ $issue->assignee->name ?? '' }}</span>
+                                </div>
+                                
+                                @if($issue->deadline)
+                                <div class="text-muted fs-11" title="{{ __('general.deadline') }}">
+                                    <i class="las la-calendar"></i> {{ date('M d', strtotime($issue->deadline)) }}
+                                </div>
+                                @endif
                             </div>
                         </div>
+                         <div class="card-footer bg-transparent border-top-0 py-2 d-flex justify-content-end gap-1">
+                             @can('view progress-issues')
+                             <a href="{{ route('issues.show', $issue->id) }}" class="btn btn-sm btn-ghost-info"><i class="las la-eye"></i></a>
+                             @endcan
+                             @can('edit progress-issues')
+                             <a href="{{ route('issues.edit', $issue->id) }}" class="btn btn-sm btn-ghost-primary"><i class="las la-pen"></i></a>
+                             @endcan
+                        </div>
                     </div>
-                    @endif
-                @endforeach
+                    @empty
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">{{ __('general.no_records_found') }}</p>
+                    </div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- TESTING Column -->
-    <div class="col-md-3">
-        <div class="card" style="background-color: #fffde7; border: 1px solid #fff59d;">
-             <div class="card-header bg-transparent">
-                <h5 class="card-title text-dark mb-0">Testing ({{ $issues->filter(fn($i) => trim($i->status) == 'Testing')->count() }})</h5>
-            </div>
-            <div class="card-body p-2" id="kanban-testing" data-status="Testing" style="min-height: 400px;">
-                 @foreach($issues as $issue)
-                    @if(trim($issue->status) == 'Testing')
-                    <div class="card mb-2 shadow-sm" data-id="{{ $issue->id }}" style="cursor: grab;">
-                        <div class="card-body p-3">
-                            <h6 class="fw-bold text-dark">{{ $issue->title }}</h6>
-                             <p class="text-muted small mb-2">{{ Str::limit($issue->description, 50) }}</p>
-                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning">{{ $issue->priority }}</span>
-                                <small class="text-muted">{{ $issue->assignee->name ?? 'Unassigned' }}</small>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    <!-- CLOSED Column -->
-    <div class="col-md-3">
-        <div class="card" style="background-color: #e8f5e9; border: 1px solid #a5d6a7;">
-             <div class="card-header bg-transparent">
-                <h5 class="card-title text-dark mb-0">Closed ({{ $issues->filter(fn($i) => trim($i->status) == 'Closed')->count() }})</h5>
-            </div>
-            <div class="card-body p-2" id="kanban-closed" data-status="Closed" style="min-height: 400px;">
-                 @foreach($issues as $issue)
-                    @if(trim($issue->status) == 'Closed')
-                    <div class="card mb-2 shadow-sm" data-id="{{ $issue->id }}" style="cursor: grab;">
-                        <div class="card-body p-3">
-                             <h6 class="fw-bold text-dark">{{ $issue->title }}</h6>
-                              <p class="text-muted small mb-2">{{ Str::limit($issue->description, 50) }}</p>
-                              <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-secondary">{{ $issue->priority }}</span>
-                                <small class="text-muted">{{ $issue->assignee->name ?? 'Unassigned' }}</small>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                @endforeach
-            </div>
-        </div>
-    </div>
+    @endforeach
 </div>
 
-<!-- Create Modal (Include same as index or verify if reused) -->
-<!-- Using the same modal ID as index to simplify, assuming included in dashboard or copied here -->
+<!-- Create Modal (Same as Index) -->
 <div class="modal fade" id="createIssueModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title text-white fw-bold"><i class="las la-plus-circle me-2"></i>New Issue</h5>
+                <h5 class="modal-title text-white fw-bold"><i class="las la-plus-circle me-2"></i>{{ __('general.new_issue') }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('issues.store') }}" method="POST" enctype="multipart/form-data">
@@ -213,10 +197,10 @@
                 <div class="modal-body p-4">
                      <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Project</label>
+                            <label class="form-label fw-bold">{{ __('general.project') }}</label>
                             <div class="input-group">
                                 <select name="project_id" class="form-select" required>
-                                    <option value="">Select Project</option>
+                                    <option value="">{{ __('general.select_project') }}</option>
                                     @foreach($projects as $project)
                                         <option value="{{ $project->id }}">{{ $project->name }}</option>
                                     @endforeach
@@ -225,48 +209,48 @@
                             </div>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Title</label>
+                            <label class="form-label fw-bold">{{ __('general.title') }}</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted"><i class="las la-heading"></i></span>
-                                <input type="text" name="title" class="form-control" required placeholder="Issue Title">
+                                <input type="text" name="title" class="form-control" required placeholder="{{ __('general.issue_title') }}">
                             </div>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Module</label>
+                            <label class="form-label fw-bold">{{ __('general.module') }}</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted"><i class="las la-cube"></i></span>
-                                <input type="text" name="module" class="form-control" placeholder="Module Name">
+                                <input type="text" name="module" class="form-control" placeholder="{{ __('general.module_name') }}">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Priority</label>
+                            <label class="form-label fw-bold">{{ __('general.priority') }}</label>
                             <div class="input-group">
                                 <select name="priority" class="form-select">
-                                    <option value="Low">Low</option>
-                                    <option value="Medium" selected>Medium</option>
-                                    <option value="High">High</option>
-                                    <option value="Urgent">Urgent</option>
+                                    <option value="Low">{{ __('general.low') }}</option>
+                                    <option value="Medium" selected>{{ __('general.medium') }}</option>
+                                    <option value="High">{{ __('general.high') }}</option>
+                                    <option value="Urgent">{{ __('general.urgent') }}</option>
                                 </select>
                                 <span class="input-group-text bg-light text-muted"><i class="las la-flag"></i></span>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Status</label>
+                            <label class="form-label fw-bold">{{ __('general.status') }}</label>
                             <div class="input-group">
                                 <select name="status" class="form-select">
-                                    <option value="New" selected>New</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Testing">Testing</option>
-                                    <option value="Closed">Closed</option>
+                                    <option value="New" selected>{{ __('general.status_new') }}</option>
+                                    <option value="In Progress">{{ __('general.in_progress') }}</option>
+                                    <option value="Testing">{{ __('general.testing') }}</option>
+                                    <option value="Closed">{{ __('general.status_closed') }}</option>
                                 </select>
                                 <span class="input-group-text bg-light text-muted"><i class="las la-info-circle"></i></span>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Assigned To</label>
+                            <label class="form-label fw-bold">{{ __('general.assigned_to') }}</label>
                              <div class="input-group">
                                 <select name="assigned_to" class="form-select">
-                                    <option value="">Unassigned</option>
+                                    <option value="">{{ __('general.unassigned') }}</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
                                     @endforeach
