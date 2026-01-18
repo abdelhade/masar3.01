@@ -665,6 +665,10 @@ return [
     'added_by' => 'Added By',
     'projects_list' => 'Projects List',
     'other' => 'Other',
+    'progress' => 'Progress',
+    'settings' => 'Settings',
+    'users' => 'Users',
+    'roles' => 'Roles',
 
     // Issues & Kanban Keys
     'issue' => 'Issue',
@@ -704,4 +708,31 @@ return [
     'select_priority' => 'Select Priority',
     'select_status' => 'Select Status',
     'select_assigned_to' => 'Select Assigned To',
+    
+    // Work Items Progress Keys
+    'based_on_completed_items' => 'Based on completed items',
+    'unknown_client' => 'Unknown Client',
+    'timeline' => 'Timeline',
+    'days_left' => 'Days Left',
+    'unknown_item' => 'Unknown Item',
+    'team_performance' => 'Team Performance',
+    'units' => 'Units',
+    'category' => 'Category',
+    'all_categories' => 'All Categories',
+    'no_status' => 'No Status',
+    'group_by_item' => 'Group by Item',
+    'toggle_all' => 'Toggle All',
+    'save_view' => 'Save View',
+
+    // Permission Targets
+    'Progress-projects' => 'Projects',
+    'Progress-issues' => 'Issues',
+    'Daily-progress' => 'Daily Progress',
+    'Progress-project-types' => 'Project Types',
+    'Progress-project-templates' => 'Project Templates',
+    'Progress-work-items' => 'Work Items',
+    'Progress-work-item-categories' => 'Work Item Categories',
+    'Progress-item-statuses' => 'Item Statuses',
+    'Progress-dashboard' => 'Dashboard',
+    'Progress-recyclebin' => 'Recycle Bin',
 ];

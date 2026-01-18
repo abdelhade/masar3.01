@@ -662,7 +662,7 @@
                         </div>
                         <p class="app-name">التقدم اليومي</p>
                     </a>
-                    @endcanany
+                @endcanany
            
                 {{-- عمليات الاصول  --}}
                 @can('view Asset-Operations')

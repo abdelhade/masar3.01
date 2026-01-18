@@ -8,6 +8,7 @@ use Modules\Progress\Models\ProjectItem;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Progress\Http\Requests\ProjectItemRequest;
 use Modules\Progress\Models\ProjectProgress;
+use Illuminate\Http\Request;
 
 class ProjectItemController extends Controller
 {
@@ -100,6 +101,55 @@ class ProjectItemController extends Controller
             });
 
         return response()->json($items);
+    }
+
+    public function updateItemStatus(Request $request, $project, $projectItem)
+    {
+        try {
+            // Resolve IDs whether they are passed as Models (Binding) or IDs (String/Int)
+            $projectId = is_object($project) ? $project->id : $project;
+            $itemId = is_object($projectItem) ? $projectItem->id : $projectItem;
+
+            // 1. Validation
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'item_status_id' => 'nullable|integer|exists:item_statuses,id'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+            }
+
+            // 2. Find Item
+            // We search for the item ensuring it belongs to the project
+            $item = ProjectItem::where('id', $itemId)->where('project_id', $projectId)->first();
+
+            if (!$item) {
+                // Fallback: Check if item exists at all
+                $item = ProjectItem::find($itemId);
+                if (!$item) {
+                     return response()->json(['success' => false, 'message' => 'Item not found'], 404);
+                }
+                
+                // If item exists but project_id mismatch
+                if ((int)$item->project_id !== (int)$projectId) {
+                    return response()->json(['success' => false, 'message' => 'Item does not belong to the specified project'], 403);
+                }
+            }
+
+            // 3. Update Status
+            $statusId = $request->item_status_id ? (int)$request->item_status_id : null;
+            
+            $item->update([
+                'item_status_id' => $statusId
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => __('general.updated_successfully')
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Server Error: ' . $e->getMessage()], 500);
+        }
     }
 
     private function calculateDailyQuantity($total, $start, $end)

@@ -482,4 +482,19 @@ return [
     'projects_list' => 'پروجیکٹس کی فہرست',
     'other' => 'دیگر',
     'project_name' => 'پروجیکٹ کا نام',
+    
+    // Work Items Progress Keys
+    'based_on_completed_items' => 'Based on completed items',
+    'unknown_client' => 'Unknown Client',
+    'timeline' => 'Timeline',
+    'days_left' => 'Days Left',
+    'unknown_item' => 'Unknown Item',
+    'team_performance' => 'Team Performance',
+    'units' => 'Units',
+    'category' => 'Category',
+    'all_categories' => 'All Categories',
+    'no_status' => 'No Status',
+    'group_by_item' => 'Group by Item',
+    'toggle_all' => 'Toggle All',
+    'save_view' => 'Save View',
 ];
