@@ -74,4 +74,14 @@ class Client extends Model
     {
         return $this->belongsTo(ClientCategory::class, 'client_category_id');
     }
+
+    public function getNameAttribute()
+    {
+        return $this->cname;
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(\Modules\Progress\Models\ProjectProgress::class, 'client_id');
+    }
 }

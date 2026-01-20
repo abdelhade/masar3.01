@@ -10,7 +10,7 @@ use App\Models\Project;
 class Issue extends Model
 {
     use SoftDeletes;
-
+// 
     protected $fillable = [
         'project_id',
         'title',

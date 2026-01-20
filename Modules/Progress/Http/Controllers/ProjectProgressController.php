@@ -15,6 +15,7 @@ use Modules\Progress\Models\ProjectItem;
 use Modules\Progress\Models\ProjectType;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Progress\Models\ProjectTemplate;
+use Modules\Progress\Models\ItemStatus;
 
 class ProjectProgressController extends Controller
 {
@@ -46,6 +47,8 @@ class ProjectProgressController extends Controller
 
         $projects = ProjectProgress::with(['client', 'type'])
             ->withCount('items')
+            ->withSum('items', 'total_quantity')
+            ->withSum('dailyProgress', 'quantity')
             ->where('status', '!=', 'draft')
             ->latest()
             ->get();
@@ -297,7 +300,9 @@ class ProjectProgressController extends Controller
     {
         // جلب المشروع مع العلاقات مباشرة
         $project = ProjectProgress::with([
-            'client',
+            'client' => function($q) {
+                $q->withCount('projects');
+            },
             'items' => function ($query) {
                 $query->withSum('dailyProgress', 'quantity');
             },
@@ -338,7 +343,7 @@ class ProjectProgressController extends Controller
             $totalCompleted += $completedQuantity;
             
             // Prepare Chart Data
-            $chartDataLabels[] = $item->workItem->name;
+            $chartDataLabels[] = $item->workItem ? $item->workItem->name : __('general.unknown_item');
             $chartDataValues[] = $item->completion_percentage;
         }
 
@@ -587,6 +592,50 @@ class ProjectProgressController extends Controller
             ->filter()
             ->values();
 
+        // Attach Planned Percentage to Items & filters data
+        $subprojectsList = [];
+        $categoriesList = [];
+
+        foreach ($project->items as $item) {
+            // Planned (Time-based Calculation)
+            $plannedPercent = 0;
+            if ($item->start_date && $item->end_date) {
+                $start = Carbon::parse($item->start_date);
+                $end = Carbon::parse($item->end_date);
+                $totalDuration = max(1, $start->diffInDays($end));
+                $daysElapsed = max(0, $start->diffInDays(Carbon::now()));
+                
+                if (Carbon::now()->lt($start)) {
+                    $plannedPercent = 0;
+                } elseif (Carbon::now()->gt($end)) {
+                    $plannedPercent = 100;
+                } else {
+                    $plannedPercent = ($daysElapsed / $totalDuration) * 100;
+                }
+            }
+            $item->planned_percentage = round($plannedPercent, 1);
+            
+            // Collect for filters
+            if ($item->subproject_name) {
+                $subprojectsList[$item->subproject_name] = $item->subproject_name;
+            } else {
+                 $subprojectsList['Main Project'] = 'Main Project';
+            }
+            
+            $catName = ($item->workItem && $item->workItem->category) ? $item->workItem->category->name : 'Uncategorized';
+            $categoriesList[$catName] = $catName;
+            
+            // Temporary Hack: Modify subproject_name accessor or just set property if null
+             if (!$item->subproject_name) {
+                $item->subproject_name = 'Main Project'; // For easy filtering in JS
+            }
+        }
+        
+        $subprojectsList = collect($subprojectsList)->values()->all();
+        $categoriesList = collect($categoriesList)->values()->all();
+
+        // Get Item Statuses
+        $itemStatuses = ItemStatus::where('is_active', true)->orderBy('order')->get();
 
         // جلب الموظفين (لإضافتهم إذا لزم الأمر في فيوهات أخرى، هنا قد لا نحتاجها للعرض فقط)
         // $employees = Employee::all();
@@ -608,7 +657,10 @@ class ProjectProgressController extends Controller
             'hierarchicalData', // New Hierarchical View Data
             'itemsByStatus', // New Items by Status View
             'recentProgress',
-            'teamPerformance'
+            'teamPerformance',
+            'itemStatuses',
+            'subprojectsList',
+            'categoriesList'
         ));
     }
 

@@ -1,14 +1,14 @@
 @extends('progress::layouts.daily-progress')
 
-@section('title', 'تعديل التصنيف')
+@section('title', __('general.edit_work_item_category'))
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => 'تعديل التصنيف',
+        'title' => __('general.edit_work_item_category'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => 'تصنيفات بنود الأعمال', 'url' => route('work-item-categories.index')],
-            ['label' => 'تعديل'],
+            ['label' => __('general.home'), 'url' => route('admin.dashboard')],
+            ['label' => __('general.work_item_categories'), 'url' => route('work-item-categories.index')],
+            ['label' => __('general.edit')],
         ],
     ])
 
@@ -17,7 +17,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between py-3">
                     <h5 class="mb-0 text-white fw-bold">
-                        <i class="las la-edit me-2"></i> تعديل التصنيف: {{ $category->name }}
+                        <i class="las la-edit me-2"></i> {{ __('general.edit_work_item_category') }}: {{ $category->name }}
                     </h5>
                     <a href="{{ route('work-item-categories.index') }}" class="btn btn-sm btn-light text-primary fw-bold">
                         <i class="las la-arrow-right me-1"></i> {{ __('general.back') }}

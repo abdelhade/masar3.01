@@ -289,5 +289,17 @@
     "progress-item-statuses": "حالات البنود",
     "progress-dashboard": "لوحة المتابعة",
     "progress-settings": "إعدادات المتابعة",
-    "recycle-bin": "سلة المحذوفات"
+    "recycle-bin": "سلة المحذوفات",
+    "Progress": "التقدم",
+    "Progress-projects": "المشاريع",
+    "Progress-issues": "المشكلات",
+    "Daily-progress": "التقدم اليومي",
+    "Progress-project-types": "أنواع المشاريع",
+    "Progress-project-templates": "قوالب المشاريع",
+    "Progress-work-items": "عناصر العمل",
+    "Progress-work-item-categories": "تصنيفات عناصر العمل",
+    "Progress-item-statuses": "حالات العناصر",
+    "Progress-dashboard": "لوحة التحكم",
+    "Progress-recyclebin": "سلة المحذوفات"
+
 }

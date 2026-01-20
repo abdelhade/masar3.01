@@ -644,3 +644,47 @@ body.dark-mode .card-animate.bg-primary { background-color: var(--bs-primary) !i
 body.dark-mode .card-animate.bg-success { background-color: var(--bs-success) !important; }
 body.dark-mode .card-animate.bg-danger { background-color: var(--bs-danger) !important; }
 body.dark-mode .card-animate.bg-info { background-color: var(--bs-info) !important; }
+
+/* Navbar Dark Mode Extended */
+body.dark-mode .navbar {
+    background-color: #283046 !important;
+    border-bottom: 1px solid #3b4253;
+}
+
+body.dark-mode .navbar .navbar-brand {
+    color: #d0d2d6 !important;
+}
+
+body.dark-mode .navbar .nav-link {
+    color: #b4b7bd;
+}
+
+body.dark-mode .navbar .nav-link:hover,
+body.dark-mode .navbar .nav-link.active {
+    color: #7367f0;
+}
+
+body.dark-mode .navbar .btn-outline-primary {
+    color: #7367f0;
+    border-color: #7367f0;
+}
+
+body.dark-mode .navbar .btn-outline-primary:hover {
+    background-color: #7367f0;
+    color: #fff;
+}
+
+body.dark-mode .navbar .navbar-toggler-icon {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Fix for Select Options Visibility */
+select option, select.form-select option {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode select option, body.dark-mode select.form-select option {
+    background-color: #283046 !important;
+    color: #d0d2d6 !important;
+}

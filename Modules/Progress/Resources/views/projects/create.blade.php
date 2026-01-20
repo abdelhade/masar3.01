@@ -1,6 +1,6 @@
 @extends('progress::layouts.daily-progress')
 
-@section('title', 'إنشاء مشروع جديد')
+@section('title', __('general.create_new_project'))
 
 @section('content')
 <!-- Inline Styles Moved to progress-theme.css -->
@@ -12,11 +12,11 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h4 class="mb-1 text-primary fw-bold">إضافة مشروع جديد</h4>
-                <p class="text-muted mb-0 small">قم بتعبئة البيانات التالية لإنشاء المشروع</p>
+                <h4 class="mb-1 text-primary fw-bold">{{ __('general.add_new_project') }}</h4>
+                <p class="text-muted mb-0 small">{{ __('general.fill_project_data') }}</p>
             </div>
             <div>
-                <a href="{{ route('progress.project.index') }}" class="btn btn-outline-secondary btn-sm"><i class="las la-arrow-right me-1"></i> رجوع للقائمة</a>
+                <a href="{{ route('progress.project.index') }}" class="btn btn-outline-secondary btn-sm"><i class="las la-arrow-right me-1"></i> {{ __('general.back_to_list') }}</a>
             </div>
         </div>
 
@@ -26,33 +26,33 @@
                 <!-- Section 1: Basic Info -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0 text-white fw-bold"><i class="las la-info-circle me-2"></i>البيانات الأساسية</h5>
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-info-circle me-2"></i>{{ __('general.basic_info') }}</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <label class="form-label fw-bold">اسم المشروع <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">{{ __('general.project_name') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input type="text" name="name" class="form-control form-control-lg" required x-model="form.name" placeholder="أدخل اسم المشروع المميز..." autofocus>
+                                    <input type="text" name="name" class="form-control form-control-lg" required x-model="form.name" placeholder="{{ __('general.project_name_placeholder') }}" autofocus>
                                     <span class="input-group-text bg-light text-muted"><i class="las la-project-diagram"></i></span>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">الحالة</label>
+                                <label class="form-label fw-bold">{{ __('general.status') }}</label>
                                 <div class="input-group">
                                     <select name="status" class="form-select form-select-lg" x-model="form.status">
-                                        <option value="pending">معلق (Pending)</option>
-                                        <option value="in_progress" selected>نشط (Active)</option>
-                                        <option value="completed">مكتمل (Completed)</option>
+                                        <option value="pending">{{ __('general.status_pending') }} (Pending)</option>
+                                        <option value="in_progress" selected>{{ __('general.status_active') }} (Active)</option>
+                                        <option value="completed">{{ __('general.status_completed') }} (Completed)</option>
                                     </select>
                                     <span class="input-group-text bg-light text-muted"><i class="las la-flag"></i></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">العميل <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">{{ __('general.client') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <select name="client_id" class="form-select" required x-model="form.client_id">
-                                        <option value="">-- اختر العميل --</option>
+                                        <option value="">{{ __('general.select_client') }}</option>
                                         @foreach($clients as $client)
                                             <option value="{{ $client->id }}">{{ $client->name }}</option>
                                         @endforeach
@@ -61,10 +61,10 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">نوع المشروع</label>
+                                <label class="form-label fw-bold">{{ __('general.project_type') }}</label>
                                 <div class="input-group">
                                     <select name="project_type_id" class="form-select" x-model="form.project_type_id">
-                                        <option value="">-- اختر النوع --</option>
+                                        <option value="">{{ __('general.select_type') }}</option>
                                         @foreach($projectTypes as $type)
                                             <option value="{{ $type->id }}">{{ $type->name }}</option>
                                         @endforeach
@@ -73,8 +73,8 @@
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold">وصف المشروع</label>
-                                <textarea name="description" class="form-control" rows="4" x-model="form.description" placeholder="اكتب وصفاً مختصراً للمشروع وأهدافه..."></textarea>
+                                <label class="form-label fw-bold">{{ __('general.description') }}</label>
+                                <textarea name="description" class="form-control" rows="4" x-model="form.description" placeholder="{{ __('general.project_description_placeholder') }}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -83,28 +83,28 @@
                 <!-- Section 2: Schedule -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0 text-white fw-bold"><i class="las la-calendar-alt me-2"></i>الجدول الزمني وإعدادات الدوام</h5>
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-calendar-alt me-2"></i>{{ __('general.schedule_and_working_settings') }}</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="card bg-light border-0 h-100">
                                     <div class="card-body">
-                                        <h6 class="fw-bold mb-3 text-dark">تكوين التواريخ</h6>
+                                        <h6 class="fw-bold mb-3 text-dark">{{ __('general.date_configuration') }}</h6>
                                         <div class="mb-3">
-                                            <label class="form-label">تاريخ البدء <span class="text-danger">*</span></label>
+                                            <label class="form-label">{{ __('general.start_date') }} <span class="text-danger">*</span></label>
                                             <div class="input-group">
                                                 <input type="date" name="start_date" class="form-control" required x-model="form.start_date" @change="calculateAllDates()">
                                                 <span class="input-group-text bg-white text-muted"><i class="las la-calendar"></i></span>
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">تاريخ الانتهاء المتوقع</label>
+                                            <label class="form-label">{{ __('general.expected_end_date') }}</label>
                                             <div class="input-group">
                                                 <input type="text" class="form-control bg-white" readonly :value="calculatedEndDate || '-'" disabled>
                                                 <span class="input-group-text"><i class="las la-calculator"></i></span>
                                             </div>
-                                            <small class="text-muted d-block mt-1">يُحسب تلقائياً بناءً على مدة البنود التالية.</small>
+                                            <small class="text-muted d-block mt-1">{{ __('general.auto_calculated_dates') }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -112,18 +112,18 @@
                             <div class="col-md-6">
                                 <div class="card bg-light border-0 h-100">
                                     <div class="card-body">
-                                        <h6 class="fw-bold mb-3 text-dark">ساعات وأيام العمل</h6>
+                                        <h6 class="fw-bold mb-3 text-dark">{{ __('general.working_hours_and_days') }}</h6>
                                         <div class="mb-3">
-                                            <label class="form-label">ساعات العمل اليومية</label>
+                                            <label class="form-label">{{ __('general.daily_work_hours') }}</label>
                                             <div class="input-group">
                                                 <input type="number" name="daily_work_hours" class="form-control" min="1" max="24" x-model="form.daily_work_hours">
                                                 <span class="input-group-text bg-white text-muted"><i class="las la-clock"></i></span>
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">أيام العمل في الأسبوع</label>
+                                            <label class="form-label">{{ __('general.working_days_per_week') }}</label>
                                             <div class="input-group">
-                                                <input type="text" class="form-control" readonly :value="7 - form.holidays.length + ' أيام'">
+                                                <input type="text" class="form-control" readonly :value="7 - form.holidays.length + ' ' + '{{ __('general.days') }}'">
                                                 <span class="input-group-text bg-white text-muted"><i class="las la-calendar-week"></i></span>
                                             </div>
                                             <input type="hidden" name="working_days" :value="7 - form.holidays.length">
@@ -133,7 +133,7 @@
                             </div>
                             
                             <div class="col-12">
-                                <label class="form-label fw-bold mb-3">حدد أيام الإجازة الأسبوعية:</label>
+                                <label class="form-label fw-bold mb-3">{{ __('general.select_weekly_holidays') }}</label>
                                 <div class="row g-2">
                                     <template x-for="(day, index) in daysOfWeek" :key="index">
                                         <div class="col">
@@ -150,7 +150,7 @@
 
                             <div class="col-12">
                                 <hr>
-                                <h6 class="fw-bold mb-3"><i class="las la-copy me-2"></i>استخدام قوالب جاهزة (اختياري)</h6>
+                                <h6 class="fw-bold mb-3"><i class="las la-copy me-2"></i>{{ __('general.use_ready_templates') }}</h6>
                                 <div class="row g-2">
                                     @forelse($templates as $template)
                                         <div class="col-md-4">
@@ -163,7 +163,7 @@
                                             </div>
                                         </div>
                                     @empty
-                                        <div class="col-12 text-muted fst-italic">لا توجد قوالب محفوظة حالياً.</div>
+                                        <div class="col-12 text-muted fst-italic">{{ __('general.no_saved_templates') }}</div>
                                     @endforelse
                                 </div>
                             </div>
@@ -174,8 +174,8 @@
                 <!-- Section 3: Items -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 text-white fw-bold"><i class="las la-tasks me-2"></i>بنود ونطاق العمل</h5>
-                        <span class="badge bg-white text-primary rounded-pill" x-text="items.length + ' بنود'"></span>
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-tasks me-2"></i>{{ __('general.items_and_scope') }}</h5>
+                        <span class="badge bg-white text-primary rounded-pill" x-text="items.length + ' {{ __('general.items') }}'"></span>
                     </div>
                     
                     <div class="card-body p-0">
@@ -185,13 +185,13 @@
                             <div class="position-relative" style="min-width: 350px;">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white border-end-0 ps-3"><i class="las la-search text-muted"></i></span>
-                                    <input type="text" class="form-control border-start-0" placeholder="بحث لإضافة بنود (Search using name or code)..." 
+                                    <input type="text" class="form-control border-start-0" placeholder="{{ __('general.search_items_placeholder') }}" 
                                         x-model="searchQuery" @input.debounce.300ms="searchItems()" autofocus>
                                     <button class="btn btn-outline-secondary border-start-0 rounded-end" type="button" @click="searchQuery = ''; searchResults = []" x-show="searchQuery.length > 0"><i class="las la-times"></i></button>
                                 </div>
                                 <!-- Dropdown for Search Results -->
                                 <div class="card position-absolute w-100 shadow-lg mt-1 border-0" style="z-index: 1050; max-height: 350px; overflow-y: auto;" x-show="searchResults.length > 0" @click.outside="searchResults = []" x-transition>
-                                    <div class="card-header bg-light py-2 small fw-bold text-muted">نتائج البحث</div>
+                                    <div class="card-header bg-light py-2 small fw-bold text-muted">{{ __('general.search_results') }}</div>
                                     <ul class="list-group list-group-flush">
                                         <template x-for="item in searchResults" :key="item.id">
                                             <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 cursor-pointer border-bottom" @click="addItem(item)">
@@ -211,21 +211,21 @@
 
                             <!-- View Toggles (Visual Only for now) -->
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-sm" :class="!isGrouped ? 'btn-primary' : 'btn-outline-primary'" @click="toggleGroupedMode(false)"><i class="las la-list"></i> عادي</button>
-                                <button type="button" class="btn btn-sm" :class="isGrouped ? 'btn-primary' : 'btn-outline-primary'" @click="toggleGroupedMode(true)"><i class="las la-layer-group"></i> مجمع</button>
+                                <button type="button" class="btn btn-sm" :class="!isGrouped ? 'btn-primary' : 'btn-outline-primary'" @click="toggleGroupedMode(false)"><i class="las la-list"></i> {{ __('general.normal_view') }}</button>
+                                <button type="button" class="btn btn-sm" :class="isGrouped ? 'btn-primary' : 'btn-outline-primary'" @click="toggleGroupedMode(true)"><i class="las la-layer-group"></i> {{ __('general.grouped_view') }}</button>
                             </div>
 
                             <!-- Bulk Actions -->
                             <div class="d-flex align-items-center gap-2">
                                 <select class="form-select form-select-sm" style="width: 200px;" x-model="bulkAction">
-                                    <option value="">-- عمليات جماعية --</option>
-                                    <option value="duplicate">نسخ المحدد (Duplicate)</option>
-                                    <option value="move">نقل لمشروع فرعي (Move)</option>
-                                    <option value="export_csv">تصدير CSV</option>
-                                    <option value="delete">حذف المحدد (Delete)</option>
+                                    <option value="">-- {{ __('general.bulk_actions') }} --</option>
+                                    <option value="duplicate">{{ __('general.duplicate_selected') }}</option>
+                                    <option value="move">{{ __('general.move_to_subproject') }}</option>
+                                    <option value="export_csv">{{ __('general.export') }} CSV</option>
+                                    <option value="delete">{{ __('general.delete_selected') }}</option>
                                 </select>
                                 <button type="button" class="btn btn-primary btn-sm" @click="executeBulkAction()" :disabled="selectedItems.length === 0">
-                                    <i class="las la-play"></i> تنفيذ
+                                    <i class="las la-play"></i> {{ __('general.execute') }}
                                 </button>
                             </div>
                         </div>
@@ -238,19 +238,19 @@
                                         <th style="width: 40px;"><input type="checkbox" class="form-check-input" @change="toggleAll($event.target.checked)"></th>
                                         <th style="width: 40px;"><i class="las la-th"></i></th>
                                         <th style="width: 50px;">#</th>
-                                        <th style="width: 350px;" class="text-start">Item Name</th>
-                                        <th style="width: 200px;">المشروع الفرعي</th>
-                                        <th style="width: 250px;">Notes</th>
-                                        <th style="width: 100px;">قابل للقياس</th>
-                                        <th style="width: 140px;">Total Quantity</th>
-                                        <th style="width: 140px;">Estimated Daily Qty</th>
-                                        <th style="width: 140px;">Estimated Duration (Days)</th>
-                                        <th style="width: 220px;">Predecessor</th>
-                                        <th style="width: 160px;">Dependency Type</th>
-                                        <th style="width: 120px;">Lag (Days)</th>
-                                        <th style="width: 150px;">Start Date</th>
-                                        <th style="width: 150px;">End Date</th>
-                                        <th style="width: 130px;">Actions</th>
+                                        <th style="width: 350px;" class="text-start">{{ __('general.item_name') }}</th>
+                                        <th style="width: 200px;">{{ __('general.subproject_name') }}</th>
+                                        <th style="width: 250px;">{{ __('general.notes') }}</th>
+                                        <th style="width: 100px;">{{ __('general.measurable') }}</th>
+                                        <th style="width: 140px;">{{ __('general.total_quantity') }}</th>
+                                        <th style="width: 140px;">{{ __('general.estimated_daily_qty') }}</th>
+                                        <th style="width: 140px;">{{ __('general.estimated_duration_days') }}</th>
+                                        <th style="width: 220px;">{{ __('general.predecessor') }}</th>
+                                        <th style="width: 160px;">{{ __('general.dependency_type') }}</th>
+                                        <th style="width: 120px;">{{ __('general.lag_days') }}</th>
+                                        <th style="width: 150px;">{{ __('general.start_date') }}</th>
+                                        <th style="width: 150px;">{{ __('general.end_date') }}</th>
+                                        <th style="width: 130px;">{{ __('general.actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="drag-container" x-ref="sortableList" x-init="Sortable.create($el, { handle: '.drag-handle', onEnd: (evt) => { let item = items.splice(evt.oldIndex, 1)[0]; items.splice(evt.newIndex, 0, item); updateItemOrders(); calculateAllDates(); } })">
@@ -285,7 +285,7 @@
 
                                             <!-- Subproject -->
                                             <td>
-                                                <input type="text" class="form-control form-control-premium" :name="'items['+index+'][subproject_name]'" x-model="row.subproject_name" placeholder="اختر أو أدخل مشروع فرعي">
+                                                <input type="text" class="form-control form-control-premium" :name="'items['+index+'][subproject_name]'" x-model="row.subproject_name" placeholder="{{ __('general.choose_or_enter_subproject') }}">
                                             </td>
 
                                             <!-- Notes -->
@@ -319,7 +319,7 @@
                                                 <input type="hidden" :name="'items['+index+'][predecessor]'" :value="getPredecessorIndex(row.predecessor)">
 
                                                 <select class="form-select form-control-premium" :value="row.predecessor" @change="row.predecessor = $event.target.value; calculateAllDates()">
-                                                    <option value="">بدون</option>
+                                                    <option value="">{{ __('general.predecessor_none') }}</option>
                                                     <template x-for="(p, i) in items" :key="p.id">
                                                         <option :value="p.id" x-text="(i + 1) + '. ' + p.name" :disabled="p.id == row.id" :selected="p.id == row.predecessor"></option>
                                                     </template>
@@ -329,8 +329,8 @@
                                             <!-- Dependency -->
                                             <td>
                                                 <select class="form-select form-control-premium" :name="'items['+index+'][dependency_type]'" :value="row.dependency_type" @change="row.dependency_type = $event.target.value; calculateAllDates()">
-                                                    <option value="end_to_start" :selected="row.dependency_type == 'end_to_start'">توالي (FS)</option>
-                                                    <option value="start_to_start" :selected="row.dependency_type == 'start_to_start'">توازي (SS)</option>
+                                                    <option value="end_to_start" :selected="row.dependency_type == 'end_to_start'">{{ __('general.dependency_fs') }}</option>
+                                                    <option value="start_to_start" :selected="row.dependency_type == 'start_to_start'">{{ __('general.dependency_ss') }}</option>
                                                 </select>
                                             </td>
 
@@ -346,10 +346,10 @@
                                             <!-- Actions -->
                                             <td>
                                                 <div class="btn-group">
-                                                    <button type="button" class="btn btn-outline-success" @click="duplicateItem(row)" title="نسخ">
+                                                    <button type="button" class="btn btn-outline-success" @click="duplicateItem(row)" title="{{ __('general.copy') }}">
                                                         <i class="las la-copy"></i>
                                                     </button>
-                                                    <button type="button" class="btn btn-outline-danger" @click="removeItem(index)" title="حذف">
+                                                    <button type="button" class="btn btn-outline-danger" @click="removeItem(index)" title="{{ __('general.delete') }}">
                                                         <i class="las la-trash"></i>
                                                     </button>
                                                 </div>
@@ -362,8 +362,8 @@
                                         <td colspan="16" class="text-center py-5">
                                             <div class="text-muted opacity-50">
                                                 <i class="las la-search display-4 mb-2"></i>
-                                                <p class="mb-0 fw-bold">لا توجد بنود</p>
-                                                <small>استخدم شريط البحث أعلاه لإضافة بنود</small>
+                                                <p class="mb-0 fw-bold">{{ __('general.no_items') }}</p>
+                                                <small>{{ __("general.search_items_placeholder") }}</small>
                                             </div>
                                         </td>
                                     </tr>
@@ -385,23 +385,23 @@
                                                                     <span class="fw-bold fs-5" x-text="group.name"></span>
                                                                 </div>
                                                                 <span class="badge bg-light text-primary rounded-pill px-3">
-                                                                    بند <span x-text="group.count"></span>
+                                                                    {{ __('general.item') }} <span x-text="group.count"></span>
                                                                 </span>
                                                             </div>
 
                                                             <div class="d-flex align-items-center gap-3 flex-wrap small">
                                                                 <div class="bg-white bg-opacity-25 px-3 py-1 rounded">
-                                                                    <i class="las la-cubes"></i> الكمية: 
+                                                                    <i class="las la-cubes"></i> {{ __('general.quantity') }}: 
                                                                     <span class="fw-bold" x-text="group.total_quantity.toFixed(2)"></span>
                                                                 </div>
                                                                 
                                                                 <div class="bg-white bg-opacity-25 px-3 py-1 rounded">
-                                                                    <i class="las la-calendar-day"></i> يوم <span class="fw-bold" x-text="group.duration"></span>
+                                                                    <i class="las la-calendar-day"></i> {{ __('general.days') }} <span class="fw-bold" x-text="group.duration"></span>
                                                                 </div>
 
                                                                 <div class="bg-white bg-opacity-25 px-3 py-1 rounded">
-                                                                    <i class="las la-calendar"></i> من: <span dir="ltr" x-text="group.formattedStart"></span>
-                                                                    إلى: <span dir="ltr" x-text="group.formattedEnd"></span>
+                                                                    <i class="las la-calendar"></i> {{ __('general.from_date') }}: <span dir="ltr" x-text="group.formattedStart"></span>
+                                                                    {{ __('general.to_date') }}: <span dir="ltr" x-text="group.formattedEnd"></span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -419,19 +419,19 @@
                                                                             </div>
                                                                         </th>
                                                                         <th style="width: 50px">#</th>
-                                                                        <th style="min-width: 200px">البند</th>
-                                                                        <th style="width: 100px">الوحدة</th>
-                                                                        <th style="width: 120px">المشروع الفرعي</th>
-                                                                        <th style="width: 100px">الكمية</th>
-                                                                        <th style="width: 100px">اليومية</th>
-                                                                        <th style="width: 80px">المدة</th>
-                                                                        <th style="width: 130px">ت. البداية</th>
-                                                                        <th style="width: 130px">ت. النهاية</th>
-                                                                        <th style="width: 150px">يعتمد على</th>
-                                                                        <th style="width: 120px">نوع الاعتماد</th>
+                                                                        <th style="min-width: 200px">{{ __('general.item') }}</th>
+                                                                        <th style="width: 100px">{{ __('general.unit') }}</th>
+                                                                        <th style="width: 120px">{{ __('general.subproject') }}</th>
+                                                                        <th style="width: 100px">{{ __('general.quantity') }}</th>
+                                                                        <th style="width: 100px">{{ __('general.daily_work_hours') }}</th>
+                                                                        <th style="width: 80px">{{ __('general.duration') }}</th>
+                                                                        <th style="width: 130px">{{ __('general.start_date') }}</th>
+                                                                        <th style="width: 130px">{{ __('general.end_date') }}</th>
+                                                                        <th style="width: 150px">{{ __('general.predecessor') }}</th>
+                                                                        <th style="width: 120px">{{ __('general.dependency_type') }}</th>
                                                                         <th style="width: 80px">Lag</th>
-                                                                        <th style="width: 50px">قياسي</th>
-                                                                        <th style="min-width: 150px">ملاحظات</th>
+                                                                        <th style="width: 50px">{{ __('general.measurable') }}</th>
+                                                                        <th style="min-width: 150px">{{ __('general.notes') }}</th>
                                                                         <th style="width: 60px"></th>
                                                                     </tr>
                                                                 </thead>
@@ -472,7 +472,7 @@
                                                                             <td>
                                                                                 <input type="hidden" :name="'items['+wrapper.originalIndex+'][predecessor]'" :value="getPredecessorIndex(wrapper.data.predecessor)">
                                                                                 <select class="form-select form-control-premium" :value="wrapper.data.predecessor" @change="wrapper.data.predecessor = $event.target.value; calculateAllDates()">
-                                                                                    <option value="">بدون</option>
+                                                                                    <option value="">{{ __('general.predecessor_none') }}</option>
                                                                                     <!-- We iterate allItems from parent scope -->
                                                                                     <template x-for="(p, i) in items" :key="p.id">
                                                                                         <option :value="p.id" x-text="(i + 1) + '. ' + p.name" :disabled="p.id == wrapper.data.id" :selected="p.id == wrapper.data.predecessor"></option>
@@ -521,17 +521,19 @@
                 <!-- Section 4: Team & Submit -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0 text-white fw-bold"><i class="las la-users me-2"></i>فريق العمل والمكان</h5>
+                        <h5 class="mb-0 text-white fw-bold"><i class="las la-users me-2"></i>{{ __('general.team_and_location') }}</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-4">
-                            <label class="form-label fw-bold">منطقة العمل (Working Zone)</label>
+                            <label class="form-label fw-bold">{{ __('general.working_zone') }} (Working Zone)</label>
                             <input type="text" name="working_zone" class="form-control form-control-lg" x-model="form.working_zone" placeholder="مثال: المنطقة الشمالية، المبنى الرئيسي...">
                         </div>
                         
                         <hr class="my-4">
                         
-                        <label class="form-label fw-bold mb-3 d-block">تعيين الموظفين للمشروع</label>
+                        <hr class="my-4">
+                        
+                        <label class="form-label fw-bold mb-3 d-block">{{ __('general.assign_employees') }}</label>
                         <div class="row g-3" style="max-height: 400px; overflow-y: auto;">
                             @foreach($employees as $employee)
                                 <div class="col-md-4 col-lg-3">
@@ -579,17 +581,17 @@
                         <div class="d-flex gap-2 align-items-center">
                             <div class="form-check form-switch me-3">
                                 <input class="form-check-input" type="checkbox" id="saveAsTemplate" name="save_as_template" x-model="form.save_as_template" value="1">
-                                <label class="form-check-label fw-bold cursor-pointer" for="saveAsTemplate">حفظ كقالب (Save as Template)</label>
+                                <label class="form-check-label fw-bold cursor-pointer" for="saveAsTemplate">{{ __('general.save_as_template') }}</label>
                             </div>
                             <div x-show="form.save_as_template" x-transition.opacity>
-                                <input type="text" name="template_name" class="form-control" placeholder="اسم القالب (اختياري)" x-model="form.template_name">
+                                <input type="text" name="template_name" class="form-control" placeholder="{{ __('general.template_name_placeholder') }}" x-model="form.template_name">
                             </div>
                             <div class="d-flex gap-2 ms-3">
                                 <button type="submit" name="save_action" value="draft" class="btn btn-warning px-4 btn-lg shadow-sm text-dark me-2" formnovalidate>
-                                    <i class="las la-save me-2"></i> Save as Draft
+                                    <i class="las la-save me-2"></i> {{ __('general.save_as_draft') }}
                                 </button>
                                 <button type="submit" class="btn btn-success px-5 btn-lg shadow-sm">
-                                    <i class="las la-check-circle me-2"></i> حفظ وإنشاء المشروع
+                                    <i class="las la-check-circle me-2"></i> {{ __('general.save_and_create_project') }}
                                 </button>
                             </div>
                         </div>
@@ -605,18 +607,18 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">نقل البنود المحددة لمشروع فرعي</h5>
+                    <h5 class="modal-title">{{ __('general.move_items_modal_title') }}</h5>
                     <button type="button" class="btn-close" @click="showMoveModal = false"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">اسم المشروع الفرعي</label>
-                        <input type="text" class="form-control" x-model="targetSubproject" placeholder="أدخل اسم المشروع الفرعي...">
+                        <label class="form-label">{{ __('general.subproject_name') }}</label>
+                        <input type="text" class="form-control" x-model="targetSubproject" placeholder="{{ __('general.enter_subproject_name') }}">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @click="showMoveModal = false">إلغاء</button>
-                    <button type="button" class="btn btn-primary" @click="applyMoveToSubproject()">نقل</button>
+                    <button type="button" class="btn btn-secondary" @click="showMoveModal = false">{{ __('general.cancel') }}</button>
+                    <button type="button" class="btn btn-primary" @click="applyMoveToSubproject()">{{ __('general.move') }}</button>
                 </div>
             </div>
         </div>

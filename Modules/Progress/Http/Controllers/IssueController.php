@@ -12,8 +12,11 @@ use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
+use Modules\Progress\Models\ProjectProgress;
+
 class IssueController extends Controller
 {
+    // 
        public function __construct()
     {
         
@@ -69,7 +72,7 @@ class IssueController extends Controller
         ];
 
         $users = User::all();
-        $projects = \App\Models\Project::all();
+        $projects = ProjectProgress::all();
         
         return view('progress::issues.index', compact('issues', 'stats', 'users', 'projects'));
     }
@@ -112,7 +115,7 @@ class IssueController extends Controller
     public function edit(Issue $issue)
     {
         $users = User::all();
-        $projects = \App\Models\Project::all();
+        $projects = ProjectProgress::all();
         return view('progress::issues.edit', compact('issue', 'users', 'projects'));
     }
 
@@ -220,7 +223,7 @@ class IssueController extends Controller
         $issues = $query->latest()->get();
         
         $users = User::all();
-        $projects = \App\Models\Project::all();
+        $projects = ProjectProgress::all();
 
         return view('progress::issues.kanban', compact('issues', 'users', 'projects'));
     }

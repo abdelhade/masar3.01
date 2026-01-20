@@ -335,6 +335,16 @@
             'view Inquiries',
             'view Orders',
             'view Rental-Management',
+            'view progress-recyclebin',
+            'view progress-project-types',
+            'view progress-project-templates',
+            'view progress-item-statuses',
+            'view progress-work-items',
+            'view progress-work-item-categories',
+            'view daily-progress',
+            'view progress-issues',
+            'view progress-projects',
+            'view progress-dashboard',
             ])
 
             <div class="apps-grid">
@@ -654,6 +664,7 @@
                 @endcan
                 {{-- التقدم اليومي --}}
              
+                @canany(['view progress-recyclebin','view progress-project-types' , 'view progress-project-templates','view progress-item-statuses','view progress-work-items','view progress-work-item-categories' ,'view daily-progress', 'view progress-issues','view progress-projects','view progress-dashboard'])
                     <a href="{{ route('progress.project.index') }}" class="app-card">
                         <div class="app-icon" style="background-color: white;">
                             <i data-lucide="bar-chart-3"
@@ -661,6 +672,7 @@
                         </div>
                         <p class="app-name">التقدم اليومي</p>
                     </a>
+                @endcanany
            
                 {{-- عمليات الاصول  --}}
                 @can('view Asset-Operations')

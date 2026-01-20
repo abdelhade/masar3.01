@@ -6,9 +6,9 @@
     @include('components.breadcrumb', [
         'title' => __('general.edit_work_item'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
+            ['label' => __('general.home'), 'url' => route('admin.dashboard')],
             ['label' => __('general.work_items_management'), 'url' => route('work.items.index')],
-            ['label' => __('تعديل')],
+            ['label' => __('general.edit')],
         ],
     ])
 
@@ -60,10 +60,10 @@
 
                             <!-- Category -->
                             <div class="col-lg-12">
-                                <label class="form-label fw-bold">تصنيف البند</label>
+                                <label class="form-label fw-bold">{{ __('general.category') }}</label>
                                 <div class="input-group">
                                     <select name="category_id" class="form-select form-select-lg @error('category_id') is-invalid @enderror">
-                                        <option value="">-- اختر التصنيف --</option>
+                                        <option value="">{{ __('general.select_category') }}</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('category_id', $workItem->category_id) == $category->id ? 'selected' : '' }}>
                                                 {{ $category->name }}

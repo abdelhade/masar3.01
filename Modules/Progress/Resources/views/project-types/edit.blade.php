@@ -6,7 +6,7 @@
     @include('components.breadcrumb', [
         'title' => __('general.edit_project_type'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
+            ['label' => __('general.home'), 'url' => route('admin.dashboard')],
             ['label' => __('general.project_types'), 'url' => route('project.types.index')],
             ['label' => __('general.edit')],
         ],

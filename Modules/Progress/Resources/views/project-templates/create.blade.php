@@ -2,11 +2,11 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('قوالب المشاريع'),
+        'title' => __('general.project_templates'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('قوالب المشاريع'), 'url' => route('project.template.index')],
-            ['label' => __('انشاء')],
+            ['label' => __('general.home'), 'url' => route('admin.dashboard')],
+            ['label' => __('general.project_templates'), 'url' => route('project.template.index')],
+            ['label' => __('general.create')],
         ],
     ])
 
@@ -26,7 +26,7 @@
                 <div class="col-lg-12">
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-primary text-white py-3">
-                            <h5 class="mb-0 text-white fw-bold"><i class="las la-plus-circle me-2"></i>اضافة قالب مشروع جديد</h5>
+                            <h5 class="mb-0 text-white fw-bold"><i class="las la-plus-circle me-2"></i>{{ __('general.add_new_project_template') }}</h5>
                         </div>
                         <div class="card-body p-4">
                             <form action="{{ route('project.template.store') }}" method="POST" id="templateForm" @submit.prevent="submitForm">
@@ -35,10 +35,10 @@
                                 {{-- Header Data --}}
                                 <div class="row mb-4">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold" for="name">اسم القالب <span class="text-danger">*</span></label>
+                                        <label class="form-label fw-bold" for="name">{{ __('general.template_name') }} <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <input type="text" class="form-control form-control-lg" id="name" name="name"
-                                                placeholder="ادخل اسم القالب" value="{{ old('name') }}" required>
+                                                placeholder="{{ __('general.enter_template_name') }}" value="{{ old('name') }}" required>
                                             <span class="input-group-text bg-light text-muted"><i class="las la-file-alt"></i></span>
                                         </div>
                                         @error('name')
@@ -47,10 +47,10 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold" for="project_type_id">نوع المشروع</label>
+                                        <label class="form-label fw-bold" for="project_type_id">{{ __('general.project_type') }}</label>
                                         <div class="input-group">
                                             <select class="form-select" id="project_type_id" name="project_type_id">
-                                                <option value="">اختر نوع المشروع</option>
+                                                <option value="">{{ __('general.project_type') }}</option>
                                                 @foreach ($projectTypes as $type)
                                                     <option value="{{ $type->id }}" {{ old('project_type_id') == $type->id ? 'selected' : '' }}>
                                                         {{ $type->name }}
@@ -63,8 +63,8 @@
                                 </div>
 
                                 <div class="mb-4">
-                                     <label class="form-label fw-bold" for="description">وصف القالب</label>
-                                     <textarea class="form-control" id="description" name="description" rows="3" placeholder="وصف مختصر للقالب...">{{ old('description') }}</textarea>
+                                     <label class="form-label fw-bold" for="description">{{ __('general.template_description') }}</label>
+                                     <textarea class="form-control" id="description" name="description" rows="3" placeholder="{{ __('general.template_description_placeholder') }}">{{ old('description') }}</textarea>
                                 </div>
 
                                 <hr>
@@ -72,8 +72,8 @@
                                 {{-- Items Section --}}
                                 <div class="card mb-4 border-0 shadow-sm">
                                     <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0 text-white fw-bold"><i class="las la-tasks me-2"></i>{{ __('بنود القالب') }}</h5>
-                                        <span class="badge bg-white text-primary rounded-pill px-3 py-2" x-text="items.length + ' بنود'"></span>
+                                        <h5 class="mb-0 text-white fw-bold"><i class="las la-tasks me-2"></i>{{ __('general.template_items') }}</h5>
+                                        <span class="badge bg-white text-primary rounded-pill px-3 py-2" x-text="items.length + ' {{ __('general.items') }}'"></span>
                                     </div>
                                     
                                     {{-- Search Bar --}}
@@ -82,7 +82,7 @@
                                             <div class="input-group">
                                                 <span class="input-group-text bg-white border-end-0 ps-3"><i class="las la-search text-muted"></i></span>
                                                 <input type="text" class="form-control border-start-0" 
-                                                    placeholder="ابحث عن بند لإضافته (بالاسم أو الكود)..." 
+                                                    placeholder="{{ __('general.search_item_placeholder') }}" 
                                                     x-model="searchQuery" 
                                                     @input.debounce.300ms="searchItems()"
                                                     @keydown.escape="searchResults = []"
@@ -99,8 +99,8 @@
                                                  @click.outside="searchResults = []" 
                                                  x-transition>
                                                 <div class="card-header bg-light py-2 small fw-bold text-muted d-flex justify-content-between">
-                                                    <span>نتائج البحث</span>
-                                                    <span class="text-primary cursor-pointer" @click="searchResults = []">إغلاق</span>
+                                                    <span>{{ __('general.search_results') }}</span>
+                                                    <span class="text-primary cursor-pointer" @click="searchResults = []">{{ __('general.close') }}</span>
                                                 </div>
                                                 <ul class="list-group list-group-flush">
                                                     <template x-for="item in searchResults" :key="item.id">
@@ -127,17 +127,17 @@
                                             <thead class="table-secondary">
                                                 <tr>
                                                     <th style="width: 50px">#</th>
-                                                    <th style="width: 250px">البند</th>
-                                                    <th style="width: 150px">مشروع فرعي</th>
-                                                    <th style="width: 200px">ملاحظات</th>
-                                                    <th style="width: 80px">قابل للقياس</th>
-                                                    <th style="width: 100px">الكمية</th>
-                                                    <th style="width: 100px">المعدل اليومي</th>
-                                                    <th style="width: 80px">المدة (أيام)</th>
-                                                    <th style="width: 200px">يعتمد على (Predecessor)</th>
-                                                    <th style="width: 120px">نوع الاعتمادية</th>
+                                                    <th style="width: 250px">{{ __('general.item') }}</th>
+                                                    <th style="width: 150px">{{ __('general.subproject') }}</th>
+                                                    <th style="width: 200px">{{ __('general.notes') }}</th>
+                                                    <th style="width: 80px">{{ __('general.measurable') }}</th>
+                                                    <th style="width: 100px">{{ __('general.quantity') }}</th>
+                                                    <th style="width: 100px">{{ __('general.daily_rate') }}</th>
+                                                    <th style="width: 80px">{{ __('general.duration_days') }}</th>
+                                                    <th style="width: 200px">{{ __('general.predecessor') }}</th>
+                                                    <th style="width: 120px">{{ __('general.dependency_type') }}</th>
                                                     <th style="width: 80px">Lag</th>
-                                                    <th style="width: 60px">حذف</th>
+                                                    <th style="width: 60px">{{ __('general.delete') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -157,7 +157,7 @@
                                                             <input type="text" class="form-control form-control-sm" 
                                                                    :name="'items['+index+'][subproject_name]'" 
                                                                    x-model="row.subproject_name" 
-                                                                   placeholder="مشروع فرعي" list="subprojects_list">
+                                                                   placeholder="{{ __('general.subproject') }}" list="subprojects_list">
                                                         </td>
                                                         
                                                         <td>
@@ -227,7 +227,7 @@
                                                 <tr x-show="items.length === 0">
                                                     <td colspan="12" class="text-center py-4 text-muted">
                                                         <i class="las la-box-open fs-1 mb-2"></i>
-                                                        <p>لا توجد بنود مضافة. استخدم البحث أعلاه لإضافة بنود.</p>
+                                                        <p>{{ __('general.no_items_added') }}</p>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -237,10 +237,10 @@
 
                                 <div class="d-flex justify-content-start mt-4">
                                     <button type="submit" class="btn btn-primary me-2">
-                                        <i class="las la-save"></i> حفظ القالب
+                                        <i class="las la-save"></i> {{ __('general.save_template') }}
                                     </button>
                                     <a href="{{ route('project.template.index') }}" class="btn btn-danger">
-                                        <i class="las la-times"></i> إلغاء
+                                        <i class="las la-times"></i> {{ __('general.cancel') }}
                                     </a>
                                 </div>
                             </form>
@@ -361,7 +361,7 @@
                 
                 submitForm(e) {
                      if (this.items.length === 0) {
-                        alert('يرجى إضافة بند واحد على الأقل');
+                        alert('{{ __('general.add_at_least_one_item') }}');
                         return;
                     }
                     e.target.submit();

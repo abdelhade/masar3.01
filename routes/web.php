@@ -25,7 +25,7 @@ use App\Http\Controllers\ProductionOrderController;
 use App\Http\Controllers\InventoryStartBalanceController;
 
 Route::get('/locale/{locale}', function (string $locale) {
-    if (! in_array($locale, ['ar', 'en'], true)) {
+    if (! in_array($locale, ['ar', 'en', 'ur', 'hi'], true)) {
         abort(404);
     }
     session(['locale' => $locale]);

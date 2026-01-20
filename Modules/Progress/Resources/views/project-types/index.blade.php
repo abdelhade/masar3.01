@@ -6,7 +6,7 @@
     @include('components.breadcrumb', [
         'title' => __('general.project_types'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
+            ['label' => __('general.home'), 'url' => route('admin.dashboard')],
             ['label' => __('general.project_types')],
         ],
     ])
@@ -15,12 +15,12 @@
         <div class="col-lg-12">
 
             {{-- زرار الإضافة --}}
-            {{-- @can('project-types-create') --}}
+           @can('create progress-project-types') 
             <a href="{{ route('project.types.create') }}" type="button" class="btn btn-primary font-hold fw-bold">
                 {{ __('general.add_project_type') }}
                 <i class="fas fa-plus me-2"></i>
             </a>
-            {{-- @endcan --}}
+           @endcan
 
             <br><br>
             {{-- الجدول --}}
@@ -28,17 +28,16 @@
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
-                        <x-table-export-actions table-id="project-types-table" filename="project-types"
-                            excel-label="تصدير Excel" pdf-label="تصدير PDF" print-label="طباعة" />
+                     
 
                         <table id="project-types-table" class="table table-striped mb-0" style="min-width: 800px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('general.name') }}</th>
-                                    {{-- @canany(['project-types-edit', 'project-types-delete']) --}}
+                                     @canany(['edit progress-project-types', 'delete progress-project-types'])
                                     <th>{{ __('general.actions') }}</th>
-                                    {{-- @endcanany --}}
+                                     @endcanany 
                                 </tr>
                             </thead>
                             <tbody>
@@ -46,16 +45,16 @@
                                     <tr class="text-center">
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $type->name }}</td>
-                                        {{-- @canany(['project-types-edit', 'project-types-delete']) --}}
+                                        @canany(['edit progress-project-types','delete progress-project-types']) 
                                         <td>
-                                            {{-- @can('project-types-edit') --}}
+                                           @can('edit progress-project-types') 
                                             <a class="btn btn-success btn-icon-square-sm"
                                                 href="{{ route('project.types.edit', $type->id) }}">
                                                 <i class="las la-edit"></i>
                                             </a>
-                                            {{-- @endcan
+                                           @endcan
 
-                                                @can('project-types-delete') --}}
+                                            @can('delete progress-project-types')
                                             <form action="{{ route('project.types.destroy', $type->id) }}" method="POST"
                                                 style="display:inline-block;"
                                                 onsubmit="return confirm('{{ __('general.confirm_delete') }}');">
@@ -65,9 +64,9 @@
                                                     <i class="las la-trash"></i>
                                                 </button>
                                             </form>
-                                            {{-- @endcan --}}
+                                            @endcan 
                                         </td>
-                                        {{-- @endcanany --}}
+                                         @endcanany
                                     </tr>
                                 @empty
                                     <tr>

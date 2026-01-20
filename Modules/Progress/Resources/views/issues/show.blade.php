@@ -1,223 +1,234 @@
 @extends('progress::layouts.daily-progress')
 
-@section('title', $issue->title)
 
 @section('content')
-<div class="container-fluid p-4">
-    
-    <!-- 1. Header Section -->
-    <div class="row mb-3">
-        <div class="col-12">
-            <!-- Breadcrumb -->
-            <div class="mb-2">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb m-0 text-muted small">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-muted">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('issues.index') }}" class="text-muted">Issues</a></li>
-                        <li class="breadcrumb-item active text-dark" aria-current="page">{{ $issue->title }}</li>
-                    </ol>
-                </nav>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">{{ __('general.issue_information') }} #{{ $issue->id }}</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('general.dashboard') }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('issues.index') }}">{{ __('general.issues') }}</a></li>
+                    <li class="breadcrumb-item active">{{ $issue->title }}</li>
+                </ol>
             </div>
+        </div>
+    </div>
+</div>
+<!--  -->
 
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <!-- Title -->
-                    <h2 class="fw-bold text-dark mb-2">{{ $issue->title }}</h2>
-                    <!-- Badges -->
-                    <div class="d-flex gap-2">
-                        @php
-                            $priorityClass = match($issue->priority) {
-                                'Medium' => 'bg-warning text-dark',
-                                'High' => 'bg-danger text-white',
-                                'Low' => 'bg-info text-white',
-                                default => 'bg-secondary text-white'
-                            };
-                            $statusClass = match($issue->status) {
-                                'New' => 'bg-primary text-white',
-                                'In Progress' => 'bg-info text-white',
-                                'Closed' => 'bg-success text-white',
-                                default => 'bg-secondary text-white'
-                            };
-                            $isOverdue = $issue->deadline && \Carbon\Carbon::parse($issue->deadline)->isPast() && $issue->status !== 'Closed';
-                        @endphp
-                        
-                        <span class="badge {{ $priorityClass }} rounded-1">{{ $issue->priority }}</span>
-                        <span class="badge {{ $statusClass }} rounded-1">{{ $issue->status }}</span>
-                        @if($isOverdue)
-                            <span class="badge bg-danger text-white rounded-1">Overdue</span>
-                        @endif
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-4">
+                    <h5 class="card-title flex-grow-1 mb-0">{{ $issue->title }}</h5>
+                    <div class="flex-shrink-0">
+                        @can('edit progress-issues')
+                        <a href="{{ route('issues.edit', $issue->id) }}" class="btn btn-soft-primary btn-sm"><i class="las la-pen"></i> {{ __('general.edit') }}</a>
+                        @endcan
+                        <a href="{{ route('issues.index') }}" class="btn btn-light btn-sm"><i class="las la-arrow-left"></i> {{ __('general.back') }}</a>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="d-flex gap-2">
-                    <a href="{{ route('issues.edit', $issue->id) }}" class="btn btn-warning fw-bold text-dark shadow-sm">
-                        <i class="las la-edit me-1"></i> Edit
-                    </a>
-                    <a href="{{ route('issues.index') }}" class="btn btn-secondary shadow-sm">
-                        <i class="las la-arrow-left me-1"></i> Back
-                    </a>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">{{ __('general.project') }}:</p>
+                        <h6 class="fs-14">{{ $issue->project->name ?? 'N/A' }}</h6>
+                    </div>
+                     <div class="col-md-6">
+                        <p class="text-muted mb-1">{{ __('general.module') }}:</p>
+                        <h6 class="fs-14">{{ $issue->module ?? 'N/A' }}</h6>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                 <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">{{ __('general.reporter') }}:</p>
+                        <h6 class="fs-14">{{ $issue->reporter->name ?? 'N/A' }}</h6>
+                    </div>
+                    <div class="col-md-6">
+                         <p class="text-muted mb-1">{{ __('general.created_at') }}:</p>
+                        <h6 class="fs-14">{{ $issue->created_at->format('d M, Y h:i A') }}</h6>
+                    </div>
+                </div>
 
-    <!-- 2. Meta Stats Row -->
-    <div class="row p-4 mb-4 bg-white rounded border-bottom border-top border-light">
-        <div class="col-md-3">
-            <div class="d-flex gap-3">
-                <i class="las la-project-diagram fs-3 mt-1 text-dark"></i>
-                <div>
-                    <div class="fw-bold text-dark mb-1">Project:</div>
-                    <div class="text-secondary small mb-3">{{ $issue->project->name ?? 'N/A' }}</div>
-                    
-                    <div class="fw-bold text-dark mb-1"><i class="las la-cubes me-1"></i> Module:</div>
-                    <div class="text-secondary small">{{ $issue->module ?? 'N/A' }}</div>
+                <div class="mt-4">
+                    <h6 class="fw-semibold text-uppercase fs-12">{{ __('general.description') }}</h6>
+                    <p class="text-muted">{!! nl2br(e($issue->description)) !!}</p>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="d-flex gap-3">
-                <i class="las la-user fs-3 mt-1 text-dark"></i>
-                <div>
-                    <div class="fw-bold text-dark mb-1">Reporter:</div>
-                    <div class="text-secondary small mb-3">{{ $issue->reporter->name ?? 'Unknown' }}</div>
-                    
-                    <div class="fw-bold text-dark mb-1"><i class="las la-clock me-1"></i> Created At:</div>
-                    <div class="text-secondary small">{{ $issue->created_at->format('Y-m-d H:i') }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="d-flex gap-3">
-                <i class="las la-user-check fs-3 mt-1 text-dark"></i>
-                <div>
-                    <div class="fw-bold text-dark mb-1">Assigned To:</div>
-                    <div class="text-secondary small">{{ $issue->assignee->name ?? 'Unassigned' }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="d-flex gap-3">
-                <i class="las la-calendar fs-3 mt-1 text-dark"></i>
-                <div>
-                    <div class="fw-bold text-dark mb-1">Deadline:</div>
-                    <div class="text-secondary small">{{ $issue->deadline ?? 'N/A' }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 3. Main Content & Sidebar -->
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-lg-9">
-            
-            <!-- Description -->
-            <div class="card shadow-none border mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="las la-align-left me-2"></i> Description</h5>
+                @if($issue->reproduce_steps)
+                <div class="mt-4">
+                    <h6 class="fw-semibold text-uppercase fs-12">{{ __('general.reproduce_steps') }}</h6>
+                    <div class="text-muted bg-light p-3 rounded">
+                        {!! nl2br(e($issue->reproduce_steps)) !!}
+                    </div>
                 </div>
-                <div class="card-body text-secondary">
-                    {{ $issue->description ?? 'No description provided' }}
-                </div>
-            </div>
+                @endif
 
-            <!-- Attachments -->
-            @if($issue->attachments->count() > 0)
-            <div class="card shadow-none border mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="las la-paperclip me-2"></i> Attachments ({{ $issue->attachments->count() }})</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush border rounded-0">
+                <div class="mt-4">
+                    <h6 class="fw-semibold text-uppercase fs-12">{{ __('general.attachments') }}</h6>
+                    @if($issue->attachments->count() > 0)
+                    <div class="row g-3">
                         @foreach($issue->attachments as $attachment)
-                        <div class="list-group-item d-flex justify-content-between align-items-center p-3 border-bottom-0">
-                            <div class="d-flex align-items-center">
-                                <i class="las la-file-alt fs-3 text-secondary me-3"></i>
-                                <div>
-                                    <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="text-primary fw-bold text-decoration-none">{{ $attachment->file_name }}</a>
-                                    <div class="small text-muted">{{ number_format($attachment->file_size / 1024, 2) }} KB</div>
+                        <div class="col-xxl-4 col-lg-6">
+                            <div class="border rounded border-dashed p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="avatar-sm">
+                                            <div class="avatar-title bg-light text-secondary rounded fs-24">
+                                                <i class="las la-file"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h5 class="fs-13 mb-1"><a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="text-body text-truncate d-block">{{ $attachment->file_name }}</a></h5>
+                                        <div class="text-muted fs-11">{{ number_format($attachment->file_size / 1024, 2) }} KB</div>
+                                    </div>
+                                    <div class="flex-shrink-0 ms-2">
+                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" download class="btn btn-icon btn-sm btn-ghost-primary"><i class="las la-download"></i></a>
+                                    </div>
                                 </div>
                             </div>
-                            <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="las la-download"></i></a>
                         </div>
                         @endforeach
                     </div>
+                    @else
+                    <p class="text-muted">{{ __('general.no_records_found') }}</p>
+                    @endif
                 </div>
-            </div>
-            @endif
-
-            <!-- Comments -->
-            <div class="card shadow-none border mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="las la-comments me-2"></i> Comments ({{ $issue->comments->count() }})</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Comment Form -->
-                    <div class="mb-4">
-                        <form action="{{ route('issues.comments.store', $issue->id) }}" method="POST">
-                            @csrf
-                            <textarea name="comment" class="form-control mb-2" rows="3" placeholder="Add Comment" required></textarea>
-                            <button type="submit" class="btn btn-primary shadow-sm"><i class="las la-paper-plane me-1"></i> Add Comment</button>
-                        </form>
-                    </div>
-
-                    <!-- Comments List -->
-                    <div class="d-flex flex-column gap-3">
+                
+                {{-- Comments Section --}}
+                <div class="mt-5">
+                    <h5 class="card-title mb-4">{{ __('general.comments') }}</h5>
+                    <div class="vstack gap-3">
                         @forelse($issue->comments as $comment)
-                        <div class="border rounded p-3 bg-light">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="fw-bold mb-0 text-dark">{{ $comment->user->name }}</h6>
-                                <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
-                            </div>
-                            <p class="mb-0 text-secondary">{{ $comment->comment }}</p>
-                            @if(auth()->id() == $comment->user_id || auth()->user()->hasRole('admin'))
-                                <div class="text-end mt-2">
-                                    <form action="{{ route('issues.comments.destroy', $comment->id) }}" method="POST" onsubmit="return confirm('Delete this comment?')" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-link text-danger p-0 small text-decoration-none">Delete</button>
-                                    </form>
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar-xs">
+                                     <span class="avatar-title rounded-circle bg-soft-primary text-primary fs-10">
+                                        {{ substr($comment->user->name ?? 'U', 0, 2) }}
+                                    </span>
                                 </div>
-                            @endif
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="fs-14 mb-1">{{ $comment->user->name ?? 'Unknown' }} <small class="text-muted ms-1">{{ $comment->created_at->diffForHumans() }}</small></h5>
+                                <p class="text-muted">{{ $comment->comment }}</p>
+                                
+                                @if(auth()->id() == $comment->user_id)
+                                <form action="{{ route('issues.comments.destroy', $comment->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-danger border-0 bg-transparent p-0 fs-12" onclick="return confirm('{{ __('general.confirm_delete') }}')">{{ __('general.delete') }}</button>
+                                </form>
+                                @endif
+                            </div>
                         </div>
                         @empty
-                        <div class="text-center text-muted py-3">No comments yet.</div>
+                        <p class="text-muted text-center">{{ __('general.no_comments') }}</p>
                         @endforelse
                     </div>
-                </div>
-            </div>
 
-        </div>
+                    <form action="{{ route('issues.comments.store', $issue->id) }}" method="POST" class="mt-4">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">{{ __('general.add_comment') }}</label>
+                                <textarea name="comment" class="form-control bg-light border-light" rows="3" placeholder="{{ __('general.add_comment') }}..." required></textarea>
+                            </div>
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-primary">{{ __('general.add_comment') }}</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-3">
-            <div class="card shadow-none border">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="las la-info-circle me-2"></i> Issue Information</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
-                        <li>
-                            <div class="fw-bold text-dark mb-1">Issue ID:</div>
-                            <div class="text-secondary">#{{ $issue->id }}</div>
-                        </li>
-                        <li>
-                            <div class="fw-bold text-dark mb-1">Created:</div>
-                            <div class="text-secondary">{{ $issue->created_at->format('Y-m-d H:i') }}</div>
-                        </li>
-                        <li>
-                            <div class="fw-bold text-dark mb-1">Last Updated:</div>
-                            <div class="text-secondary">{{ $issue->updated_at->format('Y-m-d H:i') }}</div>
-                        </li>
-                    </ul>
-                </div>
             </div>
-            
-          
         </div>
     </div>
-
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ __('general.issue_information') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.issue_id') }}:</th>
+                                <td class="text-muted">#{{ $issue->id }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.project') }}:</th>
+                                <td class="text-muted">{{ $issue->project->name ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.status') }}:</th>
+                                <td>
+                                     @php
+                                        $statusClass = match($issue->status) {
+                                            'New' => 'bg-primary',
+                                            'In Progress' => 'bg-info',
+                                            'Testing' => 'bg-warning',
+                                            'Closed' => 'bg-success',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $statusClass }}">{{ $issue->status }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.priority') }}:</th>
+                                <td>
+                                    @php
+                                        $priorityClass = match($issue->priority) {
+                                            'Low' => 'bg-info',
+                                            'Medium' => 'bg-warning',
+                                            'High' => 'bg-danger',
+                                            'Urgent' => 'bg-dark',
+                                            default => 'bg-secondary'
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $priorityClass }}">{{ $issue->priority }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.assigned_to') }}:</th>
+                                <td class="text-muted">
+                                    <div class="d-flex align-items-center">
+                                       @if($issue->assignee)
+                                            <div class="avatar-xs me-2">
+                                                <span class="avatar-title rounded-circle bg-soft-primary text-primary fs-10">
+                                                    {{ substr($issue->assignee->name, 0, 2) }}
+                                                </span>
+                                            </div>
+                                            {{ $issue->assignee->name }}
+                                        @else
+                                            {{ __('general.unassigned') }}
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.deadline') }}:</th>
+                                <td class="text-muted">{{ $issue->deadline ? date('d M, Y', strtotime($issue->deadline)) : 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-0" scope="row">{{ __('general.created') }}:</th>
+                                <td class="text-muted">{{ $issue->created_at->diffForHumans() }}</td>
+                            </tr>
+                             <tr>
+                                <th class="ps-0" scope="row">{{ __('general.last_updated') }}:</th>
+                                <td class="text-muted">{{ $issue->updated_at->diffForHumans() }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

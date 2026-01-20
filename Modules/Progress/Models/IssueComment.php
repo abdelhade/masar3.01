@@ -9,7 +9,7 @@ use App\Models\User;
 class IssueComment extends Model
 {
     use SoftDeletes;
-
+// 
     protected $fillable = [
         'issue_id',
         'user_id',

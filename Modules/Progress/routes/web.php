@@ -61,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/items', [ProjectItemController::class, 'store'])->name('project-items.store');
         Route::put('/items/{projectItem}', [ProjectItemController::class, 'update'])->name('project-items.update');
         Route::delete('/items/{projectItem}', [ProjectItemController::class, 'destroy'])->name('project-items.destroy');
+        Route::patch('/items/{projectItem}/status', [ProjectItemController::class, 'updateItemStatus'])->name('projects.items.update-status');
     });
 
 

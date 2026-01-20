@@ -20,12 +20,12 @@
         <div class="d-flex gap-2">
             @can('create progress-projects')
             <a href="{{ route('progress.project.create') }}" class="btn btn-primary btn-sm rounded-pill fw-bold shadow-sm">
-                <i class="las la-plus me-1"></i> إنشاء مشروع
+                <i class="las la-plus me-1"></i> {{ __('general.create_project') }}
             </a>
             @endcan
             @can('view progress-projects')
             <a href="{{ route('progress.project.index', ['status' => 'draft']) }}" class="btn btn-warning btn-sm rounded-pill text-dark fw-bold bg-opacity-10 border-warning">
-                <i class="las la-file-alt me-1"></i> المسودات 
+                <i class="las la-file-alt me-1"></i> {{ __('general.drafts') }} 
                 @if(isset($draftsCount) && $draftsCount > 0)
                     <span class="badge bg-warning text-dark ms-1 rounded-circle">{{ $draftsCount }}</span>
                 @endif
@@ -41,12 +41,12 @@
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3"><i class="las la-search text-muted"></i></span>
-                        <input type="text" id="searchInput" class="form-control form-control-premium border-start-0 rounded-end-pill" placeholder="Search project name or client...">
+                        <input type="text" id="searchInput" class="form-control form-control-premium border-start-0 rounded-end-pill" placeholder="{{ __('general.search_placeholder') }}">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <select id="statusFilter" class="form-select form-control-premium rounded-pill">
-                        <option value="">{{ __('general.status') }}: All</option>
+                        <option value="">{{ __('general.status') }}: {{ __('general.all') }}</option>
                         <option value="active">{{ __('general.active') }}</option>
                         <option value="pending">{{ __('general.pending') }}</option>
                         <option value="completed">{{ __('general.completed') }}</option>
@@ -54,7 +54,7 @@
                 </div>
                 <div class="col-md-2">
                     <select id="typeFilter" class="form-select form-control-premium rounded-pill">
-                        <option value="">{{ __('general.type_of_project') }}: All</option>
+                        <option value="">{{ __('general.type_of_project') }}: {{ __('general.all') }}</option>
                         @foreach($projectTypes as $type)
                             <option value="{{ $type->id }}">{{ $type->name }}</option>
                         @endforeach
@@ -62,7 +62,7 @@
                 </div>
                 <div class="col-md-2">
                     <select id="clientFilter" class="form-select form-control-premium rounded-pill">
-                        <option value="">{{ __('projects.client') }}: All</option>
+                        <option value="">{{ __('projects.client') }}: {{ __('general.all') }}</option>
                         @foreach($clients as $client)
                             <option value="{{ $client->id }}">{{ $client->name }}</option>
                         @endforeach
@@ -70,12 +70,12 @@
                 </div>
                 <div class="col-md-2 d-grid">
                     <button class="btn btn-light rounded-pill text-muted" onclick="resetFilters()">
-                        <i class="las la-undo me-1"></i> Reset
+                        <i class="las la-undo me-1"></i> {{ __('general.reset') }}
                     </button>
                 </div>
             </div>
             <div class="mt-2 text-muted small ps-2">
-                Showing <span id="visibleCount">{{ $projects->count() }}</span> projects
+                {{ __('general.showing') }} <span id="visibleCount">{{ $projects->count() }}</span> {{ __('general.projects') }}
             </div>
         </div>
     </div>
@@ -162,15 +162,19 @@
                 $progressPercent = $totalQty > 0 ? round(($completedQty / $totalQty) * 100) : 0;
                 
                 $progressColor = 'primary';
-                $progressPercent = $project->items->sum('total_quantity') > 0 
-                    ? round(($project->daily_progress_sum_quantity / $project->items->sum('total_quantity')) * 100, 2) 
+                
+                $totalQuantity = $project->items_sum_total_quantity ?? 0;
+                $completedQuantity = $project->daily_progress_sum_quantity ?? 0;
+
+                $progressPercent = $totalQuantity > 0 
+                    ? round(($completedQuantity / $totalQuantity) * 100, 2) 
                     : 0;
             @endphp
             <div class="col-md-6 col-lg-6 col-xl-6 project-item" 
                  data-name="{{ strtolower($project->name) }}" 
                  data-client="{{ strtolower($project->client->name ?? '') }}"
                  data-status="{{ $project->status }}"
-                 data-type="{{ $project->type_id }}"
+                 data-type="{{ $project->project_type_id }}"
                  data-client-id="{{ $project->client_id }}">
                 
                 <div class="card card-premium h-100 border-0 shadow-sm overflow-hidden">

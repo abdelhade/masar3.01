@@ -15,7 +15,12 @@
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
     
     <!-- Bootstrap 5 (Standard) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" integrity="sha384-PJsj/BTMqILvmcej7ulplguok8ag4xFTPryRq8xevL7eBYSmpXKcbNVuy+P0RMgq" crossorigin="anonymous">
+    <!-- Bootstrap 5 (Standard) -->
+    @if(app()->getLocale() === 'ar' || app()->getLocale() === 'ur' || app()->getLocale() === 'he')
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" integrity="sha384-PJsj/BTMqILvmcej7ulplguok8ag4xFTPryRq8xevL7eBYSmpXKcbNVuy+P0RMgq" crossorigin="anonymous">
+    @else
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    @endif
 
     <!-- Progress Theme (Isolated) -->
     <link href="{{ asset('css/progress-theme.css') }}" rel="stylesheet">

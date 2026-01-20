@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Exception;
 use Modules\Progress\Http\Requests\WorkItemRequest;
 use Modules\Progress\Models\WorkItem;
@@ -12,6 +12,13 @@ use Illuminate\Http\Request;
 
 class WorkItemController extends Controller
 {
+        public function __construct()
+    {
+        $this->middleware('can:view progress-work-items')->only(['index','show']);
+        $this->middleware('can:create progress-work-items')->only(['create', 'store']);
+        $this->middleware('can:edit progress-work-items')->only(['edit', 'update']);
+        $this->middleware('can:delete progress-work-items')->only('destroy');
+    }
     public function reorder(Request $request)
     {
         $request->validate([

@@ -9,7 +9,7 @@
     <!-- Alpine Data Scope Wrapper -->
     <div x-data="{ 
             isCustomizationModalOpen: false,
-            viewSettings: JSON.parse(localStorage.getItem('dashboardViewSettings')) || {
+            viewSettings: JSON.parse(localStorage.getItem('dashboardViewSettings_v2')) || {
                 showStats: true,
                 showAdvancedChart: true,
                 showSubprojectsChart: true,
@@ -26,7 +26,7 @@
                 showTeamMembers: true
             }
          }"
-         x-init="$watch('viewSettings', val => localStorage.setItem('dashboardViewSettings', JSON.stringify(val)))">
+         x-init="$watch('viewSettings', val => localStorage.setItem('dashboardViewSettings_v2', JSON.stringify(val)))">
 
         <div class="project-dashboard py-4">
             <div class="container dashboard-container">
@@ -86,10 +86,6 @@
                             @include('progress::projects.components.project-dashboard.charts')
                         </div>
                         
-                        <!-- Work Items Progress -->
-                        <div x-show="viewSettings.showWorkItems" x-transition>
-                            @include('progress::projects.components.project-dashboard.work-items-progress')
-                        </div>
                     </div>
 
                     <!-- Right Column (Sidebar Info) -->
@@ -113,6 +109,13 @@
                         <div x-show="viewSettings.showTeamMembers" x-transition>
                             @include('progress::projects.components.project-dashboard.team-members')
                         </div>
+                    </div>
+                </div>
+
+                <!-- Work Items Progress (Full Width) -->
+                <div class="row mt-4" x-show="viewSettings.showWorkItems" x-transition>
+                    <div class="col-12">
+                         @include('progress::projects.components.project-dashboard.work-items-progress')
                     </div>
                 </div>
 

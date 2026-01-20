@@ -1,18 +1,20 @@
 @extends('progress::layouts.daily-progress')
 {{-- Sidebar is now handled by the layout itself --}}
-@section('title', 'Item Statuses')
+@section('title', __('general.item_statuses'))
 
 @section('content')
 <div class="row mb-3">
     <div class="col-12 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
        
-            <h4 class="mb-0  fw-bold">Item Statuses</h4>
+            <h4 class="mb-0  fw-bold">{{ __('general.item_statuses') }}</h4>
         </div>
         <div>
+            @can('create progress-item-statuses')
             <a href="{{ route('item-statuses.create') }}" class="btn btn-success fw-bold rounded-pill px-4">
-                <i class="las la-plus me-1"></i> Add Item Status
+                <i class="las la-plus me-1"></i> {{ __('general.add_item_status') }}
             </a>
+            @endcan
         </div>
     </div>
 </div>
@@ -25,13 +27,15 @@
                     <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0 10px;">
                         <thead class="table-light">
                             <tr>
-                                <th scope="col" class="ps-4">#</th>
-                                <th scope="col">Name</th>
-                                <th scope="col" class="text-center">Color</th>
-                                <th scope="col" class="text-center">Icon</th>
-                                <th scope="col" class="text-center">Order</th>
-                                <th scope="col" class="text-center">Status</th>
-                                <th scope="col" class="text-end pe-4">Actions</th>
+                                <th scope="col">#</th>
+                                <th scope="col">{{ __('general.name') }}</th>
+                                <th scope="col" class="text-center">{{ __('general.color') }}</th>
+                                <th scope="col" class="text-center">{{ __('general.icon') }}</th>
+                                <th scope="col" class="text-center">{{ __('general.order') }}</th>
+                                <th scope="col" class="text-center">{{ __('general.status') }}</th>
+                                @canany(['edit progress-item-statuses' ,'delete progress-item-statuses'])
+                                <th scope="col" class="text-end pe-4">{{ __('general.actions') }}</th>
+                                @endcanany
                             </tr>
                         </thead>
                         <tbody>
@@ -78,23 +82,27 @@
                                 <td class="text-center fw-medium">{{ $status->order }}</td>
                                 <td class="text-center">
                                     @if($status->is_active)
-                                        <span class="badge bg-success rounded-pill px-3">Active</span>
+                                        <span class="badge bg-success rounded-pill px-3">{{ __('general.status_active') }}</span>
                                     @else
-                                        <span class="badge bg-danger rounded-pill px-3">Inactive</span>
+                                        <span class="badge bg-danger rounded-pill px-3">{{ __('general.status_inactive') }}</span>
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-inline-flex gap-2">
+                                        @can('edit progress-item-statuses')
                                         <a href="{{ route('item-statuses.edit', $status->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                            <i class="las la-pen me-1"></i> Edit
+                                            <i class="las la-pen me-1"></i> {{ __('general.edit') }}
                                         </a>
+                                        @endcan
+                                        @can('delete progress-item-statuses')
                                         <form action="{{ route('item-statuses.destroy', $status->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Are you sure?')">
-                                                <i class="las la-trash me-1"></i> Delete
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('{{ __('general.are_you_sure') }}')">
+                                                <i class="las la-trash me-1"></i> {{ __('general.delete') }}
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>
@@ -102,7 +110,7 @@
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-muted">
                                     <i class="las la-inbox fs-1 mb-3 d-block"></i>
-                                    No item statuses found.
+                                    {{ __('general.no_item_statuses_found') }}
                                 </td>
                             </tr>
                             @endforelse

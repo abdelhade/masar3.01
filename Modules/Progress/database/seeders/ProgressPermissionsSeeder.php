@@ -30,7 +30,8 @@ class ProgressPermissionsSeeder extends Seeder
             'progress-work-items',
             'progress-work-item-categories',
             'progress-item-statuses',
-            'progress-dashboard'
+            'progress-dashboard',
+            'progress-recyclebin'
         ];
 
         $actions = ['view', 'create', 'edit', 'delete'];

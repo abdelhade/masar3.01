@@ -28,7 +28,7 @@
                     {{ now()->format('d M, Y') }}
                 </p>
                 <div class="mt-2">
-                    <span class="badge bg-light text-dark border">{{ $daysPassed }} {{ __('general.days_passed') }}</span>
+                    <span class="badge bg-light text-dark border">{{ floor($daysPassed)  }} {{ __('general.days_passed') }}</span>
                 </div>
             </div>
 
@@ -41,7 +41,7 @@
                     {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d M, Y') : 'N/A' }}
                 </p>
                  <div class="mt-2">
-                    <span class="badge bg-light text-dark border">{{ $daysRemaining }} {{ __('general.days_left') }}</span>
+                    <span class="badge bg-light text-dark border">{{ floor($daysRemaining ) }} {{ __('general.days_left') }}</span>
                 </div>
             </div>
         </div>
