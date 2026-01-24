@@ -2,21 +2,21 @@
 
 namespace Modules\POS\app\Livewire;
 
-use App\Models\Item;
-use App\Models\Price;
-use Livewire\Component;
-use App\Models\OperHead;
-use App\Models\JournalDetail;
 use App\Helpers\ItemViewModel;
+use App\Models\Item;
+use App\Models\JournalDetail;
 use App\Models\OperationItems;
+use App\Models\OperHead;
+use App\Models\Price;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Modules\Accounts\Models\AccHead;
 use Illuminate\Support\Facades\Cache;
-use Modules\Settings\Models\PublicSetting;
-use Modules\Invoices\Services\SaveInvoiceService;
-use Modules\Invoices\Services\Invoice\DetailValueValidator;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
+use Modules\Accounts\Models\AccHead;
 use Modules\Invoices\Services\Invoice\DetailValueCalculator;
+use Modules\Invoices\Services\Invoice\DetailValueValidator;
+use Modules\Invoices\Services\SaveInvoiceService;
+use Modules\Settings\Models\PublicSetting;
 
 class CreatePosTransactionForm extends Component
 {
@@ -157,6 +157,8 @@ class CreatePosTransactionForm extends Component
 
     public $categoryItems = []; // الأصناف في التصنيف المختار
 
+    public $selectedTable = null; // الطاولة المختارة
+
     public function mount()
     {
         $this->type = 10; // فاتورة مبيعات
@@ -204,7 +206,7 @@ class CreatePosTransactionForm extends Component
         $this->invoiceItems = [];
         $this->priceTypes = Price::pluck('name', 'id')->toArray();
         $this->searchResults = [];
-        $this->items = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->take(20)->get();
+        $this->items = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->take(20)->get();
         $this->barcodeSearchResults = collect();
 
         // جلب أصناف سريعة الوصول (الأكثر مبيعاً)
@@ -348,7 +350,7 @@ class CreatePosTransactionForm extends Component
             return;
         }
 
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])
             ->whereHas('barcodes', function ($query) use ($barcode) {
                 $query->where('barcode', $barcode);
             })
@@ -476,14 +478,14 @@ class CreatePosTransactionForm extends Component
             // في حالة حدوث أي خطأ، إرجاع مصفوفة فارغة
             $this->searchResults = [];
             $this->selectedResultIndex = -1;
-            \Illuminate\Support\Facades\Log::error('Search error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Search error: '.$e->getMessage());
         }
     }
 
     // نسخ جميع دوال المعالجة من CreateInvoiceForm
     public function addItemFromSearch($itemId)
     {
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
         if (! $item) {
             return;
         }
@@ -713,7 +715,7 @@ class CreatePosTransactionForm extends Component
         }
 
         $itemId = $this->invoiceItems[$index]['item_id'];
-        $item = Item::with(['units' => fn($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
+        $item = Item::with(['units' => fn ($q) => $q->orderBy('pivot_u_val'), 'prices'])->find($itemId);
 
         if (! $item) {
             return;
@@ -898,8 +900,8 @@ class CreatePosTransactionForm extends Component
         // تحديث قيمة المدفوع حسب طريقة الدفع
         $this->received_from_client = $this->cashAmount + $this->cardAmount;
 
-        $calculator = new DetailValueCalculator();
-        $validator = new DetailValueValidator();
+        $calculator = new DetailValueCalculator;
+        $validator = new DetailValueValidator;
         $service = new SaveInvoiceService($calculator, $validator);
 
         return $service->saveInvoice($this);

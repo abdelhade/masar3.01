@@ -238,4 +238,8 @@ return [
     'daily_progress' => 'Günlük İlerleme',
     'work_items' => 'İş Kalemleri',
     'project_template' => 'Proje Şablonu',
+
+    // Satış Noktası
+    'point_of_sale' => 'Satış Noktası',
+    'create_pos_transaction' => 'İşlem Oluştur',
 ];

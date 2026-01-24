@@ -2,10 +2,6 @@
 
 namespace Modules\Accounts\Http\Controllers;
 
-use Modules\HR\Models\City;
-use Modules\HR\Models\Country;
-use Modules\HR\Models\State;
-use Modules\HR\Models\Town;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\Accounts\Models\AccHead;
 use Modules\Accounts\Models\AccountsType;
+use Modules\HR\Models\City;
+use Modules\HR\Models\Country;
+use Modules\HR\Models\State;
+use Modules\HR\Models\Town;
 
 class AccHeadController extends Controller
 {
@@ -43,24 +43,24 @@ class AccHeadController extends Controller
         $this->middleware('can:view accounts-balance-sheet')->only(['balanceSheet']);
         // ملاحظة: صلاحيات index يتم فحصها في IndexAccountRequest::authorize()
 
-        // حماية صفحات التعديل والحذف حسب نوع الحساب - معطل مؤقتاً
-        // $this->middleware(function ($request, $next) {
-        //     $id = $request->route('account') ?? $request->route('id');
+        // حماية صفحات التعديل والحذف حسب نوع الحساب
+        $this->middleware(function ($request, $next) {
+            $id = $request->route('account') ?? $request->route('id');
 
-        //     if ($id) {
-        //         $account = AccHead::find($id);
-        //         if ($account) {
-        //             $type = $this->determineAccountType($account->code);
-        //             if ($type) {
-        //                 $action = $this->getActionName($request);
+            if ($id) {
+                $account = AccHead::find($id);
+                if ($account) {
+                    $type = $this->determineAccountType($account->code);
+                    if ($type) {
+                        $action = $this->getActionName($request);
 
-        //                 $this->checkPermissionByType($type, $action);
-        //             }
-        //         }
-        //     }
+                        $this->checkPermissionByType($type, $action);
+                    }
+                }
+            }
 
-        //     return $next($request);
-        // })->only(['edit', 'update', 'destroy']);
+            return $next($request);
+        })->only(['edit', 'update', 'destroy']);
 
         // حماية صفحة الإضافة حسب الـ parent
         $this->middleware(function ($request, $next) {
@@ -203,21 +203,21 @@ class AccHeadController extends Controller
 
         if ($parent) {
             $lastAccount = DB::table('acc_head')
-                ->where('code', 'like', $parent . '%')
+                ->where('code', 'like', $parent.'%')
                 ->orderByDesc('id')
                 ->first();
 
             if ($lastAccount) {
                 $suffix = str_replace($parent, '', $lastAccount->code);
                 $next = str_pad((int) $suffix + 1, 3, '0', STR_PAD_LEFT);
-                $last_id = $parent . $next;
+                $last_id = $parent.$next;
             } else {
-                $last_id = $parent . '001';
+                $last_id = $parent.'001';
             }
 
             $resacs = DB::table('acc_head')
                 ->where('is_basic', '1')
-                ->where('code', 'like', $parent . '%')
+                ->where('code', 'like', $parent.'%')
                 ->orderBy('code')
                 ->get();
         } else {
@@ -283,7 +283,7 @@ class AccHeadController extends Controller
             'currency_id' => 'nullable|integer|exists:currencies,id',
         ]);
 
-        if (!isMultiCurrencyEnabled()) {
+        if (! isMultiCurrencyEnabled()) {
             $validated['currency_id'] = null;
         }
 
@@ -364,7 +364,7 @@ class AccHeadController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'حدث خطأ أثناء إضافة الحساب: ' . $e->getMessage());
+                ->with('error', 'حدث خطأ أثناء إضافة الحساب: '.$e->getMessage());
         }
     }
 
@@ -377,7 +377,7 @@ class AccHeadController extends Controller
 
         AccHead::create([
             'code' => (string) $depCode,
-            'aname' => 'مجمع إهلاك ' . $asset->aname,
+            'aname' => 'مجمع إهلاك '.$asset->aname,
             'parent_id' => 40,
             'is_basic' => 0,
             'deletable' => 0,
@@ -397,7 +397,7 @@ class AccHeadController extends Controller
 
         AccHead::create([
             'code' => (string) $expCode,
-            'aname' => 'مصروف إهلاك ' . $asset->aname,
+            'aname' => 'مصروف إهلاك '.$asset->aname,
             'parent_id' => 77,
             'is_basic' => 0,
             'deletable' => 0,
@@ -422,25 +422,25 @@ class AccHeadController extends Controller
             $depreciationUpdated = AccHead::where('accountable_id', $asset->id)
                 ->where('acc_type', 15)
                 ->update([
-                    'aname' => 'مجمع إهلاك ' . $asset->aname,
+                    'aname' => 'مجمع إهلاك '.$asset->aname,
                     'branch_id' => $branchId,
                     'mdtime' => now(),
                 ]);
 
-            Log::info('Depreciation accounts updated: ' . $depreciationUpdated);
+            Log::info('Depreciation accounts updated: '.$depreciationUpdated);
 
             // Update all expense accounts (type 16) linked to this asset
             $expenseUpdated = AccHead::where('accountable_id', $asset->id)
                 ->where('acc_type', 16)
                 ->update([
-                    'aname' => 'مصروف إهلاك ' . $asset->aname,
+                    'aname' => 'مصروف إهلاك '.$asset->aname,
                     'branch_id' => $branchId,
                     'mdtime' => now(),
                 ]);
 
-            Log::info('Expense accounts updated: ' . $expenseUpdated);
+            Log::info('Expense accounts updated: '.$expenseUpdated);
         } catch (\Exception $e) {
-            Log::error('Error updating depreciation accounts: ' . $e->getMessage());
+            Log::error('Error updating depreciation accounts: '.$e->getMessage());
             // Don't throw the exception, just log it so the main update can continue
         }
     }
@@ -477,7 +477,7 @@ class AccHeadController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث حسابات الإهلاك: ' . $e->getMessage(),
+                'message' => 'حدث خطأ أثناء تحديث حسابات الإهلاك: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -523,7 +523,7 @@ class AccHeadController extends Controller
 
         $resacs = DB::table('acc_head')
             ->where('is_basic', 1)
-            ->where('code', 'like', $parent . '%')
+            ->where('code', 'like', $parent.'%')
             ->orderBy('code')
             ->get();
         $countries = Country::all()->pluck('title', 'id');
@@ -558,9 +558,10 @@ class AccHeadController extends Controller
             if (isMultiCurrencyEnabled()) {
                 $currencies = \Modules\Settings\Models\Currency::active()->get();
             }
+
             return view('accounts::edit', compact('account', 'resacs', 'parent', 'countries', 'cities', 'states', 'towns', 'accountTypes', 'branches', 'currencies'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'حدث خطأ في تحميل صفحة التعديل: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ في تحميل صفحة التعديل: '.$e->getMessage());
         }
     }
 
@@ -577,7 +578,7 @@ class AccHeadController extends Controller
 
         try {
             $validated = $request->validate([
-                'aname' => 'required|string|max:100|unique:acc_head,aname,' . $id,
+                'aname' => 'required|string|max:100|unique:acc_head,aname,'.$id,
                 'phone' => 'nullable|string|max:15',
                 'address' => 'nullable|string|max:250',
                 'e_mail' => 'nullable|email|max:100',
@@ -609,7 +610,7 @@ class AccHeadController extends Controller
                 'reserve' => 'nullable', // Added for depreciation accounts handling
             ]);
 
-            if (!isMultiCurrencyEnabled()) {
+            if (! isMultiCurrencyEnabled()) {
                 $validated['currency_id'] = null;
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -692,7 +693,7 @@ class AccHeadController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'حدث خطأ أثناء تحديث الحساب: ' . $e->getMessage());
+                ->with('error', 'حدث خطأ أثناء تحديث الحساب: '.$e->getMessage());
         }
     }
 
@@ -826,7 +827,7 @@ class AccHeadController extends Controller
         if ($lastAccount) {
             $suffix = str_replace('21081', '', $lastAccount->code);
             $next = str_pad(((int) $suffix + 1), 2, '0', STR_PAD_LEFT);
-            $newCode = '21081' . $next;
+            $newCode = '21081'.$next;
         } else {
             $newCode = '2108101';
         }
@@ -834,7 +835,7 @@ class AccHeadController extends Controller
         // إنشاء حساب جاري الشريك
         AccHead::create([
             'code' => $newCode,
-            'aname' => 'جاري الشريك - ' . $partnerAccount->aname,
+            'aname' => 'جاري الشريك - '.$partnerAccount->aname,
             'phone' => $partnerAccount->phone,
             'address' => $partnerAccount->address,
             'parent_id' => $parentAccount->id,

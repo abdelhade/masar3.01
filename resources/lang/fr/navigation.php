@@ -30,7 +30,7 @@ return [
     'categories' => 'Catégories',
     'item_movement_report' => "Rapport de mouvement d'article",
     'item_management' => 'Gestion des articles',
-    
+
     // Gestion des remises
     'discounts' => 'Remises',
     'allowed_discounts_list' => 'Liste des remises autorisées',
@@ -260,4 +260,8 @@ return [
     'daily_progress' => 'Progression quotidienne',
     'work_items' => 'Éléments de travail',
     'project_template' => 'Modèle de projet',
+
+    // Point de vente
+    'point_of_sale' => 'Point de vente',
+    'create_pos_transaction' => 'Créer une transaction',
 ];

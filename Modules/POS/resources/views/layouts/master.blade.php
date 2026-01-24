@@ -251,6 +251,21 @@
 
     @livewireScripts
 
+    <!-- Register Service Worker for Offline Support -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{{ asset("modules/pos/js/pos-service-worker.js") }}')
+                    .then(function(registration) {
+                        console.log('POS Service Worker registered:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('POS Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+
     <!-- POS Global Scripts -->
     <script>
         // إعدادات عامة للPOS

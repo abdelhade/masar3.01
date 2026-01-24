@@ -291,49 +291,51 @@ new class extends Component
                     <div class="row g-3 align-items-end">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">البحث</label>
-                            <flux:input 
+                            <input 
+                                type="text" 
+                                class="form-control" 
                                 wire:model.live.debounce.300ms="search" 
                                 placeholder="ابحث بالكود أو الاسم..."
-                                class="w-full"
                             />
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">فلترة حسب النوع</label>
-                            <flux:select wire:model.live="filterType" class="w-full">
+                            <select class="form-control" wire:model.live="filterType">
                                 <option value="all">الكل</option>
                                 <option value="assets">أصول</option>
                                 <option value="liabilities">خصوم</option>
                                 <option value="equity">حقوق ملكية</option>
                                 <option value="changed">المعدلة فقط</option>
-                            </flux:select>
+                            </select>
                         </div>
                         <div class="col-md-5">
                             <div class="d-flex gap-2 justify-content-end">
                                 @if ($this->changedCount > 0)
-                                    <flux:button 
-                                        variant="ghost" 
+                                    <button 
+                                        type="button"
+                                        class="btn btn-outline-danger" 
                                         wire:click="resetChanges"
-                                        class="text-danger"
                                     >
                                         <i class="las la-undo me-1"></i>
                                         إعادة تعيين ({{ $this->changedCount }})
-                                    </flux:button>
+                                    </button>
                                 @endif
-                                <flux:button 
-                                    variant="primary" 
+                                <button 
+                                    type="button"
+                                    class="btn btn-main" 
                                     wire:click="updateStartBalance"
                                     wire:target="updateStartBalance"
                                     wire:loading.attr="disabled"
                                 >
                                     <span wire:loading.remove wire:target="updateStartBalance">
-                                        <i class="las la-save me-1"></i>
+                                        <i class="las la-sync me-1"></i>
                                         تحديث
                                     </span>
                                     <span wire:loading wire:target="updateStartBalance">
                                         <i class="las la-spinner la-spin me-1"></i>
                                         جاري التحديث...
                                     </span>
-                                </flux:button>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -426,12 +428,12 @@ new class extends Component
                                         </td>
                                         <td>
                                             @if ($isEditable)
-                                                <flux:input 
+                                                <input 
                                                     type="number" 
                                                     step="0.01"
+                                                    class="form-control text-center @if ($newBalance < 0) text-danger @endif"
                                                     wire:model.blur="allAccounts.{{ $formAccount['id'] }}.new_start_balance"
                                                     wire:change="applyFilters"
-                                                    class="w-full @if ($newBalance < 0) text-danger @endif"
                                                     placeholder="رصيد اول المدة الجديد"
                                                 />
                                             @else
@@ -488,22 +490,22 @@ new class extends Component
                                 </p>
                             </div>
                             <div>
-                                <flux:button 
-                                    variant="primary" 
+                                <button 
+                                    type="button"
+                                    class="btn btn-main" 
                                     wire:click="updateStartBalance"
                                     wire:target="updateStartBalance"
                                     wire:loading.attr="disabled"
-                                    class="w-auto"
                                 >
                                     <span wire:loading.remove wire:target="updateStartBalance">
-                                        <i class="las la-save me-1"></i>
+                                        <i class="las la-sync me-1"></i>
                                         تحديث التغييرات
                                     </span>
                                     <span wire:loading wire:target="updateStartBalance">
                                         <i class="las la-spinner la-spin me-1"></i>
                                         جاري التحديث...
                                     </span>
-                                </flux:button>
+                                </button>
                             </div>
                         </div>
                     @endif

@@ -98,6 +98,7 @@ class ProTypesSeeder extends Seeder
             ['id' => 81, 'pname' => 'currency_sell', 'ptext' => 'بيع عملة', 'ptype' => 'تبادل عملات'],
             
             ['id' => 101, 'pname' => 'expense_voucher', 'ptext' => 'سند دفع مصروفات', 'ptype' => 'فاتورة'],
+            ['id' => 102, 'pname' => 'cashier_invoice', 'ptext' => 'فاتورة كاشير', 'ptype' => 'فاتورة'],
 
         ];
 

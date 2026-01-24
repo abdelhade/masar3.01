@@ -268,4 +268,8 @@ return [
     'work_items' => 'Work Items',
     'project_template' => 'Project Template',
     'hr.attendance.reports.project' => 'Hours of Work Projects',
+
+    // Point of Sale
+    'point_of_sale' => 'Point of Sale',
+    'create_pos_transaction' => 'Create Transaction',
 ];

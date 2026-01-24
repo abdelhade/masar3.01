@@ -168,15 +168,15 @@
                                             <div class="d-flex justify-content-center flex-wrap gap-2">
 
                                                 @if ($invoice->pro_type == 11)
-                                                    <a class="btn btn-success d-inline-flex align-items-center"
-                                                        href="{{ route('edit.purchase.price.invoice.report', $invoice->id) }}">
-                                                        <i class="las la-eye me-1"></i>
-                                                        {{ __('Edit Selling Price') }}
+                                                    <a class="btn btn-success btn-icon-square-sm"
+                                                        href="{{ route('edit.purchase.price.invoice.report', $invoice->id) }}"
+                                                        title="{{ __('Edit Selling Price') }}">
+                                                        <i class="las la-dollar-sign"></i>
                                                     </a>
-                                                    <a class="btn btn-primary d-inline-flex align-items-center"
-                                                        href="{{ route('invoices.barcode-report', $invoice->id) }}">
-                                                        <i class="las la-barcode me-1"></i>
-                                                        {{ __('Print Barcode') }}
+                                                    <a class="btn btn-primary btn-icon-square-sm"
+                                                        href="{{ route('invoices.barcode-report', $invoice->id) }}"
+                                                        title="{{ __('Print Barcode') }}">
+                                                        <i class="las la-barcode"></i>
                                                     </a>
                                                 @endif
 

@@ -289,5 +289,9 @@ return [
     'check_portfolios' => 'حافظات الأوراق المالية',
     'incoming_check_portfolio' => 'حافظة أوراق القبض',
     'outgoing_check_portfolio' => 'حافظة أوراق الدفع',
-    'hr.attendance.reports.project' => 'تقرير ساعات عمل المشاريع'
+    'hr.attendance.reports.project' => 'تقرير ساعات عمل المشاريع',
+
+    // نقاط البيع
+    'point_of_sale' => 'نقاط البيع',
+    'create_pos_transaction' => 'إنشاء معاملة',
 ];

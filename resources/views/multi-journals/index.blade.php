@@ -65,7 +65,7 @@
                                 {{ $multi->confirmed ? 'نعم' : 'لا' }}</td>
                             <td class="font-hold fw-bold font-14 text-center" x-show="columns[16]">
                                 <button>
-                                    <a href="{{ route('multi-journals.edit', $multi) }}" class="btn btn-primary font-16"><i
+                                    <a href="{{ route('multi-journals.edit', $multi) }}" class="btn btn-primary"><i
                                             class="las la-edit"></i></a>
                                 </button>
                                 <form action="{{ route('multi-journals.destroy', $multi->id) }}" method="POST"
