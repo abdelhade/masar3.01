@@ -52,29 +52,39 @@
                                 </td>
                                 <td class="text-center">
                                     @php
-                                        $isHex = Str::startsWith($status->color, '#');
-                                        // Simple contrast check for hex/bootstrap
+                                        // Check if it's a standard bootstrap class or custom named color that maps to a class
+                                        // The user wants "CSS colors", so we prioritize style attribute if it's not a known bootstrap utility
+                                        $bootstrapColors = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'black'];
+                                        $isBootstrap = in_array($status->color, $bootstrapColors);
+                                        
+                                        // Simple contrast check
                                         $textColor = 'white'; 
-                                        if($status->color == 'warning' || $status->color == 'light' || $status->color == 'yellow') {
+                                        if(in_array($status->color, ['warning', 'light', 'yellow', 'white', '#ffffff', '#fff'])) {
                                             $textColor = 'dark';
                                         }
                                     @endphp
                                     
-                                    @if($isHex)
-                                        <span class="badge rounded-pill" 
-                                              style="background-color: {{ $status->color }}; color: {{ $textColor }}; min-width: 80px;">
+                                    @if($isBootstrap)
+                                        <span class="badge rounded-pill bg-{{ $status->color }} text-{{ $textColor }}" style="min-width: 80px;">
                                             {{ $status->color }}
                                         </span>
                                     @else
-                                        <span class="badge rounded-pill bg-{{ $status->color }} text-{{ $textColor }}" style="min-width: 80px;">
+                                        {{-- CSS Color (Hex, RGB, Name) --}}
+                                        <span class="badge rounded-pill" 
+                                              style="background-color: {{ $status->color }}; color: {{ $textColor }}; min-width: 80px; text-shadow: 0 0 2px rgba(0,0,0,0.3);">
                                             {{ $status->color }}
                                         </span>
                                     @endif
                                 </td>
                                 <td class="text-center">
                                     @if($status->icon)
-                                        <i class="{{ $status->icon }} fs-3" 
-                                           style="color: {{ $isHex ? $status->color : 'inherit' }};"></i>
+                                        @if(Str::startsWith($status->icon, ['las', 'la-', 'fa-', 'fas', 'fab', 'bi-']))
+                                            <i class="{{ $status->icon }} fs-3" 
+                                               style="color: {{ !$isBootstrap ? $status->color : 'inherit' }};"></i>
+                                        @else
+                                            {{-- Emoji --}}
+                                            <span class="fs-3">{{ $status->icon }}</span>
+                                        @endif
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif

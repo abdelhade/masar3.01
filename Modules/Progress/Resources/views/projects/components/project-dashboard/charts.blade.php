@@ -1,5 +1,5 @@
 <div class="row g-4 mb-4">
-    <div class="col-lg-8">
+    <div class="col-12">
         <div class="card stat-card border-0 h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title fw-bold text-primary mb-4">
@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-12">
         <div class="card stat-card border-0 h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title fw-bold text-primary mb-4">

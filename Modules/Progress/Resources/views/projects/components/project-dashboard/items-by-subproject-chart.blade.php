@@ -1,19 +1,19 @@
-<div class="card stat-card border-0 shadow-sm mb-4">
+<div class="card stat-card border-0 shadow-sm mb-4"
+     x-data="itemsBySubprojectChart()" 
+     x-init="initChart()">
     <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0 fw-bold text-primary">
             <i class="fas fa-list me-2"></i>{{ __('general.items_by_subproject') }}
         </h5>
         <!-- Dropdown Filter -->
-        <div style="min-width: 200px;" x-data>
+        <div style="min-width: 200px;">
             <select class="form-select form-select-sm" 
                     id="subprojectSelect"
-                    @change="$dispatch('subproject-changed', $el.value)">
+                    @change="updateChart($el.value)">
             </select>
         </div>
     </div>
-    <div class="card-body" 
-         x-data="itemsBySubprojectChart()" 
-         x-init="initChart()">
+    <div class="card-body">
         
         <!-- Legend Explanation -->
         <div class="mb-3 small text-muted">
@@ -36,7 +36,6 @@
             currentSubproject: null,
 
             initChart() {
-                const ctx = document.getElementById('itemsBySubprojectChart').getContext('2d');
                 const select = document.getElementById('subprojectSelect');
                 
                 // Populate Dropdown
@@ -59,15 +58,24 @@
 
                 // Initialize Chart
                 const initialData = this.getDataForSubproject(this.currentSubproject);
+                this.renderChart(initialData);
+            },
+
+            renderChart(data) {
+                const ctx = document.getElementById('itemsBySubprojectChart').getContext('2d');
+                
+                if (this.chart) {
+                    this.chart.destroy();
+                }
 
                 this.chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: initialData.labels,
+                        labels: data.labels,
                         datasets: [
                             {
                                 label: '{{ __("general.progress") }}',
-                                data: initialData.progress,
+                                data: data.progress,
                                 backgroundColor: '#ff6384', // Pink/Red
                                 borderColor: '#ff6384',
                                 borderWidth: 1,
@@ -76,7 +84,7 @@
                             },
                             {
                                 label: '{{ __("general.planned_progress") }}',
-                                data: initialData.planned,
+                                data: data.planned,
                                 backgroundColor: '#36a2eb', // Blue
                                 borderColor: '#36a2eb',
                                 borderWidth: 1,
@@ -110,11 +118,6 @@
                         }
                     }
                 });
-
-                // Listen for changes
-                window.addEventListener('subproject-changed', (e) => {
-                    this.updateChart(e.detail);
-                });
             },
 
             getDataForSubproject(subName) {
@@ -127,15 +130,8 @@
             },
 
             updateChart(subName) {
-                if (!this.chart) return;
-                
                 const newData = this.getDataForSubproject(subName);
-                
-                this.chart.data.labels = newData.labels;
-                this.chart.data.datasets[0].data = newData.progress;
-                this.chart.data.datasets[1].data = newData.planned;
-                
-                this.chart.update();
+                this.renderChart(newData);
             }
         }));
     });

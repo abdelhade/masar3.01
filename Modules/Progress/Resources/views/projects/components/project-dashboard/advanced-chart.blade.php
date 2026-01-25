@@ -3,24 +3,24 @@
         return ['id' => $id, 'label' => $label];
     }, $advancedChartData['labels'], $advancedChartData['ids']);
 @endphp
-<div class="card stat-card border-0 shadow-sm mb-4">
+<div class="card stat-card border-0 shadow-sm mb-4"
+     x-data="advancedChart()" 
+     x-init="initChart()">
     <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0 fw-bold text-primary">
             <i class="fas fa-chart-bar me-2"></i>{{ __('general.project_progress_overview') }}
         </h5>
         <!-- Actions: Select/Deselect All -->
-        <div x-data>
-            <button @click="$dispatch('select-all-items')" class="btn btn-sm btn-outline-primary me-2">
+        <div>
+            <button @click="selectAll()" class="btn btn-sm btn-outline-primary me-2">
                 <i class="fas fa-check-double me-1"></i> {{ __('general.select_all') }}
             </button>
-            <button @click="$dispatch('deselect-all-items')" class="btn btn-sm btn-outline-secondary">
+            <button @click="deselectAll()" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-times me-1"></i> {{ __('general.deselect_all') }}
             </button>
         </div>
     </div>
-    <div class="card-body" 
-         x-data="advancedChart()" 
-         x-init="initChart()">
+    <div class="card-body">
         
         <!-- Filters Area -->
         <div class="mb-4 p-3 bg-light rounded border">
@@ -31,7 +31,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" 
                                    :id="'filter-' + item.id" 
-                                   :value="item.id" 
+                                   :value="String(item.id)" 
                                    x-model="selectedItems"
                                    @change="updateChart()">
                             <label class="form-check-label small text-truncate d-block" 
@@ -58,11 +58,19 @@
             chart: null,
             allItems: @json($chartItems),
             allData: @json($advancedChartData),
-            selectedItems: @json($advancedChartData['ids']), // Check all by default
+            selectedItems: @json($advancedChartData['ids']).map(String),
 
             initChart() {
+                this.renderChart(this.allData.labels, this.allData.planned, this.allData.actual);
+            },
+
+            renderChart(labels, plannedData, actualData) {
                 const ctx = document.getElementById('advancedProgressChart').getContext('2d');
                 
+                if(this.chart) {
+                    this.chart.destroy();
+                }
+
                 // Color Config
                 const plannedColor = 'rgba(108, 117, 125, 0.4)'; // Gray for planned
                 const plannedBorder = 'rgba(108, 117, 125, 1)';
@@ -71,11 +79,11 @@
                 this.chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: this.allData.labels,
+                        labels: labels,
                         datasets: [
                             {
                                 label: '{{ __("general.planned") }}',
-                                data: this.allData.planned,
+                                data: plannedData,
                                 backgroundColor: plannedColor,
                                 borderColor: plannedBorder,
                                 borderWidth: 1,
@@ -84,7 +92,7 @@
                             },
                             {
                                 label: '{{ __("general.actual") }}',
-                                data: this.allData.actual,
+                                data: actualData,
                                 backgroundColor: actualColor,
                                 borderColor: actualColor,
                                 borderWidth: 1,
@@ -129,36 +137,31 @@
                         }
                     }
                 });
+            },
 
-                // Listeners for global buttons
-                window.addEventListener('select-all-items', () => {
-                    this.selectedItems = this.allItems.map(i => i.id);
-                    this.updateChart();
-                });
+            selectAll() {
+                this.selectedItems = this.allItems.map(i => String(i.id));
+                this.updateChart();
+            },
 
-                window.addEventListener('deselect-all-items', () => {
-                    this.selectedItems = [];
-                    this.updateChart();
-                });
+            deselectAll() {
+                this.selectedItems = [];
+                this.updateChart();
             },
 
             updateChart() {
-                if (!this.chart) return;
-
-                // Filter data based on selectedItems
+                // Robust filtering: treat all IDs as strings to handle mismatch
+                const selectedSet = new Set(this.selectedItems.map(String));
+                
                 const indices = this.allItems
-                    .map((item, index) => this.selectedItems.includes(item.id) ? index : -1)
+                    .map((item, index) => selectedSet.has(String(item.id)) ? index : -1)
                     .filter(index => index !== -1);
 
                 const newLabels = indices.map(i => this.allData.labels[i]);
                 const newPlanned = indices.map(i => this.allData.planned[i]);
                 const newActual = indices.map(i => this.allData.actual[i]);
 
-                this.chart.data.labels = newLabels;
-                this.chart.data.datasets[0].data = newPlanned;
-                this.chart.data.datasets[1].data = newActual;
-                
-                this.chart.update();
+                this.renderChart(newLabels, newPlanned, newActual);
             }
         }));
     });

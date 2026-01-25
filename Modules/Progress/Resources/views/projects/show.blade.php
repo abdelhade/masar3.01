@@ -78,38 +78,29 @@
                     @include('progress::projects.components.project-dashboard.hierarchical-view')
                 </div>
 
-                <div class="row g-4">
-                    <!-- Left Column (Main Content) -->
-                    <div class="col-lg-8">
-                        <!-- Charts -->
-                        <div x-show="viewSettings.showCharts" x-transition>
-                            @include('progress::projects.components.project-dashboard.charts')
-                        </div>
-                        
-                    </div>
+                <!-- Charts -->
+                <div x-show="viewSettings.showCharts" x-transition class="mb-4">
+                    @include('progress::projects.components.project-dashboard.charts')
+                </div>
 
-                    <!-- Right Column (Sidebar Info) -->
-                    <div class="col-lg-4">
-                        <!-- Client Info -->
-                        <div x-show="viewSettings.showClientInfo" x-transition>
-                            @include('progress::projects.components.project-dashboard.client-info')
-                        </div>
+                <!-- Client Info -->
+                <div x-show="viewSettings.showClientInfo" x-transition class="mb-4">
+                    @include('progress::projects.components.project-dashboard.client-info')
+                </div>
 
-                        <!-- Timeline -->
-                        <div x-show="viewSettings.showTimeline" x-transition>
-                            @include('progress::projects.components.project-dashboard.project-timeline')
-                        </div>
+                <!-- Timeline -->
+                <div x-show="viewSettings.showTimeline" x-transition class="mb-4">
+                    @include('progress::projects.components.project-dashboard.project-timeline')
+                </div>
 
-                        <!-- Recent Activity -->
-                        <div x-show="viewSettings.showRecentActivity" x-transition>
-                            @include('progress::projects.components.project-dashboard.recent-activity')
-                        </div>
+                <!-- Recent Activity -->
+                <div x-show="viewSettings.showRecentActivity" x-transition class="mb-4">
+                    @include('progress::projects.components.project-dashboard.recent-activity')
+                </div>
 
-                         <!-- Team Members -->
-                        <div x-show="viewSettings.showTeamMembers" x-transition>
-                            @include('progress::projects.components.project-dashboard.team-members')
-                        </div>
-                    </div>
+                <!-- Team Members -->
+                <div x-show="viewSettings.showTeamMembers" x-transition class="mb-4">
+                    @include('progress::projects.components.project-dashboard.team-members')
                 </div>
 
                 <!-- Work Items Progress (Full Width) -->
