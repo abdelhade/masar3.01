@@ -634,4 +634,10 @@ return [
     'records' => 'Records',
     'showing_all_records' => 'Showing all records',
     'added_by' => 'Added By',
+    'back_to_projects' => 'پروجیکٹس پر واپس جائیں',
+    'element' => 'عنصر',
+    'view_details' => 'تفصیلات دیکھیں',
+    'copy_of' => 'کی کاپی',
+    'general_statistics' => 'عام اعداد و شمار',
+    'gantt_chart' => 'گینٹ چارٹ',
 ];

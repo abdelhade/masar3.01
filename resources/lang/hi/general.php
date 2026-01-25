@@ -634,4 +634,10 @@ return [
     'records' => 'Records',
     'showing_all_records' => 'Showing all records',
     'added_by' => 'Added By',
+    'back_to_projects' => 'परियोजनाओं पर वापस जाएं',
+    'element' => 'तत्व',
+    'view_details' => 'विवरण देखें',
+    'copy_of' => 'की प्रतिलिपि',
+    'general_statistics' => 'सामान्य सांख्यिकी',
+    'gantt_chart' => 'गेंट चार्ट',
 ];

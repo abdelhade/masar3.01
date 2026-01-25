@@ -646,7 +646,7 @@
             <div class="group-apps-grid">
                 {{-- المشاريع  --}}
                 @can('view projects')
-                    <a href="{{ route('progress.project.index') }}" class="app-card">
+                    <a href="{{ Route::has('progress.project.index') ? route('progress.project.index') : '#' }}" class="app-card">
                         <div class="app-icon" style="background-color: white;">
                             <i data-lucide="kanban"
                                 style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
@@ -657,7 +657,7 @@
                 {{-- التقدم اليومي --}}
              
                 @canany(['view progress-recyclebin','view progress-project-types' , 'view progress-project-templates','view progress-item-statuses','view progress-work-items','view progress-work-item-categories' ,'view daily-progress', 'view progress-issues','view progress-projects','view progress-dashboard'])
-                    <a href="{{ route('progress.project.index') }}" class="app-card">
+                    <a href="{{ Route::has('progress.project.index') ? route('progress.project.index') : '#' }}" class="app-card">
                         <div class="app-icon" style="background-color: white;">
                             <i data-lucide="bar-chart-3"
                                 style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>

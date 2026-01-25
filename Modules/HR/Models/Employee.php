@@ -509,4 +509,9 @@ class Employee extends Model implements HasMedia
     {
         return $this->hasMany(\Modules\Progress\Models\DailyProgress::class, 'employee_id');
     }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(\Modules\Progress\Models\ProjectProgress::class, 'employee_project', 'employee_id', 'project_id');
+    }
 }

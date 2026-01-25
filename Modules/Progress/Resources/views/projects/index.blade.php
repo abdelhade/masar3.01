@@ -198,8 +198,8 @@
 
                          <!-- Subprojects Badge (Bottom Right Absolute) -->
                          @if($project->items->whereNotNull('subproject_name')->count() > 0)
-                            <div class="position-absolute" style="bottom: 15px; right: 15px; cursor: pointer;" onclick="openSubprojectsModal({{ $project->id }})">
-                                <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-3 py-1 small border border-white border-opacity-25 hover-scale">
+                            <div class="position-absolute start-0 bottom-0 m-3" style="cursor: pointer; z-index: 5;" onclick="openSubprojectsModal({{ $project->id }})">
+                                <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-3 py-1 small border border-white border-opacity-25 hover-scale shadow-sm">
                                     {{ __('general.subprojects') }} ({{ $project->items->whereNotNull('subproject_name')->unique('subproject_name')->count() }}) <i class="las la-sitemap ms-1"></i> 
                                 </span>
                             </div>
@@ -211,7 +211,7 @@
                         <!-- Progress Section -->
                         <div class="d-flex justify-content-between align-items-center mb-2">
                              <span class="fw-bold text-primary fs-5">{{ $progressPercent }}%</span>
-                             <span class="text-muted fw-bold small">التقدم <i class="las la-stream ms-1"></i></span>
+                             <span class="text-muted fw-bold small">{{ __('general.progress') }} <i class="las la-stream ms-1"></i></span>
                         </div>
                         <div class="progress mb-4 bg-light" style="height: 10px; border-radius: 5px;">
                             <div class="progress-bar bg-danger" role="progressbar" style="width: {{ $progressPercent }}%; border-radius: 5px;"></div>
@@ -224,7 +224,7 @@
                                 <div class="stat-box text-center rounded-2 p-3 h-100" style="background-color: #f8f9fa;">
                                     <div class="d-flex justify-content-between w-100 mb-2 text-muted small">
                                          <i class="las la-list fs-5 text-success"></i>
-                                         <span>عنصر</span>
+                                         <span>{{ __('general.element') }}</span>
                                     </div>
                                     <div class="fw-bold text-dark fs-5 text-end">{{ $project->items_count }}</div>
                                 </div>
@@ -235,7 +235,7 @@
                                 <div class="stat-box text-center rounded-2 p-3 h-100" style="background-color: #f8f9fa;">
                                      <div class="d-flex justify-content-between w-100 mb-2 text-muted small">
                                          <i class="las la-tag fs-5 text-primary"></i>
-                                         <span>نوع المشروع</span>
+                                         <span>{{ __('general.project_type') }}</span>
                                     </div>
                                     <div class="fw-bold text-dark small text-end text-truncate" style="max-width: 100%;">
                                         {{ $project->type->name ?? 'N/A' }}
@@ -248,7 +248,7 @@
                                 <div class="stat-box text-center rounded-2 p-3 h-100" style="background-color: #e0f2f1;"> <!-- Teal/Greenish -->
                                      <div class="d-flex justify-content-between w-100 mb-2 text-muted small">
                                          <i class="las la-calendar-check fs-5 text-success"></i>
-                                         <span>تاريخ الانتهاء</span>
+                                         <span>{{ __('general.end_date') }}</span>
                                     </div>
                                     <div class="fw-bold text-dark small text-end" dir="ltr">{{ $project->end_date ?? '-' }}</div>
                                 </div>
@@ -259,7 +259,7 @@
                                 <div class="stat-box text-center rounded-2 p-3 h-100" style="background-color: #ffebee;"> <!-- Light Red -->
                                      <div class="d-flex justify-content-between w-100 mb-2 text-muted small">
                                          <i class="las la-calendar-alt fs-5 text-danger"></i>
-                                         <span>تاريخ البدء</span>
+                                         <span>{{ __('general.start_date') }}</span>
                                     </div>
                                     <div class="fw-bold text-dark small text-end" dir="ltr">{{ $project->start_date }}</div>
                                 </div>
@@ -298,7 +298,7 @@
 
                             <!-- Large Details Button Right -->
                             <button type="button" onclick="openDetailsModal({{ $project->id }})" class="btn btn-details text-center shadow-sm" style="max-width: 150px;">
-                                <i class="las la-info-circle me-1"></i> عرض التفاصيل
+                                <i class="las la-info-circle me-1"></i> {{ __('general.view_details') }}
                             </button>
                         </div>
                     </div>
@@ -343,7 +343,7 @@
                         <!-- Progress Section -->
                         <div class="mb-4">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="fw-bold text-primary"><i class="las la-chart-line me-1"></i> Progress</span>
+                                <span class="fw-bold text-primary"><i class="las la-chart-line me-1"></i> {{ __('general.progress') }}</span>
                                 <span class="fw-bold text-primary fs-5" id="d_progress_text">0%</span>
                             </div>
                             <div class="progress" style="height: 12px; border-radius: 6px; background-color: #e9ecef;">
@@ -357,23 +357,23 @@
                             <!-- Left Column: Basic Information -->
                             <div class="col-md-5 border-end"> <!-- Changed border-start to border-end for LTR -->
                                 <h6 class="text-primary fw-bold mb-3 d-flex align-items-center justify-content-start">
-                                    <i class="las la-info-circle me-2"></i> Basic Information
+                                    <i class="las la-info-circle me-2"></i> {{ __('general.basic_information') }}
                                 </h6>
                                 <ul class="list-unstyled d-flex flex-column gap-3 text-start">
                                     <li>
-                                        <div class="text-muted small mb-1"><i class="las la-tag me-1 text-primary"></i> Type of Project</div>
+                                        <div class="text-muted small mb-1"><i class="las la-tag me-1 text-primary"></i> {{ __('general.project_type') }}</div>
                                         <div class="fw-bold text-dark ps-4" id="d_type">-</div>
                                     </li>
                                     <li>
-                                        <div class="text-muted small mb-1"><i class="las la-calendar-check me-1 text-primary"></i> Start Date</div>
+                                        <div class="text-muted small mb-1"><i class="las la-calendar-check me-1 text-primary"></i> {{ __('general.start_date') }}</div>
                                         <div class="fw-bold text-dark ps-4" id="d_start" dir="ltr">-</div>
                                     </li>
                                     <li>
-                                        <div class="text-muted small mb-1"><i class="las la-calendar-times me-1 text-primary"></i> End Date</div>
+                                        <div class="text-muted small mb-1"><i class="las la-calendar-times me-1 text-primary"></i> {{ __('general.end_date') }}</div>
                                         <div class="fw-bold text-dark ps-4" id="d_end" dir="ltr">-</div>
                                     </li>
                                     <li>
-                                        <div class="text-muted small mb-1"><i class="las la-map-marker me-1 text-primary"></i> Working Zone</div>
+                                        <div class="text-muted small mb-1"><i class="las la-map-marker me-1 text-primary"></i> {{ __('general.working_zone') }}</div>
                                         <div class="fw-bold text-dark ps-4" id="d_zone">-</div>
                                     </li>
                                 </ul>
@@ -382,7 +382,7 @@
                             <!-- Right Column: Statistics -->
                             <div class="col-md-7">
                                 <h6 class="text-primary fw-bold mb-3 d-flex align-items-center justify-content-start">
-                                    <i class="las la-chart-bar me-2"></i> General Statistics
+                                    <i class="las la-chart-bar me-2"></i> {{ __('general.general_statistics') }}
                                 </h6>
                                 <div class="row g-3">
                                      <!-- Top Left: Items -->
@@ -390,7 +390,7 @@
                                         <div class="p-3 bg-light rounded text-center h-100 d-flex flex-column justify-content-center align-items-center stats-card">
                                             <i class="las la-list fs-1 text-primary mb-2"></i>
                                             <div class="h3 fw-bold mb-0 text-dark" id="d_items_count">-</div>
-                                            <div class="small text-muted">items</div>
+                                            <div class="small text-muted">{{ __('general.items') }}</div>
                                         </div>
                                     </div>
                                     <!-- Top Right: Subprojects -->
@@ -398,7 +398,7 @@
                                         <div class="p-3 bg-light rounded text-center h-100 d-flex flex-column justify-content-center align-items-center stats-card">
                                             <i class="las la-sitemap fs-1 text-success mb-2"></i>
                                             <div class="h3 fw-bold mb-0 text-dark" id="d_sub_count">-</div>
-                                            <div class="small text-muted">subprojects</div>
+                                            <div class="small text-muted">{{ __('general.subprojects') }}</div>
                                         </div>
                                     </div>
                                     <!-- Bottom Left: Employees -->
@@ -406,7 +406,7 @@
                                         <div class="p-3 bg-light rounded text-center h-100 d-flex flex-column justify-content-center align-items-center stats-card">
                                             <i class="las la-users fs-1 text-info mb-2"></i>
                                             <div class="h3 fw-bold mb-0 text-dark" id="d_emp_count">-</div>
-                                            <div class="small text-muted">employees</div>
+                                            <div class="small text-muted">{{ __('general.employees') }}</div>
                                         </div>
                                     </div>
                                     <!-- Bottom Right: Working Days -->
@@ -414,13 +414,13 @@
                                         <div class="p-3 bg-light rounded text-center h-100 d-flex flex-column justify-content-center align-items-center stats-card">
                                             <i class="las la-calendar-day fs-1 text-warning mb-2"></i>
                                             <div class="h3 fw-bold mb-0 text-dark" id="d_work_days">-</div>
-                                            <div class="small text-muted">working days</div>
+                                            <div class="small text-muted">{{ __('general.working_days') }}</div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="mt-3 p-3 bg-secondary bg-opacity-10 rounded d-flex justify-content-between align-items-center">
-                                    <div class="text-muted"><i class="las la-stopwatch me-1"></i> Daily Work Hours</div>
+                                    <div class="text-muted"><i class="las la-stopwatch me-1"></i> {{ __('general.daily_work_hours') }}</div>
                                     <div class="fw-bold text-dark" id="d_hours">-</div>
                                 </div>
                             </div>
@@ -431,26 +431,26 @@
                 <!-- Footer: Right Aligned Actions -->
                 <div class="modal-footer bg-light border-top-0 d-flex justify-content-end p-3 gap-2">
                      <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">
-                        <i class="las la-times me-1"></i> Close
+                        <i class="las la-times me-1"></i> {{ __('general.close') }}
                      </button>
                      @can('view progress-projects')
                      <a href="#" id="btn_view" class="btn btn-primary text-white shadow-sm">
-                        <i class="las la-eye me-1"></i> View
+                        <i class="las la-eye me-1"></i> {{ __('general.view') }}
                      </a>
                      @endcan
                      @can('edit progress-projects')
                      <a href="#" id="btn_edit" class="btn btn-success text-white shadow-sm">
-                        <i class="las la-edit me-1"></i> Edit
+                        <i class="las la-edit me-1"></i> {{ __('general.edit') }}
                      </a>
                      @endcan
                      @can('view progress-projects')
                      <a href="#" id="btn_report" class="btn btn-info text-white shadow-sm">
-                        <i class="las la-file-alt me-1"></i> Progress Report
+                        <i class="las la-file-alt me-1"></i> {{ __('general.progress_report') }}
                      </a>
                      @endcan
                      @can('view progress-projects')
                      <a href="#" id="btn_gantt" class="btn btn-outline-primary shadow-sm">
-                        <i class="las la-stream me-1"></i> Gantt Chart
+                        <i class="las la-stream me-1"></i> {{ __('general.gantt_chart') }}
                      </a>
                      @endcan
                 </div>
@@ -584,7 +584,8 @@
         content.style.display = 'none';
 
         // Fetch Details
-        fetch(`/projects/${id}/details`)
+        const url = "{{ route('progress.project.details', ':id') }}".replace(':id', id);
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 loader.style.display = 'none';
@@ -621,15 +622,18 @@
                 document.getElementById('d_hours').textContent = data.daily_work_hours + ' {{ __('general.hours') }}';
 
                 // Footer Buttons (Fix routes)
-                const baseUrl = `{{ url('projects') }}`; // Ensure this resolves to /projects
-                document.getElementById('btn_view').href = `${baseUrl}/${data.id}`;
-                document.getElementById('btn_edit').href = `${baseUrl}/${data.id}/edit`;
+                // Use the base route for index, then append ID manually or use string replacement logic if strict
+                // Better approach: Use direct named routes with replacement placeholders
                 
-                // Charts Links
-                // Check if routes are named 'projects.progress/state' and 'projects.gantt'
-                // URL structure: /projects/{id}/progress and /projects/{id}/gantt
-                document.getElementById('btn_report').href = `${baseUrl}/${data.id}/progress`;
-                document.getElementById('btn_gantt').href = `${baseUrl}/${data.id}/gantt`;
+                const viewUrl = "{{ route('progress.project.show', ':id') }}".replace(':id', data.id);
+                const editUrl = "{{ route('progress.project.edit', ':id') }}".replace(':id', data.id);
+                const reportUrl = "{{ route('projects.progress/state', ':id') }}".replace(':id', data.id);
+                const ganttUrl = "{{ route('projects.gantt', ':id') }}".replace(':id', data.id);
+
+                document.getElementById('btn_view').href = viewUrl;
+                document.getElementById('btn_edit').href = editUrl;
+                document.getElementById('btn_report').href = reportUrl;
+                document.getElementById('btn_gantt').href = ganttUrl;
             })
             .catch(err => {
                 console.error(err);
@@ -640,8 +644,9 @@
     function openCopyModal(id, name) {
         const modal = new bootstrap.Modal(document.getElementById('copyProjectModal'));
         const form = document.getElementById('copyProjectForm');
-        form.action = `/projects/${id}/replicate`;
-        document.getElementById('copyName').value = 'نسخة من ' + name;
+        // Correct route for replication
+        form.action = "{{ route('progress.project.replicate', ':id') }}".replace(':id', id);
+        document.getElementById('copyName').value = '{{ __('general.copy_of') }} ' + name;
         modal.show();
     }
     
@@ -665,8 +670,10 @@
         listContainer.innerHTML = '';
 
         // Fetch Subprojects
-        fetch(`/projects/${id}/subprojects`)
+        const url = "{{ route('progress.project.subprojects', ':id') }}".replace(':id', id);
+        fetch(url)
             .then(response => response.json())
+
             .then(data => {
                 loader.style.display = 'none';
                 content.style.display = 'block';

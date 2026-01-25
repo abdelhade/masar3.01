@@ -869,4 +869,10 @@ return [
     'view_all' => 'عرض الكل',
     'records' => 'سجلات',
     'showing_all_records' => 'عرض كل السجلات',
+    'back_to_projects' => 'العودة للمشاريع',
+    'element' => 'عنصر',
+    'view_details' => 'عرض التفاصيل',
+    'copy_of' => 'نسخة من',
+    'general_statistics' => 'إحصائيات عامة',
+    'gantt_chart' => 'مخطط غانت',
 ];

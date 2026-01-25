@@ -45,7 +45,9 @@ class ProjectItem extends Model
 
     public function getCompletionPercentageAttribute()
     {
-        return ($this->completed_quantity / $this->total_quantity) * 100;
+        return $this->total_quantity > 0 
+            ? ($this->completed_quantity / $this->total_quantity) * 100 
+            : 0;
     }
 
     public function predecessorItem()

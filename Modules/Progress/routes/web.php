@@ -14,7 +14,6 @@ use Modules\Progress\Http\Controllers\{
     ItemStatusController,
     ProjectController
 };
-
 Route::get('/progress/dashboard', [DashboardController::class, 'index'])->name('progress.dashboard')->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {
@@ -33,23 +32,24 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('issues/attachments/{attachment}', [IssueController::class, 'destroyAttachment'])->name('issues.attachments.destroy');
     Route::resource('project-templates', ProjectTemplateController::class)->names('project.template');
     // Route::resource('project-items', ProjectItemController::class)->names('project.items');
-    Route::get('/projects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'index'])->name('progress.project.index');
-    Route::post('/projects/quick-store', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'quickStore'])->name('progress.project.quickStore');
-    Route::get('/projects/create', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'create'])->name('progress.project.create');
-    Route::post('/projects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'store'])->name('progress.project.store');
-    Route::get('/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'show'])->name('progress.project.show');
-    Route::get('/projects/{project}/details', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'getProjectDetails'])->name('progress.project.details');
-    Route::get('/projects/{project}/edit', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'edit'])->name('progress.project.edit');
-    Route::put('/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'update'])->name('progress.project.update');
-    Route::put('/projects/{project}/publish', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'publish'])->name('progress.project.publish');
-    Route::delete('/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'destroy'])->name('progress.project.destroy');
-    Route::post('/projects/{project}/replicate', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'replicate'])->name('progress.project.replicate');
+    // Route::resource('project-items', ProjectItemController::class)->names('project.items');
+    Route::get('/progress/projects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'index'])->name('progress.project.index');
+    Route::post('/progress/projects/quick-store', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'quickStore'])->name('progress.project.quickStore');
+    Route::get('/progress/projects/create', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'create'])->name('progress.project.create');
+    Route::post('/progress/projects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'store'])->name('progress.project.store');
+    Route::get('/progress/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'show'])->name('progress.project.show');
+    Route::get('/progress/projects/{project}/details', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'getProjectDetails'])->name('progress.project.details');
+    Route::get('/progress/projects/{project}/edit', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'edit'])->name('progress.project.edit');
+    Route::put('/progress/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'update'])->name('progress.project.update');
+    Route::put('/progress/projects/{project}/publish', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'publish'])->name('progress.project.publish');
+    Route::delete('/progress/projects/{project}', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'destroy'])->name('progress.project.destroy');
+    Route::post('/progress/projects/{project}/replicate', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'replicate'])->name('progress.project.replicate');
 
-    Route::get('/projects/{project}/progress', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'progress'])->name('projects.progress/state');
-    Route::get('/projects/{project}/subprojects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'getSubprojects'])->name('progress.project.subprojects');
-    Route::post('/projects/{project}/subprojects/update-weight', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'updateWeight'])->name('progress.project.subprojects.weight');
-    Route::post('/projects/{project}/subprojects/update-all-weights', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'updateAllWeights'])->name('progress.project.subprojects.updateAll');
-    Route::get('/projects/{project}/gantt', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'gantt'])->name('projects.gantt');
+    Route::get('/progress/projects/{project}/progress', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'progress'])->name('projects.progress/state');
+    Route::get('/progress/projects/{project}/subprojects', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'getSubprojects'])->name('progress.project.subprojects');
+    Route::post('/progress/projects/{project}/subprojects/update-weight', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'updateWeight'])->name('progress.project.subprojects.weight');
+    Route::post('/progress/projects/{project}/subprojects/update-all-weights', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'updateAllWeights'])->name('progress.project.subprojects.updateAll');
+    Route::get('/progress/projects/{project}/gantt', [\Modules\Progress\Http\Controllers\ProjectProgressController::class, 'gantt'])->name('projects.gantt');
     Route::get('/daily-progress', [\Modules\Progress\Http\Controllers\DailyProgressController::class, 'index'])->name('daily_progress.index');
     Route::get('/daily-progress/create', [\Modules\Progress\Http\Controllers\DailyProgressController::class, 'create'])->name('daily_progress.create');
     Route::post('/daily-progress', [\Modules\Progress\Http\Controllers\DailyProgressController::class, 'store'])->name('daily_progress.store');
@@ -57,7 +57,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/daily-progress/{dailyProgress}', [\Modules\Progress\Http\Controllers\DailyProgressController::class, 'update'])->name('daily_progress.update');
     Route::delete('/daily-progress/{dailyProgress}', [\Modules\Progress\Http\Controllers\DailyProgressController::class, 'destroy'])->name('daily_progress.destroy');
 
-    Route::prefix('projects/{project}')->middleware('auth')->group(function () {
+    Route::prefix('progress/projects/{project}')->middleware('auth')->group(function () {
         Route::post('/items', [ProjectItemController::class, 'store'])->name('project-items.store');
         Route::put('/items/{projectItem}', [ProjectItemController::class, 'update'])->name('project-items.update');
         Route::delete('/items/{projectItem}', [ProjectItemController::class, 'destroy'])->name('project-items.destroy');

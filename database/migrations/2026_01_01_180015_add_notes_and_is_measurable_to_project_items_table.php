@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('project_items', function (Blueprint $table) {
-            $table->text('notes')->nullable()->after('subproject_name');
-            $table->boolean('is_measurable')->default(true)->after('notes');
+            if (!Schema::hasColumn('project_items', 'notes')) {
+                $table->text('notes')->nullable()->after('subproject_name');
+            }
+            if (!Schema::hasColumn('project_items', 'is_measurable')) {
+                $table->boolean('is_measurable')->default(true)->after('notes');
+            }
         });
     }
 

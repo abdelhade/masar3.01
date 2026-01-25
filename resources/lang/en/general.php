@@ -875,4 +875,10 @@ return [
     'showing_all_records' => 'Showing all records',
     'added_by' => 'Added By',
 
+    'back_to_projects' => 'Back to Projects',
+    'element' => 'Element',
+    'view_details' => 'View Details',
+    'copy_of' => 'Copy of',
+    'general_statistics' => 'General Statistics',
+    'gantt_chart' => 'Gantt Chart',
 ];

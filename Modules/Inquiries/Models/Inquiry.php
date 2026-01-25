@@ -4,7 +4,8 @@ namespace Modules\Inquiries\Models;
 
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Support\Facades\Auth;
-use App\Models\{City, Town, Project};
+use Modules\HR\Models\{City, Town};
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Modules\Inquiries\Enums\{KonTitle, StatusForKon, InquiryStatus, QuotationStateEnum};
