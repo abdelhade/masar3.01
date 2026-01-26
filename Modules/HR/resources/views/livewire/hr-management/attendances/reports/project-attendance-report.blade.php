@@ -351,7 +351,7 @@ new class extends Component {
                             <th class="py-3">{{ __('hr.department') }}</th>
                             <th class="py-3">{{ __('hr.project') }}</th>
                             <th class="py-3 text-center">{{ __('hr.work_hours') }}</th>
-                            <th class="py-3 text-center">{{ __('hr.overtime') }}</th>
+                            <th class="py-3 text-center">{{ __('hr.overtime_hours') }}</th>
                             <th class="px-4 py-3 text-center">{{ __('hr.status') }}</th>
                         </tr>
                     </thead>
