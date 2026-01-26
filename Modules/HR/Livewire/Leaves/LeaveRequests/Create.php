@@ -12,6 +12,7 @@ use Modules\HR\Models\LeaveType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Modules\HR\Models\HRSetting;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -177,12 +178,16 @@ class Create extends Component
         // Check for leave percentage limit
         $employee = Employee::findOrFail($this->employee_id);
         $departmentId = $employee->department_id ?? null;
+        Log::info('=== Create Leave Request - Checking Percentage Limit ===');
+        Log::info('Employee: ' . $employee->name . ' (ID: ' . $this->employee_id . ')');
+        Log::info('Department: ' . ($employee->department->name ?? 'N/A') . ' (ID: ' . ($departmentId ?? 'null') . ')');
         $hasPercentageLimit = $service->checkLeavePercentageLimit(
             (int) $this->employee_id,
             $this->start_date,
             $this->end_date,
             $departmentId
         );
+        Log::info('Percentage Limit Check Result: ' . ($hasPercentageLimit ? 'PASS' : 'FAIL'));
 
         if (! $hasPercentageLimit) {
             // التحقق من سبب الفشل (عدم وجود نسبة محددة أم تجاوز النسبة)

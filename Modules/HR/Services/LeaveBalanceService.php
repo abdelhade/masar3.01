@@ -11,6 +11,7 @@ use Modules\HR\Models\LeaveRequest;
 use Modules\HR\Models\Department;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LeaveBalanceService
 {
@@ -197,13 +198,21 @@ class LeaveBalanceService
     /**
      * حساب عدد الموظفين في الإجازة في فترة معينة
      */
-    public function getEmployeesOnLeaveCount(string $startDate, string $endDate, ?int $departmentId = null): int
+    public function getEmployeesOnLeaveCount(string $startDate, string $endDate, ?int $departmentId = null, ?int $excludeRequestId = null): int
     {
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
+        Log::info('--- getEmployeesOnLeaveCount ---');
+        Log::info('Period: ' . $start->format('Y-m-d') . ' to ' . $end->format('Y-m-d'));
+        Log::info('Department ID: ' . ($departmentId ?? 'null'));
+        Log::info('Exclude Request ID: ' . ($excludeRequestId ?? 'null'));
+
         // الحصول على جميع الموظفين في الإجازة في أي يوم خلال الفترة
         $query = LeaveRequest::where('status', 'approved')
+            ->when($excludeRequestId, function ($q) use ($excludeRequestId) {
+                $q->where('id', '!=', $excludeRequestId);
+            })
             ->where(function ($q) use ($start, $end) {
                 $q->whereBetween('start_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
                     ->orWhereBetween('end_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
@@ -220,17 +229,34 @@ class LeaveBalanceService
                 $q->where('status', 'مفعل');
             });
 
+        // الحصول على قائمة الموظفين في الإجازة للتحقق
+        $employeeIds = $query->distinct()->pluck('employee_id')->toArray();
+        Log::info('Employee IDs on leave: ' . json_encode($employeeIds));
+        Log::info('Count: ' . count($employeeIds));
+
         // الحصول على عدد الموظفين الفريدين (لأن موظف واحد قد يكون له أكثر من إجازة)
-        return $query->distinct()->count('employee_id');
+        $count = $query->distinct()->count('employee_id');
+        Log::info('Final count: ' . $count);
+        Log::info('--- getEmployeesOnLeaveCount END ---');
+
+        return $count;
     }
 
     /**
      * التحقق من النسبة المئوية للإجازات
      */
-    public function checkLeavePercentageLimit(int $employeeId, string $startDate, string $endDate, ?int $departmentId = null): bool
+    public function checkLeavePercentageLimit(int $employeeId, string $startDate, string $endDate, ?int $departmentId = null, ?int $excludeRequestId = null): bool
     {
+        Log::info('=== checkLeavePercentageLimit START ===');
+        Log::info('Employee ID: ' . $employeeId);
+        Log::info('Start Date: ' . $startDate);
+        Log::info('End Date: ' . $endDate);
+        Log::info('Department ID: ' . ($departmentId ?? 'null'));
+        Log::info('Exclude Request ID: ' . ($excludeRequestId ?? 'null'));
+
         // الحصول على عدد الموظفين في الإجازة
-        $employeesOnLeave = $this->getEmployeesOnLeaveCount($startDate, $endDate, $departmentId);
+        $employeesOnLeave = $this->getEmployeesOnLeaveCount($startDate, $endDate, $departmentId, $excludeRequestId);
+        Log::info('Employees on Leave Count: ' . $employeesOnLeave);
 
         // الحصول على إجمالي عدد الموظفين
         $totalEmployeesQuery = Employee::where('status', 'مفعل');
@@ -238,34 +264,49 @@ class LeaveBalanceService
             $totalEmployeesQuery->where('department_id', $departmentId);
         }
         $totalEmployees = $totalEmployeesQuery->count();
+        Log::info('Total Employees: ' . $totalEmployees);
 
         if ($totalEmployees === 0) {
+            Log::info('No employees found, returning true');
             return true; // لا يوجد موظفين، لا حاجة للتحقق
         }
 
         // الحصول على النسبة المئوية القصوى
         // الأولوية: 1. departments.max_leave_percentage, 2. hr_settings.company_max_leave_percentage
         $maxPercentage = null;
+        $percentageSource = 'none';
 
         if ($departmentId !== null) {
             $department = Department::find($departmentId);
             if ($department && ! is_null($department->max_leave_percentage)) {
                 $maxPercentage = (float) $department->max_leave_percentage;
+                $percentageSource = 'department';
+                Log::info('Department found: ' . $department->name . ', Max Percentage: ' . $maxPercentage);
+            } else {
+                Log::info('Department not found or no percentage set');
             }
         }
 
         // إذا لم توجد نسبة للقسم، استخدم إعدادات الشركة
         if ($maxPercentage === null) {
             $maxPercentage = HRSetting::getCompanyMaxLeavePercentage();
+            if ($maxPercentage !== null) {
+                $percentageSource = 'company';
+                Log::info('Using Company Max Percentage: ' . $maxPercentage);
+            } else {
+                Log::info('Company Max Percentage is null');
+            }
         }
 
         // إذا لم توجد أي نسبة محددة، رفض الموافقة مع رسالة خطأ
         if ($maxPercentage === null) {
+            Log::warning('No percentage limit found, returning false');
             return false;
         }
 
         // حساب النسبة المئوية الحالية
         $currentPercentage = ($employeesOnLeave / $totalEmployees) * 100;
+        Log::info('Current Percentage: ' . number_format($currentPercentage, 2) . '%');
 
         // التحقق من أن النسبة الحالية + 1 (الموظف الجديد) لا تتجاوز الحد
         // نحسب النسبة بعد إضافة الموظف الحالي
@@ -274,6 +315,9 @@ class LeaveBalanceService
         // التحقق من أن الموظف الحالي ليس في الإجازة بالفعل في هذه الفترة
         $employeeAlreadyOnLeave = LeaveRequest::where('employee_id', $employeeId)
             ->where('status', 'approved')
+            ->when($excludeRequestId, function ($q) use ($excludeRequestId) {
+                $q->where('id', '!=', $excludeRequestId);
+            })
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])
@@ -284,11 +328,20 @@ class LeaveBalanceService
             })
             ->exists();
 
+        Log::info('Employee Already on Leave: ' . ($employeeAlreadyOnLeave ? 'YES' : 'NO'));
+
         if (! $employeeAlreadyOnLeave) {
             $newEmployeesOnLeave++;
+            Log::info('Adding employee to count. New count: ' . $newEmployeesOnLeave);
+        } else {
+            Log::info('Employee already counted, keeping count: ' . $newEmployeesOnLeave);
         }
 
         $newPercentage = ($newEmployeesOnLeave / $totalEmployees) * 100;
+        Log::info('New Percentage (after adding employee): ' . number_format($newPercentage, 2) . '%');
+        Log::info('Max Percentage Allowed: ' . number_format($maxPercentage, 2) . '% (from: ' . $percentageSource . ')');
+        Log::info('Result: ' . ($newPercentage <= $maxPercentage ? 'PASS' : 'FAIL'));
+        Log::info('=== checkLeavePercentageLimit END ===');
 
         return $newPercentage <= $maxPercentage;
     }
