@@ -130,10 +130,10 @@ class LeaveRequest extends Model
 
         // 1. التحقق من النسبة المئوية (الشرط الأول والأهم)
         // استثناء الطلب الحالي من الحساب (مفيد عند التعديل لطلب معتمد)
-        // Log::info('=== LeaveRequest canBeApproved - Checking Percentage Limit ===');
-        // Log::info('Leave Request ID: ' . $this->id);
-        // Log::info('Employee: ' . $this->employee->name . ' (ID: ' . $this->employee_id . ')');
-        // Log::info('Department: ' . ($this->employee->department->name ?? 'N/A') . ' (ID: ' . ($departmentId ?? 'null') . ')');
+        Log::info('=== LeaveRequest canBeApproved - Checking Percentage Limit ===');
+        Log::info('Leave Request ID: ' . $this->id);
+        Log::info('Employee: ' . $this->employee->name . ' (ID: ' . $this->employee_id . ')');
+        Log::info('Department: ' . ($this->employee->department->name ?? 'N/A') . ' (ID: ' . ($departmentId ?? 'null') . ')');
         $hasPercentageLimit = $service->checkLeavePercentageLimit(
             $this->employee_id,
             $this->start_date->format('Y-m-d'),
@@ -141,7 +141,7 @@ class LeaveRequest extends Model
             $departmentId,
             $this->id // استثناء الطلب الحالي من الحساب
         );
-        // Log::info('Percentage Limit Check Result: ' . ($hasPercentageLimit ? 'PASS' : 'FAIL'));
+        Log::info('Percentage Limit Check Result: ' . ($hasPercentageLimit ? 'PASS' : 'FAIL'));
 
         if (! $hasPercentageLimit) {
             // التحقق من سبب الفشل (عدم وجود نسبة محددة أم تجاوز النسبة)

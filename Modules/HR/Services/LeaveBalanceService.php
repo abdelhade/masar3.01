@@ -203,10 +203,10 @@ class LeaveBalanceService
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
-        // Log::info('--- getEmployeesOnLeaveCount ---');
-        // Log::info('Period: ' . $start->format('Y-m-d') . ' to ' . $end->format('Y-m-d'));
-        // Log::info('Department ID: ' . ($departmentId ?? 'null'));
-        // Log::info('Exclude Request ID: ' . ($excludeRequestId ?? 'null'));
+        Log::info('--- getEmployeesOnLeaveCount ---');
+        Log::info('Period: ' . $start->format('Y-m-d') . ' to ' . $end->format('Y-m-d'));
+        Log::info('Department ID: ' . ($departmentId ?? 'null'));
+        Log::info('Exclude Request ID: ' . ($excludeRequestId ?? 'null'));
 
         // الحصول على جميع الموظفين في الإجازة في أي يوم خلال الفترة
         $query = LeaveRequest::where('status', 'approved')
@@ -230,14 +230,14 @@ class LeaveBalanceService
             });
 
         // الحصول على قائمة الموظفين في الإجازة للتحقق
-        // $employeeIds = $query->distinct()->pluck('employee_id')->toArray();
-        // Log::info('Employee IDs on leave: ' . json_encode($employeeIds));
-        // Log::info('Count: ' . count($employeeIds));
+        $employeeIds = $query->distinct()->pluck('employee_id')->toArray();
+        Log::info('Employee IDs on leave: ' . json_encode($employeeIds));
+        Log::info('Count: ' . count($employeeIds));
 
         // الحصول على عدد الموظفين الفريدين (لأن موظف واحد قد يكون له أكثر من إجازة)
         $count = $query->distinct()->count('employee_id');
-        // Log::info('Final count: ' . $count);
-        // Log::info('--- getEmployeesOnLeaveCount END ---');
+        Log::info('Final count: ' . $count);
+        Log::info('--- getEmployeesOnLeaveCount END ---');
 
         return $count;
     }
@@ -247,16 +247,16 @@ class LeaveBalanceService
      */
     public function checkLeavePercentageLimit(int $employeeId, string $startDate, string $endDate, ?int $departmentId = null, ?int $excludeRequestId = null): bool
     {
-        // Log::info('=== checkLeavePercentageLimit START ===');
-        // Log::info('Employee ID: ' . $employeeId);
-        // Log::info('Start Date: ' . $startDate);
-        // Log::info('End Date: ' . $endDate);
-        // Log::info('Department ID: ' . ($departmentId ?? 'null'));
-        // Log::info('Exclude Request ID: ' . ($excludeRequestId ?? 'null'));
+        Log::info('=== checkLeavePercentageLimit START ===');
+        Log::info('Employee ID: ' . $employeeId);
+        Log::info('Start Date: ' . $startDate);
+        Log::info('End Date: ' . $endDate);
+        Log::info('Department ID: ' . ($departmentId ?? 'null'));
+        Log::info('Exclude Request ID: ' . ($excludeRequestId ?? 'null'));
 
         // الحصول على عدد الموظفين في الإجازة
         $employeesOnLeave = $this->getEmployeesOnLeaveCount($startDate, $endDate, $departmentId, $excludeRequestId);
-        // Log::info('Employees on Leave Count: ' . $employeesOnLeave);
+        Log::info('Employees on Leave Count: ' . $employeesOnLeave);
 
         // الحصول على إجمالي عدد الموظفين
         $totalEmployeesQuery = Employee::where('status', 'مفعل');
@@ -264,10 +264,10 @@ class LeaveBalanceService
             $totalEmployeesQuery->where('department_id', $departmentId);
         }
         $totalEmployees = $totalEmployeesQuery->count();
-        // Log::info('Total Employees: ' . $totalEmployees);
+        Log::info('Total Employees: ' . $totalEmployees);
 
         if ($totalEmployees === 0) {
-            // Log::info('No employees found, returning true');
+            Log::info('No employees found, returning true');
             return true; // لا يوجد موظفين، لا حاجة للتحقق
         }
 
@@ -281,9 +281,9 @@ class LeaveBalanceService
             if ($department && ! is_null($department->max_leave_percentage)) {
                 $maxPercentage = (float) $department->max_leave_percentage;
                 $percentageSource = 'department';
-                // Log::info('Department found: ' . $department->name . ', Max Percentage: ' . $maxPercentage);
+                Log::info('Department found: ' . $department->name . ', Max Percentage: ' . $maxPercentage);
             } else {
-                // Log::info('Department not found or no percentage set');
+                Log::info('Department not found or no percentage set');
             }
         }
 
@@ -292,21 +292,21 @@ class LeaveBalanceService
             $maxPercentage = HRSetting::getCompanyMaxLeavePercentage();
             if ($maxPercentage !== null) {
                 $percentageSource = 'company';
-                // Log::info('Using Company Max Percentage: ' . $maxPercentage);
+                Log::info('Using Company Max Percentage: ' . $maxPercentage);
             } else {
-                // Log::info('Company Max Percentage is null');
+                Log::info('Company Max Percentage is null');
             }
         }
 
         // إذا لم توجد أي نسبة محددة، رفض الموافقة مع رسالة خطأ
         if ($maxPercentage === null) {
-            // Log::warning('No percentage limit found, returning false');
+            Log::warning('No percentage limit found, returning false');
             return false;
         }
 
         // حساب النسبة المئوية الحالية
         $currentPercentage = ($employeesOnLeave / $totalEmployees) * 100;
-        // Log::info('Current Percentage: ' . number_format($currentPercentage, 2) . '%');
+        Log::info('Current Percentage: ' . number_format($currentPercentage, 2) . '%');
 
         // التحقق من أن النسبة الحالية + 1 (الموظف الجديد) لا تتجاوز الحد
         // نحسب النسبة بعد إضافة الموظف الحالي
@@ -328,20 +328,20 @@ class LeaveBalanceService
             })
             ->exists();
 
-        // Log::info('Employee Already on Leave: ' . ($employeeAlreadyOnLeave ? 'YES' : 'NO'));
+        Log::info('Employee Already on Leave: ' . ($employeeAlreadyOnLeave ? 'YES' : 'NO'));
 
         if (! $employeeAlreadyOnLeave) {
             $newEmployeesOnLeave++;
-            // Log::info('Adding employee to count. New count: ' . $newEmployeesOnLeave);
+            Log::info('Adding employee to count. New count: ' . $newEmployeesOnLeave);
         } else {
-            // Log::info('Employee already counted, keeping count: ' . $newEmployeesOnLeave);
+            Log::info('Employee already counted, keeping count: ' . $newEmployeesOnLeave);
         }
 
         $newPercentage = ($newEmployeesOnLeave / $totalEmployees) * 100;
-        // Log::info('New Percentage (after adding employee): ' . number_format($newPercentage, 2) . '%');
-        // Log::info('Max Percentage Allowed: ' . number_format($maxPercentage, 2) . '% (from: ' . $percentageSource . ')');
-        // Log::info('Result: ' . ($newPercentage <= $maxPercentage ? 'PASS' : 'FAIL'));
-        // Log::info('=== checkLeavePercentageLimit END ===');
+        Log::info('New Percentage (after adding employee): ' . number_format($newPercentage, 2) . '%');
+        Log::info('Max Percentage Allowed: ' . number_format($maxPercentage, 2) . '% (from: ' . $percentageSource . ')');
+        Log::info('Result: ' . ($newPercentage <= $maxPercentage ? 'PASS' : 'FAIL'));
+        Log::info('=== checkLeavePercentageLimit END ===');
 
         return $newPercentage <= $maxPercentage;
     }
