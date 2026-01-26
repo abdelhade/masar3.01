@@ -1,0 +1,1952 @@
+# 📱 **Offline POS - خطة المشروع الكاملة**
+
+## 🎯 **نظرة عامة**
+
+إنشاء موديول **OfflinePOS** متكامل يعمل بنظام Offline-First مع إمكانية المزامنة التلقائية مع السيرفر.
+
+---
+
+## 🏗️ **المعمارية التقنية (Technical Architecture)**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         PWA Application                          │
+│                     (Progressive Web App)                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                  Alpine.js Frontend Interface                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ POS Screen   │  │   Reports    │  │   Settings   │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                  IndexedDB (Local Database)                      │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ Tables:                                                   │   │
+│  │  • items           (الأصناف + وحدات + أرصدة + أسعار)    │   │
+│  │  • customers       (العملاء)                             │   │
+│  │  • users           (المستخدم الحالي + صلاحياته)         │   │
+│  │  • transactions    (المعاملات المحلية)                  │   │
+│  │  • sync_queue      (قائمة انتظار المزامنة)              │   │
+│  │  • settings        (الإعدادات المحلية)                  │   │
+│  │  • stores          (المخازن)                             │   │
+│  │  • employees       (الموظفين)                            │   │
+│  │  • cash_boxes      (الصناديق)                            │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│              Service Worker (Background Sync)                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ Sync Manager │  │ Cache Manager│  │ Offline Queue│          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   Laravel API (Server Side)                      │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ Endpoints:                                                │   │
+│  │  • GET  /api/offline-pos/init-data                        │   │
+│  │  • POST /api/offline-pos/sync-transaction                 │   │
+│  │  • POST /api/offline-pos/batch-sync                       │   │
+│  │  • POST /api/offline-pos/return-invoice                   │   │
+│  │  • GET  /api/offline-pos/sync-status/{id}                 │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    MySQL Database (Server)                       │
+│  • oper_heads          • operation_items                         │
+│  • journal_heads       • journal_details                         │
+│  • acc_heads           • items                                   │
+│  • offline_sync_log    (جدول تتبع المزامنة)                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 **قاعدة البيانات المحلية (IndexedDB Schema)**
+
+### **1. items (الأصناف)**
+```javascript
+{
+  id: number,              // معرف الصنف
+  code: string,            // كود الصنف
+  name: string,            // اسم الصنف
+  description: string,     // الوصف
+  barcode: string[],       // أكواد الباركود (array)
+  category_id: number,     // التصنيف
+  category_name: string,   // اسم التصنيف
+  is_active: boolean,      // نشط؟
+  average_cost: number,    // متوسط التكلفة
+  
+  // الوحدات
+  units: [{
+    id: number,
+    name: string,
+    conversion_factor: number,  // معامل التحويل
+    is_base: boolean            // وحدة أساسية؟
+  }],
+  
+  // الأسعار
+  prices: [{
+    price_type_id: number,
+    price_type_name: string,
+    unit_id: number,
+    price: number
+  }],
+  
+  // الأرصدة في المخازن (per branch) ✅
+  stock_balances: [{
+    store_id: number,
+    store_name: string,
+    branch_id: number,      // ✅ عزل حسب الفرع
+    quantity: number,
+    unit_id: number
+  }],
+  
+  last_synced: timestamp
+}
+```
+
+### **2. customers (العملاء)**
+```javascript
+{
+  id: number,
+  code: string,
+  name: string,
+  phone: string,
+  email: string,
+  address: string,
+  balance: number,         // الرصيد الحالي
+  credit_limit: number,    // حد الائتمان
+  last_synced: timestamp
+}
+```
+
+### **3. users (المستخدمين)**
+```javascript
+{
+  id: number,
+  name: string,
+  email: string,
+  permissions: string[],   // قائمة الصلاحيات
+  settings: object,        // إعدادات المستخدم
+  last_synced: timestamp
+}
+```
+
+### **4. transactions (المعاملات المحلية)**
+```javascript
+{
+  local_id: string,           // UUID محلي
+  server_id: number | null,   // ID من السيرفر بعد المزامنة
+  
+  // Multi-tenancy & Branch isolation ✅
+  branch_id: number,          // ✅ الفرع (معزول per branch)
+  
+  // بيانات الفاتورة
+  transaction_type: 'sale' | 'return',
+  invoice_number: string,
+  date: timestamp,
+  
+  customer_id: number,
+  store_id: number,
+  employee_id: number,
+  cash_box_id: number,
+  user_id: number,
+  
+  // الأصناف
+  items: [{
+    item_id: number,
+    item_name: string,
+    unit_id: number,
+    unit_name: string,
+    quantity: number,
+    price: number,
+    discount: number,        // خصم على مستوى الصنف ✅
+    sub_total: number
+  }],
+  
+  // الحسابات
+  subtotal: number,
+  discount_percentage: number,
+  discount_value: number,
+  additional_percentage: number,
+  additional_value: number,
+  total: number,
+  
+  // الدفع
+  payment_method: 'cash' | 'card' | 'mixed',
+  cash_amount: number,
+  card_amount: number,
+  paid_amount: number,
+  change_amount: number,
+  
+  notes: string,
+  
+  // حالة المزامنة
+  sync_status: 'pending' | 'syncing' | 'synced' | 'error',
+  sync_error: string | null,
+  sync_attempts: number,
+  last_sync_attempt: timestamp | null,
+  synced_at: timestamp | null,
+  
+  created_at: timestamp,
+  updated_at: timestamp
+}
+```
+
+### **5. sync_queue (قائمة انتظار المزامنة)**
+```javascript
+{
+  id: string,              // UUID
+  transaction_id: string,  // reference to transactions.local_id
+  priority: number,        // أولوية (1-10)
+  retry_count: number,
+  max_retries: number,
+  last_error: string | null,
+  created_at: timestamp
+}
+```
+
+### **6. settings (الإعدادات)**
+```javascript
+{
+  key: string,
+  value: any,
+  last_synced: timestamp
+}
+```
+
+### **7. stores (المخازن)**
+```javascript
+{
+  id: number,
+  code: string,
+  name: string,
+  is_active: boolean,
+  last_synced: timestamp
+}
+```
+
+### **8. employees (الموظفين)**
+```javascript
+{
+  id: number,
+  name: string,
+  code: string,
+  last_synced: timestamp
+}
+```
+
+### **9. cash_boxes (الصناديق)**
+```javascript
+{
+  id: number,
+  name: string,
+  code: string,
+  balance: number,
+  last_synced: timestamp
+}
+```
+
+---
+
+## 🗂️ **هيكل الموديول (Module Structure)**
+
+```
+Modules/OfflinePOS/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── OfflinePOSController.php           // الواجهة الرئيسية
+│   │   │   ├── API/
+│   │   │   │   ├── InitDataController.php         // تحميل البيانات الأولية
+│   │   │   │   ├── SyncController.php             // المزامنة
+│   │   │   │   ├── ItemsController.php            // API الأصناف
+│   │   │   │   ├── CustomersController.php        // API العملاء
+│   │   │   │   ├── ReportsController.php          // التقارير
+│   │   │   │   └── ReturnInvoiceController.php    // فواتير المرتجعات
+│   │   │   └── PrintController.php                // الطباعة الحرارية
+│   │   └── Middleware/
+│   │       ├── CheckOfflinePOSPermission.php      // التحقق من الصلاحيات
+│   │       └── ValidateSyncRequest.php            // التحقق من طلبات المزامنة
+│   ├── Services/
+│   │   ├── InitDataService.php                    // تجهيز البيانات للتنزيل
+│   │   ├── SyncService.php                        // منطق المزامنة
+│   │   ├── TransactionProcessorService.php        // معالجة المعاملات
+│   │   ├── ConflictResolverService.php            // حل التعارضات
+│   │   ├── ThermalPrinterService.php              // الطباعة الحرارية
+│   │   └── ReportService.php                      // التقارير
+│   ├── Models/
+│   │   ├── OfflineSyncLog.php                     // سجل المزامنة
+│   │   └── OfflineTransaction.php                 // المعاملات المؤقتة
+│   └── Providers/
+│       ├── OfflinePOSServiceProvider.php
+│       └── RouteServiceProvider.php
+│
+├── database/
+│   ├── migrations/
+│   │   ├── create_offline_sync_logs_table.php
+│   │   └── create_offline_transactions_temp_table.php
+│   └── seeders/
+│       └── OfflinePOSPermissionsSeeder.php
+│
+├── resources/
+│   ├── assets/
+│   │   ├── js/
+│   │   │   ├── app.js                             // Entry point
+│   │   │   ├── db/
+│   │   │   │   ├── IndexedDBManager.js            // إدارة IndexedDB
+│   │   │   │   ├── schemas.js                     // تعريف الجداول
+│   │   │   │   └── migrations.js                  // Migrations محلية
+│   │   │   ├── services/
+│   │   │   │   ├── SyncManager.js                 // مدير المزامنة
+│   │   │   │   ├── DataDownloader.js              // تنزيل البيانات
+│   │   │   │   ├── TransactionManager.js          // إدارة المعاملات
+│   │   │   │   ├── CacheManager.js                // إدارة الكاش
+│   │   │   │   ├── PrintManager.js                // الطباعة
+│   │   │   │   └── NetworkMonitor.js              // مراقبة الاتصال
+│   │   │   ├── components/
+│   │   │   │   ├── pos-screen.js                  // شاشة البيع (Alpine Component)
+│   │   │   │   ├── cart.js                        // السلة
+│   │   │   │   ├── item-search.js                 // البحث
+│   │   │   │   ├── barcode-scanner.js             // مسح الباركود
+│   │   │   │   ├── payment.js                     // الدفع
+│   │   │   │   ├── sync-status.js                 // حالة المزامنة
+│   │   │   │   └── reports.js                     // التقارير
+│   │   │   └── utils/
+│   │   │       ├── uuid.js                        // توليد UUID
+│   │   │       ├── formatters.js                  // التنسيق
+│   │   │       └── validators.js                  // التحقق
+│   │   ├── css/
+│   │   │   ├── offline-pos.css                    // Styles رئيسية
+│   │   │   └── thermal-print.css                  // Styles للطباعة الحرارية
+│   │   └── icons/                                 // أيقونات PWA
+│   │       ├── icon-72x72.png
+│   │       ├── icon-96x96.png
+│   │       ├── icon-128x128.png
+│   │       ├── icon-144x144.png
+│   │       ├── icon-152x152.png
+│   │       ├── icon-192x192.png
+│   │       ├── icon-384x384.png
+│   │       └── icon-512x512.png
+│   │
+│   └── views/
+│       ├── index.blade.php                        // الصفحة الرئيسية
+│       ├── install.blade.php                      // صفحة التثبيت/التنزيل
+│       ├── pos.blade.php                          // شاشة البيع
+│       ├── reports/
+│       │   ├── index.blade.php                    // التقارير الرئيسية
+│       │   ├── best-sellers.blade.php             // أكثر الأصناف مبيعاً
+│       │   ├── top-customers.blade.php            // أفضل العملاء
+│       │   └── daily-sales.blade.php              // مبيعات يومية
+│       ├── print/
+│       │   ├── thermal-receipt.blade.php          // فاتورة حرارية
+│       │   └── a4-invoice.blade.php               // فاتورة A4
+│       └── layouts/
+│           └── master.blade.php
+│
+├── routes/
+│   ├── web.php                                    // مسارات الواجهة
+│   └── api.php                                    // مسارات API
+│
+├── public/
+│   ├── manifest.json                              // PWA Manifest
+│   ├── service-worker.js                          // Service Worker
+│   └── offline.html                               // صفحة Offline
+│
+└── tests/
+    ├── Feature/
+    │   ├── SyncTest.php
+    │   └── TransactionTest.php
+    └── Unit/
+        └── ConflictResolverTest.php
+```
+
+---
+
+## 📋 **المراحل والتاسكات (Phases & Tasks)**
+
+---
+
+### **🔷 Phase 1: إعداد الموديول والبنية التحتية** ✅ **مكتملة**
+
+#### **Task 1.1: إنشاء الموديول** ✅
+- [x] إنشاء موديول `OfflinePOS` باستخدام Laravel Modules
+- [x] إعداد `module.json`
+- [x] إنشاء Service Providers
+- [x] تسجيل Routes
+- [x] إنشاء جميع المجلدات المطلوبة
+
+**Files:**
+- `Modules/OfflinePOS/module.json` ✅
+- `Modules/OfflinePOS/Providers/OfflinePOSServiceProvider.php` ✅
+- `Modules/OfflinePOS/Providers/RouteServiceProvider.php` ✅
+
+---
+
+#### **Task 1.2: إنشاء Migrations للجداول الجديدة** ✅
+
+**Migration 1: offline_sync_logs**
+```php
+Schema::create('offline_sync_logs', function (Blueprint $table) {
+    $table->id();
+    $table->string('local_transaction_id')->unique(); // UUID من الجهاز
+    $table->unsignedBigInteger('server_transaction_id')->nullable(); // ID بعد المزامنة
+    $table->unsignedBigInteger('user_id');
+    $table->enum('status', ['pending', 'syncing', 'synced', 'error'])->default('pending');
+    $table->text('transaction_data')->nullable(); // JSON للبيانات
+    $table->text('error_message')->nullable();
+    $table->integer('sync_attempts')->default(0);
+    $table->timestamp('last_sync_attempt')->nullable();
+    $table->timestamp('synced_at')->nullable();
+    $table->timestamps();
+    
+    $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+    $table->index(['status', 'created_at']);
+});
+```
+
+**Migration 2: offline_transactions_temp** (مؤقت للمعاملات قيد المزامنة)
+```php
+Schema::create('offline_transactions_temp', function (Blueprint $table) {
+    $table->id();
+    $table->string('local_id')->unique();
+    $table->json('data');
+    $table->timestamps();
+});
+```
+
+**Files:**
+- `Modules/OfflinePOS/database/migrations/2026_01_20_170330_create_offline_sync_logs_table.php` ✅
+- `Modules/OfflinePOS/database/migrations/2026_01_20_170332_create_offline_transactions_temp_table.php` ✅
+
+**Status:** ✅ Migrations created and executed successfully
+
+---
+
+#### **Task 1.3: إنشاء Models** ✅
+
+**Files:**
+- `Modules/OfflinePOS/app/Models/OfflineSyncLog.php` ✅
+- `Modules/OfflinePOS/app/Models/OfflineTransaction.php` ✅
+
+**Status:** ✅ Models created with relationships and helper methods
+
+---
+
+#### **Task 1.4: إنشاء Permissions Seeder** ✅
+
+**Permissions Created (18 permissions):**
+- `view offline pos system`
+- `view offline pos transactions`
+- `view offline pos reports`
+- `view offline pos sync status`
+- `create offline pos transaction`
+- `create offline pos return invoice`
+- `edit offline pos transaction`
+- `edit offline pos settings`
+- `delete offline pos transaction`
+- `print offline pos invoice`
+- `print offline pos thermal`
+- `sync offline pos transactions`
+- `force sync offline pos`
+- `download offline pos data`
+- `clear offline pos local data`
+- `manage offline pos settings`
+- `access offline pos reports advanced`
+- `export offline pos reports`
+
+**Files:**
+- `Modules/OfflinePOS/database/seeders/OfflinePOSPermissionsSeeder.php` ✅
+- `Modules/OfflinePOS/database/seeders/OfflinePOSDatabaseSeeder.php` ✅
+
+**Status:** ✅ Seeder executed successfully - 18 permissions created and assigned to default user role
+
+---
+
+#### **Task 1.5: إعداد PWA (Progressive Web App)** ✅
+
+**manifest.json:**
+```json
+{
+  "name": "Offline POS - نظام نقاط البيع",
+  "short_name": "Offline POS",
+  "description": "نظام نقاط بيع يعمل بدون إنترنت",
+  "start_url": "/offline-pos",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/modules/offlinepos/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/modules/offlinepos/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/modules/offlinepos/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+**service-worker.js:** (هيكل أولي)
+```javascript
+const CACHE_NAME = 'offline-pos-v1';
+const urlsToCache = [
+  '/offline-pos',
+  '/offline-pos/pos',
+  '/css/offline-pos.css',
+  '/js/offline-pos.js'
+];
+
+// Install event
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+// Background Sync
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-transactions') {
+    event.waitUntil(syncTransactions());
+  }
+});
+```
+
+**Files:**
+- `Modules/OfflinePOS/public/manifest.json` ✅
+- `Modules/OfflinePOS/public/service-worker.js` ✅
+- `Modules/OfflinePOS/public/offline.html` ✅
+- `Modules/OfflinePOS/resources/assets/icons/README.md` ✅ (دليل إنشاء الأيقونات)
+
+**Status:** ✅ PWA configured with manifest, service worker, and offline page
+
+**Notes:**
+- Service Worker يدعم Caching Strategies (Network First, Cache First)
+- Background Sync جاهز للمزامنة التلقائية
+- Offline page تفاعلية مع التحقق من الاتصال
+- الأيقونات تحتاج للإنشاء (8 أحجام مختلفة) - انظر README
+
+---
+
+#### **Task 1.6: دعم Multi-tenancy (stancl/tenancy)** ✅
+
+**التعديلات المُنفذة:**
+
+1. **Database Migrations:**
+   - ✅ إضافة `branch_id` لجدول `offline_sync_logs`
+   - ✅ إضافة `branch_id` لجدول `offline_transactions_temp`
+   - ✅ إضافة Indexes للفلترة per branch
+
+2. **Models:**
+   - ✅ إضافة `branch_id` في fillable
+   - ✅ إضافة scope `forBranch()` للتصفية حسب الفرع
+   - ✅ دعم tenant isolation (تلقائي من stancl/tenancy)
+
+3. **Middleware:**
+   - ✅ `EnsureBranchContext` - للتحقق من سياق الفرع
+   - ✅ `CheckOfflinePOSPermission` - للصلاحيات per-tenant
+   
+4. **Routes:**
+   - ✅ Web routes محمية بـ `InitializeTenancyByDomain`
+   - ✅ API routes محمية بـ Sanctum + Tenancy middleware
+   - ✅ دعم subdomain routing (tenant1.domain.com)
+
+**Architecture:**
+```
+tenant1.domain.com → Database 1
+  ├── Branch 1 (branch_id: 1)
+  ├── Branch 2 (branch_id: 2)
+  └── Offline data isolated per branch ✅
+
+tenant2.domain.com → Database 2
+  ├── Branch 1 (branch_id: 1)
+  └── Offline data isolated per branch ✅
+```
+
+**Files:**
+- `app/Http/Middleware/EnsureBranchContext.php` ✅
+- `app/Http/Middleware/CheckOfflinePOSPermission.php` ✅
+- `routes/web.php` ✅ (updated with tenancy middleware)
+- `routes/api.php` ✅ (updated with tenancy middleware)
+- `database/migrations/*` ✅ (updated with branch_id)
+- `app/Models/*` ✅ (updated with branch scope)
+
+**Status:** ✅ Multi-tenancy support added successfully
+
+**Integration Verified:**
+- ✅ `InitializeTenancyBySubdomain` middleware (matching project setup)
+- ✅ Per-tenant database isolation
+- ✅ Per-branch data isolation
+- ✅ Automatic migrations on tenant creation
+- ✅ Automatic permissions seeding
+- ✅ See: `TENANCY_INTEGRATION_CHECKLIST.md` for verification steps
+
+---
+
+### **🔷 Phase 2: API Endpoints للبيانات** ✅ **مكتملة**
+
+#### **Task 2.1: API تحميل البيانات الأولية (Init Data)** ✅
+
+**Endpoint:** `GET /api/offline-pos/init-data`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [...],           // جميع الأصناف مع تفاصيلها
+    "customers": [...],       // العملاء
+    "stores": [...],          // المخازن
+    "employees": [...],       // الموظفين
+    "cash_boxes": [...],      // الصناديق
+    "user": {                 // المستخدم الحالي
+      "id": 1,
+      "name": "...",
+      "permissions": [...]
+    },
+    "settings": {...},        // الإعدادات
+    "categories": [...],      // التصنيفات
+    "price_types": [...]      // أنواع الأسعار
+  },
+  "metadata": {
+    "total_items": 1500,
+    "total_customers": 300,
+    "last_updated": "2026-01-20 12:00:00",
+    "version": "1.0.0"
+  }
+}
+```
+
+**Files:**
+- `Modules/OfflinePOS/app/Http/Controllers/API/InitDataController.php` ✅
+- `Modules/OfflinePOS/app/Services/InitDataService.php` ✅
+
+**Features:**
+- ✅ جلب جميع البيانات المطلوبة (9 sections)
+- ✅ التحقق من التحديثات (checkUpdates)
+- ✅ تحميل قسم محدد (getSection)
+- ✅ Cache للأداء
+- ✅ Branch isolation support
+
+**Status:** ✅ Implemented and ready
+
+---
+
+#### **Task 2.2: API المزامنة (Sync)** ✅
+
+**Endpoint:** `POST /api/offline-pos/sync-transaction`
+
+**Request:**
+```json
+{
+  "local_id": "uuid-xxxx-xxxx-xxxx",
+  "transaction": {
+    "type": "sale",
+    "date": "2026-01-20 14:30:00",
+    "customer_id": 61,
+    "store_id": 62,
+    "employee_id": 65,
+    "cash_box_id": 59,
+    "items": [
+      {
+        "item_id": 100,
+        "unit_id": 1,
+        "quantity": 2,
+        "price": 50,
+        "discount": 5,
+        "row_total": 95
+      }
+    ],
+    "subtotal": 95,
+    "discount_value": 10,
+    "total": 85,
+    "payment_method": "cash",
+    "paid_amount": 100,
+    "change_amount": 15
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "server_transaction_id": 1234,
+    "invoice_number": "INV-2026-001234",
+    "created_at": "2026-01-20 14:30:15"
+  },
+  "message": "تم المزامنة بنجاح"
+}
+```
+
+**Files:**
+- `Modules/OfflinePOS/app/Http/Controllers/API/SyncController.php` ✅
+- `Modules/OfflinePOS/app/Services/SyncService.php` ✅
+- `Modules/OfflinePOS/app/Services/TransactionProcessorService.php` ✅
+
+**Features:**
+- ✅ مزامنة معاملة واحدة (syncTransaction)
+- ✅ مزامنة جماعية (batchSync - حتى 50 معاملة)
+- ✅ التحقق من حالة المزامنة (checkStatus)
+- ✅ إعادة المحاولة للمعاملات الفاشلة (retrySync)
+- ✅ جلب المعاملات المعلقة (getPendingTransactions)
+- ✅ إنشاء OperHead + OperationItems + JournalEntries
+- ✅ إنشاء سند قبض تلقائي
+- ✅ دعم المرتجعات
+
+**Status:** ✅ Fully implemented with transaction processing
+
+---
+
+#### **Task 2.3: API Batch Sync (مزامنة جماعية)** ✅ **Included in Task 2.2**
+
+**Endpoint:** `POST /api/offline-pos/batch-sync`
+
+**Request:**
+```json
+{
+  "transactions": [
+    {
+      "local_id": "uuid-1",
+      "transaction": {...}
+    },
+    {
+      "local_id": "uuid-2",
+      "transaction": {...}
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "local_id": "uuid-1",
+      "status": "synced",
+      "server_id": 1234
+    },
+    {
+      "local_id": "uuid-2",
+      "status": "error",
+      "error": "رصيد غير كافٍ"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "synced": 1,
+    "failed": 1
+  }
+}
+```
+
+---
+
+#### **Task 2.4: API فواتير المرتجعات** ✅
+
+**Endpoint:** `POST /api/offline-pos/return-invoice`
+
+**Request:**
+```json
+{
+  "original_invoice_id": 1234,
+  "return_items": [
+    {
+      "item_id": 100,
+      "quantity": 1,
+      "price": 50,
+      "reason": "تالف"
+    }
+  ],
+  "notes": "..."
+}
+```
+
+**Files:**
+- `Modules/OfflinePOS/app/Http/Controllers/API/ReturnInvoiceController.php` ✅
+
+**Features:**
+- ✅ إنشاء فاتورة مرتجعة
+- ✅ ربط مع الفاتورة الأصلية
+- ✅ معالجة عبر TransactionProcessorService
+- ✅ إنشاء قيود محاسبية تلقائياً
+
+**Status:** ✅ Implemented
+
+---
+
+#### **Task 2.5: API التقارير** ✅
+
+**Endpoints:**
+- `GET /api/offline-pos/reports/best-sellers?from=...&to=...`
+- `GET /api/offline-pos/reports/top-customers?from=...&to=...`
+- `GET /api/offline-pos/reports/daily-sales?date=...`
+- `GET /api/offline-pos/reports/sales-summary?from=...&to=...`
+
+**Files:**
+- `Modules/OfflinePOS/app/Http/Controllers/API/ReportsController.php` ✅
+- `Modules/OfflinePOS/app/Services/ReportService.php` ✅
+
+**Reports:**
+- ✅ أكثر الأصناف مبيعاً (bestSellers)
+- ✅ أفضل العملاء (topCustomers)
+- ✅ مبيعات يومية (dailySales)
+- ✅ ملخص المبيعات (salesSummary)
+
+**Status:** ✅ All reports implemented
+
+---
+
+#### **Task 2.6: Web Controller** ✅
+
+**Files:**
+- `Modules/OfflinePOS/Http/Controllers/OfflinePOSController.php` ✅
+
+**Routes:**
+- ✅ `index()` - Dashboard
+- ✅ `install()` - صفحة التثبيت
+- ✅ `pos()` - شاشة نقاط البيع
+- ✅ `show($id)` - عرض معاملة
+- ✅ `reports()` - التقارير
+- ✅ `offline()` - صفحة offline
+
+**Status:** ✅ Web interface ready
+
+---
+
+#### **Task 2.7: Database Schema Corrections** ✅
+
+**Files:**
+- `Modules/OfflinePOS/Http/Controllers/OfflinePOSController.php` ✅
+
+**Routes:**
+- ✅ `index()` - Dashboard
+- ✅ `install()` - صفحة التثبيت
+- ✅ `pos()` - شاشة نقاط البيع
+- ✅ `show($id)` - عرض معاملة
+- ✅ `reports()` - التقارير
+- ✅ `offline()` - صفحة offline
+
+**Status:** ✅ Web interface ready
+
+---
+
+#### **Task 2.7: Database Schema Corrections** ✅
+
+**Reviewed Tables (11 migrations):**
+1. ✅ `employees` + performance indexes migration
+2. ✅ `items`
+3. ✅ `units`
+4. ✅ `item_units` (pivot)
+5. ✅ `barcodes`
+6. ✅ `prices`
+7. ✅ `item_prices` (pivot)
+8. ✅ `notes`
+9. ✅ `note_details`
+10. ✅ `item_notes` (pivot)
+11. ✅ `add_column_to_items_table`
+
+**Corrections Applied:**
+
+1. **Employees:**
+   - ✅ Field: `status = 'مفعل'` (not `is_active`)
+   - ✅ Fields: `name`, `phone`, `email` (not emp_name/emp_code)
+   - ✅ Added: `branch_id`, `finger_print_id`
+
+2. **Items:**
+   - ✅ Relation: `units()` via `item_units` (pivot: u_val, cost)
+   - ✅ Relation: `prices()` via `item_prices` (pivot: unit_id, price, discount, tax_rate)
+   - ✅ Relation: `notes()` via `item_notes` (pivot: note_detail_name)
+   - ✅ Barcodes: filtered by `isdeleted = 0`
+   - ✅ Category: from `item_notes.note_detail_name`
+
+3. **Price Types:**
+   - ✅ Field: `is_deleted` (not `isdeleted`)
+
+**Files:**
+- `app/Services/InitDataService.php` ✅ (corrected)
+- `DATABASE_SCHEMA_FIXES.md` ✅ (documentation)
+
+**Status:** ✅ Schema verified and corrected
+
+---
+
+### **🔷 Phase 3: IndexedDB & Local Storage** 🔄 **التالية**
+
+#### **Task 3.1: إنشاء IndexedDB Manager**
+
+**File:** `Modules/OfflinePOS/resources/assets/js/db/IndexedDBManager.js`
+
+```javascript
+class IndexedDBManager {
+  constructor(dbName = 'OfflinePOSDB', version = 1) {
+    this.dbName = dbName;
+    this.version = version;
+    this.db = null;
+  }
+
+  async init() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve(this.db);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        this.db = event.target.result;
+        this.createStores();
+      };
+    });
+  }
+
+  createStores() {
+    // إنشاء جميع الجداول
+    if (!this.db.objectStoreNames.contains('items')) {
+      const itemsStore = this.db.createObjectStore('items', { keyPath: 'id' });
+      itemsStore.createIndex('code', 'code', { unique: false });
+      itemsStore.createIndex('name', 'name', { unique: false });
+      itemsStore.createIndex('barcode', 'barcode', { unique: false, multiEntry: true });
+    }
+    
+    if (!this.db.objectStoreNames.contains('customers')) {
+      const customersStore = this.db.createObjectStore('customers', { keyPath: 'id' });
+      customersStore.createIndex('name', 'name', { unique: false });
+    }
+    
+    if (!this.db.objectStoreNames.contains('transactions')) {
+      const transactionsStore = this.db.createObjectStore('transactions', { keyPath: 'local_id' });
+      transactionsStore.createIndex('sync_status', 'sync_status', { unique: false });
+      transactionsStore.createIndex('created_at', 'created_at', { unique: false });
+    }
+    
+    // ... باقي الجداول
+    // item units.
+    // item barcodes.
+    // items warehouses (stores) balnce.
+    // items prices.
+    // cash boxs
+
+  }
+
+  async add(storeName, data) {
+    const tx = this.db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    return store.add(data);
+  }
+
+  async put(storeName, data) {
+    const tx = this.db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    return store.put(data);
+  }
+
+  async get(storeName, key) {
+    const tx = this.db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    return store.get(key);
+  }
+
+  async getAll(storeName) {
+    const tx = this.db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    return store.getAll();
+  }
+
+  async delete(storeName, key) {
+    const tx = this.db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    return store.delete(key);
+  }
+
+  async clear(storeName) {
+    const tx = this.db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    return store.clear();
+  }
+
+  async getAllByIndex(storeName, indexName, value) {
+    const tx = this.db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const index = store.index(indexName);
+    return index.getAll(value);
+  }
+}
+
+export default IndexedDBManager;
+```
+
+---
+
+#### **Task 3.2: Data Downloader (تنزيل البيانات)**
+
+**File:** `Modules/OfflinePOS/resources/assets/js/services/DataDownloader.js`
+
+```javascript
+class DataDownloader {
+  constructor(dbManager) {
+    this.db = dbManager;
+    this.apiUrl = '/api/offline-pos/init-data';
+  }
+
+  async downloadInitialData(onProgress) {
+    try {
+      // عرض progress
+      onProgress({ step: 'fetching', percent: 0, message: 'جاري تحميل البيانات من السيرفر...' });
+      
+      const response = await fetch(this.apiUrl);
+      const { data, metadata } = await response.json();
+      
+      // تخزين الأصناف
+      onProgress({ step: 'items', percent: 20, message: 'تخزين الأصناف...' });
+      await this.saveItems(data.items);
+      
+      // تخزين العملاء
+      onProgress({ step: 'customers', percent: 40, message: 'تخزين العملاء...' });
+      await this.saveCustomers(data.customers);
+      
+      // تخزين المخازن
+      onProgress({ step: 'items_stores', percent: 60, message: 'تخزين ارصده المخازن...' });
+      await this.saveStores(data.stores);
+      
+      // باقي البيانات...
+      onProgress({ step: 'done', percent: 100, message: 'اكتمل التنزيل!' });
+      
+      return { success: true, metadata };
+    } catch (error) {
+      console.error('Error downloading data:', error);
+      throw error;
+    }
+  }
+
+  async saveItems(items) {
+    await this.db.clear('items');
+    for (const item of items) {
+      await this.db.add('items', item);
+    }
+  }
+
+  async saveCustomers(customers) {
+    await this.db.clear('customers');
+    for (const customer of customers) {
+      await this.db.add('customers', customer);
+    }
+  }
+
+  // ... باقي الدوال
+}
+
+export default DataDownloader;
+```
+
+---
+
+#### **Task 3.3: Transaction Manager (إدارة المعاملات)**
+
+**File:** `Modules/OfflinePOS/resources/assets/js/services/TransactionManager.js`
+
+```javascript
+import { v4 as uuidv4 } from 'uuid';
+
+class TransactionManager {
+  constructor(dbManager) {
+    this.db = dbManager;
+  }
+
+  async createTransaction(transactionData) {
+    const transaction = {
+      local_id: uuidv4(),
+      server_id: null,
+      ...transactionData,
+      sync_status: 'pending',
+      sync_error: null,
+      sync_attempts: 0,
+      last_sync_attempt: null,
+      synced_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    await this.db.add('transactions', transaction);
+    await this.addToSyncQueue(transaction.local_id);
+    
+    return transaction;
+  }
+
+  async addToSyncQueue(transactionId) {
+    const queueItem = {
+      id: uuidv4(),
+      transaction_id: transactionId,
+      priority: 5,
+      retry_count: 0,
+      max_retries: 5,
+      last_error: null,
+      created_at: new Date().toISOString()
+    };
+
+    await this.db.add('sync_queue', queueItem);
+  }
+
+  async getPendingTransactions() {
+    return await this.db.getAllByIndex('transactions', 'sync_status', 'pending');
+  }
+
+  async updateTransactionStatus(localId, status, serverId = null, error = null) {
+    const transaction = await this.db.get('transactions', localId);
+    
+    transaction.sync_status = status;
+    transaction.updated_at = new Date().toISOString();
+    
+    if (serverId) transaction.server_id = serverId;
+    if (error) transaction.sync_error = error;
+    if (status === 'synced') transaction.synced_at = new Date().toISOString();
+    
+    await this.db.put('transactions', transaction);
+  }
+}
+
+export default TransactionManager;
+```
+
+---
+
+#### **Task 3.4: Sync Manager (مدير المزامنة)**
+
+**File:** `Modules/OfflinePOS/resources/assets/js/services/SyncManager.js`
+
+```javascript
+class SyncManager {
+  constructor(dbManager, transactionManager) {
+    this.db = dbManager;
+    this.transactionManager = transactionManager;
+    this.isSyncing = false;
+    this.syncInterval = null;
+  }
+
+  async startAutoSync(intervalMinutes = 5) {
+    this.syncInterval = setInterval(() => {
+      this.syncPendingTransactions();
+    }, intervalMinutes * 60 * 1000);
+    
+    // محاولة مزامنة فورية
+    await this.syncPendingTransactions();
+  }
+
+  stopAutoSync() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+      this.syncInterval = null;
+    }
+  }
+
+  async syncPendingTransactions() {
+    if (this.isSyncing) return;
+    if (!navigator.onLine) return;
+
+    this.isSyncing = true;
+
+    try {
+      const pending = await this.transactionManager.getPendingTransactions();
+      
+      for (const transaction of pending) {
+        await this.syncSingleTransaction(transaction);
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+
+  async syncSingleTransaction(transaction) {
+    try {
+      await this.transactionManager.updateTransactionStatus(
+        transaction.local_id,
+        'syncing'
+      );
+
+      const response = await fetch('/api/offline-pos/sync-transaction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+          local_id: transaction.local_id,
+          transaction: transaction
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        await this.transactionManager.updateTransactionStatus(
+          transaction.local_id,
+          'synced',
+          result.data.server_transaction_id
+        );
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      await this.transactionManager.updateTransactionStatus(
+        transaction.local_id,
+        'error',
+        null,
+        error.message
+      );
+      
+      transaction.sync_attempts++;
+      await this.db.put('transactions', transaction);
+    }
+  }
+
+  async forceSyncAll() {
+    this.isSyncing = false;
+    await this.syncPendingTransactions();
+  }
+}
+
+export default SyncManager;
+```
+
+---
+
+### **🔷 Phase 4: Frontend - Alpine.js**
+
+#### **Task 4.1: شاشة البيع الرئيسية**
+
+**File:** `Modules/OfflinePOS/resources/assets/js/components/pos-screen.js`
+
+```javascript
+export default function posScreen() {
+  return {
+    // State
+    cart: [],
+    searchTerm: '',
+    searchResults: [],
+    barcode: '',
+    selectedCategory: null,
+    
+    // Transaction
+    customer_id: 61,
+    store_id: 62,
+    employee_id: 65,
+    cash_box_id: 59,
+    
+    // Totals
+    subtotal: 0,
+    discount_percentage: 0,
+    discount_value: 0,
+    total: 0,
+    
+    // Payment
+    payment_method: 'cash',
+    cash_amount: 0,
+    card_amount: 0,
+    change_amount: 0,
+    
+    // DB
+    db: null,
+    transactionManager: null,
+    
+    // Init
+    async init() {
+      this.db = new IndexedDBManager();
+      await this.db.init();
+      
+      this.transactionManager = new TransactionManager(this.db);
+      
+      // Listen to barcode scanner
+      this.listenToBarcode();
+    },
+    
+    // Search
+    async searchItems() {
+      if (this.searchTerm.length < 2) {
+        this.searchResults = [];
+        return;
+      }
+      
+      const allItems = await this.db.getAll('items');
+      this.searchResults = allItems.filter(item => 
+        item.name.includes(this.searchTerm) || 
+        item.code.includes(this.searchTerm)
+      ).slice(0, 10);
+    },
+    
+    // Add to cart
+    addItemToCart(item) {
+      const existingIndex = this.cart.findIndex(i => i.item_id === item.id);
+      
+      if (existingIndex !== -1) {
+        this.cart[existingIndex].quantity++;
+      } else {
+        this.cart.push({
+          item_id: item.id,
+          item_name: item.name,
+          unit_id: item.units[0].id,
+          unit_name: item.units[0].name,
+          quantity: 1,
+          price: item.prices[0].price,
+          discount: 0,  // خصم على مستوى الصنف ✅
+          sub_total: item.prices[0].price
+        });
+      }
+      
+      this.calculateTotals();
+      this.searchTerm = '';
+      this.searchResults = [];
+    },
+    
+    // Barcode
+    listenToBarcode() {
+      document.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter' && this.barcode) {
+          await this.addItemByBarcode();
+          this.barcode = '';
+        }
+      });
+    },
+    
+    async addItemByBarcode() {
+      const items = await this.db.getAllByIndex('items', 'barcode', this.barcode);
+      if (items.length > 0) {
+        this.addItemToCart(items[0]);
+      }
+    },
+    
+    // Calculate
+    calculateTotals() {
+      this.subtotal = this.cart.reduce((sum, item) => {
+        item.sub_total = (item.quantity * item.price) - item.discount;
+        return sum + item.sub_total;
+      }, 0);
+      
+      this.discount_value = (this.subtotal * this.discount_percentage) / 100;
+      this.total = this.subtotal - this.discount_value;
+      
+      if (this.payment_method === 'cash') {
+        this.cash_amount = this.total;
+        this.card_amount = 0;
+      } else if (this.payment_method === 'card') {
+        this.card_amount = this.total;
+        this.cash_amount = 0;
+      }
+      
+      this.calculateChange();
+    },
+    
+    calculateChange() {
+      const paid = this.cash_amount + this.card_amount;
+      this.change_amount = Math.max(0, paid - this.total);
+    },
+    
+    // Save
+    async saveTransaction() {
+      const transaction = {
+        transaction_type: 'sale',
+        invoice_number: 'TEMP-' + Date.now(),
+        date: new Date().toISOString(),
+        customer_id: this.customer_id,
+        store_id: this.store_id,
+        employee_id: this.employee_id,
+        cash_box_id: this.cash_box_id,
+        user_id: window.currentUserId,
+        items: this.cart,
+        subtotal: this.subtotal,
+        discount_percentage: this.discount_percentage,
+        discount_value: this.discount_value,
+        total: this.total,
+        payment_method: this.payment_method,
+        cash_amount: this.cash_amount,
+        card_amount: this.card_amount,
+        paid_amount: this.cash_amount + this.card_amount,
+        change_amount: this.change_amount
+      };
+      
+      const saved = await this.transactionManager.createTransaction(transaction);
+      
+      alert('تم حفظ الفاتورة محلياً! سيتم المزامنة تلقائياً.');
+      
+      this.resetForm();
+    },
+    
+    resetForm() {
+      this.cart = [];
+      this.subtotal = 0;
+      this.discount_percentage = 0;
+      this.discount_value = 0;
+      this.total = 0;
+      this.cash_amount = 0;
+      this.card_amount = 0;
+      this.change_amount = 0;
+    }
+  }
+}
+```
+
+---
+
+#### **Task 4.2: Blade View للـ POS**
+
+**File:** `Modules/OfflinePOS/resources/views/pos.blade.php`
+
+```blade
+@extends('offlinepos::layouts.master')
+
+@section('content')
+<div x-data="posScreen()" x-init="init()" class="pos-container">
+  {{-- Header --}}
+  <div class="pos-header">
+    <h1>نظام نقاط البيع - Offline</h1>
+    <div x-data="syncStatus()">
+      <span x-show="isOnline" class="badge bg-success">متصل</span>
+      <span x-show="!isOnline" class="badge bg-danger">غير متصل</span>
+      <span x-show="pendingCount > 0" class="badge bg-warning">
+        <span x-text="pendingCount"></span> معاملات في الانتظار
+      </span>
+    </div>
+  </div>
+  
+  {{-- Main Content --}}
+  <div class="pos-content">
+    {{-- Left: Items & Search --}}
+    <div class="pos-left">
+      <input 
+        type="text" 
+        x-model="searchTerm" 
+        @input.debounce.300ms="searchItems()"
+        placeholder="ابحث عن صنف..."
+        class="form-control mb-3"
+      >
+      
+      <div class="search-results">
+        <template x-for="item in searchResults" :key="item.id">
+          <div @click="addItemToCart(item)" class="item-card">
+            <span x-text="item.name"></span>
+            <span x-text="item.prices[0].price + ' ريال'"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+    
+    {{-- Right: Cart & Payment --}}
+    <div class="pos-right">
+      <div class="cart">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>الصنف</th>
+              <th>الكمية</th>
+              <th>السعر</th>
+              <th>خصم</th>
+              <th>المجموع</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(item, index) in cart" :key="index">
+              <tr>
+                <td x-text="item.item_name"></td>
+                <td>
+                  <input 
+                    type="number" 
+                    x-model.number="item.quantity" 
+                    @input="calculateTotals()"
+                    class="form-control form-control-sm"
+                  >
+                </td>
+                <td x-text="item.price"></td>
+                <td>
+                  <input 
+                    type="number" 
+                    x-model.number="item.discount" 
+                    @input="calculateTotals()"
+                    class="form-control form-control-sm"
+                    placeholder="خصم الصنف"
+                  >
+                </td>
+                <td x-text="item.sub_total"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="totals">
+        <div class="total-row">
+          <span>المجموع:</span>
+          <span x-text="subtotal"></span>
+        </div>
+        <div class="total-row">
+          <span>الخصم:</span>
+          <input type="number" x-model.number="discount_percentage" @input="calculateTotals()">
+          <span x-text="discount_value"></span>
+        </div>
+        <div class="total-row total-final">
+          <span>الإجمالي:</span>
+          <span x-text="total"></span>
+        </div>
+      </div>
+      
+      <div class="payment">
+        <select x-model="payment_method" @change="calculateTotals()">
+          <option value="cash">نقدي</option>
+          <option value="card">بطاقة</option>
+          <option value="mixed">مختلط</option>
+        </select>
+        
+        <div x-show="payment_method === 'cash' || payment_method === 'mixed'">
+          <input type="number" x-model.number="cash_amount" @input="calculateChange()" placeholder="المبلغ النقدي">
+        </div>
+        
+        <div x-show="payment_method === 'card' || payment_method === 'mixed'">
+          <input type="number" x-model.number="card_amount" @input="calculateChange()" placeholder="مبلغ البطاقة">
+        </div>
+        
+        <div class="change">
+          <span>الباقي: </span>
+          <span x-text="change_amount"></span>
+        </div>
+      </div>
+      
+      <button @click="saveTransaction()" class="btn btn-primary btn-lg w-100">
+        حفظ الفاتورة
+      </button>
+    </div>
+  </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="{{ asset('modules/offlinepos/js/app.js') }}" type="module"></script>
+@endpush
+```
+
+---
+
+#### **Task 4.3: Sync Status Component**
+
+**File:** `Modules/OfflinePOS/resources/assets/js/components/sync-status.js`
+
+```javascript
+export default function syncStatus() {
+  return {
+    isOnline: navigator.onLine,
+    pendingCount: 0,
+    syncManager: null,
+    
+    async init() {
+      // Monitor online/offline
+      window.addEventListener('online', () => {
+        this.isOnline = true;
+        this.syncManager.syncPendingTransactions();
+      });
+      
+      window.addEventListener('offline', () => {
+        this.isOnline = false;
+      });
+      
+      // Update pending count
+      setInterval(async () => {
+        await this.updatePendingCount();
+      }, 5000);
+      
+      await this.updatePendingCount();
+    },
+    
+    async updatePendingCount() {
+      const db = new IndexedDBManager();
+      await db.init();
+      const pending = await db.getAllByIndex('transactions', 'sync_status', 'pending');
+      this.pendingCount = pending.length;
+    }
+  }
+}
+```
+
+---
+
+### **🔷 Phase 5: Service Worker & Background Sync**
+
+#### **Task 5.1: تطوير Service Worker الكامل**
+
+**File:** `Modules/OfflinePOS/public/service-worker.js`
+
+```javascript
+const CACHE_NAME = 'offline-pos-v1';
+const OFFLINE_URL = '/offline-pos/offline';
+
+// Install
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll([
+        '/offline-pos',
+        '/offline-pos/pos',
+        '/css/offline-pos.css',
+        '/js/offline-pos.js',
+        OFFLINE_URL
+      ]);
+    })
+  );
+  self.skipWaiting();
+});
+
+// Activate
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Fetch
+self.addEventListener('fetch', event => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(OFFLINE_URL);
+      })
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then(response => {
+        return response || fetch(event.request);
+      })
+    );
+  }
+});
+
+// Background Sync
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-transactions') {
+    event.waitUntil(syncTransactions());
+  }
+});
+
+async function syncTransactions() {
+  const db = await openDB();
+  const tx = db.transaction('transactions', 'readonly');
+  const store = tx.objectStore('transactions');
+  const index = store.index('sync_status');
+  const pending = await index.getAll('pending');
+  
+  for (const transaction of pending) {
+    try {
+      await fetch('/api/offline-pos/sync-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          local_id: transaction.local_id,
+          transaction: transaction
+        })
+      });
+    } catch (error) {
+      console.error('Background sync failed:', error);
+    }
+  }
+}
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('OfflinePOSDB');
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+```
+
+---
+
+### **🔷 Phase 6: التحسينات المطلوبة**
+
+#### **Task 6.1: خصومات على مستوى الصنف**
+✅ **تم تنفيذه** في المراحل السابقة - كل صنف في السلة له حقل `discount` منفصل
+
+---
+
+#### **Task 6.2: فواتير المرتجعات**
+
+**API Endpoint:**
+```php
+// ReturnInvoiceController.php
+public function create(Request $request)
+{
+    $validated = $request->validate([
+        'original_invoice_id' => 'required|exists:oper_heads,id',
+        'return_items' => 'required|array',
+        'return_items.*.item_id' => 'required|exists:items,id',
+        'return_items.*.quantity' => 'required|numeric|min:0',
+        'return_items.*.reason' => 'nullable|string',
+        'notes' => 'nullable|string'
+    ]);
+    
+    // إنشاء فاتورة مرتجعة (pro_type = 12)
+    // ...
+}
+```
+
+**Frontend Component:**
+```javascript
+// return-invoice.js
+export default function returnInvoice() {
+  return {
+    originalInvoiceId: null,
+    returnItems: [],
+    
+    async loadOriginalInvoice(invoiceId) {
+      // جلب الفاتورة الأصلية
+      // عرض الأصناف للاختيار
+    },
+    
+    async processReturn() {
+      // حفظ فاتورة المرتجع محلياً
+      // إضافة للـ sync queue
+    }
+  }
+}
+```
+
+---
+
+#### **Task 6.3: تقارير تفصيلية**
+
+**1. أكثر الأصناف مبيعاً:**
+```javascript
+async getBestSellers(fromDate, toDate) {
+  const transactions = await this.db.getAll('transactions');
+  const filtered = transactions.filter(t => 
+    t.date >= fromDate && t.date <= toDate && t.sync_status === 'synced'
+  );
+  
+  const itemSales = {};
+  filtered.forEach(transaction => {
+    transaction.items.forEach(item => {
+      if (!itemSales[item.item_id]) {
+        itemSales[item.item_id] = {
+          item_name: item.item_name,
+          total_quantity: 0,
+          total_value: 0
+        };
+      }
+      itemSales[item.item_id].total_quantity += item.quantity;
+      itemSales[item.item_id].total_value += item.sub_total;
+    });
+  });
+  
+  return Object.values(itemSales).sort((a, b) => b.total_value - a.total_value);
+}
+```
+
+**2. أفضل العملاء:**
+```javascript
+async getTopCustomers(fromDate, toDate) {
+  const transactions = await this.db.getAll('transactions');
+  const filtered = transactions.filter(t => 
+    t.date >= fromDate && t.date <= toDate && t.sync_status === 'synced'
+  );
+  
+  const customerSales = {};
+  filtered.forEach(transaction => {
+    if (!customerSales[transaction.customer_id]) {
+      customerSales[transaction.customer_id] = {
+        total_purchases: 0,
+        transaction_count: 0
+      };
+    }
+    customerSales[transaction.customer_id].total_purchases += transaction.total;
+    customerSales[transaction.customer_id].transaction_count++;
+  });
+  
+  return Object.entries(customerSales)
+    .sort((a, b) => b[1].total_purchases - a[1].total_purchases)
+    .slice(0, 10);
+}
+```
+
+---
+
+#### **Task 6.4: الطباعة الحرارية**
+
+**File:** `Modules/OfflinePOS/app/Services/ThermalPrinterService.php`
+
+```php
+class ThermalPrinterService
+{
+    public function generateESCPOSCommands($transaction)
+    {
+        $esc = "\x1B";
+        $gs = "\x1D";
+        
+        $output = '';
+        
+        // Initialize
+        $output .= $esc . "@";
+        
+        // Center align
+        $output .= $esc . "a" . chr(1);
+        
+        // Company name (bold, double size)
+        $output .= $esc . "!" . chr(0x30);
+        $output .= "اسم الشركة\n";
+        $output .= $esc . "!" . chr(0);
+        
+        // Invoice details
+        $output .= "فاتورة مبيعات\n";
+        $output .= "رقم: " . $transaction->invoice_number . "\n";
+        $output .= "التاريخ: " . $transaction->date . "\n";
+        $output .= str_repeat("-", 32) . "\n";
+        
+        // Left align
+        $output .= $esc . "a" . chr(0);
+        
+        // Items
+        foreach ($transaction->items as $item) {
+            $output .= $item->item_name . "\n";
+            $output .= sprintf(
+                "%d x %.2f = %.2f\n",
+                $item->quantity,
+                $item->price,
+                $item->discount,
+                $item->sub_total
+            );
+        }
+        
+        $output .= str_repeat("-", 32) . "\n";
+        
+        // Totals
+        $output .= sprintf("المجموع: %.2f\n", $transaction->subtotal);
+        $output .= sprintf("الخصم: %.2f\n", $transaction->discount_value);
+        $output .= $esc . "!" . chr(0x10);
+        $output .= sprintf("الإجمالي: %.2f\n", $transaction->total);
+        $output .= $esc . "!" . chr(0);
+        
+        // Cut paper
+        $output .= $gs . "V" . chr(66) . chr(0);
+        
+        return $output;
+    }
+    
+    public function printToUSB($commands)
+    {
+        // طباعة مباشرة عبر USB
+        // يمكن استخدام مكتبة مثل mike42/escpos-php
+    }
+}
+```
+
+**Frontend Print Manager:**
+```javascript
+// PrintManager.js
+class PrintManager {
+  async printThermal(transaction) {
+    // استخدام Web USB API أو Web Serial API
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+      
+      const writer = port.writable.getWriter();
+      const encoder = new TextEncoder();
+      
+      // إرسال أوامر ESC/POS
+      await writer.write(encoder.encode(this.generateCommands(transaction)));
+      
+      writer.releaseLock();
+      await port.close();
+    } catch (error) {
+      console.error('Print error:', error);
+    }
+  }
+  
+  generateCommands(transaction) {
+    // توليد أوامر الطباعة
+    // ...
+  }
+}
+```
+
+---
+
+## 📝 **خطوات التنفيذ بالترتيب**
+
+### **Step-by-Step Implementation:**
+
+1. ✅ إنشاء الموديول الجديد `OfflinePOS`
+2. ✅ إعداد Migrations & Models
+3. ✅ إنشاء Permissions Seeder
+4. ✅ إعداد PWA (Manifest + Service Worker)
+5. ✅ بناء API Endpoints (InitData, Sync, Reports, Return)
+6. ✅ إنشاء IndexedDB Manager
+7. ✅ بناء Data Downloader
+8. ✅ بناء Transaction Manager
+9. ✅ بناء Sync Manager
+10. ✅ تطوير Frontend بـ Alpine.js
+11. ✅ إضافة Barcode Scanner
+12. ✅ إضافة خصومات على مستوى الصنف
+13. ✅ تطوير نظام المرتجعات
+14. ✅ بناء التقارير التفصيلية
+15. ✅ تطوير نظام الطباعة الحرارية
+16. ✅ Testing شامل
+17. ✅ Deployment
+
+---
+
+## 🔒 **الأمان (Security Considerations)**
+
+1. **التحقق من الصلاحيات:** كل API endpoint محمي بـ Middleware
+2. **تشفير البيانات المحلية:** استخدام Web Crypto API لتشفير البيانات الحساسة
+3. **CSRF Protection:** جميع POST requests محمية
+4. **Validation:** التحقق من البيانات قبل المزامنة
+5. **Rate Limiting:** تحديد عدد المحاولات للمزامنة
+
+---
+
+## 📊 **Metrics & Monitoring**
+
+1. **عدد المعاملات المحلية**
+2. **نسبة نجاح المزامنة**
+3. **متوسط وقت المزامنة**
+4. **حجم قاعدة البيانات المحلية**
+5. **الأخطاء المتكررة**
+
+---
+
+## 🎯 **الخلاصة**
+
+هذا المشروع يتطلب:
+- **200+ ملف** جديد
+- **20+ API Endpoint**
+- **10+ JavaScript Classes**
+- **تكامل كامل** مع النظام الحالي
+
+**هل نبدأ التنفيذ الآن؟** 🚀
