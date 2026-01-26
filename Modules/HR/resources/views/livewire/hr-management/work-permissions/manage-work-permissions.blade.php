@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Livewire\Volt\Component;
-use Modules\HR\Models\WorkPermission;
-use Modules\HR\Models\Employee;
 use Livewire\WithPagination;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Computed;
@@ -50,7 +48,7 @@ new class extends Component {
 
     public function loadEmployees(): void
     {
-        $this->employeesList = Employee::select('id', 'name')
+        $this->employeesList = \Modules\HR\Models\Employee::select('id', 'name')
             ->orderBy('name')
             ->get()
             ->map(fn($emp) => ['id' => $emp->id, 'name' => $emp->name])
@@ -118,7 +116,7 @@ new class extends Component {
         $this->checkPermission('create Work Permissions');
         $this->validate();
 
-        WorkPermission::create([
+        \Modules\HR\Models\WorkPermission::create([
             'employee_id' => $this->employee_id,
             'date' => $this->date,
             'status' => $this->status,
@@ -133,7 +131,7 @@ new class extends Component {
     public function edit(int $id): void
     {
         $this->checkPermission('edit Work Permissions');
-        $workPermission = WorkPermission::with(['employee', 'created_by', 'updated_by', 'approved_by'])->findOrFail($id);
+        $workPermission = \Modules\HR\Models\WorkPermission::with(['employee', 'created_by', 'updated_by', 'approved_by'])->findOrFail($id);
         $this->editingWorkPermissionId = $id;
         $this->employee_id = $workPermission->employee_id;
         $this->date = $workPermission->date->format('Y-m-d');
@@ -152,7 +150,7 @@ new class extends Component {
         
         $this->validate();
 
-        $workPermission = WorkPermission::findOrFail($this->editingWorkPermissionId);
+        $workPermission = \Modules\HR\Models\WorkPermission::findOrFail($this->editingWorkPermissionId);
         $workPermission->update([
             'employee_id' => $this->employee_id,
             'date' => $this->date,
@@ -182,7 +180,7 @@ new class extends Component {
     public function confirmDelete(): void
     {
         $this->checkPermission('delete Work Permissions');
-        $workPermission = WorkPermission::findOrFail($this->deleteId);
+        $workPermission = \Modules\HR\Models\WorkPermission::findOrFail($this->deleteId);
         $workPermission->delete();
         
         $this->showDeleteModal = false;
@@ -193,7 +191,7 @@ new class extends Component {
     public function approve(int $id): void
     {
         $this->checkPermission('Leave Approvals');
-        $workPermission = WorkPermission::findOrFail($id);
+        $workPermission = \Modules\HR\Models\WorkPermission::findOrFail($id);
         $workPermission->update([
             'status' => 'approved',
             'approved_by' => Auth::id(),
@@ -206,7 +204,7 @@ new class extends Component {
     public function reject(int $id): void
     {
         $this->checkPermission('Leave Rejections');
-        $workPermission = WorkPermission::findOrFail($id);
+        $workPermission = \Modules\HR\Models\WorkPermission::findOrFail($id);
         $workPermission->update([
             'status' => 'rejected',
             'approved_by' => Auth::id(),
@@ -224,7 +222,7 @@ new class extends Component {
     #[Computed]
     public function workPermissions(): LengthAwarePaginator
     {
-        return WorkPermission::query()
+        return \Modules\HR\Models\WorkPermission::query()
             ->with(['employee', 'created_by', 'approved_by'])
             ->when($this->search, function ($query) {
                 $query->whereHas('employee', function ($empQuery) {
@@ -248,12 +246,12 @@ new class extends Component {
     }
 
     #[Computed]
-    public function viewWorkPermission(): ?WorkPermission
+    public function viewWorkPermission(): ?\Modules\HR\Models\WorkPermission
     {
         if (!$this->viewWorkPermissionId) {
             return null;
         }
-        return WorkPermission::with(['employee', 'created_by', 'updated_by', 'approved_by'])->find($this->viewWorkPermissionId);
+        return \Modules\HR\Models\WorkPermission::with(['employee', 'created_by', 'updated_by', 'approved_by'])->find($this->viewWorkPermissionId);
     }
 
     #[Computed]

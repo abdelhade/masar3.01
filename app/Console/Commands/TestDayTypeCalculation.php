@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Employee;
+use Modules\HR\Models\Employee;
 use App\Models\Shift;
 use App\Services\SalaryCalculationService;
 use Carbon\Carbon;

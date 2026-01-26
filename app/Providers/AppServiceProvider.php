@@ -22,7 +22,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // حل مشكلة المسارات المفقودة على Hostinger (Shared Hosting)
+        // هذا الجزء يوجه أي نداء قديم للمسار الجديد داخل الموديولات
+        $aliases = [
+            'App\Models\Employee'       => \Modules\HR\Models\Employee::class,
+            'App\Models\WorkPermission' => \Modules\HR\Models\WorkPermission::class,
+            // أضف أي موديلات أخرى قمت بنقلها هنا بنفس الطريقة
+        ];
+
+        foreach ($aliases as $oldPath => $newClass) {
+            if (!class_exists($oldPath) && class_exists($newClass)) {
+                class_alias($newClass, $oldPath);
+            }
+        }
     }
 
     /**
@@ -39,13 +51,11 @@ class AppServiceProvider extends ServiceProvider
             });
             config(['public_settings' => $settings]);
         } catch (\Exception $e) {
-            // ممكن تكتب لوج هنا لو حابب، بس الأهم ما توقفش الـ boot ولا تطلع error
+            // Log if needed
         }
 
         Paginator::useBootstrapFive();
-        // JournalDetail::observe(classes: JournalDetailObserver::class);
         Item::observe(ItemObserver::class);
         NoteDetails::observe(NoteDetailsObserver::class);
-        // Model::automaticallyEagerLoadRelationships();
     }
 }

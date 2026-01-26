@@ -10,7 +10,7 @@ use Modules\MyResources\Models\Resource;
 use Modules\MyResources\Models\ResourceCategory;
 use Modules\MyResources\Models\ResourceType;
 use Modules\MyResources\Models\ResourceStatus;
-use App\Models\Employee;
+use Modules\HR\Models\Employee;
 
 class CreateResource extends Component
 {

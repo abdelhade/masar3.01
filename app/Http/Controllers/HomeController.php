@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use App\Models\Employee;
+use Modules\HR\Models\Employee;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\{Item, User, Voucher, OperHead};

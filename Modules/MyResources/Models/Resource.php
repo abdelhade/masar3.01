@@ -3,7 +3,7 @@
 namespace Modules\MyResources\Models;
 
 use App\Models\User;
-use App\Models\Employee;
+use Modules\HR\Models\Employee;
 use Modules\Branches\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Maintenance\Models\PeriodicMaintenanceSchedule;

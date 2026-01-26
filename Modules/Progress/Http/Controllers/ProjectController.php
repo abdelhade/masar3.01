@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Models\Client;
-use App\Models\Employee;
+use Modules\HR\Models\Employee;
 use Modules\Progress\Models\ProjectType;
 use Modules\Progress\Models\WorkItem;
 use Modules\Progress\Models\ProjectTemplate;
