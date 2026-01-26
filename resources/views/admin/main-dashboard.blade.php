@@ -714,15 +714,7 @@
                 <!-- الخدمات والعمليات -->
                 <div class="group-apps-grid">
                     {{-- ادارة المستأجرات  --}}
-                    @can('view Rental-Management')
-                        <a href="{{ route('rentals.buildings.index') }}" class="app-card">
-                            <div class="app-icon" style="background-color: white;">
-                                <i data-lucide="building"
-                                    style="color: #00695C; width: 24px; height: 24px; stroke-width: 2;"></i>
-                            </div>
-                            <p class="app-name">ادارة المستأجرات</p>
-                        </a>
-                    @endcan
+            
                     {{-- أدارة الشحن --}}
                     @can('view Orders')
                         <a href="{{ route('orders.index') }}" class="app-card">
