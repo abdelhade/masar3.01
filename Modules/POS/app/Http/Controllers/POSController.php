@@ -556,50 +556,197 @@ class POSController extends Controller
                 ]);
             }
 
-            // إنشاء القيد المحاسبي (JournalHead)
+            // ========== القيد الأول: قيد المبيعات ==========
             $lastJournalId = JournalHead::max('journal_id') ?? 0;
-            $journalId = $lastJournalId + 1;
-            $journalHead = JournalHead::create([
-                'journal_id' => $journalId,
+            $salesJournalId = $lastJournalId + 1;
+            $salesJournalHead = JournalHead::create([
+                'journal_id' => $salesJournalId,
                 'total' => $total,
                 'op_id' => $operHead->id,
                 'pro_type' => 102, // فاتورة كاشير
                 'date' => now()->format('Y-m-d'),
-                'details' => 'قيد فاتورة كاشير رقم '.$nextProId,
+                'details' => 'قيد مبيعات - فاتورة كاشير رقم '.$nextProId,
                 'user' => Auth::id(),
                 'branch_id' => $branchId,
             ]);
 
-            // إنشاء تفاصيل القيد المحاسبي (JournalDetails)
+            // مدين - العميل (للمبيعات)
             if ($customerId) {
-                // مدين - العميل
                 JournalDetail::create([
-                    'journal_id' => $journalId,
+                    'journal_id' => $salesJournalId,
                     'account_id' => $customerId,
                     'debit' => $total,
                     'credit' => 0,
                     'type' => 0,
-                    'info' => 'مدين - عميل',
+                    'info' => 'مدين - عميل (مبيعات)',
                     'op_id' => $operHead->id,
                     'isdeleted' => 0,
                     'branch' => $branchId,
                 ]);
             }
 
-            // دائن - الصندوق أو المخزن
-            $creditAccount = $cashAccountId ?? $storeId;
-            if ($creditAccount) {
-                JournalDetail::create([
-                    'journal_id' => $journalId,
-                    'account_id' => $creditAccount,
-                    'debit' => 0,
-                    'credit' => $total,
-                    'type' => 1,
-                    'info' => 'دائن - '.($cashAccountId ? 'صندوق' : 'مخزن'),
-                    'op_id' => $operHead->id,
-                    'isdeleted' => 0,
-                    'branch' => $branchId,
-                ]);
+            // دائن - حساب المبيعات (47)
+            JournalDetail::create([
+                'journal_id' => $salesJournalId,
+                'account_id' => 47, // حساب المبيعات
+                'debit' => 0,
+                'credit' => $total,
+                'type' => 1,
+                'info' => 'دائن - مبيعات',
+                'op_id' => $operHead->id,
+                'isdeleted' => 0,
+                'branch' => $branchId,
+            ]);
+
+            // ========== القيد الثاني: قيد الدفع ==========
+            $cashAmount = $validated['cash_amount'] ?? 0;
+            $cardAmount = $validated['card_amount'] ?? 0;
+            $paymentMethod = $validated['payment_method'] ?? 'cash';
+
+            if ($paidAmount > 0) {
+                if ($paymentMethod === 'mixed' && $cashAmount > 0 && $cardAmount > 0) {
+                    // الدفع المختلط - قيدين منفصلين
+                    
+                    // قيد الدفع النقدي
+                    $cashJournalId = $salesJournalId + 1;
+                    JournalHead::create([
+                        'journal_id' => $cashJournalId,
+                        'total' => $cashAmount,
+                        'op_id' => $operHead->id,
+                        'pro_type' => 102,
+                        'date' => now()->format('Y-m-d'),
+                        'details' => 'قيد دفع نقدي - فاتورة كاشير رقم '.$nextProId,
+                        'user' => Auth::id(),
+                        'branch_id' => $branchId,
+                    ]);
+
+                    // مدين - الصندوق
+                    if ($cashAccountId) {
+                        JournalDetail::create([
+                            'journal_id' => $cashJournalId,
+                            'account_id' => $cashAccountId,
+                            'debit' => $cashAmount,
+                            'credit' => 0,
+                            'type' => 0,
+                            'info' => 'مدين - صندوق (دفع نقدي)',
+                            'op_id' => $operHead->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+
+                    // دائن - العميل
+                    if ($customerId) {
+                        JournalDetail::create([
+                            'journal_id' => $cashJournalId,
+                            'account_id' => $customerId,
+                            'debit' => 0,
+                            'credit' => $cashAmount,
+                            'type' => 1,
+                            'info' => 'دائن - عميل (دفع نقدي)',
+                            'op_id' => $operHead->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+
+                    // قيد الدفع بالبطاقة
+                    $cardJournalId = $cashJournalId + 1;
+                    JournalHead::create([
+                        'journal_id' => $cardJournalId,
+                        'total' => $cardAmount,
+                        'op_id' => $operHead->id,
+                        'pro_type' => 102,
+                        'date' => now()->format('Y-m-d'),
+                        'details' => 'قيد دفع بالبطاقة - فاتورة كاشير رقم '.$nextProId,
+                        'user' => Auth::id(),
+                        'branch_id' => $branchId,
+                    ]);
+
+                    // مدين - البنك
+                    if ($bankAccountId) {
+                        JournalDetail::create([
+                            'journal_id' => $cardJournalId,
+                            'account_id' => $bankAccountId,
+                            'debit' => $cardAmount,
+                            'credit' => 0,
+                            'type' => 0,
+                            'info' => 'مدين - بنك (دفع بالبطاقة)',
+                            'op_id' => $operHead->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+
+                    // دائن - العميل
+                    if ($customerId) {
+                        JournalDetail::create([
+                            'journal_id' => $cardJournalId,
+                            'account_id' => $customerId,
+                            'debit' => 0,
+                            'credit' => $cardAmount,
+                            'type' => 1,
+                            'info' => 'دائن - عميل (دفع بالبطاقة)',
+                            'op_id' => $operHead->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+                } else {
+                    // دفع واحد (نقدي أو بطاقة)
+                    $paymentAccountId = null;
+                    $paymentAmount = 0;
+                    
+                    if ($paymentMethod === 'cash' || ($paymentMethod === 'mixed' && $cashAmount > 0)) {
+                        $paymentAccountId = $cashAccountId ?? $storeId;
+                        $paymentAmount = $cashAmount > 0 ? $cashAmount : $paidAmount;
+                    } elseif ($paymentMethod === 'card' || ($paymentMethod === 'mixed' && $cardAmount > 0)) {
+                        $paymentAccountId = $bankAccountId ?? $storeId;
+                        $paymentAmount = $cardAmount > 0 ? $cardAmount : $paidAmount;
+                    }
+
+                    if ($paymentAccountId && $paymentAmount > 0) {
+                        $paymentJournalId = $salesJournalId + 1;
+                        JournalHead::create([
+                            'journal_id' => $paymentJournalId,
+                            'total' => $paymentAmount,
+                            'op_id' => $operHead->id,
+                            'pro_type' => 102,
+                            'date' => now()->format('Y-m-d'),
+                            'details' => 'قيد دفع - فاتورة كاشير رقم '.$nextProId,
+                            'user' => Auth::id(),
+                            'branch_id' => $branchId,
+                        ]);
+
+                        // مدين - الصندوق أو البنك
+                        JournalDetail::create([
+                            'journal_id' => $paymentJournalId,
+                            'account_id' => $paymentAccountId,
+                            'debit' => $paymentAmount,
+                            'credit' => 0,
+                            'type' => 0,
+                            'info' => 'مدين - '.($cashAccountId ? 'صندوق' : 'بنك'),
+                            'op_id' => $operHead->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+
+                        // دائن - العميل
+                        if ($customerId) {
+                            JournalDetail::create([
+                                'journal_id' => $paymentJournalId,
+                                'account_id' => $customerId,
+                                'debit' => 0,
+                                'credit' => $paymentAmount,
+                                'type' => 1,
+                                'info' => 'دائن - عميل (دفع)',
+                                'op_id' => $operHead->id,
+                                'isdeleted' => 0,
+                                'branch' => $branchId,
+                            ]);
+                        }
+                    }
+                }
             }
 
             // حفظ في جدول cashier_transactions (للربط والمزامنة)
@@ -1601,9 +1748,9 @@ class POSController extends Controller
     }
 
     /**
-     * تسجيل مصروف نثري (Pay Out)
+     * تسجيل مصروف نثري (Petty Cash - سند دفع لمصروف)
      */
-    public function payOut(Request $request)
+    public function pettyCash(Request $request)
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
@@ -1892,32 +2039,49 @@ class POSController extends Controller
     }
 
     /**
-     * إرجاع فاتورة
+     * إرجاع فاتورة كاشير
      */
     public function returnInvoice(Request $request)
     {
         $validated = $request->validate([
             'original_invoice_id' => 'required|exists:oper_head,id',
+            'cash_account_id' => 'nullable|exists:acc_head,id',
+            'bank_account_id' => 'nullable|exists:acc_head,id',
+            'payment_method' => 'nullable|string|in:cash,card,mixed',
+            'cash_amount' => 'nullable|numeric|min:0',
+            'card_amount' => 'nullable|numeric|min:0',
         ]);
 
         try {
             DB::beginTransaction();
 
             $originalInvoice = OperHead::with('operationItems')
-                ->where('pro_type', 102)
+                ->where('pro_type', 102) // فاتورة كاشير
                 ->where('id', $validated['original_invoice_id'])
                 ->where('isdeleted', 0)
                 ->firstOrFail();
 
             $branchId = Auth::user()->branch_id ?? 1;
-            $nextProId = OperHead::where('pro_type', 12)->max('pro_id') + 1 ?? 1;
+            $nextProId = OperHead::where('pro_type', 112)->max('pro_id') + 1 ?? 1;
 
-            // إنشاء فاتورة إرجاع
+            // جلب معلومات الدفع من الفاتورة الأصلية
+            $cashierTransaction = \Modules\POS\app\Models\CashierTransaction::where('server_id', $originalInvoice->id)->first();
+            $originalCashAmount = $cashierTransaction->cash_amount ?? 0;
+            $originalCardAmount = $cashierTransaction->card_amount ?? 0;
+            $originalPaymentMethod = $cashierTransaction->payment_method ?? 'cash';
+
+            // استخدام المبالغ المحددة أو الأصلية
+            $returnCashAmount = $validated['cash_amount'] ?? $originalCashAmount;
+            $returnCardAmount = $validated['card_amount'] ?? $originalCardAmount;
+            $returnPaymentMethod = $validated['payment_method'] ?? $originalPaymentMethod;
+            $totalReturnAmount = $returnCashAmount + $returnCardAmount;
+
+            // إنشاء فاتورة إرجاع كاشير
             $returnInvoice = OperHead::create([
                 'pro_id' => $nextProId,
                 'pro_date' => now()->format('Y-m-d'),
                 'accural_date' => now()->format('Y-m-d'),
-                'pro_type' => 12, // مردود مبيعات
+                'pro_type' => 112, // مرتجع كاشير
                 'acc1' => $originalInvoice->acc1,
                 'acc2' => $originalInvoice->acc2,
                 'store_id' => $originalInvoice->store_id,
@@ -1929,9 +2093,9 @@ class POSController extends Controller
                 'fat_plus_per' => $originalInvoice->fat_plus_per,
                 'fat_net' => $originalInvoice->fat_net,
                 'pro_value' => $originalInvoice->pro_value,
-                'paid_from_client' => 0,
-                'info' => 'إرجاع فاتورة رقم '.$originalInvoice->pro_id,
-                'details' => 'إرجاع فاتورة رقم '.$originalInvoice->pro_id,
+                'paid_from_client' => $totalReturnAmount,
+                'info' => 'إرجاع فاتورة كاشير رقم '.$originalInvoice->pro_id,
+                'details' => 'إرجاع فاتورة كاشير رقم '.$originalInvoice->pro_id,
                 'isdeleted' => 0,
                 'is_stock' => 1,
                 'is_finance' => 1,
@@ -1957,7 +2121,7 @@ class POSController extends Controller
                     'additional' => $item->additional ?? 0,
                     'detail_value' => $item->detail_value,
                     'profit' => 0,
-                    'notes' => 'إرجاع من فاتورة '.$originalInvoice->pro_id,
+                    'notes' => 'إرجاع من فاتورة كاشير '.$originalInvoice->pro_id,
                     'is_stock' => 1,
                     'isdeleted' => 0,
                     'branch_id' => $branchId,
@@ -1966,60 +2130,209 @@ class POSController extends Controller
                 ]);
             }
 
-            // إنشاء القيد المحاسبي العكسي
+            // ========== القيد الأول: قيد مردود المبيعات ==========
             $lastJournalId = JournalHead::max('journal_id') ?? 0;
-            $journalId = $lastJournalId + 1;
-            $journalHead = JournalHead::create([
-                'journal_id' => $journalId,
+            $returnSalesJournalId = $lastJournalId + 1;
+            JournalHead::create([
+                'journal_id' => $returnSalesJournalId,
                 'total' => $returnInvoice->fat_net,
                 'op_id' => $returnInvoice->id,
-                'pro_type' => 12,
+                'pro_type' => 112,
                 'date' => now()->format('Y-m-d'),
-                'details' => 'قيد إرجاع فاتورة رقم '.$nextProId,
+                'details' => 'قيد مردود مبيعات - مرتجع كاشير رقم '.$nextProId,
                 'user' => Auth::id(),
                 'branch_id' => $branchId,
             ]);
 
-            // تفاصيل القيد (عكس)
+            // دائن - العميل (مردود مبيعات)
             if ($originalInvoice->acc1) {
                 JournalDetail::create([
-                    'journal_id' => $journalId,
+                    'journal_id' => $returnSalesJournalId,
                     'account_id' => $originalInvoice->acc1,
                     'debit' => 0,
                     'credit' => $returnInvoice->fat_net,
                     'type' => 1,
-                    'info' => 'دائن - عميل (إرجاع)',
+                    'info' => 'دائن - عميل (مردود مبيعات)',
                     'op_id' => $returnInvoice->id,
                     'isdeleted' => 0,
                     'branch' => $branchId,
                 ]);
             }
 
-            if ($originalInvoice->acc2) {
-                JournalDetail::create([
-                    'journal_id' => $journalId,
-                    'account_id' => $originalInvoice->acc2,
-                    'debit' => $returnInvoice->fat_net,
-                    'credit' => 0,
-                    'type' => 0,
-                    'info' => 'مدين - صندوق/مخزن (إرجاع)',
-                    'op_id' => $returnInvoice->id,
-                    'isdeleted' => 0,
-                    'branch' => $branchId,
-                ]);
+            // مدين - حساب مردود المبيعات (48)
+            JournalDetail::create([
+                'journal_id' => $returnSalesJournalId,
+                'account_id' => 48, // حساب مردود المبيعات
+                'debit' => $returnInvoice->fat_net,
+                'credit' => 0,
+                'type' => 0,
+                'info' => 'مدين - مردود مبيعات',
+                'op_id' => $returnInvoice->id,
+                'isdeleted' => 0,
+                'branch' => $branchId,
+            ]);
+
+            // ========== القيد الثاني: قيد استرجاع الدفع ==========
+            if ($totalReturnAmount > 0) {
+                $cashAccountId = $validated['cash_account_id'] ?? ($cashierTransaction->cash_account_id ?? null);
+                $bankAccountId = $validated['bank_account_id'] ?? null;
+
+                if ($returnPaymentMethod === 'mixed' && $returnCashAmount > 0 && $returnCardAmount > 0) {
+                    // استرجاع دفع مختلط - قيدين منفصلين
+                    
+                    // قيد استرجاع الدفع النقدي
+                    $returnCashJournalId = $returnSalesJournalId + 1;
+                    JournalHead::create([
+                        'journal_id' => $returnCashJournalId,
+                        'total' => $returnCashAmount,
+                        'op_id' => $returnInvoice->id,
+                        'pro_type' => 112,
+                        'date' => now()->format('Y-m-d'),
+                        'details' => 'قيد استرجاع دفع نقدي - مرتجع كاشير رقم '.$nextProId,
+                        'user' => Auth::id(),
+                        'branch_id' => $branchId,
+                    ]);
+
+                    // دائن - الصندوق
+                    if ($cashAccountId) {
+                        JournalDetail::create([
+                            'journal_id' => $returnCashJournalId,
+                            'account_id' => $cashAccountId,
+                            'debit' => 0,
+                            'credit' => $returnCashAmount,
+                            'type' => 1,
+                            'info' => 'دائن - صندوق (استرجاع دفع نقدي)',
+                            'op_id' => $returnInvoice->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+
+                    // مدين - العميل
+                    if ($originalInvoice->acc1) {
+                        JournalDetail::create([
+                            'journal_id' => $returnCashJournalId,
+                            'account_id' => $originalInvoice->acc1,
+                            'debit' => $returnCashAmount,
+                            'credit' => 0,
+                            'type' => 0,
+                            'info' => 'مدين - عميل (استرجاع دفع نقدي)',
+                            'op_id' => $returnInvoice->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+
+                    // قيد استرجاع الدفع بالبطاقة
+                    $returnCardJournalId = $returnCashJournalId + 1;
+                    JournalHead::create([
+                        'journal_id' => $returnCardJournalId,
+                        'total' => $returnCardAmount,
+                        'op_id' => $returnInvoice->id,
+                        'pro_type' => 112,
+                        'date' => now()->format('Y-m-d'),
+                        'details' => 'قيد استرجاع دفع بالبطاقة - مرتجع كاشير رقم '.$nextProId,
+                        'user' => Auth::id(),
+                        'branch_id' => $branchId,
+                    ]);
+
+                    // دائن - البنك
+                    if ($bankAccountId) {
+                        JournalDetail::create([
+                            'journal_id' => $returnCardJournalId,
+                            'account_id' => $bankAccountId,
+                            'debit' => 0,
+                            'credit' => $returnCardAmount,
+                            'type' => 1,
+                            'info' => 'دائن - بنك (استرجاع دفع بالبطاقة)',
+                            'op_id' => $returnInvoice->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+
+                    // مدين - العميل
+                    if ($originalInvoice->acc1) {
+                        JournalDetail::create([
+                            'journal_id' => $returnCardJournalId,
+                            'account_id' => $originalInvoice->acc1,
+                            'debit' => $returnCardAmount,
+                            'credit' => 0,
+                            'type' => 0,
+                            'info' => 'مدين - عميل (استرجاع دفع بالبطاقة)',
+                            'op_id' => $returnInvoice->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+                    }
+                } else {
+                    // استرجاع دفع واحد (نقدي أو بطاقة)
+                    $returnPaymentAccountId = null;
+                    $returnPaymentAmount = 0;
+                    
+                    if ($returnPaymentMethod === 'cash' || ($returnPaymentMethod === 'mixed' && $returnCashAmount > 0)) {
+                        $returnPaymentAccountId = $cashAccountId ?? $originalInvoice->acc2;
+                        $returnPaymentAmount = $returnCashAmount > 0 ? $returnCashAmount : $totalReturnAmount;
+                    } elseif ($returnPaymentMethod === 'card' || ($returnPaymentMethod === 'mixed' && $returnCardAmount > 0)) {
+                        $returnPaymentAccountId = $bankAccountId ?? $originalInvoice->acc2;
+                        $returnPaymentAmount = $returnCardAmount > 0 ? $returnCardAmount : $totalReturnAmount;
+                    }
+
+                    if ($returnPaymentAccountId && $returnPaymentAmount > 0) {
+                        $returnPaymentJournalId = $returnSalesJournalId + 1;
+                        JournalHead::create([
+                            'journal_id' => $returnPaymentJournalId,
+                            'total' => $returnPaymentAmount,
+                            'op_id' => $returnInvoice->id,
+                            'pro_type' => 112,
+                            'date' => now()->format('Y-m-d'),
+                            'details' => 'قيد استرجاع دفع - مرتجع كاشير رقم '.$nextProId,
+                            'user' => Auth::id(),
+                            'branch_id' => $branchId,
+                        ]);
+
+                        // دائن - الصندوق أو البنك
+                        JournalDetail::create([
+                            'journal_id' => $returnPaymentJournalId,
+                            'account_id' => $returnPaymentAccountId,
+                            'debit' => 0,
+                            'credit' => $returnPaymentAmount,
+                            'type' => 1,
+                            'info' => 'دائن - '.($cashAccountId ? 'صندوق' : 'بنك'),
+                            'op_id' => $returnInvoice->id,
+                            'isdeleted' => 0,
+                            'branch' => $branchId,
+                        ]);
+
+                        // مدين - العميل
+                        if ($originalInvoice->acc1) {
+                            JournalDetail::create([
+                                'journal_id' => $returnPaymentJournalId,
+                                'account_id' => $originalInvoice->acc1,
+                                'debit' => $returnPaymentAmount,
+                                'credit' => 0,
+                                'type' => 0,
+                                'info' => 'مدين - عميل (استرجاع دفع)',
+                                'op_id' => $returnInvoice->id,
+                                'isdeleted' => 0,
+                                'branch' => $branchId,
+                            ]);
+                        }
+                    }
+                }
             }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم إرجاع الفاتورة بنجاح',
+                'message' => 'تم إرجاع فاتورة الكاشير بنجاح',
                 'return_invoice_id' => $returnInvoice->id,
                 'return_invoice_number' => $nextProId,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Return Invoice Error: '.$e->getMessage(), [
+            \Log::error('Return Cashier Invoice Error: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
 

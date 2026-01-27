@@ -46,14 +46,35 @@
             e.preventDefault();
             const barcode = $(this).val().trim();
             if (barcode.length > 0) {
+                console.log('تم الضغط على Enter للبحث عن الباركود:', barcode);
                 searchBarcode(barcode);
+            } else {
+                console.log('الباركود فارغ');
+                if (typeof msg === 'function') {
+                    msg('الرجاء إدخال باركود', 'warning');
+                } else if (typeof showToast === 'function') {
+                    showToast('الرجاء إدخال باركود', 'warning');
+                } else {
+                    alert('الرجاء إدخال باركود');
+                }
             }
         }
     });
     
     // دالة البحث بالباركود - دالة الميزان والبحث العادي
     async function searchBarcode(barcode) {
-        if (!barcode || barcode.length === 0) return;
+        if (!barcode || barcode.length === 0) {
+            if (typeof msg === 'function') {
+                msg('الرجاء إدخال باركود', 'warning');
+            } else if (typeof showToast === 'function') {
+                showToast('الرجاء إدخال باركود', 'warning');
+            } else {
+                alert('الرجاء إدخال باركود');
+            }
+            return;
+        }
+        
+        console.log('بدء البحث عن الباركود:', barcode);
         
         // المحاولة الأولى: البحث في الميزان (إذا كان مفعّل)
         if (scaleSettings && scaleSettings.enable_scale_items && scaleSettings.scale_code_prefix) {
@@ -134,11 +155,23 @@
                             // إضافة الصنف مع الكمية المحسوبة
                             addScaleItemToCart(foundItem, quantity);
                             $('#barcodeSearch').val('');
-                            showToast(`تم إضافة ${quantity.toFixed(3)} كيلو`, 'success');
+                            if (typeof msg === 'function') {
+                                msg(`تم إضافة ${quantity.toFixed(3)} كيلو`, 'success');
+                            } else if (typeof showToast === 'function') {
+                                showToast(`تم إضافة ${quantity.toFixed(3)} كيلو`, 'success');
+                            }
                             return;
                         } else {
                             // لم يُوجد الصنف بالكود المستخرج من الميزان
-                            showToast('لم يتم العثور على صنف بالكود: ' + itemCode, 'error');
+                            console.log('لم يتم العثور على صنف بالكود من الميزان:', itemCode);
+                            // استخدام دالة msg
+                            if (typeof msg === 'function') {
+                                msg('لم يتم العثور على صنف بالكود: ' + itemCode, 'error');
+                            } else if (typeof showToast === 'function') {
+                                showToast('لم يتم العثور على صنف بالكود: ' + itemCode, 'error');
+                            } else {
+                                alert('لم يتم العثور على صنف بالكود: ' + itemCode);
+                            }
                             $('#barcodeSearch').val('');
                             return;
                         }
@@ -171,7 +204,11 @@
             // إضافة المنتج مباشرة للسلة
             addItemToCart(cachedItem.id);
             $('#barcodeSearch').val('');
-            showToast('تم إضافة المنتج للشمنال', 'success');
+                            if (typeof msg === 'function') {
+                                msg('تم إضافة المنتج ', 'success');
+                            } else if (typeof showToast === 'function') {
+                                showToast('تم إضافة المنتج ', 'success');
+                            }
             return;
         }
         
@@ -187,7 +224,11 @@
                         const itemId = localItems[0].id;
                         addItemToCart(itemId);
                         $('#barcodeSearch').val('');
-                        showToast('تم إضافة المنتج للشمنال', 'success');
+                            if (typeof msg === 'function') {
+                                msg('تم إضافة المنتج ', 'success');
+                            } else if (typeof showToast === 'function') {
+                                showToast('تم إضافة المنتج ', 'success');
+                            }
                     } else {
                         displayProducts(localItems);
                     }
@@ -208,7 +249,8 @@
                     timeout: 2000 // تقليل timeout
                 });
                 
-                if (response.items && response.items.length > 0) {
+                // التحقق من وجود النتائج
+                if (response && response.items && Array.isArray(response.items) && response.items.length > 0) {
                     // حفظ في الـ cache
                     response.items.forEach(item => {
                         itemsCache[item.id] = item;
@@ -218,7 +260,11 @@
                         const itemId = response.items[0].id;
                         addItemToCart(itemId);
                         $('#barcodeSearch').val('');
-                        showToast('تم إضافة المنتج للشمنال', 'success');
+                            if (typeof msg === 'function') {
+                                msg('تم إضافة المنتج ', 'success');
+                            } else if (typeof showToast === 'function') {
+                                showToast('تم إضافة المنتج ', 'success');
+                            }
                     } else {
                         displayProducts(response.items);
                     }
@@ -228,27 +274,64 @@
                         db.saveItems(response.items).catch(err => console.error('Save to IndexedDB error:', err));
                     }
                     return;
-                } else {
-                    // لم يتم العثور على نتائج من الـ server
-                    showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
-                    $('#barcodeSearch').val('');
-                    return;
                 }
+                
+                // لم يتم العثور على نتائج من الـ server
+                console.log('لم يتم العثور على نتائج للباركود:', barcode, 'الاستجابة:', response);
+                console.log('msg متاحة؟', typeof msg);
+                console.log('showToast متاحة؟', typeof showToast);
+                // استخدام دالة msg
+                if (typeof msg === 'function') {
+                    console.log('استخدام msg');
+                    msg('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+                } else if (typeof showToast === 'function') {
+                    console.log('استخدام showToast');
+                    showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+                } else {
+                    console.log('استخدام alert');
+                    alert('لم يتم العثور على صنف بالباركود: ' + barcode);
+                }
+                $('#barcodeSearch').val('');
+                return;
             } catch (err) {
                 // في حالة الخطأ، عرض رسالة الخطأ
-                showToast('حدث خطأ أثناء البحث عن الباركود: ' + barcode, 'error');
+                console.error('خطأ في البحث عن الباركود:', err);
+                // استخدام دالة msg
+                if (typeof msg === 'function') {
+                    msg('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+                } else if (typeof showToast === 'function') {
+                    showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+                } else {
+                    alert('لم يتم العثور على صنف بالباركود: ' + barcode);
+                }
                 $('#barcodeSearch').val('');
                 return;
             }
         } else {
             // غير متصل بالإنترنت ولم يُوجد محلياً
-            showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+            console.log('غير متصل ولم يتم العثور على الباركود:', barcode);
+            // استخدام دالة msg
+            if (typeof msg === 'function') {
+                msg('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+            } else if (typeof showToast === 'function') {
+                showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+            } else {
+                alert('لم يتم العثور على صنف بالباركود: ' + barcode);
+            }
             $('#barcodeSearch').val('');
             return;
         }
         
-        // إذا وصلنا هنا، يعني لم يُوجد في أي مكان (fallback)
-        showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+        // Fallback: إذا وصلنا هنا ولم يتم العثور على أي شيء
+        console.log('Fallback: لم يتم العثور على الباركود:', barcode);
+        // استخدام دالة msg
+        if (typeof msg === 'function') {
+            msg('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+        } else if (typeof showToast === 'function') {
+            showToast('لم يتم العثور على صنف بالباركود: ' + barcode, 'error');
+        } else {
+            alert('لم يتم العثور على صنف بالباركود: ' + barcode);
+        }
         $('#barcodeSearch').val('');
     }
 

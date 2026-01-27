@@ -35,4 +35,9 @@ class Project extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    public function account()
+    {
+        return $this->belongsTo(\Modules\Accounts\Models\AccHead::class, 'account_id');
+    }
 }

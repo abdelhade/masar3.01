@@ -61,6 +61,18 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label fw-bold">{{ __('general.account') }}</label>
+                                <div class="input-group">
+                                    <select name="account_id" class="form-select" x-model="form.account_id">
+                                        <option value="">{{ __('general.select_account') }}</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account->id }}">{{ $account->code }} - {{ $account->aname }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-wallet"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">{{ __('general.project_type') }}</label>
                                 <div class="input-group">
                                     <select name="project_type_id" class="form-select" x-model="form.project_type_id">

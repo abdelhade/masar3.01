@@ -28,21 +28,7 @@ class POSServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
 
-        // تسجيل Livewire Components
-        $this->registerLivewireComponents();
-    }
-
-    /**
-     * تسجيل Livewire Components
-     */
-    protected function registerLivewireComponents(): void
-    {
-        if (class_exists(\Livewire\Livewire::class)) {
-            \Livewire\Livewire::component(
-                'pos::create-pos-transaction-form',
-                \Modules\POS\app\Livewire\CreatePosTransactionForm::class
-            );
-        }
+        // تم إزالة Livewire - استخدام jQuery/Ajax بدلاً منه
     }
 
     /**

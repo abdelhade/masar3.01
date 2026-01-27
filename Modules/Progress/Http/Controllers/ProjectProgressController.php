@@ -16,6 +16,7 @@ use Modules\Progress\Models\ProjectType;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Progress\Models\ProjectTemplate;
 use Modules\Progress\Models\ItemStatus;
+use Modules\Accounts\Models\AccHead;
 
 class ProjectProgressController extends Controller
 {
@@ -39,7 +40,6 @@ class ProjectProgressController extends Controller
             $projects = ProjectProgress::with(['client', 'type', 'items'])
                 ->withCount('items')
                 ->where('status', 'draft')
-				->where('is_progress', 1)
                 ->latest()
                 ->get();
             $draftsCount = $projects->count();
@@ -51,7 +51,6 @@ class ProjectProgressController extends Controller
             ->withSum('items', 'total_quantity')
             ->withSum('dailyProgress', 'quantity')
             ->where('status', '!=', 'draft')
-			->where('is_progress', 1)
             ->latest()
             ->get();
             
@@ -72,7 +71,6 @@ class ProjectProgressController extends Controller
             'holidays' => '5,6', // أيام الجمعة والسبت كقيمة افتراضية
             'status' => 'pending',
             'start_date' => now()->format('Y-m-d'),
-			'is_progress' => 1,
         ]);
 
         return redirect()
@@ -88,6 +86,10 @@ class ProjectProgressController extends Controller
         $users = User::all();
         $templates = ProjectTemplate::with(['items.workItem'])->get();
         $projectTypes = ProjectType::all();
+        $accounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->orderBy('code')
+            ->get(['id', 'aname', 'code']);
 
         $templates = $templates->map(function ($template) {
             return [
@@ -113,7 +115,7 @@ class ProjectProgressController extends Controller
             ];
         });
 
-        return view('progress::projects.create', compact('clients', 'workItems', 'employees', 'users', 'templates', 'projectTypes'));
+        return view('progress::projects.create', compact('clients', 'workItems', 'employees', 'users', 'templates', 'projectTypes', 'accounts'));
     }
 
     public function store(Request $request)
@@ -127,6 +129,7 @@ class ProjectProgressController extends Controller
                 // If user really wants NO validation, we'd need to mock it or nullable DB.
                 // Minimizing to just name and client.
                  'client_id' => 'required|exists:clients,id',
+                 'account_id' => 'nullable|exists:acc_head,id',
             ]);
             // Relaxed validation for drafts
             $status = 'draft';
@@ -135,6 +138,7 @@ class ProjectProgressController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'client_id' => 'required|exists:clients,id',
+                'account_id' => 'nullable|exists:acc_head,id',
                 'start_date' => 'required|date',
                 'status' => 'required',
                 'working_zone' => 'nullable|string',
@@ -151,6 +155,7 @@ class ProjectProgressController extends Controller
             'name' => $request['name'],
             'description' => $request['description'] ?? null,
             'client_id' => $request['client_id'],
+            'account_id' => $request['account_id'] ?? null,
             'start_date' => $request['start_date'] ?? null, // Allow null for draft
             'status' => $status,
             'working_zone' => $request['working_zone'] ?? ($isDraft ? 'Not Set' : null), 
@@ -160,7 +165,6 @@ class ProjectProgressController extends Controller
             'holidays' => is_array($request['weekly_holidays'] ?? $request['holidays'] ?? null) 
                 ? implode(',', $request['weekly_holidays'] ?? $request['holidays']) 
                 : ($request['weekly_holidays'] ?? $request['holidays'] ?? '5,6'),
-			'is_progress' => 1,
         ]);
 
         // If Draft and no items, return early
@@ -700,6 +704,10 @@ class ProjectProgressController extends Controller
         $users = User::all();
         $templates = ProjectTemplate::all();
         $projectTypes = ProjectType::all();
+        $accounts = AccHead::where('isdeleted', 0)
+            ->where('is_basic', 0)
+            ->orderBy('code')
+            ->get(['id', 'aname', 'code']);
 
         return view('progress::projects.edit', compact(
             'project',
@@ -709,7 +717,8 @@ class ProjectProgressController extends Controller
             'templates',
             'initialItems',
             'projectTypes',
-            'users'
+            'users',
+            'accounts'
         ));
     }
 
@@ -723,6 +732,7 @@ class ProjectProgressController extends Controller
              $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'client_id' => 'required|exists:clients,id',
+                'account_id' => 'nullable|exists:acc_head,id',
             ]);
             // Allow partial updates
             $status = 'draft';
@@ -731,6 +741,7 @@ class ProjectProgressController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'client_id' => 'required|exists:clients,id',
+                'account_id' => 'nullable|exists:acc_head,id',
                 'status' => 'required|in:active,completed,pending,in_progress', // Removed draft from allowed strict statuses
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -750,6 +761,7 @@ class ProjectProgressController extends Controller
             'name' => $request['name'],
             'description' => $request['description'],
             'client_id' => $request['client_id'],
+            'account_id' => $request['account_id'] ?? null,
             'status' => $status,
             'start_date' => $request['start_date'],
             'working_zone' => $request['working_zone'],

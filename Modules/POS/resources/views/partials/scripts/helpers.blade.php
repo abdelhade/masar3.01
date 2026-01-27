@@ -1,4 +1,5 @@
-    function showToast(message, type = 'success') {
+    // تعريف دالة msg في النطاق العام
+    window.msg = function(message, type = 'success') {
         const bgColor = type === 'success' ? '#28a745' : 
                         type === 'error' ? '#dc3545' : 
                         type === 'warning' ? '#ffc107' : '#17a2b8';
@@ -18,4 +19,15 @@
                 $(this).remove();
             });
         }, 3000);
+    };
+    
+    // تعريف محلي أيضاً للتوافق
+    function msg(message, type = 'success') {
+        window.msg(message, type);
+    }
+    
+    // تعريف showToast للتوافق مع الكود القديم
+    window.showToast = window.msg;
+    function showToast(message, type = 'success') {
+        window.msg(message, type);
     }

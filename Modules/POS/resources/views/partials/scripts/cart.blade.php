@@ -37,7 +37,7 @@
             });
         }
         updateCartDisplay();
-        showToast('تم إضافة المنتج للشمنال', 'success');
+        showToast('تم إضافة المنتج ', 'success');
     }
     
     // إضافة صنف ميزان مع الكمية المحددة

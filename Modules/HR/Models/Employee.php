@@ -509,4 +509,17 @@ class Employee extends Model implements HasMedia
     {
         return $this->hasMany(\Modules\Progress\Models\DailyProgress::class, 'employee_id');
     }
+
+    public function projects()
+    {
+        // العلاقة عن طريق account_id حسب النوع (acc_type = 5 للموظفين)
+        $accountId = $this->account?->id;
+        
+        if (!$accountId) {
+            // Return empty query if no account
+            return \Modules\Progress\Models\ProjectProgress::query()->whereRaw('1 = 0');
+        }
+        
+        return \Modules\Progress\Models\ProjectProgress::where('account_id', $accountId);
+    }
 }

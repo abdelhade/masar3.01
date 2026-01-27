@@ -85,8 +85,8 @@ Route::middleware(['auth', 'verified', \Modules\POS\app\Http\Middleware\SafeSear
     Route::post('/api/complete-held-order/{id}', [POSController::class, 'completeHeldOrder'])->name('api.complete-held-order');
     Route::delete('/api/delete-held-order/{id}', [POSController::class, 'deleteHeldOrder'])->name('api.delete-held-order');
 
-    // Pay Out (المصروفات النثرية)
-    Route::post('/api/pay-out', [POSController::class, 'payOut'])->name('api.pay-out');
+    // Petty Cash (المصروفات النثرية)
+    Route::post('/api/petty-cash', [POSController::class, 'pettyCash'])->name('api.petty-cash');
 
     // Return Invoice
     Route::get('/api/invoice/{proId}', [POSController::class, 'getInvoice'])->name('api.invoice');

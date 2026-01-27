@@ -35,6 +35,8 @@ enum OperationTypeEnum: int
     case SALES_RETURN = 12;
     case PURCHASE_RETURN = 13;
     case DAMAGE_INVOICE = 18;
+    case CASHIER_INVOICE = 102; // فاتورة كاشير
+    case CASHIER_RETURN = 112; // مرتجع كاشير
 
     // 📋 الأوامر - Orders
     case SALE_ORDER = 14;
@@ -105,6 +107,8 @@ enum OperationTypeEnum: int
             self::PURCHASE_INVOICE => 'فاتورة مشتريات',
             self::SALES_RETURN => 'مردود مبيعات',
             self::PURCHASE_RETURN => 'مردود مشتريات',
+            self::CASHIER_INVOICE => 'فاتورة كاشير',
+            self::CASHIER_RETURN => 'مرتجع كاشير',
             self::SALE_ORDER => 'امر بيع',
             self::PURCHASE_ORDER => 'امر شراء',
             self::QUOTATION_CUSTOMER => 'عرض سعر لعميل',

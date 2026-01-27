@@ -136,7 +136,7 @@
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> جاري التسجيل...');
 
         $.ajax({
-            url: '{{ route("pos.api.pay-out") }}',
+            url: '{{ route("pos.api.petty-cash") }}',
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

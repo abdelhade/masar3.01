@@ -34,7 +34,7 @@ class ItemSeeder extends Seeder
             'تلفزيون', 'فستان', 'شوكة', 'لحم', 'مضاد', 'دفتر', 'قطار', 'عطر', 'ساعة', 'ستارة',
         ];
 
-        $totalItems = 200000;
+        $totalItems = 20000;
         $this->command->info("Starting to seed {$totalItems} items...");
         $this->command->info('This may take several minutes...');
 

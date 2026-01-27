@@ -3,14 +3,15 @@
 namespace Modules\Progress\Models;
 
 use App\Models\Client;
-use Modules\HR\Models\Employee;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Accounts\Models\AccHead;
+use Modules\HR\Models\Employee;
 
 class ProjectProgress extends Model
 {
     use SoftDeletes;
+
     protected $table = 'projects';
 
     protected $guarded = ['id'];
@@ -35,6 +36,11 @@ class ProjectProgress extends Model
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function account()
+    {
+        return $this->belongsTo(AccHead::class, 'account_id');
     }
 
     public function users()
@@ -64,17 +70,31 @@ class ProjectProgress extends Model
         $filled = 0;
         $total = 6;
 
-        if (!empty($this->name)) $filled++;
-        if (!empty($this->client_id)) $filled++;
-        if (!empty($this->project_type_id)) $filled++;
-        if (!empty($this->start_date)) $filled++;
-        if (!empty($this->working_zone)) $filled++;
+        if (! empty($this->name)) {
+            $filled++;
+        }
+        if (! empty($this->client_id)) {
+            $filled++;
+        }
+        if (! empty($this->project_type_id)) {
+            $filled++;
+        }
+        if (! empty($this->start_date)) {
+            $filled++;
+        }
+        if (! empty($this->working_zone)) {
+            $filled++;
+        }
 
         // Check items count (use attribute if eager loaded, otherwise query)
         if ($this->getAttribute('items_count') !== null) {
-            if ($this->items_count > 0) $filled++;
+            if ($this->items_count > 0) {
+                $filled++;
+            }
         } else {
-             if ($this->items()->count() > 0) $filled++;
+            if ($this->items()->count() > 0) {
+                $filled++;
+            }
         }
 
         return round(($filled / $total) * 100);

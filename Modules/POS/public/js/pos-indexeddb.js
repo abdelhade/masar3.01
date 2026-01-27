@@ -138,8 +138,9 @@ class POSIndexedDB {
                 const items = request.result;
                 const filtered = items.filter(item => {
                     const searchTerm = term.toLowerCase();
-                    return item.name.toLowerCase().includes(searchTerm) ||
-                           item.code.toLowerCase().includes(searchTerm);
+                    const nameMatch = item.name && String(item.name).toLowerCase().includes(searchTerm);
+                    const codeMatch = item.code && String(item.code).toLowerCase().includes(searchTerm);
+                    return nameMatch || codeMatch;
                 });
                 resolve(filtered);
             };
@@ -179,8 +180,12 @@ class POSIndexedDB {
                     const cursor = event.target.result;
                     if (cursor) {
                         const item = cursor.value;
-                        if (item.code && item.code.toLowerCase().includes(barcode.toLowerCase())) {
-                            results.push(item);
+                        if (item.code) {
+                            const codeStr = String(item.code);
+                            const barcodeStr = String(barcode);
+                            if (codeStr.toLowerCase().includes(barcodeStr.toLowerCase())) {
+                                results.push(item);
+                            }
                         }
                         cursor.continue();
                     } else {
@@ -190,7 +195,10 @@ class POSIndexedDB {
                             getAllRequest.onsuccess = () => {
                                 const allItems = getAllRequest.result;
                                 const filtered = allItems.filter(item => {
-                                    return item.code && item.code.toLowerCase().includes(barcode.toLowerCase());
+                                    if (!item.code) return false;
+                                    const codeStr = String(item.code);
+                                    const barcodeStr = String(barcode);
+                                    return codeStr.toLowerCase().includes(barcodeStr.toLowerCase());
                                 });
                                 resolve(filtered.slice(0, 10)); // حد أقصى 10 نتائج
                             };
@@ -207,7 +215,10 @@ class POSIndexedDB {
                     getAllRequest.onsuccess = () => {
                         const allItems = getAllRequest.result;
                         const filtered = allItems.filter(item => {
-                            return item.code && item.code.toLowerCase().includes(barcode.toLowerCase());
+                            if (!item.code) return false;
+                            const codeStr = String(item.code);
+                            const barcodeStr = String(barcode);
+                            return codeStr.toLowerCase().includes(barcodeStr.toLowerCase());
                         });
                         resolve(filtered.slice(0, 10));
                     };

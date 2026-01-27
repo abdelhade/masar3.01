@@ -62,6 +62,20 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label fw-bold">الحساب</label>
+                                <div class="input-group">
+                                    <select name="account_id" class="form-select" x-model="form.account_id">
+                                        <option value="">-- اختر الحساب --</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account->id }}" @selected(old('account_id', $project->account_id ?? '') == $account->id)>
+                                                {{ $account->code }} - {{ $account->aname }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <span class="input-group-text bg-light text-muted"><i class="las la-wallet"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">نوع المشروع</label>
                                 <div class="input-group">
                                     <select name="project_type_id" class="form-select" x-model="form.project_type_id">

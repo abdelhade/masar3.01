@@ -70,22 +70,45 @@
     }
 
     .item-info {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 30px;
+        padding: 4rem 3rem;
         margin-bottom: 2rem;
         display: none;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
     }
 
     .item-info.show {
         display: block;
-        animation: fadeIn 0.5s;
+        animation: slideInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    @keyframes fadeIn {
+    @keyframes slideInScale {
+        0% {
+            opacity: 0;
+            transform: scale(0.5) translateY(50px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .item-name {
+        font-size: 4.5rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 2rem;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+        line-height: 1.2;
+    }
+
+    @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(30px);
         }
         to {
             opacity: 1;
@@ -93,99 +116,51 @@
         }
     }
 
-    .item-name {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-    }
-
-    .item-code {
-        font-size: 1rem;
-        color: #718096;
-        margin-bottom: 1rem;
-    }
-
-    .item-barcode {
-        display: inline-block;
-        background: #e2e8f0;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-family: 'Courier New', monospace;
-        font-size: 1.1rem;
-        color: #4a5568;
-    }
-
-    .prices-section {
-        margin-top: 2rem;
-    }
-
-    .prices-section-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e2e8f0;
-    }
-
-    .unit-prices {
-        margin-bottom: 2rem;
-    }
-
-    .unit-name {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #4a5568;
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        background: #edf2f7;
-        border-radius: 8px;
-    }
-
-    .price-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    .price-display {
+        font-size: 5.5rem;
+        font-weight: 900;
+        color: #ffd700;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        animation: pulseGlow 2s ease-in-out infinite, fadeInUp 0.8s ease-out 0.4s both;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 1rem;
     }
 
-    .price-card {
-        background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 1.5rem;
-        text-align: center;
-        transition: all 0.3s;
-    }
-
-    .price-card:hover {
-        border-color: #667eea;
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-    }
-
-    .price-name {
-        font-size: 0.9rem;
-        color: #718096;
-        margin-bottom: 0.5rem;
-    }
-
-    .price-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #2d3748;
+    @keyframes pulseGlow {
+        0%, 100% {
+            transform: scale(1);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        50% {
+            transform: scale(1.05);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.5);
+        }
     }
 
     .price-currency {
-        font-size: 1rem;
-        color: #718096;
-        margin-right: 0.25rem;
+        font-size: 3rem;
+        color: #ffffff;
+        opacity: 0.9;
     }
 
-    .no-prices {
-        text-align: center;
-        padding: 2rem;
-        color: #718096;
+    .price-value-number {
+        animation: numberPop 0.6s ease-out 0.6s both;
+    }
+
+    @keyframes numberPop {
+        0% {
+            opacity: 0;
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     .error-message {
@@ -211,8 +186,9 @@
 
     .loading-spinner {
         text-align: center;
-        padding: 2rem;
+        padding: 4rem 2rem;
         display: none;
+        animation: fadeIn 0.3s ease-out;
     }
 
     .loading-spinner.show {
@@ -220,18 +196,67 @@
     }
 
     .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1.5rem;
+        position: relative;
+    }
+
+    .spinner::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 8px solid rgba(102, 126, 234, 0.1);
+        border-top: 8px solid #667eea;
+        border-right: 8px solid #764ba2;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
         animation: spin 1s linear infinite;
-        margin: 0 auto;
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .spinner::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        border: 6px solid rgba(102, 126, 234, 0.1);
+        border-top: 6px solid #764ba2;
+        border-left: 6px solid #667eea;
+        border-radius: 50%;
+        animation: spinReverse 0.8s linear infinite;
     }
 
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spinReverse {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(-360deg); }
+    }
+
+    .loading-spinner p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #667eea;
+        margin: 0;
+        animation: pulseText 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseText {
+        0%, 100% {
+            opacity: 0.7;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.05);
+        }
     }
 
     .back-button {
@@ -270,8 +295,30 @@
             padding: 1rem;
         }
 
-        .price-list {
-            grid-template-columns: 1fr;
+        .item-name {
+            font-size: 3rem;
+        }
+
+        .price-display {
+            font-size: 4rem;
+        }
+
+        .price-currency {
+            font-size: 2rem;
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+        }
+
+        .spinner::after {
+            width: 40px;
+            height: 40px;
+        }
+
+        .loading-spinner p {
+            font-size: 1.2rem;
         }
     }
 </style>
@@ -303,21 +350,16 @@
 
             <div class="loading-spinner" id="loadingSpinner">
                 <div class="spinner"></div>
-                <p style="margin-top: 1rem; color: #718096;">جاري البحث...</p>
+                <p>جاري البحث...</p>
             </div>
 
             <div class="error-message" id="errorMessage"></div>
 
             <div class="item-info" id="itemInfo">
                 <div class="item-name" id="itemName"></div>
-                <div class="item-code" id="itemCode"></div>
-                <div class="item-barcode" id="itemBarcode"></div>
-
-                <div class="prices-section">
-                    <div class="prices-section-title">
-                        <i class="fas fa-tags me-2"></i> الأسعار
-                    </div>
-                    <div id="pricesContainer"></div>
+                <div class="price-display" id="priceDisplay">
+                    <span class="price-currency">ر.س</span>
+                    <span class="price-value-number" id="priceValue"></span>
                 </div>
             </div>
         </div>
@@ -333,9 +375,7 @@
         const errorMessage = $('#errorMessage');
         const itemInfo = $('#itemInfo');
         const itemName = $('#itemName');
-        const itemCode = $('#itemCode');
-        const itemBarcode = $('#itemBarcode');
-        const pricesContainer = $('#pricesContainer');
+        const priceValue = $('#priceValue');
 
         // التركيز على حقل الباركود عند تحميل الصفحة
         barcodeInput.focus();
@@ -400,48 +440,36 @@
         }
 
         function displayItemInfo(item) {
-            // عرض معلومات الصنف
+            // عرض اسم الصنف
             itemName.text(item.name);
-            itemCode.text('كود الصنف: ' + item.code);
-            itemBarcode.text(item.barcode);
             
-            // عرض الأسعار
-            pricesContainer.empty();
+            // البحث عن السعر الأول المتاح
+            let displayPrice = null;
             
             if (item.prices_by_unit && item.prices_by_unit.length > 0) {
-                item.prices_by_unit.forEach(function(unitData) {
-                    const unitDiv = $('<div class="unit-prices"></div>');
-                    const unitName = $('<div class="unit-name"><i class="fas fa-ruler me-2"></i>' + unitData.unit_name + '</div>');
-                    unitDiv.append(unitName);
-                    
+                // البحث في أول وحدة تحتوي على أسعار
+                for (let i = 0; i < item.prices_by_unit.length; i++) {
+                    const unitData = item.prices_by_unit[i];
                     if (unitData.prices && unitData.prices.length > 0) {
-                        const priceList = $('<div class="price-list"></div>');
-                        
-                        unitData.prices.forEach(function(price) {
-                            const priceCard = $('<div class="price-card"></div>');
-                            const priceName = $('<div class="price-name">' + price.name + '</div>');
-                            const priceValue = $('<div class="price-value"><span class="price-currency">ر.س</span>' + formatPrice(price.price) + '</div>');
-                            
-                            priceCard.append(priceName);
-                            priceCard.append(priceValue);
-                            priceList.append(priceCard);
-                        });
-                        
-                        unitDiv.append(priceList);
-                    } else {
-                        const noPrices = $('<div class="no-prices">لا توجد أسعار لهذه الوحدة</div>');
-                        unitDiv.append(noPrices);
+                        // أخذ أول سعر (عادة السعر الأساسي)
+                        displayPrice = unitData.prices[0].price;
+                        break;
                     }
-                    
-                    pricesContainer.append(unitDiv);
-                });
-            } else {
-                const noPrices = $('<div class="no-prices">لا توجد أسعار متاحة لهذا الصنف</div>');
-                pricesContainer.append(noPrices);
+                }
             }
             
-            // إظهار معلومات الصنف
-            itemInfo.addClass('show');
+            // عرض السعر
+            if (displayPrice !== null) {
+                priceValue.text(formatPrice(displayPrice));
+            } else {
+                priceValue.text('غير متوفر');
+            }
+            
+            // إظهار معلومات الصنف مع animation
+            itemInfo.removeClass('show');
+            setTimeout(function() {
+                itemInfo.addClass('show');
+            }, 10);
         }
 
         function showError(message) {
@@ -456,7 +484,6 @@
         function hideResults() {
             itemInfo.removeClass('show');
             errorMessage.removeClass('show');
-            pricesContainer.empty();
         }
 
         function formatPrice(price) {

@@ -34,9 +34,8 @@ Route::get('/locale/{locale}', function (string $locale) {
 })->name('locale.switch');
 
 // Admin Dashboard
-Route::get('/admin/dashboard', function () {
-    return view('admin.main-dashboard');
-})->middleware(['auth', 'verified'])->name('admin.dashboard');
+use App\Http\Controllers\DashboardController;
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.dashboard');
 
 Route::get('/', function () {
     return redirect()->route('login');
