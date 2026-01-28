@@ -46,8 +46,9 @@
                             <label class="form-label">{{ __('الفرع') }}</label>
                             <select name="branch_id" class="form-select">
                                 <option value="">{{ __('جميع الفروع') }}</option>
-                                @foreach($branches as $branch)
-                                    <option value="{{ $branch->id }}" {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
+                                @foreach ($branches as $branch)
+                                    <option value="{{ $branch->id }}"
+                                        {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
                                         {{ $branch->name }}
                                     </option>
                                 @endforeach
@@ -128,7 +129,8 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="card-title">{{ __('صافي القيمة الدفترية') }}</h6>
-                                <h4>{{ number_format($items->sum('cost') - $items->sum('accumulated_depreciation'), 2) }}</h4>
+                                <h4>{{ number_format($items->sum('cost') - $items->sum('accumulated_depreciation'), 2) }}
+                                </h4>
                             </div>
                             <div class="align-self-center">
                                 <i class="fas fa-calculator fa-2x"></i>
@@ -154,6 +156,7 @@
                                 <th>{{ __('قيمة الخردة') }}</th>
                                 <th>{{ __('الإهلاك السنوي') }}</th>
                                 <th>{{ __('الإهلاك المتراكم') }}</th>
+                                <th>{{ __('Maintenance Costs') }}</th>
                                 <th>{{ __('القيمة الدفترية') }}</th>
                                 <th>{{ __('نسبة الإهلاك') }}</th>
                                 <th>{{ __('السنوات المتبقية') }}</th>
@@ -165,7 +168,7 @@
                                     <td>
                                         <div class="d-flex flex-column">
                                             <strong>{{ $item->name }}</strong>
-                                            @if($item->assetAccount)
+                                            @if ($item->assetAccount)
                                                 <small class="text-muted">
                                                     {{ $item->assetAccount->code }} - {{ $item->assetAccount->aname }}
                                                 </small>
@@ -179,12 +182,14 @@
                                     <td>{{ number_format($item->salvage_value, 2) }}</td>
                                     <td>{{ number_format($item->annual_depreciation, 2) }}</td>
                                     <td>{{ number_format($item->accumulated_depreciation, 2) }}</td>
+                                    <td class="text-danger fw-bold">
+                                        {{ number_format($item->getTotalMaintenanceCost(), 2) }}</td>
                                     <td>{{ number_format($item->getNetBookValue(), 2) }}</td>
                                     <td>
                                         <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar" 
-                                                 style="width: {{ $item->getDepreciationPercentage() }}%"
-                                                 role="progressbar">
+                                            <div class="progress-bar"
+                                                style="width: {{ $item->getDepreciationPercentage() }}%"
+                                                role="progressbar">
                                                 {{ number_format($item->getDepreciationPercentage(), 1) }}%
                                             </div>
                                         </div>
@@ -221,50 +226,51 @@
     </div>
 
     @push('styles')
-    <style>
-        @media print {
-            .no-print {
-                display: none !important;
+        <style>
+            @media print {
+                .no-print {
+                    display: none !important;
+                }
+
+                .print-only {
+                    display: block !important;
+                    color: #000 !important;
+                }
+
+                .card {
+                    border: 1px solid #000 !important;
+                    box-shadow: none !important;
+                }
+
+                .table th,
+                .table td {
+                    border: 1px solid #000 !important;
+                }
+
+                .progress {
+                    border: 1px solid #000;
+                }
+
+                .progress-bar {
+                    background-color: #000 !important;
+                    color: #fff !important;
+                }
             }
-            
+
             .print-only {
-                display: block !important;
-                color: #000 !important;
+                display: none;
             }
-            
-            .card {
-                border: 1px solid #000 !important;
-                box-shadow: none !important;
-            }
-            
-            .table th, .table td {
-                border: 1px solid #000 !important;
-            }
-            
+
             .progress {
-                border: 1px solid #000;
+                background-color: #e9ecef;
             }
-            
+
             .progress-bar {
-                background-color: #000 !important;
-                color: #fff !important;
+                background-color: #28a745;
+                color: white;
+                font-size: 12px;
+                line-height: 20px;
             }
-        }
-        
-        .print-only {
-            display: none;
-        }
-        
-        .progress {
-            background-color: #e9ecef;
-        }
-        
-        .progress-bar {
-            background-color: #28a745;
-            color: white;
-            font-size: 12px;
-            line-height: 20px;
-        }
-    </style>
+        </style>
     @endpush
 @endsection

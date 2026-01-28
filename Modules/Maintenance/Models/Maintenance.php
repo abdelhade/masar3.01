@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Maintenance\Models;
 
 use App\Models\OperHead;
@@ -16,6 +18,9 @@ class Maintenance extends Model
         'status' => MaintenanceStatus::class,
         'date' => 'date',
         'accural_date' => 'date',
+        'spare_parts_cost' => 'decimal:2',
+        'labor_cost' => 'decimal:2',
+        'total_cost' => 'decimal:2',
     ];
 
     protected static function booted()
@@ -26,6 +31,16 @@ class Maintenance extends Model
     public function type()
     {
         return $this->belongsTo(ServiceType::class, 'service_type_id');
+    }
+
+    public function asset()
+    {
+        return $this->belongsTo(\Modules\Depreciation\Models\AccountAsset::class, 'asset_id');
+    }
+
+    public function depreciationItem()
+    {
+        return $this->belongsTo(\Modules\Depreciation\Models\DepreciationItem::class, 'depreciation_item_id');
     }
 
     public function operHead()
