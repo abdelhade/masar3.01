@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\OfflinePOS\Database\Seeders;
+namespace Modules\OfflinePOS\database\seeders;
 
 use Illuminate\Database\Seeder;
 
