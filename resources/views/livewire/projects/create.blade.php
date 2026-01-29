@@ -9,6 +9,7 @@ new class extends Component {
     public $description = '';
     public $start_date = '';
     public $end_date = '';
+    public $budget;
     public $actual_end_date = null;
     public $status = 'pending';
 
@@ -21,6 +22,7 @@ new class extends Component {
             'end_date' => 'required|date|after:start_date',
             'actual_end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'budget' => 'nullable|numeric|min:0',
         ]);
 
         // Convert empty string to null for actual_end_date
@@ -30,9 +32,7 @@ new class extends Component {
 
         $validated['created_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
-
         Project::create($validated);
-
         session()->flash('success', 'تم إنشاء المشروع بنجاح');
         return redirect()->route('projects.index');
     }
@@ -98,6 +98,17 @@ new class extends Component {
                             <option value="cancelled">ملغي</option>
                         </select>
                         @error('status')
+                            <div class="invalid-feedback font-hold">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-1 mb-3">
+                        <label for="budget" class="form-label font-hold fw-bold">الميزانية</label>
+                        <input type="number" step="0.01" class="form-control @error('budget') is-invalid @enderror"
+                            wire:model="budget" id="budget" placeholder="0.00">
+                        @error('budget')
                             <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>

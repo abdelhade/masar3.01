@@ -63,10 +63,7 @@ class ProjectController extends Controller
         }
 
         $vouchers = OperHead::where('project_id', $id)
-            ->where(function ($query) {
-                $query->where('pro_type', 1)
-                    ->orWhere('pro_type', 2);
-            })
+            ->whereIn('pro_type', [1, 2, 32, 33, 101])
             ->get();
 
         return view('projects.show', compact('project', 'operations', 'equipments', 'vouchers', 'equipmentOperations'));
