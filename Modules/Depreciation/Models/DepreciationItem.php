@@ -11,7 +11,7 @@ class DepreciationItem extends Model
 {
     protected $table = 'depreciation_items';
     protected $guarded = [];
-    
+
     protected $casts = [
         'purchase_date' => 'date',
         'cost' => 'decimal:2',
@@ -19,7 +19,21 @@ class DepreciationItem extends Model
         'annual_depreciation' => 'decimal:2',
         'accumulated_depreciation' => 'decimal:2',
         'is_active' => 'boolean',
+        'insurance_renewal_date' => 'date',
     ];
+
+    /**
+     * التحقق من اقتراب موعد تجديد التأمين
+     */
+    public function isInsuranceRenewalSoon(): bool
+    {
+        if (!$this->insurance_renewal_date) {
+            return false;
+        }
+
+        $notificationDate = $this->insurance_renewal_date->subDays($this->insurance_notification_days ?? 30);
+        return now()->greaterThanOrEqualTo($notificationDate) && now()->lessThan($this->insurance_renewal_date);
+    }
 
     // Relationships
     public function assetAccount(): BelongsTo
@@ -48,7 +62,7 @@ class DepreciationItem extends Model
         if ($this->depreciation_method === 'straight_line') {
             return ($this->cost - $this->salvage_value) / $this->useful_life;
         }
-        
+
         return 0; // Add other methods as needed
     }
 
@@ -67,5 +81,15 @@ class DepreciationItem extends Model
     {
         if ($this->cost == 0) return 0;
         return ($this->accumulated_depreciation / $this->cost) * 100;
+    }
+
+    public function maintenances()
+    {
+        return $this->hasMany(\Modules\Maintenance\Models\Maintenance::class, 'depreciation_item_id');
+    }
+
+    public function getTotalMaintenanceCost(): float
+    {
+        return (float) $this->maintenances()->sum('total_cost');
     }
 }

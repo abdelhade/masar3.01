@@ -108,6 +108,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/vouchers/statistics', [VoucherController::class, 'statistics'])->name('vouchers.statistics');
     Route::resource('vouchers', VoucherController::class)->names('vouchers');
+    Route::resource('projects', ProjectController::class)->names('projects');
 
     Route::get('transfers/statistics', [TransferController::class, 'statistics'])->name('transfers.statistics');
     Route::resource('transfers', TransferController::class)->names('transfers');

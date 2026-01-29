@@ -18,7 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('client_id')->nullable();
             $table->tinyInteger('working_days')->default(5);
             $table->tinyInteger('daily_work_hours')->default(8);
-            $table->smallInteger('holidays')->default(0);
+            $table->Integer('holidays')->nullable();
+            $table->decimal('budget', 15, 2)->default(0)->nullable();
             $table->string('working_zone')->nullable();
             $table->foreignId('project_type_id')->nullable()->constrained('project_types')->nullOnDelete();
 

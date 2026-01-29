@@ -10,6 +10,7 @@ new class extends Component {
     public $description;
     public $start_date;
     public $end_date;
+    public $budget;
     public $actual_end_date;
     public $status;
 
@@ -18,6 +19,7 @@ new class extends Component {
         $this->project = $project;
         $this->name = $project->name;
         $this->description = $project->description;
+        $this->budget = $project->budget;
         $this->start_date = $project->start_date ? $project->start_date->format('Y-m-d') : null;
         $this->end_date = $project->end_date ? $project->end_date->format('Y-m-d') : null;
         $this->actual_end_date = $project->actual_end_date ? $project->actual_end_date->format('Y-m-d') : null;
@@ -32,6 +34,7 @@ new class extends Component {
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'actual_end_date' => 'nullable|date|after_or_equal:start_date',
+            'budget' => 'nullable|numeric|min:0',
             'status' => 'required|in:pending,in_progress,completed,cancelled',
         ]);
 
@@ -103,14 +106,25 @@ new class extends Component {
 
                     <div class="col-md-2 mb-3">
                         <label for="status" class="form-label font-hold fw-bold">حالة المشروع</label>
-                        <select class="form-select font-hold fw-bold @error('status') is-invalid @enderror" wire:model="status"
-                            id="status">
+                        <select class="form-select font-hold fw-bold @error('status') is-invalid @enderror"
+                            wire:model="status" id="status">
                             <option value="pending">قيد الانتظار</option>
                             <option value="in_progress">قيد التنفيذ</option>
                             <option value="completed">مكتمل</option>
                             <option value="cancelled">ملغي</option>
                         </select>
                         @error('status')
+                            <div class="invalid-feedback font-hold">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-1 mb-3">
+                        <label for="budget" class="form-label font-hold fw-bold">الميزانية</label>
+                        <input type="number" class="form-control @error('budget') is-invalid @enderror"
+                            wire:model="budget" id="budget" placeholder="الميزانية">
+                        @error('budget')
                             <div class="invalid-feedback font-hold">
                                 {{ $message }}
                             </div>

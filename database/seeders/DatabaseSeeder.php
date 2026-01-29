@@ -28,7 +28,7 @@ use Modules\Depreciation\database\seeders\DepreciationDatabaseSeeder;
 use Modules\Installments\database\seeders\InstallmentsDatabaseSeeder;
 use Modules\Manufacturing\database\seeders\ManufacturingDatabaseSeeder;
 use Modules\Authorization\Database\Seeders\RoleAndPermissionDatabaseSeeder;
-use Modules\OfflinePOS\Database\Seeders\OfflinePOSDatabaseSeeder;
+use Modules\OfflinePOS\database\seeders\OfflinePOSDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -79,6 +79,6 @@ class DatabaseSeeder extends Seeder
             VaribalSeeder::class,
             GiveAllPermissionsToAdminSeeder::class,
         ]);
-        
+
     }
 }

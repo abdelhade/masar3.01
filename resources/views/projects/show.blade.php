@@ -281,6 +281,67 @@
         </div>
     </div>
 
+    <!-- Budget vs Receipts Comparison -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="project-info-card">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-icon" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div>
+                                <strong>الميزانية التقديرية:</strong>
+                                <h5 class="ms-2 mb-0 text-primary">{{ number_format($project->budget, 2) }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        @php
+                            $totalReceipts = $vouchers->whereIn('pro_type', [1, 32])->sum('pro_value');
+                            $totalPayments = $vouchers->whereIn('pro_type', [2, 33, 101])->sum('pro_value');
+                            $budgetDiff = $project->budget + $totalReceipts - $totalPayments;
+                            $percent = $project->budget > 0 ? ($totalPayments / $project->budget) * 100 : 0;
+                        @endphp
+                        <div class="info-item">
+                            <div class="info-icon" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                            <div>
+                                <strong>إجمالي المقبوضات:</strong>
+                                <h5 class="ms-2 mb-0 text-success">{{ number_format($totalReceipts, 2) }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-icon" style="background: {{ $budgetDiff < 0 ? 'linear-gradient(45deg, #dc3545, #c82333)' : 'linear-gradient(45deg, #ffc107, #e0a800)' }};">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div>
+                                <strong>{{ $budgetDiff < 0 ? 'تجاوز الميزانية:' : 'المتبقي من الميزانية:' }}</strong>
+                                <h5 class="ms-2 mb-0 {{ $budgetDiff < 0 ? 'text-danger' : 'text-warning' }}">
+                                    {{ number_format(abs($budgetDiff), 2) }}
+                                    <small class="text-muted" style="font-size: 0.8rem;">({{ number_format($percent, 1) }}%)</small>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress mt-3" style="height: 10px;">
+                    <div class="progress-bar {{ $percent > 100 ? 'bg-danger' : 'bg-success' }}" 
+                         role="progressbar" 
+                         style="width: {{ min($percent, 100) }}%" 
+                         aria-valuenow="{{ $percent }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- project body -->
     <!-- equipments and vouchers and operations -->
     <div class="row">
@@ -397,10 +458,18 @@
                             <tbody>
                                 @forelse ($vouchers as $voucher)
                                     <tr>
-                                        <td>{{ $voucher->type->ptext }}</td>
+                                        <td>
+                                            @if(in_array($voucher->pro_type, [1, 32]))
+                                                <span class="badge bg-success"><i class="fas fa-arrow-down me-1"></i>{{ $voucher->type->ptext }}</span>
+                                            @elseif(in_array($voucher->pro_type, [2, 33, 101]))
+                                                <span class="badge bg-danger"><i class="fas fa-arrow-up me-1"></i>{{ $voucher->type->ptext }}</span>
+                                            @else
+                                                {{ $voucher->type->ptext ?? 'غير محدد' }}
+                                            @endif
+                                        </td>
                                         <td>{{ $voucher->pro_date }}</td>
-                                        <td class="amount-positive">{{ $voucher->pro_type == 1 ? number_format($voucher->pro_value, 2) : '0.00' }}</td>
-                                        <td class="amount-negative">{{ $voucher->pro_type == 2 ? number_format($voucher->pro_value, 2) : '0.00' }}</td>
+                                        <td class="amount-positive">{{ in_array($voucher->pro_type, [1, 32]) ? number_format($voucher->pro_value, 2) : '0.00' }}</td>
+                                        <td class="amount-negative">{{ in_array($voucher->pro_type, [2, 33, 101]) ? number_format($voucher->pro_value, 2) : '0.00' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -415,8 +484,8 @@
                                 <tr class="summary-row">
                                     <td><i class="fas fa-calculator me-2"></i>المجموع</td>
                                     <td></td>
-                                    <td class="amount-positive">{{ number_format($vouchers->where('pro_type', 1)->sum('pro_value'), 2) }}</td>
-                                    <td class="amount-negative">{{ number_format($vouchers->where('pro_type', 2)->sum('pro_value'), 2) }}</td>
+                                    <td class="amount-positive">{{ number_format($vouchers->whereIn('pro_type', [1, 32])->sum('pro_value'), 2) }}</td>
+                                    <td class="amount-negative">{{ number_format($vouchers->whereIn('pro_type', [2, 33, 101])->sum('pro_value'), 2) }}</td>
                                 </tr>
                             </tfoot>
                         </table>

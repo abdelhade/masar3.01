@@ -45,7 +45,21 @@ class Vehicle extends Model
         'purchase_cost' => 'decimal:2',
         'current_mileage' => 'decimal:2',
         'is_active' => 'boolean',
+        'insurance_renewal_date' => 'date',
     ];
+
+    /**
+     * التحقق من اقتراب موعد تجديد التأمين
+     */
+    public function isInsuranceRenewalSoon(): bool
+    {
+        if (!$this->insurance_renewal_date) {
+            return false;
+        }
+
+        $notificationDate = $this->insurance_renewal_date->subDays($this->insurance_notification_days ?? 30);
+        return now()->greaterThanOrEqualTo($notificationDate) && now()->lessThan($this->insurance_renewal_date);
+    }
 
     protected static function booted(): void
     {

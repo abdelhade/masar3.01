@@ -27,12 +27,12 @@ class ServiceTypeController extends Controller
     public function create()
     {
         $branches = userBranches();
-
         return view('maintenance::service-types.create', compact('branches'));
     }
 
     public function store(ServiceTypeRequest $request)
     {
+
         try {
             ServiceType::create($request->validated());
             Alert::toast(__('Item created successfully'), 'success');
@@ -48,8 +48,9 @@ class ServiceTypeController extends Controller
     public function edit($id)
     {
         $type = ServiceType::findOrFail($id);
+        $branches = userBranches();
 
-        return view('maintenance::service-types.edit', compact('type'));
+        return view('maintenance::service-types.edit', compact('type', 'branches'));
     }
 
     public function update(ServiceTypeRequest $request, ServiceType $service_type)
