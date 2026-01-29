@@ -44,9 +44,7 @@ class MaintenanceServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        $this->commands([
-            \Modules\Maintenance\Console\CheckMaintenanceReminders::class,
-        ]);
+        $this->commands([]);
     }
 
     /**

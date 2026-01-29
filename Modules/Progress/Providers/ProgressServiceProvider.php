@@ -21,7 +21,6 @@ class ProgressServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerCommands();
         $this->registerCommandSchedules();
         $this->registerTranslations();
         $this->registerConfig();
@@ -41,20 +40,21 @@ class ProgressServiceProvider extends ServiceProvider
     /**
      * Register commands in the format of Command::class
      */
-    protected function registerCommands(): void
-    {
-        // $this->commands([]);
-    }
 
     /**
      * Register command Schedules.
      */
     protected function registerCommandSchedules(): void
     {
-        // $this->app->booted(function () {
-        //     $schedule = $this->app->make(Schedule::class);
-        //     $schedule->command('inspire')->hourly();
-        // });
+        $this->app->booted(function () {
+            $schedule = $this->app->make(\Illuminate\Console\Scheduling\Schedule::class);
+
+            // فحص التأخيرات كل ساعة
+            $schedule->command('progress:check-delays')->hourly();
+
+            // فحص الميزانيات كل 6 ساعات
+            $schedule->command('progress:check-budgets')->everySixHours();
+        });
     }
 
     /**

@@ -158,10 +158,12 @@
             const timeAgo = getTimeAgo(notification.created_at);
             const isRead = notification.read_at !== null;
             const readClass = isRead ? 'notification-read' : 'notification-unread';
+            // Use javascript:void(0) to prevent default navigation, we handle it in JS
+            const url = data.url ? data.url : 'javascript:void(0)'; 
 
             notificationHTML += `
-                <a href="#" class="dropdown-item py-3 notification-item ${readClass}"
-                   data-notification-id="${notification.id}">
+                <a href="${url}" class="dropdown-item py-3 notification-item ${readClass}"
+                   data-notification-id="${notification.id}" data-url="${data.url || ''}">
                     <small class="float-end text-muted ps-2">${timeAgo}</small>
                     <div class="media">
                         <div class="avatar-md bg-soft-primary">
@@ -178,10 +180,17 @@
 
         list.innerHTML = notificationHTML;
 
+        // Attach click handlers
         document.querySelectorAll('.notification-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                // If there is a URL, prevent default to ensure we mark as read first
+                const url = this.dataset.url;
+                if (url && url !== 'undefined' && url !== '') {
+                    e.preventDefault(); 
+                }
+                
                 const notificationId = this.dataset.notificationId;
-                markAsRead(notificationId);
+                markAsRead(notificationId, url);
             });
         });
     }
@@ -189,10 +198,17 @@
     function addSingleNotification(notification) {
         const list = document.getElementById('notificationList');
         const timeAgo = getTimeAgo(notification.created_at);
+        const data = notification; // In broadcast, notification IS the data structure from toArray/toBroadcast
+        
+        // Check if `url` is directly in notification or in data wrapper (depends on event structure)
+        // Usually broadcast event has the structure defined in `toBroadcast`. 
+        // Our GeneralNotification returns `notification => toArray()`.
+        // So `notification` here has `url`.
+        const url = notification.url ? notification.url : 'javascript:void(0)';
 
         const notificationHTML = `
-            <a href="#" class="dropdown-item py-3 notification-item notification-unread"
-               data-notification-id="${notification.id}">
+            <a href="${url}" class="dropdown-item py-3 notification-item notification-unread"
+               data-notification-id="${notification.id}" data-url="${notification.url || ''}">
                 <small class="float-end text-muted ps-2">${timeAgo}</small>
                 <div class="media">
                     <div class="avatar-md bg-soft-primary">
@@ -206,7 +222,12 @@
             </a>
         `;
 
-        list.innerHTML = notificationHTML + list.innerHTML;
+        // Check if list was empty
+        if (list.querySelector('.text-center')) {
+             list.innerHTML = notificationHTML;
+        } else {
+             list.innerHTML = notificationHTML + list.innerHTML;
+        }
 
         const badge = document.getElementById('notificationBadge');
         const count = document.getElementById('notificationCount');
@@ -216,13 +237,22 @@
         badge.textContent = currentCount;
 
         const newItem = list.querySelector('.notification-item:first-child');
-        newItem.addEventListener('click', function() {
+        newItem.addEventListener('click', function(e) {
+            const url = this.dataset.url;
+             if (url && url !== 'undefined' && url !== '') {
+                e.preventDefault(); 
+            }
             const notificationId = this.dataset.notificationId;
-            markAsRead(notificationId);
+            markAsRead(notificationId, url);
         });
     }
 
     function getNotificationIcon(iconType) {
+        // If icon is a class string (e.g. "las la-something"), return an i tag
+        if (iconType && (iconType.includes('las ') || iconType.includes('fa ') || iconType.includes('fas ') || iconType.includes('far '))) {
+             return `<i class="${iconType} font-20"></i>`;
+        }
+
         const icons = {
             'shopping-cart': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart align-self-center icon-xs"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>',
             'users': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users align-self-center icon-xs"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
@@ -243,7 +273,7 @@
         return `منذ ${Math.floor(diffInMinutes / 1440)} يوم`;
     }
 
-    function markAsRead(notificationId) {
+    function markAsRead(notificationId, redirectUrl = null) {
         fetch(`/notifications/${notificationId}/read`, {
                 method: 'POST',
                 headers: {
@@ -254,10 +284,20 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    loadNotifications();
+                    if (redirectUrl && redirectUrl !== 'undefined' && redirectUrl !== '') {
+                        window.location.href = redirectUrl;
+                    } else {
+                        loadNotifications();
+                    }
                 }
             })
-            .catch(error => console.error('خطأ في تحديد الإشعار كمقروء:', error));
+            .catch(error => {
+                console.error('خطأ في تحديد الإشعار كمقروء:', error);
+                // Fallback: redirects anyway if there's a URL
+                if (redirectUrl && redirectUrl !== 'undefined' && redirectUrl !== '') {
+                    window.location.href = redirectUrl;
+                }
+            });
     }
 
     function markAllAsRead() {
