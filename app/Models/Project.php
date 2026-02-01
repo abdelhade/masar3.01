@@ -40,4 +40,9 @@ class Project extends Model
     {
         return $this->belongsTo(\Modules\Accounts\Models\AccHead::class, 'account_id');
     }
+
+    public function operations()
+    {
+        return $this->hasMany(\App\Models\OperHead::class, 'project_id');
+    }
 }
