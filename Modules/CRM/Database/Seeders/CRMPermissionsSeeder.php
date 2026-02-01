@@ -26,6 +26,7 @@ class CRMPermissionsSeeder extends Seeder
                 'Tickets',
                 'Returns',
                 'CRM Statistics',
+                'Campaigns'
             ],
         ];
 

@@ -86,6 +86,14 @@
     </li>
 @endcan
 
+@can('view Campaigns')
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('campaigns.index') }}">
+            <i class="ti-control-record"></i>{{ __('Marketing Campaigns') }}
+        </a>
+    </li>
+@endcan
+
 @can('view Task Types')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('tasks.types.index') }}">
