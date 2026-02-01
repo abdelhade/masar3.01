@@ -355,5 +355,13 @@
     "delete Campaigns": "حذف الحملات",
     "view Campaigns": "عرض الحملات",
     "Address": "العنوان",
-    "Enter address": "أدخل العنوان"
+    "Enter address": "أدخل العنوان",
+    "New Lead Created": "تم إنشاء فرصة جديدة",
+    "A new lead named \":title\" has been added.": "تم إضافة فرصة جديدة بعنوان \":title\".",
+    "Lead Status Updated": "تم تحديث حالة الفرصة",
+    "Lead \":title\" status changed to \":status\".": "تم تغيير حالة الفرصة \":title\" إلى \":status\".",
+    "Lead Updated": "تم تحديث الفرصة",
+    "Lead \":title\" has been updated.": "تم تحديث الفرصة \":title\".",
+    "Lead Deleted": "تم حذف الفرصة",
+    "Lead \":title\" has been deleted.": "تم حذف الفرصة \":title\"."
 }

@@ -246,12 +246,28 @@ class LeadsBoard extends Component
         try {
             $lead = Lead::find($leadId);
             if ($lead) {
+                $oldStatus = $lead->status;
                 $lead->changeStatus($newStatusId);
+                $newStatus = LeadStatus::find($newStatusId);
+                
+                // إرسال إشعار لجميع المستخدمين
+                $users = \App\Models\User::all();
+                \Illuminate\Support\Facades\Notification::send($users, new \Modules\Notifications\Notifications\GeneralNotification(
+                    title: __('Lead Status Updated'),
+                    message: __('Lead ":title" status changed to ":status".', [
+                        'title' => $lead->title,
+                        'status' => $newStatus->name ?? 'Unknown'
+                    ]),
+                    url: route('leads.board'),
+                    type: 'info',
+                    icon: 'las la-exchange-alt'
+                ));
+                
                 $this->loadData();
 
                 $this->dispatch('lead-moved', [
                     'leadId' => $leadId,
-                    'newStatus' => LeadStatus::find($newStatusId)->name
+                    'newStatus' => $newStatus->name
                 ]);
 
                 session()->flash('message', 'تم تحديث حالة الفرصة بنجاح!');
@@ -323,6 +339,16 @@ class LeadsBoard extends Component
                 'assigned_to' => $this->editingLead['assigned_to'],
                 'description' => $this->editingLead['description']
             ]);
+
+            // إرسال إشعار لجميع المستخدمين
+            $users = \App\Models\User::all();
+            \Illuminate\Support\Facades\Notification::send($users, new \Modules\Notifications\Notifications\GeneralNotification(
+                title: __('Lead Updated'),
+                message: __('Lead ":title" has been updated.', ['title' => $lead->title]),
+                url: route('leads.board'),
+                type: 'info',
+                icon: 'las la-edit'
+            ));
 
             $this->closeModal();
             $this->loadData();
@@ -408,7 +434,18 @@ class LeadsBoard extends Component
                     ->where('branches.is_active', 1)
                     ->value('branches.id');
             }
-            Lead::create($leadData);
+            $lead = Lead::create($leadData);
+            
+            // إرسال إشعار لجميع المستخدمين
+            $users = \App\Models\User::all();
+            \Illuminate\Support\Facades\Notification::send($users, new \Modules\Notifications\Notifications\GeneralNotification(
+                title: __('New Lead Created'),
+                message: __('A new lead named ":title" has been added.', ['title' => $lead->title]),
+                url: route('leads.board'),
+                type: 'success',
+                icon: 'las la-bullseye'
+            ));
+            
             $this->closeModal();
             $this->loadData();
             $this->dispatch('lead-added');
@@ -456,7 +493,19 @@ class LeadsBoard extends Component
         try {
             $lead = Lead::find($leadId);
             if ($lead) {
+                $leadTitle = $lead->title;
                 $lead->delete();
+                
+                // إرسال إشعار لجميع المستخدمين
+                $users = \App\Models\User::all();
+                \Illuminate\Support\Facades\Notification::send($users, new \Modules\Notifications\Notifications\GeneralNotification(
+                    title: __('Lead Deleted'),
+                    message: __('Lead ":title" has been deleted.', ['title' => $leadTitle]),
+                    url: route('leads.board'),
+                    type: 'warning',
+                    icon: 'las la-trash'
+                ));
+                
                 $this->loadData();
                 session()->flash('message', 'تم حذف الفرصة بنجاح!');
             }
