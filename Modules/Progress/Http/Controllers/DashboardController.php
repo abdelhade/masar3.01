@@ -79,6 +79,7 @@ class DashboardController extends Controller
             'active' => 0,
             'completed' => 0,
             'pending' => 0,
+            'other' => 0,
         ];
 
         foreach ($allProjects as $project) {
@@ -87,8 +88,6 @@ class DashboardController extends Controller
             if (isset($statusCounts[$st])) {
                 $statusCounts[$st]++;
             } else {
-                // simple fallback
-                if (!isset($statusCounts['other'])) $statusCounts['other'] = 0;
                 $statusCounts['other']++;
             }
 

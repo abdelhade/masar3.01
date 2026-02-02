@@ -104,6 +104,16 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" href="{{ route('reports.items.idle') }}">
+                <i class="ti-control-record"></i>{{ __('Idle Items Report') }}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('reports.items.most-expensive') }}">
+                <i class="ti-control-record"></i>{{ __('reports.most_expensive_items_report') }}
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="{{ route('reports.items.with-stores') }}">
                 <i class="ti-control-record"></i>{{ __('Items per Warehouse') }}
             </a>
@@ -180,6 +190,11 @@
         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
     </a>
     <ul class="sub-menu mm-collapse">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('reports.purchasing.dashboard') }}">
+                <i class="ti-control-record"></i>{{ __('Purchasing Dashboard') }}
+            </a>
+        </li>
         <li class="nav-item">
             <a class="nav-link" href="{{ route('reports.general-purchases-report') }}">
                 <i class="ti-control-record"></i>{{ __('General Purchases Report') }}

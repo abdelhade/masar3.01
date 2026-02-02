@@ -3,6 +3,19 @@
     <nav class="navbar-custom">
         <ul class="list-unstyled topbar-nav float-end mb-0">
 
+            {{-- Theme switcher dropdown --}}
+            <li class="dropdown" data-masar-theme-dropdown>
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" title="{{ __('Theme') }}">
+                    <i data-feather="droplet" class="align-self-center"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="#" data-masar-theme="classic"><i class="fas fa-palette me-1"></i> Classic (Bootstrap)</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="mint-green"><i class="fas fa-leaf me-1"></i> Mint Green</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="dark"><i class="fas fa-moon me-1"></i> Dark Mode</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="monokai"><i class="fas fa-code me-1"></i> Monokai</a>
+                </div>
+            </li>
+
             @can('عرض الاعدادات')
                 <li>
                     <a title="الإعدادات" href="{{ route('mysettings.index') }}" class="nav-link">

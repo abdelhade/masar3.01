@@ -1,5 +1,11 @@
 @extends('admin.dashboard')
 
+@section('body_class', 'invoice-page sidebar-collapsed')
+@section('hide_footer')
+@endsection
+@push('styles')
+    @include('admin.partials.invoice-page-styles')
+@endpush
 @section('sidebar')
     @if (in_array($type, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')

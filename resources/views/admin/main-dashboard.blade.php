@@ -11,13 +11,19 @@
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard-main.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/themes/masar-themes.css') }}">
 
     <!-- Lucide Icons CDN -->
     <script src="{{ asset('assets/js/lucide.js') }}"></script>
 </head>
 
 <body class="theme-neumorphism-lite">
-
+    <script>
+    (function(){var k='masar_theme';var v;try{v=localStorage.getItem(k);}catch(e){v=null;}
+    var t=(v&&['classic','mint-green','dark','monokai'].indexOf(v)!==-1)?v:'classic';
+    document.body.classList.add('theme-'+t);
+    })();
+    </script>
     <!-- Animated Doodles Background - Geometric Shapes, Currency & ERP Icons -->
     <div class="doodles-container">
         <!-- Dollar Sign Icon -->
@@ -154,6 +160,16 @@
                     <input type="text" id="searchInput" class="search-input frst" placeholder="🔍 ابحث عن القسم...">
                     <span class="search-count" id="searchCount"></span>
                 </div>
+                {{-- Theme switcher: select --}}
+                <div class="ms-3 d-flex align-items-center gap-2">
+                    <label for="masar-theme-select" class="mb-0 small fw-bold text-white">المظهر:</label>
+                    <select id="masar-theme-select" class="form-select form-select-sm shadow-sm" title="تغيير المظهر" style="min-width: 140px; border-radius: 8px; font-weight: 600;">
+                        <option value="classic">Classic (أزرق)</option>
+                        <option value="mint-green">Mint Green</option>
+                        <option value="dark">Dark Mode</option>
+                        <option value="monokai">Monokai</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -281,6 +297,7 @@
             <div class="apps-icons-row">
                 <div class="d-flex">
                     {{-- البيانات الاساسيه --}}
+                    <div class="app-icon-group">
                     @canany([
                         'view Clients',
                         'view Suppliers',
@@ -306,8 +323,10 @@
                             <p>البيانات الاساسيه</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- الاصناف --}}
+                    <div class="app-icon-group">
                     @canany([
                         'view items',
                         'view units',
@@ -323,8 +342,10 @@
                             <p>الاصناف</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- الصلاحيات --}}
+                    <div class="app-icon-group">
                     @canany(['view roles', 'view branches', 'view settings', 'view login-history', 'view active-sessions',
                         'view activity-logs'])
                         <a href="{{ route('users.index') }}" class="app-icon-large icon-bg-green">
@@ -334,8 +355,10 @@
                             <p>الصلاحيات</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- الاعدادات --}}
+                    <div class="app-icon-group">
                     @can('view settings')
                         <a href="{{ route('mysettings.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -344,8 +367,10 @@
                             <p>الاعدادات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- التقارير --}}
+                    <div class="app-icon-group">
                     @canany(['view DailyWorkAnalysis', 'view Chart-of-Accounts', 'view balance-sheet', 'view Profit-Loss',
                         'view Sales-Reports', 'view Purchasing-Reports', 'view Inventory-Reports', 'view Expenses-Reports'])
                         <a href="{{ route('reports.overall') }}" class="app-icon-large icon-bg-green">
@@ -355,8 +380,10 @@
                             <p>التقارير</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- crm --}}
+                    <div class="app-icon-group">
                     @canany(['view CRM', 'view CRM Statistics'])
                         <a href="{{ route('statistics.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -365,8 +392,10 @@
                             <p>CRM</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- المبيعات --}}
+                    <div class="app-icon-group">
                     @can('view Sales Invoice')
                         <a href="{{ route('invoices.index', ['type' => 10]) }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -375,8 +404,10 @@
                             <p>المبيعات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- pos --}}
+                    <div class="app-icon-group">
                     @can('view POS System')
                         <a href="{{ route('pos.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -385,8 +416,10 @@
                             <p>نقطة البيع</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- ادارة المستأجرات --}}
+                    <div class="app-icon-group">
                     @can('view Buildings')
                         <a href="{{ route('rentals.buildings.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -395,8 +428,10 @@
                             <p>ادارة المستأجرات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- ادارة الحسابات --}}
+                    <div class="app-icon-group">
                     @can('view journals')
                         <a href="{{ route('journals.index', ['type' => 'basic_journal']) }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -405,8 +440,10 @@
                             <p>أدارة الحسابات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- ادارة المصروفات --}}
+                    <div class="app-icon-group">
                     @can('view Expenses-Management')
                         <a href="{{ route('expenses.dashboard') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -415,8 +452,10 @@
                             <p>ادارة المصروفات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- السندات الماليه --}}
+                    <div class="app-icon-group">
                     @canany(['view receipt vouchers', 'view payment vouchers', 'view exp-payment'])
                         <a href="{{ route('vouchers.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -425,8 +464,10 @@
                             <p>السندات الماليه</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- التحويلات النقديه --}}
+                    <div class="app-icon-group">
                     @can('view transfers')
                         <a href="{{ route('transfers.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -435,8 +476,10 @@
                             <p>التحويلات النقديه</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- ادارة الدفعات --}}
+                    <div class="app-icon-group">
                     @can('view Installment Plans')
                         <a href="{{ route('installments.plans.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -445,19 +488,23 @@
                             <p>ادارة الدفعات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- ادارة الشيكات --}}
+                    <div class="app-icon-group">
                     @can('view Checks')
                         <a href="{{ route('checks.incoming') }}" class="app-icon-large icon-bg-green" style="position: relative;">
-                            <span style="position: absolute; top: -8px; right: -8px; background: #ff4757; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">جديد</span>
+                            <span style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">جديد</span>
                             <div class="icon-wrapper">
                                 <i data-lucide="file-check-2"></i>
                             </div>
                             <p>إدارة الشيكات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- ادارة المخزون --}}
+                    <div class="app-icon-group">
                     @canany([
                         'view Inventory-Management',
                         'view Damaged Goods Invoice',
@@ -472,8 +519,10 @@
                             <p>ادارة المخزون</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- التصنيع --}}
+                    <div class="app-icon-group">
                     @can('view Manufacturing Invoices')
                         <a href="{{ route('manufacturing.create') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -482,8 +531,10 @@
                             <p>التصنيع</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- إدارة الجودة --}}
+                    <div class="app-icon-group">
                     @canany(['view quality', 'view inspections', 'view standards', 'view ncr', 'view capa', 'view batches',
                         'view rateSuppliers', 'view certificates', 'view audits'])
                         <a href="{{ route('quality.dashboard') }}" class="app-icon-large icon-bg-green">
@@ -493,8 +544,10 @@
                             <p>إدارة الجودة</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- المشتريات --}}
+                    <div class="app-icon-group">
                     @can('view Purchase Invoice')
                         <a href="{{ route('invoices.index', ['type' => 11]) }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -503,8 +556,10 @@
                             <p>المشتريات</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- الصيانه --}}
+                    <div class="app-icon-group">
                     @canany(['view Service Types', 'view Maintenances', 'view Periodic Maintenance', 'view Maintenance'])
                         <a href="{{ route('service.types.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -513,19 +568,23 @@
                             <p>الصيانه</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- إدارة الأسطول --}}
+                    <div class="app-icon-group">
                     @can('view Fleet Dashboard')
                         <a href="{{ route('fleet.dashboard.index') }}?sidebar=fleet" class="app-icon-large icon-bg-green" style="position: relative;">
-                            <span style="position: absolute; top: -8px; right: -8px; background: #ff4757; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">جديد</span>
+                            <span style="position: absolute; top: 5px; left: 5px; background: #ff4757; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; z-index: 10;">جديد</span>
                             <div class="icon-wrapper">
                                 <i data-lucide="truck"></i>
                             </div>
                             <p>إدارة الأسطول</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- المشاريع --}}
+                    <div class="app-icon-group">
                     @can('view projects')
                         <a href="{{ Route::has('progress.project.index') ? route('progress.project.index') : '#' }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -534,8 +593,10 @@
                             <p>المشاريع</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- التقدم اليومي --}}
+                    <div class="app-icon-group">
                     @canany(['view progress-recyclebin','view progress-project-types' , 'view progress-project-templates','view progress-item-statuses','view progress-work-items','view progress-work-item-categories' ,'view daily-progress', 'view progress-issues','view progress-projects','view progress-dashboard'])
                         <a href="{{ Route::has('progress.project.index') ? route('progress.project.index') : '#' }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -544,16 +605,20 @@
                             <p>التقدم اليومي</p>
                         </a>
                     @endcanany
+                    </div>
 
                     {{-- عمليات الاصول --}}
+                    <div class="app-icon-group">
                     <a href="{{ route('depreciation.index') }}" class="app-icon-large icon-bg-green">
                         <div class="icon-wrapper">
                             <i data-lucide="building"></i>
                         </div>
                         <p>عمليات الاصول</p>
                     </a>
+                    </div>
 
                     {{-- ادارة الموارد --}}
+                    <div class="app-icon-group">
                     @can('view MyResources')
                         <a href="{{ route('myresources.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -562,8 +627,10 @@
                             <p>إدارة الموارد</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- الموارد البشريه --}}
+                    <div class="app-icon-group">
                     @can('view Employees')
                         <a href="{{ route('employees.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -572,8 +639,10 @@
                             <p>الموارد البشريه</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- بصمة الموبايل --}}
+                    <div class="app-icon-group">
                     @can('view Mobile-fingerprint')
                         <a href="{{ route('mobile.employee-login') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -582,8 +651,10 @@
                             <p>بصمه الموبايل</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- أدارة الشحن --}}
+                    <div class="app-icon-group">
                     @can('view Orders')
                         <a href="{{ route('orders.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -592,8 +663,10 @@
                             <p>أدارة الشحن</p>
                         </a>
                     @endcan
+                    </div>
 
                     {{-- Inquiries --}}
+                    <div class="app-icon-group">
                     @can('view Inquiries')
                         <a href="{{ route('inquiries.index') }}" class="app-icon-large icon-bg-green">
                             <div class="icon-wrapper">
@@ -602,6 +675,7 @@
                             <p>Inquiries</p>
                         </a>
                     @endcan
+                    </div>
                 </div>
             </div>
         @endcanany
@@ -613,7 +687,7 @@
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
-                            <h5 class="mb-0 fw-bold" style="color: #2d3748 !important;">
+                            <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="wallet" style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
                                 آخر 5 حسابات
                             </h5>
@@ -633,11 +707,11 @@
                                             <tr>
                                                 <td><strong>{{ $account->code ?? '-' }}</strong></td>
                                                 <td>{{ $account->aname ?? '-' }}</td>
-                                                <td style="color: #2d3748 !important;">#{{ $account->id }}</td>
+                                                <td >#{{ $account->id }}</td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5" style="font-size: 0.95rem; color: #9ca3af !important;">لا توجد بيانات</td>
+                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -651,7 +725,7 @@
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
-                            <h5 class="mb-0 fw-bold" style="color: #2d3748 !important;">
+                            <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="log-in" style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
                                 آخر 5 عمليات تسجيل دخول
                             </h5>
@@ -670,14 +744,14 @@
                                         @forelse($recentLogins ?? [] as $login)
                                             <tr>
                                                 <td><strong>{{ $login->user->name ?? '-' }}</strong></td>
-                                                <td style="color: #2d3748 !important; font-size: 0.875rem;">{{ $login->ip_address ?? '-' }}</td>
-                                                <td style="color: #2d3748 !important; font-size: 0.875rem;">
+                                                <td style="font-size: 0.875rem;">{{ $login->ip_address ?? '-' }}</td>
+                                                <td style="font-size: 0.875rem;">
                                                     {{ $login->login_at ? $login->login_at->format('Y-m-d H:i') : '-' }}
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5" style="font-size: 0.95rem; color: #9ca3af !important;">لا توجد بيانات</td>
+                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -691,7 +765,7 @@
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
-                            <h5 class="mb-0 fw-bold" style="color: #2d3748 !important;">
+                            <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="trending-up" style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
                                 إحصائيات المبيعات
                             </h5>
@@ -731,7 +805,7 @@
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
-                            <h5 class="mb-0 fw-bold" style="color: #2d3748 !important;">
+                            <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="package" style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
                                 آخر 5 أصناف
                             </h5>
@@ -751,13 +825,13 @@
                                             <tr>
                                                 <td><strong>{{ $item->code ?? '-' }}</strong></td>
                                                 <td>{{ $item->name ?? '-' }}</td>
-                                                <td style="color: #2d3748 !important; font-size: 0.875rem;">
+                                                <td style="font-size: 0.875rem;">
                                                     {{ $item->created_at ? $item->created_at->format('Y-m-d') : '-' }}
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5" style="font-size: 0.95rem; color: #9ca3af !important;">لا توجد بيانات</td>
+                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -771,7 +845,7 @@
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white border-bottom" style="padding: 1rem 1.25rem;">
-                            <h5 class="mb-0 fw-bold" style="color: #2d3748 !important;">
+                            <h5 class="mb-0 fw-bold tables-section-title">
                                 <i data-lucide="file-text" style="width: 20px; height: 20px; margin-left: 8px; vertical-align: middle;"></i>
                                 آخر 5 عمليات
                             </h5>
@@ -791,13 +865,13 @@
                                             <tr>
                                                 <td><strong>#{{ $operation->pro_id ?? '-' }}</strong></td>
                                                 <td>{{ $operation->acc1Head->aname ?? '-' }}</td>
-                                                <td style="font-weight: 600; color: #2d3748 !important;">
+                                                <td >
                                                     {{ number_format($operation->fat_net ?? 0, 2) }} ر.س
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-5" style="font-size: 0.95rem; color: #9ca3af !important;">لا توجد بيانات</td>
+                                                <td colspan="3" class="text-center text-muted py-5">لا توجد بيانات</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -809,6 +883,12 @@
             </div>
         </div>
     </div>
+
+    {{-- Masar theme switcher --}}
+    <script src="{{ asset('js/theme-switcher.js') }}"></script>
+    <script>
+    (function(){ if (typeof MasarThemeSwitcher !== 'undefined') MasarThemeSwitcher.bindSelect('#masar-theme-select'); })();
+    </script>
 
     <script>
         // Initialize Lucide icons when DOM is loaded

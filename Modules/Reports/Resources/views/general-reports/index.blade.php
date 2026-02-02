@@ -340,6 +340,11 @@
                                 <span>{{ __('reports.inactive_items_report') }}</span>
                             </a>
 
+                            <a href="{{ route('reports.items.idle') }}" class="report-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>{{ __('reports.idle_items_report') }}</span>
+                            </a>
+
                             <a href="{{ route('reports.items.with-stores') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>{{ __('reports.items_by_store_report') }}</span>

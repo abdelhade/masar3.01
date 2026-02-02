@@ -330,6 +330,7 @@ class InvoiceReportController extends Controller
                 'branch_id' => $originalInvoice->branch_id,
                 'delivery_id' => $originalInvoice->emp2_id,
                 'cash_box_id' => null,
+                'expected_delivery_date' => $originalInvoice->expected_delivery_date ? \Carbon\Carbon::parse($originalInvoice->expected_delivery_date)->format('Y-m-d') : null,
             ];
 
             $itemsData = [];

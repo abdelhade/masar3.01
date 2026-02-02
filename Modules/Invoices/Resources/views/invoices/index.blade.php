@@ -1,5 +1,11 @@
 @extends('admin.dashboard')
 
+@section('body_class', 'invoice-page')
+@section('hide_footer')
+@endsection
+@push('styles')
+    @include('admin.partials.invoice-page-styles')
+@endpush
 @section('sidebar')
     @if (in_array($invoiceType, [10, 12, 14, 16, 22, 26]))
         @include('components.sidebar.sales-invoices')
@@ -19,7 +25,6 @@
             ['label' => __($invoiceTitle)],
         ],
     ])
-
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -27,36 +32,33 @@
         </div>
     @endif
 
-    <div class="row mb-4">
-        <div class="col-lg-12">
+    <div class="row mb-2">
+        <div class="col-12">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                         <h5 class="card-title mb-0">{{ __($invoiceTitle) }}</h5>
-
                         @can('create ' . $invoiceTitle)
                             <a href="{{ url('/invoices/create?type=' . $invoiceType . '&q=' . md5($invoiceType)) }}"
-                                class="btn btn-main">
+                                class="btn btn-main btn-sm">
                                 <i class="las la-plus me-1"></i>
                                 {{ __('Add') }} {{ __($invoiceTitle) }}
                             </a>
                         @endcan
                     </div>
-                    <form method="GET" action="{{ route('invoices.index') }}" class="row g-3 align-items-end">
+                    <form method="GET" action="{{ route('invoices.index') }}" class="row g-2 align-items-end">
                         <input type="hidden" name="type" value="{{ $invoiceType }}">
-
-
-                        <div class="col-md-3">
-                            <label for="start_date" class="form-label">{{ __('From Date') }}</label>
-                            <input type="date" name="start_date" id="start_date" class="form-control"
+                        <div class="col-md-2 col-lg-2">
+                            <label for="start_date" class="form-label small mb-0">{{ __('From Date') }}</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control form-control-sm"
                                 value="{{ $startDate }}">
                         </div>
-                        <div class="col-md-3">
-                            <label for="end_date" class="form-label">{{ __('To Date') }}</label>
-                            <input type="date" name="end_date" id="end_date" class="form-control"
+                        <div class="col-md-2 col-lg-2">
+                            <label for="end_date" class="form-label small mb-0">{{ __('To Date') }}</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control form-control-sm"
                                 value="{{ $endDate }}">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-2 col-lg-2">
                             <button type="submit" class="btn btn-primary btn-sm">
                                 <i class="las la-filter me-1"></i>
                                 {{ __('Filter') }}
@@ -69,9 +71,9 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-12">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body py-2">
 
                     <x-table-export-actions table-id="invoices-table" filename="{{ Str::slug($invoiceTitle) }}"
                         excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"

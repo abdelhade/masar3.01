@@ -48,7 +48,7 @@ class Item extends Model implements HasMedia
     public function units(): BelongsToMany
     {
         return $this->belongsToMany(Unit::class, 'item_units', 'item_id', 'unit_id')
-            ->withPivot('u_val', 'cost', 'quick_access')
+            ->withPivot('u_val', 'cost')
             ->withTimestamps();
     }
 
