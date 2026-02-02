@@ -11,6 +11,15 @@ use Modules\Installments\Models\{InstallmentPayment, InstallmentPlan};
 
 class InstallmentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Installment Plans')->only(['index', 'show']);
+        $this->middleware('can:view Overdue Installments')->only(['overduePayments']);
+        $this->middleware('can:create Installment Plans')->only(['create', 'store']);
+        $this->middleware('can:edit Installment Plans')->only(['edit', 'update']);
+        $this->middleware('can:delete Installment Plans')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      *

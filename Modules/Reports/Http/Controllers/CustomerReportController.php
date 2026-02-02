@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Modules\Accounts\Models\AccHead;
 use App\Models\JournalDetail;
 use App\Models\OperationItems;
-use App\Models\OperHead;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Routing\Controller;
+use Modules\Accounts\Models\AccHead;
 
 class CustomerReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Clients');
+    }
+
     public function generalCustomersReport()
     {
         $customers = AccHead::where('code', 'like', '1103%')->where('isdeleted', 0)->get();
@@ -201,4 +203,3 @@ class CustomerReportController extends Controller
         return view('reports::customers.customer-debt-history');
     }
 }
-

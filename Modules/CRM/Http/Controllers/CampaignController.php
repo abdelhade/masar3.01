@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace Modules\CRM\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
 use Modules\CRM\Models\Campaign;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Modules\CRM\Services\CampaignService;
 use Modules\CRM\Jobs\SendCampaignEmailJob;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CampaignController extends Controller
 {
     public function __construct(
         private CampaignService $campaignService
-    ) {}
+    ) {
+        $this->middleware('can:view Campaigns')->only(['index', 'show']);
+        $this->middleware('can:create Campaigns')->only(['create', 'store', 'preview']);
+        $this->middleware('can:edit Campaigns')->only(['edit', 'update', 'send']);
+        $this->middleware('can:delete Campaigns')->only(['destroy']);
+    }
 
     public function index()
     {

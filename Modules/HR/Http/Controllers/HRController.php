@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class HRController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Employees');
+    }
+
     /**
      * Display a listing of the resource.
      */

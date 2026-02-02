@@ -8,6 +8,11 @@ use Illuminate\Routing\Controller;
 
 class SalaryPointController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Payroll');
+    }
+
     /**
      * Display a listing of the resource.
      */

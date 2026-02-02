@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Note;
-use App\Models\Unit;
-use Modules\Accounts\Models\AccHead;
 use App\Models\OperationItems;
-use Modules\Reports\Services\ReportCalculationTrait;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Controller;
+use Modules\Accounts\Models\AccHead;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Modules\Reports\Services\ReportCalculationTrait;
 
 class InventoryReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view items');
+    }
+
     use ReportCalculationTrait;
 
     public function generalInventoryBalances()
@@ -67,7 +71,7 @@ class InventoryReportController extends Controller
                     $search = request('search');
                     $query->where(function ($q) use ($search) {
                         $q->where('aname', 'like', '%' . $search . '%')
-                          ->orWhere('code', 'like', '%' . $search . '%');
+                            ->orWhere('code', 'like', '%' . $search . '%');
                     });
                 }
 
@@ -77,7 +81,7 @@ class InventoryReportController extends Controller
                     if ($noteValue) {
                         $query->whereHas('notes', function ($q) use ($note, $noteValue) {
                             $q->where('notes.id', $note->id)
-                              ->wherePivot('note_detail_name', $noteValue);
+                                ->wherePivot('note_detail_name', $noteValue);
                         });
                     }
                 }
@@ -153,27 +157,27 @@ class InventoryReportController extends Controller
         //         }
 
         //         $movements = $query->orderBy('created_at', 'asc')->paginate(50);
-                
+
         //         // Calculate running balance for each movement
         //         $runningBalance = 0;
         //         if ($movements->count() > 0) {
         //             // Get the first movement's date to calculate balance before
         //             $firstMovement = $movements->first();
         //             $firstDate = $firstMovement->created_at ? $firstMovement->created_at->format('Y-m-d') : null;
-                    
+
         //             if ($firstDate) {
         //                 // Calculate balance before the first movement in the result set
         //                 $balanceQuery = OperationItems::where('item_id', $selectedItem->id)
         //                     ->where('isdeleted', 0);
-                        
+
         //                 if ($warehouseId !== 'all') {
         //                     $balanceQuery->where('detail_store', $warehouseId);
         //                 }
-                        
+
         //                 $balanceQuery->whereDate('created_at', '<', $firstDate);
         //                 $runningBalance = $balanceQuery->sum('qty_in') - $balanceQuery->sum('qty_out');
         //             }
-                    
+
         //             // Add running balance to each movement
         //             $movements->getCollection()->transform(function ($movement) use (&$runningBalance) {
         //                 $runningBalance += $movement->qty_in - $movement->qty_out;
@@ -181,7 +185,7 @@ class InventoryReportController extends Controller
         //                 return $movement;
         //             });
         //         }
-                
+
         //         $currentBalance = $this->calculateItemBalance($selectedItem->id);
         //     }
         // }
@@ -203,10 +207,10 @@ class InventoryReportController extends Controller
         //     'netMovement',
         //     'totalOperations'
         // ));
-        
+
         $itemId = request('item_id');
         $warehouseId = request('warehouse_id', 'all');
-        
+
         return view('item-management.reports.item-movement', compact('itemId', 'warehouseId'));
     }
 
@@ -446,6 +450,3 @@ class InventoryReportController extends Controller
         ]);
     }
 }
-
-
-
