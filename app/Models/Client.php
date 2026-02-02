@@ -84,4 +84,14 @@ class Client extends Model
     {
         return $this->hasMany(\Modules\Progress\Models\ProjectProgress::class, 'client_id');
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(OperHead::class, 'acc2')->where('pro_type', 1); // pro_type 1 = فاتورة مبيعات
+    }
+
+    public function operations()
+    {
+        return $this->hasMany(OperHead::class, 'acc2');
+    }
 }

@@ -28,6 +28,21 @@
                             style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
                             wire:keydown.enter="addItemByBarcode" />
                     </div>
+                    @if (setting('allow_edit_price_payments'))
+                        {{-- اختيار نوع السعر العام للفاتورة --}}
+                        @if (in_array($type, [10, 12, 14, 16, 22]))
+                            <div class="col-lg-2">
+                                <label for="selectedPriceType">{{ __('Select Price Type for Invoice') }}</label>
+                                <select wire:model.live="selectedPriceType"
+                                    class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
+                                    {{-- <option value="">{{ __('اختر نوع السعر') }}</option> --}}
+                                    @foreach ($priceTypes as $id => $name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('selectedPriceType')
+                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                @enderror
                     @endpush
                     @include('invoices::components.invoices.invoice-head')
 

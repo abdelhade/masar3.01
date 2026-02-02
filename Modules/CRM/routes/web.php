@@ -5,6 +5,8 @@ use App\Http\Controllers\ClientController;
 
 use Modules\CRM\Http\Controllers\{
     ActivityController,
+    CampaignController,
+    CampaignTrackingController,
     ChanceSourceController,
     ClientCategoryController,
     ClientContactController,
@@ -47,4 +49,17 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::post('/returns/{return}/reject', [ReturnController::class, 'reject'])->name('returns.reject');
 
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
+
+    // Campaigns Routes
+    Route::resource('campaigns', CampaignController::class)->names('campaigns');
+    Route::post('/campaigns/{campaign}/send', [CampaignController::class, 'send'])->name('campaigns.send');
+    Route::post('/campaigns/preview', [CampaignController::class, 'preview'])->name('campaigns.preview');
+    
+    // Campaign Tracking Routes (Public - No Auth)
+});
+
+// Campaign Tracking Routes (Public - No Auth Required)
+Route::prefix('track')->group(function () {
+    Route::get('/open/{trackingCode}', [CampaignTrackingController::class, 'trackOpen'])->name('campaigns.track.open');
+    Route::get('/click/{trackingCode}', [CampaignTrackingController::class, 'trackClick'])->name('campaigns.track.click');
 });
