@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Models\Item;
 use App\Models\JournalDetail;
 use App\Models\NoteDetails;
+use App\Models\Project;
 use App\Observers\ItemObserver;
 use App\Observers\JournalDetailObserver;
 use App\Observers\NoteDetailsObserver;
+use App\Observers\ProjectObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
@@ -57,5 +59,6 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         Item::observe(ItemObserver::class);
         NoteDetails::observe(NoteDetailsObserver::class);
+        Project::observe(ProjectObserver::class);
     }
 }

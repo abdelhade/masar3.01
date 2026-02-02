@@ -24,6 +24,13 @@ class MaintenanceRequest extends FormRequest
             'date' => 'nullable|date',
             'accural_date' => 'nullable|date',
             'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
+            'asset_id' => 'nullable|exists:accounts_assets,id',
+            'depreciation_item_id' => 'nullable|exists:depreciation_items,id',
+            'spare_parts_cost' => 'nullable|numeric|min:0',
+            'labor_cost' => 'nullable|numeric|min:0',
+            'total_cost' => 'nullable|numeric|min:0',
+            'maintenance_type' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
         ];
     }
 

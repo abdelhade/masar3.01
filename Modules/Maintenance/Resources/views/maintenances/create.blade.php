@@ -148,7 +148,102 @@
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row" x-data="{ spare: {{ old('spare_parts_cost', 0) }}, labor: {{ old('labor_cost', 0) }}, total: {{ old('total_cost', 0) }} }">
+                            <div class="col-md-3 mb-3">
+                                <label for="asset_id" class="form-label">
+                                    {{ __('Asset (Accounting)') }}
+                                </label>
+                                <select name="asset_id" id="asset_id"
+                                    class="form-control @error('asset_id') is-invalid @enderror">
+                                    <option value="">{{ __('Choose Asset') }}</option>
+                                    @foreach ($assets as $asset)
+                                        <option value="{{ $asset->id }}"
+                                            {{ old('asset_id') == $asset->id ? 'selected' : '' }}>
+                                            {{ $asset->asset_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('asset_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="depreciation_item_id" class="form-label">
+                                    {{ __('Asset (Direct)') }}
+                                </label>
+                                <select name="depreciation_item_id" id="depreciation_item_id"
+                                    class="form-control @error('depreciation_item_id') is-invalid @enderror">
+                                    <option value="">{{ __('Choose Asset') }}</option>
+                                    @foreach ($depreciationItems as $item)
+                                        <option value="{{ $item->id }}"
+                                            {{ old('depreciation_item_id') == $item->id ? 'selected' : '' }}>
+                                            {{ $item->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('depreciation_item_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="maintenance_type" class="form-label">
+                                    {{ __('Maintenance Type') }}
+                                </label>
+                                <select name="maintenance_type" id="maintenance_type"
+                                    class="form-control @error('maintenance_type') is-invalid @enderror">
+                                    <option value="">{{ __('Choose Type') }}</option>
+                                    <option value="periodic"
+                                        {{ old('maintenance_type') == 'periodic' ? 'selected' : '' }}>{{ __('Periodic') }}
+                                    </option>
+                                    <option value="emergency"
+                                        {{ old('maintenance_type') == 'emergency' ? 'selected' : '' }}>
+                                        {{ __('Emergency') }}</option>
+                                    <option value="repair" {{ old('maintenance_type') == 'repair' ? 'selected' : '' }}>
+                                        {{ __('Repair') }}</option>
+                                </select>
+                                @error('maintenance_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="spare_parts_cost" class="form-label">
+                                    {{ __('Spare Parts Cost') }}
+                                </label>
+                                <input type="number" step="0.01" name="spare_parts_cost" id="spare_parts_cost"
+                                    class="form-control @error('spare_parts_cost') is-invalid @enderror"
+                                    x-model.number="spare" @input="total = spare + labor">
+                                @error('spare_parts_cost')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="labor_cost" class="form-label">
+                                    {{ __('Labor Cost') }}
+                                </label>
+                                <input type="number" step="0.01" name="labor_cost" id="labor_cost"
+                                    class="form-control @error('labor_cost') is-invalid @enderror" x-model.number="labor"
+                                    @input="total = spare + labor">
+                                @error('labor_cost')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="total_cost" class="form-label">
+                                    {{ __('Total Cost') }}
+                                </label>
+                                <input type="number" step="0.01" name="total_cost" id="total_cost"
+                                    class="form-control @error('total_cost') is-invalid @enderror" x-model.number="total"
+                                    readonly>
+                                @error('total_cost')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                             <div class="col-md-9 mb-3">
                                 <label for="notes" class="form-label">{{ __('Notes') }}</label>
                                 <textarea name="notes" id="notes" rows="3" class="form-control @error('notes') is-invalid @enderror">{{ old('notes') }}</textarea>

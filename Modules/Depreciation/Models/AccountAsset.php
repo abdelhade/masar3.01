@@ -96,7 +96,7 @@ class AccountAsset extends Model
     public function getRemainingLife(): int
     {
         if (!$this->purchase_date || !$this->useful_life_years) return 0;
-        
+
         $yearsUsed = now()->diffInYears($this->purchase_date);
         return max(0, $this->useful_life_years - $yearsUsed);
     }
@@ -116,24 +116,24 @@ class AccountAsset extends Model
     public function calculateAnnualDepreciation(): float
     {
         if (!$this->purchase_cost || !$this->useful_life_years) return 0;
-        
+
         $depreciableAmount = $this->purchase_cost - ($this->salvage_value ?? 0);
-        
+
         switch ($this->depreciation_method) {
             case 'straight_line':
                 return $depreciableAmount / $this->useful_life_years;
-            
+
             case 'double_declining':
                 $rate = (2 / $this->useful_life_years);
                 $currentBookValue = $this->getNetBookValue();
                 return min($currentBookValue * $rate, $depreciableAmount - ($this->accumulated_depreciation ?? 0));
-            
+
             case 'sum_of_years':
                 $sumOfYears = ($this->useful_life_years * ($this->useful_life_years + 1)) / 2;
                 $remainingYears = $this->getRemainingLife();
                 if ($remainingYears <= 0) return 0;
                 return ($depreciableAmount * $remainingYears) / $sumOfYears;
-            
+
             default:
                 return $depreciableAmount / $this->useful_life_years;
         }
@@ -157,7 +157,7 @@ class AccountAsset extends Model
         if (!$this->purchase_date) {
             return 0;
         }
-        
+
         return Carbon::parse($this->purchase_date)->diffInYears(now());
     }
 
@@ -170,13 +170,29 @@ class AccountAsset extends Model
     }
 
     /**
+     * Get maintenance records for this asset
+     */
+    public function maintenances()
+    {
+        return $this->hasMany(\Modules\Maintenance\Models\Maintenance::class, 'asset_id');
+    }
+
+    /**
+     * Calculate total maintenance cost for this asset
+     */
+    public function getTotalMaintenanceCost(): float
+    {
+        return (float) $this->maintenances()->sum('total_cost');
+    }
+
+    /**
      * Scope for assets ready for depreciation.
      */
     public function scopeReadyForDepreciation($query)
     {
         return $query->where('is_active', true)
-                    ->whereNotNull('depreciation_start_date')
-                    ->where('depreciation_start_date', '<=', now())
-                    ->whereColumn('accumulated_depreciation', '<', 'purchase_cost');
+            ->whereNotNull('depreciation_start_date')
+            ->where('depreciation_start_date', '<=', now())
+            ->whereColumn('accumulated_depreciation', '<', 'purchase_cost');
     }
 }
