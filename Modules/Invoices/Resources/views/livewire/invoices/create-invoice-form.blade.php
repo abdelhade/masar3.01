@@ -4,45 +4,27 @@
 
 <div>
     <style>
-        footer.footer { display: none !important; }
+        footer.footer {
+            display: none !important;
+        }
     </style>
     @section('formAction', 'create')
     <div class="content-wrapper">
         <section class="content">
-            <form id="invoice-main-form"
-                class="d-flex flex-column g-0 invoice-form-fullheight"
-                style="height: 100%; min-height: 0; overflow: hidden;"
-                data-invoice-submit="saveForm">
+            <form id="invoice-main-form" class="d-flex flex-column g-0 invoice-form-fullheight"
+                style="height: 100%; min-height: 0; overflow: hidden;" data-invoice-submit="saveForm">
 
-                <div id="invoice-search-container"
-                    class="d-flex flex-column flex-grow-1 overflow-hidden g-0"
-                    data-branch-id="{{ $branch_id ?? '' }}"
-                    data-invoice-type="{{ $type ?? 10 }}"
-                    data-price-type="{{ $selectedPriceType ?? 1 }}"
-                    data-store-id="{{ $acc2_id ?? '' }}">
+                <div id="invoice-search-container" class="d-flex flex-column flex-grow-1 overflow-hidden g-0"
+                    data-branch-id="{{ $branch_id ?? '' }}" data-invoice-type="{{ $type ?? 10 }}"
+                    data-price-type="{{ $selectedPriceType ?? 1 }}" data-store-id="{{ $acc2_id ?? '' }}">
                     @push('invoice_head_barcode')
-                    <div class="col-lg-4">
-                        <label class="form-label" style="font-size: 1em;">{{ __('Search by Barcode') }}</label>
-                        <input type="text" class="form-control form-control-sm font-hold font-14" id="barcode-search"
-                            placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
-                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
-                            wire:keydown.enter="addItemByBarcode" />
-                    </div>
-                    @if (setting('allow_edit_price_payments'))
-                        {{-- اختيار نوع السعر العام للفاتورة --}}
-                        @if (in_array($type, [10, 12, 14, 16, 22]))
-                            <div class="col-lg-2">
-                                <label for="selectedPriceType">{{ __('Select Price Type for Invoice') }}</label>
-                                <select wire:model.live="selectedPriceType"
-                                    class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
-                                    {{-- <option value="">{{ __('اختر نوع السعر') }}</option> --}}
-                                    @foreach ($priceTypes as $id => $name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selectedPriceType')
-                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                @enderror
+                        <div class="col-lg-4">
+                            <label class="form-label" style="font-size: 1em;">{{ __('Search by Barcode') }}</label>
+                            <input type="text" class="form-control form-control-sm font-hold font-14" id="barcode-search"
+                                placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
+                                style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
+                                wire:keydown.enter="addItemByBarcode" />
+                        </div>
                     @endpush
                     @include('invoices::components.invoices.invoice-head')
 
@@ -52,13 +34,15 @@
                     <div class="row flex-grow-1 overflow-hidden g-0 py-0">
                         <div class="col-12 h-100 py-0 d-flex flex-column min-height-0">
                             @push('invoice_table_search_row')
-                            <div class="d-inline-block invoice-cell-search-wrap w-100" style="position: relative;">
-                                <input type="text" class="form-control form-control-sm invoice-field" id="search-input"
-                                    placeholder="{{ __('Search by item name...') }}" autocomplete="off"
-                                    style="max-width: 100%;">
-                                <div id="invoice-search-results" class="list-group position-absolute shadow-sm invoice-search-results"
-                                    style="z-index: 999; max-height: 280px; overflow-y: auto; width: 320px; margin-top: 2px;"></div>
-                            </div>
+                                <div class="d-inline-block invoice-cell-search-wrap w-100" style="position: relative;">
+                                    <input type="text" class="form-control form-control-sm invoice-field"
+                                        id="search-input" placeholder="{{ __('Search by item name...') }}"
+                                        autocomplete="off" style="max-width: 100%;">
+                                    <div id="invoice-search-results"
+                                        class="list-group position-absolute shadow-sm invoice-search-results"
+                                        style="z-index: 999; max-height: 280px; overflow-y: auto; width: 320px; margin-top: 2px;">
+                                    </div>
+                                </div>
                             @endpush
                             <div class="flex-grow-1 min-height-0 overflow-hidden">
                                 @include('invoices::components.invoices.invoice-item-table')

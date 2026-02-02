@@ -25,14 +25,15 @@
     </style>
     <div class="row">
         <div class="col-lg-12">
-            @can('create Clients')
+            @can('create CRM Clients')
                 <a href="{{ route('clients.create') }}" type="button" class="btn btn-main">
                     <i class="fas fa-plus me-2"></i>
                     {{ __('Add New Client') }}
                 </a>
             @endcan
+
             <br><br>
-            @can('import Clients')
+            @can('import CRM Clients')
                 <x-app::excel-importer model="Client" :column-mapping="[
                     'cname' => 'cname',
                     'email' => 'email',
@@ -51,8 +52,9 @@
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
 
-                        <x-table-export-actions table-id="clients-table" filename="clients-table" excel-label="{{ __('Export Excel') }}"
-                            pdf-label="{{ __('Export PDF') }}" print-label="{{ __('Print') }}" />
+                        <x-table-export-actions table-id="clients-table" filename="clients-table"
+                            excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                            print-label="{{ __('Print') }}" />
 
                         <table id="clients-table" class="table table-striped mb-0" style="min-width: 1200px;">
                             <thead class="table-light text-center align-middle">
@@ -69,7 +71,7 @@
                                     <th>{{ __('Type') }}</th>
                                     {{-- <th>{{ __('الجنس') }}</th> --}}
                                     <th>{{ __('Status') }}</th>
-                                    @canany(['edit Clients', 'delete Clients'])
+                                    @canany(['edit CRM Clients', 'delete CRM Clients'])
                                         <th>{{ __('Actions') }}</th>
                                     @endcanany
                                 </tr>
@@ -102,7 +104,7 @@
                                         </td> --}}
 
                                         <td>
-                                            @can('edit Clients')
+                                            @can('edit CRM Clients')
                                                 <span class="d-inline-flex align-items-center">
                                                     <div class="form-check form-switch">
                                                         <input type="checkbox" class="form-check-input toggle-active"
@@ -117,15 +119,15 @@
                                             @endcan
                                         </td>
 
-                                        @canany(['edit Clients', 'delete Clients'])
+                                        @canany(['edit CRM Clients', 'delete CRM Clients'])
                                             <td>
-                                                @can('edit Clients')
+                                                @can('edit CRM Clients')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('clients.edit', $client->id) }}">
                                                         <i class="las la-edit"></i>
                                                     </a>
                                                 @endcan
-                                                @can('delete Clients')
+                                                @can('delete CRM Clients')
                                                     <form action="{{ route('clients.destroy', $client->id) }}" method="POST"
                                                         style="display:inline-block;"
                                                         onsubmit="return confirm('{{ __('Are you sure you want to delete this client?') }}');">

@@ -16,14 +16,13 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class ClientController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('can:عرض العملااء')->only(['index']);
-    //     $this->middleware('can:عرض تفاصيل عميل')->only(['show']);
-    //     $this->middleware('can:إضافة العملااء')->only(['create', 'store']);
-    //     $this->middleware('can:تعديل العملااء')->only(['edit', 'update']);
-    //     $this->middleware('can:حذف العملااء')->only(['destroy']);
-    // }
+    public function __construct()
+    {
+        $this->middleware('permission:view CRM Clients')->only(['index', 'show']);
+        $this->middleware('permission:create CRM Clients')->only(['create', 'store']);
+        $this->middleware('permission:edit CRM Clients')->only(['edit', 'update']);
+        $this->middleware('permission:delete CRM Clients')->only(['destroy']);
+    }
 
     public function index()
     {

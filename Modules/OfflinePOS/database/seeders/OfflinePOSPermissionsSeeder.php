@@ -1,92 +1,58 @@
 <?php
 
-namespace Modules\OfflinePOS\database\seeders;
+namespace Modules\OfflinePOS\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Modules\Authorization\Models\Permission;
 
 class OfflinePOSPermissionsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Define permissions structure for Offline POS module
-        // الصلاحيات بالإنجليزية للدعم متعدد اللغات
-        $permissions = [
-            // View permissions
-            'view offline pos system',              // عرض نظام نقاط البيع الأوفلاين
-            'view offline pos transactions',        // عرض معاملات نقاط البيع الأوفلاين
-            'view offline pos reports',             // عرض تقارير نقاط البيع الأوفلاين
-            'view offline pos sync status',         // عرض حالة المزامنة
-            
-            // Create permissions
-            'create offline pos transaction',       // إنشاء معاملة نقاط بيع أوفلاين
-            'create offline pos return invoice',    // إنشاء فاتورة مرتجعة أوفلاين
-            
-            // Edit permissions
-            'edit offline pos transaction',         // تعديل معاملة نقاط بيع أوفلاين
-            'edit offline pos settings',            // تعديل إعدادات نقاط البيع الأوفلاين
-            
-            // Delete permissions
-            'delete offline pos transaction',       // حذف معاملة نقاط بيع أوفلاين
-            
-            // Print permissions
-            'print offline pos invoice',            // طباعة فاتورة نقاط بيع أوفلاين
-            'print offline pos thermal',            // الطباعة الحرارية لنقاط البيع
-            
-            // Sync permissions
-            'sync offline pos transactions',        // مزامنة معاملات نقاط البيع
-            'force sync offline pos',               // فرض المزامنة الفورية
-            
-            // Data management
-            'download offline pos data',            // تنزيل بيانات نقاط البيع المحلية
-            'clear offline pos local data',         // مسح البيانات المحلية
-            
-            // Advanced permissions
-            'manage offline pos settings',          // إدارة إعدادات نقاط البيع الأوفلاين
-            'access offline pos reports advanced',  // الوصول للتقارير المتقدمة
-            'export offline pos reports',           // تصدير تقارير نقاط البيع
+        $groupedPermissions = [
+            'Offline POS' => [
+                'Offline POS System',
+                'Offline POS Transactions',
+                'Offline POS Reports',
+                'Offline POS Sync Status',
+                'Offline POS Return Invoice',
+                'Offline POS Settings',
+                'Offline POS Invoice',
+                'Offline POS Thermal',
+                'Offline POS Data',
+                'Offline POS Local Data',
+                'Offline POS Reports Advanced',
+            ],
         ];
 
-        // Create permissions
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(
-                [
-                    'name' => $permission,
-                    'guard_name' => 'web',
-                ],
-                [
-                    'category' => 'Offline POS',
-                ]
-            );
-        }
+        $actions = ['view', 'create', 'edit', 'delete', 'print'];
 
-        // Assign all permissions to 'default user' role (ID: 2)
-        $defaultUserRole = Role::find(2);
-        if ($defaultUserRole) {
-            $createdPermissions = Permission::whereIn('name', $permissions)->pluck('id');
-            $defaultUserRole->givePermissionTo($createdPermissions);
-            
-            $this->command->info('✅ Permissions assigned to "default user" role');
-        }
+        foreach ($groupedPermissions as $category => $permissions) {
+            foreach ($permissions as $basePermission) {
+                // إضافة صلاحيات خاصة لبعض العناصر
+                $currentActions = $actions;
 
-        // Optional: Assign to super admin if exists
-        $superAdminRole = Role::where('name', 'super-admin')
-            ->orWhere('name', 'admin')
-            ->orWhere('id', 1)
-            ->first();
-            
-        if ($superAdminRole) {
-            $createdPermissions = Permission::whereIn('name', $permissions)->pluck('id');
-            $superAdminRole->givePermissionTo($createdPermissions);
-            
-            $this->command->info('✅ Permissions assigned to "super admin" role');
-        }
+                if ($basePermission === 'Offline POS Transactions') {
+                    $currentActions = array_merge($actions, ['sync', 'export']);
+                }
 
-        $this->command->info('✅ Offline POS permissions created and assigned successfully!');
-        $this->command->info('📊 Total permissions created: ' . count($permissions));
+                if ($basePermission === 'Offline POS Data') {
+                    $currentActions = array_merge($actions, ['download']);
+                }
+
+                if ($basePermission === 'Offline POS Local Data') {
+                    $currentActions = array_merge($actions, ['clear']);
+                }
+
+                foreach ($currentActions as $action) {
+                    $fullName = "$action $basePermission";
+
+                    Permission::firstOrCreate(
+                        ['name' => $fullName, 'guard_name' => 'web'],
+                        ['category' => $category]
+                    );
+                }
+            }
+        }
     }
 }
