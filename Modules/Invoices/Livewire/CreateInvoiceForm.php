@@ -33,6 +33,7 @@ class CreateInvoiceForm extends Component
     public $emp_id;
     public $pro_date;
     public $accural_date;
+    public $expected_delivery_date = null;
     public $pro_id;
     public $serial_number;
 
@@ -1149,6 +1150,130 @@ class CreateInvoiceForm extends Component
             'success' => true,
             'index' => $newIndex,
             'item' => $newItem,
+        ];
+    }
+
+    /**
+     * إرجاع بيانات صنف جاهزة للإلحاق بالجدول من جانب العميل (بدون تعديل invoiceItems).
+     * يُستدعى مرة واحدة من JS ثم الإلحاق يتم append من Alpine.
+     */
+    public function getItemRowData($itemId)
+    {
+        $item = Item::with([
+            'units' => fn ($q) => $q->orderBy('item_units.u_val', 'asc'),
+            'prices',
+        ])->find($itemId);
+
+        if (! $item) {
+            return ['success' => false, 'message' => 'Item not found'];
+        }
+
+        foreach ($this->invoiceItems as $index => $invoiceItem) {
+            if (($invoiceItem['item_id'] ?? null) == $item->id) {
+                $currentQty = (float) ($invoiceItem['quantity'] ?? 0);
+                return [
+                    'success' => true,
+                    'exists' => true,
+                    'index' => $index,
+                    'quantity' => $currentQty + 1,
+                ];
+            }
+        }
+
+        $firstUnit = $item->units->first();
+        $unitId = $firstUnit?->id;
+        $price = $this->calculateItemPrice($item, $unitId, $this->selectedPriceType);
+        $quantity = ($this->settings->default_quantity_greater_than_zero ?? 0) == 1 && $this->type == 10 ? 1 : 1;
+
+        $availableUnits = $item->units->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'u_val' => $unit->pivot->u_val ?? 1,
+            ];
+        })->toArray();
+
+        $row = [
+            'item_id' => $item->id,
+            'unit_id' => $unitId,
+            'code' => $item->code,
+            'name' => $item->name,
+            'quantity' => $quantity,
+            'price' => $price,
+            'sub_value' => $price * $quantity,
+            'discount' => 0,
+            'available_units' => $availableUnits,
+            'length' => null,
+            'width' => null,
+            'height' => null,
+            'density' => 1,
+            'batch_number' => null,
+            'expiry_date' => null,
+        ];
+
+        return [
+            'success' => true,
+            'exists' => false,
+            'row' => $row,
+        ];
+    }
+
+    /**
+     * تطبيق نتيجة getItemRowData من جانب العميل (إلحاق صف أو تحديث كمية).
+     * يُستدعى من vanilla JS بعد getItemRowData.
+     */
+    public function applyItemRowData(array $result)
+    {
+        if (empty($result['success'])) {
+            return ['success' => false];
+        }
+
+        if (! empty($result['exists']) && isset($result['index'], $result['quantity'])) {
+            $index = (int) $result['index'];
+            if (isset($this->invoiceItems[$index])) {
+                $this->invoiceItems[$index]['quantity'] = (float) $result['quantity'];
+                $this->recalculateSubValues();
+                $this->calculateTotals();
+                $item = Item::with(['units', 'prices'])->find($this->invoiceItems[$index]['item_id']);
+                if ($item) {
+                    $this->updateSelectedItemData(
+                        $item,
+                        $this->invoiceItems[$index]['unit_id'],
+                        $this->invoiceItems[$index]['price']
+                    );
+                }
+                return ['success' => true, 'index' => $index];
+            }
+        }
+
+        if (empty($result['exists']) && ! empty($result['row']) && is_array($result['row'])) {
+            $this->invoiceItems[] = $result['row'];
+            $newIndex = count($this->invoiceItems) - 1;
+            $this->recalculateSubValues();
+            $this->calculateTotals();
+            $item = Item::with(['units', 'prices'])->find($result['row']['item_id']);
+            if ($item) {
+                $this->updateSelectedItemData(
+                    $item,
+                    $result['row']['unit_id'],
+                    $result['row']['price']
+                );
+            }
+            return ['success' => true, 'index' => $newIndex];
+        }
+
+        return ['success' => false];
+    }
+
+    /**
+     * إرجاع الرصيد الحالي وبعد الفاتورة لاستخدام JS في التحديث.
+     */
+    public function getBalanceAfter()
+    {
+        $this->calculateBalanceAfterInvoice();
+        return [
+            'balance_after' => $this->balanceAfterInvoice,
+            'current_balance' => $this->currentBalance,
         ];
     }
 

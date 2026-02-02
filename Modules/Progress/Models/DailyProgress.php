@@ -18,13 +18,18 @@ class DailyProgress extends Model
         'user_id', // Added user_id
         'progress_date',
         'quantity',
+        'remaining_quantity',
+        'planned_end_date',
         'notes',
+        'shifts',
+        'subproject_name',
         'completion_percentage',
         'branch_id',
     ];
 
     protected $casts = [
         'progress_date' => 'date',
+        'planned_end_date' => 'date',
     ];
 
     protected $appends = ['completion_percentage'];

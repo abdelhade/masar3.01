@@ -47,6 +47,7 @@ class EditInvoiceForm extends Component
     public $pro_date;
 
     public $accural_date;
+    public $expected_delivery_date = null;
 
     public $pro_id;
 
@@ -232,6 +233,7 @@ class EditInvoiceForm extends Component
         $this->emp_id = $this->operation->emp_id;
         $this->pro_date = $this->operation->pro_date;
         $this->accural_date = $this->operation->accural_date;
+        $this->expected_delivery_date = $this->operation->expected_delivery_date ? $this->operation->expected_delivery_date->format('Y-m-d') : null;
         $this->pro_id = $this->operation->pro_id;
         $this->serial_number = $this->operation->pro_serial;
         $this->selectedPriceType = $this->operation->price_list ?? 1;
@@ -792,6 +794,129 @@ class EditInvoiceForm extends Component
         $newRowIndex = count($this->invoiceItems) - 1;
         $this->dispatch('alert', ['type' => 'success', 'message' => 'تم إضافة الصنف بنجاح.']);
         $this->dispatch('focus-quantity', ['index' => $newRowIndex]);
+    }
+
+    /**
+     * إرجاع بيانات صنف جاهزة للإلحاق بالجدول (للاستخدام من JS).
+     */
+    public function getItemRowData($itemId)
+    {
+        $item = Item::with([
+            'units' => fn($q) => $q->orderBy('item_units.u_val', 'asc'),
+            'prices',
+        ])->find($itemId);
+
+        if (!$item) {
+            return ['success' => false, 'message' => 'Item not found'];
+        }
+
+        foreach ($this->invoiceItems as $index => $invoiceItem) {
+            if (($invoiceItem['item_id'] ?? null) == $item->id) {
+                $currentQty = (float) ($invoiceItem['quantity'] ?? 0);
+                return [
+                    'success' => true,
+                    'exists' => true,
+                    'index' => $index,
+                    'quantity' => $currentQty + 1,
+                ];
+            }
+        }
+
+        $firstUnit = $item->units->first();
+        $unitId = $firstUnit?->id;
+        $price = $this->calculateItemPrice($item, $unitId, $this->selectedPriceType);
+        $defaultQtyGreaterThanZero = (setting('default_quantity_greater_than_zero') ?? '0') == '1' && $this->type == 10;
+        $quantity = $defaultQtyGreaterThanZero ? 1 : 1;
+
+        $availableUnits = $item->units->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'u_val' => $unit->pivot->u_val ?? 1,
+            ];
+        })->toArray();
+
+        $row = [
+            'item_id' => $item->id,
+            'unit_id' => $unitId,
+            'code' => $item->code,
+            'name' => $item->name,
+            'quantity' => $quantity,
+            'price' => $price,
+            'sub_value' => $price * $quantity,
+            'discount' => 0,
+            'available_units' => $availableUnits,
+            'length' => null,
+            'width' => null,
+            'height' => null,
+            'density' => 1,
+            'batch_number' => null,
+            'expiry_date' => null,
+        ];
+
+        return [
+            'success' => true,
+            'exists' => false,
+            'row' => $row,
+        ];
+    }
+
+    /**
+     * تطبيق نتيجة getItemRowData من جانب العميل.
+     */
+    public function applyItemRowData(array $result)
+    {
+        if (empty($result['success'])) {
+            return ['success' => false];
+        }
+
+        if (!empty($result['exists']) && isset($result['index'], $result['quantity'])) {
+            $index = (int) $result['index'];
+            if (isset($this->invoiceItems[$index])) {
+                $this->invoiceItems[$index]['quantity'] = (float) $result['quantity'];
+                $this->recalculateSubValues();
+                $this->calculateTotals();
+                $item = Item::with(['units', 'prices'])->find($this->invoiceItems[$index]['item_id']);
+                if ($item) {
+                    $this->updateSelectedItemData(
+                        $item,
+                        $this->invoiceItems[$index]['unit_id'],
+                        $this->invoiceItems[$index]['price']
+                    );
+                }
+                return ['success' => true, 'index' => $index];
+            }
+        }
+
+        if (empty($result['exists']) && !empty($result['row']) && is_array($result['row'])) {
+            $this->invoiceItems[] = $result['row'];
+            $newIndex = count($this->invoiceItems) - 1;
+            $this->recalculateSubValues();
+            $this->calculateTotals();
+            $item = Item::with(['units', 'prices'])->find($result['row']['item_id']);
+            if ($item) {
+                $this->updateSelectedItemData(
+                    $item,
+                    $result['row']['unit_id'],
+                    $result['row']['price']
+                );
+            }
+            return ['success' => true, 'index' => $newIndex];
+        }
+
+        return ['success' => false];
+    }
+
+    /**
+     * إرجاع الرصيد الحالي وبعد الفاتورة لاستخدام JS.
+     */
+    public function getBalanceAfter()
+    {
+        $this->calculateBalanceAfterInvoice();
+        return [
+            'balance_after' => $this->balanceAfterInvoice,
+            'current_balance' => $this->currentBalance,
+        ];
     }
 
     // public function updatedBarcodeTerm($value)

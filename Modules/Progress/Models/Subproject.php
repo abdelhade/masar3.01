@@ -17,7 +17,16 @@ class Subproject extends Model
         'project_id',
         'project_template_id',
         'weight',
-        'unit'
+        'unit',
+        'start_date',
+        'end_date',
+        'total_quantity',
+        'description'
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function project()

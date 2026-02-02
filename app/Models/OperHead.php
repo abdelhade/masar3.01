@@ -24,6 +24,7 @@ class OperHead extends Model
      */
     protected $casts = [
         'currency_rate' => 'decimal:6',
+        'expected_delivery_date' => 'date',
     ];
 
     protected static function booted()

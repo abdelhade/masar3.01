@@ -3,6 +3,13 @@
 @include('admin.partials.head')
 
 <body class="page-wrapper">
+    {{-- Apply saved theme immediately to avoid flash --}}
+    <script>
+    (function(){var k='masar_theme';var v;try{v=localStorage.getItem(k);}catch(e){v=null;}
+    var t=(v&&['classic','mint-green','dark','monokai'].indexOf(v)!==-1)?v:'classic';
+    document.body.classList.add('theme-'+t);
+    })();
+    </script>
     <div class="">
         @include('admin.partials.topbar2')
         <div class="page-content">

@@ -1,105 +1,132 @@
 <div class="table-responsive invoice-scroll-container card border border-top-0 border-secondary border-3 h-100"
-    style="overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6; position: relative; z-index: 1;">
+    style="overflow-y: auto; overflow-x: auto; border: 3px solid #dee2e6; position: relative; z-index: 1;">
 
     <style>
+        /* Grid: sticky header + search row inside table (Excel-like) */
         .invoice-data-grid {
             border-collapse: separate !important;
-            /* Required for sticky to work on borders properly */
             border-spacing: 0;
             width: 100%;
             border: none;
         }
 
         .invoice-data-grid th {
-            padding: 8px !important;
-            background-color: #bbc8d6ff;
-            border: 1px solid #dee2e6;
-            border-top: none;
-            /* Container has border */
+            padding: 3px 5px !important;
+            margin: 0 !important;
+            background-color: #d4dce6;
+            border: 1px solid #b0b8c4;
             vertical-align: middle;
-            font-weight: bold;
+            font-weight: 600;
             position: sticky;
-            /* Sticky Header */
             top: 0;
             z-index: 10;
-            box-shadow: 0 1px 0 #dee2e6;
-            /* Border fix for sticky */
+            box-shadow: 0 1px 0 #b0b8c4;
+        }
+
+        /* صف البحث داخل الجدول — خلية اسم الصنف فقط (مثل Excel) */
+        .invoice-data-grid .invoice-grid-search-row td {
+            position: sticky;
+            top: 30px;
+            z-index: 9;
+            background: #f5f6f8 !important;
+            border: 1px solid #c8ccd4;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 30px;
+            min-height: 30px;
+            vertical-align: middle;
+            box-shadow: 0 1px 0 #c8ccd4;
+        }
+        .invoice-data-grid .invoice-grid-search-row td .invoice-cell-search-wrap {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            display: block;
+        }
+        .invoice-data-grid .invoice-grid-search-row .form-control,
+        .invoice-data-grid .invoice-grid-search-row #search-input,
+        .invoice-data-grid .invoice-grid-search-row input[type="text"] {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 30px !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 2px 5px !important;
+            margin: 0 !important;
+            background: #fff !important;
+            font-size: 0.875rem;
+            box-shadow: inset 0 0 0 1px #c0c0c0;
+        }
+        .invoice-data-grid .invoice-grid-search-row .form-control:focus,
+        .invoice-data-grid .invoice-grid-search-row #search-input:focus {
+            box-shadow: inset 0 0 0 2px #2563eb !important;
+            outline: none;
         }
 
         .invoice-data-grid td {
             padding: 0 !important;
-            border: 1px solid #5f5f5fff;
+            margin: 0 !important;
+            border: 1px solid #c0c0c0;
             vertical-align: middle;
-            height: 38px;
+            height: 30px;
         }
 
-        /* Zebra Striping */
-        .invoice-data-grid tbody tr:nth-of-type(odd) {
-            background-color: #ffffffff;
-        }
+        .invoice-data-grid tbody tr:nth-of-type(odd) { background-color: #fff; }
+        .invoice-data-grid tbody tr:nth-of-type(even) { background-color: #f5f6f8; }
 
-        .invoice-data-grid tbody tr:nth-of-type(even) {
-            background-color: #cfcfcf8e; /* Light blue-gray for contrast */
-        }
-
-        /* Inputs and Selects styling */
+        /* خلايا شبيهة بـ Excel: حدود رفيعة، padding و margin أقل */
         .invoice-data-grid .form-control,
         .invoice-data-grid .form-select,
         .invoice-data-grid input,
         .invoice-data-grid select {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 30px !important;
             border: none !important;
             border-radius: 0 !important;
             box-shadow: none !important;
-            width: 100% !important;
-            height: 100% !important;
-            min-height: 38px;
-            padding: 4px 8px !important;
-            background-color: transparent;
+            padding: 2px 4px !important;
             margin: 0 !important;
+            background: transparent !important;
+            font-size: 0.875rem;
+            box-shadow: inset 0 0 0 1px transparent;
         }
-
         .invoice-data-grid .form-control:focus,
-        .invoice-data-grid .form-select:focus,
         .invoice-data-grid input:focus,
         .invoice-data-grid select:focus {
-            background-color: #e8f0fe !important;
+            background: #e8f4ff !important;
             outline: none !important;
-            box-shadow: inset 0 0 0 2px #0d6efd !important;
-            z-index: 1;
+            box-shadow: inset 0 0 0 1px #2563eb !important;
             position: relative;
+            z-index: 1;
         }
 
-        /* Remove spin buttons from number inputs */
         .invoice-data-grid input[type=number]::-webkit-inner-spin-button,
         .invoice-data-grid input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        /* Fix for readonly inputs */
         .invoice-data-grid input[readonly],
         .invoice-data-grid input:disabled {
-            background-color: #f8f9fa;
+            background: #f0f1f3 !important;
             cursor: not-allowed;
-            color: #6c757d;
+            color: #6b7280;
         }
 
-        /* Specific alignment for text */
-        .invoice-data-grid input.text-center {
-            text-align: center;
-        }
+        .invoice-data-grid input.text-center { text-align: center; }
 
-        /* Action button cell */
         .invoice-data-grid td.action-cell {
-            padding: 4px !important;
+            padding: 1px !important;
+            margin: 0 !important;
             text-align: center;
         }
 
-        /* Span styling for read-only text */
         .invoice-data-grid .static-text {
             display: flex;
             align-items: center;
-            padding: 0 8px;
+            padding: 0 4px;
+            margin: 0;
             height: 100%;
             width: 100%;
             white-space: nowrap;
@@ -138,12 +165,28 @@
                 @endforeach
                 <th class="font-bold fw-bold font-14 text-center">{{ __('Action') }}</th>
             </tr>
+            {{-- صف البحث: تحت صف العناوين --}}
+            <tr class="invoice-grid-search-row">
+                @foreach ($this->currentTemplate->getOrderedColumns() as $columnKey)
+                    @if ($this->shouldShowColumn($columnKey))
+                        @php $width = $this->currentTemplate->getColumnWidth($columnKey); @endphp
+                        @if ($columnKey === 'item_name')
+                            <td style="width: {{ $width }}%;">
+                                @stack('invoice_table_search_row')
+                            </td>
+                        @else
+                            <td style="width: {{ $width }}%;"></td>
+                        @endif
+                    @endif
+                @endforeach
+                <td class="action-cell"></td>
+            </tr>
         </thead>
 
         <tbody>
 
             @forelse ($invoiceItems as $index => $row)
-                <tr wire:key="invoice-row-{{ $row['item_id'] }}"
+                <tr wire:key="invoice-row-{{ $row['item_id'] }}" data-row-index="{{ $index }}"
                     wire:click="selectItemFromTable({{ $row['item_id'] ?? 0 }}, {{ $row['unit_id'] ?? 'null' }}, {{ $row['price'] ?? 0 }})"
                     style="cursor: pointer;" class="align-middle">
 
@@ -212,8 +255,8 @@
                     @if ($this->shouldShowColumn('quantity'))
                         <td style="width: 10%;">
                             <input type="number" step="0.001" min="0" id="quantity-{{ $index }}"
-                                x-model.number="invoiceItems[{{ $index }}].quantity" data-field="quantity"
-                                data-row="{{ $index }}" @focus="$event.target.select()"
+                                wire:model.live="invoiceItems.{{ $index }}.quantity" data-field="quantity"
+                                data-row="{{ $index }}" onclick="this.select()"
                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                 @click.stop placeholder="{{ __('Quantity') }}"
                                 class="form-control invoice-quantity invoice-field text-center">
@@ -360,8 +403,8 @@
                     @if ($this->shouldShowColumn('price'))
                         <td style="width: 15%;">
                             <input type="number" id="price-{{ $index }}"
-                                x-model.number="invoiceItems[{{ $index }}].price" data-field="price"
-                                data-row="{{ $index }}" @focus="$event.target.select()"
+                                wire:model.live="invoiceItems.{{ $index }}.price" data-field="price"
+                                data-row="{{ $index }}" onclick="this.select()"
                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                 @click.stop class="form-control text-center invoice-price invoice-field"
                                 step="0.01" @if ($this->type == 10 && !auth()->user()->can('allow_price_change')) readonly @endif />
@@ -380,8 +423,8 @@
                         @endphp
                         <td style="width: 15%;">
                             <input type="number" id="discount-{{ $index }}"
-                                x-model.number="invoiceItems[{{ $index }}].discount" data-field="discount"
-                                data-row="{{ $index }}" @focus="$event.target.select()"
+                                wire:model.live="invoiceItems.{{ $index }}.discount" data-field="discount"
+                                data-row="{{ $index }}" onclick="this.select()"
                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                 @click.stop class="form-control text-center invoice-discount invoice-field"
                                 step="0.01" @if (!$hasDiscountPermission || !$isDiscountItemEnabled) readonly @endif />
@@ -393,8 +436,8 @@
                     @if ($this->shouldShowColumn('sub_value'))
                         <td style="width: 15%;">
                             <input type="number" step="0.01" min="0" id="sub_value-{{ $index }}"
-                                x-model.number="invoiceItems[{{ $index }}].sub_value" data-field="sub_value"
-                                data-row="{{ $index }}" @focus="$event.target.select()"
+                                wire:model.live="invoiceItems.{{ $index }}.sub_value" data-field="sub_value"
+                                data-row="{{ $index }}" onclick="this.select()"
                                 @keydown.enter.prevent="window.handleEnterNavigation && window.handleEnterNavigation($event)"
                                 @click.stop placeholder="{{ __('Value') }}"
                                 class="form-control invoice-field text-center" readonly>

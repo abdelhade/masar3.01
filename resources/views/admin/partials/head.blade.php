@@ -32,6 +32,9 @@
         rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
 
+    {{-- Masar theme switcher (classic, mint-green, dark, monokai) --}}
+    <link href="{{ asset('css/themes/masar-themes.css') }}" rel="stylesheet" type="text/css" />
+
     <!-- Alpine.js is included with Livewire 3, no need to load separately -->
     {{-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.0/dist/cdn.min.js"></script> --}}
 
