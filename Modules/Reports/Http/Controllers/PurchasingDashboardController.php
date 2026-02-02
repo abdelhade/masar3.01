@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use App\Models\OperHead;
 use App\Models\OperationItems;
-use Carbon\Carbon;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Modules\Accounts\Models\AccHead;
+use Illuminate\Support\Facades\Schema;
 
 class PurchasingDashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Purchase Invoice');
+    }
+
     /**
      * لوحة تحكم المشتريات: طلبات متأخرة، أفضل 5 موردين، متوسط أسعار 6 أشهر.
      */

@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\JournalHead;
-use App\Models\OperHead;
-use App\Models\ProType;
 use App\Models\User;
+use App\Models\ProType;
+use App\Models\OperHead;
+use App\Models\JournalHead;
+use Illuminate\Routing\Controller;
 use Modules\Reports\Services\ReportCalculationTrait;
 
 class GeneralReportController extends Controller
 {
     use ReportCalculationTrait;
+
+    public function __construct()
+    {
+        $this->middleware('can:view account-movement-report');
+    }
 
     public function index(): \Illuminate\Contracts\View\View
     {

@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\JournalDetail;
+use Illuminate\Routing\Controller;
 use Modules\Accounts\Models\AccHead;
 use Modules\Reports\Services\ReportCalculationTrait;
 
 class AccountsReportController extends Controller
 {
     use ReportCalculationTrait;
+
+    public function __construct()
+    {
+        $this->middleware('can:view account-movement-report');
+    }
 
     /**
      * جلب الحسابات مع جميع الأطفال بشكل recursive
@@ -344,7 +349,7 @@ class AccountsReportController extends Controller
         $query = AccHead::where('isdeleted', 0)->orderBy('code', 'asc');
 
         if ($accountGroup) {
-            $query->where('code', 'like', $accountGroup.'%');
+            $query->where('code', 'like', $accountGroup . '%');
         }
 
         $accountBalances = $query->paginate(200)->through(function ($account) use ($asOfDate) {
@@ -447,7 +452,7 @@ class AccountsReportController extends Controller
             'as_of_date' => $asOfDate,
             'comparisons' => $comparisons,
             'total_accounts' => count($comparisons),
-            'accounts_with_difference' => count(array_filter($comparisons, fn ($c) => $c['has_difference'])),
+            'accounts_with_difference' => count(array_filter($comparisons, fn($c) => $c['has_difference'])),
             'total_difference' => $totalDifference,
         ]);
     }

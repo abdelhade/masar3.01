@@ -2,15 +2,18 @@
 
 namespace Modules\Reports\Http\Controllers;
 
-use Modules\Accounts\Models\AccHead;
 use App\Models\OperHead;
-use Illuminate\Http\Request;
 use App\Models\OperationItems;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 
 class salesReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Sales Invoice');
+    }
+
     public function generalSalesItemsReport()
     {
         $query = OperationItems::whereHas('operhead', function ($q) {

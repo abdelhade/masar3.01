@@ -2,14 +2,19 @@
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Models\OperationItems;
 use App\Models\OperHead;
-use Modules\Accounts\Models\AccHead;
+use App\Models\OperationItems;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
+use Modules\Accounts\Models\AccHead;
 
 class purchaseReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Purchase Invoice');
+    }
+
     public function generalPurchasesItemsReport()
     {
         $query = OperationItems::whereHas('operhead', function ($q) {
