@@ -46,7 +46,12 @@ class BranchScope implements Scope
 
             // Only apply scope if user has branches
             if (! empty($branchIds)) {
-                $builder->whereIn($model->getTable().'.branch_id', $branchIds);
+                $table = $model->getTable();
+                // Include records that belong to user's branches OR have no branch (NULL) for backward compatibility
+                $builder->where(function (Builder $q) use ($table, $branchIds) {
+                    $q->whereIn($table.'.branch_id', $branchIds)
+                        ->orWhereNull($table.'.branch_id');
+                });
             } else {
                 // If no branches, return empty result set
                 $builder->whereRaw('1 = 0');

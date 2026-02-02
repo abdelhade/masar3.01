@@ -147,6 +147,7 @@ trait HandlesInvoiceData
         // أضف نقل التواريخ:
         $this->pro_date = $sourceInvoice->pro_date;
         $this->accural_date = $sourceInvoice->accural_date;
+        $this->expected_delivery_date = $sourceInvoice->expected_delivery_date ? \Carbon\Carbon::parse($sourceInvoice->expected_delivery_date)->format('Y-m-d') : null;
     }
 
     protected function handleConvertData($convertData)
@@ -167,6 +168,7 @@ trait HandlesInvoiceData
         $this->notes = $invoiceData['notes'] ?? '';
         $this->pro_date = $invoiceData['invoice_date'] ?? $this->pro_date;
         $this->accural_date = $invoiceData['accural_date'] ?? $this->accural_date;
+        $this->expected_delivery_date = $invoiceData['expected_delivery_date'] ?? $this->expected_delivery_date ?? null;
 
         // ✅ نقل الإجماليات والخصومات
         $this->discount_percentage = $convertData['discount_percentage'] ?? 0;

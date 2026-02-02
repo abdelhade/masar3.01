@@ -2,7 +2,14 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 @include('admin.partials.head')
 
-<body>
+<body class="@yield('body_class')">
+    {{-- Apply saved theme immediately to avoid flash --}}
+    <script>
+    (function(){var k='masar_theme';var v;try{v=localStorage.getItem(k);}catch(e){v=null;}
+    var t=(v&&['classic','mint-green','dark','monokai'].indexOf(v)!==-1)?v:'classic';
+    document.body.classList.add('theme-'+t);
+    })();
+    </script>
     {{-- YouTube-style Progress Bar Loader --}}
     <div id="page-loader" class="page-loader">
         <div class="loader-bar"></div>
@@ -35,7 +42,9 @@
     @endif
 
     <div class="page-wrapper">
+        @hasSection('hide_topbar')@else
         @include('admin.partials.topbar')
+        @endif
         <div class="page-content">
             <div class="container-fluid">
                 <div class="row">
@@ -43,7 +52,9 @@
                     @yield('content')
                 </div>
             </div>
+            @hasSection('hide_footer') @else
             @include('admin.partials.footer')
+            @endif
         </div>
     </div>
     @include('admin.partials.scripts')

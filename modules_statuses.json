@@ -25,6 +25,5 @@
     "Recruitment": true,
     "Fleet": true,
     "ActivityLog": true,
-    "HR": true,
-    "OfflinePOS": false
+    "HR": true
 }

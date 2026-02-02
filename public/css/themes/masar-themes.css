@@ -1,0 +1,1072 @@
+/**
+ * Masar Theme Switcher - CSS Overrides
+ * Themes: classic (blue/light blue), mint-green, dark, monokai
+ */
+
+/* ---------------------------------------------------------------------------
+   theme-classic: Blue & light blue — كل الكلام أسمر
+   --------------------------------------------------------------------------- */
+body.theme-classic {
+  --masar-bg: #e8f4fc;
+  --masar-sidebar: #d4e9f7;
+  --masar-card: #ffffff;
+  --masar-text: #3e2723;
+  --masar-text-muted: #5d4037;
+  --masar-primary: #1976d2;
+  --masar-border: #90caf9;
+}
+
+body.theme-classic,
+body.theme-classic .page-wrapper,
+body.theme-classic .page-content {
+  background-color: var(--masar-bg) !important;
+  color: var(--masar-text);
+}
+
+body.theme-classic .left-sidenav {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border) !important;
+}
+
+body.theme-classic .navbar-custom {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border);
+}
+
+body.theme-classic .card {
+  background-color: var(--masar-card);
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-classic .left-sidenav-menu li > a {
+  color: var(--masar-text-muted);
+}
+
+body.theme-classic .left-sidenav-menu li > a:hover,
+body.theme-classic .left-sidenav-menu li > a.active {
+  color: var(--masar-primary);
+}
+
+body.theme-classic .card,
+body.theme-classic .card-body,
+body.theme-classic h1, body.theme-classic h2, body.theme-classic h3,
+body.theme-classic h4, body.theme-classic h5, body.theme-classic h6,
+body.theme-classic p, body.theme-classic span, body.theme-classic td,
+body.theme-classic th, body.theme-classic label {
+  color: var(--masar-text) !important;
+}
+body.theme-classic .text-muted {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-classic .table {
+  color: var(--masar-text) !important;
+}
+
+body.theme-classic .nav-link,
+body.theme-classic .topbar-nav .nav-link {
+  color: var(--masar-text-muted) !important;
+}
+
+body.theme-classic .text-primary {
+  color: var(--masar-primary) !important;
+}
+
+body.theme-classic .btn-primary {
+  background-color: #1976d2;
+  border-color: #1565c0;
+}
+
+body.theme-classic .form-control,
+body.theme-classic .form-select {
+  background-color: #fff;
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-classic .dashboard-container {
+  background-color: var(--masar-bg) !important;
+}
+
+/* Header من الثيم */
+body.theme-classic .header-section,
+body.theme-neumorphism-lite.theme-classic .header-section {
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.95) 0%, rgba(33, 150, 243, 0.95) 100%) !important;
+  border-bottom-color: rgba(25, 118, 210, 0.4) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   theme-mint-green: Mint green palette — نص أسمر
+   --------------------------------------------------------------------------- */
+body.theme-mint-green,
+body.theme-neumorphism-lite.theme-mint-green {
+  --masar-bg: #f0faf5;
+  --masar-sidebar: #e8f5e9;
+  --masar-card: #ffffff;
+  --masar-text: #3e2723;
+  --masar-text-muted: #5d4037;
+  --masar-primary: #2e7d32;
+  --masar-border: #a5d6a7;
+}
+
+body.theme-mint-green,
+body.theme-neumorphism-lite.theme-mint-green,
+body.theme-mint-green .page-wrapper,
+body.theme-mint-green .page-content {
+  background-color: var(--masar-bg) !important;
+  color: var(--masar-text);
+}
+
+body.theme-mint-green .dashboard-container,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container {
+  background-color: var(--masar-bg) !important;
+}
+
+/* Header من الثيم */
+body.theme-mint-green .header-section,
+body.theme-neumorphism-lite.theme-mint-green .header-section {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.95) 0%, rgba(56, 142, 60, 0.95) 100%) !important;
+  border-bottom-color: rgba(46, 125, 50, 0.4) !important;
+}
+
+body.theme-mint-green .left-sidenav {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border) !important;
+}
+
+body.theme-mint-green .navbar-custom {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border);
+}
+
+body.theme-mint-green .card {
+  background-color: var(--masar-card);
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-mint-green .left-sidenav-menu li > a {
+  color: var(--masar-text-muted);
+}
+body.theme-mint-green .card,
+body.theme-mint-green .card-body {
+  color: var(--masar-text) !important;
+}
+
+body.theme-mint-green h1, body.theme-mint-green h2, body.theme-mint-green h3,
+body.theme-mint-green h4, body.theme-mint-green h5, body.theme-mint-green h6,
+body.theme-mint-green p, body.theme-mint-green span, body.theme-mint-green td,
+body.theme-mint-green th, body.theme-mint-green label, body.theme-mint-green .text-muted {
+  color: var(--masar-text) !important;
+}
+body.theme-mint-green .text-muted {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-mint-green .table {
+  color: var(--masar-text) !important;
+}
+
+body.theme-mint-green .left-sidenav-menu li > a:hover,
+body.theme-mint-green .left-sidenav-menu li > a.active {
+  color: var(--masar-primary);
+}
+
+body.theme-mint-green .nav-link,
+body.theme-mint-green .topbar-nav .nav-link {
+  color: var(--masar-text-muted) !important;
+}
+
+body.theme-mint-green .text-primary {
+  color: var(--masar-primary) !important;
+}
+
+body.theme-mint-green .btn-primary {
+  background-color: #388e3c;
+  border-color: #2e7d32;
+}
+
+body.theme-mint-green .form-control,
+body.theme-mint-green .form-select {
+  background-color: #fff;
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+/* ---------------------------------------------------------------------------
+   theme-dark: Dark mode — كل الكتابة بيضاء
+   --------------------------------------------------------------------------- */
+body.theme-dark {
+  --masar-bg: #1a1d23;
+  --masar-sidebar: #15181e;
+  --masar-card: #22262e;
+  --masar-text: #ffffff;
+  --masar-text-muted: #e5e7eb;
+  --masar-primary: #60a5fa;
+  --masar-border: #374151;
+}
+
+body.theme-dark,
+body.theme-dark .page-wrapper,
+body.theme-dark .page-content {
+  background-color: var(--masar-bg) !important;
+  color: var(--masar-text);
+}
+
+body.theme-dark .dashboard-container {
+  background-color: var(--masar-bg) !important;
+}
+
+/* Header من الثيم */
+body.theme-dark .header-section,
+body.theme-neumorphism-lite.theme-dark .header-section {
+  background: linear-gradient(135deg, rgba(21, 24, 30, 0.98) 0%, rgba(34, 39, 46, 0.98) 100%) !important;
+  border-bottom-color: var(--masar-border) !important;
+}
+
+body.theme-dark .left-sidenav {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border) !important;
+}
+
+body.theme-dark .navbar-custom {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border);
+}
+
+body.theme-dark .card {
+  background-color: var(--masar-card);
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-dark .card-header {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-dark .left-sidenav-menu li > a {
+  color: var(--masar-text-muted);
+}
+
+body.theme-dark .left-sidenav-menu li > a:hover,
+body.theme-dark .left-sidenav-menu li > a.active {
+  color: var(--masar-primary);
+}
+
+body.theme-dark .nav-link,
+body.theme-dark .topbar-nav .nav-link {
+  color: var(--masar-text-muted) !important;
+}
+
+body.theme-dark .text-dark {
+  color: var(--masar-text) !important;
+}
+
+body.theme-dark .text-muted {
+  color: var(--masar-text-muted) !important;
+}
+
+body.theme-dark .table {
+  color: var(--masar-text);
+}
+
+body.theme-dark .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+body.theme-dark .table thead th {
+  border-color: var(--masar-border);
+  color: var(--masar-text-muted);
+}
+
+body.theme-dark .form-control,
+body.theme-dark .form-select {
+  background-color: #2d323c;
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-dark .form-control:focus,
+body.theme-dark .form-control:focus-visible {
+  background-color: #374151;
+  border-color: var(--masar-primary);
+  color: var(--masar-text);
+}
+
+body.theme-dark .dropdown-menu {
+  background-color: var(--masar-card);
+  border-color: var(--masar-border);
+}
+
+body.theme-dark .dropdown-item {
+  color: var(--masar-text);
+}
+
+body.theme-dark .dropdown-item:hover {
+  background-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-dark .dropdown-divider {
+  border-color: var(--masar-border);
+}
+
+/* Dark: كل النص في المشروع أبيض */
+body.theme-dark .card,
+body.theme-dark .card-body,
+body.theme-dark .card-header,
+body.theme-dark h1, body.theme-dark h2, body.theme-dark h3,
+body.theme-dark h4, body.theme-dark h5, body.theme-dark h6,
+body.theme-dark p, body.theme-dark span, body.theme-dark td,
+body.theme-dark th, body.theme-dark label, body.theme-dark li,
+body.theme-dark a:not(.btn):not([data-masar-theme]),
+body.theme-dark .breadcrumb,
+body.theme-dark .page-title,
+body.theme-dark small {
+  color: #ffffff !important;
+}
+body.theme-dark .text-muted,
+body.theme-dark .text-secondary {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-dark .table thead th {
+  color: #ffffff !important;
+}
+body.theme-dark .stats-card .stats-card-label,
+body.theme-dark .stats-card .stats-card-value,
+body.theme-dark .stats-card .stats-card-subtitle {
+  color: #ffffff !important;
+}
+body.theme-dark .card-header h5,
+body.theme-dark .card-header h6 {
+  color: #ffffff !important;
+}
+body.theme-dark input::placeholder,
+body.theme-dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   theme-monokai: Monokai editor style
+   --------------------------------------------------------------------------- */
+body.theme-monokai {
+  --masar-bg: #272822;
+  --masar-sidebar: #1e1f1c;
+  --masar-card: #3e3d32;
+  --masar-text: #ffffff;
+  --masar-text-muted: #b0b0a8;
+  --masar-primary: #66d9ef;
+  --masar-accent: #a6e22e;
+  --masar-orange: #fd971f;
+  --masar-pink: #f92672;
+  --masar-border: #49483e;
+}
+
+body.theme-monokai,
+body.theme-monokai .page-wrapper,
+body.theme-monokai .page-content {
+  background-color: var(--masar-bg) !important;
+  color: var(--masar-text);
+}
+
+body.theme-monokai .dashboard-container {
+  background-color: var(--masar-bg) !important;
+}
+
+/* Header من الثيم */
+body.theme-monokai .header-section,
+body.theme-neumorphism-lite.theme-monokai .header-section {
+  background: linear-gradient(135deg, rgba(30, 31, 28, 0.98) 0%, rgba(62, 61, 50, 0.98) 100%) !important;
+  border-bottom-color: var(--masar-border) !important;
+}
+
+body.theme-monokai .left-sidenav {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border) !important;
+}
+
+body.theme-monokai .navbar-custom {
+  background-color: var(--masar-sidebar) !important;
+  border-color: var(--masar-border);
+}
+
+body.theme-monokai .card {
+  background-color: var(--masar-card);
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-monokai .card-header {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-color: var(--masar-border);
+  color: var(--masar-accent);
+}
+
+body.theme-monokai .left-sidenav-menu li > a {
+  color: var(--masar-text-muted);
+}
+
+body.theme-monokai .left-sidenav-menu li > a:hover {
+  color: var(--masar-primary);
+}
+
+body.theme-monokai .left-sidenav-menu li > a.active {
+  color: var(--masar-accent);
+}
+
+body.theme-monokai .nav-link,
+body.theme-monokai .topbar-nav .nav-link {
+  color: var(--masar-text-muted) !important;
+}
+
+body.theme-monokai .text-dark {
+  color: var(--masar-text) !important;
+}
+
+body.theme-monokai .text-muted {
+  color: var(--masar-text-muted) !important;
+}
+
+body.theme-monokai .text-primary {
+  color: var(--masar-primary) !important;
+}
+
+body.theme-monokai .table {
+  color: var(--masar-text);
+}
+
+body.theme-monokai .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+body.theme-monokai .table thead th {
+  border-color: var(--masar-border);
+  color: var(--masar-orange);
+}
+
+body.theme-monokai .form-control,
+body.theme-monokai .form-select {
+  background-color: #3e3d32;
+  border-color: var(--masar-border);
+  color: var(--masar-text);
+}
+
+body.theme-monokai .form-control:focus,
+body.theme-monokai .form-control:focus-visible {
+  border-color: var(--masar-primary);
+  color: var(--masar-text);
+}
+
+body.theme-monokai .dropdown-menu {
+  background-color: var(--masar-card);
+  border-color: var(--masar-border);
+}
+
+body.theme-monokai .dropdown-item {
+  color: var(--masar-text);
+}
+
+body.theme-monokai .dropdown-item:hover {
+  background-color: var(--masar-border);
+  color: var(--masar-accent);
+}
+
+body.theme-monokai .dropdown-divider {
+  border-color: var(--masar-border);
+}
+
+body.theme-monokai .btn-primary {
+  background-color: #66d9ef;
+  border-color: #66d9ef;
+  color: #272822;
+}
+
+/* =======================================================================
+   Sidebar hover effects (override custom-styles per theme)
+   ======================================================================= */
+
+/* Classic: blue hover — مشع */
+body.theme-classic .left-sidenav-menu li > a {
+  transition: all 0.3s ease !important;
+}
+body.theme-classic .left-sidenav-menu li > a:hover {
+  background: rgba(25, 118, 210, 0.18) !important;
+  color: var(--masar-primary) !important;
+  transform: translateX(-4px);
+  box-shadow: 0 0 12px rgba(25, 118, 210, 0.35), 0 0 24px rgba(25, 118, 210, 0.2), inset 0 0 20px rgba(25, 118, 210, 0.08) !important;
+  text-shadow: 0 0 12px rgba(25, 118, 210, 0.5);
+}
+body.theme-classic .left-sidenav-menu li > a:hover::before {
+  background: var(--masar-primary) !important;
+  box-shadow: 0 0 10px var(--masar-primary), 0 0 20px rgba(25, 118, 210, 0.6) !important;
+}
+body.theme-classic .left-sidenav-menu li > a:hover .menu-icon,
+body.theme-classic .left-sidenav-menu li > a:hover i {
+  color: var(--masar-primary) !important;
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 6px rgba(25, 118, 210, 0.7));
+}
+body.theme-classic .left-sidenav-menu li ul li > a:hover {
+  background: rgba(25, 118, 210, 0.12) !important;
+  border-right-color: var(--masar-primary) !important;
+  box-shadow: 0 0 10px rgba(25, 118, 210, 0.25) !important;
+}
+body.theme-classic .left-sidenav-menu li.nav-item.border-bottom:hover {
+  background: rgba(25, 118, 210, 0.2) !important;
+  border-color: var(--masar-border) !important;
+  box-shadow: 0 0 14px rgba(25, 118, 210, 0.3) !important;
+}
+body.theme-classic .left-sidenav-menu li.nav-item.border-bottom:hover a,
+body.theme-classic .left-sidenav-menu li.nav-item.border-bottom:hover .menu-icon {
+  color: var(--masar-primary) !important;
+}
+
+/* Mint green: green hover — مشع */
+body.theme-mint-green .left-sidenav-menu li > a {
+  transition: all 0.3s ease !important;
+}
+body.theme-mint-green .left-sidenav-menu li > a:hover {
+  background: rgba(46, 125, 50, 0.18) !important;
+  color: var(--masar-primary) !important;
+  transform: translateX(-4px);
+  box-shadow: 0 0 12px rgba(46, 125, 50, 0.35), 0 0 24px rgba(46, 125, 50, 0.2), inset 0 0 20px rgba(46, 125, 50, 0.08) !important;
+  text-shadow: 0 0 12px rgba(46, 125, 50, 0.5);
+}
+body.theme-mint-green .left-sidenav-menu li > a:hover::before {
+  background: var(--masar-primary) !important;
+  box-shadow: 0 0 10px var(--masar-primary), 0 0 20px rgba(46, 125, 50, 0.6) !important;
+}
+body.theme-mint-green .left-sidenav-menu li > a:hover .menu-icon,
+body.theme-mint-green .left-sidenav-menu li > a:hover i {
+  color: var(--masar-primary) !important;
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 6px rgba(46, 125, 50, 0.7));
+}
+body.theme-mint-green .left-sidenav-menu li ul li > a:hover {
+  background: rgba(46, 125, 50, 0.12) !important;
+  border-right-color: var(--masar-primary) !important;
+  box-shadow: 0 0 10px rgba(46, 125, 50, 0.25) !important;
+}
+body.theme-mint-green .left-sidenav-menu li.nav-item.border-bottom:hover {
+  background: rgba(46, 125, 50, 0.2) !important;
+  border-color: var(--masar-border) !important;
+  box-shadow: 0 0 14px rgba(46, 125, 50, 0.3) !important;
+}
+body.theme-mint-green .left-sidenav-menu li.nav-item.border-bottom:hover a,
+body.theme-mint-green .left-sidenav-menu li.nav-item.border-bottom:hover .menu-icon {
+  color: var(--masar-primary) !important;
+}
+
+/* Dark: primary blue hover — مشع */
+body.theme-dark .left-sidenav-menu li > a {
+  transition: all 0.3s ease !important;
+}
+body.theme-dark .left-sidenav-menu li > a:hover {
+  background: rgba(96, 165, 250, 0.2) !important;
+  color: var(--masar-primary) !important;
+  transform: translateX(-4px);
+  box-shadow: 0 0 14px rgba(96, 165, 250, 0.4), 0 0 28px rgba(96, 165, 250, 0.25), inset 0 0 20px rgba(96, 165, 250, 0.1) !important;
+  text-shadow: 0 0 14px rgba(96, 165, 250, 0.6);
+}
+body.theme-dark .left-sidenav-menu li > a:hover::before {
+  background: var(--masar-primary) !important;
+  box-shadow: 0 0 12px var(--masar-primary), 0 0 24px rgba(96, 165, 250, 0.7) !important;
+}
+body.theme-dark .left-sidenav-menu li > a:hover .menu-icon,
+body.theme-dark .left-sidenav-menu li > a:hover i {
+  color: var(--masar-primary) !important;
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.8));
+}
+body.theme-dark .left-sidenav-menu li ul li > a:hover {
+  background: rgba(96, 165, 250, 0.14) !important;
+  border-right-color: var(--masar-primary) !important;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.3) !important;
+}
+body.theme-dark .left-sidenav-menu li.nav-item.border-bottom:hover {
+  background: rgba(96, 165, 250, 0.18) !important;
+  border-color: var(--masar-border) !important;
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.35) !important;
+}
+body.theme-dark .left-sidenav-menu li.nav-item.border-bottom:hover a,
+body.theme-dark .left-sidenav-menu li.nav-item.border-bottom:hover .menu-icon {
+  color: var(--masar-primary) !important;
+}
+
+/* Monokai: primary/accent hover — مشع */
+body.theme-monokai .left-sidenav-menu li > a {
+  transition: all 0.3s ease !important;
+}
+body.theme-monokai .left-sidenav-menu li > a:hover {
+  background: rgba(102, 217, 239, 0.18) !important;
+  color: var(--masar-primary) !important;
+  transform: translateX(-4px);
+  box-shadow: 0 0 14px rgba(102, 217, 239, 0.4), 0 0 28px rgba(102, 217, 239, 0.25), inset 0 0 20px rgba(102, 217, 239, 0.08) !important;
+  text-shadow: 0 0 14px rgba(102, 217, 239, 0.6);
+}
+body.theme-monokai .left-sidenav-menu li > a:hover::before {
+  background: var(--masar-primary) !important;
+  box-shadow: 0 0 12px var(--masar-primary), 0 0 24px rgba(102, 217, 239, 0.7) !important;
+}
+body.theme-monokai .left-sidenav-menu li > a:hover .menu-icon,
+body.theme-monokai .left-sidenav-menu li > a:hover i {
+  color: var(--masar-primary) !important;
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 8px rgba(102, 217, 239, 0.8));
+}
+body.theme-monokai .left-sidenav-menu li ul li > a:hover {
+  background: rgba(102, 217, 239, 0.12) !important;
+  border-right-color: var(--masar-primary) !important;
+  box-shadow: 0 0 12px rgba(102, 217, 239, 0.3) !important;
+}
+body.theme-monokai .left-sidenav-menu li.nav-item.border-bottom:hover {
+  background: rgba(166, 226, 46, 0.18) !important;
+  border-color: var(--masar-border) !important;
+  box-shadow: 0 0 16px rgba(166, 226, 46, 0.35) !important;
+}
+body.theme-monokai .left-sidenav-menu li.nav-item.border-bottom:hover a,
+body.theme-monokai .left-sidenav-menu li.nav-item.border-bottom:hover .menu-icon {
+  color: var(--masar-accent) !important;
+  filter: drop-shadow(0 0 6px rgba(166, 226, 46, 0.7));
+}
+
+/* =======================================================================
+   Cards & Modules colors per theme
+   ======================================================================= */
+
+/* Classic: blue cards */
+body.theme-classic .stats-card-clients {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+  border-right: 4px solid #1976d2 !important;
+}
+body.theme-classic .stats-card-logins {
+  background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%) !important;
+  border-right: 4px solid #0288d1 !important;
+}
+body.theme-classic .stats-card-sales {
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%) !important;
+  border-right: 4px solid #3f51b5 !important;
+}
+body.theme-classic .stats-card .stats-card-label {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-classic .stats-card .stats-card-value {
+  color: var(--masar-text) !important;
+}
+body.theme-classic .stats-card .stats-card-subtitle {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-classic .stats-card .stat-icon-wrapper {
+  background: rgba(25, 118, 210, 0.15) !important;
+  color: #1976d2 !important;
+}
+body.theme-classic .app-icon-large.icon-bg-green {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+  border: 2px solid #90caf9 !important;
+  color: #1976d2 !important;
+}
+body.theme-classic .app-icon-large.icon-bg-green:hover {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
+  color: white !important;
+  box-shadow: 0 0 20px rgba(25, 118, 210, 0.4) !important;
+}
+body.theme-classic .card {
+  border-color: var(--masar-border) !important;
+}
+body.theme-classic .card-header {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+  border-bottom-color: var(--masar-border) !important;
+  color: var(--masar-text) !important;
+}
+body.theme-classic .card-header h5,
+body.theme-classic .card-header h6 {
+  color: var(--masar-text) !important;
+}
+
+/* Mint green: green cards — بطاقات خضراء فاتحة مع نص أسمر للقراءة */
+body.theme-mint-green .stats-card-clients,
+body.theme-neumorphism-lite.theme-mint-green .stats-card-clients {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important;
+  border-right: 4px solid #2e7d32 !important;
+  box-shadow: 0 10px 30px rgba(46, 125, 50, 0.2) !important;
+}
+body.theme-mint-green .stats-card-logins,
+body.theme-neumorphism-lite.theme-mint-green .stats-card-logins {
+  background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%) !important;
+  border-right: 4px solid #558b2f !important;
+  box-shadow: 0 10px 30px rgba(85, 139, 47, 0.2) !important;
+}
+body.theme-mint-green .stats-card-sales,
+body.theme-neumorphism-lite.theme-mint-green .stats-card-sales {
+  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%) !important;
+  border-right: 4px solid #00796b !important;
+  box-shadow: 0 10px 30px rgba(0, 121, 107, 0.2) !important;
+}
+body.theme-mint-green .stats-card .stats-card-label,
+body.theme-mint-green .stats-card .stats-card-label *,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-label,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-label * {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-mint-green .stats-card .stats-card-value,
+body.theme-mint-green .stats-card .stats-card-value *,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-value,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-value * {
+  color: var(--masar-text) !important;
+}
+body.theme-mint-green .stats-card .stats-card-subtitle,
+body.theme-mint-green .stats-card .stats-card-subtitle *,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-subtitle,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-subtitle * {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-mint-green .stats-card .stat-icon-wrapper,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper {
+  background: rgba(46, 125, 50, 0.15) !important;
+  color: var(--masar-text) !important;
+}
+body.theme-mint-green .stats-card .stat-icon-wrapper i,
+body.theme-mint-green .stats-card .stat-icon-wrapper svg,
+body.theme-mint-green .stats-card .stat-icon-wrapper [data-lucide],
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper i,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper svg,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper [data-lucide] {
+  color: var(--masar-text) !important;
+  stroke: var(--masar-text) !important;
+}
+body.theme-mint-green .app-icon-large.icon-bg-green,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important;
+  border: 2px solid #a5d6a7 !important;
+  color: var(--masar-text) !important;
+}
+body.theme-mint-green .app-icon-large.icon-bg-green p,
+body.theme-mint-green .app-icon-large.icon-bg-green span,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green p,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green span {
+  color: var(--masar-text) !important;
+}
+body.theme-mint-green .app-icon-large.icon-bg-green svg,
+body.theme-mint-green .app-icon-large.icon-bg-green [data-lucide],
+body.theme-mint-green .app-icon-large.icon-bg-green i,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green svg,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green [data-lucide],
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green i {
+  color: var(--masar-text) !important;
+  stroke: var(--masar-text) !important;
+}
+body.theme-mint-green .app-icon-large.icon-bg-green:hover,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green:hover {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 20px rgba(46, 125, 50, 0.4) !important;
+}
+body.theme-mint-green .app-icon-large.icon-bg-green:hover p,
+body.theme-mint-green .app-icon-large.icon-bg-green:hover span,
+body.theme-mint-green .app-icon-large.icon-bg-green:hover svg,
+body.theme-mint-green .app-icon-large.icon-bg-green:hover [data-lucide],
+body.theme-mint-green .app-icon-large.icon-bg-green:hover i,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green:hover p,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green:hover span,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green:hover svg,
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green:hover [data-lucide],
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large.icon-bg-green:hover i {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+body.theme-mint-green .card-header {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important;
+  border-bottom-color: var(--masar-border) !important;
+  color: var(--masar-text) !important;
+}
+body.theme-mint-green .card-header h5,
+body.theme-mint-green .card-header h6 {
+  color: var(--masar-text) !important;
+}
+
+/* Dark: dark cards */
+body.theme-dark .stats-card-clients {
+  background: linear-gradient(135deg, #2d323c 0%, #22262e 100%) !important;
+  border-right: 4px solid #60a5fa !important;
+}
+body.theme-dark .stats-card-logins {
+  background: linear-gradient(135deg, #2d323c 0%, #22262e 100%) !important;
+  border-right: 4px solid #3b82f6 !important;
+}
+body.theme-dark .stats-card-sales {
+  background: linear-gradient(135deg, #2d323c 0%, #22262e 100%) !important;
+  border-right: 4px solid #2563eb !important;
+}
+body.theme-dark .stats-card .stats-card-label {
+  color: #9ca3af !important;
+}
+body.theme-dark .stats-card .stats-card-value {
+  color: #e4e6eb !important;
+}
+body.theme-dark .stats-card .stat-icon-wrapper {
+  background: rgba(96, 165, 250, 0.15) !important;
+  color: #60a5fa !important;
+}
+body.theme-dark .app-icon-large.icon-bg-green {
+  background: linear-gradient(135deg, #2d323c 0%, #22262e 100%) !important;
+  border: 2px solid #374151 !important;
+  color: #60a5fa !important;
+}
+body.theme-dark .app-icon-large.icon-bg-green:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
+  color: #1a1d23 !important;
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.5) !important;
+}
+body.theme-dark .card-header {
+  background: linear-gradient(135deg, #2d323c 0%, #22262e 100%) !important;
+  border-bottom-color: var(--masar-border) !important;
+  color: var(--masar-text) !important;
+}
+body.theme-dark .card-header h5 {
+  color: var(--masar-text) !important;
+}
+
+/* Monokai: monokai cards */
+body.theme-monokai .stats-card-clients {
+  background: linear-gradient(135deg, #3e3d32 0%, #2d2c24 100%) !important;
+  border-right: 4px solid #66d9ef !important;
+}
+body.theme-monokai .stats-card-logins {
+  background: linear-gradient(135deg, #3e3d32 0%, #2d2c24 100%) !important;
+  border-right: 4px solid #a6e22e !important;
+}
+body.theme-monokai .stats-card-sales {
+  background: linear-gradient(135deg, #3e3d32 0%, #2d2c24 100%) !important;
+  border-right: 4px solid #fd971f !important;
+}
+body.theme-monokai .stats-card .stats-card-label {
+  color: #75715e !important;
+}
+body.theme-monokai .stats-card .stats-card-value {
+  color: #f8f8f2 !important;
+}
+body.theme-monokai .stats-card .stat-icon-wrapper {
+  background: rgba(102, 217, 239, 0.15) !important;
+  color: #66d9ef !important;
+}
+body.theme-monokai .app-icon-large.icon-bg-green {
+  background: linear-gradient(135deg, #3e3d32 0%, #2d2c24 100%) !important;
+  border: 2px solid #49483e !important;
+  color: #66d9ef !important;
+}
+body.theme-monokai .app-icon-large.icon-bg-green:hover {
+  background: linear-gradient(135deg, #66d9ef 0%, #a6e22e 100%) !important;
+  color: #272822 !important;
+  box-shadow: 0 0 20px rgba(102, 217, 239, 0.5) !important;
+}
+body.theme-monokai .card-header {
+  background: linear-gradient(135deg, #3e3d32 0%, #2d2c24 100%) !important;
+  border-bottom-color: var(--masar-border) !important;
+  color: var(--masar-accent) !important;
+}
+body.theme-monokai .card-header h5 {
+  color: var(--masar-accent) !important;
+}
+
+/* =======================================================================
+   Theme dropdown items hover
+   ======================================================================= */
+[data-masar-theme-dropdown] .dropdown-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+[data-masar-theme-dropdown] .dropdown-item:hover {
+  background: linear-gradient(135deg, rgba(52, 211, 163, 0.1) 0%, rgba(35, 157, 119, 0.1) 100%);
+  transform: translateX(-3px);
+  padding-right: 18px;
+}
+[data-masar-theme-dropdown] .dropdown-item[data-masar-theme="classic"]:hover {
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(21, 101, 192, 0.1) 100%) !important;
+  color: #1976d2 !important;
+}
+[data-masar-theme-dropdown] .dropdown-item[data-masar-theme="mint-green"]:hover {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.15) 0%, rgba(27, 94, 32, 0.1) 100%) !important;
+  color: #2e7d32 !important;
+}
+[data-masar-theme-dropdown] .dropdown-item[data-masar-theme="dark"]:hover {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%) !important;
+  color: #60a5fa !important;
+}
+[data-masar-theme-dropdown] .dropdown-item[data-masar-theme="monokai"]:hover {
+  background: linear-gradient(135deg, rgba(102, 217, 239, 0.15) 0%, rgba(166, 226, 46, 0.1) 100%) !important;
+  color: #66d9ef !important;
+}
+
+/* =======================================================================
+   Dashboard override — main-dashboard يستخدم dashboard-main.css منفصل
+   هذه القواعد تتغلّب على dashboard-main عند تفعيل الثيم
+   ======================================================================= */
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-value,
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper i,
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper svg,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-value,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper i,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper svg {
+  color: var(--masar-text) !important;
+  stroke: var(--masar-text) !important;
+}
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-label,
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-subtitle,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-label,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-subtitle {
+  color: var(--masar-text-muted) !important;
+}
+body.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green,
+body.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green p,
+body.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green svg,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green p,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green svg {
+  color: var(--masar-text) !important;
+  stroke: var(--masar-text) !important;
+}
+body.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green:hover,
+body.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green:hover p,
+body.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green:hover svg,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green:hover,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green:hover p,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .apps-icons-row .app-icon-large.icon-bg-green:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Monokai: كل الكتابة بيضاء في الداشبورد */
+body.theme-monokai .dashboard-container,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container {
+  color: #ffffff !important;
+}
+body.theme-monokai .dashboard-container h1,
+body.theme-monokai .dashboard-container h2,
+body.theme-monokai .dashboard-container h3,
+body.theme-monokai .dashboard-container h4,
+body.theme-monokai .dashboard-container h5,
+body.theme-monokai .dashboard-container h6,
+body.theme-monokai .dashboard-container p,
+body.theme-monokai .dashboard-container span,
+body.theme-monokai .dashboard-container td,
+body.theme-monokai .dashboard-container th,
+body.theme-monokai .dashboard-container label,
+body.theme-monokai .dashboard-container strong,
+body.theme-monokai .dashboard-container .stats-card-label,
+body.theme-monokai .dashboard-container .stats-card-value,
+body.theme-monokai .dashboard-container .stats-card-subtitle,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container h1,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container h2,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container h3,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container h4,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container h5,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container h6,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container p,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container span,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container td,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container th,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container label,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container strong,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card-label,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card-value,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card-subtitle {
+  color: #ffffff !important;
+}
+body.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper i,
+body.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper svg,
+body.theme-monokai .dashboard-container .app-icon-large.icon-bg-green,
+body.theme-monokai .dashboard-container .app-icon-large.icon-bg-green p,
+body.theme-monokai .dashboard-container .app-icon-large.icon-bg-green svg,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper i,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper svg,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-large.icon-bg-green,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-large.icon-bg-green p,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-large.icon-bg-green svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* الجداول تأخذ من الثيم */
+body.theme-classic .dashboard-container .tables-section .table,
+body.theme-classic .dashboard-container .tables-section .table thead th,
+body.theme-classic .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-classic .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; color: var(--masar-primary) !important; }
+body.theme-classic .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-classic .dashboard-container .tables-section .card-header { background: var(--masar-sidebar) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-classic .dashboard-container .tables-section .card-header h5 { color: var(--masar-text) !important; }
+body.theme-classic .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-classic .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-mint-green .dashboard-container .tables-section .table,
+body.theme-mint-green .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-mint-green .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; background: var(--masar-sidebar) !important; color: var(--masar-primary) !important; }
+body.theme-mint-green .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-mint-green .dashboard-container .tables-section .card-header { background: var(--masar-sidebar) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-mint-green .dashboard-container .tables-section .card-header h5 { color: var(--masar-text) !important; }
+body.theme-mint-green .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-mint-green .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-dark .dashboard-container .tables-section .table,
+body.theme-dark .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-dark .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; color: var(--masar-primary) !important; }
+body.theme-dark .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-dark .dashboard-container .tables-section .card-header { background: rgba(0,0,0,0.2) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-dark .dashboard-container .tables-section .card-header h5 { color: var(--masar-text) !important; }
+body.theme-dark .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-dark .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-monokai .dashboard-container .tables-section .table,
+body.theme-monokai .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-monokai .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; color: var(--masar-orange) !important; }
+body.theme-monokai .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-monokai .dashboard-container .tables-section .card-header { background: rgba(0,0,0,0.25) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-monokai .dashboard-container .tables-section .card-header h5 { color: var(--masar-accent) !important; }
+body.theme-monokai .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-monokai .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .table,
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .card-header { background: var(--masar-sidebar) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .card-header h5 { color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-classic .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .table,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; background: var(--masar-sidebar) !important; color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .card-header { background: var(--masar-sidebar) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .card-header h5 { color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .table,
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .card-header { background: rgba(0,0,0,0.2) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .card-header h5 { color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-dark .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .table,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .table tbody td { background: var(--masar-card) !important; color: var(--masar-text) !important; }
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .table thead th { border-bottom-color: var(--masar-primary) !important; color: var(--masar-orange) !important; }
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .card { background: var(--masar-card) !important; border-color: var(--masar-border) !important; }
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .card-header { background: rgba(0,0,0,0.25) !important; border-bottom-color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .card-header h5 { color: var(--masar-accent) !important; }
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .table tbody tr:hover td { color: var(--masar-primary) !important; }
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .tables-section .card:hover { border-color: var(--masar-primary) !important; }
+
+/* app-icon-group من الثيم */
+body.theme-dark .dashboard-container .app-icon-group,
+body.theme-neumorphism-lite.theme-dark .dashboard-container .app-icon-group {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+body.theme-monokai .dashboard-container .app-icon-group,
+body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-group {
+  background: rgba(255, 255, 255, 0.03) !important;
+}

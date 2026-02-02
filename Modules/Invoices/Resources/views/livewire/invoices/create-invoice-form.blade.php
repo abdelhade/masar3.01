@@ -1,157 +1,32 @@
 @php
-    // Inject InvoiceFormStateManager to get field states
     $fieldStates = app(\Modules\Invoices\Services\Invoice\InvoiceFormStateManager::class)->getFieldStates();
-    $jsConfig = app(\Modules\Invoices\Services\Invoice\InvoiceFormStateManager::class)->getJavaScriptConfig();
 @endphp
 
 <div>
-    {{-- Hide Global Footer on this page only --}}
     <style>
-        footer.footer {
-            display: none !important;
-        }
+        footer.footer { display: none !important; }
     </style>
     @section('formAction', 'create')
     <div class="content-wrapper">
         <section class="content">
-            <form x-data="invoiceCalculations({
-                invoiceItems: @entangle('invoiceItems'),
-                discountPercentage: @entangle('discount_percentage'),
-                additionalPercentage: @entangle('additional_percentage'),
-                receivedFromClient: @entangle('received_from_client'),
-                discountValue: @entangle('discount_value'),
-                additionalValue: @entangle('additional_value'),
-                vatPercentage: @entangle('vat_percentage'),
-                vatValue: @entangle('vat_value'),
-                withholdingTaxPercentage: @entangle('withholding_tax_percentage'),
-                withholdingTaxValue: @entangle('withholding_tax_value'),
-                subtotal: @entangle('subtotal'),
-                totalAfterAdditional: @entangle('total_after_additional'),
-                defaultVatPercentage: @js(setting('default_vat_percentage', 0)),
-                defaultWithholdingTaxPercentage: @js(setting('default_withholding_tax_percentage', 0)),
-                dimensionsUnit: @js($dimensionsUnit ?? 'cm'),
-                enableDimensionsCalculation: @js($enableDimensionsCalculation ?? false),
-                invoiceType: @js($type ?? 10),
-                isCashAccount: @entangle('isCurrentAccountCash'),
-                acc1Id: @entangle('acc1_id'),
-                editableFieldsOrder: @js($this->getEditableFieldsOrder()),
-                currentBalance: @js($currentBalance ?? 0),
-                fieldStates: @js($fieldStates)
-            })"
-                class="d-flex flex-column g-0"
-                style="height: calc(100vh - 70px); overflow: hidden;"
-                @submit.prevent="
-                    // ✅ 1. مزامنة جميع القيم من Alpine.js إلى Livewire
-                    syncToLivewire();
-                    // ✅ 2. انتظار قليل للتأكد من اكتمال المزامنة
-                    setTimeout(() => {
-                        // ✅ 3. إرسال النموذج
-                        $wire.saveForm();
-                    }, 100);
-                "
-                @keydown.enter.prevent="
-                    if ($event.target.tagName === 'BUTTON' && $event.target.type === 'submit') {
-                        $event.target.click();
-                    }
-                ">
+            <form id="invoice-main-form"
+                class="d-flex flex-column g-0 invoice-form-fullheight"
+                style="height: 100%; min-height: 0; overflow: hidden;"
+                data-invoice-submit="saveForm">
 
-                @include('invoices::components.invoices.invoice-head')
-
-                <div id="invoice-config" data-is-cash="{{ $isCurrentAccountCash ? '1' : '0' }}"
-                    wire:key="invoice-config-{{ $isCurrentAccountCash ? '1' : '0' }}" style="display:none;"></div>
-
-                <div class="row border border-secondary border-bottom-0 border-3 rounded p-3 mb-3">
-                    @if (setting('invoice_use_templates'))
-                        @if ($availableTemplates->isNotEmpty())
-                            <div class="col-lg-1">
-                                <label for="selectedTemplate">{{ __('Invoice Template') }}</label>
-                                <select wire:model.live="selectedTemplateId" id="selectedTemplate"
-                                    class="form-control @error('selectedTemplateId') is-invalid @enderror">
-                                    @foreach ($availableTemplates as $template)
-                                        <option value="{{ $template->id }}">
-                                            {{ $template->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('selectedTemplateId')
-                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                @enderror
-                            </div>
-                        @endif
-                    @endif
-
-                    <div class="col-lg-3 mb-3" style="position: relative;" x-data="invoiceSearch({
-                        invoiceType: {{ $type }},
-                        branchId: '{{ $branch_id ?? '' }}',
-                        priceType: {{ $selectedPriceType ?? 1 }},
-                        storeId: '{{ $acc2_id ?? '' }}',
-                        currentItems: @js($invoiceItems ?? [])
-                    })" wire:ignore.self>
-                        <label>{{ __('Search Item') }}</label>
-
-                        <div style="position: relative;">
-
-                            {{-- ✅ تم إزالة @keydown.enter.prevent و @keydown.arrow-down/up - keydownHandler في init() يتعامل مع جميع مفاتيح التنقل --}}
-                            <div class="input-group">
-                                <input type="text" x-model="searchTerm"
-                                    @input.debounce.50ms="if (searchTerm && searchTerm.length >= 1) { showResults = true; } search();"
-                                    @keydown.escape="clearSearch(true)" x-on:focus="handleSearchFocus()"
-                                    class="form-control frst" id="search-input"
-                                    placeholder="{{ __('Search by item name...') }}" autocomplete="off">
-
-                                <button class="btn btn-outline-secondary" type="button" @click="loadItems(false)"
-                                    title="{{ __('Refresh Items Data') }}">
-                                    <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
-                                </button>
-                            </div>
-
-                            {{-- Loading spinner --}}
-                            <div x-show="loading" x-cloak
-                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
-                                <i class="fas fa-spinner fa-spin text-primary"></i>
-                            </div>
-
-                            {{-- نتائج البحث --}}
-                            <div x-show="showResults && searchResults.length > 0 && !loading" x-cloak
-                                class="list-group position-absolute w-100"
-                                style="z-index: 999; max-height: 300px; overflow-y: auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ddd;"
-                                @click.away="showResults = false">
-
-                                <template x-for="(item, index) in searchResults" :key="item.id">
-                                    <li :class="'list-group-item list-group-item-action search-item-' + index + (selectedIndex ===
-                                        index ? ' active' : '')"
-                                        @click="addItemFast(item)" @mouseenter="selectedIndex = index"
-                                        style="cursor: pointer; transition: all 0.2s;">
-                                        <strong x-text="item.name"></strong>
-                                        <small class="text-muted" x-show="item.code"> - <span
-                                                x-text="item.code"></span></small>
-                                    </li>
-                                </template>
-                            </div>
-
-                            {{-- زر إضافة صنف جديد --}}
-                            <div x-show="showResults && searchResults.length === 0 && searchTerm.length > 0 && !loading"
-                                x-cloak class="list-group position-absolute w-100"
-                                style="z-index: 999; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ddd;">
-                                <li :class="'list-group-item list-group-item-action list-group-item-success search-item-0' + (
-                                    (selectedIndex === 0 && isCreateNewItemSelected) || (selectedIndex === 0 &&
-                                        searchResults.length === 0) ? ' active' : '')"
-                                    @click="createNewItem()"
-                                    @mouseenter="selectedIndex = 0; isCreateNewItemSelected = true"
-                                    style="cursor: pointer; transition: all 0.2s;">
-                                    <i class="fas fa-plus"></i>
-                                    <strong>{{ __('Create new item') }}</strong>: <span x-text="searchTerm"></span>
-                                </li>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 mb-3">
-                        <label>{{ __('Search by Barcode') }}</label>
-                        {{-- ✅ حقل الباركود يستخدم نفس invoiceSearch component من الحقل السابق (x-data على parent div) --}}
-                        <input type="text" x-model="barcodeTerm" class="form-control" id="barcode-search"
+                <div id="invoice-search-container"
+                    class="d-flex flex-column flex-grow-1 overflow-hidden g-0"
+                    data-branch-id="{{ $branch_id ?? '' }}"
+                    data-invoice-type="{{ $type ?? 10 }}"
+                    data-price-type="{{ $selectedPriceType ?? 1 }}"
+                    data-store-id="{{ $acc2_id ?? '' }}">
+                    @push('invoice_head_barcode')
+                    <div class="col-lg-4">
+                        <label class="form-label" style="font-size: 1em;">{{ __('Search by Barcode') }}</label>
+                        <input type="text" class="form-control form-control-sm font-hold font-14" id="barcode-search"
                             placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
-                            @keydown.enter.prevent="handleBarcodeEnter()" />
+                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
+                            wire:keydown.enter="addItemByBarcode" />
                     </div>
                     @if (setting('allow_edit_price_payments'))
                         {{-- اختيار نوع السعر العام للفاتورة --}}
@@ -168,41 +43,33 @@
                                 @error('selectedPriceType')
                                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                                 @enderror
+                    @endpush
+                    @include('invoices::components.invoices.invoice-head')
+
+                    <div id="invoice-config" data-is-cash="{{ $isCurrentAccountCash ? '1' : '0' }}"
+                        wire:key="invoice-config-{{ $isCurrentAccountCash ? '1' : '0' }}" style="display:none;"></div>
+
+                    <div class="row flex-grow-1 overflow-hidden g-0 py-0">
+                        <div class="col-12 h-100 py-0 d-flex flex-column min-height-0">
+                            @push('invoice_table_search_row')
+                            <div class="d-inline-block invoice-cell-search-wrap w-100" style="position: relative;">
+                                <input type="text" class="form-control form-control-sm invoice-field" id="search-input"
+                                    placeholder="{{ __('Search by item name...') }}" autocomplete="off"
+                                    style="max-width: 100%;">
+                                <div id="invoice-search-results" class="list-group position-absolute shadow-sm invoice-search-results"
+                                    style="z-index: 999; max-height: 280px; overflow-y: auto; width: 320px; margin-top: 2px;"></div>
                             </div>
-                        @endif
-                    @endif
-
-                    {{-- <x-branches::branch-select :branches="$branches" model="branch_id" /> --}}
-
-                    @if ($type == 14)
-                        <div class="col-lg-1">
-                            <label for="status">{{ __('Invoice Status') }}</label>
-                            <select wire:model="status" id="status"
-                                class="form-control form-control-sm @error('status') is-invalid @enderror">
-                                @foreach ($statues as $statusCase)
-                                    <option value="{{ $statusCase->value }}">{{ $statusCase->translate() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('status')
-                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                            @enderror
+                            @endpush
+                            <div class="flex-grow-1 min-height-0 overflow-hidden">
+                                @include('invoices::components.invoices.invoice-item-table')
+                            </div>
                         </div>
-                    @endif
-
-                </div>
-
-                <div class="row flex-grow-1 overflow-hidden g-0">
-                    <div class="col-12 h-100">
-                        @include('invoices::components.invoices.invoice-item-table')
                     </div>
                 </div>
 
                 @include('invoices::components.invoices.invoice-footer')
-
             </form>
 
-            {{-- Installment Modal --}}
             @if (setting('enable_installment_from_invoice'))
                 <div wire:ignore>
                     @livewire(
@@ -215,14 +82,10 @@
                     )
                 </div>
             @endif
-
         </section>
     </div>
 </div>
 @push('scripts')
-    {{-- Fuse.js for Client-Side Fuzzy Search --}}
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
-
-    {{-- ✅ Include Shared Invoice Scripts Component --}}
     @include('invoices::components.invoices.invoice-scripts')
 @endpush

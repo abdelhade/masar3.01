@@ -37,6 +37,12 @@
 {{-- SweetAlert2 --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
+{{-- Masar theme switcher --}}
+<script src="{{ asset('js/theme-switcher.js') }}"></script>
+<script>
+(function(){ if (typeof MasarThemeSwitcher !== 'undefined') { MasarThemeSwitcher.bindDropdown('[data-masar-theme-dropdown]'); } })();
+</script>
+
 {{-- Stack for additional scripts from components --}}
 @stack('scripts')
 

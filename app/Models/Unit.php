@@ -17,7 +17,7 @@ class Unit extends Model
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'item_units', 'unit_id', 'item_id')
-            ->withPivot('u_val', 'cost', 'quick_access')
+            ->withPivot('u_val', 'cost')
             ->withTimestamps();
     }
 

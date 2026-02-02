@@ -2,8 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Reports\Http\Controllers\purchaseReportController;
+use Modules\Reports\Http\Controllers\PurchasingDashboardController;
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/reports/purchasing-dashboard', [PurchasingDashboardController::class, 'index'])->name('reports.purchasing.dashboard');
+    Route::get('/reports/purchasing-delayed-orders', [PurchasingDashboardController::class, 'delayedOrders'])->name('reports.purchasing.delayed-orders');
+
     Route::get('/reports/general-purchases-total', [purchaseReportController::class, 'generalPurchasesTotalReport'])
         ->name('reports.general-purchases-total');
 

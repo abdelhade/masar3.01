@@ -10,6 +10,19 @@
                 @livewire('language-switcher')
             </li>
 
+            {{-- Theme switcher dropdown --}}
+            <li class="dropdown me-3" data-masar-theme-dropdown>
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false" title="{{ __('Theme') }}" style="color: #34d3a3;">
+                    <i class="fas fa-palette fa-2x" style="color: #34d3a3;"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="#" data-masar-theme="classic"><i class="fas fa-palette me-1"></i> Classic (Bootstrap)</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="mint-green"><i class="fas fa-leaf me-1"></i> Mint Green</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="dark"><i class="fas fa-moon me-1"></i> Dark Mode</a>
+                    <a class="dropdown-item" href="#" data-masar-theme="monokai"><i class="fas fa-code me-1"></i> Monokai</a>
+                </div>
+            </li>
+
             @can('view Settings Control')
                 <li>
                     <a title="{{ __('navigation.users') }}" href="{{ route('mysettings.index') }}"

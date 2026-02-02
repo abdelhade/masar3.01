@@ -5,147 +5,84 @@
 @endphp
 
 <div>
+    {{-- Hide Global Footer on this page only (layout already hides via hide_footer section) --}}
+    <style>
+        footer.footer { display: none !important; }
+    </style>
     @section('formAction', 'edit')
     <div class="invoice-container">
         <div class="content-wrapper">
             <section class="content">
-                <form
-                    x-data="invoiceCalculations({
-                        invoiceItems: @entangle('invoiceItems'),
-                        discountPercentage: @entangle('discount_percentage'),
-                        additionalPercentage: @entangle('additional_percentage'),
-                        receivedFromClient: @entangle('received_from_client'),
-                        discountValue: @entangle('discount_value'),
-                        additionalValue: @entangle('additional_value'),
-                        vatPercentage: @entangle('vat_percentage'),
-                        vatValue: @entangle('vat_value'),
-                        withholdingTaxPercentage: @entangle('withholding_tax_percentage'),
-                        withholdingTaxValue: @entangle('withholding_tax_value'),
-                        subtotal: @entangle('subtotal'),
-                        totalAfterAdditional: @entangle('total_after_additional'),
-                        defaultVatPercentage: @js(setting('default_vat_percentage', 0)),
-                        defaultWithholdingTaxPercentage: @js(setting('default_withholding_tax_percentage', 0)),
-                        dimensionsUnit: @js($dimensionsUnit ?? 'cm'),
-                        enableDimensionsCalculation: @js($enableDimensionsCalculation ?? false),
-                        invoiceType: @js($type ?? 10),
-                        isCashAccount: @entangle('isCurrentAccountCash'),
-                        acc1Id: @entangle('acc1_id'),
-                        editableFieldsOrder: @js($this->getEditableFieldsOrder()),
-                        currentBalance: @js($currentBalance ?? 0),
-                        fieldStates: @js($fieldStates)
-                    })"
-                    @submit.prevent="
-                        // ✅ 1. مزامنة جميع القيم من Alpine.js إلى Livewire
-                                syncToLivewire();
-                        // ✅ 2. انتظار قليل للتأكد من اكتمال المزامنة
-                        setTimeout(() => {
-                            // ✅ 3. إرسال النموذج
-                            $wire.updateForm();
-                        }, 100);
-                    "
-                    @keydown.enter.prevent="
-                        if ($event.target.tagName === 'BUTTON' && $event.target.type === 'submit') {
-                            $event.target.click();
-                        }
-                    ">
+                <form id="invoice-edit-form"
+                    class="d-flex flex-column g-0 invoice-form-fullheight"
+                    style="height: 100%; min-height: 0; overflow: hidden;"
+                    data-invoice-submit="updateForm">
 
+                    @push('invoice_head_barcode')
+                    <div class="col-lg-4" style="position: relative;">
+                        <label class="form-label" style="font-size: 1em;">{{ __('Search by Barcode') }}</label>
+                        <input type="text" wire:model.live="barcodeTerm" class="form-control form-control-sm font-hold font-14" id="barcode-search"
+                            placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
+                            style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
+                            wire:keydown.enter="addItemByBarcode" />
+                        @if (strlen($barcodeTerm) > 0 && $barcodeSearchResults->count())
+                            <ul class="list-group position-absolute shadow-sm w-100" style="z-index: 999; max-height: 200px; overflow-y: auto; margin-top: 2px;">
+                                @foreach ($barcodeSearchResults as $index => $item)
+                                    <li class="list-group-item list-group-item-action" style="cursor: pointer;"
+                                        wire:click="addItemFromSearch({{ $item->id }})">
+                                        {{ $item->name }} ({{ $item->code }})
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                    @endpush
                     @include('invoices::components.invoices.invoice-head')
 
-                    {{-- ✅ إعداد الفاتورة للـ Alpine.js --}}
                     <div id="invoice-config"
                          data-is-cash="{{ $isCurrentAccountCash ? '1' : '0' }}"
                          wire:key="invoice-config-{{ $isCurrentAccountCash ? '1' : '0' }}"
                          style="display:none;"></div>
 
-                    <div class="row">
-                        <div class="col-lg-3 mb-3" style="position: relative;">
-                            <label>ابحث عن صنف</label>
-                            <input type="text" wire:model.live="searchTerm" class="form-control frst"
-                                placeholder="ابدأ بكتابة اسم الصنف..." autocomplete="off"
-                                wire:keydown.arrow-down="handleKeyDown" wire:keydown.arrow-up="handleKeyUp"
-                                wire:keydown.enter.prevent="handleEnter" />
-                            @if (strlen($searchTerm) > 0 && $searchResults->count())
-                                <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                                    @foreach ($searchResults as $index => $item)
-                                        <li class="list-group-item list-group-item-action
-                                             @if ($selectedResultIndex === $index) active @endif"
-                                            wire:click="addItemFromSearch({{ $item->id }})">
-                                            {{ $item->name }}
+                    <div class="row flex-grow-1 overflow-hidden g-0 py-0">
+                        <div class="col-12 h-100 py-0 d-flex flex-column min-height-0">
+                            @push('invoice_table_search_row')
+                            <div class="d-inline-block invoice-cell-search-wrap w-100" style="position: relative;">
+                                <input type="text" wire:model.live="searchTerm" class="form-control form-control-sm invoice-field" id="search-input"
+                                    placeholder="{{ __('Search by item name...') }}" autocomplete="off"
+                                    style="max-width: 100%;"
+                                    wire:keydown.arrow-down="handleKeyDown" wire:keydown.arrow-up="handleKeyUp"
+                                    wire:keydown.enter.prevent="handleEnter" />
+                                @if (strlen($searchTerm) > 0 && $searchResults->count())
+                                    <ul class="list-group position-absolute shadow-sm" style="z-index: 999; max-height: 280px; overflow-y: auto; width: 320px; margin-top: 2px;">
+                                        @foreach ($searchResults as $index => $item)
+                                            <li class="list-group-item list-group-item-action @if ($selectedResultIndex === $index) active @endif"
+                                                wire:click="addItemFromSearch({{ $item->id }})" style="cursor: pointer;">
+                                                {{ $item->name }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @elseif(strlen($searchTerm) > 0 && $searchResults->isEmpty())
+                                    <ul class="list-group position-absolute shadow-sm" style="z-index: 999; width: 320px; margin-top: 2px;">
+                                        <li class="list-group-item list-group-item-action list-group-item-success @if ($isCreateNewItemSelected) active @endif"
+                                            style="cursor: pointer;" wire:click.prevent="createNewItem('{{ $searchTerm }}')">
+                                            <i class="fas fa-plus"></i>
+                                            <strong>{{ __('Create new item') }}</strong>: {{ $searchTerm }}
                                         </li>
-                                    @endforeach
-                                </ul>
-                            @elseif(strlen($searchTerm) > 0 && $searchResults->isEmpty())
-                                <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                                    <li class="list-group-item list-group-item-action list-group-item-success @if ($isCreateNewItemSelected) active @endif"
-                                        style="cursor: pointer;"
-                                        wire:click.prevent="createNewItem('{{ $searchTerm }}')">
-                                        <i class="fas fa-plus"></i>
-                                        <strong>إنشاء صنف جديد:</strong> "{{ $searchTerm }}"
-                                    </li>
-                                </ul>
-                            @elseif(strlen($searchTerm) > 0)
-                                <div class="mt-2" style="position: absolute; z-index: 1000; width: 100%;">
-                                    <div class="list-group-item text-danger">
-                                        لا توجد نتائج لـ "{{ $searchTerm }}"
+                                    </ul>
+                                @elseif(strlen($searchTerm) > 0)
+                                    <div class="list-group position-absolute shadow-sm" style="z-index: 999; width: 320px; margin-top: 2px;">
+                                        <div class="list-group-item text-danger small">
+                                            {{ __('No results for') }} "{{ $searchTerm }}"
+                                        </div>
                                     </div>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="col-lg-3 mb-3">
-                            <label>ابحث بالباركود</label>
-                            <input type="text" wire:model.live="barcodeTerm" class="form-control" id="barcode-search"
-                                placeholder="ادخل الباركود " autocomplete="off" wire:keydown.enter="addItemByBarcode" />
-                            @if (strlen($barcodeTerm) > 0 && $barcodeSearchResults->count())
-                                <ul class="list-group position-absolute w-100" style="z-index: 999;">
-                                    @foreach ($barcodeSearchResults as $index => $item)
-                                        <li class="list-group-item list-group-item-action"
-                                            wire:click="addItemFromSearch({{ $item->id }})">
-                                            {{ $item->name }} ({{ $item->code }})
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </div>
-
-                        {{-- اختيار نوع السعر العام للفاتورة --}}
-                        @if (in_array($type, [10, 12, 14, 16, 22]))
-                            <div class="col-lg-2">
-                                <label for="selectedPriceType">{{ __('اختر نوع السعر للفاتورة') }}</label>
-                                <select wire:model.live="selectedPriceType"
-                                    class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
-                                    <option value="">{{ __('اختر نوع السعر') }}</option>
-                                    @foreach ($priceTypes as $id => $name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selectedPriceType')
-                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                @enderror
+                                @endif
                             </div>
-                        @endif
-
-                        <x-branches::branch-select :branches="$branches" model="branch_id" />
-
-                        @if ($type == 14)
-                            <div class="col-lg-1">
-                                <label for="status">{{ __('حالة الفاتوره') }}</label>
-                                <select wire:model="status" id="status"
-                                    class="form-control form-control-sm @error('status') is-invalid @enderror">
-                                    @foreach ($statues as $statusCase)
-                                        <option value="{{ $statusCase->value }}">{{ $statusCase->translate() }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('status')
-                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                @enderror
+                            @endpush
+                            <div class="flex-grow-1 min-height-0 overflow-hidden">
+                                @include('invoices::components.invoices.invoice-item-table')
                             </div>
-                        @endif
-                    </div>
-
-                    <div class="row form-control">
-                        @include('invoices::components.invoices.invoice-item-table')
+                        </div>
                     </div>
 
                     {{-- قسم الإجماليات والمدفوعات --}}
