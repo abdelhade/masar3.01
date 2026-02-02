@@ -16,11 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // ✅ Global Tenancy Middleware - يطبق على جميع web routes في كل الـ modules
         $tenancyMiddleware = array_filter([
-            class_exists(\Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class) 
-                ? \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class 
+            class_exists(\Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class)
+                ? \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class
                 : null,
-            class_exists(\Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class) 
-                ? \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class 
+            class_exists(\Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class)
+                ? \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class
                 : null,
         ]);
 
@@ -35,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // ✅ Global Tenancy Middleware - يطبق على جميع api routes في كل الـ modules
         $middleware->api(append: $tenancyMiddleware);
 
-     
+
         $middleware->alias([
             'employee.auth' => \Modules\HR\Http\Middleware\EmployeeAuth::class,
             'engineer.access' => \Modules\Inquiries\Middleware\EngineerAccessMiddleware::class,
@@ -44,7 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        
+
         $middleware->group('employee', [
             \Modules\HR\Http\Middleware\EmployeeAuth::class,
         ]);
@@ -52,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \Modules\Inquiries\Console\TestGoogleMapsCommand::class,
     ])
     ->withExceptions(function (Exceptions $exceptions) {
-        
+
         $exceptions->render(function (Throwable $e, $request) {
             if (
                 str_contains($e->getMessage(), 'FailedToInitializePatternSearchException') ||

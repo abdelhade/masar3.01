@@ -39,7 +39,8 @@
         }
 
         .invoice-data-grid tbody tr:nth-of-type(even) {
-            background-color: #cfcfcf8e; /* Light blue-gray for contrast */
+            background-color: #cfcfcf8e;
+            /* Light blue-gray for contrast */
         }
 
         /* Inputs and Selects styling */
@@ -158,11 +159,9 @@
                     @endif
 
                     {{-- كود الصنف --}}
-                    {{-- كود الصنف --}}
                     @if ($this->shouldShowColumn('code'))
                         <td style="width: 10%;">
-                            <div class="static-text"
-                                title="{{ $row['code'] ?? '-' }}">
+                            <div class="static-text" title="{{ $row['code'] ?? '-' }}">
                                 {{ $row['code'] ?? '-' }}
                             </div>
                         </td>

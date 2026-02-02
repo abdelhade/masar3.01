@@ -153,7 +153,7 @@
                             placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
                             @keydown.enter.prevent="handleBarcodeEnter()" />
                     </div>
-                    @if (setting('invoice_select_price_type'))
+                    @if (setting('allow_edit_price_payments'))
                         {{-- اختيار نوع السعر العام للفاتورة --}}
                         @if (in_array($type, [10, 12, 14, 16, 22]))
                             <div class="col-lg-2">
