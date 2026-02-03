@@ -16,9 +16,9 @@ class RentalsUnitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'building_id' => $this->isMethod('post')
-                ? 'required|exists:rentals_buildings,id'
-                : 'sometimes|exists:rentals_buildings,id',
+            'unit_type'   => 'required|string|in:building,item',
+            'item_id'     => 'nullable|required_if:unit_type,item|exists:items,id',
+            'building_id' => 'nullable|required_if:unit_type,building|exists:rentals_buildings,id',
             'name'        => 'required|string|max:255',
             'floor'       => 'nullable|integer',
             'area'        => 'nullable|numeric|min:0',
