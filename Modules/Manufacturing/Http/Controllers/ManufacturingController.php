@@ -12,7 +12,7 @@ class ManufacturingController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view Manufacturing Invoices')->only(['index', 'show', 'stageInvoicesReport']);
+        $this->middleware('permission:view Manufacturing Invoices')->only(['index', 'show', 'stageInvoicesReport', 'manufacturingStatistics']);
         $this->middleware('permission:create Manufacturing Invoices')->only(['create', 'store']);
         $this->middleware('permission:edit Manufacturing Invoices')->only(['edit', 'update']);
         $this->middleware('permission:delete Manufacturing Invoices')->only(['destroy']);

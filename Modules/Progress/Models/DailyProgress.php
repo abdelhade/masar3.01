@@ -34,10 +34,8 @@ class DailyProgress extends Model
 
     protected $appends = ['completion_percentage'];
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new \App\Models\Scopes\BranchScope);
-    }
+    // لا نستخدم BranchScope هنا حتى يظهر التقدم التابع للمشروع لجميع المستخدمين حسب صلاحيات التقدم اليومي
+    // public static function booted() { static::addGlobalScope(new \App\Models\Scopes\BranchScope); }
 
     public function project()
     {

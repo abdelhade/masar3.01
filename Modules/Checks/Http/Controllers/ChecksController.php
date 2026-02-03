@@ -2,21 +2,21 @@
 
 namespace Modules\Checks\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Modules\Accounts\Models\AccHead;
-use Modules\Checks\Http\Requests\BatchCancelRequest;
-use Modules\Checks\Http\Requests\BatchCollectRequest;
-use Modules\Checks\Http\Requests\ClearCheckRequest;
-use Modules\Checks\Http\Requests\CollectCheckRequest;
-use Modules\Checks\Http\Requests\StoreCheckRequest;
-use Modules\Checks\Http\Requests\UpdateCheckRequest;
 use Modules\Checks\Models\Check;
-use Modules\Checks\Services\CheckAccountingService;
-use Modules\Checks\Services\CheckPortfolioService;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use Modules\Accounts\Models\AccHead;
+use Illuminate\Support\Facades\Storage;
 use Modules\Checks\Services\CheckService;
+use Modules\Checks\Services\CheckPortfolioService;
+use Modules\Checks\Http\Requests\ClearCheckRequest;
+use Modules\Checks\Http\Requests\StoreCheckRequest;
+use Modules\Checks\Services\CheckAccountingService;
+use Modules\Checks\Http\Requests\BatchCancelRequest;
+use Modules\Checks\Http\Requests\UpdateCheckRequest;
+use Modules\Checks\Http\Requests\BatchCollectRequest;
+use Modules\Checks\Http\Requests\CollectCheckRequest;
 
 class ChecksController extends Controller
 {
@@ -24,7 +24,13 @@ class ChecksController extends Controller
         private CheckService $checkService,
         private CheckAccountingService $accountingService,
         private CheckPortfolioService $portfolioService
-    ) {}
+    ) {
+        $this->middleware('can:view check-portfolios-incoming')->only(['incoming', 'createIncoming', 'management', 'dashboard', 'statistics']);
+        $this->middleware('can:view check-portfolios-outgoing')->only(['outgoing', 'createOutgoing']);
+        $this->middleware('can:create check-portfolios-incoming')->only(['createIncoming', 'store']);
+        $this->middleware('can:create check-portfolios-outgoing')->only(['createOutgoing', 'store']);
+        // Store, Update, Destroy, etc. will have internal checks because they are shared
+    }
 
     /**
      * Display the main checks page
@@ -263,18 +269,18 @@ class ChecksController extends Controller
             'per_page' => 10000, // Get all for export
         ])->items();
 
-        $filename = 'checks_export_'.now()->format('Y_m_d_H_i_s').'.csv';
+        $filename = 'checks_export_' . now()->format('Y_m_d_H_i_s') . '.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
         $callback = function () use ($checks) {
             $file = fopen('php://output', 'w');
 
             // UTF-8 BOM for proper Arabic encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // CSV headers
             fputcsv($file, [
@@ -360,7 +366,7 @@ class ChecksController extends Controller
 
             return redirect()->route($routeName)->with('success', 'تم إضافة الشيك وإنشاء القيد المحاسبي بنجاح');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -377,7 +383,7 @@ class ChecksController extends Controller
 
             return redirect()->route($routeName)->with('success', 'تم تحديث الشيك بنجاح');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'حدث خطأ: '.$e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'حدث خطأ: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -391,7 +397,7 @@ class ChecksController extends Controller
 
             return response()->json(['success' => true, 'message' => 'تم حذف الشيك بنجاح']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         }
     }
 
@@ -459,7 +465,7 @@ class ChecksController extends Controller
                 ->with('success', 'تم تحصيل الورقة بنجاح وإنشاء القيد المحاسبي');
         } catch (\Exception $e) {
             return redirect()->route('checks.collect', $check)
-                ->with('error', 'حدث خطأ: '.$e->getMessage());
+                ->with('error', 'حدث خطأ: ' . $e->getMessage());
         }
     }
 
@@ -508,7 +514,7 @@ class ChecksController extends Controller
                 ->with('success', 'تم تظهير الورقة بنجاح وإنشاء القيد المحاسبي');
         } catch (\Exception $e) {
             return redirect()->route('checks.show-clear', $check)
-                ->with('error', 'حدث خطأ: '.$e->getMessage());
+                ->with('error', 'حدث خطأ: ' . $e->getMessage());
         }
     }
 
@@ -547,7 +553,7 @@ class ChecksController extends Controller
                 ->with('success', 'تم إلغاء الورقة بقيد عكسي بنجاح');
         } catch (\Exception $e) {
             return redirect()->route('checks.show-cancel-reversal', $check)
-                ->with('error', 'حدث خطأ: '.$e->getMessage());
+                ->with('error', 'حدث خطأ: ' . $e->getMessage());
         }
     }
 
@@ -571,7 +577,7 @@ class ChecksController extends Controller
                 'message' => "تم تحصيل {$processedCount} شيك بنجاح",
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         }
     }
 
@@ -593,7 +599,7 @@ class ChecksController extends Controller
                 'message' => 'تم إلغاء الشيكات بقيد عكسي بنجاح',
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         }
     }
 
@@ -641,7 +647,7 @@ class ChecksController extends Controller
             'results' => $accounts->map(function ($account) {
                 return [
                     'value' => $account->id,
-                    'text' => "[{$account->code}] {$account->aname} - ".number_format($account->balance ?? 0, 2).' ر.س',
+                    'text' => "[{$account->code}] {$account->aname} - " . number_format($account->balance ?? 0, 2) . ' ر.س',
                     'balance' => $account->balance ?? 0,
                 ];
             })->toArray(),

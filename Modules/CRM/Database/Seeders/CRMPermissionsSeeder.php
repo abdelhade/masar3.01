@@ -18,7 +18,7 @@ class CRMPermissionsSeeder extends Seeder
                 'Lead Sources',
                 'Chance Sources',
                 'Client Categories',
-                'Clients',
+                'CRM Clients',
                 'Client Types',
                 'Client Contacts',
                 'Task Types',
@@ -26,6 +26,7 @@ class CRMPermissionsSeeder extends Seeder
                 'Tickets',
                 'Returns',
                 'CRM Statistics',
+                'Campaigns'
             ],
         ];
 

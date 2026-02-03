@@ -12,6 +12,49 @@
         max-width: none !important;
         margin-left: 80px !important;  /* يطابق عرض الـ sidebar المقفول - بدون هذا يبقى 230px من القالب الأساسي */
     }
+    
+    /* إخفاء النصوص في الـ sidebar المقفول وإظهار الأيقونات فقط */
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        text-align: center !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    /* إخفاء النصوص في الـ sidebar المقفول */
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link {
+        font-size: 0 !important;
+        line-height: 0 !important;
+        color: transparent !important;
+    }
+    /* إظهار الأيقونات فقط */
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link i,
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link .menu-icon,
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link [data-feather],
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link svg {
+        font-size: 1.5rem !important;
+        display: inline-block !important;
+        margin: 0 !important;
+        width: 24px !important;
+        height: 24px !important;
+        line-height: 1 !important;
+        color: #7081b9 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    /* إخفاء النصوص فقط وليس الأيقونات - استخدام text-indent */
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link {
+        text-indent: -9999px !important;
+    }
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link i,
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link .menu-icon,
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link [data-feather],
+    body.invoice-page.sidebar-collapsed .left-sidenav-menu .nav-link svg {
+        text-indent: 0 !important;
+    }
 
     /* ========== ارتفاع كامل + توزيع عمودي (لا scroll للصفحة) ========== */
     html, body.invoice-page { height: 100%; }

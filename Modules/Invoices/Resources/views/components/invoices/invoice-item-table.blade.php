@@ -63,6 +63,7 @@
             outline: none;
         }
 
+
         .invoice-data-grid td {
             padding: 0 !important;
             margin: 0 !important;
@@ -201,11 +202,9 @@
                     @endif
 
                     {{-- كود الصنف --}}
-                    {{-- كود الصنف --}}
                     @if ($this->shouldShowColumn('code'))
                         <td style="width: 10%;">
-                            <div class="static-text"
-                                title="{{ $row['code'] ?? '-' }}">
+                            <div class="static-text" title="{{ $row['code'] ?? '-' }}">
                                 {{ $row['code'] ?? '-' }}
                             </div>
                         </td>

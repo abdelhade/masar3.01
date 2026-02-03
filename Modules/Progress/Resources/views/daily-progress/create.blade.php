@@ -27,7 +27,7 @@
     }
 </style>
 
-<div class="container-fluid px-4" x-data="dailyProgressForm()">
+<div class="container-fluid px-4" x-data="dailyProgressForm({{ $selectedProjectId ? (int) $selectedProjectId : 'null' }}, {{ $selectedItemId ? (int) $selectedItemId : 'null' }})">
     
     <!-- Main Card Container -->
     <div class="card border-0 shadow-sm mb-4">
@@ -73,7 +73,7 @@
                             <select name="project_id" x-model="projectId" @change="loadItems()" class="form-select form-select-lg border-0 bg-light" required>
                                 <option value="">{{ __('general.select_project') }}...</option>
                                 @foreach ($projects as $project)
-                                    <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                    <option value="{{ $project->id }}" @if(isset($selectedProjectId) && $selectedProjectId == $project->id) selected @endif>{{ $project->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -208,14 +208,19 @@
 @push('scripts')
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('dailyProgressForm', () => ({
-            projectId: '',
+        Alpine.data('dailyProgressForm', (selectedProjectId = null, selectedItemId = null) => ({
+            projectId: selectedProjectId ? String(selectedProjectId) : '',
+            selectedItemId: selectedItemId,
             items: [],
             subprojects: [],
             subprojectFilter: '',
             search: '',
             viewMode: 'list',
             isLoading: false,
+
+            init() {
+                if (this.projectId) this.$nextTick(() => this.loadItems());
+            },
 
             loadItems() {
                 if (!this.projectId) { 

@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Modules\Accounts\Models\AccHead;
-use App\Models\JournalDetail;
 use App\Models\CostCenter;
+use App\Models\JournalDetail;
+use Illuminate\Routing\Controller;
+use Modules\Accounts\Models\AccHead;
 use Modules\Reports\Services\ReportCalculationTrait;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ExpenseReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Expenses');
+    }
+
     use ReportCalculationTrait;
 
     public function generalExpensesReport()
@@ -132,6 +136,3 @@ class ExpenseReportController extends Controller
         ));
     }
 }
-
-
-

@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\CostCenter;
-use App\Models\JournalDetail;
 use Carbon\Carbon;
+use App\Models\CostCenter;
 use Illuminate\Http\Request;
+use App\Models\JournalDetail;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Accounts\Models\AccHead;
 
 class ExpenseManagementController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view Expenses');
+    }
+
     /**
      * عرض لوحة تحكم المصروفات
      */
