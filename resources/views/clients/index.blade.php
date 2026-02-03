@@ -121,6 +121,13 @@
 
                                         @canany(['edit CRM Clients', 'delete CRM Clients'])
                                             <td>
+                                                @can('view CRM Clients')
+                                                    <a class="btn btn-primary btn-icon-square-sm"
+                                                        href="{{ route('clients.show', $client->id) }}">
+                                                        <i class="las la-eye"></i>
+                                                    </a>
+                                                @endcan
+
                                                 @can('edit CRM Clients')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('clients.edit', $client->id) }}">
