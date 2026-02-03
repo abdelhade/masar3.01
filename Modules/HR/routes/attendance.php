@@ -15,36 +15,36 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth'])->group(function () {
     // Attendance Processing Routes
     Route::view('/attendance/processing', 'hr::hr-management.attendances.processing.manage-processing')
-        ->name('hr.attendance.processing');
+        ->name('hr.attendance.processing')->middleware('can:view Attendance');
     
     // Flexible Salary Processing Routes
     Route::prefix('attendances/flexible-salary')->name('hr.flexible-salary.processing.')->group(function () {
         Route::view('/', 'hr::hr-management.attendances.flexible-salary-processing.index')
-            ->name('index');
+            ->name('index')->middleware('can:view Payroll');
         Route::view('/create', 'hr::hr-management.attendances.flexible-salary-processing.create')
-            ->name('create');
+            ->name('create')->middleware('can:create Payroll');
         Route::get('/{processing}/edit', function ($processing) {
             return view('hr::hr-management.attendances.flexible-salary-processing.edit', [
                 'processing' => \Modules\HR\Models\FlexibleSalaryProcessing::with('employee')->findOrFail($processing),
             ]);
-        })->name('edit');
+        })->name('edit')->middleware('can:edit Payroll');
     });
 
     // Employee Advances Routes
     Route::view('/employee-advances', 'hr::hr-management.employee-advances.index')
-        ->name('hr.employee-advances.index');
+        ->name('hr.employee-advances.index')->middleware('can:view Payroll');
 
     // Employee Deductions & Rewards Routes
     Route::view('/employee-deductions-rewards', 'hr::hr-management.employee-deductions-rewards.index')
-        ->name('hr.employee-deductions-rewards.index');
+        ->name('hr.employee-deductions-rewards.index')->middleware('can:view Payroll');
     
     // Regular Attendance Routes  
     Route::get('/attendance', [AttendanceController::class, 'index'])
-        ->name('hr.attendance.index');
+        ->name('hr.attendance.index'); // Already handled in controller? Yes.
 
     // Attendance Reports For Projects
     Route::view('/attendance/reports/project-attendance', 'hr::hr-management.attendances.reports.project-attendance-report-container')
-        ->name('hr.attendance.reports.project');
+        ->name('hr.attendance.reports.project')->middleware('can:view Attendance');
     
     Route::get('/attendance/create', [AttendanceController::class, 'create'])
         ->name('hr.attendance.create');

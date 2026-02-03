@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Reports\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\CostCenter;
 use App\Models\JournalDetail;
+use Illuminate\Routing\Controller;
 use Modules\Reports\Services\ReportCalculationTrait;
 
 class CostCenterReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:view account-movement-report');
+    }
+
     use ReportCalculationTrait;
 
     public function generalCostCentersReport()
@@ -123,4 +128,3 @@ class CostCenterReportController extends Controller
         ));
     }
 }
-

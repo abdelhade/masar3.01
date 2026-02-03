@@ -39,6 +39,7 @@ class CRMServiceProvider extends ServiceProvider
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
         Livewire::component('leads-board', \Modules\CRM\Livewire\LeadsBoard::class);
+        Livewire::component('crm::campaign-form', \Modules\CRM\Livewire\CampaignForm::class);
     }
 
     /**
