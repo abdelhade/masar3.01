@@ -4,6 +4,11 @@
             <i class="ti-control-record"></i>{{ __('Rentals Statistics') }}
         </a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('rentals.reports') }}">
+            <i class="ti-control-record"></i>{{ __('Reports') }}
+        </a>
+    </li>
 @endcan
 
 @can('view Buildings')

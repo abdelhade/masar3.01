@@ -85,7 +85,7 @@
                             </div>
 
                             {{-- Rent Amount --}}
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">{{ __('Rent Amount') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
@@ -94,6 +94,22 @@
                                         value="{{ old('rent_amount', $lease->rent_amount) }}" required>
                                 </div>
                                 @error('rent_amount')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Rent Type --}}
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ __('Rent Type') }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <select name="rent_type" class="form-select @error('rent_type') is-invalid @enderror" required>
+                                        <option value="daily" @selected(old('rent_type', $lease->rent_type) == 'daily')>{{ __('Daily') }}</option>
+                                        <option value="monthly" @selected(old('rent_type', $lease->rent_type ?? 'monthly') == 'monthly')>{{ __('Monthly') }}</option>
+                                        <option value="yearly" @selected(old('rent_type', $lease->rent_type) == 'yearly')>{{ __('Yearly') }}</option>
+                                    </select>
+                                </div>
+                                @error('rent_type')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>

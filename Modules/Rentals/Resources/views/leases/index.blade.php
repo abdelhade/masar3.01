@@ -30,6 +30,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('Unit') }}</th>
+                                    <th>{{ __('Rent Type') }}</th>
                                     <th>{{ __('Client') }}</th>
                                     <th>{{ __('Start Date') }}</th>
                                     <th>{{ __('End Date') }}</th>
@@ -44,40 +45,56 @@
                             </thead>
                             <tbody>
                                 @forelse ($leases as $lease)
-                                    <tr class="text-center">
+                                    <tr class="text-center align-middle">
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ optional($lease->unit)->name }}</td>
+                                        <td>
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span
+                                                    class="badge {{ ($lease->unit->unit_type ?? 'building') === 'item' ? 'bg-info' : 'bg-primary' }} mb-1"
+                                                    style="font-size: 0.7rem;">
+                                                    {{ ($lease->unit->unit_type ?? 'building') === 'item' ? __('Item') : __('Unit') }}
+                                                </span>
+                                                <span class="fw-bold">
+                                                    @if (($lease->unit->unit_type ?? 'building') === 'item' && $lease->unit->item)
+                                                        {{ $lease->unit->item->name }}
+                                                    @else
+                                                        {{ optional($lease->unit)->name }}
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                {{ ucfirst(__($lease->rent_type ?? 'monthly')) }}
+                                            </span>
+                                        </td>
                                         <td>{{ optional($lease->client)->cname }}</td>
                                         <td>{{ $lease->start_date }}</td>
                                         <td>{{ $lease->end_date }}</td>
                                         <td>{{ number_format($lease->rent_amount, 2) }}</td>
                                         <td>{{ $lease->account->aname ?? '-' }}</td>
                                         <td>
-                                            @switch($lease->status)
-                                                @case(\Modules\Rentals\Enums\LeaseStatus::PENDING->value)
-                                                    <span
-                                                        class="badge bg-warning">{{ \Modules\Rentals\Enums\LeaseStatus::PENDING->label() }}</span>
-                                                @break
-
-                                                @case(\Modules\Rentals\Enums\LeaseStatus::ACTIVE->value)
-                                                    <span
-                                                        class="badge bg-success">{{ \Modules\Rentals\Enums\LeaseStatus::ACTIVE->label() }}</span>
-                                                @break
-
-                                                @case(\Modules\Rentals\Enums\LeaseStatus::EXPIRED->value)
-                                                    <span
-                                                        class="badge bg-secondary">{{ \Modules\Rentals\Enums\LeaseStatus::EXPIRED->label() }}</span>
-                                                @break
-
-                                                @case(\Modules\Rentals\Enums\LeaseStatus::TERMINATED->value)
-                                                    <span
-                                                        class="badge bg-danger">{{ \Modules\Rentals\Enums\LeaseStatus::TERMINATED->label() }}</span>
-                                                @break
-                                            @endswitch
+                                            <span
+                                                class="badge {{ match ($lease->status) {
+                                                    \Modules\Rentals\Enums\LeaseStatus::PENDING => 'bg-warning',
+                                                    \Modules\Rentals\Enums\LeaseStatus::ACTIVE => 'bg-success',
+                                                    \Modules\Rentals\Enums\LeaseStatus::EXPIRED => 'bg-secondary',
+                                                    \Modules\Rentals\Enums\LeaseStatus::TERMINATED => 'bg-danger',
+                                                    default => 'bg-secondary',
+                                                } }}">
+                                                {{ $lease->status->label() }}
+                                            </span>
                                         </td>
                                         <td>{{ $lease->notes ?? '-' }}</td>
                                         @canany(['edit Leases', 'delete Leases'])
                                             <td>
+                                                @can('view Leases')
+                                                    <a class="btn btn-primary btn-icon-square-sm"
+                                                        href="{{ route('rentals.leases.show', $lease->id) }}">
+                                                        <i class="las la-eye"></i>
+                                                    </a>
+                                                @endcan
+
                                                 @can('edit Leases')
                                                     <a class="btn btn-success btn-icon-square-sm"
                                                         href="{{ route('rentals.leases.edit', $lease->id) }}">
@@ -98,25 +115,25 @@
                                             </td>
                                         @endcanany
                                     </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="10" class="text-center">
-                                                <div class="alert alert-info py-3 mb-0"
-                                                    style="font-size: 1.2rem; font-weight: 500;">
-                                                    <i class="las la-info-circle me-2"></i>
-                                                    {{ __('No leases have been added yet') }}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="mt-3">
-                            {{ $leases->links() }}
-                        </div>
+                                @empty
+                                    <tr>
+                                        <td colspan="13" class="text-center">
+                                            <div class="alert alert-info py-3 mb-0"
+                                                style="font-size: 1.2rem; font-weight: 500;">
+                                                <i class="las la-info-circle me-2"></i>
+                                                {{ __('No leases have been added yet') }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        {{ $leases->links() }}
                     </div>
                 </div>
             </div>
         </div>
-    @endsection
+    </div>
+@endsection
