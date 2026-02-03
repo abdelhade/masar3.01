@@ -31,6 +31,8 @@ Route::middleware(['auth', 'verified'])->prefix('crm')->group(function () {
     Route::resource('client-categories', ClientCategoryController::class)->names('client.categories')->middleware('can:view Client Categories');
     Route::resource('client-types', ClientTypeController::class)->names('client-types')->middleware('can:view Client Types');
 
+    Route::get('tasks/kanban', [TaskController::class, 'kanban'])->name('tasks.kanban')->middleware('can:view Tasks');
+    Route::post('tasks/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus')->middleware('can:edit Tasks');
     Route::resource('tasks', TaskController::class)->names('tasks')->middleware('can:view Tasks');
     Route::resource('tasks-types', TaskTypeController::class)->names('tasks.types')->middleware('can:view Task Types');
 

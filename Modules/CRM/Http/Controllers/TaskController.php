@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller;
 use Modules\CRM\Enums\{TaskPriorityEnum, TaskStatusEnum};
 use Modules\CRM\Http\Requests\TaskRequest;
 use Modules\CRM\Models\{Task, TaskType};
+use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class TaskController extends Controller
@@ -38,22 +39,20 @@ class TaskController extends Controller
 
     public function store(TaskRequest $request)
     {
-        try {
-            $data = $request->validated();
+        // dd($request->all());
+        $data = $request->validated();
 
-            $task = Task::create($data);
+        $task = Task::create($data);
 
-            if ($request->hasFile('attachment')) {
-                $task
-                    ->addMedia($request->file('attachment'))
-                    ->toMediaCollection('tasks');
-            }
-
-            Alert::toast(__('Task created successfully'), 'success');
-            return redirect()->route('tasks.index');
-        } catch (\Exception) {
-            Alert::toast(__('An error occurred while creating the task'), 'error');
+        if ($request->hasFile('attachment')) {
+            $task
+                ->addMedia($request->file('attachment'))
+                ->toMediaCollection('tasks');
         }
+
+        Alert::toast(__('Task created successfully'), 'success');
+        return redirect()->route('tasks.index');
+
 
         return redirect()->route('tasks.index');
     }
@@ -99,5 +98,27 @@ class TaskController extends Controller
         }
 
         return redirect()->route('tasks.index');
+    }
+
+    public function kanban()
+    {
+        $tasks = Task::with(['client', 'user'])->get();
+        $statuses = TaskStatusEnum::cases();
+
+        return view('crm::tasks.kanban', compact('tasks', 'statuses'));
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'task_id' => 'required|exists:tasks,id',
+            'status' => 'required',
+        ]);
+
+        $task = Task::findOrFail($request->task_id);
+        $task->status = $request->status;
+        $task->save();
+
+        return response()->json(['success' => true, 'message' => __('Task status updated successfully')]);
     }
 }
