@@ -14,6 +14,13 @@ class ProjectProgress extends Model
 
     protected $table = 'projects';
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope('progressOnly', function ($query) {
+            $query->where('is_progress', true);
+        });
+    }
+
     protected $guarded = ['id'];
 
     protected $casts = [

@@ -21,7 +21,7 @@
                 <!-- Filters Section -->
                 <form method="GET" action="{{ route('daily_progress.index') }}" class="row g-3 mb-4">
                     <input type="hidden" name="view_all" value="{{ request('view_all') }}">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">{{ __('general.project') }}</label>
                         <select name="project_id" class="form-select" onchange="this.form.submit()">
                             <option value="">{{ __('general.all_projects') }}</option>
@@ -33,24 +33,31 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <label class="form-label">{{ __('general.from_date') ?? 'من تاريخ' }}</label>
+                        <input type="date" name="from_date" value="{{ request('from_date') }}"
+                            class="form-control" onchange="this.form.submit()">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">{{ __('general.to_date') ?? 'إلى تاريخ' }}</label>
+                        <input type="date" name="to_date" value="{{ request('to_date') }}"
+                            class="form-control" onchange="this.form.submit()">
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label">{{ __('general.date') }}</label>
                         <input type="date" name="progress_date" value="{{ request('progress_date') }}"
                             class="form-control" onchange="this.form.submit()">
                     </div>
-                    
-                    <!-- Client Side Search -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">{{ __('general.search') }} ({{ __('general.client_side') }})</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control" x-model="search" 
+                            <input type="text" class="form-control" x-model="search"
                                 placeholder="{{ __('general.search_placeholder') }}...">
                         </div>
                     </div>
-
-                    <div class="col-md-2 d-flex align-items-end">
-                         <a href="{{ route('daily_progress.index', ['view_all' => 1]) }}" class="btn btn-secondary w-100">
+                    <div class="col-md-1 d-flex align-items-end">
+                        <a href="{{ route('daily_progress.index', ['view_all' => 1]) }}" class="btn btn-secondary w-100">
                             <i class="fas fa-list me-1"></i> {{ __('general.view_all') }}
                         </a>
                     </div>

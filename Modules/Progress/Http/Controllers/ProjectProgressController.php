@@ -39,6 +39,7 @@ class ProjectProgressController extends Controller
         if (request('status') === 'draft') {
             $projects = ProjectProgress::with(['client', 'type', 'items'])
                 ->withCount('items')
+                ->where('is_progress', true)
                 ->where('status', 'draft')
                 ->latest()
                 ->get();
@@ -50,12 +51,13 @@ class ProjectProgressController extends Controller
             ->withCount('items')
             ->withSum('items', 'total_quantity')
             ->withSum('dailyProgress', 'quantity')
+            ->where('is_progress', true)
             ->where('status', '!=', 'draft')
             ->latest()
             ->get();
             
         // Draft calculation
-        $draftsCount = ProjectProgress::where('status', 'draft')->count();
+        $draftsCount = ProjectProgress::where('is_progress', true)->where('status', 'draft')->count();
 
         return view('progress::projects.index', compact('projects', 'clients', 'projectTypes', 'draftsCount'));
     }
@@ -71,6 +73,7 @@ class ProjectProgressController extends Controller
             'holidays' => '5,6', // أيام الجمعة والسبت كقيمة افتراضية
             'status' => 'pending',
             'start_date' => now()->format('Y-m-d'),
+            'is_progress' => true,
         ]);
 
         return redirect()
@@ -165,6 +168,7 @@ class ProjectProgressController extends Controller
             'holidays' => is_array($request['weekly_holidays'] ?? $request['holidays'] ?? null) 
                 ? implode(',', $request['weekly_holidays'] ?? $request['holidays']) 
                 : ($request['weekly_holidays'] ?? $request['holidays'] ?? '5,6'),
+            'is_progress' => true,
         ]);
 
         // If Draft and no items, return early
