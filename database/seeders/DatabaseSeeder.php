@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(ServicesDatabaseSeeder::class);
         $this->call(ShippingDatabaseSeeder::class);
         $this->call(ZatcaDatabaseSeeder::class);
-        $this->call(OfflinePOSDatabaseSeeder::class);
+        // $this->call(OfflinePOSDatabaseSeeder::class);
 
         $this->call([
             UpdateAccHeadAccTypeSeeder::class,
@@ -79,6 +79,5 @@ class DatabaseSeeder extends Seeder
             VaribalSeeder::class,
             GiveAllPermissionsToAdminSeeder::class,
         ]);
-
     }
 }

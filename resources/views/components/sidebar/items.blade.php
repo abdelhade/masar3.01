@@ -1,11 +1,10 @@
 @can('view item-statistics')
-<li class="nav-item">
-    <a class="nav-link font-hold fw-bold" href="{{ route('items.statistics') }}">
-        <i class="ti-control-record"></i>{{ __('Items Statistics') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link font-hold fw-bold" href="{{ route('items.statistics') }}">
+            <i class="ti-control-record"></i>{{ __('Items Statistics') }}
+        </a>
+    </li>
 @endcan
-
 
 @can('view units')
     <li class="nav-item">
@@ -14,6 +13,7 @@
         </a>
     </li>
 @endcan
+
 @can('view items')
     <li class="nav-item">
         <a class="nav-link font-hold fw-bold" href="{{ route('items.index') }}">
@@ -21,6 +21,7 @@
         </a>
     </li>
 @endcan
+
 @can('view prices')
     <li class="nav-item">
         <a class="nav-link font-hold fw-bold" href="{{ route('prices.index') }}">
@@ -28,6 +29,7 @@
         </a>
     </li>
 @endcan
+
 @can('view varibals')
     <livewire:item-management.notes.notesNames />
     <li class="nav-item">
@@ -37,4 +39,3 @@
     </li>
     <livewire:item-management.varibals.varibalslinks />
 @endcan
-

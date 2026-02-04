@@ -123,7 +123,7 @@ new class extends Component {
                 ->paginate(50);
         } else {
             $salesTotals = $query->selectRaw('
-                "الإجمالي" as period_name,
+                __('Total') as period_name,
                 COUNT(DISTINCT operhead.id) as invoices_count,
                 SUM(operation_items.qty_out) as total_quantity,
                 SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
@@ -172,7 +172,7 @@ new class extends Component {
     {
         $grandTotalInvoices = $this->grandTotalInvoices;
         $grandTotalNetSales = $this->grandTotalNetSales;
-        
+
         return $grandTotalInvoices > 0 ? $grandTotalNetSales / $grandTotalInvoices : 0;
     }
 
@@ -195,121 +195,189 @@ new class extends Component {
     {
         $totalPeriods = $this->totalPeriods;
         $grandTotalNetSales = $this->grandTotalNetSales;
-        
+
         return $totalPeriods > 0 ? $grandTotalNetSales / $totalPeriods : 0;
     }
 }; ?>
-<div>
-    <div class="container">
-        <div class="card">
-            <div class="card-head">
-                <h2>تقرير المبيعات إجماليات</h2>
+<div class="container">
+    <div class="card">
+        <div class="card-head">
+            <h2>{{ __('Sales Totals Report') }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="from_date" class="form-label fw-bold">{{ __('From Date') }}:</label>
+                    <input type="date" id="from_date" class="form-control" wire:model.live="fromDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="to_date" class="form-label fw-bold">{{ __('To Date') }}:</label>
+                    <input type="date" id="to_date" class="form-control" wire:model.live="toDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="group_by" class="form-label fw-bold">{{ __('Group By') }}:</label>
+                    <select id="group_by" class="form-select" wire:model.live="groupBy">
+                        <option value="day">{{ __('Day') }}</option>
+                        <option value="week">{{ __('Week') }}</option>
+                        <option value="month">{{ __('Month') }}</option>
+                        <option value="customer">{{ __('Customer') }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" wire:click="generateReport">
+                        <i class="fas fa-chart-pie me-2"></i>{{ __('Generate Report') }}
+                    </button>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <label for="from_date">من تاريخ:</label>
-                        <input type="date" id="from_date" class="form-control" wire:model.live="fromDate">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="to_date">إلى تاريخ:</label>
-                        <input type="date" id="to_date" class="form-control" wire:model.live="toDate">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="group_by">تجميع حسب:</label>
-                        <select id="group_by" class="form-control" wire:model.live="groupBy">
-                            <option value="day">اليوم</option>
-                            <option value="week">الأسبوع</option>
-                            <option value="month">الشهر</option>
-                            <option value="customer">العميل</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">&nbsp;</label>
-                        <button class="btn btn-primary d-block" wire:click="generateReport">توليد التقرير</button>
+
+            <!-- Summary Cards -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-3">
+                    <div class="card bg-info text-white shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-invoice fa-2x mb-2 opacity-75"></i>
+                            <h6 class="fw-bold">{{ __('Invoices Count') }}</h6>
+                            <h4 class="fw-bold mb-0">{{ $grandTotalInvoices ?? 0 }}</h4>
+                        </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-boxes fa-2x mb-2 opacity-75"></i>
+                            <h6 class="fw-bold">{{ __('Total Quantity') }}</h6>
+                            <h4 class="fw-bold mb-0">{{ number_format($grandTotalQuantity ?? 0, 2) }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-dollar-sign fa-2x mb-2 opacity-75"></i>
+                            <h6 class="fw-bold">{{ __('Total Sales') }}</h6>
+                            <h4 class="fw-bold mb-0">{{ number_format($grandTotalSales ?? 0, 2) }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calculator fa-2x mb-2 opacity-75"></i>
+                            <h6 class="fw-bold">{{ __('Grand Total Net Sales') }}</h6>
+                            <h4 class="fw-bold mb-0">{{ number_format($grandTotalNetSales ?? 0, 2) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center fw-bold">
+                                {{ $groupBy == 'customer' ? __('Customer') : __('Period') }}
+                            </th>
+                            <th class="text-end fw-bold">{{ __('Invoices Count') }}</th>
+                            <th class="text-end fw-bold">{{ __('Total Quantity') }}</th>
+                            <th class="text-end fw-bold text-success">{{ __('Total Sales') }}</th>
+                            <th class="text-end fw-bold text-warning">{{ __('Total Discount') }}</th>
+                            <th class="text-end fw-bold text-info">{{ __('Net Sales') }}</th>
+                            <th class="text-end fw-bold text-primary">{{ __('Average Invoice') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($salesTotals ?? collect() as $total)
+                            <tr class="{{ $total->net_sales > 0 ? 'table-light' : 'table-secondary' }}">
+                                <td class="fw-semibold">
+                                    @if ($groupBy == 'customer')
+                                        <i class="fas fa-user me-2 text-info"></i>
+                                        {{ $total->customer_name ?? '---' }}
+                                    @else
+                                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                        {{ $total->period_name ?? '---' }}
+                                    @endif
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge bg-info">{{ $total->invoices_count ?? 0 }}</span>
+                                </td>
+                                <td class="text-end fw-bold">{{ number_format($total->total_quantity ?? 0, 2) }}</td>
+                                <td class="text-end fw-bold text-success fs-6">
+                                    {{ number_format($total->total_sales ?? 0, 2) }}
+                                </td>
+                                <td class="text-end fw-bold text-warning">
+                                    {{ number_format($total->total_discount ?? 0, 2) }}
+                                </td>
+                                <td class="text-end fw-bold text-info fs-6">
+                                    {{ number_format($total->net_sales ?? 0, 2) }}
+                                </td>
+                                <td class="text-end fw-bold text-primary">
+                                    {{ number_format($total->average_invoice ?? 0, 2) }}
+                                </td>
+                            </tr>
+                        @empty
                             <tr>
-                                <th>{{ $this->groupBy == 'customer' ? 'العميل' : 'الفترة' }}</th>
-                                <th class="text-end">عدد الفواتير</th>
-                                <th class="text-end">إجمالي الكمية</th>
-                                <th class="text-end">إجمالي المبيعات</th>
-                                <th class="text-end">إجمالي الخصم</th>
-                                <th class="text-end">صافي المبيعات</th>
-                                <th class="text-end">متوسط الفاتورة</th>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fas fa-chart-line fa-2x mb-3 d-block"></i>
+                                        {{ __('No Data Available') }}
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($this->salesTotals as $total)
-                                <tr>
-                                    <td>
-                                        @if ($this->groupBy == 'customer')
-                                            {{ $total->customer_name ?? '---' }}
-                                        @else
-                                            {{ $total->period_name ?? '---' }}
-                                        @endif
-                                    </td>
-                                    <td class="text-end">{{ $total->invoices_count }}</td>
-                                    <td class="text-end">{{ number_format($total->total_quantity, 2) }}</td>
-                                    <td class="text-end">{{ number_format($total->total_sales, 2) }}</td>
-                                    <td class="text-end">{{ number_format($total->total_discount, 2) }}</td>
-                                    <td class="text-end">{{ number_format($total->net_sales, 2) }}</td>
-                                    <td class="text-end">{{ number_format($total->average_invoice, 2) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">لا توجد بيانات متاحة.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-primary">
-                                <th>الإجمالي</th>
-                                <th class="text-end">{{ $this->grandTotalInvoices }}</th>
-                                <th class="text-end">{{ number_format($this->grandTotalQuantity, 2) }}</th>
-                                <th class="text-end">{{ number_format($this->grandTotalSales, 2) }}</th>
-                                <th class="text-end">{{ number_format($this->grandTotalDiscount, 2) }}</th>
-                                <th class="text-end">{{ number_format($this->grandTotalNetSales, 2) }}</th>
-                                <th class="text-end">{{ number_format($this->grandAverageInvoice, 2) }}</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                @if ($this->salesTotals->hasPages())
-                    <div class="d-flex justify-content-center">
-                        {{ $this->salesTotals->links() }}
-                    </div>
-                @endif
-
-                <!-- ملخص -->
-                <div class="row mt-3">
-                    <div class="col-md-3">
-                        <div class="alert alert-info">
-                            <strong>إجمالي الفترات:</strong> {{ $this->totalPeriods }}
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="alert alert-success">
-                            <strong>أعلى مبيعات:</strong> {{ number_format($this->highestSales, 2) }}
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="alert alert-warning">
-                            <strong>أدنى مبيعات:</strong> {{ number_format($this->lowestSales, 2) }}
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="alert alert-primary">
-                            <strong>متوسط المبيعات:</strong> {{ number_format($this->averageSales, 2) }}
-                        </div>
-                    </div>
-                </div>
+                        @endforelse
+                    </tbody>
+                    <tfoot class="table-primary">
+                        <tr>
+                            <th class="text-end fw-bold fs-5">{{ __('Grand Total') }}</th>
+                            <th class="text-end fw-bold fs-5">{{ $grandTotalInvoices ?? 0 }}</th>
+                            <th class="text-end fw-bold fs-5">{{ number_format($grandTotalQuantity ?? 0, 2) }}</th>
+                            <th class="text-end fw-bold text-success fs-5">
+                                {{ number_format($grandTotalSales ?? 0, 2) }}</th>
+                            <th class="text-end fw-bold text-warning fs-5">
+                                {{ number_format($grandTotalDiscount ?? 0, 2) }}</th>
+                            <th class="text-end fw-bold text-info fs-5">
+                                {{ number_format($grandTotalNetSales ?? 0, 2) }}</th>
+                            <th class="text-end fw-bold text-primary fs-5">
+                                {{ number_format($grandAverageInvoice ?? 0, 2) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
+
+            @if (isset($salesTotals) && $salesTotals->hasPages())
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $salesTotals->links() }}
+                </div>
+            @endif
+
+            <!-- Analytics Summary -->
+            @if ($salesTotals->count() > 0)
+                <div class="row mt-4 g-3">
+                    <div class="col-md-3">
+                        <div class="alert alert-info shadow-sm">
+                            <i class="fas fa-calendar-week fa-2x float-start me-2 mb-2"></i>
+                            <strong>{{ __('Total Periods') }}:</strong> {{ $totalPeriods ?? 0 }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-success shadow-sm">
+                            <i class="fas fa-trophy fa-2x float-start me-2 mb-2"></i>
+                            <strong>{{ __('Highest Sales') }}:</strong> {{ number_format($highestSales ?? 0, 2) }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-warning shadow-sm">
+                            <i class="fas fa-chart-line fa-2x float-start me-2 mb-2"></i>
+                            <strong>{{ __('Lowest Sales') }}:</strong> {{ number_format($lowestSales ?? 0, 2) }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-primary shadow-sm">
+                            <i class="fas fa-calculator fa-2x float-start me-2 mb-2"></i>
+                            <strong>{{ __('Average Sales') }}:</strong> {{ number_format($averageSales ?? 0, 2) }}
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>

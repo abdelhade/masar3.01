@@ -1,9 +1,9 @@
 @can('view vouchers-statistics')
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('vouchers.statistics') }}">
-        <i class="ti-control-record"></i>{{ __('Vouchers Statistics') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('vouchers.statistics') }}">
+            <i class="ti-control-record"></i>{{ __('Vouchers Statistics') }}
+        </a>
+    </li>
 @endcan
 
 
