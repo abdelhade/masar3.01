@@ -38,16 +38,16 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-head">
-                <h2>تقرير المبيعات حسب المندوب</h2>
+                <h2>{{ __('Sales Report by Representative') }}</h2>
             </div>
             <div class="card-body">
                 <!-- فلاتر البحث -->
                 <form method="GET" action="{{ route('reports.sales.representative') }}">
                     <div class="row mb-4">
                         <div class="col-md-3">
-                            <label for="representative_id">المندوب:</label>
+                            <label for="representative_id">{{ __('Representative') }}:</label>
                             <select name="representative_id" id="representative_id" class="form-control">
-                                <option value="">-- جميع المندوبين --</option>
+                                <option value="">{{ __('-- All Representatives --') }}</option>
                                 @foreach ($representatives as $rep)
                                     <option value="{{ $rep->id }}"
                                         {{ request('representative_id') == $rep->id ? 'selected' : '' }}>
@@ -57,25 +57,25 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="from_date">من تاريخ:</label>
+                            <label for="from_date">{{ __('From Date') }}:</label>
                             <input type="date" name="from_date" id="from_date" class="form-control"
-                                value="{{ $fromDate }}">
+                                value="{{ $fromDate ?? '' }}">
                         </div>
                         <div class="col-md-2">
-                            <label for="to_date">إلى تاريخ:</label>
+                            <label for="to_date">{{ __('To Date') }}:</label>
                             <input type="date" name="to_date" id="to_date" class="form-control"
-                                value="{{ $toDate }}">
+                                value="{{ $toDate ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label>&nbsp;</label>
                             <button type="submit" class="btn btn-primary form-control">
-                                <i class="fas fa-filter"></i> فلتر
+                                <i class="fas fa-filter"></i> {{ __('Filter') }}
                             </button>
                         </div>
                         <div class="col-md-2">
                             <label>&nbsp;</label>
                             <a href="{{ route('reports.sales.representative') }}" class="btn btn-secondary form-control">
-                                <i class="fas fa-redo"></i> إعادة تعيين
+                                <i class="fas fa-redo"></i> {{ __('Reset') }}
                             </a>
                         </div>
                     </div>
@@ -84,98 +84,126 @@
                 <!-- الجدول -->
                 <div class="table-responsive">
                     <table id="salesRepTable" class="table table-bordered table-striped table-hover">
-                        <thead>
+                        <thead class="table-dark">
                             <tr>
                                 <th>#</th>
-                                <th>كود المندوب</th>
-                                <th>اسم المندوب</th>
-                                <th>عدد الفواتير</th>
-                                <th>إجمالي المبيعات</th>
-                                <th>إجمالي الخصم</th>
-                                <th>صافي المبيعات</th>
-                                <th>متوسط الفاتورة</th>
-                                <th>% من الإجمالي</th>
+                                <th>{{ __('Representative Code') }}</th>
+                                <th>{{ __('Representative Name') }}</th>
+                                <th class="text-end">{{ __('Invoices Count') }}</th>
+                                <th class="text-end">{{ __('Total Sales') }}</th>
+                                <th class="text-end">{{ __('Total Discount') }}</th>
+                                <th class="text-end">{{ __('Net Sales') }}</th>
+                                <th class="text-end">{{ __('Average Invoice') }}</th>
+                                <th class="text-end">{{ __('Percentage of Total') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($salesByRep as $index => $rep)
+                            @forelse ($salesByRep as $index => $rep)
                                 @php
                                     $averageInvoice =
                                         $rep->invoices_count > 0 ? $rep->net_sales / $rep->invoices_count : 0;
-                                    $percentage = $grandNetSales > 0 ? ($rep->net_sales / $grandNetSales) * 100 : 0;
+                                    $percentage =
+                                        isset($grandNetSales) && $grandNetSales > 0
+                                            ? ($rep->net_sales / $grandNetSales) * 100
+                                            : 0;
                                 @endphp
                                 <tr>
                                     <td>{{ $salesByRep->firstItem() + $index }}</td>
-                                    <td>{{ $rep->emp_id }}</td>
+                                    <td>{{ $rep->emp_id ?? '---' }}</td>
                                     <td>
-                                        <strong>{{ $rep->representative->name ?? 'غير محدد' }}</strong>
+                                        <strong>{{ $rep->representative->name ?? __('Unspecified') }}</strong>
                                     </td>
-                                    <td class="text-end">{{ number_format($rep->invoices_count, 0) }}</td>
-                                    <td class="text-end">{{ number_format($rep->total_sales, 2) }}</td>
-                                    <td class="text-end">{{ number_format($rep->total_discount, 2) }}</td>
-                                    <td class="text-end">
-                                        <strong>{{ number_format($rep->net_sales, 2) }}</strong>
+                                    <td class="text-end fw-bold">
+                                        <span class="badge bg-info">{{ number_format($rep->invoices_count, 0) }}</span>
                                     </td>
-                                    <td class="text-end">{{ number_format($averageInvoice, 2) }}</td>
+                                    <td class="text-end fw-bold text-primary">
+                                        {{ number_format($rep->total_sales ?? 0, 2) }}
+                                    </td>
+                                    <td class="text-end fw-bold text-warning">
+                                        {{ number_format($rep->total_discount ?? 0, 2) }}
+                                    </td>
+                                    <td class="text-end fw-bold text-success fs-6">
+                                        {{ number_format($rep->net_sales ?? 0, 2) }}
+                                    </td>
+                                    <td class="text-end fw-bold">
+                                        {{ number_format($averageInvoice, 2) }}
+                                    </td>
                                     <td class="text-end">
                                         <span class="badge bg-info">{{ number_format($percentage, 2) }}%</span>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">{{ __('No sales data available for selected period') }}
+                                        </p>
+                                    </td>
+                            @endforelse
                         </tbody>
-                        <tfoot class="table-secondary">
-                            <tr>
-                                <th colspan="3" class="text-center">الإجمالي</th>
-                                <th class="text-end">{{ number_format($totalInvoices, 0) }}</th>
-                                <th class="text-end">{{ number_format($grandTotalSales, 2) }}</th>
-                                <th class="text-end">{{ number_format($grandTotalDiscount, 2) }}</th>
-                                <th class="text-end">{{ number_format($grandNetSales, 2) }}</th>
-                                <th class="text-end">{{ number_format($averageInvoiceValue, 2) }}</th>
-                                <th class="text-end">100%</th>
-                            </tr>
-                        </tfoot>
+                        @if (isset($grandNetSales))
+                            <tfoot class="table-primary">
+                                <tr>
+                                    <th colspan="3" class="text-center fw-bold fs-5">{{ __('Grand Total') }}</th>
+                                    <th class="text-end fw-bold fs-5">{{ number_format($totalInvoices ?? 0, 0) }}</th>
+                                    <th class="text-end fw-bold text-primary fs-5">
+                                        {{ number_format($grandTotalSales ?? 0, 2) }}</th>
+                                    <th class="text-end fw-bold text-warning fs-5">
+                                        {{ number_format($grandTotalDiscount ?? 0, 2) }}</th>
+                                    <th class="text-end fw-bold text-success fs-5">{{ number_format($grandNetSales, 2) }}
+                                    </th>
+                                    <th class="text-end fw-bold fs-5">{{ number_format($averageInvoiceValue ?? 0, 2) }}
+                                    </th>
+                                    <th class="text-end fw-bold fs-5">100%</th>
+                                </tr>
+                            </tfoot>
+                        @endif
                     </table>
                 </div>
 
                 <!-- Pagination -->
-                @if ($salesByRep->hasPages())
+                @if (isset($salesByRep) && $salesByRep->hasPages())
                     <div class="d-flex justify-content-center mt-3">
                         {{ $salesByRep->appends(request()->query())->links() }}
                     </div>
                 @endif
 
                 <!-- ملخص التقرير -->
-                <div class="row mt-4">
-                    <div class="col-md-3">
-                        <div class="alert alert-info stats-card info">
-                            <strong>إجمالي المندوبين:</strong><br>
-                            <h3>{{ $totalReps }}</h3>
+                @if (isset($totalReps))
+                    <div class="row mt-4 g-3">
+                        <div class="col-md-3">
+                            <div class="alert alert-info shadow-sm h-100">
+                                <strong>{{ __('Total Representatives') }}:</strong><br>
+                                <h3 class="fw-bold text-info">{{ $totalReps }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert alert-success shadow-sm h-100">
+                                <strong>{{ __('Top Selling Representative') }}:</strong><br>
+                                <h5 class="fw-bold">{{ $topRepName ?? '---' }}</h5>
+                                <small class="text-success">{{ number_format($topRepSales ?? 0, 2) }}
+                                    {{ __('EGP') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert alert-warning shadow-sm h-100">
+                                <strong>{{ __('Average Sales per Representative') }}:</strong><br>
+                                <h4 class="fw-bold">{{ number_format($averageSalesPerRep ?? 0, 2) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert alert-primary shadow-sm h-100">
+                                <strong>{{ __('Average Invoices per Representative') }}:</strong><br>
+                                <h4 class="fw-bold">{{ number_format($averageInvoicesPerRep ?? 0, 1) }}</h4>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="alert alert-success stats-card success">
-                            <strong>أعلى مندوب مبيعاً:</strong><br>
-                            <h5>{{ $topRepName }}</h5>
-                            <small>{{ number_format($topRepSales, 2) }} جنيه</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="alert alert-warning stats-card warning">
-                            <strong>متوسط المبيعات للمندوب:</strong><br>
-                            <h4>{{ number_format($averageSalesPerRep, 2) }}</h4>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="alert alert-primary stats-card primary">
-                            <strong>متوسط الفواتير للمندوب:</strong><br>
-                            <h4>{{ number_format($averageInvoicesPerRep, 1) }}</h4>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
 @endsection
+
 
 @section('scripts')
     <script>

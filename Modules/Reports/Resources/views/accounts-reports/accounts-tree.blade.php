@@ -197,18 +197,18 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-head">
-                <h1>شجرة الحسابات</h1>
+                <h1>{{ __('Accounts Tree') }}</h1>
             </div>
             <div class="card-body">
                 <div class="mb-3 no-print">
                     <button type="button" id="expand-all" class="btn btn-primary btn-lg">
-                        <i class="fas fa-expand-alt me-1"></i>{{ __('فتح الكل') }}
+                        <i class="fas fa-expand-alt me-1"></i>{{ __('Expand All') }}
                     </button>
                     <button type="button" id="collapse-all" class="btn btn-secondary btn-lg">
-                        <i class="fas fa-compress-alt me-1"></i>{{ __('طي الكل') }}
+                        <i class="fas fa-compress-alt me-1"></i>{{ __('Collapse All') }}
                     </button>
                     <button type="button" id="print-tree" class="btn btn-success btn-lg">
-                        <i class="fas fa-print me-1"></i>{{ __('طباعة') }}
+                        <i class="fas fa-print me-1"></i>{{ __('Print') }}
                     </button>
                 </div>
 
@@ -216,10 +216,12 @@
                     <!-- Tree Section (2/3) -->
                     <div class="col-lg-8">
                         <div id="printed-area" class="tree-container">
-                            <h5 class="mb-3"><i class="fas fa-sitemap me-2"></i>شجرة الحسابات</h5>
+                            <h5 class="mb-3"><i class="fas fa-sitemap me-2"></i>{{ __('Accounts Tree') }}</h5>
                             <ul>
                                 @foreach ($accounts as $account)
-                                    @include('reports::accounts-reports.partials.account-node', ['account' => $account])
+                                    @include('reports::accounts-reports.partials.account-node', [
+                                        'account' => $account,
+                                    ])
                                 @endforeach
                             </ul>
                         </div>
@@ -228,21 +230,22 @@
                     <!-- Table Section (1/3) -->
                     <div class="col-lg-4 no-print">
                         <div class="table-container">
-                            <h5 class="mb-3"><i class="fas fa-list me-2"></i>قائمة الحسابات</h5>
+                            <h5 class="mb-3"><i class="fas fa-list me-2"></i>{{ __('Accounts List') }}</h5>
 
                             <!-- Search Box -->
                             <div class="search-box">
-                                <input type="text" id="searchInput" class="form-control" placeholder="ابحث عن حساب...">
+                                <input type="text" id="searchInput" class="form-control"
+                                    placeholder="{{ __('Search for account...') }}">
                             </div>
 
                             <div class="table-responsive">
                                 <table class="table table-sm table-striped table-hover">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>الكود</th>
-                                            <th>اسم الحساب</th>
-                                            <th>الرصيد</th>
-                                            <th>عمليات</th>
+                                            <th>{{ __('Code') }}</th>
+                                            <th>{{ __('Account Name') }}</th>
+                                            <th>{{ __('Balance') }}</th>
+                                            <th>{{ __('Actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="accountsTableBody">
@@ -262,7 +265,9 @@
                                                     echo '<td>';
 
                                                     if ($account->editable == 1) {
-                                                        echo "<button class='btn btn-warning btn-edit-sm' onclick='editAccount({$account->id})' title='تعديل'>";
+                                                        echo "<button class='btn btn-warning btn-edit-sm' onclick='editAccount({$account->id})' title='" .
+                                                            __('Edit') .
+                                                            "'>";
                                                         echo "<i class='fas fa-edit'></i>";
                                                         echo '</button>';
                                                     }
@@ -370,8 +375,9 @@
                 }
             });
         });
+
         function editAccount(accountId) {
             window.location.href = `/accounts/${accountId}/edit`;
         }
     </script>
-@endsection
+    @endsec

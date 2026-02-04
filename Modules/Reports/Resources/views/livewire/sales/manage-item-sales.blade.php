@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
@@ -40,7 +40,7 @@ new class extends Component {
         }
         if ($warehouseId && $warehouseId !== 'all') {
             $this->warehouseId = $warehouseId;
-        }else{
+        } else {
             $this->warehouseId = 'all';
         }
     }
@@ -115,9 +115,9 @@ new class extends Component {
     {
         $baseId = $referenceId;
         $translations = [
-            '10' => 'فاتورة مبيعات',    
+            '10' => __('Sales Invoice'),
             // '11' => 'ÙØ§ØªÙˆØ±Ø© Ù…Ø´ØªØ±ÙŠØ§Øª',
-            '12' => 'مرتجع مبيعات',
+            '12' => __('Sales Return'),
             // '13' => 'Ù…Ø±Ø¯ÙˆØ¯ Ù…Ø´ØªØ±ÙŠØ§Øª',
             // '14' => 'Ø§Ù…Ø± Ø¨ÙŠØ¹',
             // '15' => 'Ø§Ù…Ø± Ø´Ø±Ø§Ø¡',
@@ -154,7 +154,7 @@ new class extends Component {
         }
 
         return OperationItems::where('item_id', $this->itemId)
-            ->whereIn('pro_tybe', [10, 12]  )
+            ->whereIn('pro_tybe', [10, 12])
             ->when($this->warehouseId !== 'all', function ($q) {
                 $q->where('detail_store', $this->warehouseId);
             })
@@ -207,178 +207,179 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-hold fw-bold">تقرير مبيعات صنف</h4>
+                <h4 class="page-title font-bold fw-bold">{{ __('Item Sales Report') }}</h4>
             </div>
         </div>
     </div>
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-hold fw-bold">تقرير مبيعات صنف</h4>
+            <h4 class="font-bold fw-bold">{{ __('Item Sales Report') }}</h4>
             @if ($itemId)
                 <div class="d-flex align-items-center">
-                    <span class="font-hold fw-bold me-2">الرصيد الحالي للصنف {{ $itemName }} 
-                    :</span>
-                    <span
-                        class="bg-soft-primary font-hold fw-bold font-16">{{ number_format($this->totalQuantity) }}
-                        {{ Item::find($this->itemId)->units->first()->name }}</span>
+                    <span class="font-bold fw-bold me-2">{{ __('Current Balance') }} {{ $itemName }}:</span>
+                    <span class="badge bg-primary fs-6 px-3 py-2">
+                        {{ number_format($totalQuantity ?? 0, 3) }}
+                        {{ \App\Models\Item::find($itemId)?->units->first()->name ?? __('Unit') }}
+                    </span>
                 </div>
             @endif
         </div>
         <div class="card-body">
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="mb-3">
-                        <label for="item" class="form-label font-hold fw-bold">الصنف</label>
-                        <div class="dropdown" wire:click.outside="hideDropdown">
-                            <input type="text" class="form-control font-hold fw-bold"
-                                placeholder="ابحث عن صنف..." wire:model.live.debounce.300ms="searchTerm"
-                                wire:keydown.arrow-down.prevent="arrowDown" wire:keydown.arrow-up.prevent="arrowUp"
-                                wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
-                                onclick="this.select()">
-                            @if ($showDropdown && $this->searchResults->isNotEmpty())
-                                <ul class="dropdown-menu show" style="width: 100%;">
-                                    @foreach ($this->searchResults as $index => $item)
+                    <label for="item" class="form-label font-bold fw-bold">{{ __('Item') }}</label>
+                    <div class="dropdown position-relative" x-data="{ open: false }" @click.outside="open = false">
+                        <input type="text" class="form-control font-bold"
+                            placeholder="{{ __('Search for item...') }}" wire:model.live.debounce.300ms="searchTerm"
+                            wire:keydown.arrow-down.prevent="arrowDown()" wire:keydown.arrow-up.prevent="arrowUp()"
+                            wire:keydown.enter.prevent="selectHighlightedItem()" x-ref="searchInput">
+
+                        @if ($showDropdown)
+                            @if ($searchResults->isNotEmpty())
+                                <ul class="dropdown-menu show position-absolute w-100 border shadow"
+                                    style="z-index: 1050; top: 100%; left: 0;">
+                                    @foreach ($searchResults as $index => $item)
                                         <li>
-                                            <a class="font-hold fw-bold dropdown-item {{ $highlightedIndex === $index ? 'active' : '' }}"
+                                            <a class="dropdown-item font-bold {{ $highlightedIndex === $index ? 'bg-primary text-white' : '' }}"
                                                 href="#"
-                                                wire:click.prevent="selectItem({{ $item->id }}, '{{ $item->name }}')">
-                                                {{ $item->name }}
+                                                wire:click.prevent="selectItem({{ $item->id }}, '{{ addslashes($item->name) }}')"
+                                                wire:keydown.enter.prevent="selectItem({{ $item->id }}, '{{ addslashes($item->name) }}')">
+                                                {{ $item->code ?? '' }} - {{ $item->name }}
                                             </a>
                                         </li>
                                     @endforeach
                                 </ul>
-                            @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $itemName)
-                                <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span class="dropdown-item-text font-hold fw-bold text-danger">لا يوجد
-                                            نتائج لهذا البحث</span></li>
+                            @elseif(strlen($searchTerm) >= 2 && $searchTerm !== $itemName)
+                                <ul class="dropdown-menu show position-absolute w-100 border shadow"
+                                    style="z-index: 1050; top: 100%; left: 0;">
+                                    <li>
+                                        <span class="dropdown-item-text text-danger fw-bold p-3 text-center w-100">
+                                            <i class="fas fa-search me-2"></i>{{ __('No results found') }}
+                                        </span>
+                                    </li>
                                 </ul>
                             @endif
-                        </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="warehouse" class="form-label font-hold fw-bold">المخزن</label>
-                        <select wire:model.live="warehouseId" id="warehouse"
-                            class="form-select font-hold fw-bold" style = "height: 50px;">
-                            <option class="font-hold fw-bold" value="all">جميع المخازن</option>
-                            @foreach ($warehouses as $id => $name)
-                                <option class="font-hold fw-bold" value="{{ $id }}">
-                                    {{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <label for="warehouse" class="form-label font-bold fw-bold">{{ __('Warehouse') }}</label>
+                    <select wire:model.live="warehouseId" id="warehouse" class="form-select font-bold"
+                        style="height: 50px;">
+                        <option value="all" class="font-bold">{{ __('All Warehouses') }}</option>
+                        @foreach ($warehouses as $id => $name)
+                            <option value="{{ $id }}" class="font-bold">{{ $name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="fromDate" class="form-label font-hold fw-bold">من تاريخ</label>
-                        <input type="date" wire:model.live="fromDate" id="fromDate"
-                            class="form-control font-hold fw-bold">
-                    </div>
+                    <label for="fromDate" class="form-label font-bold fw-bold">{{ __('From Date') }}</label>
+                    <input type="date" wire:model.live="fromDate" id="fromDate" class="form-control font-bold">
                 </div>
                 <div class="col-md-2">
-                    <div class="mb-3">
-                        <label for="toDate" class="form-label font-hold fw-bold">إلى تاريخ</label>
-                        <input type="date" wire:model.live="toDate" id="toDate"
-                            class="form-control font-hold fw-bold">
-                    </div>
+                    <label for="toDate" class="form-label font-bold fw-bold">{{ __('To Date') }}</label>
+                    <input type="date" wire:model.live="toDate" id="toDate" class="form-control font-bold">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-primary h-100" wire:click="generateReport"
+                        title="{{ __('Generate Report') }}">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     @if ($itemId)
-
         <div class="card">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-box me-2"></i>{{ __('Movement History') }} - {{ $itemName }}
+                </h5>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped table-centered mb-0">
-                        <thead>
+                    <table class="table table-striped table-hover table-sm">
+                        <thead class="table-dark">
                             <tr>
-                                <th class="font-hold fw-bold">التاريخ</th>
-                                <th class="font-hold fw-bold">مصدر العملية</th>
-                                <th class="font-hold fw-bold">نوع الحركة</th>
-                                <th class="font-hold fw-bold">المخزن</th>
-                                <th class="font-hold fw-bold">الوحدة</th>
-                                <th class="font-hold fw-bold">الرصيد قبل الحركة</th>
-                                <th class="font-hold fw-bold">الكمية</th>
-                                <th class="font-hold fw-bold">الرصيد بعد الحركة</th>
-                                {{-- <th class="font-hold fw-bold">Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡</th> --}}
+                                <th class="text-center">{{ __('Date') }}</th>
+                                <th class="text-center">{{ __('Operation Source') }}</th>
+                                <th class="text-center">{{ __('Movement Type') }}</th>
+                                <th>{{ __('Warehouse') }}</th>
+                                <th>{{ __('Unit') }}</th>
+                                <th class="text-end">{{ __('Balance Before') }}</th>
+                                <th class="text-end">{{ __('Quantity') }}</th>
+                                <th class="text-end">{{ __('Balance After') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
-                                // Get the sum of qty_in and qty_out for the selected period and warehouse
-                                if ($this->warehouseId === 'all' || empty($this->warehouseId)) {
-                                    $balanceBefore = OperationItems::where('item_id', $this->itemId)
-                                        ->whereBetween('created_at', [$this->fromDate, $this->toDate])
-                                        ->sum('qty_in') -
-                                        OperationItems::where('item_id', $this->itemId)
-                                        ->whereBetween('created_at', [$this->fromDate, $this->toDate])
-                                        ->sum('qty_out');
-                                } else {
-                                    $balanceBefore = OperationItems::where('item_id', $this->itemId)
-                                        ->where('detail_store', $this->warehouseId)
-                                        ->whereBetween('created_at', [$this->fromDate, $this->toDate])
-                                        ->sum('qty_in') -
-                                        OperationItems::where('item_id', $this->itemId)
-                                        ->where('detail_store', $this->warehouseId)
-                                        ->whereBetween('created_at', [$this->fromDate, $this->toDate])
-                                        ->sum('qty_out');
-                                }
-                                $balanceAfter = 0;
+                                $runningBalance =
+                                    $this->warehouseId === 'all' || empty($this->warehouseId)
+                                        ? OperationItems::where('item_id', $this->itemId)
+                                            ->where('created_at', '<', $this->fromDate ?? now())
+                                            ->sum(DB::raw('qty_in - qty_out'))
+                                        : OperationItems::where('item_id', $this->itemId)
+                                            ->where('detail_store', $this->warehouseId)
+                                            ->where('created_at', '<', $this->fromDate ?? now())
+                                            ->sum(DB::raw('qty_in - qty_out'));
                             @endphp
                             @forelse($movements as $movement)
-                                <tr>
-                                    <td class="font-hold fw-bold">{{ $movement->created_at->format('Y-m-d') }}
+                                @php
+                                    $quantity = $movement->qty_in ?: -$movement->qty_out;
+                                    $isInbound = $movement->qty_in > 0;
+                                    $runningBalance += $quantity;
+                                @endphp
+                                <tr class="{{ $isInbound ? 'table-success' : 'table-danger' }}">
+                                    <td class="text-center fw-bold">
+                                        {{ \Carbon\Carbon::parse($movement->created_at)->format('Y-m-d H:i') }}
                                     </td>
-                                    <td class="font-hold fw-bold">
-                                        {{ $movement->pro_id }}#_{{ $this->getArabicReferenceName($movement->pro_tybe) }}
-                                    </td>
-                                    <td class="font-hold fw-bold">
-                                        <span
-                                            class="badge {{ $movement->qty_in != 0 ? 'badge-soft-success' : 'badge-soft-danger' }} font-hold fw-bold">
-                                            {{ $movement->qty_in != 0 ? 'in' : 'out' }}
+                                    <td class="fw-bold">
+                                        <span class="badge bg-info">
+                                            {{ $movement->pro_id }}#{{ $this->getArabicReferenceName($movement->pro_tybe) ?? __('Unknown') }}
                                         </span>
                                     </td>
-                                    <td class="font-hold fw-bold">
-                                        {{ AccHead::find($movement->detail_store)->aname ?? 'N/A' }}</td>
-                                    <td class="font-hold fw-bold">
-                                        {{ Item::find($this->itemId)->units->first()->name }}</td>
-                                    <td class="font-hold fw-bold">{{ $balanceBefore }}</td>
+                                    <td class="text-center">
+                                        <span class="badge {{ $isInbound ? 'bg-success' : 'bg-danger' }} fs-6">
+                                            {{ $isInbound ? __('Inbound') : __('Outbound') }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-semibold">
+                                        {{ \Modules\Accounts\Models\AccHead::find($movement->detail_store)?->aname ?? __('N/A') }}
+                                    </td>
+                                    <td class="fw-bold text-muted small">
+                                        {{ \App\Models\Item::find($itemId)?->units->first()->name ?? __('Unit') }}
+                                    </td>
+                                    <td class="text-end fw-bold text-muted">
+                                        {{ number_format($runningBalance - abs($quantity), 3) }}
+                                    </td>
                                     <td
-                                        class="font-hold fw-bold {{ $movement->qty_in != 0 ? 'bg-soft-success' : 'bg-soft-danger' }}">
-                                        {{ $movement->qty_in != 0 ? $movement->qty_in : $movement->qty_out }}</td>
-                                    @php
-                                        if ($movement->qty_in != 0) {
-                                            $balanceAfter = $balanceBefore + $movement->qty_in;
-                                        } elseif ($movement->qty_out != 0) {
-                                            $balanceAfter = $balanceBefore - $movement->qty_out;
-                                        }
-                                    @endphp
-                                    <td class="font-hold fw-bold">{{ $balanceAfter }}</td>
-                                    {{-- <td class="font-hold fw-bold">
-                                    <button wire:click="viewReference({{ $movement->id }})" class="btn btn-xs btn-primary">
-                                        <i class="fas fa-eye"></i> Ø¹Ø±Ø¶
-                                    </button>
-                                </td> --}}
+                                        class="text-end fw-bolder fs-6 {{ $isInbound ? 'text-success' : 'text-danger' }}">
+                                        {{ number_format($quantity, 3) }}
+                                    </td>
+                                    <td class="text-end fw-bold bg-light rounded px-2 py-1">
+                                        {{ number_format($runningBalance, 3) }}
+                                    </td>
                                 </tr>
-                                @php
-                                    $balanceBefore = $balanceAfter;
-                                @endphp
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center font-hold fw-bold">لا يوجد حركات
-                                        للمعايير المحددة.</td>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block opacity-75"></i>
+                                            <h5>{{ __('No movements found for the selected criteria') }}</h5>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-3 d-flex justify-content-center">
-                    {{ $movements->links() }}
-                </div>
+                @if ($movements->hasPages())
+                    <div class="mt-4 d-flex justify-content-center">
+                        {{ $movements->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     @endif
@@ -438,6 +439,3 @@ new class extends Component {
         </script>
     @endpush
 </div>
-
-
-
