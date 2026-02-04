@@ -1,17 +1,10 @@
 @can('view basicData-statistics')
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('accounts.basic-data-statistics') }}">
-        <i class="ti-list"></i>{{ __('إحصائيات البيانات الأساسية') }}
-    </a>
-</li>
-@endcan
-
-    {{-- <li class="nav-item">
-        <a class="nav-link" href="{{ route('accounts.index') }}">
-            <i class="ti-list"></i>{{ __('navigation.all_accounts') }}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('accounts.basic-data-statistics') }}">
+            <i class="ti-list"></i>{{ __('Basic Data Statistics') }}
         </a>
-    </li> --}}
-
+    </li>
+@endcan
 
 @can('view Clients')
     <li class="nav-item">
@@ -125,11 +118,10 @@
     </li>
 @endcan
 
-{{-- حافظات الأوراق المالية --}}
 @can('view check-portfolios-incoming')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'check-portfolios-incoming']) }}">
-            <i class="ti-control-record"></i>{{ __('حافظات أوراق القبض') }}
+            <i class="ti-control-record"></i>{{ __('Incoming Check Portfolios') }}
         </a>
     </li>
 @endcan
@@ -137,10 +129,7 @@
 @can('view check-portfolios-outgoing')
     <li class="nav-item">
         <a class="nav-link" href="{{ route('accounts.index', ['type' => 'check-portfolios-outgoing']) }}">
-            <i class="ti-control-record"></i>{{ __('حافظات أوراق الدفع') }}
+            <i class="ti-control-record"></i>{{ __('Outgoing Check Portfolios') }}
         </a>
     </li>
 @endcan
-
-
-
