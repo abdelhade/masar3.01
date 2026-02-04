@@ -12,13 +12,13 @@
                 <div>
                     <h2 class="mb-0">
                         <i class="fas fa-clipboard-check me-2"></i>
-                        فحوصات الجودة
+                        {{ __("Quality Inspections") }}
                     </h2>
                 </div>
                 @can('create inspections')
                 <div>
                     <a href="{{ route('quality.inspections.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-2"></i>فحص جديد
+                        <i class="fas fa-plus-circle me-2"></i>{{ __("New Inspection") }}
                     </a>
                 </div>
                 @endcan
@@ -33,15 +33,15 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>رقم الفحص</th>
-                            <th>الصنف</th>
-                            <th>النوع</th>
-                            <th>الكمية</th>
-                            <th>النتيجة</th>
-                            <th>نسبة النجاح</th>
-                            <th>التاريخ</th>
+                            <th>{{ __("Inspection Number") }}</th>
+                            <th>{{ __("Item") }}</th>
+                            <th>{{ __("Type") }}</th>
+                            <th>{{ __("Quantity") }}</th>
+                            <th>{{ __("Result") }}</th>
+                            <th>{{ __("Pass Percentage") }}</th>
+                            <th>{{ __("Date") }}</th>
                             @canany(['edit inspections', 'delete inspections' , 'view inspections'])
-                            <th>الإجراءات</th>
+                            <th>{{ __("Actions") }}</th>
                             @endcanany
                         </tr>
                     </thead>
@@ -57,11 +57,11 @@
                             <td>
                                 <span class="badge bg-info">
                                     {{ match($inspection->inspection_type) {
-                                        'receiving' => 'استلام',
-                                        'in_process' => 'أثناء الإنتاج',
-                                        'final' => 'نهائي',
-                                        'random' => 'عشوائي',
-                                        'customer_complaint' => 'شكوى',
+                                        'receiving' => __('Receiving'),
+                                        'in_process' => __('In Process'),
+                                        'final' => __('Final'),
+                                        'random' => __('Random'),
+                                        'customer_complaint' => __('Customer Complaint'),
                                         default => $inspection->inspection_type
                                     } }}
                                 </span>
@@ -69,11 +69,11 @@
                             <td>{{ number_format($inspection->quantity_inspected, 2) }}</td>
                             <td>
                                 @if($inspection->result == 'pass')
-                                    <span class="badge bg-success">نجح</span>
+                                    <span class="badge bg-success">{{ __('Pass') }}</span>
                                 @elseif($inspection->result == 'fail')
-                                    <span class="badge bg-danger">فشل</span>
+                                    <span class="badge bg-danger">{{ __('Fail') }}</span>
                                 @else
-                                    <span class="badge bg-warning">مشروط</span>
+                                    <span class="badge bg-warning">{{ __('Conditional') }}</span>
                                 @endif
                             </td>
                             <td>
@@ -87,13 +87,13 @@
                                 <div class="btn-group" role="group">
                                     @can('view inspections')
                                     <a href="{{ route('quality.inspections.show', $inspection) }}"
-                                       class="btn btn-sm btn-info" title="عرض">
+                                       class="btn btn-sm btn-info" title="{{ __("View") }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @endcan
                                     @can('edit inspections')
                                     <a href="{{ route('quality.inspections.edit', $inspection) }}"
-                                       class="btn btn-sm btn-warning" title="تعديل">
+                                       class="btn btn-sm btn-warning" title="{{ __("Edit") }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @endcan
@@ -101,7 +101,7 @@
                                     <button type="button" class="btn btn-sm btn-danger"
                                             data-bs-toggle="modal"
                                             data-bs-target="#deleteModal{{ $inspection->id }}"
-                                            title="حذف">
+                                            title="{{ __("Delete") }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     @endcan
@@ -112,18 +112,18 @@
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">تأكيد الحذف</h5>
+                                                <h5 class="modal-title">{{ __('Confirm Delete') }}</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                هل أنت متأكد من حذف الفحص رقم {{ $inspection->inspection_number }}؟
+                                                {{ __('Are you sure you want to delete inspection number') }} {{ $inspection->inspection_number }}?
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
                                                 <form action="{{ route('quality.inspections.destroy', $inspection) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger">حذف</button>
+                                                    <button type="submit" class="btn btn-danger">{{ __("Delete") }}</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -136,7 +136,7 @@
                         <tr>
                             <td colspan="8" class="text-center py-4">
                                 <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p class="text-muted mb-0">لا توجد فحوصات</p>
+                                <p class="text-muted mb-0">{{ __('No inspections') }}</p>
                             </td>
                         </tr>
                         @endforelse

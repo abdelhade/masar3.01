@@ -14,7 +14,7 @@
                     <h2 class="mb-1">{{ $inspection->inspection_number }}</h2>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('quality.dashboard') }}">الجودة</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('quality.dashboard') }}">{{ __("Quality") }}</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('quality.inspections.index') }}">الفحوصات</a></li>
                             <li class="breadcrumb-item active">{{ $inspection->inspection_number }}</li>
                         </ol>
@@ -22,7 +22,7 @@
                 </div>
                 <div>
                     <a href="{{ route('quality.inspections.edit', $inspection) }}" class="btn btn-warning">
-                        <i class="fas fa-edit me-2"></i>تعديل
+                        <i class="fas fa-edit me-2"></i>{{ __("Edit") }}
                     </a>
                     <a href="{{ route('quality.inspections.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-right me-2"></i>رجوع
@@ -42,7 +42,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">الصنف</label>
+                            <label class="text-muted small">{{ __("Item") }}</label>
                             <div class="fw-bold">{{ $inspection->item?->name ?? 'غير محدد' }}</div>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -108,7 +108,7 @@
 
         <!-- النتائج والإحصائيات -->
         <div class="col-lg-4">
-            <!-- النتيجة النهائية -->
+            <!-- {{ __("Result") }} النهائية -->
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <div class="mb-3">
@@ -128,7 +128,7 @@
                             default => $inspection->result
                         } }}
                     </h4>
-                    <div class="text-muted">النتيجة النهائية</div>
+                    <div class="text-muted">{{ __("Result") }} النهائية</div>
                 </div>
             </div>
 
@@ -140,7 +140,7 @@
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
                         <div class="list-group-item d-flex justify-content-between">
-                            <span>الكمية المفحوصة</span>
+                            <span>{{ __("Quantity") }} المفحوصة</span>
                             <strong>{{ number_format($inspection->quantity_inspected, 2) }}</strong>
                         </div>
                         <div class="list-group-item d-flex justify-content-between text-success">
@@ -152,7 +152,7 @@
                             <strong>{{ number_format($inspection->fail_quantity, 2) }}</strong>
                         </div>
                         <div class="list-group-item d-flex justify-content-between bg-light">
-                            <span class="fw-bold">نسبة النجاح</span>
+                            <span class="fw-bold">{{ __("Pass Percentage") }}</span>
                             <strong class="{{ $inspection->pass_percentage >= 95 ? 'text-success' : 'text-danger' }}">
                                 {{ number_format($inspection->pass_percentage, 1) }}%
                             </strong>
@@ -194,7 +194,7 @@
                     <h6 class="mb-0">معلومات إضافية</h6>
                 </div>
                 <div class="card-body">
-                    <div class="small text-muted mb-2">تاريخ الإنشاء</div>
+                    <div class="small text-muted mb-2">تاريخ ال{{ __("Create") }}</div>
                     <div class="mb-3">{{ $inspection->created_at?->format('Y-m-d H:i') }}</div>
                     
                     @if($inspection->updated_at != $inspection->created_at)
