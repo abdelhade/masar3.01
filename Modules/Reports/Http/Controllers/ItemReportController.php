@@ -99,7 +99,7 @@ class ItemReportController extends Controller
         return view('reports::items.items-stores-stock', compact('stores', 'items', 'balances'));
     }
 
-    public function inactiveItemsReport(): \Illuminate\Contracts\View\View
+    public function inactiveItemsReport()
     {
         // Get filters from request
         $search = request('search');

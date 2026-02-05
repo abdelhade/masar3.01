@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Reports;
+namespace Modules\Reports\Livewire;
 
 use App\Models\OperHead;
 use App\Models\OperationItems;
@@ -247,7 +247,7 @@ class PurchaseInvoiceItemsPricing extends Component
         $this->calculateStatistics();
         $priceTypes = Price::all(); // Fetch all price types
 
-        return view('livewire.reports.purchase-invoice-items-pricing', [
+        return view('reports::livewire.purchase-invoice-items-pricing', [
             'items' => $items,
             'operation' => $this->operation,
             'priceTypes' => $priceTypes,

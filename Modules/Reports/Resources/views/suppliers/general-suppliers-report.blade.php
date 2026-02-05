@@ -83,7 +83,7 @@
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-dark text-white">
+                                <div class="card">
                                     <div class="card-body">
                                         <h6 class="card-title">{{ __('Average Transaction') }}</h6>
                                         <h4 class="card-text">

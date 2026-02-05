@@ -5,5 +5,36 @@
 @endsection
 
 @section('content')
-    <livewire:sales.general-sales-report />
+    @include('components.breadcrumb', [
+        'title' => __('General Sales Report'),
+        'items' => [
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('General Sales Report')],
+        ],
+    ])
+
+    <div class="container-fluid">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>{{ __('General Sales Report') }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ __('This report is under development. Please check back later.') }}
+                </div>
+                
+                {{-- Placeholder for future implementation --}}
+                <div class="row">
+                    <div class="col-md-12">
+                        <p class="text-muted">
+                            {{ __('This report will show general sales statistics and trends.') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

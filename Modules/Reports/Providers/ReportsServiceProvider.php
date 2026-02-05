@@ -37,6 +37,11 @@ class ReportsServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+        
+        // Register Livewire Components
+        \Livewire\Livewire::component('reports.barcode-printing-report', \Modules\Reports\Livewire\BarcodePrintingReport::class);
+        \Livewire\Livewire::component('reports.inventory-discrepancy', \Modules\Reports\Livewire\InventoryDiscrepancy::class);
+        \Livewire\Livewire::component('reports.purchase-invoice-items-pricing', \Modules\Reports\Livewire\PurchaseInvoiceItemsPricing::class);
     }
 
     /**

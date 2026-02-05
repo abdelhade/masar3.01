@@ -67,7 +67,7 @@
 
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
-                        <thead class="table-dark">
+                        <thead>
                             <tr>
                                 <th>{{ __('Date') }}</th>
                                 <th>{{ __('Time') }}</th>

@@ -77,7 +77,7 @@ class ItemController extends Controller
     // 📁 Item Purchase Report
     public function itemPurchaseReport()
     {
-        return view('reports.purchase.manage-item-purchase-report');
+        return view('reports::purchases.manage-item-purchase-report');
 
         // Get item as JSON for AJAX requests
     }

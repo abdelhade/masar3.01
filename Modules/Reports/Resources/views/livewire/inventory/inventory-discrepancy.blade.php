@@ -1,33 +1,27 @@
 <div>
     {{-- Flash Messages --}}
     @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show font-hold" role="alert" 
-             x-data="{ show: true }" 
-             x-show="show"
-             x-init="setTimeout(() => show = false, 5000)">
-            <i class="ri-check-line me-2"></i>
+        <div class="alert alert-success alert-dismissible fade show font-hold" role="alert" x-data="{ show: true }"
+            x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <i class="fas fa-check me-2"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
         </div>
     @endif
-    
+
     @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show font-hold" role="alert"
-             x-data="{ show: true }" 
-             x-show="show"
-             x-init="setTimeout(() => show = false, 5000)">
-            <i class="ri-close-line me-2"></i>
+        <div class="alert alert-danger alert-dismissible fade show font-hold" role="alert" x-data="{ show: true }"
+            x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <i class="fas fa-times me-2"></i>
             {{ session('error') }}
             <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
         </div>
     @endif
-    
+
     @if (session()->has('info'))
-        <div class="alert alert-info alert-dismissible fade show font-hold" role="alert"
-             x-data="{ show: true }" 
-             x-show="show"
-             x-init="setTimeout(() => show = false, 5000)">
-            <i class="ri-information-line me-2"></i>
+        <div class="alert alert-info alert-dismissible fade show font-hold" role="alert" x-data="{ show: true }"
+            x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <i class="fas fa-info-circle me-2"></i>
             {{ session('info') }}
             <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
         </div>
@@ -36,15 +30,16 @@
     {{-- Filters --}}
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="card-title mb-0"><i class="ri-filter-3-line"></i> فلاتر التقرير</h5>
+            <h5 class="card-title mb-0">
+                <i class="fas fa-filter"></i> {{ __('Report Filters') }}
+            </h5>
         </div>
         <div class="card-body">
             <div class="row align-items-end">
-
                 <div class="col-md-4">
-                    <label class="form-label">المخزن</label>
+                    <label class="form-label">{{ __('Warehouse') }}</label>
                     <select wire:model.live="selectedWarehouse" class="form-select">
-                        <option value="">اختر المخزن</option>
+                        <option value="">{{ __('Select Warehouse') }}</option>
                         @foreach ($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
                         @endforeach
@@ -55,7 +50,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">حساب تسوية الجرد</label>
+                    <label class="form-label">{{ __('Inventory Adjustment Account') }}</label>
                     <select wire:model="selectedPartner" class="form-select">
                         @foreach ($partners as $partner)
                             <option value="{{ $partner->id }}">{{ $partner->aname }}</option>
@@ -68,26 +63,28 @@
 
                 <div class="col-md-4">
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-main w-100" wire:click="applyInventoryAdjustments"
+                        <button type="button" class="btn btn-primary w-100" wire:click="applyInventoryAdjustments"
                             wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="applyInventoryAdjustments"><i
-                                    class="ri-refresh-line"></i> تحديث الأرصدة وتطبيق التسوية</span>
-                            <span wire:loading wire:target="applyInventoryAdjustments">جاري التطبيق...</span>
+                            <span wire:loading.remove wire:target="applyInventoryAdjustments">
+                                <i class="fas fa-sync-alt"></i> {{ __('Update Balances & Apply Adjustment') }}
+                            </span>
+                            <span wire:loading wire:target="applyInventoryAdjustments">{{ __('Applying...') }}</span>
                         </button>
-                        <button type="button" class="btn btn-success" onclick="window.print()"> طباعه</button>
+                        <button type="button" class="btn btn-success" onclick="window.print()">
+                            <i class="fas fa-print"></i> {{ __('Print') }}
+                        </button>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    {{-- إحصائيات سريعة --}}
+    {{-- Quick Statistics --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card bg-light">
                 <div class="card-body text-center">
-                    <h6 class="card-title">إجمالي الأصناف</h6>
+                    <h6 class="card-title">{{ __('Total Items') }}</h6>
                     <h4 class="text-primary">{{ $totalItems }}</h4>
                 </div>
             </div>
@@ -95,7 +92,7 @@
         <div class="col-md-3">
             <div class="card bg-light">
                 <div class="card-body text-center">
-                    <h6 class="card-title">أصناف بها زيادة</h6>
+                    <h6 class="card-title">{{ __('Items with Overage') }}</h6>
                     <h4 class="text-info">{{ $itemsWithOverage }}</h4>
                 </div>
             </div>
@@ -103,7 +100,7 @@
         <div class="col-md-3">
             <div class="card bg-light">
                 <div class="card-body text-center">
-                    <h6 class="card-title">أصناف بها نقص</h6>
+                    <h6 class="card-title">{{ __('Items with Shortage') }}</h6>
                     <h4 class="text-danger">{{ $itemsWithShortage }}</h4>
                 </div>
             </div>
@@ -111,30 +108,31 @@
         <div class="col-md-3">
             <div class="card bg-light">
                 <div class="card-body text-center">
-                    <h6 class="card-title">أصناف مطابقة</h6>
+                    <h6 class="card-title">{{ __('Matching Items') }}</h6>
                     <h4 class="text-success">{{ $itemsMatching }}</h4>
                 </div>
             </div>
         </div>
     </div>
 
-
-    {{-- إشعار حساب الفروقات --}}
+    {{-- Inventory Difference Account Warning --}}
     @if (!$inventoryDifferenceAccount)
         <div class="alert alert-warning">
-            <i class="ri-alert-line"></i>
-            <strong>تحذير:</strong> حساب فروقات الجرد غير محدد أو غير موجود.
-            @if($inventoryDifferenceAccountValue)
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>{{ __('Warning') }}:</strong>
+            {{ __('Inventory difference account not specified or does not exist.') }}
+            @if ($inventoryDifferenceAccountValue)
                 <br>
                 <small>
-                    القيمة المحفوظة في الإعدادات: <code>{{ $inventoryDifferenceAccountValue }}</code>
+                    {{ __('Saved value in settings') }}: <code>{{ $inventoryDifferenceAccountValue }}</code>
                     <br>
-                    يرجى التحقق من أن هذا الكود أو المعرف موجود في جدول الحسابات (AccHead) وغير محذوف.
+                    {{ __('Please verify this code/ID exists in the accounts table (AccHead) and is not deleted.') }}
                 </small>
             @else
                 <br>
                 <small>
-                    يرجى تحديد قيمة للمفتاح <code>show_inventory_difference_account</code> في الإعدادات العامة.
+                    {{ __('Please set value for key') }} <code>show_inventory_difference_account</code>
+                    {{ __('in general settings.') }}
                 </small>
             @endif
         </div>
@@ -148,13 +146,13 @@
                     <thead class="table-light">
                         <tr class="text-center">
                             <th>#</th>
-                            <th>اسم الصنف</th>
-                            <th>التكلفة</th>
-                            <th>الرصيد الدفتري</th>
-                            <th>الكمية الفعلية (الجرد)</th>
-                            <th>الفرق (الكمية)</th>
-                            <th>نوع الفرق</th>
-                            <th>قيمة الفرق</th>
+                            <th>{{ __('Item Name') }}</th>
+                            <th>{{ __('Cost') }}</th>
+                            <th>{{ __('Book Balance') }}</th>
+                            <th>{{ __('Actual Quantity (Inventory)') }}</th>
+                            <th>{{ __('Quantity Difference') }}</th>
+                            <th>{{ __('Difference Type') }}</th>
+                            <th>{{ __('Difference Value') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -162,16 +160,13 @@
                             <tr
                                 class="{{ $data['discrepancy'] < 0 ? 'table-danger' : ($data['discrepancy'] > 0 ? 'table-info' : '') }}">
                                 <td class="text-center">{{ $index + 1 }}</td>
-                                {{-- CORRECTED --}}
-                                <td class="text-center">{{ $data['item_name'] }}</td>
+                                <td>{{ $data['item_name'] }}</td>
                                 <td class="text-center">{{ number_format($data['item_cost']) }}</td>
                                 <td class="text-center">
                                     {{ number_format($data['system_quantity']) }}
-                                    {{-- CORRECTED --}}
                                     <br><small>{{ $data['main_unit_name'] }}</small>
                                 </td>
                                 <td style="width: 150px;">
-                                    {{-- CORRECTED --}}
                                     <input type="number"
                                         wire:model.live.debounce.500ms="quantities.{{ $data['item_id'] }}"
                                         class="form-control form-control-sm text-center" step="any">
@@ -199,9 +194,9 @@
                             <tr>
                                 <td colspan="8" class="text-center py-4">
                                     @if (!$selectedWarehouse)
-                                        الرجاء اختيار مخزن لعرض الأصناف
+                                        {{ __('Please select a warehouse to display items') }}
                                     @else
-                                        لا توجد أصناف لعرضها
+                                        {{ __('No items to display') }}
                                     @endif
                                 </td>
                             </tr>
@@ -210,7 +205,7 @@
                 </table>
             </div>
 
-            {{-- ملخص القيم المالية المحسن --}}
+            {{-- Enhanced Financial Summary --}}
             @if (count($inventoryData) > 0)
                 @php
                     $summary = collect($inventoryData);
@@ -223,8 +218,8 @@
                     <div class="col-md-3">
                         <div class="card bg-info text-white">
                             <div class="card-body text-center">
-                                <i class="ri-arrow-up-line fs-2"></i>
-                                <h6 class="mt-2">إجمالي قيمة الزيادات</h6>
+                                <i class="fas fa-arrow-up fs-2"></i>
+                                <h6 class="mt-2">{{ __('Total Increase Value') }}</h6>
                                 <h4>{{ number_format($totalIncreaseValue) }}</h4>
                             </div>
                         </div>
@@ -232,8 +227,8 @@
                     <div class="col-md-3">
                         <div class="card bg-danger text-white">
                             <div class="card-body text-center">
-                                <i class="ri-arrow-down-line fs-2"></i>
-                                <h6 class="mt-2">إجمالي قيمة النقص</h6>
+                                <i class="fas fa-arrow-down fs-2"></i>
+                                <h6 class="mt-2">{{ __('Total Decrease Value') }}</h6>
                                 <h4>{{ number_format($totalDecreaseValue) }}</h4>
                             </div>
                         </div>
@@ -241,8 +236,8 @@
                     <div class="col-md-3">
                         <div class="card {{ $netDifference >= 0 ? 'bg-success' : 'bg-warning' }} text-white">
                             <div class="card-body text-center">
-                                <i class="ri-calculator-line fs-2"></i>
-                                <h6 class="mt-2">صافي الفرق</h6>
+                                <i class="fas fa-calculator fs-2"></i>
+                                <h6 class="mt-2">{{ __('Net Difference') }}</h6>
                                 <h4>{{ number_format($netDifference) }}</h4>
                             </div>
                         </div>
@@ -250,23 +245,23 @@
                     <div class="col-md-3">
                         <div class="card bg-secondary text-white">
                             <div class="card-body text-center">
-                                <i class="ri-account-circle-line fs-2"></i>
-                                <h6 class="mt-2">حساب الفروقات</h6>
-                                <small>{{ $inventoryDifferenceAccount ? 'محدد' : 'غير محدد' }}</small>
+                                <i class="fas fa-users fs-2"></i>
+                                <h6 class="mt-2">{{ __('Difference Account') }}</h6>
+                                <small>{{ $inventoryDifferenceAccount ? __('Set') : __('Not Set') }}</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- تفاصيل إضافية للفروقات --}}
+                {{-- Unsaved Changes Warning --}}
                 @if ($hasUnsavedChanges)
                     <div class="alert alert-warning mt-3">
-                        <i class="ri-information-line"></i>
-                        يوجد تغييرات غير محفوظة. انقر على "تحديث الأرصدة وتطبيق التسوية" لحفظ التغييرات.
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ __('There are unsaved changes. Click "Update Balances & Apply Adjustment" to save changes.') }}
                     </div>
                 @endif
 
-                {{-- جدول ملخص بالأصناف التي بها فروقات فقط --}}
+                {{-- Items Needing Adjustment Summary Table --}}
                 @php
                     $itemsWithDiscrepancies = collect($inventoryData)->where('discrepancy', '!=', 0);
                 @endphp
@@ -275,8 +270,9 @@
                     <div class="card mt-4">
                         <div class="card-header">
                             <h6 class="card-title mb-0">
-                                <i class="ri-alert-line text-warning"></i>
-                                الأصناف التي تحتاج تسوية ({{ $itemsWithDiscrepancies->count() }} صنف)
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                {{ __('Items Needing Adjustment') }} ({{ $itemsWithDiscrepancies->count() }}
+                                {{ __('Item(s)') }})
                             </h6>
                         </div>
                         <div class="card-body">
@@ -284,17 +280,16 @@
                                 <table class="table table-sm">
                                     <thead>
                                         <tr class="text-center">
-                                            <th>الصنف</th>
-                                            <th>الكمية الدفترية</th>
-                                            <th>الكمية الفعلية</th>
-                                            <th>الفرق</th>
-                                            <th>القيمة</th>
+                                            <th>{{ __('Item') }}</th>
+                                            <th>{{ __('Book Quantity') }}</th>
+                                            <th>{{ __('Actual Quantity') }}</th>
+                                            <th>{{ __('Difference') }}</th>
+                                            <th>{{ __('Value') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($itemsWithDiscrepancies as $item)
                                             <tr class="text-center">
-                                                {{-- CORRECTED --}}
                                                 <td>{{ $item['item_name'] }}</td>
                                                 <td>{{ number_format($item['system_quantity']) }}</td>
                                                 <td>{{ number_format($item['actual_quantity']) }}</td>
@@ -314,7 +309,6 @@
                         </div>
                     </div>
                 @endif
-
             @endif
         </div>
     </div>

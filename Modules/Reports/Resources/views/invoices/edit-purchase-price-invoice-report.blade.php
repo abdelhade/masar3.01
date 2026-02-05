@@ -3,12 +3,13 @@
 @section('sidebar')
     @include('components.sidebar.purchases-invoices')
 @endsection
+
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('الفواتير'),
+        'title' => __('Invoices'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('تعديل سعر البيع لاصناف الفاتوره ')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Edit Selling Price for Invoice Items')],
         ],
     ])
     <br>

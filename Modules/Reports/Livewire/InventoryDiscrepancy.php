@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Reports;
+namespace Modules\Reports\Livewire;
 
 use App\Models\{Item, OperHead, JournalHead, JournalDetail, OperationItems};
 use Modules\Accounts\Models\AccHead;
@@ -567,6 +567,6 @@ class InventoryDiscrepancy extends Component
 
     public function render()
     {
-        return view('livewire.reports.inventory.inventory-discrepancy');
+        return view('reports::livewire.inventory.inventory-discrepancy');
     }
 }

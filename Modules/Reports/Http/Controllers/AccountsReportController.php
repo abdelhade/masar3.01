@@ -242,6 +242,10 @@ class AccountsReportController extends Controller
         // جلب الحسابات الرئيسية للمصروفات
         $expenseAccounts = $this->loadAccountsWithChildren('5');
 
+        // حساب totalWithChildren للإيرادات والمصروفات من journal_details (كل الفترة)
+        $this->calculateTotalWithChildren($revenueAccounts, null, false);
+        $this->calculateTotalWithChildren($expenseAccounts, null, false);
+
         // حساب الإيرادات من رصيد الحساب مباشرة (مثل الميزانية العمومية)
         $totalRevenue = $this->calculateTotalBalance($revenueAccounts);
 
@@ -255,7 +259,7 @@ class AccountsReportController extends Controller
         $toDate = null;
         $isTotalPeriod = true;
 
-        return view('reports::accounts-reports.general-profit-loss-report', compact(
+        return view('reports::accounts-reports.general-profit-loss-report-total', compact(
             'revenueAccounts',
             'expenseAccounts',
             'totalRevenue',
