@@ -87,7 +87,7 @@
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <div class="card bg-dark text-white shadow-sm h-100">
+                                <div class="card shadow-sm h-100">
                                     <div class="card-body text-center">
                                         <i class="fas fa-chart-bar fa-2x mb-2 opacity-75"></i>
                                         <h6 class="card-title fw-bold">{{ __('Average Invoice Value') }}</h6>
@@ -100,7 +100,7 @@
                         <!-- Data Table -->
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped table-hover">
-                                <thead class="table-dark">
+                                <thead>
                                     <tr>
                                         <th class="text-center">{{ __('Date') }}</th>
                                         <th class="text-center">{{ __('Invoice Number') }}</th>

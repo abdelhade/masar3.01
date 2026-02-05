@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ReportController;
 use Modules\Reports\Http\Controllers\GeneralReportController;
+use Modules\Reports\Http\Controllers\ItemReportController;
+use Modules\Reports\Http\Controllers\InventoryReportController;
 
 Route::middleware(['auth'])->group(function () {
     // محلل العمل اليومي
@@ -37,15 +39,15 @@ Route::middleware(['auth'])->group(function () {
             ->name('reports.get-items-max-min-quantity');
 
         // تقرير الأصناف غير النشطة
-        Route::get('reports/items/inactive', [GeneralReportController::class, 'inactiveItemsReport'])
+        Route::get('reports/items/inactive', [ItemReportController::class, 'inactiveItemsReport'])
             ->name('reports.items.inactive');
 
         // تقرير الأصناف حسب المخزن
-        Route::get('reports/items/with-stores', [GeneralReportController::class, 'itemsByStoreReport'])
+        Route::get('reports/items/with-stores', [ItemReportController::class, 'itemsWithStoresReport'])
             ->name('reports.items.with-stores');
 
         // مراقبة المخزون (Inventory Monitoring)
-        Route::get('reports/inventory-discrepancy', [GeneralReportController::class, 'inventoryDiscrepancyReport'])
+        Route::get('reports/inventory-discrepancy', [InventoryReportController::class, 'inventoryDiscrepancyReport'])
             ->name('reports.inventory-discrepancy-report');
     });
 });

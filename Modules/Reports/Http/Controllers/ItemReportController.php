@@ -58,13 +58,6 @@ class ItemReportController extends Controller
 
         return view('reports::items.idle-items', compact('items', 'days', 'balances'));
     }
-
-    public function itemInactiveReport()
-    {
-        $items = Item::Inactive()->paginate(50);
-        return view('reports::items.inactive-items', compact('items'));
-    }
-
     /**
      * تقرير المنتجات الأكثر تكلفة: أصناف مرتبة حسب التكلفة المتوسطة (الأعلى أولاً).
      */
@@ -104,5 +97,41 @@ class ItemReportController extends Controller
             ->groupBy('item_id');
         $items = Item::paginate(50);
         return view('reports::items.items-stores-stock', compact('stores', 'items', 'balances'));
+    }
+
+    public function inactiveItemsReport()
+    {
+        // Get filters from request
+        $search = request('search');
+        $warehouseId = request('warehouse_id');
+
+        // Build query for inactive items
+        $query = \App\Models\Item::inactive()->notDeleted();
+
+        // Apply search filter (by name or code)
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply warehouse filter if needed
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+
+        // Get paginated results
+        $items = $query->orderBy('updated_at', 'desc')
+            ->paginate(100);
+
+        // Get warehouses for filter dropdown (warehouses are AccHead records with code starting with 1104)
+        $warehouses = AccHead::where('code', 'like', '1104%')
+            ->where('is_basic', 0)
+            ->where('is_stock', 1)
+            ->orderBy('aname', 'asc')
+            ->get();
+
+        return view('reports::inventory.inactive-items-report', compact('items', 'warehouses'));
     }
 }

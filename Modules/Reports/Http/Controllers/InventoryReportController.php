@@ -269,7 +269,7 @@ class InventoryReportController extends Controller
             return view('reports::inventory.prices-compare-report', [
                 'items' => [],
                 'suppliers' => [],
-                'message' => 'لا توجد عروض أسعار متاحة'
+                'message' => __(' No price data available to compare.')
             ]);
         }
 

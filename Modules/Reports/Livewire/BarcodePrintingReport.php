@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Reports;
+namespace Modules\Reports\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -224,7 +224,7 @@ class BarcodePrintingReport extends Component
 
     public function render()
     {
-        return view('livewire.reports.barcode-printing-report', [
+        return view('reports::livewire.barcode-printing-report', [
             'items' => $this->items,
             'barcodes' => $this->barcodes,
             'totalBarcodes' => $this->totalBarcodes,

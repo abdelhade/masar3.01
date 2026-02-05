@@ -4,10 +4,12 @@ namespace Modules\Inquiries\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Modules\HR\Models\City;
+use Modules\HR\Models\Town;
+use Modules\HR\Models\State;
 use Livewire\WithFileUploads;
+use Modules\HR\Models\Country;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Models\{City, Town, Client};
 use Illuminate\Support\Facades\Auth;
 use Modules\Inquiries\Models\Contact;
 use Modules\CRM\Models\ClientCategory;
@@ -768,11 +770,11 @@ class EditInquiry extends Component
 
         try {
             $emirate = $this->extractEmirateFromAddress($this->toLocation) ?: 'Abu Dhabi';
-            $country = \App\Models\Country::firstOrCreate(
+            $country = Country::firstOrCreate(
                 ['title' => 'United Arab Emirates'],
                 ['title' => 'United Arab Emirates']
             );
-            $state = \App\Models\State::firstOrCreate(
+            $state = State::firstOrCreate(
                 ['title' => 'United Arab Emirates', 'country_id' => $country->id],
                 ['title' => 'United Arab Emirates', 'country_id' => $country->id]
             );

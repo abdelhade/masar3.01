@@ -79,7 +79,7 @@
 
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover">
-                        <thead class="table-dark">
+                        <thead>
                             <tr>
                                 <th class="text-center">{{ __('Date') }}</th>
                                 <th class="text-center">{{ __('Invoice Number') }}</th>

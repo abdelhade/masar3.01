@@ -84,7 +84,7 @@
                 <!-- الجدول -->
                 <div class="table-responsive">
                     <table id="salesRepTable" class="table table-bordered table-striped table-hover">
-                        <thead class="table-dark">
+                        <thead>
                             <tr>
                                 <th>#</th>
                                 <th>{{ __('Representative Code') }}</th>

@@ -8,7 +8,7 @@
     @include('components.breadcrumb', [
         'title' => __('Items Max Min Quantity'),
         'items' => [
-            ['label' => __(__('{{ __('Home') }}')), 'url' => route('admin.dashboard')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
             ['label' => __('Items Max Min Quantity')],
         ],
     ])

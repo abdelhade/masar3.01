@@ -35,6 +35,7 @@ Route::get('/locale/{locale}', function (string $locale) {
 
 // Admin Dashboard
 use App\Http\Controllers\DashboardController;
+
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.dashboard');
 
 Route::get('/', function () {
@@ -144,9 +145,7 @@ Route::middleware(['auth'])->group(function () {
 
     require __DIR__ . '/modules/magicals.php';
     require __DIR__ . '/modules/cheques.php';
-    require __DIR__ . '/modules/invoice-reports.php';
     require __DIR__ . '/modules/reports.php';
-
 });
 
 require __DIR__ . '/auth.php';
