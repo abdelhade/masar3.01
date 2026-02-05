@@ -376,5 +376,17 @@
     "Grand Total": "الإجمالي الكلي",
     "Average Duration (days)": "متوسط المدة (يوم)",
     "Days": "الأيام",
-    "Unspecified": "غير محدد"
+    "Unspecified": "غير محدد",
+    "Add": "إضافة",
+    "Search in": "البحث في",
+    "Edit Value": "تعديل القيمة",
+    "Add New Value": "إضافة قيمة جديدة",
+    "Enter value": "أدخل القيمة",
+    "Delete": "حذف",
+    "Are you sure you want to delete this value?": "هل أنت متأكد من حذف هذه القيمة؟",
+    "Variable Name": "اسم المتغير",
+    "No Values": "لا توجد قيم",
+    "No values have been added for this variable yet": "لم يتم إضافة أي قيم لهذا المتغير بعد",
+    "Add First Value": "إضافة أول قيمة",
+    "Loading...": "جاري التحميل..."
 }
