@@ -338,7 +338,7 @@
                                 <span>{{ __('Items List With Min Max') }}</span>
                             </a>
 
-                            <a href="{{ route('reports.items.inactive') }}" class="report-link">
+                            <a href="{{ route('reports.inactive-items') }}" class="report-link">
                                 <i class="fas fa-clipboard-list"></i>
                                 <span>{{ __('Inactive Items Report') }}</span>
                             </a>

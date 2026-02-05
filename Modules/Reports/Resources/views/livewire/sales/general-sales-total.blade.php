@@ -45,9 +45,7 @@ new class extends Component {
 
     public function getSalesTotalsProperty()
     {
-        $query = DB::table('operhead')
-            ->join('operation_items', 'operhead.id', '=', 'operation_items.pro_id')
-            ->where('operhead.pro_type', 10);
+        $query = DB::table('operhead')->join('operation_items', 'operhead.id', '=', 'operation_items.pro_id')->where('operhead.pro_type', 10);
 
         if ($this->fromDate) {
             $query->whereDate('operhead.pro_date', '>=', $this->fromDate);
@@ -57,19 +55,24 @@ new class extends Component {
         }
 
         if ($this->groupBy === 'day') {
-            $salesTotals = $query->selectRaw('
+            $salesTotals = $query
+                ->selectRaw(
+                    '
                 DATE(operhead.pro_date) as period_name,
                 COUNT(DISTINCT operhead.id) as invoices_count,
                 SUM(operation_items.qty_out) as total_quantity,
                 SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
                 SUM(operhead.fat_disc) as total_discount,
                 SUM(operhead.fat_net) as net_sales
-            ')
+            ',
+                )
                 ->groupBy(DB::raw('DATE(operhead.pro_date)'))
                 ->orderBy(DB::raw('DATE(operhead.pro_date)'), 'desc')
                 ->paginate(50);
         } elseif ($this->groupBy === 'week') {
-            $salesTotals = $query->selectRaw('
+            $salesTotals = $query
+                ->selectRaw(
+                    '
                 YEAR(operhead.pro_date) as year,
                 WEEK(operhead.pro_date, 1) as week,
                 CONCAT(YEAR(operhead.pro_date), "-W", LPAD(WEEK(operhead.pro_date, 1), 2, "0")) as period_name,
@@ -78,17 +81,16 @@ new class extends Component {
                 SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
                 SUM(operhead.fat_disc) as total_discount,
                 SUM(operhead.fat_net) as net_sales
-            ')
-                ->groupBy(
-                    DB::raw('YEAR(operhead.pro_date)'),
-                    DB::raw('WEEK(operhead.pro_date, 1)'),
-                    DB::raw('CONCAT(YEAR(operhead.pro_date), "-W", LPAD(WEEK(operhead.pro_date, 1), 2, "0"))')
+            ',
                 )
+                ->groupBy(DB::raw('YEAR(operhead.pro_date)'), DB::raw('WEEK(operhead.pro_date, 1)'), DB::raw('CONCAT(YEAR(operhead.pro_date), "-W", LPAD(WEEK(operhead.pro_date, 1), 2, "0"))'))
                 ->orderBy(DB::raw('YEAR(operhead.pro_date)'), 'desc')
                 ->orderBy(DB::raw('WEEK(operhead.pro_date, 1)'), 'desc')
                 ->paginate(50);
         } elseif ($this->groupBy === 'month') {
-            $salesTotals = $query->selectRaw('
+            $salesTotals = $query
+                ->selectRaw(
+                    '
                 YEAR(operhead.pro_date) as year,
                 MONTH(operhead.pro_date) as month,
                 CONCAT(YEAR(operhead.pro_date), "-", LPAD(MONTH(operhead.pro_date), 2, "0")) as period_name,
@@ -97,18 +99,17 @@ new class extends Component {
                 SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
                 SUM(operhead.fat_disc) as total_discount,
                 SUM(operhead.fat_net) as net_sales
-            ')
-                ->groupBy(
-                    DB::raw('YEAR(operhead.pro_date)'),
-                    DB::raw('MONTH(operhead.pro_date)'),
-                    DB::raw('CONCAT(YEAR(operhead.pro_date), "-", LPAD(MONTH(operhead.pro_date), 2, "0"))')
+            ',
                 )
+                ->groupBy(DB::raw('YEAR(operhead.pro_date)'), DB::raw('MONTH(operhead.pro_date)'), DB::raw('CONCAT(YEAR(operhead.pro_date), "-", LPAD(MONTH(operhead.pro_date), 2, "0"))'))
                 ->orderBy(DB::raw('YEAR(operhead.pro_date)'), 'desc')
                 ->orderBy(DB::raw('MONTH(operhead.pro_date)'), 'desc')
                 ->paginate(50);
         } elseif ($this->groupBy === 'customer') {
-            $salesTotals = $query->join('acc_head', 'operhead.acc1', '=', 'acc_head.id')
-                ->selectRaw('
+            $salesTotals = $query
+                ->join('acc_head', 'operhead.acc1', '=', 'acc_head.id')
+                ->selectRaw(
+                    '
                     operhead.acc1 as customer_id,
                     acc_head.aname as customer_name,
                     acc_head.aname as period_name,
@@ -117,27 +118,27 @@ new class extends Component {
                     SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
                     SUM(operhead.fat_disc) as total_discount,
                     SUM(operhead.fat_net) as net_sales
-                ')
+                ',
+                )
                 ->groupBy('operhead.acc1', 'acc_head.aname')
                 ->orderBy('net_sales', 'desc')
                 ->paginate(50);
         } else {
-            $salesTotals = $query->selectRaw('
-                __('Total') as period_name,
-                COUNT(DISTINCT operhead.id) as invoices_count,
-                SUM(operation_items.qty_out) as total_quantity,
-                SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
-                SUM(operhead.fat_disc) as total_discount,
-                SUM(operhead.fat_net) as net_sales
-            ')
+            $salesTotals = $query
+                ->selectRaw(
+                    '   "Total" as period_name,
+        COUNT(DISTINCT operhead.id) as invoices_count,
+        SUM(operation_items.qty_out) as total_quantity,
+        SUM(operation_items.qty_out * operation_items.item_price) as total_sales,
+        SUM(operhead.fat_disc) as total_discount,
+        SUM(operhead.fat_net) as net_sales',
+                )
                 ->paginate(50);
         }
 
         // أضف متوسط الفاتورة لكل صف
         foreach ($salesTotals->getCollection() as $row) {
-            $row->average_invoice = $row->invoices_count > 0
-                ? $row->net_sales / $row->invoices_count
-                : 0;
+            $row->average_invoice = $row->invoices_count > 0 ? $row->net_sales / $row->invoices_count : 0;
         }
 
         return $salesTotals;
@@ -272,7 +273,7 @@ new class extends Component {
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-hover">
-                    <thead class="table-dark">
+                    <thead>
                         <tr>
                             <th class="text-center fw-bold">
                                 {{ $groupBy == 'customer' ? __('Customer') : __('Period') }}
@@ -350,7 +351,7 @@ new class extends Component {
             @endif
 
             <!-- Analytics Summary -->
-            @if ($salesTotals->count() > 0)
+            @if (isset($salesTotals) && $salesTotals->count() > 0)
                 <div class="row mt-4 g-3">
                     <div class="col-md-3">
                         <div class="alert alert-info shadow-sm">

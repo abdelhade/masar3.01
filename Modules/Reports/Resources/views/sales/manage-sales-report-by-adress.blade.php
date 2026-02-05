@@ -5,10 +5,10 @@
 @endsection
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __(__('{{ __('Sales Report By Address') }}')),
+        'title' => __('Sales Report By Address'),
         'items' => [
-            ['label' => __(__('{{ __('Home') }}')), 'url' => route('admin.dashboard')],
-            ['label' => __(__('{{ __('Sales Report By Address') }}'))],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Sales Report By Address')],
         ],
     ])
     <livewire:reports.sales.manage-sales-report-by-adress />

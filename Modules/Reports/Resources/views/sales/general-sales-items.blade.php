@@ -54,19 +54,13 @@
                                 <i class="fas fa-redo"></i> {{ __('Reset') }}
                             </a>
                         </div>
-                        <div class="col-md-2">
-                            <label>&nbsp;</label>
-                            <a href="{{ route('reports.sales.items.export') }}" class="btn btn-success form-control">
-                                <i class="fas fa-file-export"></i> {{ __('Export') }}
-                            </a>
-                        </div>
                     </div>
                 </form>
 
                 <!-- الجدول -->
                 <div class="table-responsive">
                     <table id="salesTable" class="table table-bordered table-striped table-hover">
-                        <thead class="table-dark">
+                        <thead>
                             <tr>
                                 <th>#</th>
                                 <th>{{ __('Code') }}</th>

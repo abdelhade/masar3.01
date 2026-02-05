@@ -380,4 +380,4 @@
             window.location.href = `/accounts/${accountId}/edit`;
         }
     </script>
-    @endsec
+@endsection

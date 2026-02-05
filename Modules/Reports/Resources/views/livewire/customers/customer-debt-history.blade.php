@@ -89,7 +89,7 @@ new class extends Component {
             <!-- Results Table -->
             <div class="table-responsive">
                 <table class="table table-striped table-bordered">
-                    <thead class="table-dark">
+                    <thead>
                         <tr>
                             <th class="text-center text-white">#</th>
                             <th class="text-white">{{ __('Customer Name') }}</th>
@@ -161,45 +161,38 @@ new class extends Component {
                             </tr>
                         @endforelse
                     </tbody>
-                    <tfoot class="table-dark">
+                    <tfoot>
                         <tr>
                             <th colspan="2" class="text-end text-white fw-bold">{{ __('Total') }}</th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(array_sum(array_map(fn($c) => $this->getDebt1to15($c->id), $this->customers->toArray())), 2) }}
-                            </th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(array_sum(array_map(fn($c) => $this->getDebt16to30($c->id), $this->customers->toArray())), 2) }}
-                            </th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(array_sum(array_map(fn($c) => $this->getDebt31to60($c->id), $this->customers->toArray())), 2) }}
-                            </th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(array_sum(array_map(fn($c) => $this->getDebt61to90($c->id), $this->customers->toArray())), 2) }}
-                            </th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(array_sum(array_map(fn($c) => $this->getDebt91to120($c->id), $this->customers->toArray())), 2) }}
-                            </th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(array_sum(array_map(fn($c) => $this->getDebtOver120($c->id), $this->customers->toArray())), 2) }}
-                            </th>
-                            <th class="text-end text-white fw-bold">
-                                {{ number_format(
-                                    array_sum(
-                                        array_map(
-                                            fn($c) => array_sum([
-                                                $this->getDebt1to15($c->id),
-                                                $this->getDebt16to30($c->id),
-                                                $this->getDebt31to60($c->id),
-                                                $this->getDebt61to90($c->id),
-                                                $this->getDebt91to120($c->id),
-                                                $this->getDebtOver120($c->id),
-                                            ]),
-                                            $this->customers->toArray(),
-                                        ),
-                                    ),
-                                    2,
-                                ) }}
-                            </th>
+                            @php
+                                // Calculate totals once in PHP to avoid repeating the logic in every cell
+                                $footerTotals = [
+                                    '1_15' => 0,
+                                    '16_30' => 0,
+                                    '31_60' => 0,
+                                    '61_90' => 0,
+                                    '91_120' => 0,
+                                    'over120' => 0,
+                                ];
+
+                                foreach ($this->customers as $customer) {
+                                    $footerTotals['1_15'] += $this->getDebt1to15($customer->id);
+                                    $footerTotals['16_30'] += $this->getDebt16to30($customer->id);
+                                    $footerTotals['31_60'] += $this->getDebt31to60($customer->id);
+                                    $footerTotals['61_90'] += $this->getDebt61to90($customer->id);
+                                    $footerTotals['91_120'] += $this->getDebt91to120($customer->id);
+                                    $footerTotals['over120'] += $this->getDebtOver120($customer->id);
+                                }
+                                $grandTotal = array_sum($footerTotals);
+                            @endphp
+
+                            <th class="text-end text-white">{{ number_format($footerTotals['1_15'], 2) }}</th>
+                            <th class="text-end text-white">{{ number_format($footerTotals['16_30'], 2) }}</th>
+                            <th class="text-end text-white">{{ number_format($footerTotals['31_60'], 2) }}</th>
+                            <th class="text-end text-white">{{ number_format($footerTotals['61_90'], 2) }}</th>
+                            <th class="text-end text-white">{{ number_format($footerTotals['91_120'], 2) }}</th>
+                            <th class="text-end text-white">{{ number_format($footerTotals['over120'], 2) }}</th>
+                            <th class="text-end text-white">{{ number_format($grandTotal, 2) }}</th>
                             <th></th>
                         </tr>
                     </tfoot>
