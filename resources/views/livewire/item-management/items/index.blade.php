@@ -15,8 +15,7 @@ use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use Modules\Accounts\Models\AccHead;
 
-new class extends Component
-{
+new class extends Component {
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
@@ -84,7 +83,7 @@ new class extends Component
     // Check if we're in a reports context
     public function isReportsPage(): bool
     {
-        $url = request()->fullUrl() ?? url()->current() ?? '';
+        $url = request()->fullUrl() ?? (url()->current() ?? '');
 
         return str_contains($url, 'reports');
     }
@@ -101,22 +100,15 @@ new class extends Component
         });
 
         $this->warehouses = Cache::remember('warehouses_1104', 3600, function () {
-            return AccHead::where('code', 'like', '1104%')
-                ->where('is_basic', 0)
-                ->orderBy('id')
-                ->get();
+            return AccHead::where('code', 'like', '1104%')->where('is_basic', 0)->orderBy('id')->get();
         });
 
         $this->groups = Cache::remember('note_groups', 3600, function () {
-            return NoteDetails::where('note_id', 1)
-                ->orderBy('id')
-                ->pluck('name', 'id');
+            return NoteDetails::where('note_id', 1)->orderBy('id')->pluck('name', 'id');
         });
 
         $this->categories = Cache::remember('note_categories', 3600, function () {
-            return NoteDetails::where('note_id', 2)
-                ->orderBy('id')
-                ->pluck('name', 'id');
+            return NoteDetails::where('note_id', 2)->orderBy('id')->pluck('name', 'id');
         });
 
         // Initialize note visibility - all notes visible by default
@@ -133,15 +125,11 @@ new class extends Component
     #[Computed]
     public function items()
     {
-        $queryService = new ItemsQueryService;
-        $items = $queryService->buildFilteredQuery($this->search, (int) $this->selectedGroup, (int) $this->selectedCategory)
-            ->paginate($this->perPage);
+        $queryService = new ItemsQueryService();
+        $items = $queryService->buildFilteredQuery($this->search, (int) $this->selectedGroup, (int) $this->selectedCategory)->paginate($this->perPage);
 
         // Load base quantities for all items in current page
-        $this->baseQuantities = $queryService->getBaseQuantitiesForItems(
-            $items->pluck('id')->all(),
-            (int) $this->selectedWarehouse
-        );
+        $this->baseQuantities = $queryService->getBaseQuantitiesForItems($items->pluck('id')->all(), (int) $this->selectedWarehouse);
 
         // Pre-calculate display data for all items in current page
         $this->prepareDisplayData($items);
@@ -152,7 +140,7 @@ new class extends Component
     protected function prepareDisplayData($items)
     {
         foreach ($items as $item) {
-            if (! isset($this->selectedUnit[$item->id])) {
+            if (!isset($this->selectedUnit[$item->id])) {
                 $defaultUnit = $item->units->sortBy('pivot.u_val')->first();
                 $this->selectedUnit[$item->id] = $defaultUnit ? $defaultUnit->id : null;
             }
@@ -160,61 +148,41 @@ new class extends Component
             // Prepare Alpine.js data for client-side calculations
             $itemId = $item->id;
             $baseQty = $this->baseQuantities[$itemId] ?? 0;
-            $this->displayItemData[$itemId] = ItemDataTransformer::getItemDataForAlpine(
-                $item,
-                (int) $this->selectedWarehouse,
-                $baseQty
-            );
+            $this->displayItemData[$itemId] = ItemDataTransformer::getItemDataForAlpine($item, (int) $this->selectedWarehouse, $baseQty);
         }
     }
 
     public function getTotalQuantityProperty()
     {
-        if (! $this->selectedPriceType) {
+        if (!$this->selectedPriceType) {
             return 0;
         }
 
-        $queryService = new ItemsQueryService;
+        $queryService = new ItemsQueryService();
 
-        return $queryService->getTotalQuantity(
-            $this->search,
-            (int) $this->selectedGroup,
-            (int) $this->selectedCategory,
-            (int) $this->selectedWarehouse
-        );
+        return $queryService->getTotalQuantity($this->search, (int) $this->selectedGroup, (int) $this->selectedCategory, (int) $this->selectedWarehouse);
     }
 
     public function getTotalAmountProperty()
     {
-        if (! $this->selectedPriceType) {
+        if (!$this->selectedPriceType) {
             return 0;
         }
 
-        $queryService = new ItemsQueryService;
+        $queryService = new ItemsQueryService();
 
-        return $queryService->getTotalAmount(
-            $this->search,
-            (int) $this->selectedGroup,
-            (int) $this->selectedCategory,
-            $this->selectedPriceType,
-            (int) $this->selectedWarehouse
-        );
+        return $queryService->getTotalAmount($this->search, (int) $this->selectedGroup, (int) $this->selectedCategory, $this->selectedPriceType, (int) $this->selectedWarehouse);
     }
 
     public function getTotalItemsProperty()
     {
-        if (! $this->selectedPriceType) {
+        if (!$this->selectedPriceType) {
             return 0;
         }
 
-        $queryService = new ItemsQueryService;
+        $queryService = new ItemsQueryService();
 
-        return $queryService->getTotalItems(
-            $this->search,
-            (int) $this->selectedGroup,
-            (int) $this->selectedCategory,
-            (int) $this->selectedWarehouse
-        );
+        return $queryService->getTotalItems($this->search, (int) $this->selectedGroup, (int) $this->selectedCategory, (int) $this->selectedWarehouse);
     }
 
     public function updatedSearch()
@@ -291,11 +259,7 @@ new class extends Component
             return;
         }
 
-        $prices = DB::table('item_prices')
-            ->whereIn('item_id', $itemIds)
-            ->where('price_id', $priceId)
-            ->get()
-            ->keyBy('item_id');
+        $prices = DB::table('item_prices')->whereIn('item_id', $itemIds)->where('price_id', $priceId)->get()->keyBy('item_id');
 
         $this->loadedPriceData[$priceId] = $prices;
     }
@@ -318,11 +282,7 @@ new class extends Component
             return;
         }
 
-        $notes = DB::table('item_notes')
-            ->whereIn('item_id', $itemIds)
-            ->where('note_id', $noteId)
-            ->get()
-            ->keyBy('item_id');
+        $notes = DB::table('item_notes')->whereIn('item_id', $itemIds)->where('note_id', $noteId)->get()->keyBy('item_id');
 
         $this->loadedNoteData[$noteId] = $notes;
     }
@@ -402,7 +362,7 @@ new class extends Component
         $previousPrices = $this->visiblePrices;
         $this->visiblePrices = $prices;
         foreach ($prices as $priceId => $isVisible) {
-            if ($isVisible && ! ($previousPrices[$priceId] ?? false)) {
+            if ($isVisible && !($previousPrices[$priceId] ?? false)) {
                 // Newly visible - lazy load
                 $this->loadPriceColumn($priceId);
             }
@@ -412,7 +372,7 @@ new class extends Component
         $previousNotes = $this->visibleNotes;
         $this->visibleNotes = $notes;
         foreach ($notes as $noteId => $isVisible) {
-            if ($isVisible && ! ($previousNotes[$noteId] ?? false)) {
+            if ($isVisible && !($previousNotes[$noteId] ?? false)) {
                 // Newly visible - lazy load
                 $this->loadNoteColumn($noteId);
             }
@@ -444,20 +404,20 @@ new class extends Component
     <div class="row">
         <div class="col-lg-12">
             @if (session()->has('success'))
-                <div class="alert alert-success font-hold fw-bold font-12 mt-2" x-data="{ show: true }"
-                    x-show="show" x-init="setTimeout(() => show = false, 3000)">
+                <div class="alert alert-success font-hold fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
+                    x-init="setTimeout(() => show = false, 3000)">
                     {{ session('success') }}
                 </div>
             @endif
             @if (session()->has('error'))
-                <div class="alert alert-danger font-hold fw-bold font-12 mt-2" x-data="{ show: true }"
-                    x-show="show" x-init="setTimeout(() => show = false, 3000)">
+                <div class="alert alert-danger font-hold fw-bold font-12 mt-2" x-data="{ show: true }" x-show="show"
+                    x-init="setTimeout(() => show = false, 3000)">
                     {{ session('error') }}
                 </div>
             @endif
             <div class="card">
                 {{-- card title --}}
-                <div class="text-center bg-dark text-white py-3">
+                <div class="text-center py-3">
                     <h5 class="card-title font-hold fw-bold font-20 text-white">
                         {{ __('items.items_list_with_balances') }}
                     </h5>
@@ -468,10 +428,9 @@ new class extends Component
                 <div class="card-header">
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                         {{-- Primary Action Button --}}
-                        {{-- @if(Auth::user() && Auth::user()->hasDirectPermission('create items')) --}}
+                        {{-- @if (Auth::user() && Auth::user()->hasDirectPermission('create items')) --}}
                         @can('create items')
-                            <a href="{{ route('items.create') }}"
-                                class="btn btn-main btn-lg font-hold fw-bold mt-4"
+                            <a href="{{ route('items.create') }}" class="btn btn-main btn-lg font-hold fw-bold mt-4"
                                 style="min-height: 50px;">
                                 <i class="fas fa-plus me-2"></i>
                                 {{ __('items.add_new_item') }}
@@ -481,24 +440,25 @@ new class extends Component
 
                         {{-- Print Button --}}
                         @can('print items')
-                        <div class="mt-4">
-                            <a href="{{ route('items.print', [
-                                'search' => $search,
-                                'warehouse' => $selectedWarehouse,
-                                'group' => $selectedGroup,
-                                'category' => $selectedCategory,
-                                'priceType' => $selectedPriceType
-                            ]) }}" target="_blank" class="btn btn-main btn-lg font-hold fw-bold">
-                                <i class="fas fa-print me-2"></i>
-                                {{ __('items.print_list') }}
-                            </a>
-                        </div>
+                            <div class="mt-4">
+                                <a href="{{ route('items.print', [
+                                    'search' => $search,
+                                    'warehouse' => $selectedWarehouse,
+                                    'group' => $selectedGroup,
+                                    'category' => $selectedCategory,
+                                    'priceType' => $selectedPriceType,
+                                ]) }}"
+                                    target="_blank" class="btn btn-main btn-lg font-hold fw-bold">
+                                    <i class="fas fa-print me-2"></i>
+                                    {{ __('items.print_list') }}
+                                </a>
+                            </div>
                         @endcan
 
                         {{-- Column Visibility Button --}}
                         <div class="mt-4">
-                            <button type="button" class="btn btn-main btn-lg font-hold fw-bold"
-                                    data-bs-toggle="modal" data-bs-target="#columnVisibilityModal">
+                            <button type="button" class="btn btn-main btn-lg font-hold fw-bold" data-bs-toggle="modal"
+                                data-bs-target="#columnVisibilityModal">
                                 <i class="fas fa-columns me-2"></i>
                                 {{ __('items.display_options') }}
                             </button>
@@ -506,22 +466,18 @@ new class extends Component
 
                         {{-- Search and Filter Group --}}
                         <div class="d-flex flex-grow-1 flex-wrap align-items-center justify-content-end gap-2"
-                            style="min-width: 300px;"
-                            x-data="filtersComponent()"
-                            x-init="
-                                searchValue = @js($this->search);
-                                warehouseValue = @js($this->selectedWarehouse);
-                                groupValue = @js($this->selectedGroup);
-                                categoryValue = @js($this->selectedCategory);
-                            ">
+                            style="min-width: 300px;" x-data="filtersComponent()" x-init="searchValue = @js($this->search);
+                            warehouseValue = @js($this->selectedWarehouse);
+                            groupValue = @js($this->selectedGroup);
+                            categoryValue = @js($this->selectedCategory);">
                             {{-- Clear Filters Button --}}
                             <div class="d-flex align-items-end mt-4">
                                 <button type="button" @click="clearFilters()" style="min-height: 50px;"
-                                    class="btn btn-outline-info btn-lg font-hold fw-bold"
-                                    wire:loading.attr="disabled" wire:target="clearFilters">
+                                    class="btn btn-outline-info btn-lg font-hold fw-bold" wire:loading.attr="disabled"
+                                    wire:target="clearFilters">
                                     <span wire:loading.remove wire:target="clearFilters">
-                                    <i class="fas fa-times me-1"></i>
-                                    {{ __('common.clear_filters') }}
+                                        <i class="fas fa-times me-1"></i>
+                                        {{ __('common.clear_filters') }}
                                     </span>
                                     <span wire:loading wire:target="clearFilters">
                                         <div class="spinner-border spinner-border-sm me-1" role="status">
@@ -533,36 +489,41 @@ new class extends Component
                             </div>
                             {{-- Search Input --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('common.search') }}:</label>
+                                <label
+                                    class="form-label font-hold fw-bold font-12 mb-1">{{ __('common.search') }}:</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-search" wire:loading.remove wire:target="search"></i>
-                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="search">
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading
+                                            wire:target="search">
                                             <span class="visually-hidden">{{ __('common.loading') }}</span>
                                         </div>
                                     </span>
                                     <input type="text" x-model="searchValue" @input="updateSearch()"
                                         class="form-control font-hold"
-                                        placeholder="{{ __('items.search_placeholder') }}"
-                                        wire:loading.attr="disabled" wire:target="search">
+                                        placeholder="{{ __('items.search_placeholder') }}" wire:loading.attr="disabled"
+                                        wire:target="search">
                                 </div>
                             </div>
 
                             {{-- Warehouse Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.warehouse') }}:</label>
+                                <label
+                                    class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.warehouse') }}:</label>
                                 <div class="input-group">
                                     <select x-model="warehouseValue" @change="updateWarehouse()"
-                                        class="form-select font-hold fw-bold font-14"
-                                        wire:loading.attr="disabled" wire:target="selectedWarehouse">
-                                    <option value="">{{ __('items.all_warehouses') }}</option>
-                                    @foreach ($warehouses as $warehouse)
-                                        <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
-                                    @endforeach
-                                </select>
+                                        class="form-select font-hold fw-bold font-14" wire:loading.attr="disabled"
+                                        wire:target="selectedWarehouse">
+                                        <option value="">{{ __('items.all_warehouses') }}</option>
+                                        @foreach ($warehouses as $warehouse)
+                                            <option value="{{ $warehouse->id }}">{{ $warehouse->aname }}</option>
+                                        @endforeach
+                                    </select>
                                     <span class="input-group-text">
-                                        <i class="fas fa-warehouse" wire:loading.remove wire:target="selectedWarehouse"></i>
-                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedWarehouse">
+                                        <i class="fas fa-warehouse" wire:loading.remove
+                                            wire:target="selectedWarehouse"></i>
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading
+                                            wire:target="selectedWarehouse">
                                             <span class="visually-hidden">{{ __('common.loading') }}</span>
                                         </div>
                                     </span>
@@ -571,19 +532,22 @@ new class extends Component
 
                             {{-- Group Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.group') }}:</label>
+                                <label
+                                    class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.group') }}:</label>
                                 <div class="input-group">
                                     <select x-model="groupValue" @change="updateGroup()"
-                                        class="form-select font-hold fw-bold font-14"
-                                        wire:loading.attr="disabled" wire:target="selectedGroup">
-                                    <option value="">{{ __('items.all_groups') }}</option>
-                                    @foreach ($groups as $id => $name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
+                                        class="form-select font-hold fw-bold font-14" wire:loading.attr="disabled"
+                                        wire:target="selectedGroup">
+                                        <option value="">{{ __('items.all_groups') }}</option>
+                                        @foreach ($groups as $id => $name)
+                                            <option value="{{ $id }}">{{ $name }}</option>
+                                        @endforeach
+                                    </select>
                                     <span class="input-group-text">
-                                        <i class="fas fa-layer-group" wire:loading.remove wire:target="selectedGroup"></i>
-                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedGroup">
+                                        <i class="fas fa-layer-group" wire:loading.remove
+                                            wire:target="selectedGroup"></i>
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading
+                                            wire:target="selectedGroup">
                                             <span class="visually-hidden">{{ __('common.loading') }}</span>
                                         </div>
                                     </span>
@@ -592,19 +556,21 @@ new class extends Component
 
                             {{-- Category Filter --}}
                             <div class="flex-grow-1">
-                                <label class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.category') }}:</label>
+                                <label
+                                    class="form-label font-hold fw-bold font-12 mb-1">{{ __('items.category') }}:</label>
                                 <div class="input-group">
                                     <select x-model="categoryValue" @change="updateCategory()"
-                                        class="form-select font-hold fw-bold font-14"
-                                        wire:loading.attr="disabled" wire:target="selectedCategory">
-                                    <option value="">{{ __('items.all_categories') }}</option>
-                                    @foreach ($categories as $id => $name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
+                                        class="form-select font-hold fw-bold font-14" wire:loading.attr="disabled"
+                                        wire:target="selectedCategory">
+                                        <option value="">{{ __('items.all_categories') }}</option>
+                                        @foreach ($categories as $id => $name)
+                                            <option value="{{ $id }}">{{ $name }}</option>
+                                        @endforeach
+                                    </select>
                                     <span class="input-group-text">
                                         <i class="fas fa-tags" wire:loading.remove wire:target="selectedCategory"></i>
-                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="selectedCategory">
+                                        <div class="spinner-border spinner-border-sm" role="status" wire:loading
+                                            wire:target="selectedCategory">
                                             <span class="visually-hidden">{{ __('common.loading') }}</span>
                                         </div>
                                     </span>
@@ -625,14 +591,15 @@ new class extends Component
                             <div class="input-group" style="width: auto;">
                                 <select wire:model.live="perPage" class="form-select form-select-sm font-hold fw-bold"
                                     wire:loading.attr="disabled" wire:target="perPage">
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                                <option value="200">200</option>
-                            </select>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
                                 <span class="input-group-text">
                                     <i class="fas fa-list" wire:loading.remove wire:target="perPage"></i>
-                                    <div class="spinner-border spinner-border-sm" role="status" wire:loading wire:target="perPage">
+                                    <div class="spinner-border spinner-border-sm" role="status" wire:loading
+                                        wire:target="perPage">
                                         <span class="visually-hidden">{{ __('common.loading') }}</span>
                                     </div>
                                 </span>
@@ -641,27 +608,27 @@ new class extends Component
                         </div>
                         <div class="font-hold fw-bold text-muted">
                             <i class="fas fa-list me-1"></i>
-                            {{ __('items.total_results') }}: <span class="text-primary">{{ $this->items->total() }}</span>
+                            {{ __('items.total_results') }}: <span
+                                class="text-primary">{{ $this->items->total() }}</span>
                         </div>
                     </div>
 
                     {{-- Active Filters Display --}}
                     @if ($search || $selectedWarehouse || $selectedGroup || $selectedCategory)
-                        <div class="alert alert-info mb-3"
-                             x-data="{ show: true }"
-                             x-show="show"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 transform translate-y-2"
-                             x-transition:enter-end="opacity-100 transform translate-y-0"
-                             x-transition:leave="transition ease-in duration-200"
-                             x-transition:leave-start="opacity-100 transform translate-y-0"
-                             x-transition:leave-end="opacity-0 transform translate-y-2">
+                        <div class="alert alert-info mb-3" x-data="{ show: true }" x-show="show"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 transform translate-y-2"
+                            x-transition:enter-end="opacity-100 transform translate-y-0"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 transform translate-y-0"
+                            x-transition:leave-end="opacity-0 transform translate-y-2">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="font-hold fw-bold">
                                     <i class="fas fa-filter me-2"></i>
                                     {{ __('items.active_filters') }}:
                                     @if ($search)
-                                        <span class="badge bg-primary me-1">{{ __('common.search') }}: {{ $search }}</span>
+                                        <span class="badge bg-primary me-1">{{ __('common.search') }}:
+                                            {{ $search }}</span>
                                     @endif
                                     @if ($selectedWarehouse)
                                         @php $warehouse = $warehouses->firstWhere('id', $selectedWarehouse); @endphp
@@ -703,7 +670,7 @@ new class extends Component
                                     background-color: #f8f9fa !important;
                                     z-index: 10;
                                     border-bottom: 2px solid #dee2e6;
-                                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                                 }
 
                                 /* Ensure proper stacking context */
@@ -714,48 +681,51 @@ new class extends Component
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th class="font-hold text-center fw-bold">#</th>
-                                    @if($visibleColumns['image'])
+                                    @if ($visibleColumns['image'])
                                         <th class="font-hold text-center fw-bold">{{ __('items.image') }}</th>
                                     @endif
-                                    @if($visibleColumns['code'])
+                                    @if ($visibleColumns['code'])
                                         <th class="font-hold text-center fw-bold">{{ __('common.code') }}</th>
                                     @endif
-                                    @if($visibleColumns['name'])
+                                    @if ($visibleColumns['name'])
                                         <th class="font-hold text-center fw-bold">{{ __('common.name') }}</th>
                                     @endif
-                                    @if($visibleColumns['units'])
-                                        <th class="font-hold text-center fw-bold" style="min-width: 130px;">{{ __('items.units') }}</th>
+                                    @if ($visibleColumns['units'])
+                                        <th class="font-hold text-center fw-bold" style="min-width: 130px;">
+                                            {{ __('items.units') }}</th>
                                     @endif
-                                    @if($visibleColumns['quantity'])
-                                        <th class="font-hold text-center fw-bold" style="min-width: 100px;">{{ __('common.quantity') }}</th>
+                                    @if ($visibleColumns['quantity'])
+                                        <th class="font-hold text-center fw-bold" style="min-width: 100px;">
+                                            {{ __('common.quantity') }}</th>
                                     @endif
-                                    @if($visibleColumns['average_cost'])
+                                    @if ($visibleColumns['average_cost'])
                                         <th class="font-hold text-center fw-bold">{{ __('items.average_cost') }}</th>
                                     @endif
-                                    @if($visibleColumns['quantity_average_cost'])
-                                        <th class="font-hold text-center fw-bold">{{ __('items.quantity_average_cost') }}</th>
+                                    @if ($visibleColumns['quantity_average_cost'])
+                                        <th class="font-hold text-center fw-bold">
+                                            {{ __('items.quantity_average_cost') }}</th>
                                     @endif
-                                    @if($visibleColumns['last_cost'])
+                                    @if ($visibleColumns['last_cost'])
                                         <th class="font-hold text-center fw-bold">{{ __('items.last_cost') }}</th>
                                     @endif
-                                    @if($visibleColumns['quantity_cost'])
+                                    @if ($visibleColumns['quantity_cost'])
                                         <th class="font-hold text-center fw-bold">{{ __('items.quantity_cost') }}</th>
                                     @endif
                                     @foreach ($this->priceTypes as $priceId => $priceName)
-                                        @if(isset($visiblePrices[$priceId]) && $visiblePrices[$priceId])
+                                        @if (isset($visiblePrices[$priceId]) && $visiblePrices[$priceId])
                                             <th class="font-hold text-center fw-bold">{{ $priceName }}</th>
                                         @endif
                                     @endforeach
-                                    @if($visibleColumns['barcode'])
+                                    @if ($visibleColumns['barcode'])
                                         <th class="font-hold text-center fw-bold">{{ __('items.item_barcode') }}</th>
                                     @endif
                                     @foreach ($this->noteTypes as $noteId => $noteName)
-                                        @if(isset($visibleNotes[$noteId]) && $visibleNotes[$noteId])
+                                        @if (isset($visibleNotes[$noteId]) && $visibleNotes[$noteId])
                                             <th class="font-hold text-center fw-bold">{{ $noteName }}</th>
                                         @endif
                                     @endforeach
                                     @canany(['edit items', 'delete items'])
-                                        @if($visibleColumns['actions'])
+                                        @if ($visibleColumns['actions'])
                                             <th class="font-hold fw-bold">{{ __('common.actions') }}</th>
                                         @endif
                                     @endcanany
@@ -769,115 +739,125 @@ new class extends Component
                                         $selectedUnitId = $this->selectedUnit[$item->id] ?? null;
                                     @endphp
                                     @if (!empty($itemData))
-                                         <tr wire:key="item-{{ $item->id }}-{{ $selectedUnitId ?? 'no-unit' }}"
-                                             x-data="itemRow({{ json_encode($itemData) }}, {{ $selectedUnitId }})"
-                                             x-transition:enter="transition ease-out duration-200"
-                                             x-transition:enter-start="opacity-0 transform scale-95"
-                                             x-transition:enter-end="opacity-100 transform scale-100"
-                                             x-transition:leave="transition ease-in duration-150"
-                                             x-transition:leave-start="opacity-100 transform scale-100"
-                                             x-transition:leave-end="opacity-0 transform scale-95">
+                                        <tr wire:key="item-{{ $item->id }}-{{ $selectedUnitId ?? 'no-unit' }}"
+                                            x-data="itemRow({{ json_encode($itemData) }}, {{ $selectedUnitId }})"
+                                            x-transition:enter="transition ease-out duration-200"
+                                            x-transition:enter-start="opacity-0 transform scale-95"
+                                            x-transition:enter-end="opacity-100 transform scale-100"
+                                            x-transition:leave="transition ease-in duration-150"
+                                            x-transition:leave-start="opacity-100 transform scale-100"
+                                            x-transition:leave-end="opacity-0 transform scale-95">
                                             <td class="font-hold text-center fw-bold">{{ $loop->iteration }}</td>
 
-                                            @if($visibleColumns['image'])
+                                            @if ($visibleColumns['image'])
                                                 <td class="font-hold text-center">
                                                     @php
                                                         // Use eager loaded media first, fallback to getFirstMedia if not loaded
                                                         // This matches how images are saved in create-item.blade.php using toMediaCollection('item-thumbnail')
                                                         $thumbnail = null;
                                                         if ($item->relationLoaded('media')) {
-                                                            $thumbnail = $item->media->where('collection_name', 'item-thumbnail')->first();
+                                                            $thumbnail = $item->media
+                                                                ->where('collection_name', 'item-thumbnail')
+                                                                ->first();
                                                         }
                                                         // Fallback to getFirstMedia if eager loading didn't work
-                                                        if (!$thumbnail) {
-                                                            $thumbnail = $item->getFirstMedia('item-thumbnail');
+if (!$thumbnail) {
+    $thumbnail = $item->getFirstMedia('item-thumbnail');
                                                         }
                                                     @endphp
-                                                    @if($thumbnail)
+                                                    @if ($thumbnail)
                                                         @php
                                                             // Use Media Library's URL method which handles encoding
-                                                            // Same as create-item.blade.php: toMediaCollection('item-thumbnail')
-                                                            $thumbUrl = $thumbnail->getUrl('thumb');
-                                                            $previewUrl = $thumbnail->getUrl('preview');
+// Same as create-item.blade.php: toMediaCollection('item-thumbnail')
+$thumbUrl = $thumbnail->getUrl('thumb');
+$previewUrl = $thumbnail->getUrl('preview');
                                                         @endphp
-                                                        <img src="{{ $thumbUrl }}" 
-                                                             alt="{{ $item->name }}" 
-                                                             class="img-thumbnail"
-                                                             style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
-                                                             loading="lazy"
-                                                             onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                                             onclick="window.open('{{ $previewUrl }}', '_blank')">
-                                                        <div class="text-muted" style="width: 50px; height: 50px; display: none; align-items: center; justify-content: center; border: 1px solid #dee2e6; border-radius: 0.25rem;">
+                                                        <img src="{{ $thumbUrl }}" alt="{{ $item->name }}"
+                                                            class="img-thumbnail"
+                                                            style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                                                            loading="lazy"
+                                                            onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                                            onclick="window.open('{{ $previewUrl }}', '_blank')">
+                                                        <div class="text-muted"
+                                                            style="width: 50px; height: 50px; display: none; align-items: center; justify-content: center; border: 1px solid #dee2e6; border-radius: 0.25rem;">
                                                             <i class="fas fa-image fa-2x"></i>
                                                         </div>
                                                     @else
-                                                        <div class="text-muted" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; border-radius: 0.25rem;">
+                                                        <div class="text-muted"
+                                                            style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 1px solid #dee2e6; border-radius: 0.25rem;">
                                                             <i class="fas fa-image fa-2x"></i>
                                                         </div>
                                                     @endif
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['code'])
+                                            @if ($visibleColumns['code'])
                                                 <td class="font-hold text-center fw-bold" x-text="itemData.code"></td>
                                             @endif
 
-                                            @if($visibleColumns['name'])
+                                            @if ($visibleColumns['name'])
                                                 <td class="font-hold text-center fw-bold">
                                                     <span x-text="itemData.name"></span>
                                                     <a href="{{ route('item-movement', ['itemId' => $item->id]) }}">
-                                                        <i class="las la-eye fa-lg text-primary" title="{{ __('items.view_item_movements') }}"></i>
+                                                        <i class="las la-eye fa-lg text-primary"
+                                                            title="{{ __('items.view_item_movements') }}"></i>
                                                     </a>
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['units'])
+                                            @if ($visibleColumns['units'])
                                                 <td class="font-hold text-center fw-bold">
-                                                     <template x-if="Object.keys(itemData.units).length > 0">
-                                                         <div>
+                                                    <template x-if="Object.keys(itemData.units).length > 0">
+                                                        <div>
                                                             <select class="form-select font-hold fw-bold font-14"
-                                                                 x-model="selectedUnitId"
-                                                                style="min-width: 105px;">
-                                                                 <template x-for="[unitId, unit] in Object.entries(itemData.units)" :key="unitId">
-                                                                     <option :value="unitId" x-text="unit.name + ' [' + formatNumber(unit.u_val) + ']'"></option>
-                                                                 </template>
+                                                                x-model="selectedUnitId" style="min-width: 105px;">
+                                                                <template
+                                                                    x-for="[unitId, unit] in Object.entries(itemData.units)"
+                                                                    :key="unitId">
+                                                                    <option :value="unitId"
+                                                                        x-text="unit.name + ' [' + formatNumber(unit.u_val) + ']'">
+                                                                    </option>
+                                                                </template>
                                                             </select>
                                                         </div>
-                                                     </template>
+                                                    </template>
                                                     <template x-if="Object.keys(itemData.units).length === 0">
-                                                        <span class="font-hold fw-bold font-14">{{ __('items.no_units_found') }}</span>
+                                                        <span
+                                                            class="font-hold fw-bold font-14">{{ __('items.no_units_found') }}</span>
                                                     </template>
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['quantity'])
+                                            @if ($visibleColumns['quantity'])
                                                 <td class="text-center fw-bold">
                                                     <span x-text="formattedQuantity.integer"></span>
-                                                    <template x-if="formattedQuantity.remainder > 0 && formattedQuantity.unitName !== formattedQuantity.smallerUnitName">
-                                                        <span x-text="'[' + formattedQuantity.remainder + ' ' + formattedQuantity.smallerUnitName + ']'"></span>
+                                                    <template
+                                                        x-if="formattedQuantity.remainder > 0 && formattedQuantity.unitName !== formattedQuantity.smallerUnitName">
+                                                        <span
+                                                            x-text="'[' + formattedQuantity.remainder + ' ' + formattedQuantity.smallerUnitName + ']'"></span>
                                                     </template>
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['average_cost'])
+                                            @if ($visibleColumns['average_cost'])
                                                 <td class="font-hold text-center fw-bold">
                                                     <span x-text="formatCurrency(unitAverageCost)"></span>
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['quantity_average_cost'])
+                                            @if ($visibleColumns['quantity_average_cost'])
                                                 <td class="font-hold text-center fw-bold">
                                                     <span x-text="formatCurrency(quantityAverageCost)"></span>
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['last_cost'])
+                                            @if ($visibleColumns['last_cost'])
                                                 <td class="text-center fw-bold">
                                                     <span x-text="formatCurrency(unitCostPrice)"></span>
                                                 </td>
                                             @endif
 
-                                            @if($visibleColumns['quantity_cost'])
+                                            @if ($visibleColumns['quantity_cost'])
                                                 <td class="text-center fw-bold">
                                                     <span x-text="formatCurrency(quantityCost)"></span>
                                                 </td>
@@ -885,40 +865,43 @@ new class extends Component
 
                                             {{-- Prices --}}
                                             @foreach ($this->priceTypes as $priceTypeId => $priceTypeName)
-                                                @if(isset($visiblePrices[$priceTypeId]) && $visiblePrices[$priceTypeId])
+                                                @if (isset($visiblePrices[$priceTypeId]) && $visiblePrices[$priceTypeId])
                                                     <td class="font-hold text-center fw-bold">
                                                         <span x-text="getPriceForType({{ $priceTypeId }})"></span>
                                                     </td>
                                                 @endif
                                             @endforeach
 
-                                            @if($visibleColumns['barcode'])
+                                            @if ($visibleColumns['barcode'])
                                                 <td class="font-hold fw-bold text-center">
                                                     <template x-if="currentBarcodes.length > 0">
-                                                        <span class="font-hold fw-bold font-14" x-text="currentBarcodes.map(b => b.barcode).join(', ')"></span>
+                                                        <span class="font-hold fw-bold font-14"
+                                                            x-text="currentBarcodes.map(b => b.barcode).join(', ')"></span>
                                                     </template>
                                                     <template x-if="currentBarcodes.length === 0">
-                                                        <span class="font-hold fw-bold font-14">{{ __('common.no_data_found') }}</span>
+                                                        <span
+                                                            class="font-hold fw-bold font-14">{{ __('common.no_data_found') }}</span>
                                                     </template>
                                                 </td>
                                             @endif
 
                                             {{-- Notes --}}
                                             @foreach ($this->noteTypes as $noteTypeId => $noteTypeName)
-                                                @if(isset($visibleNotes[$noteTypeId]) && $visibleNotes[$noteTypeId])
+                                                @if (isset($visibleNotes[$noteTypeId]) && $visibleNotes[$noteTypeId])
                                                     <td class="font-hold fw-bold text-center">
-                                                        <span x-text="itemData.notes[{{ $noteTypeId }}] || ''"></span>
+                                                        <span
+                                                            x-text="itemData.notes[{{ $noteTypeId }}] || ''"></span>
                                                     </td>
                                                 @endif
                                             @endforeach
 
-                                            @canany(['edit items','delete items'])
-                                                @if($visibleColumns['actions'])
-                                                    <td class="d-flex justify-content-center align-items-center gap-2 mt-2" 
-                                                        x-data="{ itemId: {{ $item->id }} }"
-                                                        @click.stop>
+                                            @canany(['edit items', 'delete items'])
+                                                @if ($visibleColumns['actions'])
+                                                    <td class="d-flex justify-content-center align-items-center gap-2 mt-2"
+                                                        x-data="{ itemId: {{ $item->id }} }" @click.stop>
                                                         @can('edit items')
-                                                            <button type="button" title="{{ __('items.edit_item') }}" class="btn btn-success btn-sm"
+                                                            <button type="button" title="{{ __('items.edit_item') }}"
+                                                                class="btn btn-success btn-sm"
                                                                 @click.stop="
                                                                     const wireEl = $el.closest('[wire\\:id]');
                                                                     if(wireEl) {
@@ -932,7 +915,8 @@ new class extends Component
                                                             </button>
                                                         @endcan
                                                         @can('delete items')
-                                                            <button type="button" title="{{ __('items.delete_item') }}" class="btn btn-danger btn-sm"
+                                                            <button type="button" title="{{ __('items.delete_item') }}"
+                                                                class="btn btn-danger btn-sm"
                                                                 @click.stop="
                                                                     if(confirm('{{ __('items.confirm_delete_item') }}')) {
                                                                         const wireEl = $el.closest('[wire\\:id]');
@@ -957,8 +941,8 @@ new class extends Component
                                         $colspan = $this->visibleColumnsCount;
                                     @endphp
                                     <tr>
-                                        <td colspan="{{ $colspan }}"
-                                            class="text-center font-hold fw-bold">{{ __('common.no_records_found') }}
+                                        <td colspan="{{ $colspan }}" class="text-center font-hold fw-bold">
+                                            {{ __('common.no_records_found') }}
                                         </td>
                                     </tr>
                                 @endforelse
@@ -980,7 +964,8 @@ new class extends Component
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-2">
-                                            <label class="form-label font-hold fw-bold">{{ __('items.select_price_type') }}:</label>
+                                            <label
+                                                class="form-label font-hold fw-bold">{{ __('items.select_price_type') }}:</label>
                                             <select wire:model.live="selectedPriceType"
                                                 class="form-select font-hold fw-bold font-14">
                                                 <option value="">{{ __('items.select_price_type') }}</option>
@@ -992,7 +977,8 @@ new class extends Component
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label font-hold fw-bold">{{ __('items.selected_warehouse') }}:</label>
+                                            <label
+                                                class="form-label font-hold fw-bold">{{ __('items.selected_warehouse') }}:</label>
                                             <div class="form-control-plaintext font-hold fw-bold">
                                                 @if ($selectedWarehouse)
                                                     @php
@@ -1012,12 +998,14 @@ new class extends Component
                                                     style="font-size: 1.2rem;">{{ $this->totalQuantity }}</h4>
                                             </div>
                                             <div class="col-md-3">
-                                                <h6 class="font-hold fw-bold text-primary">{{ __('items.total_value') }}</h6>
+                                                <h6 class="font-hold fw-bold text-primary">
+                                                    {{ __('items.total_value') }}</h6>
                                                 <h4 class="font-hold fw-bold text-success">
                                                     {{ formatCurrency($this->totalAmount) }}</h4>
                                             </div>
                                             <div class="col-md-2">
-                                                <h6 class="font-hold fw-bold text-primary">{{ __('items.items_count') }}</h6>
+                                                <h6 class="font-hold fw-bold text-primary">
+                                                    {{ __('items.items_count') }}</h6>
                                                 <h4 class="font-hold fw-bold text-success">
                                                     {{ $this->totalItems }}</h4>
                                             </div>
@@ -1035,7 +1023,7 @@ new class extends Component
                     {{-- Pagination Links --}}
                     <div class="mt-4 d-flex justify-content-center">
                         <div class="font-hold">
-                        {{ $this->items->links() }}
+                            {{ $this->items->links() }}
                         </div>
                     </div>
                 </div>
@@ -1044,14 +1032,11 @@ new class extends Component
     </div>
 
     {{-- Column Visibility Modal --}}
-    <div class="modal fade" id="columnVisibilityModal" tabindex="-1" aria-labelledby="columnVisibilityModalLabel" aria-hidden="true"
-         x-data="columnVisibilityModal()"
-         x-init="
-            columns = @js($this->visibleColumns);
-            prices = @js($this->visiblePrices);
-            notes = @js($this->visibleNotes);
-         "
-         @close-modal.window="$el.querySelector('.btn-close').click()">
+    <div class="modal fade" id="columnVisibilityModal" tabindex="-1" aria-labelledby="columnVisibilityModalLabel"
+        aria-hidden="true" x-data="columnVisibilityModal()" x-init="columns = @js($this->visibleColumns);
+        prices = @js($this->visiblePrices);
+        notes = @js($this->visibleNotes);"
+        @close-modal.window="$el.querySelector('.btn-close').click()">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
@@ -1059,18 +1044,21 @@ new class extends Component
                         <i class="fas fa-columns me-2"></i>
                         {{ __('items.column_display_options') }}
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     {{-- Global Controls --}}
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex gap-2 justify-content-center">
-                                <button type="button" @click="showAllColumns()" class="btn btn-success btn-sm font-hold fw-bold">
+                                <button type="button" @click="showAllColumns()"
+                                    class="btn btn-success btn-sm font-hold fw-bold">
                                     <i class="fas fa-eye me-1"></i>
                                     {{ __('items.show_all') }}
                                 </button>
-                                <button type="button" @click="hideAllColumns()" class="btn btn-secondary btn-sm font-hold fw-bold">
+                                <button type="button" @click="hideAllColumns()"
+                                    class="btn btn-secondary btn-sm font-hold fw-bold">
                                     <i class="fas fa-eye-slash me-1"></i>
                                     {{ __('items.hide_all') }}
                                 </button>
@@ -1129,7 +1117,8 @@ new class extends Component
                                 </label>
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" x-model="columns.quantity_average_cost">
+                                <input class="form-check-input" type="checkbox"
+                                    x-model="columns.quantity_average_cost">
                                 <label class="form-check-label font-hold fw-bold">
                                     {{ __('items.quantity_average_cost') }}
                                 </label>
@@ -1150,7 +1139,7 @@ new class extends Component
                     </div>
 
                     {{-- Prices Section --}}
-                    @if(count($this->priceTypes) > 0)
+                    @if (count($this->priceTypes) > 0)
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12 mb-3">
@@ -1159,11 +1148,13 @@ new class extends Component
                                     {{ __('items.sale_prices') }}:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" @click="showAllPrices()" class="btn btn-info btn-sm font-hold fw-bold">
+                                    <button type="button" @click="showAllPrices()"
+                                        class="btn btn-info btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye me-1"></i>
                                         {{ __('items.show_all_prices') }}
                                     </button>
-                                    <button type="button" @click="hideAllPrices()" class="btn btn-secondary btn-sm font-hold fw-bold">
+                                    <button type="button" @click="hideAllPrices()"
+                                        class="btn btn-secondary btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
                                         {{ __('items.hide_all_prices') }}
                                     </button>
@@ -1173,7 +1164,8 @@ new class extends Component
                             <div class="col-md-6">
                                 @foreach ($this->priceTypes as $priceId => $priceName)
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" x-model="prices['{{ $priceId }}']">
+                                        <input class="form-check-input" type="checkbox"
+                                            x-model="prices['{{ $priceId }}']">
                                         <label class="form-check-label font-hold fw-bold">
                                             {{ $priceName }}
                                         </label>
@@ -1203,7 +1195,7 @@ new class extends Component
                     @endcanany
 
                     {{-- Notes Section --}}
-                    @if(count($this->noteTypes) > 0)
+                    @if (count($this->noteTypes) > 0)
                         <hr class="my-4">
                         <div class="row">
                             <div class="col-12 mb-3">
@@ -1212,11 +1204,13 @@ new class extends Component
                                     {{ __('items.notes') }}:
                                 </h6>
                                 <div class="d-flex gap-2 mb-3">
-                                    <button type="button" @click="showAllNotes()" class="btn btn-success btn-sm font-hold fw-bold">
+                                    <button type="button" @click="showAllNotes()"
+                                        class="btn btn-success btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye me-1"></i>
                                         {{ __('items.show_all_notes') }}
                                     </button>
-                                    <button type="button" @click="hideAllNotes()" class="btn btn-secondary btn-sm font-hold fw-bold">
+                                    <button type="button" @click="hideAllNotes()"
+                                        class="btn btn-secondary btn-sm font-hold fw-bold">
                                         <i class="fas fa-eye-slash me-1"></i>
                                         {{ __('items.hide_all_notes') }}
                                     </button>
@@ -1226,7 +1220,8 @@ new class extends Component
                             <div class="col-md-6">
                                 @foreach ($this->noteTypes as $noteId => $noteName)
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" x-model="notes['{{ $noteId }}']">
+                                        <input class="form-check-input" type="checkbox"
+                                            x-model="notes['{{ $noteId }}']">
                                         <label class="form-check-label font-hold fw-bold">
                                             {{ $noteName }}
                                         </label>
@@ -1238,7 +1233,7 @@ new class extends Component
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-main font-hold fw-bold" @click="applyChanges()"
-                            wire:loading.attr="disabled" wire:target="updateVisibility">
+                        wire:loading.attr="disabled" wire:target="updateVisibility">
                         <span wire:loading.remove wire:target="updateVisibility">
                             <i class="fas fa-check me-2"></i>
                             {{ __('common.apply') }}
@@ -1260,170 +1255,189 @@ new class extends Component
 </div>
 
 <script>
-// Alpine.js component for item row calculations
-function itemRow(itemData, initialUnitId) {
-    return {
-        itemData: itemData,
-        selectedUnitId: initialUnitId,
+    // Alpine.js component for item row calculations
+    function itemRow(itemData, initialUnitId) {
+        return {
+            itemData: itemData,
+            selectedUnitId: initialUnitId,
 
-        get selectedUnit() {
-            return this.itemData.units[this.selectedUnitId] || null;
-        },
+            get selectedUnit() {
+                return this.itemData.units[this.selectedUnitId] || null;
+            },
 
-        get selectedUVal() {
-            return this.selectedUnit?.u_val || 1;
-        },
+            get selectedUVal() {
+                return this.selectedUnit?.u_val || 1;
+            },
 
-        get currentUnitQuantity() {
-            return this.selectedUVal > 0 ? this.itemData.base_quantity / this.selectedUVal : 0;
-        },
+            get currentUnitQuantity() {
+                return this.selectedUVal > 0 ? this.itemData.base_quantity / this.selectedUVal : 0;
+            },
 
-        get formattedQuantity() {
-            const integer = this.selectedUVal > 0 ? Math.floor(this.itemData.base_quantity / this.selectedUVal) : 0;
-            const remainder = this.selectedUVal > 0 ? this.itemData.base_quantity % this.selectedUVal : 0;
+            get formattedQuantity() {
+                const integer = this.selectedUVal > 0 ? Math.floor(this.itemData.base_quantity / this
+                    .selectedUVal) : 0;
+                const remainder = this.selectedUVal > 0 ? this.itemData.base_quantity % this.selectedUVal : 0;
 
-            // Find smaller unit
-            const units = Object.values(this.itemData.units);
-            const smallerUnit = units.length > 0 ? units.reduce((min, unit) =>
-                unit.u_val < min.u_val ? unit : min
-            ) : null;
+                // Find smaller unit
+                const units = Object.values(this.itemData.units);
+                const smallerUnit = units.length > 0 ? units.reduce((min, unit) =>
+                    unit.u_val < min.u_val ? unit : min
+                ) : null;
 
-            return {
-                integer: integer,
-                remainder: remainder,
-                unitName: this.selectedUnit?.name || '',
-                smallerUnitName: smallerUnit?.name || ''
-            };
-        },
+                return {
+                    integer: integer,
+                    remainder: remainder,
+                    unitName: this.selectedUnit?.name || '',
+                    smallerUnitName: smallerUnit?.name || ''
+                };
+            },
 
-        get unitCostPrice() {
-            return this.selectedUnit?.cost || 0;
-        },
+            get unitCostPrice() {
+                return this.selectedUnit?.cost || 0;
+            },
 
-        get quantityCost() {
-            return this.currentUnitQuantity * this.unitCostPrice;
-        },
+            get quantityCost() {
+                return this.currentUnitQuantity * this.unitCostPrice;
+            },
 
-        get unitAverageCost() {
-            return this.itemData.average_cost * this.selectedUVal;
-        },
+            get unitAverageCost() {
+                return this.itemData.average_cost * this.selectedUVal;
+            },
 
-        get quantityAverageCost() {
-            return this.currentUnitQuantity * this.unitAverageCost;
-        },
+            get quantityAverageCost() {
+                return this.currentUnitQuantity * this.unitAverageCost;
+            },
 
-        get currentBarcodes() {
-            return this.itemData.barcodes[this.selectedUnitId] || [];
-        },
+            get currentBarcodes() {
+                return this.itemData.barcodes[this.selectedUnitId] || [];
+            },
 
-        getPriceForType(priceTypeId) {
-            const unitPrices = this.itemData.prices[this.selectedUnitId] || {};
-            const price = unitPrices[priceTypeId];
-            return price ? this.formatCurrency(price.price) : 'N/A';
-        },
+            getPriceForType(priceTypeId) {
+                const unitPrices = this.itemData.prices[this.selectedUnitId] || {};
+                const price = unitPrices[priceTypeId];
+                return price ? this.formatCurrency(price.price) : 'N/A';
+            },
 
-        formatCurrency(value) {
-            if (value === null || value === undefined) return '0.00';
-            return new Intl.NumberFormat('ar-SA', {
-                style: 'currency',
-                currency: 'SAR',
-                minimumFractionDigits: 2
-            }).format(value);
-        },
+            formatCurrency(value) {
+                if (value === null || value === undefined) return '0.00';
+                return new Intl.NumberFormat('ar-SA', {
+                    style: 'currency',
+                    currency: 'SAR',
+                    minimumFractionDigits: 2
+                }).format(value);
+            },
 
-        formatNumber(value) {
-            if (value === null || value === undefined) return '0';
-            // Remove trailing zeros and decimal point if not needed
-            return parseFloat(value).toString();
+            formatNumber(value) {
+                if (value === null || value === undefined) return '0';
+                // Remove trailing zeros and decimal point if not needed
+                return parseFloat(value).toString();
+            }
         }
     }
-}
 
-// Alpine.js component for filters with debouncing
-function filtersComponent() {
-    return {
-        searchValue: '',
-        warehouseValue: '',
-        groupValue: '',
-        categoryValue: '',
-        searchTimeout: null,
+    // Alpine.js component for filters with debouncing
+    function filtersComponent() {
+        return {
+            searchValue: '',
+            warehouseValue: '',
+            groupValue: '',
+            categoryValue: '',
+            searchTimeout: null,
 
-        updateSearch() {
-            clearTimeout(this.searchTimeout);
-            this.searchTimeout = setTimeout(() => {
-                this.$wire.set('search', this.searchValue);
-            }, 500);
-        },
+            updateSearch() {
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    this.$wire.set('search', this.searchValue);
+                }, 500);
+            },
 
-        updateWarehouse() {
-            this.$wire.set('selectedWarehouse', this.warehouseValue);
-        },
+            updateWarehouse() {
+                this.$wire.set('selectedWarehouse', this.warehouseValue);
+            },
 
-        updateGroup() {
-            this.$wire.set('selectedGroup', this.groupValue);
-        },
+            updateGroup() {
+                this.$wire.set('selectedGroup', this.groupValue);
+            },
 
-        updateCategory() {
-            this.$wire.set('selectedCategory', this.categoryValue);
-        },
+            updateCategory() {
+                this.$wire.set('selectedCategory', this.categoryValue);
+            },
 
-        clearFilters() {
-            this.searchValue = '';
-            this.warehouseValue = '';
-            this.groupValue = '';
-            this.categoryValue = '';
-            this.$wire.call('clearFilters');
+            clearFilters() {
+                this.searchValue = '';
+                this.warehouseValue = '';
+                this.groupValue = '';
+                this.categoryValue = '';
+                this.$wire.call('clearFilters');
+            }
         }
     }
-}
 
-// Alpine.js component for column visibility modal
-function columnVisibilityModal() {
-    return {
-        columns: {},
-        prices: {},
-        notes: {},
+    // Alpine.js component for column visibility modal
+    function columnVisibilityModal() {
+        return {
+            columns: {},
+            prices: {},
+            notes: {},
 
-        showAllColumns() {
-            console.log('showAllColumns called', { columns: this.columns, prices: this.prices, notes: this.notes });
-            Object.keys(this.columns).forEach(key => this.columns[key] = true);
-            Object.keys(this.prices).forEach(key => this.prices[key] = true);
-            Object.keys(this.notes).forEach(key => this.notes[key] = true);
-        },
+            showAllColumns() {
+                console.log('showAllColumns called', {
+                    columns: this.columns,
+                    prices: this.prices,
+                    notes: this.notes
+                });
+                Object.keys(this.columns).forEach(key => this.columns[key] = true);
+                Object.keys(this.prices).forEach(key => this.prices[key] = true);
+                Object.keys(this.notes).forEach(key => this.notes[key] = true);
+            },
 
-        hideAllColumns() {
-            console.log('hideAllColumns called', { columns: this.columns, prices: this.prices, notes: this.notes });
-            Object.keys(this.columns).forEach(key => this.columns[key] = false);
-            Object.keys(this.prices).forEach(key => this.prices[key] = false);
-            Object.keys(this.notes).forEach(key => this.notes[key] = false);
-        },
+            hideAllColumns() {
+                console.log('hideAllColumns called', {
+                    columns: this.columns,
+                    prices: this.prices,
+                    notes: this.notes
+                });
+                Object.keys(this.columns).forEach(key => this.columns[key] = false);
+                Object.keys(this.prices).forEach(key => this.prices[key] = false);
+                Object.keys(this.notes).forEach(key => this.notes[key] = false);
+            },
 
-        showAllPrices() {
-            console.log('showAllPrices called', { prices: this.prices });
-            Object.keys(this.prices).forEach(key => this.prices[key] = true);
-        },
+            showAllPrices() {
+                console.log('showAllPrices called', {
+                    prices: this.prices
+                });
+                Object.keys(this.prices).forEach(key => this.prices[key] = true);
+            },
 
-        hideAllPrices() {
-            console.log('hideAllPrices called', { prices: this.prices });
-            Object.keys(this.prices).forEach(key => this.prices[key] = false);
-        },
+            hideAllPrices() {
+                console.log('hideAllPrices called', {
+                    prices: this.prices
+                });
+                Object.keys(this.prices).forEach(key => this.prices[key] = false);
+            },
 
-        showAllNotes() {
-            console.log('showAllNotes called', { notes: this.notes });
-            Object.keys(this.notes).forEach(key => this.notes[key] = true);
-        },
+            showAllNotes() {
+                console.log('showAllNotes called', {
+                    notes: this.notes
+                });
+                Object.keys(this.notes).forEach(key => this.notes[key] = true);
+            },
 
-        hideAllNotes() {
-            console.log('hideAllNotes called', { notes: this.notes });
-            Object.keys(this.notes).forEach(key => this.notes[key] = false);
-        },
+            hideAllNotes() {
+                console.log('hideAllNotes called', {
+                    notes: this.notes
+                });
+                Object.keys(this.notes).forEach(key => this.notes[key] = false);
+            },
 
-        applyChanges() {
-            console.log('applyChanges called', { columns: this.columns, prices: this.prices, notes: this.notes });
-            this.$wire.call('updateVisibility', this.columns, this.prices, this.notes);
+            applyChanges() {
+                console.log('applyChanges called', {
+                    columns: this.columns,
+                    prices: this.prices,
+                    notes: this.notes
+                });
+                this.$wire.call('updateVisibility', this.columns, this.prices, this.notes);
+            }
         }
     }
-}
-
 </script>
-
