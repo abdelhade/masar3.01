@@ -13,7 +13,7 @@ class ClientObserver
     public function created(Client $client): void
     {
         ActivityLogService::created($client, [
-            'name' => $client->name,
+            'name' => $client->cname,
             'email' => $client->email,
             'phone' => $client->phone,
             'address' => $client->address,
@@ -49,7 +49,7 @@ class ClientObserver
     public function deleted(Client $client): void
     {
         ActivityLogService::deleted($client, [
-            'name' => $client->name,
+            'name' => $client->cname,
             'email' => $client->email,
             'phone' => $client->phone,
         ], 'clients');

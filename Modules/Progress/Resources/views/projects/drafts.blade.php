@@ -73,7 +73,7 @@
                                     </td>
                                     <td>
                                         @if($draft->client)
-                                            {{ $draft->client->name }}
+                                            {{ $draft->client->cname }}
                                         @else
                                             <span class="text-muted">{{ __('general.not_set') }}</span>
                                         @endif

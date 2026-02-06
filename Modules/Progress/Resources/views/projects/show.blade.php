@@ -953,7 +953,7 @@ button:focus,
                                 <i class="fas fa-building fa-2x text-primary"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0">{{ $project->client->name }}</h5>
+                                <h5 class="mb-0">{{ $project->client->cname }}</h5>
                                 <p class="text-muted mb-0">{{ $project->client->contact_person }}</p>
                             </div>
                         </div>

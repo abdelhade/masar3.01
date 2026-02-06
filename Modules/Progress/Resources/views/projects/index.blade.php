@@ -95,7 +95,7 @@
                         @endphp
                         @foreach($uniqueClients as $client)
                             @if($client)
-                                <option value="{{ $client->name }}">{{ $client->name }}</option>
+                                <option value="{{ $client->cname }}">{{ $client->cname }}</option>
                             @endif
                         @endforeach
                     </select>
@@ -136,7 +136,7 @@
                      data-project-id="{{ $project->id }}"
                      data-project-name="{{ $project->name }}"
                      data-project-description="{{ $project->description ?? '' }}"
-                     data-project-client="{{ $project->client->name }}"
+                     data-project-client="{{ $project->client->cname }}"
                      data-project-status="{{ $project->status }}"
                      data-project-type="{{ $project->type ? $project->type->name : __('general.not_specified') }}"
                      data-project-start-date="{{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d-m-Y') : '' }}"
@@ -187,7 +187,7 @@
                                 <h5 class="mb-2 fw-bold text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 1.3rem;">{{ $project->name }}</h5>
                                 <small class="text-white-50 d-flex align-items-center mb-3" style="opacity: 0.9;">
                                     <i class="fas fa-building me-2"></i>
-                                    {{ $project->client->name }}
+                                    {{ $project->client->cname }}
                                 </small>
                                 
                                 @if($subprojectsWithItemsCount > 0)

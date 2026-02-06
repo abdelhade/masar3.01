@@ -9,11 +9,11 @@
         <div class="row">
             <div class="col-md-4 text-center mb-3">
                 <div class="client-avatar mx-auto mb-2">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($project->client->name) }}&background=4f46e5&color=fff&size=80"
-                        alt="{{ $project->client->name }}" class="rounded-circle" width="80"
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($project->client->cname) }}&background=4f46e5&color=fff&size=80"
+                        alt="{{ $project->client->cname }}" class="rounded-circle" width="80"
                         height="80">
                 </div>
-                <h5 class="fw-bold">{{ $project->client->name }}</h5>
+                <h5 class="fw-bold">{{ $project->client->cname }}</h5>
             </div>
             <div class="col-md-8">
                 <div class="client-details">

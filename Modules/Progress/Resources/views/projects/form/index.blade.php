@@ -87,7 +87,7 @@
                         @foreach ($clients as $client)
                         <option value="{{ $client->id }}"
                             @selected(old('client_id', optional($project)->client_id) == $client->id)>
-                            {{ $client->name }}
+                            {{ $client->cname }}
                         </option>
                         @endforeach
                     </select>

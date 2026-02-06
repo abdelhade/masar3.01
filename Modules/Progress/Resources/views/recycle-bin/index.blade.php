@@ -162,7 +162,7 @@
                                             <tbody>
                                                 @foreach($deletedClients as $client)
                                                     <tr>
-                                                        <td>{{ $client->name }}</td>
+                                                        <td>{{ $client->cname }}</td>
                                                         <td>
                                                             <i class="bi bi-calendar3 me-1 text-secondary"></i>
                                                             {{ $client->deleted_at->format('Y-m-d H:i') }}
