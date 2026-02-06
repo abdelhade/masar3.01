@@ -15,6 +15,17 @@
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Progress Management')" class="grid" expandable>
+                    <flux:navlist.item icon="chart-bar" :href="route('progress.dashboard')" :current="request()->routeIs('progress.dashboard')" wire:navigate>{{ __('Progress Dashboard') }}</flux:navlist.item>
+                    <flux:navlist.item icon="folder" :href="route('progress.projects.index')" :current="request()->routeIs('progress.projects.*')" wire:navigate>{{ __('Projects') }}</flux:navlist.item>
+                    <flux:navlist.item icon="clipboard-list" :href="route('progress.daily-progress.index')" :current="request()->routeIs('progress.daily-progress.*')" wire:navigate>{{ __('Daily Progress') }}</flux:navlist.item>
+                    <flux:navlist.item icon="briefcase" :href="route('progress.work-items.index')" :current="request()->routeIs('progress.work-items.*')" wire:navigate>{{ __('Work Items') }}</flux:navlist.item>
+                    <flux:navlist.item icon="users" :href="route('progress.clients.index')" :current="request()->routeIs('progress.clients.*')" wire:navigate>{{ __('Clients') }}</flux:navlist.item>
+                    <flux:navlist.item icon="user-group" :href="route('progress.employees.index')" :current="request()->routeIs('progress.employees.*')" wire:navigate>{{ __('Employees') }}</flux:navlist.item>
+                    <flux:navlist.item icon="exclamation-circle" :href="route('progress.issues.index')" :current="request()->routeIs('progress.issues.*')" wire:navigate>{{ __('Issues') }}</flux:navlist.item>
+                    <flux:navlist.item icon="document-chart-bar" :href="route('progress.progress.report')" :current="request()->routeIs('progress.progress.report')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
+                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />

@@ -543,29 +543,28 @@
                     {{-- المشاريع --}}
                     <div class="app-icon-group">
                         @can('view projects')
-                            <a href="{{ Route::has('progress.project.index') ? route('progress.project.index') : '#' }}"
-                                class="app-icon-large icon-bg-green">
-                                <div class="icon-wrapper">
-                                    <i data-lucide="kanban"></i>
-                                </div>
-                                <p>المشاريع</p>
-                            </a>
+                            @if(Route::has('progress.projects.index'))
+                                <a href="{{ route('progress.projects.index') }}" class="app-icon-large icon-bg-green">
+                                    <div class="icon-wrapper">
+                                        <i data-lucide="kanban"></i>
+                                    </div>
+                                    <p>المشاريع</p>
+                                </a>
+                            @endif
                         @endcan
                     </div>
 
                     {{-- التقدم اليومي --}}
                     <div class="app-icon-group">
-                        @canany(['view progress-recyclebin', 'view progress-project-types', 'view
-                            progress-project-templates', 'view progress-item-statuses', 'view progress-work-items', 'view
-                            progress-work-item-categories', 'view daily-progress', 'view progress-issues', 'view
-                            progress-projects', 'view progress-dashboard'])
-                            <a href="{{ Route::has('progress.project.index') ? route('progress.project.index') : '#' }}"
-                                class="app-icon-large icon-bg-green">
-                                <div class="icon-wrapper">
-                                    <i data-lucide="bar-chart-3"></i>
-                                </div>
-                                <p>التقدم اليومي</p>
-                            </a>
+                        @canany(['view progress-recyclebin','view progress-project-types' , 'view progress-project-templates','view progress-item-statuses','view progress-work-items','view progress-work-item-categories' ,'view daily-progress', 'view progress-issues','view progress-projects','view progress-dashboard'])
+                            @if(Route::has('progress.dashboard'))
+                                <a href="{{ route('progress.dashboard') }}" class="app-icon-large icon-bg-green">
+                                    <div class="icon-wrapper">
+                                        <i data-lucide="bar-chart-3"></i>
+                                    </div>
+                                    <p>التقدم اليومي</p>
+                                </a>
+                            @endif
                         @endcanany
                     </div>
 

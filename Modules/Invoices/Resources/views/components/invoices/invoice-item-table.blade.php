@@ -138,7 +138,8 @@
 
     <table class="table invoice-data-grid mb-0" style="min-width: 1200px;">
         <thead class="table-light text-center align-middle">
-            <tr>
+        <tr>
+                        <th class="font-bold fw-bold font-14 text-center" style="width: 30px;">#</th>
                 @foreach ($this->currentTemplate->getOrderedColumns() as $columnKey)
                     @if ($this->shouldShowColumn($columnKey))
                         @php
@@ -168,6 +169,7 @@
             </tr>
             {{-- صف البحث: تحت صف العناوين --}}
             <tr class="invoice-grid-search-row">
+                <td class="form-control text-center" style="width: 30px; background: #f5f6f8; font-weight: bold; color: #2563eb; vertical-align: middle;">+</td>
                 @foreach ($this->currentTemplate->getOrderedColumns() as $columnKey)
                     @if ($this->shouldShowColumn($columnKey))
                         @php $width = $this->currentTemplate->getColumnWidth($columnKey); @endphp
@@ -191,6 +193,10 @@
                     wire:click="selectItemFromTable({{ $row['item_id'] ?? 0 }}, {{ $row['unit_id'] ?? 'null' }}, {{ $row['price'] ?? 0 }})"
                     style="cursor: pointer;" class="align-middle">
 
+                    <td class="text-center" style="width: 30px; font-weight: bold; background: #f8f9fa;">
+                        {{ $index + 1 }}
+                    </td>
+
                     {{-- اسم الصنف --}}
                     @if ($this->shouldShowColumn('item_name'))
                         <td style="width: 18%;">
@@ -209,8 +215,7 @@
                             </div>
                         </td>
                     @endif
-
-
+                    
                     {{-- الوحدة --}}
                     @if ($this->shouldShowColumn('unit'))
                         <td style="width: 10%;">

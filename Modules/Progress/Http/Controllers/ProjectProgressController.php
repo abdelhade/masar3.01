@@ -3,7 +3,7 @@
 namespace Modules\Progress\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\Client;
+use Modules\Progress\Models\Client;
 use Modules\HR\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;

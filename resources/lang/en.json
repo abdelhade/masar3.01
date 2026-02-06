@@ -9,5 +9,15 @@
     "Progress-work-item-categories": "Work Item Categories",
     "Progress-item-statuses": "Item Statuses",
     "Progress-dashboard": "Dashboard",
-    "Progress-recyclebin": "Recycle Bin"
+    "Progress-recyclebin": "Recycle Bin",
+
+    "Progress Management": "Progress Management",
+    "Progress Dashboard": "Progress Dashboard",
+    "Projects": "Projects",
+    "Daily Progress": "Daily Progress",
+    "Work Items": "Work Items",
+    "Clients": "Clients",
+    "Employees": "Employees",
+    "Issues": "Issues",
+    "Reports": "Reports"
 }

@@ -118,7 +118,7 @@
                     @if ($type != 21)
                         <div class="row mb-1 align-items-center g-1">
                             <div class="col-3 text-right fw-bold small">{{ __('Subtotal:') }}</div>
-                            <div class="col-3 text-left text-primary small" id="display-subtotal">{{ number_format($subtotal) }}</div>
+                            <div class="col-3 text-left text-primary small" id="invoice-subtotal">{{ number_format($subtotal) }}</div>
                         </div>
                     @endif
                     @if ($type != 18 && $type != 21)
@@ -165,7 +165,7 @@
                     @if ($type != 21)
                         <div class="row mb-1 align-items-center g-1">
                             <div class="col-3 text-right fw-bold small">{{ __('Net') }}</div>
-                            <div class="col-3 text-left font-weight-bold small main-num" id="display-total">{{ number_format($total_after_additional) }}</div>
+                            <div class="col-3 text-left font-weight-bold small main-num" id="invoice-net-total">{{ number_format($total_after_additional) }}</div>
                         </div>
                     @endif
                     <div class="row mb-1 align-items-center g-1">

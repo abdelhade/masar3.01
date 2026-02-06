@@ -198,13 +198,20 @@
                                 <input type="password" name="password_confirmation" class="form-control">
                             </div>
 
-                            <div class="col-12 mt-4">
+                            <div class="col-12 mt-4" x-data="{ searchBranch: '' }">
                                 <div class="card bg-light border-0 p-3">
-                                    <h6 class="small fw-bold mb-3 text-dark">{{ __('Branch Access') }}</h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="small fw-bold m-0 text-dark">{{ __('Branch Access') }}</h6>
+                                        <div class="input-group input-group-sm w-auto">
+                                            <input type="text" x-model="searchBranch" class="form-control form-control-sm" 
+                                                   placeholder="{{ __('Search branches...') }}">
+                                        </div>
+                                    </div>
                                     <div class="d-flex flex-wrap gap-3">
                                         @foreach ($branches as $branch)
                                             <label
-                                                class="d-flex align-items-center cursor-pointer bg-white px-3 py-2 rounded border shadow-sm">
+                                                class="d-flex align-items-center cursor-pointer bg-white px-3 py-2 rounded border shadow-sm"
+                                                x-show="searchBranch === '' || '{{ strtolower($branch->name) }}'.includes(searchBranch.toLowerCase())">
                                                 <input type="checkbox" name="branches[]" value="{{ $branch->id }}"
                                                     class="modern-check me-2"
                                                     {{ in_array($branch->id, (array) old('branches', $userBranches)) ? 'checked' : '' }}>
@@ -256,14 +263,24 @@
                                 @endphp
 
                                 <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}"
-                                    id="pills-{{ $catSlug }}">
-                                    <!-- Select All Header -->
-                                    <div class="d-flex justify-content-end mb-2">
-                                        <div class="form-check form-switch">
+                                    id="pills-{{ $catSlug }}"
+                                    x-data="{ search: '' }">
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="flex-grow-1 me-3">
+                                             <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white border-end-0">
+                                                    <i class="fas fa-search text-muted"></i>
+                                                </span>
+                                                <input type="text" x-model="search" class="form-control border-start-0 ps-0" 
+                                                       placeholder="{{ __('Search in') }} {{ __(ucfirst($category ?: 'General')) }}...">
+                                            </div>
+                                        </div>
+                                        <!-- Select All Header -->
+                                        <div class="form-check form-switch m-0 d-flex align-items-center">
                                             <input class="form-check-input select-cat-all" type="checkbox"
                                                 data-target=".group-{{ $catSlug }}">
-                                            <label class="form-check-label small fw-bold">{{ __('Select All in') }}
-                                                {{ __(ucfirst($category ?: 'General')) }}</label>
+                                            <label class="form-check-label small fw-bold ms-2">{{ __('Select All') }}</label>
                                         </div>
                                     </div>
 
@@ -281,7 +298,7 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($grouped as $target => $actions)
-                                                    <tr class="perm-row">
+                                                    <tr class="perm-row" x-show="search === '' || '{{ strtolower($target) }}'.includes(search.toLowerCase()) || '{{ strtolower(__(ucfirst($target))) }}'.includes(search.toLowerCase())">
                                                         <td class="ps-4 perm-label">
                                                             @php
                                                                 $transVal = __(ucfirst($target));
@@ -318,23 +335,33 @@
 
 
                     <!-- C. Options Section -->
-                    <div id="content-options" class="main-section" style="display: none;">
-                        <h5 class="fw-bold mb-4 text-dark">{{ __('Advanced Options') }}</h5>
+                    <div id="content-options" class="main-section" style="display: none;" x-data="{ searchOption: '' }">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold m-0 text-dark">{{ __('Advanced Options') }}</h5>
+                            <div class="input-group input-group-sm w-auto">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" x-model="searchOption" class="form-control border-start-0 ps-0" 
+                                       placeholder="{{ __('Search options...') }}">
+                            </div>
+                        </div>
 
                         <div class="row g-4">
                             @foreach ($selectivePermissions as $cat => $perms)
-                                <div class="col-12">
+                                <div class="col-12" x-show="searchOption === '' || '{{ strtolower($cat) }}'.includes(searchOption.toLowerCase()) || Array.from($el.querySelectorAll('.opt-label')).some(el => el.innerText.toLowerCase().includes(searchOption.toLowerCase()))">
                                     <div class="card border p-3">
                                         <h6 class="text-uppercase text-muted small fw-bold mb-3">{{ __($cat) }}</h6>
                                         <div class="d-flex flex-wrap gap-2">
                                             @foreach ($perms as $perm)
                                                 <label
-                                                    class="d-flex align-items-center px-3 py-2 border rounded bg-light cursor-pointer hover-shadow">
+                                                    class="d-flex align-items-center px-3 py-2 border rounded bg-light cursor-pointer hover-shadow"
+                                                    x-show="searchOption === '' || '{{ strtolower($perm->name) }}'.includes(searchOption.toLowerCase()) || '{{ strtolower(__($perm->description ?? $perm->name)) }}'.includes(searchOption.toLowerCase())">
                                                     <input type="checkbox" name="permissions[]"
                                                         value="{{ $perm->id }}" class="modern-check me-2"
                                                         {{ in_array($perm->id, (array) old('permissions', $userPermissions)) ? 'checked' : '' }}>
                                                     <span
-                                                        class="small fw-semibold">{{ __($perm->description ?? $perm->name) }}</span>
+                                                        class="small fw-semibold opt-label">{{ __($perm->description ?? $perm->name) }}</span>
                                                 </label>
                                             @endforeach
                                         </div>

@@ -302,6 +302,15 @@
     "Progress-dashboard": "لوحة التحكم",
     "Progress-recyclebin": "سلة المحذوفات",
 
+    "Progress Management": "إدارة التقدم",
+    "Progress Dashboard": "لوحة تحكم التقدم",
+    "Projects": "المشاريع",
+    "Daily Progress": "التقدم اليومي",
+    "Work Items": "بنود العمل",
+    "Employees": "الموظفين",
+    "Issues": "المشاكل",
+    "Reports": "التقارير",
+
     "Basic Data Statistics": "إحصائيات البيانات الأساسية",
     "Incoming Check Portfolios": "حافظات أوراق القبض",
     "Outgoing Check Portfolios": "حافظات أوراق الدفع",
@@ -309,7 +318,6 @@
     "Add Outgoing Check": "إضافة ورقة دفع",
 
     "Work Item Categories": "تصنيفات بنود الأعمال",
-    "Issues": "المشكلات",
     "Item Statuses": "حالات البنود",
     "Asset Depreciation Management": "إدارة إهلاك الأصول",
     "Depreciation Management": "إدارة الإهلاك",

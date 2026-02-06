@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-// use Modules\Invoices\Http\Controllers\InvoicesController;
+use Modules\Invoices\Http\Controllers\Api\InvoiceActionsController;
+use Modules\Invoices\Http\Controllers\Api\InvoiceSearchController;
 
-// Commented out - InvoicesController does not exist
-// Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-//     Route::apiResource('invoices', InvoicesController::class)->names('invoices');
-// });
+Route::get('/search', InvoiceSearchController::class);
+Route::post('/add-item', [InvoiceActionsController::class, 'addItem']);
+Route::post('/create-item', [InvoiceActionsController::class, 'createItem']);

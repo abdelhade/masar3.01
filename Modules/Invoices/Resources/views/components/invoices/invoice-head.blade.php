@@ -31,15 +31,14 @@
     <div class="card-body py-2">
         <input type="hidden" wire:model="type">
 
-        {{-- السطر الأول: عنوان الفاتورة + المورد + المخزن + نمط الفاتورة --}}
         <div class="row g-2 align-items-end mb-2">
-            <div class="col-auto d-flex align-items-center gap-2">
+            <div class="col-3">
                 <span class="rounded-circle {{ $colorClass }}" style="width: 10px; height: 10px; min-width: 10px; flex-shrink: 0;"></span>
-                <h3 class="card-title fw-bold m-0" style="font-size: 1.15rem;">{{ __($titles[$type]) }}</h3>
+                <h3 class="card-title fw-bold m-0" style="font-size: 2rem;">{{ __($titles[$type]) }}</h3>
             </div>
 
             @if ($branches->count() > 1)
-                <div class="col-auto" style="min-width: 130px;">
+                <div class="col-2">
                     <label class="form-label small mb-0">{{ __('Branch') }}</label>
                     <select wire:model.live="branch_id" class="form-control form-control-sm">
                         @foreach ($branches as $branch)
@@ -48,8 +47,7 @@
                     </select>
                 </div>
             @endif
-
-            {{-- المورد / العميل acc1 — 2/12 من العرض --}}
+<div class="col-md-4"></div>
             <div class="col-2" wire:key="acc1-{{ $branch_id }}">
                 <label class="form-label small mb-0">{{ $acc1Role }}</label>
                 @if ($type != 21 && setting('invoice_show_add_clients_suppliers'))
@@ -72,16 +70,26 @@
                         placeholder="{{ __('Search for ') . $acc1Role . __('...') }}" ui="bootstrap"
                         :key="'acc1-async-' . $type . '-' . $branch_id . '-' . count($acc1Options)" />
                 @endif
+                     @if ($type != 21 && $showBalance ?? false)
+                <div class="col-12">
+                    <div class="small">
+                        <span>{{ __('Current Balance:') }}</span>
+                        <span class="fw-bold text-primary" id="invoice-balance-current">{{ number_format($currentBalance ?? 0) }}</span>
+                        <span class="ms-1">{{ __('After:') }}</span>
+                        <span id="invoice-balance-after" class="fw-bold {{ ($balanceAfterInvoice ?? 0) < 0 ? 'text-danger' : 'text-success' }}">{{ number_format($balanceAfterInvoice ?? 0) }}</span>
+                    </div>
+                </div>
+            @endif
                 @error('acc1_id')<span class="text-danger small"><strong>{{ $message }}</strong></span>@enderror
             </div>
-
+</div>
+<div class="row g-2 align-items-end mb-2">
             {{-- المخزن acc2 --}}
-            <div class="col-auto" wire:key="acc2-{{ $branch_id }}" style="min-width: 140px;">
+            <div class="col-2" wire:key="acc2-{{ $branch_id }}">
                 <label class="form-label small mb-0">{{ $acc2Role }}</label>
                 <select wire:model.live="acc2_id"
                     class="form-control form-control-sm @error('acc2_id') is-invalid @enderror"
                     @cannot('edit ' . $titles[$type]) disabled @endcannot>
-                    <option value="">{{ __('Select ') }}{{ $acc2Role }}</option>
                     @foreach ($acc2List as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->aname }}</option>
                     @endforeach
@@ -91,7 +99,7 @@
 
             {{-- نمط الفاتورة: قالب الفاتورة و/أو نوع السعر --}}
             @if (setting('invoice_use_templates') && ($availableTemplates ?? collect())->isNotEmpty())
-                <div class="col-auto" style="min-width: 120px;">
+                <div class="col-2">
                     <label class="form-label small mb-0">{{ __('Invoice Template') }}</label>
                     <select wire:model.live="selectedTemplateId" id="selectedTemplate"
                         class="form-control form-control-sm @error('selectedTemplateId') is-invalid @enderror">
@@ -103,7 +111,7 @@
                 </div>
             @endif
             @if (setting('invoice_select_price_type') && in_array($type, [10, 12, 14, 16, 22]))
-                <div class="col-auto" style="min-width: 120px;">
+                <div class="col-2">
                     <label class="form-label small mb-0">{{ __('Price Type') }}</label>
                     <select wire:model.live="selectedPriceType"
                         class="form-control form-control-sm @error('selectedPriceType') is-invalid @enderror">
@@ -116,7 +124,7 @@
             @endif
 
             @if (isMultiCurrencyEnabled())
-                <div class="col-auto">
+                <div class="col-2">
                     <x-settings::currency-converter-mini :inline="false" sourceField="#pro_value" :showAmount="true"
                         :showResult="true" :selectedCurrency="$currency_id" :exchangeRate="$currency_rate"
                         wire:key="currency-converter-{{ $currency_id }}-{{ $currency_rate }}"
@@ -127,26 +135,15 @@
                 <input type="hidden" wire:model="currency_rate" value="1">
             @endif
 
-            @if ($type != 21 && $showBalance ?? false)
-                <div class="col-auto">
-                    <div class="small">
-                        <span>{{ __('Current Balance:') }}</span>
-                        <span class="fw-bold text-primary" id="invoice-balance-current">{{ number_format($currentBalance ?? 0) }}</span>
-                        <span class="ms-1">{{ __('After:') }}</span>
-                        <span id="invoice-balance-after" class="fw-bold {{ ($balanceAfterInvoice ?? 0) < 0 ? 'text-danger' : 'text-success' }}">{{ number_format($balanceAfterInvoice ?? 0) }}</span>
-                    </div>
-                </div>
-            @endif
+       
         </div>
 
-        {{-- السطر الثاني: باقي الحقول وينتهي بالبحث بالباركود --}}
         <div class="row g-2 align-items-end">
             {{-- الموظف --}}
-            <div class="col-auto" wire:key="emp-{{ $branch_id }}" style="min-width: 120px;">
+            <div class="col-auto" wire:key="emp-{{ $branch_id }}">
                 <label class="form-label small mb-0">{{ __('Employee') }}</label>
                 <select wire:model="emp_id" class="form-control form-control-sm @error('emp_id') is-invalid @enderror"
                     @cannot('edit ' . $titles[$type]) disabled @endcannot>
-                    <option value="">{{ __('Select Employee') }}</option>
                     @foreach ($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->aname }}</option>
                     @endforeach
@@ -155,11 +152,10 @@
             </div>
 
             @if ($type != 21)
-                <div class="col-auto" wire:key="delivery-{{ $branch_id }}" style="min-width: 120px;">
+                <div class="col-auto" wire:key="delivery-{{ $branch_id }}">
                     <label class="form-label small mb-0">{{ __('Delegate') }}</label>
                     <select wire:model="delivery_id" class="form-control form-control-sm @error('delivery_id') is-invalid @enderror"
                         @cannot('edit ' . $titles[$type]) disabled @endcannot>
-                        <option value="">{{ __('Select Delegate') }}</option>
                         @foreach ($deliverys as $delivery)
                             <option value="{{ $delivery->id }}">{{ $delivery->aname }}</option>
                         @endforeach
@@ -169,7 +165,7 @@
             @endif
 
             {{-- التاريخ --}}
-            <div class="col-auto" style="min-width: 115px;">
+            <div class="col-auto">
                 <label class="form-label small mb-0">{{ __('Date') }}</label>
                 <input type="date" wire:model="pro_date"
                     class="form-control form-control-sm @error('pro_date') is-invalid @enderror"
@@ -178,7 +174,7 @@
             </div>
 
             @if (in_array($type, [15, 17]))
-                <div class="col-auto" style="min-width: 115px;">
+                <div class="col-auto">
                     <label class="form-label small mb-0">{{ __('Expected delivery date') }}</label>
                     <input type="date" wire:model="expected_delivery_date"
                         class="form-control form-control-sm @error('expected_delivery_date') is-invalid @enderror"
@@ -188,7 +184,7 @@
             @endif
 
             @if (setting('invoice_use_due_date') && $type != 21)
-                <div class="col-auto" style="min-width: 115px;">
+                <div class="col-auto">
                     <label class="form-label small mb-0">{{ __('Due Date') }}</label>
                     <input type="date" wire:model="accural_date"
                         class="form-control form-control-sm @error('accural_date') is-invalid @enderror"
@@ -197,14 +193,14 @@
                 </div>
             @endif
 
-            <div class="col-auto" style="min-width: 80px;">
+            <div class="col-auto"
                 <label class="form-label small mb-0">{{ __('Invoice Number') }}</label>
                 <input type="number" wire:model="pro_id" class="form-control form-control-sm @error('pro_id') is-invalid @enderror" readonly>
                 @error('pro_id')<span class="invalid-feedback d-block"><strong>{{ $message }}</strong></span>@enderror
             </div>
 
             @if ($type != 21)
-                <div class="col-auto" style="min-width: 80px;">
+                <div class="col-auto"
                     <label class="form-label small mb-0">{{ __('S.N') }}</label>
                     <input type="text" wire:model="serial_number"
                         class="form-control form-control-sm @error('serial_number') is-invalid @enderror"
@@ -214,7 +210,7 @@
             @endif
 
             @if ($type == 14 && isset($statues))
-                <div class="col-auto" style="min-width: 100px;">
+                <div class="col-auto">
                     <label class="form-label small mb-0">{{ __('Invoice Status') }}</label>
                     <select wire:model="status" id="status" class="form-control form-control-sm @error('status') is-invalid @enderror">
                         @foreach ($statues as $statusCase)
@@ -225,9 +221,11 @@
                 </div>
             @endif
 
-            {{-- البحث بالباركود في نهاية السطر --}}
-            <div class="col ms-auto" style="min-width: 160px;">
-                @stack('invoice_head_barcode')
+            {{-- البحث بالباركود - تم حذف الـ Livewire للسرعة --}}
+            <div class="col-3" style="position: relative;">
+                <label class="form-label small mb-0">{{ __('Search by Barcode') }}</label>
+                <input type="text" class="form-control form-control-sm" id="barcode-search"
+                    placeholder="{{ __('Enter Barcode ') }}" autocomplete="off">
             </div>
         </div>
     </div>

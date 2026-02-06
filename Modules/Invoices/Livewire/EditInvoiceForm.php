@@ -797,6 +797,35 @@ class EditInvoiceForm extends Component
     }
 
     /**
+     * Add item to invoice from AJAX search call (Client Side)
+     */
+    public function addItemToInvoice(array $itemData)
+    {
+        // Add item to invoiceItems array
+        $this->invoiceItems[] = $itemData;
+        $newIndex = count($this->invoiceItems) - 1;
+
+        // Recalculate values
+        $this->recalculateSubValues();
+        $this->calculateTotals();
+
+        // Update selected item data for display below the table
+        $item = Item::with(['units', 'prices'])->find($itemData['item_id']);
+        if ($item) {
+            $this->updateSelectedItemData(
+                $item,
+                $itemData['unit_id'],
+                $itemData['price']
+            );
+        }
+
+        return [
+            'success' => true,
+            'index' => $newIndex,
+        ];
+    }
+
+    /**
      * إرجاع بيانات صنف جاهزة للإلحاق بالجدول (للاستخدام من JS).
      */
     public function getItemRowData($itemId)

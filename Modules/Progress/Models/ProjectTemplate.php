@@ -2,51 +2,64 @@
 
 namespace Modules\Progress\Models;
 
-use Illuminate\Database\Eloquent\Model;;
-
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProjectTemplate extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
         'description',
+        'status',
         'project_type_id',
-        'weekly_holidays'
+        'working_days',
+        'daily_work_hours',
+        'weekly_holidays',
+        'working_zone',
     ];
 
     protected $casts = [
-        'weekly_holidays' => 'array',
+        'working_days' => 'integer',
+        'daily_work_hours' => 'integer',
     ];
 
-    public function items(): HasMany
+    /**
+     * Get template items from project_items table (using project_template_id)
+     */
+    public function items()
     {
         return $this->hasMany(ProjectItem::class, 'project_template_id')->orderBy('item_order');
     }
 
-    public function subprojects(): HasMany
+    /**
+     * Legacy: Get template items from template_items table (if needed)
+     */
+    public function templateItems()
     {
-        return $this->hasMany(Subproject::class, 'project_template_id');
+        return $this->hasMany(TemplateItem::class)->orderBy('item_order');
+    }
+
+    /**
+     * Alias for items() - Get template items from project_items table
+     */
+    public function projectItems()
+    {
+        return $this->items();
     }
 
     public function projectType()
     {
-        return $this->belongsTo(ProjectType::class, 'project_type_id');
+        return $this->belongsTo(ProjectType::class);
     }
 
-    public function workItems()
+    /**
+     * Get subprojects relationship (like Project)
+     */
+    public function subprojects()
     {
-        return $this->hasManyThrough(
-            WorkItem::class,      // الجدول النهائي
-            ProjectItem::class,   // الجدول الوسيط
-            'project_template_id', // المفتاح في جدول ProjectItem
-            'id',                 // المفتاح الأساسي في جدول WorkItem
-            'id',                 // المفتاح الأساسي في جدول ProjectTemplate
-            'work_item_id'        // المفتاح الخارجي في جدول ProjectItem
-        );
+        return $this->hasMany(Subproject::class, 'project_template_id');
     }
 }
