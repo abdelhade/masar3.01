@@ -2,78 +2,110 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Modules\Progress\Models\ItemStatus;
-use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Http\Request;
 
 class ItemStatusController extends Controller
 {
-       public function __construct()
+    public function __construct()
     {
-        $this->middleware('can:view progress-item-statuses')->only(['index','show']);
+        $this->middleware('can:view progress-item-statuses')->only('index');
         $this->middleware('can:create progress-item-statuses')->only(['create', 'store']);
         $this->middleware('can:edit progress-item-statuses')->only(['edit', 'update']);
         $this->middleware('can:delete progress-item-statuses')->only('destroy');
     }
+
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $statuses = ItemStatus::orderBy('order')->orderBy('name')->get();
-        return view('progress::item-statuses.index', compact('statuses'));
+        $statuses = ItemStatus::ordered()->get();
+        return view('progress::item_statuses.index', compact('statuses'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        return view('progress::item-statuses.create');
+        return view('progress::item_statuses.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->merge(['order' => (int) $request->input('order', 0)]);
-
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255|unique:item_statuses,name',
             'color' => 'nullable|string|max:50',
             'icon' => 'nullable|string|max:50',
             'description' => 'nullable|string',
-            'order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+            'is_active' => 'nullable|boolean',
         ]);
 
-        ItemStatus::create($request->all());
+        ItemStatus::create($validated);
 
-        Alert::toast(__('general.created_successfully'), 'success');
-        return redirect()->route('item-statuses.index');
+        return redirect()
+            ->route('item-statuses.index')
+            ->with('success', __('general.item_status_created_successfully'));
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(ItemStatus $itemStatus)
+    {
+        return view('progress::item_statuses.show', compact('itemStatus'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(ItemStatus $itemStatus)
     {
-        return view('progress::item-statuses.edit', compact('itemStatus'));
+        return view('progress::item_statuses.edit', compact('itemStatus'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, ItemStatus $itemStatus)
     {
-        $request->merge(['order' => (int) $request->input('order', 0)]);
-
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255|unique:item_statuses,name,' . $itemStatus->id,
             'color' => 'nullable|string|max:50',
             'icon' => 'nullable|string|max:50',
             'description' => 'nullable|string',
-            'order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+            'is_active' => 'nullable|boolean',
         ]);
 
-        $itemStatus->update($request->all());
+        $itemStatus->update($validated);
 
-        Alert::toast(__('general.updated_successfully'), 'success');
-        return redirect()->route('item-statuses.index');
+        return redirect()
+            ->route('item-statuses.index')
+            ->with('success', __('general.item_status_updated_successfully'));
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(ItemStatus $itemStatus)
     {
+        // Check if status is used in any project items
+        if ($itemStatus->projectItems()->count() > 0) {
+            return back()
+                ->with('error', __('general.cannot_delete_item_status_in_use'));
+        }
+
         $itemStatus->delete();
-        Alert::toast(__('general.deleted_successfully'), 'success');
-        return redirect()->route('item-statuses.index');
+
+        return redirect()
+            ->route('item-statuses.index')
+            ->with('success', __('general.item_status_deleted_successfully'));
     }
 }
+

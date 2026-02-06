@@ -17,72 +17,65 @@ class ItemsApiController extends Controller
      */
     public function lite(Request $request)
     {
-        // 1. Extract inputs & validation
-        $branchId = $request->input('branch_id');
-        $invoiceType = $request->input('type');
-        // $limit = $request->input('limit', 2000); // Optional safety limit
+        $term = trim((string)$request->input('term', ''));
+        
+        if (strlen($term) < 1) return response()->json([]);
 
-        // 2. Generate Cache Key
-        $cacheKey = sprintf(
-            'items_lite_v3_%s_%s', // ✅ Version bump to force fresh cache (User cancelled cache:clear)
-             $branchId ?? 'all',
-             $invoiceType ?? 'all'
-        );
+        $cacheKey = 'items_lite_v5_' . md5($term);
 
-        // 3. Fetch Data (Cached)
-        // ✅ Reduced cache time to 5 seconds to ensure new items appear quickly
-        return Cache::remember($cacheKey, 5, function () use ($branchId, $invoiceType) {
-            try {
-                $query = Item::query()
-                    ->select([
-                        'items.id',
-                        'items.name',
-                        'items.code',
-                        'items.average_cost', // ✅ Added for Manufacturing
-                        // 'items.price', // ❌ Removed: Column does not exist
-                    ])
-                    ->where('items.isdeleted', 0)
-                    ->where('items.is_active', 1);
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($term) {
+            $query = Item::query()->select(['id', 'name'])->where('isdeleted', 0);
 
-                // Apply Branch Filter
-                if ($branchId) {
-                    $query->where(function ($q) use ($branchId) {
-                        $q->where('items.branch_id', $branchId)
-                          ->orWhereNull('items.branch_id');
-                    });
+            $query->where(function($q) use ($term) {
+                // Always search in name (substring)
+                $q->where('name', 'LIKE', '%' . $term . '%');
+                
+                // If numeric, also check for exact Code or Barcode match
+                if (is_numeric($term)) {
+                    $q->orWhere('code', $term)
+                      ->orWhereHas('barcodes', function($bq) use ($term) {
+                          $bq->where('barcode', $term);
+                      });
                 }
+            });
 
-                // Apply Invoice Type Filter
-                if (in_array($invoiceType, [11, 13, 15, 17])) {
-                    $query->where('items.type', ItemType::Inventory->value);
-                } 
-                elseif ($invoiceType == 24) {
-                    $query->where('items.type', ItemType::Service->value);
-                }
-
-                $items = $query->get();
-
-                // Load relationships: prices (default price_id 1), barcodes, units
-                $items->load(['barcodes:id,item_id,barcode', 'units:id,name', 'prices']);
-
-                return $items->map(function ($item) {
-                    // Try to find default price (id 1)
-                    $price = $item->prices->where('price_id', 1)->first()->price ?? 0;
-                    
-                    return [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                        'code' => $item->code,
-                        'barcode' => $item->barcodes->pluck('barcode')->toArray(),
-                        'price' => $price, 
-                        'average_cost' => $item->average_cost, // ✅ Added for Manufacturing
-                        'unit_name' => $item->units->first()->name ?? '',
-                    ];
-                });
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('ItemsApiController Error: ' . $e->getMessage());
-                throw $e;
-            }
+            return $query->limit(10)->get();
         });
+    }
+
+    /**
+     * Get full details for a single item via AJAX on selection.
+     */
+    public function details($id)
+    {
+        $item = Item::with(['barcodes:id,item_id,barcode', 'units:id,name', 'prices'])->find($id);
+
+        if (!$item || $item->isdeleted) {
+            return response()->json(['success' => false, 'message' => 'Item not found'], 404);
+        }
+
+        // Map data to match the JS expected format
+        $priceRecord = $item->prices->where('pivot.price_id', 1)->first() ?? $item->prices->first();
+        $price = $priceRecord ? ($priceRecord->pivot->price ?? 0) : 0;
+
+        return response()->json([
+            'success' => true,
+            'item' => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'code' => $item->code,
+                'barcodes' => $item->barcodes->pluck('barcode')->toArray(),
+                'price' => $price,
+                'average_cost' => $item->average_cost,
+                'units' => $item->units->map(function($u) {
+                    return [
+                        'id' => $u->id,
+                        'name' => $u->name,
+                        'u_val' => $u->pivot->u_val ?? 1,
+                        'cost' => $u->pivot->cost ?? 0,
+                    ];
+                }),
+            ]
+        ]);
     }
 }

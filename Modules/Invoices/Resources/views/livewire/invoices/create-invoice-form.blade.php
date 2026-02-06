@@ -17,15 +17,7 @@
                 <div id="invoice-search-container" class="d-flex flex-column flex-grow-1 overflow-hidden g-0"
                     data-branch-id="{{ $branch_id ?? '' }}" data-invoice-type="{{ $type ?? 10 }}"
                     data-price-type="{{ $selectedPriceType ?? 1 }}" data-store-id="{{ $acc2_id ?? '' }}">
-                    @push('invoice_head_barcode')
-                        <div class="col-lg-4">
-                            <label class="form-label" style="font-size: 1em;">{{ __('Search by Barcode') }}</label>
-                            <input type="text" class="form-control form-control-sm font-hold font-14" id="barcode-search"
-                                placeholder="{{ __('Enter Barcode ') }}" autocomplete="off"
-                                style="font-size: 0.85em; height: 2em; padding: 2px 6px;"
-                                wire:keydown.enter="addItemByBarcode" />
-                        </div>
-                    @endpush
+
                     @include('invoices::components.invoices.invoice-head')
 
                     <div id="invoice-config" data-is-cash="{{ $isCurrentAccountCash ? '1' : '0' }}"
@@ -34,8 +26,8 @@
                     <div class="row flex-grow-1 overflow-hidden g-0 py-0">
                         <div class="col-12 h-100 py-0 d-flex flex-column min-height-0">
                             @push('invoice_table_search_row')
-                                <div class="d-inline-block invoice-cell-search-wrap w-100" style="position: relative;">
-                                    <input type="text" class="form-control form-control-sm invoice-field"
+                                <div class="d-inline-block invoice-cell-search-wrap w-100" style="position: relative;" wire:ignore>
+                                    <input type="text" class="form-control frst form-control-sm invoice-field"
                                         id="search-input" placeholder="{{ __('Search by item name...') }}"
                                         autocomplete="off" style="max-width: 100%;">
                                     <div id="invoice-search-results"

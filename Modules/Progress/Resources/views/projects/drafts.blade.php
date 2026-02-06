@@ -1,152 +1,219 @@
-@extends('progress::layouts.daily-progress')
+@extends('progress::layouts.app')
 
-@section('title', 'Project Drafts')
+@section('breadcrumb')
+    <li class="breadcrumb-item">
+        <a href="{{ route('progress.dashboard') }}" class="text-muted text-decoration-none">
+            {{ __('general.dashboard') }}
+        </a>
+    </li>
+    <li class="breadcrumb-item active">{{ __('general.drafts') }}</li>
+@endsection
+
+@section('title', __('general.project_drafts'))
 
 @section('content')
-<div class="container-fluid p-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="m-2 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-file-alt me-2"></i>
+            {{ __('general.project_drafts') }}
+        </h5>
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-muted">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('progress.project.index') }}" class="text-muted">{{ __('projects.list') }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Drafts</li>
-                </ol>
-            </nav>
-            <h4 class="fw-bold text-dark"><i class="las la-file-alt me-2"></i>Project Drafts</h4>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('progress.project.index') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
-                <i class="las la-arrow-left me-1"></i> All Projects
+            <a href="{{ route('progress.projects.index') }}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-project-diagram me-1"></i> {{ __('general.all_projects') }}
             </a>
-            <a href="{{ route('progress.project.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="las la-plus me-1"></i> New Project
-            </a>
+            @can('create progress-projects')
+                <a href="{{ route('progress.projects.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> {{ __('projects.new') }}
+                </a>
+            @endcan
         </div>
     </div>
 
-    <!-- Drafts Table Card -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4 py-3 text-uppercase small fw-bold text-muted border-0">#</th>
-                            <th class="py-3 text-uppercase small fw-bold text-muted border-0">Project Name</th>
-                            <th class="py-3 text-uppercase small fw-bold text-muted border-0">Client</th>
-                            <th class="py-3 text-uppercase small fw-bold text-muted border-0">Status</th>
-                            <th class="py-3 text-uppercase small fw-bold text-muted border-0">Type of Project</th>
-                            <th class="py-3 text-uppercase small fw-bold text-muted border-0">Created At</th>
-                            <th class="py-3 text-uppercase small fw-bold text-muted border-0">Completion</th>
-                            <th class="pe-4 py-3 text-uppercase small fw-bold text-muted border-0 text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($projects as $index => $project)
-                        @php
-                            // Calculate Progress
-                            $totalQty = $project->items->sum('total_quantity');
-                            $completedQty = $project->items->sum('completed_quantity');
-                            $progressPercent = $totalQty > 0 ? round(($completedQty / $totalQty) * 100) : 0;
-                            
-                            $progressColor = 'primary';
-                            if($progressPercent < 25) $progressColor = 'danger';
-                            elseif($progressPercent < 50) $progressColor = 'warning';
-                            elseif($progressPercent < 75) $progressColor = 'info';
-                            else $progressColor = 'success';
-                        @endphp
-                        <tr>
-                            <td class="ps-4 fw-bold text-muted">{{ $loop->iteration }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-2 me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                                        <i class="las la-file-alt"></i>
-                                    </div>
-                                    <span class="fw-bold text-dark">{{ $project->name }}</span>
-                                </div>
-                            </td>
-                            <td>{{ $project->client->name ?? 'N/A' }}</td>
-                            <td>
-                                <span class="badge bg-warning text-dark border border-warning">
-                                    <i class="las la-pen me-1"></i> Draft
-                                </span>
-                            </td>
-                            <td>
-                                <span class="text-muted">{{ $project->type->name ?? 'Not set' }}</span>
-                            </td>
-                            <td class="text-muted">
-                                {{ $project->created_at->format('d-m-Y H:i') }}
-                            </td>
-                            <td style="min-width: 150px;">
-                                @php
-                                    $completionPercent = $project->completion_percentage;
-                                    $progressColor = 'primary';
-                                    if($completionPercent < 50) $progressColor = 'warning'; // Matches screenshot yellow/orange
-                                    elseif($completionPercent < 100) $progressColor = 'info';
-                                    else $progressColor = 'success';
-                                @endphp
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="progress flex-grow-1" style="height: 6px;">
-                                        <div class="progress-bar bg-{{ $progressColor }}" role="progressbar" style="width: {{ $completionPercent }}%"></div>
-                                    </div>
-                                    <span class="small fw-bold {{ 'text-'.$progressColor }}">{{ $completionPercent }}%</span>
-                                </div>
-                            </td>
-                            <td class="pe-4 text-end">
-                                <div class="d-flex justify-content-end gap-1">
-                                    <a href="{{ route('progress.project.edit', $project->id) }}" class="btn btn-warning btn-sm text-dark shadow-sm" title="Edit Draft">
-                                        <i class="las la-pen"></i>
-                                    </a>
-                                    
-                                    @if($completionPercent >= 100)
-                                    <!-- Publish Button -->
-                                    <form action="{{ route('progress.project.publish', $project->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('PUT')
-                                        <button type="submit" class="btn btn-success btn-sm shadow-sm" title="Publish Project">
-                                            <i class="las la-check-circle"></i>
-                                        </button>
-                                    </form>
-                                    @else
-                                    <!-- Locked Button -->
-                                    <button type="button" class="btn btn-secondary btn-sm shadow-sm" disabled title="Complete project to publish">
-                                        <i class="las la-lock"></i>
-                                    </button>
-                                    @endif
-
-                                    <!-- Delete Button -->
-                                    <form action="{{ route('progress.project.destroy', $project->id) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('general.delete_confirm') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm shadow-sm" title="Delete Draft">
-                                            <i class="las la-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <div class="text-muted">
-                                    <i class="las la-inbox fs-1 mb-3"></i>
-                                    <p class="mb-0">No drafts found.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    @if($drafts->isEmpty())
+        <div class="card border-0 rounded-3">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-file-alt text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 text-muted">{{ __('general.no_drafts_found') }}</h5>
+                <p class="text-muted">{{ __('general.no_drafts_description') }}</p>
+                @can('create progress-projects')
+                    <a href="{{ route('progress.projects.create') }}" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus me-1"></i> {{ __('general.create_new_project') }}
+                    </a>
+                @endcan
             </div>
-            <!-- Pagination if needed -->
-            @if($projects instanceof \Illuminate\Pagination\LengthAwarePaginator)
-            <div class="p-3 border-top">
-                {{ $projects->links() }}
-            </div>
-            @endif
         </div>
-    </div>
-</div>
+    @else
+        <div class="card border-0 rounded-0">
+            <div class="card-header border-0">
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table id="draftsTable" class="table table-striped mb-0 w-100" style="min-width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>{{ __('projects.name') }}</th>
+                                <th>{{ __('projects.client') }}</th>
+                                <th>{{ __('general.status') }}</th>
+                                <th>{{ __('general.type_of_project') }}</th>
+                                <th>{{ __('general.created_at') }}</th>
+                                <th>{{ __('general.completion') }}</th>
+                                @canany(['edit progress-projects', 'delete progress-projects'])
+                                    <th>{{ __('projects.actions') }}</th>
+                                @endcanany
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($drafts as $draft)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-file-alt text-warning me-2"></i>
+                                            <strong>{{ $draft->name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($draft->client)
+                                            {{ $draft->client->name }}
+                                        @else
+                                            <span class="text-muted">{{ __('general.not_set') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-pencil-alt me-1"></i>
+                                            {{ __('general.draft') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($draft->projectType)
+                                            {{ $draft->projectType->name }}
+                                        @else
+                                            <span class="text-muted">{{ __('general.not_set') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        {{ $draft->created_at->format('d-m-Y H:i') }}
+                                    </td>
+                                    <td>
+                                        @php
+                                            $completion = 0;
+                                            $total = 8; // عدد الحقول المطلوبة
+                                            $filled = 0;
+
+                                            if($draft->name) $filled++;
+                                            if($draft->client_id) $filled++;
+                                            if($draft->start_date) $filled++;
+                                            if($draft->end_date) $filled++;
+                                            if($draft->project_type_id) $filled++;
+                                            if($draft->working_zone) $filled++;
+                                            if($draft->items->count() > 0) $filled++;
+                                            if($draft->employees->count() > 0) $filled++;
+
+                                            $completion = round(($filled / $total) * 100);
+                                        @endphp
+
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1" style="height: 20px;">
+                                                <div class="progress-bar {{ $completion >= 100 ? 'bg-success' : 'bg-warning' }}"
+                                                     role="progressbar"
+                                                     style="width: {{ $completion }}%;">
+                                                    <strong>{{ $completion }}%</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    @canany(['edit progress-projects', 'delete progress-projects'])
+                                        <td>
+                                            @can('edit progress-projects')
+                                                
+                                                <a href="{{ route('progress.projects.edit', $draft) }}"
+                                                   class="btn btn-icon-square-sm btn-warning"
+                                                   style='font-size:10px;'
+                                                   title="{{ __('general.continue_editing') }}">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+
+                                                
+                                                @if($completion >= 100)
+                                                    <form action="{{ route('progress.projects.publish', $draft) }}"
+                                                          method="POST"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('{{ __('general.confirm_publish_draft') }}')">
+                                                        @csrf
+                                                        <button type="submit"
+                                                                class="btn btn-icon-square-sm btn-success"
+                                                                style='font-size:10px;'
+                                                                title="{{ __('general.publish_project') }}">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <button type="button"
+                                                            class="btn btn-icon-square-sm btn-secondary"
+                                                            style='font-size:10px;'
+                                                            disabled
+                                                            title="{{ __('general.complete_all_fields_to_publish') }}">
+                                                        <i class="fas fa-lock"></i>
+                                                    </button>
+                                                @endif
+                                            @endcan
+
+                                            @can('delete progress-projects')
+                                                <form action="{{ route('progress.projects.destroy', $draft) }}"
+                                                      method="POST"
+                                                      class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="btn btn-danger btn-icon-square-sm"
+                                                            style='font-size:10px;'
+                                                            onclick="return confirm('{{ __('general.confirm_delete_draft') }}')"
+                                                            title="{{ __('general.delete') }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </td>
+                                    @endcanany
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <style>
+        .progress {
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            font-size: 0.75rem;
+        }
+
+        .btn-icon-square-sm {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+
+    @push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#draftsTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
+                },
+                order: [[5, 'desc']], // ترتيب حسب تاريخ الإنشاء
+                pageLength: 25
+            });
+        });
+    </script>
+    @endpush
 @endsection

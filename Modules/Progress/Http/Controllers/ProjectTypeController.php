@@ -2,83 +2,61 @@
 
 namespace Modules\Progress\Http\Controllers;
 
-use Illuminate\Routing\Controller;
-use Exception;
-use Modules\Progress\Http\Requests\ProjectTypeRequest;
+use Illuminate\Http\Request;
 use Modules\Progress\Models\ProjectType;
-use RealRashid\SweetAlert\Facades\Alert;
-
 class ProjectTypeController extends Controller
 {
         public function __construct()
-    {
-        $this->middleware('can:view progress-project-types')->only(['index','show']);
-        $this->middleware('can:create progress-project-types')->only(['create', 'store']);
-        $this->middleware('can:edit progress-project-types')->only(['edit', 'update']);
-        $this->middleware('can:delete progress-project-types')->only('destroy');
-    }
-
+{
+    $this->middleware('can:view progress-project-types')->only('index');
+    $this->middleware('can:create progress-project-types')->only(['create', 'store']);
+    $this->middleware('can:edit progress-project-types')->only(['edit', 'update']);
+    $this->middleware('can:delete progress-project-types')->only('destroy');
+}
     public function index()
     {
-        $types = ProjectType::paginate(20);
-
-        return view('progress::project-types.index', compact('types'));
+        $types = ProjectType::all();
+        return view('progress::project_types.index', compact('types'));
     }
 
     public function create()
     {
-        return view('progress::project-types.create');
+        return view('progress::project_types.create');
     }
 
-    public function store(ProjectTypeRequest $request)
+    public function store(Request $request)
     {
-        try {
-            ProjectType::create($request->validated());
-            Alert::toast('تم الاضافه بنجاح', 'success');
+        $request->validate([
+            'name' => 'required|unique:project_types,name',
+        ]);
 
-            return redirect()->route('project.types.index');
-        } catch (Exception) {
-            Alert::toast('حدث خطا', 'error');
-
-            return redirect()->route('project.types.index');
-        }
-    }
-
-    public function edit(ProjectType $projectType)
-    {
-        return view('progress::project-types.edit', compact('projectType'));
-    }
-
-    public function update(ProjectTypeRequest $request, ProjectType $projectType)
-    {
-        try {
-            $projectType->update($request->validated());
-            Alert::toast('تم التعديل بنجاح', 'success');
-
-            return redirect()->route('project.types.index');
-        } catch (Exception) {
-            Alert::toast('حدث خطا', 'error');
-
-            return redirect()->route('project.types.index');
-        }
+        ProjectType::create($request->all());
+        return redirect()->route('project_types.index')->with('success', 'تم إضافة النوع بنجاح');
     }
 
     public function show(ProjectType $projectType)
     {
-        return view('progress::project-types.show', compact('projectType'));
+        return view('progress::project_types.show', compact('projectType'));
+    }
+
+    public function edit(ProjectType $projectType)
+    {
+        return view('progress::project_types.edit', compact('projectType'));
+    }
+
+    public function update(Request $request, ProjectType $projectType)
+    {
+        $request->validate([
+            'name' => 'required|unique:project_types,name,' . $projectType->id,
+        ]);
+
+        $projectType->update($request->all());
+        return redirect()->route('project_types.index')->with('success', 'تم تعديل النوع بنجاح');
     }
 
     public function destroy(ProjectType $projectType)
     {
-        try {
-            $projectType->delete();
-            Alert::toast('تم الحذف بنجاح', 'success');
-
-            return redirect()->route('project.types.index');
-        } catch (Exception) {
-            Alert::toast('حدث خطا', 'error');
-
-            return redirect()->route('project.types.index');
-        }
+        $projectType->delete();
+        return redirect()->route('project_types.index')->with('success', 'تم حذف النوع بنجاح');
     }
 }

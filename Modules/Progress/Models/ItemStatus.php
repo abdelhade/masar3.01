@@ -15,11 +15,36 @@ class ItemStatus extends Model
         'icon',
         'description',
         'order',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'order' => 'integer'
+        'order' => 'integer',
     ];
+
+    /**
+     * Get all project items with this status
+     */
+    public function projectItems()
+    {
+        return $this->hasMany(ProjectItem::class);
+    }
+
+    /**
+     * Scope for active statuses
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope for ordered statuses
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('order')->orderBy('name');
+    }
 }
+

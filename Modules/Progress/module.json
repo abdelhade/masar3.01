@@ -1,11 +1,19 @@
 {
     "name": "Progress",
     "alias": "progress",
-    "description": "",
-    "keywords": [],
-    "priority": 0,
+    "description": "Daily Progress Tracking and Project Management Module",
+    "keywords": [
+        "progress",
+        "projects",
+        "daily-progress",
+        "tracking",
+        "management"
+    ],
+    "priority": 10,
     "providers": [
-        "Modules\\Progress\\Providers\\ProgressServiceProvider"
+        "Modules\\Progress\\Providers\\ProgressServiceProvider",
+        "Modules\\Progress\\Providers\\RouteServiceProvider",
+        "Modules\\Progress\\Providers\\EventServiceProvider"
     ],
     "files": []
 }

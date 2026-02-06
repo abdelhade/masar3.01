@@ -1,4 +1,4 @@
-<div class="sidebar progress-sidebar col-md-3 col-lg-2 d-md-block collapse" id="sidebarMenu">
+<div class="sidebar col-md-3 col-lg-2 d-md-block collapse" id="sidebarMenu">
     <div class="position-sticky pt-3">
         
         <div class="sidebar-header d-flex justify-content-between align-items-center px-3 pb-2 mb-2 border-bottom">
@@ -22,132 +22,139 @@
         <ul class="nav flex-column">
 
             
+            @can('view progress-dashboard')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3"
-                        href="{{ route('admin.dashboard') }}" data-title="{{ __('general.home') }}">
-                        <i class="fas fa-home"></i> <span>{{ __('general.home') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.dashboard') ? 'active' : '' }}"
+                        href="{{ route('progress.dashboard') }}" data-title="{{ __('general.dashboard') }}">
+                        <i class="fas fa-home me-2"></i> <span>{{ __('general.dashboard') }}</span>
                     </a>
                 </li>
+            @endcan
 
-                @can('view progress-dashboard')
+            @can('view progress-projects')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('progress.dashboard') ? 'active' : '' }}"
-                        href="{{ route('progress.dashboard') }}" data-title="{{ __('progress::dashboard.title') }}">
-                        <i class="fas fa-tachometer-alt"></i> <span>{{ __('progress::dashboard.title') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.projects.*') ? 'active' : '' }}"
+                        href="{{ route('progress.projects.index') }}" data-title="{{ __('general.projects') }}">
+                        <i class="fas fa-project-diagram me-2"></i> <span>{{ __('general.projects') }}</span>
                     </a>
                 </li>
-                @endcan
-                
+            @endcan
 
-
-                @can('view progress-projects')
+            @can('view progress-issues')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('projects.*') ? 'active' : '' }}"
-                        href="{{ route('progress.project.index') }}" data-title="{{ __('general.projects') }}">
-                        <i class="fas fa-project-diagram"></i> <span>{{ __('general.projects') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.issues.*') ? 'active' : '' }}"
+                        href="{{ route('progress.issues.index') }}" data-title="{{ __('general.issues_management') }}">
+                        <i class="fas fa-bug me-2"></i> <span>{{ __('general.issues') }}</span>
                     </a>
                 </li>
-                @endcan
+            @endcan
 
-                @can('view progress-issues')
+            @can('view daily-progress')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('issues.*') ? 'active' : '' }}"
-                        href="{{ route('issues.index') }}" data-title="{{ __('general.issues_management') }}">
-                        <i class="fas fa-bug"></i> <span>{{ __('general.issues') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.daily-progress.index') ? 'active' : '' }}"
+                        href="{{ route('progress.daily-progress.index') }}" data-title="{{ __('general.daily_progress') }}">
+                        <i class="fas fa-list-alt me-2"></i> <span>{{ __('general.daily_progress') }}</span>
                     </a>
                 </li>
-                @endcan
+            @endcan
 
-                @can('view daily-progress')
+            @can('create daily-progress')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('daily_progress.index') ? 'active' : '' }}"
-                        href="{{ route('daily_progress.index') }}" data-title="{{ __('general.daily_progress') }}">
-                        <i class="fas fa-list-alt"></i> <span>{{ __('general.daily_progress') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.daily-progress.create') ? 'active' : '' }}"
+                        href="{{ route('progress.daily-progress.create') }}" data-title="{{ __('general.create_daily_progress') }}">
+                        <i class="fas fa-plus-circle me-2"></i> <span>{{ __('general.create_daily_progress') }}</span>
                     </a>
                 </li>
-                @endcan
-
-                @can('create daily-progress')
+            @endcan
+            @can('view progress-clients')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('daily_progress.create') ? 'active' : '' }}"
-                        href="{{ route('daily_progress.create') }}" data-title="{{ __('general.create_daily_progress') }}">
-                        <i class="fas fa-plus-circle"></i> <span>{{ __('general.create_daily_progress') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.clients.*') ? 'active' : '' }}"
+                        href="{{ route('progress.clients.index') }}" data-title="{{ __('general.clients') }}">
+                        <i class="fas fa-users me-2"></i> <span>{{ __('general.clients') }}</span>
                     </a>
                 </li>
-                @endcan 
+            @endcan
 
-                @can('view Clients')
+            @can('view progress-employees')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('clients.*') ? 'active' : '' }}"
-                        href="{{ route('clients.index') }}" data-title="{{ __('general.clients') }}">
-                        <i class="fas fa-users"></i> <span>{{ __('general.clients') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.employees.*') ? 'active' : '' }}"
+                        href="{{ route('progress.employees.index') }}" data-title="{{ __('general.employees') }}">
+                        <i class="fas fa-user-tie me-2"></i> <span>{{ __('general.employees') }}</span>
                     </a>
                 </li>
-                @endcan
-
-                @can('view Employees')
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('employees.*') ? 'active' : '' }}"
-                        href="{{ route('employees.index') }}" data-title="{{ __('general.employees') }}">
-                        <i class="fas fa-user-tie"></i> <span>{{ __('general.employees') }}</span>
-                    </a>
-                </li>
-                @endcan
-
-                @can('view progress-work-item-categories')
+            @endcan
+            @can('view progress-work-item-categories')
             <li class="nav-item">
-                <a href="{{ route('work-item-categories.index') }}"
-                    class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('work-item-categories.*') ? 'active' : '' }}" data-title="{{ __('general.categories') }}">
-                    <i class="fas fa-layer-group"></i>
+                <a href="{{ route('progress.categories.index') }}"
+                    class="nav-link {{ request()->routeIs('progress.categories.*') ? 'active' : '' }}" data-title="{{ __('general.categories') }}">
+                    <i class="fas fa-layer-group me-2"></i>
                     <span>{{ __('general.categories') }}</span>
                 </a>
             </li>
-                @endcan
+            @endcan
 
-                @can('view progress-work-items')
+            @can('view progress-work-items')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('work.items.*') ? 'active' : '' }}"
-                        href="{{ route('work.items.index') }}" data-title="{{ __('general.work_items') }}">
-                        <i class="fas fa-tasks"></i> <span>{{ __('general.work_items') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.work-items.*') ? 'active' : '' }}"
+                        href="{{ route('progress.work-items.index') }}" data-title="{{ __('general.work_items') }}">
+                        <i class="fas fa-tasks me-2"></i> <span>{{ __('general.work_items') }}</span>
                     </a>
                 </li>
-                @endcan
+            @endcan
 
-                @can('view progress-item-statuses')
+            @can('view progress-item-statuses')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('item-statuses.*') ? 'active' : '' }}"
-                        href="{{ route('item-statuses.index') }}" data-title="{{ __('general.item_statuses') }}">
-                        <i class="fas fa-tags"></i> <span>{{ __('general.item_statuses') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.item-statuses.*') ? 'active' : '' }}"
+                        href="{{ route('progress.item-statuses.index') }}" data-title="{{ __('general.item_statuses') }}">
+                        <i class="fas fa-tags me-2"></i> <span>{{ __('general.item_statuses') }}</span>
                     </a>
                 </li>
-                @endcan
+            @endcan
 
-                @can('view progress-project-templates')
+            @can('view progress-project-templates')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('project.template.*') ? 'active' : '' }}"
-                        href="{{ route('project.template.index') }}" data-title="{{ __('general.project_templates') }}">
-                        <i class="fas fa-file-alt"></i> <span>{{ __('general.project_templates') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.project-templates.*') ? 'active' : '' }}"
+                        href="{{ route('progress.project-templates.index') }}" data-title="{{ __('general.project_templates') }}">
+                        <i class="fas fa-file-alt  me-2"></i> <span>{{ __('general.project_templates') }}</span>
                     </a>
                 </li>
-                @endcan
-
-                @can('view progress-project-types')
+            @endcan
+            @can('view progress-project-types')
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('project.types.*') ? 'active' : '' }}"
-                        href="{{ route('project.types.index') }}" data-title="{{ __('general.project__type') }}">
-                        <i class="fa-solid fa-diagram-next"></i> <span>{{ __('general.project__type') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.project_types.*') ? 'active' : '' }}"
+                        href="{{ route('progress.project_types.index') }}" data-title="{{ __('general.project__type') }}">
+                        <i class="fa-solid fa-diagram-next  me-2"></i> <span>{{ __('general.project__type') }}</span>
                     </a>
                 </li>
-                @endcan
+            @endcan
 
-                @can('view progress-recyclebin')
+            @can('view progress-activity-logs')
                 <li class="nav-item">
-                     <a class="nav-link d-flex align-items-center gap-3 {{ request()->routeIs('progress.recycle_bin.*') ? 'active' : '' }}"
-                        href="{{ route('progress.recycle_bin.index') }}" data-title="{{ __('progress::dashboard.recycle_bin') }}">
-                        <i class="las la-trash"></i> <span>{{ __('progress::dashboard.recycle_bin') }}</span>
+                    <a class="nav-link {{ request()->routeIs('progress.activity-logs.*') ? 'active' : '' }}"
+                        href="{{ route('progress.activity-logs.index') }}" data-title="{{ __('activity-logs.activity_logs_nav') }}">
+                        <i class="fas fa-history me-2"></i> <span>{{ __('activity-logs.activity_logs_nav') }}</span>
                     </a>
                 </li>
-                @endcan
+            @endcan
+            @can('view progress-recyclebin')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('progress.recycle-bin.*') ? 'active' : '' }}"
+                        href="{{ route('progress.recycle-bin.index') }}" data-title="{{ __('general.recycle_bin_title') }}">
+                        <i class="fas fa-trash-alt me-2"></i><span>{{ __('general.recycle_bin_title') }}</span>
+                    </a>
+                </li>
+            @endcan
+            @can('view progress-backup')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('progress.backup.*') ? 'active' : '' }}"
+                        href="{{ route('progress.backup.index') }}" data-title="{{ __('general.backup_restore') }}">
+                        <i class="fas fa-database me-2"></i> <span>{{ __('general.backup_restore') }}</span>
+                    </a>
+                </li>
+            @endcan
+
+
+
         </ul>
     </div>
 </div>

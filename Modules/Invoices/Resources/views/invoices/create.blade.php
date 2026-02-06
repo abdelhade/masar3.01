@@ -1,6 +1,6 @@
 @extends('admin.dashboard')
 
-@section('body_class', 'invoice-page sidebar-collapsed')
+@section('body_class', 'invoice-page')
 @section('hide_footer')
 @endsection
 @push('styles')

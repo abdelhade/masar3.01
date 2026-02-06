@@ -1,0 +1,1402 @@
+/* ===================================
+   GitHub-like Dark Mode Theme (Optional)
+   Toggle-able Dark/Light Mode
+   =================================== */
+
+/* Root Variables - GitHub Dark Colors */
+:root {
+    /* Main backgrounds */
+    --dark-bg-primary: #0d1117;
+    --dark-bg-secondary: #161b22;
+    --dark-bg-tertiary: #21262d;
+    --dark-bg-hover: #30363d;
+    
+    /* Borders */
+    --dark-border: #30363d;
+    --dark-border-subtle: #21262d;
+    
+    /* Text colors */
+    --dark-text-primary: #c9d1d9;
+    --dark-text-secondary: #8b949e;
+    --dark-text-muted: #6e7681;
+    --dark-text-link: #58a6ff;
+    --dark-text-link-hover: #79c0ff;
+    
+    /* Status colors */
+    --dark-success: #3fb950;
+    --dark-warning: #d29922;
+    --dark-danger: #f85149;
+    --dark-info: #58a6ff;
+    
+    /* Component colors */
+    --dark-primary: #58a6ff;
+    --dark-primary-hover: #1f6feb;
+    --dark-secondary: #373e47;
+    
+    /* Shadow */
+    --dark-shadow: rgba(1, 4, 9, 0.85);
+    --dark-shadow-light: rgba(1, 4, 9, 0.5);
+}
+
+/* ===================================
+   Dark Mode Toggle Button
+   =================================== */
+
+#darkModeToggle {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+#darkModeToggle:hover {
+    transform: rotate(20deg) scale(1.1);
+    box-shadow: 0 0 15px rgba(88, 166, 255, 0.3);
+}
+
+body.dark-mode #darkModeToggle {
+    background-color: var(--dark-bg-tertiary);
+    border-color: var(--dark-border);
+    color: var(--dark-text-link);
+}
+
+#darkModeIcon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+#darkModeToggle:active #darkModeIcon {
+    transform: scale(0.85);
+}
+
+/* Light mode icon (moon) */
+body:not(.dark-mode) #darkModeIcon.fa-moon {
+    color: #4361ee;
+}
+
+/* Dark mode icon (sun) */
+body.dark-mode #darkModeIcon.fa-sun {
+    color: #ffd700;
+}
+
+/* ===================================
+   ICONS ENHANCEMENT FOR DARK MODE
+   =================================== */
+
+/* All Font Awesome Icons */
+body.dark-mode i,
+body.dark-mode .fa,
+body.dark-mode .fas,
+body.dark-mode .far,
+body.dark-mode .fal,
+body.dark-mode .fab {
+    opacity: 0.95;
+    color: rgb(77, 0, 150) !important;
+}
+
+/* Primary color icons */
+body.dark-mode .text-primary i,
+body.dark-mode i.text-primary {
+    color: var(--dark-primary) !important;
+}
+
+/* Success icons */
+body.dark-mode .text-success i,
+body.dark-mode i.text-success {
+    color: var(--dark-success) !important;
+}
+
+/* Danger icons */
+body.dark-mode .text-danger i,
+body.dark-mode i.text-danger {
+    color: var(--dark-danger) !important;
+}
+
+/* Warning icons */
+body.dark-mode .text-warning i,
+body.dark-mode i.text-warning {
+    color: var(--dark-warning) !important;
+}
+
+/* Info icons */
+body.dark-mode .text-info i,
+body.dark-mode i.text-info {
+    color: var(--dark-info) !important;
+}
+
+/* Muted icons */
+body.dark-mode .text-muted i,
+body.dark-mode i.text-muted {
+    color: var(--dark-text-muted) !important;
+}
+
+/* Button icons */
+body.dark-mode .btn i {
+    opacity: 1;
+}
+
+/* Sidebar icons - make them more visible */
+body.dark-mode .sidebar a i {
+    color: var(--dark-text-primary) !important;
+    opacity: 0.85;
+    filter: brightness(1.1);
+}
+
+body.dark-mode .sidebar a:hover i {
+    color: var(--dark-text-link) !important;
+    opacity: 1;
+    filter: brightness(1.2);
+}
+
+body.dark-mode .sidebar a.active i {
+    color: #fff !important;
+    opacity: 1;
+    filter: brightness(1);
+}
+
+/* Navbar icons */
+body.dark-mode .navbar i {
+    color: var(--dark-text-primary) !important;
+    opacity: 0.9;
+}
+
+body.dark-mode .navbar a:hover i {
+    color: var(--dark-text-link) !important;
+    opacity: 1;
+}
+
+/* Table action icons */
+body.dark-mode .table .btn i {
+    filter: brightness(1.1);
+}
+
+/* Card icons */
+body.dark-mode .card-header i,
+body.dark-mode .card-title i {
+    opacity: 0.9;
+    filter: brightness(1.1);
+}
+
+/* Form label icons */
+body.dark-mode .form-label i {
+    opacity: 0.85;
+    filter: brightness(1.1);
+}
+
+/* Badge icons */
+body.dark-mode .badge i {
+    opacity: 1;
+    filter: brightness(1.2);
+}
+
+/* Alert icons */
+body.dark-mode .alert i {
+    opacity: 1;
+    filter: brightness(1.1);
+}
+
+/* Dropdown icons */
+body.dark-mode .dropdown-item i {
+    opacity: 0.85;
+}
+
+body.dark-mode .dropdown-item:hover i {
+    opacity: 1;
+}
+
+/* Breadcrumb icons */
+body.dark-mode .breadcrumb-item i {
+    opacity: 0.8;
+}
+
+/* Stats card icons */
+body.dark-mode .stats-card .icon,
+body.dark-mode .stat-card .icon {
+    opacity: 0.2 !important;
+    filter: brightness(1.3);
+}
+
+body.dark-mode .stats-card:hover .icon,
+body.dark-mode .stat-card:hover .icon {
+    opacity: 0.3 !important;
+}
+
+/* Dashboard header icons */
+body.dark-mode .dashboard-header i {
+    color: #fff !important;
+    opacity: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Action button icons - enhance visibility */
+body.dark-mode .btn-icon-square-sm i,
+body.dark-mode .btn-sm i,
+body.dark-mode .btn-xs i {
+    filter: brightness(1.2);
+}
+
+/* Special icons with specific colors */
+body.dark-mode .fa-eye {
+    color: var(--dark-info) !important;
+}
+
+body.dark-mode .fa-edit,
+body.dark-mode .fa-pen {
+    color: var(--dark-success) !important;
+}
+
+body.dark-mode .fa-trash,
+body.dark-mode .fa-trash-alt {
+    color: var(--dark-danger) !important;
+}
+
+body.dark-mode .fa-download {
+    color: var(--dark-primary) !important;
+}
+
+body.dark-mode .fa-print {
+    color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .fa-search {
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .fa-plus,
+body.dark-mode .fa-plus-circle {
+    color: var(--dark-success) !important;
+}
+
+body.dark-mode .fa-check,
+body.dark-mode .fa-check-circle {
+    color: var(--dark-success) !important;
+}
+
+body.dark-mode .fa-times,
+body.dark-mode .fa-times-circle {
+    color: var(--dark-danger) !important;
+}
+
+body.dark-mode .fa-exclamation,
+body.dark-mode .fa-exclamation-circle,
+body.dark-mode .fa-exclamation-triangle {
+    color: var(--dark-warning) !important;
+}
+
+body.dark-mode .fa-info,
+body.dark-mode .fa-info-circle {
+    color: var(--dark-info) !important;
+}
+
+/* Icon hover effects */
+body.dark-mode a:hover i,
+body.dark-mode button:hover i {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+/* Spinning icons */
+body.dark-mode .fa-spin {
+    opacity: 0.8;
+}
+
+/* Icon in buttons - primary */
+body.dark-mode .btn-primary i {
+    color: #fff !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Icon in buttons - success */
+body.dark-mode .btn-success i {
+    color: #fff !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Icon in buttons - danger */
+body.dark-mode .btn-danger i {
+    color: #fff !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Icon in buttons - warning */
+body.dark-mode .btn-warning i {
+    color: #000 !important;
+    filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.3));
+}
+
+/* Icon in buttons - info */
+body.dark-mode .btn-info i {
+    color: #fff !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Icon pulse animation for important actions */
+@keyframes icon-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+body.dark-mode .btn-primary:hover i,
+body.dark-mode .btn-success:hover i,
+body.dark-mode .btn-danger:hover i {
+    animation: icon-pulse 1s ease-in-out infinite;
+}
+
+/* ===================================
+   GLOBAL STYLES - Only apply in dark mode
+   =================================== */
+
+body.dark-mode {
+    background-color: var(--dark-bg-primary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* Text colors */
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4, 
+body.dark-mode h5, 
+body.dark-mode h6,
+body.dark-mode .text-dark {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode p, 
+body.dark-mode span, 
+body.dark-mode div, 
+body.dark-mode label, 
+body.dark-mode small {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .text-muted {
+    color: var(--dark-text-muted) !important;
+}
+
+body.dark-mode .text-secondary {
+    color: var(--dark-text-secondary) !important;
+}
+
+/* Links */
+body.dark-mode a {
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode a:hover {
+    color: var(--dark-text-link-hover) !important;
+}
+
+/* ===================================
+   NAVBAR
+   =================================== */
+
+body.dark-mode .navbar {
+    background: var(--dark-bg-secondary) !important;
+    border-bottom: 1px solid var(--dark-border) !important;
+    box-shadow: 0 1px 0 var(--dark-border) !important;
+}
+
+body.dark-mode .navbar-brand,
+body.dark-mode .navbar-nav .nav-link {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .navbar-nav .nav-link:hover {
+    color: var(--dark-text-link) !important;
+}
+
+/* ===================================
+   SIDEBAR
+   =================================== */
+
+body.dark-mode .sidebar {
+    background: var(--dark-bg-secondary) !important;
+    border-right: 1px solid var(--dark-border) !important;
+    box-shadow: none !important;
+}
+
+[dir="rtl"] body.dark-mode .sidebar {
+    border-right: none !important;
+    border-left: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .sidebar a {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .sidebar a:hover {
+    background: var(--dark-bg-hover) !important;
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .sidebar a.active {
+    background: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .sidebar a i {
+    color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .sidebar a.active i {
+    color: #fff !important;
+}
+
+body.dark-mode .sidebar-header {
+    background: var(--dark-bg-secondary) !important;
+    border-bottom: 1px solid var(--dark-border) !important;
+}
+
+/* ===================================
+   CARDS
+   =================================== */
+
+body.dark-mode .card {
+    background-color: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .card-header {
+    background-color: var(--dark-bg-tertiary) !important;
+    border-bottom: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .card-body {
+    background-color: var(--dark-bg-secondary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .card-footer {
+    background-color: var(--dark-bg-tertiary) !important;
+    border-top: 1px solid var(--dark-border) !important;
+}
+
+/* ===================================
+   FORMS
+   =================================== */
+
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode select,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="time"],
+body.dark-mode input[type="datetime-local"],
+body.dark-mode textarea {
+    background-color: var(--dark-bg-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus,
+body.dark-mode select:focus,
+body.dark-mode input:focus,
+body.dark-mode textarea:focus {
+    background-color: var(--dark-bg-primary) !important;
+    border-color: var(--dark-primary) !important;
+    color: var(--dark-text-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.25) !important;
+}
+
+body.dark-mode .form-control::placeholder,
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: var(--dark-text-muted) !important;
+}
+
+body.dark-mode .form-label {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .form-check-input {
+    background-color: var(--dark-bg-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .form-check-input:checked {
+    background-color: var(--dark-primary) !important;
+    border-color: var(--dark-primary) !important;
+}
+
+body.dark-mode .form-check-label {
+    color: var(--dark-text-primary) !important;
+}
+
+/* ===================================
+   BUTTONS
+   =================================== */
+
+body.dark-mode .btn {
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .btn-primary {
+    background-color: var(--dark-primary-hover) !important;
+    border-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: var(--dark-primary) !important;
+    border-color: var(--dark-primary) !important;
+}
+
+body.dark-mode .btn-secondary {
+    background-color: var(--dark-secondary) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background-color: var(--dark-bg-hover) !important;
+    border-color: var(--dark-border) !important;
+}
+
+body.dark-mode .btn-success {
+    background-color: var(--dark-success) !important;
+    border-color: var(--dark-success) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .btn-danger {
+    background-color: var(--dark-danger) !important;
+    border-color: var(--dark-danger) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .btn-warning {
+    background-color: var(--dark-warning) !important;
+    border-color: var(--dark-warning) !important;
+    color: #000 !important;
+}
+
+body.dark-mode .btn-info {
+    background-color: var(--dark-info) !important;
+    border-color: var(--dark-info) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .btn-light {
+    background-color: var(--dark-bg-tertiary) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .btn-dark {
+    background-color: var(--dark-bg-primary) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .btn-outline-primary {
+    color: var(--dark-primary) !important;
+    border-color: var(--dark-primary) !important;
+    background-color: transparent !important;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+    background-color: var(--dark-primary) !important;
+    color: #fff !important;
+}
+
+/* ===================================
+   TABLES
+   =================================== */
+
+/* Exception: Don't modify table-dark - keep Bootstrap default */
+body.dark-mode .table-dark,
+body.dark-mode .table-dark thead th,
+body.dark-mode .table-dark tbody tr,
+body.dark-mode .table-dark tbody tr:hover,
+body.dark-mode .table-dark td,
+body.dark-mode .table-dark th {
+    /* Keep Bootstrap's default table-dark styling */
+    background-color: revert !important;
+    color: revert !important;
+    border-color: revert !important;
+}
+
+/* Regular tables - apply dark mode */
+body.dark-mode .table:not(.table-dark) {
+    color: var(--dark-text-primary) !important;
+    border-color: var(--dark-border) !important;
+}
+
+body.dark-mode .table:not(.table-dark) thead th {
+    background-color: var(--dark-bg-tertiary) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .table:not(.table-dark) tbody tr {
+    border-color: var(--dark-border) !important;
+}
+
+body.dark-mode .table:not(.table-dark) tbody tr:hover {
+    background-color: var(--dark-bg-hover) !important;
+}
+
+body.dark-mode .table:not(.table-dark) td,
+body.dark-mode .table:not(.table-dark) th {
+    border-color: var(--dark-border) !important;
+}
+
+body.dark-mode .table-striped:not(.table-dark) tbody tr:nth-of-type(odd) {
+    background-color: var(--dark-bg-tertiary) !important;
+}
+
+body.dark-mode .table-hover:not(.table-dark) tbody tr:hover {
+    background-color: var(--dark-bg-hover) !important;
+}
+
+/* ===================================
+   MODALS
+   =================================== */
+
+body.dark-mode .modal-content {
+    background-color: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid var(--dark-border) !important;
+    background-color: var(--dark-bg-tertiary) !important;
+}
+
+body.dark-mode .modal-title {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .modal-body {
+    background-color: var(--dark-bg-secondary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .modal-footer {
+    border-top: 1px solid var(--dark-border) !important;
+    background-color: var(--dark-bg-tertiary) !important;
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* ===================================
+   DROPDOWNS
+   =================================== */
+
+body.dark-mode .dropdown-menu {
+    background-color: var(--dark-bg-tertiary) !important;
+    border: 1px solid var(--dark-border) !important;
+    box-shadow: 0 8px 16px var(--dark-shadow-light) !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .dropdown-item:hover,
+body.dark-mode .dropdown-item:focus {
+    background-color: var(--dark-bg-hover) !important;
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .dropdown-item.active {
+    background-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .dropdown-divider {
+    border-color: var(--dark-border) !important;
+}
+
+/* ===================================
+   BADGES
+   =================================== */
+
+body.dark-mode .badge {
+    border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .badge.bg-primary {
+    background-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .badge.bg-success {
+    background-color: var(--dark-success) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .badge.bg-danger {
+    background-color: var(--dark-danger) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .badge.bg-warning {
+    background-color: var(--dark-warning) !important;
+    color: #000 !important;
+}
+
+body.dark-mode .badge.bg-info {
+    background-color: var(--dark-info) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .badge.bg-secondary {
+    background-color: var(--dark-secondary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .badge.bg-light {
+    background-color: var(--dark-bg-tertiary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .badge.bg-dark {
+    background-color: var(--dark-bg-primary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* ===================================
+   ALERTS
+   =================================== */
+
+body.dark-mode .alert {
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .alert-primary {
+    background-color: rgba(88, 166, 255, 0.15) !important;
+    border-color: var(--dark-primary) !important;
+    color: var(--dark-primary) !important;
+}
+
+body.dark-mode .alert-success {
+    background-color: rgba(63, 185, 80, 0.15) !important;
+    border-color: var(--dark-success) !important;
+    color: var(--dark-success) !important;
+}
+
+body.dark-mode .alert-danger {
+    background-color: rgba(248, 81, 73, 0.15) !important;
+    border-color: var(--dark-danger) !important;
+    color: var(--dark-danger) !important;
+}
+
+body.dark-mode .alert-warning {
+    background-color: rgba(210, 153, 34, 0.15) !important;
+    border-color: var(--dark-warning) !important;
+    color: var(--dark-warning) !important;
+}
+
+body.dark-mode .alert-info {
+    background-color: rgba(88, 166, 255, 0.15) !important;
+    border-color: var(--dark-info) !important;
+    color: var(--dark-info) !important;
+}
+
+/* ===================================
+   BREADCRUMB
+   =================================== */
+
+body.dark-mode .breadcrumb {
+    background-color: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .breadcrumb-item {
+    color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .breadcrumb-item.active {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .breadcrumb-item + .breadcrumb-item::before {
+    color: var(--dark-text-muted) !important;
+}
+
+/* ===================================
+   PAGINATION
+   =================================== */
+
+body.dark-mode .pagination .page-link {
+    background-color: var(--dark-bg-secondary) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .pagination .page-link:hover {
+    background-color: var(--dark-bg-hover) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-link-hover) !important;
+}
+
+body.dark-mode .pagination .page-item.active .page-link {
+    background-color: var(--dark-primary-hover) !important;
+    border-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .pagination .page-item.disabled .page-link {
+    background-color: var(--dark-bg-tertiary) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-muted) !important;
+}
+
+/* ===================================
+   LIST GROUP
+   =================================== */
+
+body.dark-mode .list-group-item {
+    background-color: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .list-group-item:hover {
+    background-color: var(--dark-bg-hover) !important;
+}
+
+body.dark-mode .list-group-item.active {
+    background-color: var(--dark-primary-hover) !important;
+    border-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+/* ===================================
+   PROGRESS BARS
+   =================================== */
+
+body.dark-mode .progress {
+    background-color: var(--dark-bg-tertiary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .progress-bar {
+    background-color: var(--dark-primary-hover) !important;
+}
+
+body.dark-mode .progress-bar.bg-success {
+    background-color: var(--dark-success) !important;
+}
+
+body.dark-mode .progress-bar.bg-danger {
+    background-color: var(--dark-danger) !important;
+}
+
+body.dark-mode .progress-bar.bg-warning {
+    background-color: var(--dark-warning) !important;
+}
+
+/* ===================================
+   TOOLTIPS & POPOVERS
+   =================================== */
+
+body.dark-mode .tooltip-inner {
+    background-color: var(--dark-bg-tertiary) !important;
+    color: var(--dark-text-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .popover {
+    background-color: var(--dark-bg-tertiary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .popover-header {
+    background-color: var(--dark-bg-secondary) !important;
+    border-bottom: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .popover-body {
+    color: var(--dark-text-primary) !important;
+}
+
+/* ===================================
+   ACCORDION
+   =================================== */
+
+body.dark-mode .accordion-item {
+    background-color: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .accordion-button {
+    background-color: var(--dark-bg-tertiary) !important;
+    color: var(--dark-text-primary) !important;
+    border: none !important;
+}
+
+body.dark-mode .accordion-button:not(.collapsed) {
+    background-color: var(--dark-bg-hover) !important;
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.25) !important;
+}
+
+body.dark-mode .accordion-body {
+    background-color: var(--dark-bg-secondary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* ===================================
+   SELECT2
+   =================================== */
+
+body.dark-mode .select2-container--default .select2-selection--single,
+body.dark-mode .select2-container--default .select2-selection--multiple {
+    background-color: var(--dark-bg-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .select2-dropdown {
+    background-color: var(--dark-bg-tertiary) !important;
+    border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .select2-container--default .select2-results__option {
+    background-color: var(--dark-bg-tertiary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--dark-bg-hover) !important;
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .select2-search--dropdown .select2-search__field {
+    background-color: var(--dark-bg-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* ===================================
+   SCROLLBARS
+   =================================== */
+
+body.dark-mode ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background: var(--dark-bg-primary);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: var(--dark-bg-hover);
+    border-radius: 6px;
+    border: 2px solid var(--dark-bg-primary);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-border);
+}
+
+/* Firefox */
+body.dark-mode * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark-bg-hover) var(--dark-bg-primary);
+}
+
+/* ===================================
+   FOOTER
+   =================================== */
+
+body.dark-mode footer {
+    background-color: var(--dark-bg-secondary) !important;
+    border-top: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-secondary) !important;
+}
+
+/* ===================================
+   CUSTOM PAGE STYLES
+   =================================== */
+
+/* Dashboard & Project Dashboard */
+body.dark-mode .dashboard-header {
+    background: linear-gradient(135deg, var(--dark-primary) 0%, var(--dark-primary-hover) 100%) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .dashboard-container {
+    background: var(--dark-bg-secondary) !important;
+}
+
+body.dark-mode .stats-card,
+body.dark-mode .stat-card {
+    background: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .stats-card .label,
+body.dark-mode .stat-card .label {
+    color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .stats-card .value,
+body.dark-mode .stat-card .value {
+    color: var(--dark-primary) !important;
+}
+
+body.dark-mode .stats-card .icon {
+    color: var(--dark-primary) !important;
+}
+
+body.dark-mode .stats-card .footer,
+body.dark-mode .stat-card .footer {
+    border-top-color: var(--dark-border) !important;
+}
+
+/* DataTables */
+body.dark-mode .dataTables_wrapper {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .dataTables_wrapper .dataTables_length,
+body.dark-mode .dataTables_wrapper .dataTables_filter,
+body.dark-mode .dataTables_wrapper .dataTables_info,
+body.dark-mode .dataTables_wrapper .dataTables_paginate {
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .dataTables_wrapper .dataTables_length select,
+body.dark-mode .dataTables_wrapper .dataTables_filter input {
+    background-color: var(--dark-bg-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-link) !important;
+}
+
+body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--dark-bg-hover) !important;
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-link-hover) !important;
+}
+
+body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--dark-primary-hover) !important;
+    border-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+/* Charts */
+body.dark-mode canvas {
+    filter: brightness(0.9);
+}
+
+/* Tabs & Pills */
+body.dark-mode .nav-pills .nav-link {
+    color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .nav-pills .nav-link.active {
+    background-color: var(--dark-primary-hover) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .nav-tabs {
+    border-bottom-color: var(--dark-border) !important;
+}
+
+body.dark-mode .nav-tabs .nav-link {
+    color: var(--dark-text-secondary) !important;
+    border-color: transparent !important;
+}
+
+body.dark-mode .nav-tabs .nav-link:hover {
+    border-color: var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .nav-tabs .nav-link.active {
+    background-color: var(--dark-bg-secondary) !important;
+    border-color: var(--dark-border) var(--dark-border) var(--dark-bg-secondary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .tab-content {
+    background: var(--dark-bg-secondary) !important;
+    border: 1px solid var(--dark-border) !important;
+    border-top: none !important;
+}
+
+/* Offcanvas */
+body.dark-mode .offcanvas {
+    background-color: var(--dark-bg-secondary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .offcanvas-header {
+    border-bottom: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .offcanvas-title {
+    color: var(--dark-text-primary) !important;
+}
+
+/* Toast */
+body.dark-mode .toast {
+    background-color: var(--dark-bg-tertiary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .toast-header {
+    background-color: var(--dark-bg-secondary) !important;
+    border-bottom: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* Additional utilities */
+body.dark-mode .border {
+    border-color: var(--dark-border) !important;
+}
+
+body.dark-mode .bg-white,
+body.dark-mode .bg-light {
+    background-color: var(--dark-bg-secondary) !important;
+}
+
+body.dark-mode .bg-dark {
+    background-color: var(--dark-bg-primary) !important;
+}
+
+body.dark-mode hr {
+    border-color: var(--dark-border) !important;
+    opacity: 1 !important;
+}
+
+/* Inline styles override */
+body.dark-mode [style*="background: white"],
+body.dark-mode [style*="background: #fff"],
+body.dark-mode [style*="background: #ffffff"],
+body.dark-mode [style*="background-color: white"],
+body.dark-mode [style*="background-color: #fff"],
+body.dark-mode [style*="background-color: #ffffff"] {
+    background: var(--dark-bg-secondary) !important;
+}
+
+body.dark-mode [style*="color: #212529"],
+body.dark-mode [style*="color: black"],
+body.dark-mode [style*="color: #000"] {
+    color: var(--dark-text-primary) !important;
+}
+
+/* ===================================
+   DYNAMIC TABLES (Created by JavaScript)
+   =================================== */
+
+/* Dynamic rows added by JavaScript */
+body.dark-mode #items_table_body tr,
+body.dark-mode tbody[id*="table"] tr,
+body.dark-mode .dynamically-added-row {
+    background-color: transparent !important;
+    color: var(--dark-text-primary) !important;
+    border-color: var(--dark-border) !important;
+}
+
+/* Dynamic text-dark classes (created by JS) */
+body.dark-mode .fw-bold.text-dark,
+body.dark-mode div.text-dark,
+body.dark-mode span.text-dark {
+    color: var(--dark-text-primary) !important;
+}
+
+/* Dynamic bg-light classes (created by JS) */
+body.dark-mode .input-group-text.bg-light,
+body.dark-mode .bg-light:not(.table-dark):not(.table-dark *) {
+    background-color: var(--dark-bg-tertiary) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* Class helper for dynamic elements */
+body.dark-mode .bg-dark-mode {
+    background-color: var(--dark-bg-tertiary) !important;
+}
+
+/* Dynamic table headers (like table-primary in JS) */
+body.dark-mode .table-primary:not(.table-dark) thead,
+body.dark-mode thead.table-primary:not(.table-dark) {
+    background-color: rgba(88, 166, 255, 0.2) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .table-primary:not(.table-dark) thead th,
+body.dark-mode thead.table-primary:not(.table-dark) th {
+    background-color: rgba(88, 166, 255, 0.2) !important;
+    color: var(--dark-text-primary) !important;
+    border-color: var(--dark-primary) !important;
+}
+
+/* Dynamic forms in tables */
+body.dark-mode tbody input[type="number"],
+body.dark-mode tbody input.form-control,
+body.dark-mode tbody select.form-select {
+    background-color: var(--dark-bg-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+    color: var(--dark-text-primary) !important;
+}
+
+/* Dynamic small text in tables */
+body.dark-mode tbody small.text-muted,
+body.dark-mode td small.text-muted {
+    color: var(--dark-text-muted) !important;
+}
+
+/* Dynamic icons in dynamic content */
+body.dark-mode tbody i,
+body.dark-mode td i {
+    opacity: 0.85;
+}
+
+/* jQuery appended elements */
+body.dark-mode [id*="table_body"] tr,
+body.dark-mode [id*="TableBody"] tr,
+body.dark-mode [class*="dynamic"] tr {
+    background-color: transparent !important;
+}
+
+/* Ajax loaded content */
+body.dark-mode .ajax-loaded,
+body.dark-mode [data-loaded="true"] {
+    background-color: inherit !important;
+    color: inherit !important;
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+
+@media (max-width: 768px) {
+    body.dark-mode .sidebar {
+        background-color: var(--dark-bg-secondary) !important;
+    }
+}
+
+/* ===================================
+   SMOOTH TRANSITIONS
+   =================================== */
+
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevent transition flicker on dynamic elements */
+body.dark-mode [data-dynamic="true"],
+body.dark-mode .just-added {
+    transition: none !important;
+}
+
+/* ===================================
+   TABLE WIDTH FIX
+   =================================== */
+
+/* Force tables to respect width attributes */
+.table-responsive .table,
+table.table {
+    table-layout: auto !important;
+}
+
+/* For tables with fixed widths in headers */
+table.table thead th[style*="width"],
+table.table thead th[width] {
+    min-width: auto;
+    max-width: none;
+}
+
+/* Specific fix for project items table */
+#selected-items-container,
+.sortable-table {
+    display: table-row-group;
+}
+
+/* Table with many columns needs scroll */
+.table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure th respects width */
+table th[style*="width"] {
+    width: auto !important;
+    min-width: fit-content;
+}
+
+/* Better approach: use min-width for flexibility */
+table th[style*="width: 30px"] {
+    min-width: 30px !important;
+    width: 30px !important;
+}
+
+table th[style*="width: 50px"] {
+    min-width: 50px !important;
+    width: 50px !important;
+}
+
+table th[style*="width: 350px"] {
+    min-width: 350px !important;
+    width: 350px !important;
+}
+
+table th[style*="width: 500px"] {
+    min-width: 500px !important;
+    width: 500px !important;
+}
+
+/* For cells to respect width */
+table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure table doesn't collapse */
+.table-responsive .table {
+    min-width: 100%;
+    white-space: nowrap;
+}

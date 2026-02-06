@@ -1,140 +1,153 @@
-@extends('progress::layouts.daily-progress')
+@extends('progress::layouts.app')
 
-@section('title', 'Edit Issue')
+@section('breadcrumb')
+    <li class="breadcrumb-item">
+        <a href="{{ route('progress.dashboard') }}" class="text-muted text-decoration-none">{{ __('general.dashboard') }}</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ route('progress.issues.index') }}" class="text-muted text-decoration-none">{{ __('general.issues') }}</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ route('progress.issues.show', $issue) }}" class="text-muted text-decoration-none">{{ __('general.issue') }} #{{ $issue->id }}</a>
+    </li>
+@endsection
+
+@section('title', __('general.edit_issue'))
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">{{ __('general.edit_issue') }} #{{ $issue->id }}</h4>
-            <div class="page-title-right">
-                <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('general.dashboard') }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('issues.index') }}">{{ __('general.issues') }}</a></li>
-                    <li class="breadcrumb-item active">{{ __('general.edit') }}</li>
-                </ol>
-            </div>
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-edit me-2"></i>{{ __('general.edit_issue') }} #{{ $issue->id }}</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ route('progress.issues.update', $issue) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">{{ __('general.project') }} <span class="text-danger">*</span></label>
+                        <select name="project_id" class="form-select @error('project_id') is-invalid @enderror" required>
+                            @foreach($projects as $project)
+                                <option value="{{ $project->id }}" {{ old('project_id', $issue->project_id) == $project->id ? 'selected' : '' }}>
+                                    {{ $project->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('project_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">{{ __('general.title') }} <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" 
+                               value="{{ old('title', $issue->title) }}" required maxlength="255">
+                        @error('title')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ __('general.priority') }} <span class="text-danger">*</span></label>
+                        <select name="priority" class="form-select @error('priority') is-invalid @enderror" required>
+                            <option value="Low" {{ old('priority', $issue->priority) == 'Low' ? 'selected' : '' }}>{{ __('general.low') }}</option>
+                            <option value="Medium" {{ old('priority', $issue->priority) == 'Medium' ? 'selected' : '' }}>{{ __('general.medium') }}</option>
+                            <option value="High" {{ old('priority', $issue->priority) == 'High' ? 'selected' : '' }}>{{ __('general.high') }}</option>
+                            <option value="Urgent" {{ old('priority', $issue->priority) == 'Urgent' ? 'selected' : '' }}>{{ __('general.urgent') }}</option>
+                        </select>
+                        @error('priority')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ __('general.status') }} <span class="text-danger">*</span></label>
+                        <select name="status" class="form-select @error('status') is-invalid @enderror" required>
+                            <option value="New" {{ old('status', $issue->status) == 'New' ? 'selected' : '' }}>{{ __('general.new') }}</option>
+                            <option value="In Progress" {{ old('status', $issue->status) == 'In Progress' ? 'selected' : '' }}>{{ __('general.in_progress') }}</option>
+                            <option value="Testing" {{ old('status', $issue->status) == 'Testing' ? 'selected' : '' }}>{{ __('general.testing') }}</option>
+                            <option value="Closed" {{ old('status', $issue->status) == 'Closed' ? 'selected' : '' }}>{{ __('general.closed') }}</option>
+                        </select>
+                        @error('status')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ __('general.assigned_to') }}</label>
+                        <select name="assigned_to" class="form-select @error('assigned_to') is-invalid @enderror">
+                            <option value="">{{ __('general.unassigned') }}</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ old('assigned_to', $issue->assigned_to) == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('assigned_to')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ __('general.module') }}</label>
+                        <input type="text" name="module" class="form-control @error('module') is-invalid @enderror" 
+                               value="{{ old('module', $issue->module) }}" maxlength="255">
+                        @error('module')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">{{ __('general.deadline') }}</label>
+                        <input type="date" name="deadline" class="form-control @error('deadline') is-invalid @enderror" 
+                               value="{{ old('deadline', $issue->deadline?->format('Y-m-d')) }}">
+                        @error('deadline')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">{{ __('general.description') }}</label>
+                        <textarea name="description" class="form-control @error('description') is-invalid @enderror" 
+                                  rows="4">{{ old('description', $issue->description) }}</textarea>
+                        @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">{{ __('general.reproduce_steps') }}</label>
+                        <textarea name="reproduce_steps" class="form-control @error('reproduce_steps') is-invalid @enderror" 
+                                  rows="4">{{ old('reproduce_steps', $issue->reproduce_steps) }}</textarea>
+                        @error('reproduce_steps')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">{{ __('general.add_attachments') }}</label>
+                        <input type="file" name="attachments[]" class="form-control @error('attachments.*') is-invalid @enderror" 
+                               multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+                        <small class="form-text text-muted">{{ __('general.max_file_size_10mb') }}</small>
+                        @error('attachments.*')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>{{ __('general.update') }}
+                    </button>
+                    <a href="{{ route('progress.issues.show', $issue) }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>{{ __('general.cancel') }}
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-<!--  -->
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-body">
-                <form action="{{ route('issues.update', $issue->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">{{ __('general.project') }}</label>
-                            <select name="project_id" class="form-select" required>
-                                <option value="">{{ __('general.select_project') }}</option>
-                                @foreach($projects as $project)
-                                    <option value="{{ $project->id }}" {{ $issue->project_id == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">{{ __('general.title') }}</label>
-                            <input type="text" name="title" class="form-control" value="{{ $issue->title }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">{{ __('general.priority') }}</label>
-                            <select name="priority" class="form-select">
-                                <option value="Low" {{ $issue->priority == 'Low' ? 'selected' : '' }}>{{ __('general.low') }}</option>
-                                <option value="Medium" {{ $issue->priority == 'Medium' ? 'selected' : '' }}>{{ __('general.medium') }}</option>
-                                <option value="High" {{ $issue->priority == 'High' ? 'selected' : '' }}>{{ __('general.high') }}</option>
-                                <option value="Urgent" {{ $issue->priority == 'Urgent' ? 'selected' : '' }}>{{ __('general.urgent') }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">{{ __('general.status') }}</label>
-                            <select name="status" class="form-select">
-                                <option value="New" {{ $issue->status == 'New' ? 'selected' : '' }}>{{ __('general.status_new') }}</option>
-                                <option value="In Progress" {{ $issue->status == 'In Progress' ? 'selected' : '' }}>{{ __('general.in_progress') }}</option>
-                                <option value="Testing" {{ $issue->status == 'Testing' ? 'selected' : '' }}>{{ __('general.testing') }}</option>
-                                <option value="Closed" {{ $issue->status == 'Closed' ? 'selected' : '' }}>{{ __('general.status_closed') }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">{{ __('general.assigned_to') }}</label>
-                            <select name="assigned_to" class="form-select">
-                                <option value="">{{ __('general.unassigned') }}</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ $issue->assigned_to == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">{{ __('general.module') }}</label>
-                            <input type="text" name="module" class="form-control" value="{{ $issue->module }}">
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">{{ __('general.deadline') }}</label>
-                            <input type="date" name="deadline" class="form-control" value="{{ $issue->deadline }}">
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">{{ __('general.description') }}</label>
-                            <textarea name="description" class="form-control" rows="3">{{ $issue->description }}</textarea>
-                        </div>
-                         <div class="col-md-12 mb-3">
-                            <label class="form-label">{{ __('general.reproduce_steps') }}</label>
-                            <textarea name="reproduce_steps" class="form-control" rows="3">{{ $issue->reproduce_steps }}</textarea>
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">{{ __('general.attachments') }}</label>
-                            
-                            @if($issue->attachments->count() > 0)
-                                <div class="mb-3">
-                                    <div class="vstack gap-2">
-                                        @foreach($issue->attachments as $attachment)
-                                            <div class="border rounded border-dashed p-2">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar-sm">
-                                                            <div class="avatar-title bg-light text-secondary rounded fs-24">
-                                                                <i class="las la-file"></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1 overflow-hidden">
-                                                        <h5 class="fs-13 mb-1">{{ $attachment->file_name }}</h5>
-                                                        <div class="text-muted fs-11">{{ number_format($attachment->file_size / 1024, 2) }} KB</div>
-                                                    </div>
-                                                    <div class="flex-shrink-0 ms-2">
-                                                        <!-- Uses separate form for deletion to avoid main form conflict -->
-                                                        <button type="button" class="btn btn-icon btn-sm btn-ghost-danger" onclick="if(confirm('{{ __('general.confirm_delete') }}')) { document.getElementById('delete-attachment-{{ $attachment->id }}').submit(); }">
-                                                            <i class="las la-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            <input type="file" name="attachments[]" class="form-control" multiple>
-                            <small class="text-muted">Maximum file size: 10MB. Allowed types: JPG, PNG, PDF, DOC, XLS.</small>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">{{ __('general.update') }}</button>
-                        <a href="{{ route('issues.index') }}" class="btn btn-light">{{ __('general.cancel') }}</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@foreach($issue->attachments as $attachment)
-    <form id="delete-attachment-{{ $attachment->id }}" action="{{ route('issues.attachments.destroy', $attachment->id) }}" method="POST" style="display: none;">
-        @csrf
-        @method('DELETE')
-    </form>
-@endforeach
 @endsection
+

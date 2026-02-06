@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('progress::layouts.app')
 @section('breadcrumb')
     <li class="breadcrumb-item">
-        <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none">
+        <a href="{{ route('progress.dashboard') }}" class="text-muted text-decoration-none">
             {{ __('general.dashboard') }}
         </a>
     </li>
@@ -15,7 +15,7 @@
 
             
             @can('projects-list')
-                <a href="{{ route('projects.drafts') }}" class="btn btn-sm btn-outline-warning">
+                <a href="{{ route('progress.projects.drafts') }}" class="btn btn-sm btn-outline-warning">
                     <i class="fas fa-file-alt me-1"></i>
                     {{ __('general.drafts') }}
                     @if (isset($draftsCount) && $draftsCount > 0)
@@ -24,8 +24,8 @@
                 </a>
             @endcan
         </div>
-        @can('projects-create')
-            <a href="{{ route('projects.create') }}" class="btn btn-primary">
+        @can('create progress-projects')
+            <a href="{{ route('progress.projects.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i> {{ __('projects.new') }}
             </a>
         @endcan
@@ -136,7 +136,7 @@
                      data-project-id="{{ $project->id }}"
                      data-project-name="{{ $project->name }}"
                      data-project-description="{{ $project->description ?? '' }}"
-                     data-project-client="{{ $project->client?->name ?? '' }}"
+                     data-project-client="{{ $project->client->name }}"
                      data-project-status="{{ $project->status }}"
                      data-project-type="{{ $project->type ? $project->type->name : __('general.not_specified') }}"
                      data-project-start-date="{{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d-m-Y') : '' }}"
@@ -187,7 +187,7 @@
                                 <h5 class="mb-2 fw-bold text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 1.3rem;">{{ $project->name }}</h5>
                                 <small class="text-white-50 d-flex align-items-center mb-3" style="opacity: 0.9;">
                                     <i class="fas fa-building me-2"></i>
-                                    {{ $project->client?->name ?? '—' }}
+                                    {{ $project->client->name }}
                                 </small>
                                 
                                 @if($subprojectsWithItemsCount > 0)
@@ -400,8 +400,8 @@
                             {{ __('general.view_details') }}
                         </button>
                         <div class="d-flex gap-2">
-                            @can('projects-view')
-                                <a href="{{ route('projects.dashboard', $project->id) }}"
+                            @can('view progress-projects')
+                                <a href="{{ route('progress.projects.dashboard', $project->id) }}"
                                     class="btn btn-sm btn-outline-primary"
                                     title="{{ __('general.view') }}"
                                     onclick="event.stopPropagation();"
@@ -414,8 +414,8 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                             @endcan
-                            @can('projects-edit')
-                                <a href="{{ route('projects.edit', $project) }}"
+                            @can('edit progress-projects')
+                                <a href="{{ route('progress.projects.edit', $project) }}"
                                     class="btn btn-sm btn-outline-success"
                                     title="{{ __('general.edit') }}"
                                     onclick="event.stopPropagation();"
@@ -832,7 +832,7 @@
                 // Check permissions and add buttons
                 @php
                     $canView = auth()->user()->can('projects-view');
-                    $canEdit = auth()->user()->can('projects-edit');
+                    $canEdit = auth()->user()->can('edit progress-projects');
                     $canProgress = auth()->user()->can('projects-progress');
                     $canGantt = auth()->user()->can('projects-gantt');
                 @endphp

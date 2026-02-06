@@ -2,7 +2,7 @@
 
 namespace Modules\Progress\Models;
 
-use App\Models\Client;
+use Modules\Progress\Models\Client;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Accounts\Models\AccHead;

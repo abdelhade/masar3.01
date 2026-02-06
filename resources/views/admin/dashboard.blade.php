@@ -21,6 +21,12 @@
             <div class="menu-content h-100" data-simplebar>
                 <ul class="metismenu left-sidenav-menu">
          
+                    <li class="nav-item border-bottom pb-2 mb-2 text-center">
+                        <a href="{{ route('home') }}" class="fw-bold text-primary font-16">
+                            {{ config('public_settings.campany_name') }}
+                        </a>
+                    </li>
+
                     <li class="nav-item border-bottom pb-1 mb-2">
                         <a href="{{ route('admin.dashboard') }}"
                             class="nav-link d-flex align-items-center gap-2 transition-base {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"

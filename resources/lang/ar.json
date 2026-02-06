@@ -300,6 +300,15 @@
     "Progress-work-item-categories": "تصنيفات عناصر العمل",
     "Progress-item-statuses": "حالات العناصر",
     "Progress-dashboard": "لوحة التحكم",
-    "Progress-recyclebin": "سلة المحذوفات"
+    "Progress-recyclebin": "سلة المحذوفات",
+
+    "Progress Management": "إدارة التقدم",
+    "Progress Dashboard": "لوحة تحكم التقدم",
+    "Projects": "المشاريع",
+    "Daily Progress": "التقدم اليومي",
+    "Work Items": "بنود العمل",
+    "Employees": "الموظفين",
+    "Issues": "المشاكل",
+    "Reports": "التقارير"
 
 }

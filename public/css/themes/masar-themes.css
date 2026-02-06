@@ -716,20 +716,28 @@ body.theme-classic .stats-card .stats-card-value {
 body.theme-classic .stats-card .stats-card-subtitle {
   color: var(--masar-text-muted) !important;
 }
-body.theme-classic .stats-card .stat-icon-wrapper {
+body.theme-classic .stats-card .icon-wrapper {
   background: rgba(25, 118, 210, 0.15) !important;
   color: #1976d2 !important;
 }
 body.theme-classic .app-icon-large.icon-bg-green {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #dddddd 100%) !important;
   border: 2px solid #90caf9 !important;
-  color: #1976d2 !important;
+  color: #ffffff !important;
 }
 body.theme-classic .app-icon-large.icon-bg-green:hover {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
+  background: linear-gradient(135deg, #a8b5ff 0%, #4343ff 100%) !important;
   color: white !important;
   box-shadow: 0 0 20px rgba(25, 118, 210, 0.4) !important;
 }
+body.theme-classic .app-icon-large:hover p,
+body.theme-classic .app-icon-large:hover svg {
+  color: #ffffff !important;
+}
+
+
+
+
 body.theme-classic .card {
   border-color: var(--masar-border) !important;
 }
@@ -780,33 +788,33 @@ body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-subtitle,
 body.theme-neumorphism-lite.theme-mint-green .stats-card .stats-card-subtitle * {
   color: var(--masar-text-muted) !important;
 }
-body.theme-mint-green .stats-card .stat-icon-wrapper,
-body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper {
-  background: rgba(46, 125, 50, 0.15) !important;
+body.theme-mint-green .stats-card .icon-wrapper,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .icon-wrapper {
+  background: rgba(255, 255, 255, 0.15) !important;
   color: var(--masar-text) !important;
 }
-body.theme-mint-green .stats-card .stat-icon-wrapper i,
-body.theme-mint-green .stats-card .stat-icon-wrapper svg,
-body.theme-mint-green .stats-card .stat-icon-wrapper [data-lucide],
-body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper i,
-body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper svg,
-body.theme-neumorphism-lite.theme-mint-green .stats-card .stat-icon-wrapper [data-lucide] {
+body.theme-mint-green .stats-card .icon-wrapper i,
+body.theme-mint-green .stats-card .icon-wrapper svg,
+body.theme-mint-green .stats-card .icon-wrapper [data-lucide],
+body.theme-neumorphism-lite.theme-mint-green .stats-card .icon-wrapper i,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .icon-wrapper svg,
+body.theme-neumorphism-lite.theme-mint-green .stats-card .icon-wrapper [data-lucide] {
   color: var(--masar-text) !important;
   stroke: var(--masar-text) !important;
 }
 /* Mint: خلفية بيضاء و الكلام ملون */
 body.theme-mint-green .app-icon-large,
 body.theme-neumorphism-lite.theme-mint-green .app-icon-large {
-  background: #ffffff !important;
+  background: #00702b !important;
   border: 2px solid #c8e6c9 !important;
   color: var(--masar-primary) !important;
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15) !important;
 }
 body.theme-mint-green .app-icon-large p,
-body.theme-mint-green .app-icon-large span,
+body.theme-mint-green .app-icon-large svg,
 body.theme-neumorphism-lite.theme-mint-green .app-icon-large p,
-body.theme-neumorphism-lite.theme-mint-green .app-icon-large span {
-  color: var(--masar-primary) !important;
+body.theme-neumorphism-lite.theme-mint-green .app-icon-large svg {
+  color: rgb(99, 0, 0) !important;
 }
 body.theme-mint-green .app-icon-large svg,
 body.theme-mint-green .app-icon-large [data-lucide],
@@ -819,24 +827,11 @@ body.theme-neumorphism-lite.theme-mint-green .app-icon-large i {
 }
 body.theme-mint-green .app-icon-large:hover,
 body.theme-neumorphism-lite.theme-mint-green .app-icon-large:hover {
-  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%) !important;
+  background: linear-gradient(135deg, #6cff74 0%, #1b5e20 100%) !important;
   border-color: #1b5e20 !important;
   color: #ffffff !important;
-  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.35) !important;
 }
-body.theme-mint-green .app-icon-large:hover p,
-body.theme-mint-green .app-icon-large:hover span,
-body.theme-mint-green .app-icon-large:hover svg,
-body.theme-mint-green .app-icon-large:hover [data-lucide],
-body.theme-mint-green .app-icon-large:hover i,
-body.theme-neumorphism-lite.theme-mint-green .app-icon-large:hover p,
-body.theme-neumorphism-lite.theme-mint-green .app-icon-large:hover span,
-body.theme-neumorphism-lite.theme-mint-green .app-icon-large:hover svg,
-body.theme-neumorphism-lite.theme-mint-green .app-icon-large:hover [data-lucide],
-body.theme-neumorphism-lite.theme-mint-green .app-icon-large:hover i {
-  color: #ffffff !important;
-  stroke: #ffffff !important;
-}
+
 body.theme-mint-green .card-header {
   background: #ffffff !important;
   border-bottom: 2px solid var(--masar-border) !important;
@@ -866,7 +861,7 @@ body.theme-dark .stats-card .stats-card-label {
 body.theme-dark .stats-card .stats-card-value {
   color: #e4e6eb !important;
 }
-body.theme-dark .stats-card .stat-icon-wrapper {
+body.theme-dark .stats-card .icon-wrapper {
   background: rgba(96, 165, 250, 0.15) !important;
   color: #60a5fa !important;
 }
@@ -876,9 +871,12 @@ body.theme-dark .app-icon-large.icon-bg-green {
   color: #60a5fa !important;
 }
 body.theme-dark .app-icon-large.icon-bg-green:hover {
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
-  color: #1a1d23 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%) !important;
+  color: #000000 !important;
   box-shadow: 0 0 20px rgba(96, 165, 250, 0.5) !important;
+}
+body.theme-dark .app-icon-large.icon-bg-green:hover p {
+  color: #4b4b4b !important;
 }
 body.theme-dark .card-header {
   background: linear-gradient(135deg, #2d323c 0%, #22262e 100%) !important;
@@ -908,7 +906,7 @@ body.theme-monokai .stats-card .stats-card-label {
 body.theme-monokai .stats-card .stats-card-value {
   color: #f8f8f2 !important;
 }
-body.theme-monokai .stats-card .stat-icon-wrapper {
+body.theme-monokai .stats-card .icon-wrapper {
   background: rgba(102, 217, 239, 0.15) !important;
   color: #66d9ef !important;
 }
@@ -965,11 +963,11 @@ body.theme-monokai .card-header h5 {
    هذه القواعد تتغلّب على dashboard-main عند تفعيل الثيم
    ======================================================================= */
 body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-value,
-body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper i,
-body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper svg,
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .icon-wrapper i,
+body.theme-mint-green .dashboard-container .stats-cards-section .stats-card .icon-wrapper svg,
 body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stats-card-value,
-body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper i,
-body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .stat-icon-wrapper svg {
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .icon-wrapper i,
+body.theme-neumorphism-lite.theme-mint-green .dashboard-container .stats-cards-section .stats-card .icon-wrapper svg {
   color: var(--masar-text) !important;
   stroke: var(--masar-text) !important;
 }
@@ -1037,19 +1035,7 @@ body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card-value
 body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card-subtitle {
   color: #ffffff !important;
 }
-body.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper i,
-body.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper svg,
-body.theme-monokai .dashboard-container .app-icon-large.icon-bg-green,
-body.theme-monokai .dashboard-container .app-icon-large.icon-bg-green p,
-body.theme-monokai .dashboard-container .app-icon-large.icon-bg-green svg,
-body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper i,
-body.theme-neumorphism-lite.theme-monokai .dashboard-container .stats-card .stat-icon-wrapper svg,
-body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-large.icon-bg-green,
-body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-large.icon-bg-green p,
-body.theme-neumorphism-lite.theme-monokai .dashboard-container .app-icon-large.icon-bg-green svg {
-  color: #ffffff !important;
-  stroke: #ffffff !important;
-}
+
 
 /* الجداول تأخذ من الثيم */
 body.theme-classic .dashboard-container .tables-section .table,
