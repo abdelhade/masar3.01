@@ -14,10 +14,12 @@ class RentalsBuildingController extends Controller
 {
     public function index()
     {
-        $buildings = RentalsBuilding::all();
-        $units = RentalsUnit::all();
+        $buildings = RentalsBuilding::with('units')->get();
+        $buildingUnits = RentalsUnit::buildings()->get();
+        $itemUnits = RentalsUnit::items()->with('item')->get();
+        $units = RentalsUnit::all(); // For compatibility with existing statistics
 
-        return view('rentals::buildings.index', compact('buildings', 'units'));
+        return view('rentals::buildings.index', compact('buildings', 'buildingUnits', 'itemUnits', 'units'));
     }
 
     public function create()

@@ -13,9 +13,9 @@
                 <div class="card-body">
                     <h2 class="mb-0">
                         <i class="fas fa-award me-2"></i>
-                        نظام إدارة الجودة (QMS)
+                        {{ __('Quality Management System (QMS)') }}
                     </h2>
-                    <p class="mb-0 mt-2">لوحة تحكم شاملة لمتابعة جميع عمليات الجودة والفحص</p>
+                    <p class="mb-0 mt-2">{{ __('Comprehensive dashboard to track all quality and inspection operations') }}</p>
                 </div>
             </div>
         </div>
@@ -29,10 +29,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">إجمالي الفحوصات</h6>
+                            <h6 class="text-muted mb-2">{{ __('Total Inspections') }}</h6>
                             <h3 class="mb-0">{{ $totalInspections }}</h3>
                             <small class="text-success">
-                                <i class="fas fa-check-circle"></i> نسبة النجاح: {{ number_format($passRate, 1) }}%
+                                <i class="fas fa-check-circle"></i> {{ __('Success Rate') }}: {{ number_format($passRate, 1) }}%
                             </small>
                         </div>
                         <div class="text-primary" style="font-size: 3rem;">
@@ -49,10 +49,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">تقارير عدم المطابقة</h6>
+                            <h6 class="text-muted mb-2">{{ __('Non-Conformance Reports') }}</h6>
                             <h3 class="mb-0">{{ $totalNCRs }}</h3>
                             <small class="text-danger">
-                                <i class="fas fa-exclamation-circle"></i> مفتوحة: {{ $openNCRs }}
+                                <i class="fas fa-exclamation-circle"></i> {{ __('Open') }}: {{ $openNCRs }}
                             </small>
                         </div>
                         <div class="text-danger" style="font-size: 3rem;">
@@ -69,10 +69,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">إجراءات تصحيحية</h6>
+                            <h6 class="text-muted mb-2">{{ __('Corrective Actions') }}</h6>
                             <h3 class="mb-0">{{ $activeCapas }}</h3>
                             <small class="text-warning">
-                                <i class="fas fa-clock"></i> متأخرة: {{ $overdueCapas }}
+                                <i class="fas fa-clock"></i> {{ __('Overdue') }}: {{ $overdueCapas }}
                             </small>
                         </div>
                         <div class="text-warning" style="font-size: 3rem;">
@@ -89,10 +89,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-2">الدفعات النشطة</h6>
+                            <h6 class="text-muted mb-2">{{ __('Active Batches') }}</h6>
                             <h3 class="mb-0">{{ $activeBatches }}</h3>
                             <small class="text-info">
-                                <i class="fas fa-hourglass-half"></i> تنتهي قريباً: {{ $expiringSoonBatches }}
+                                <i class="fas fa-hourglass-half"></i> {{ __('Expiring Soon') }}: {{ $expiringSoonBatches }}
                             </small>
                         </div>
                         <div class="text-info" style="font-size: 3rem;">
@@ -112,7 +112,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-history me-2"></i>
-                        آخر الفحوصات
+                        {{ __('Recent Inspections') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -120,10 +120,10 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>رقم الفحص</th>
-                                    <th>الصنف</th>
-                                    <th>النتيجة</th>
-                                    <th>التاريخ</th>
+                                    <th>{{ __('Inspection Number') }}</th>
+                                    <th>{{ __('Item') }}</th>
+                                    <th>{{ __('Result') }}</th>
+                                    <th>{{ __('Date') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -137,18 +137,18 @@
                                     <td>{{ $inspection->item->name ?? '---' }}</td>
                                     <td>
                                         @if($inspection->result == 'pass')
-                                            <span class="badge bg-success">نجح</span>
+                                            <span class="badge bg-success">{{ __('Pass') }}</span>
                                         @elseif($inspection->result == 'fail')
-                                            <span class="badge bg-danger">فشل</span>
+                                            <span class="badge bg-danger">{{ __('Fail') }}</span>
                                         @else
-                                            <span class="badge bg-warning">مشروط</span>
+                                            <span class="badge bg-warning">{{ __('Conditional') }}</span>
                                         @endif
                                     </td>
                                     <td>{{ $inspection->inspection_date->format('Y-m-d') }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">لا توجد فحوصات</td>
+                                    <td colspan="4" class="text-center">{{ __('No inspections') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -164,7 +164,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        آخر تقارير عدم المطابقة
+                        {{ __('Recent Non-Conformance Reports') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -172,10 +172,10 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>رقم NCR</th>
-                                    <th>الصنف</th>
-                                    <th>الخطورة</th>
-                                    <th>الحالة</th>
+                                    <th>{{ __('NCR Number') }}</th>
+                                    <th>{{ __('Item') }}</th>
+                                    <th>{{ __('Severity') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -185,22 +185,22 @@
                                     <td>{{ $ncr->item->name ?? '---' }}</td>
                                     <td>
                                         @if($ncr->severity == 'critical')
-                                            <span class="badge bg-danger">حرج</span>
+                                            <span class="badge bg-danger">{{ __('Critical') }}</span>
                                         @elseif($ncr->severity == 'major')
-                                            <span class="badge bg-warning">رئيسي</span>
+                                            <span class="badge bg-warning">{{ __('Major') }}</span>
                                         @else
-                                            <span class="badge bg-info">ثانوي</span>
+                                            <span class="badge bg-info">{{ __('Minor') }}</span>
                                         @endif
                                     </td>
                                     <td>
                                         <span class="badge bg-{{ $ncr->status == 'open' ? 'danger' : 'success' }}">
-                                            {{ $ncr->status == 'open' ? 'مفتوح' : 'مغلق' }}
+                                            {{ $ncr->status == 'open' ? __('Open') : __('Closed') }}
                                         </span>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">لا توجد تقارير</td>
+                                    <td colspan="4" class="text-center">{{ __('No reports') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -218,7 +218,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-bolt me-2"></i>
-                        إجراءات سريعة
+                        {{ __('Quick Actions') }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -226,25 +226,25 @@
                         <div class="col-md-3">
                             <a href="{{ route('quality.inspections.create') }}" class="btn btn-primary w-100">
                                 <i class="fas fa-plus-circle me-2"></i>
-                                فحص جديد
+                                {{ __('New Inspection') }}
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ url('/quality/ncrs/create') }}" class="btn btn-danger w-100">
                                 <i class="fas fa-exclamation-circle me-2"></i>
-                                تقرير NCR جديد
+                                {{ __('New NCR Report') }}
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ url('/quality/batches') }}" class="btn btn-info w-100">
                                 <i class="fas fa-barcode me-2"></i>
-                                إدارة الدفعات
+                                {{ __('Manage Batches') }}
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ route('quality.reports') }}" class="btn btn-success w-100">
                                 <i class="fas fa-chart-bar me-2"></i>
-                                عرض التقارير
+                                {{ __('View Reports') }}
                             </a>
                         </div>
                     </div>

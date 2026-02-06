@@ -4,6 +4,7 @@ namespace Modules\Rentals\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Exception;
+use Illuminate\Http\Request;
 use Modules\Rentals\Models\RentalsUnit;
 use RealRashid\SweetAlert\Facades\Alert;
 use Modules\Rentals\Models\RentalsBuilding;
@@ -18,21 +19,28 @@ class RentalsUnitController extends Controller
         return view('rentals::index');
     }
 
-    public function create($id)
+    public function create($id = null)
     {
-        $building = RentalsBuilding::findOrFail($id);
-        $floors = range(1, $building->floors);
-        return view('rentals::units.create', compact('building', 'floors'));
+        $building = $id ? RentalsBuilding::find($id) : null;
+        $floors = $building ? range(1, $building->floors) : range(1, 10);
+        $items = \App\Models\Item::active()->notDeleted()->get();
+        
+        return view('rentals::units.create', compact('building', 'floors', 'items'));
     }
 
     public function store(RentalsUnitRequest $request)
     {
         try {
             $data = $request->validated();
-            RentalsUnit::create($data);
+            $unit = RentalsUnit::create($data);
             Alert::toast(__('Unit added successfully.'), 'success');
+            
+            if ($unit->unit_type === 'item') {
+                return redirect()->route('rentals.leases.index'); // Or a units index if it exists
+            }
+            
             return redirect()->route('rentals.buildings.show', $data['building_id']);
-        } catch (Exception) {
+        } catch (Exception $e) {
             Alert::toast(__('An error occurred while adding the unit.'), 'error');
             return redirect()->back();
         }
@@ -47,12 +55,17 @@ class RentalsUnitController extends Controller
     {
         $unit = RentalsUnit::findOrFail($id);
         $building = $unit->building;
+        $items = \App\Models\Item::active()->notDeleted()->get();
 
-        $count = (int) ($building->floors ?? $building->number_of_floors ?? 10);
-        $count = max(1, $count);
-        $floors = range(1, $count);
+        if ($building) {
+            $count = (int) ($building->floors ?? $building->number_of_floors ?? 10);
+            $count = max(1, $count);
+            $floors = range(1, $count);
+        } else {
+            $floors = range(1, 10);
+        }
 
-        return view('rentals::units.edit', compact('unit', 'building', 'floors'));
+        return view('rentals::units.edit', compact('unit', 'building', 'floors', 'items'));
     }
 
     public function update(RentalsUnitRequest $request, $id)
@@ -73,7 +86,7 @@ class RentalsUnitController extends Controller
 
             Alert::toast(__('Unit updated successfully.'), 'success');
             return redirect()->back();
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             Alert::toast(__('An error occurred while updating the unit.'), 'error');
             return redirect()->back()->withInput();
         }

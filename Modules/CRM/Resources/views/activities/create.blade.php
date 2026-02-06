@@ -74,7 +74,7 @@
                             {{-- Client --}}
                             <div class="col-md-3 mb-3">
                                 <x-dynamic-search name="client_id" :label="__('Client')" column="cname"
-                                    model="App\Models\Client" :placeholder="__('Search for client...')" :required="false" :class="'form-select'" />
+                                    model="App\Models\Client" :placeholder="__('Search for client...')" :required="false" :class="'form-select'" :selected="request('client_id')" />
                             </div>
 
                             {{-- Assigned To --}}

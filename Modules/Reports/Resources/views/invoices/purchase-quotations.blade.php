@@ -1,11 +1,15 @@
 @extends('admin.dashboard')
 
+@section('sidebar')
+    @include('components.sidebar.reports')
+@endsection
+
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('مقارنة عروض أسعار العملاء'),
+        'title' => __('Customer Price Quotes Comparison'),
         'items' => [
-            ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
-            ['label' => __('مقارنة عروض الأسعار للعملاء')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Customer Price Quotes Comparison')],
         ],
     ])
 
@@ -13,13 +17,13 @@
         <div class="col-lg-12">
             <br>
 
-            {{-- إحصائيات سريعة --}}
+            {{-- Quick Statistics --}}
             <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body text-center">
                             <h3>{{ is_array($itemsComparison) ? count($itemsComparison) : 0 }}</h3>
-                            <p class="mb-0">إجمالي الأصناف</p>
+                            <p class="mb-0">{{ __('Total Items') }}</p>
                         </div>
                     </div>
                 </div>
@@ -28,7 +32,7 @@
                         <div class="card-body text-center">
                             <h3>{{ is_array($itemsComparison) ? collect($itemsComparison)->sum(fn($item) => count($item['quotations'] ?? [])) : 0 }}
                             </h3>
-                            <p class="mb-0">إجمالي العروض</p>
+                            <p class="mb-0">{{ __('Total Quotes') }}</p>
                         </div>
                     </div>
                 </div>
@@ -37,7 +41,7 @@
                         <div class="card-body text-center">
                             <h3>{{ is_array($itemsComparison) ? collect($itemsComparison)->filter(fn($item) => count($item['quotations'] ?? []) > 1)->count() : 0 }}
                             </h3>
-                            <p class="mb-0">أصناف بها عروض متعددة</p>
+                            <p class="mb-0">{{ __('Items with Multiple Quotes') }}</p>
                         </div>
                     </div>
                 </div>
@@ -46,24 +50,24 @@
                         <div class="card-body text-center">
                             <h3>{{ is_array($itemsComparison) ? collect($itemsComparison)->filter(fn($item) => count($item['quotations'] ?? []) == 1)->count() : 0 }}
                             </h3>
-                            <p class="mb-0">أصناف بعرض واحد</p>
+                            <p class="mb-0">{{ __('Items with Single Quote') }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-header text-white d-flex justify-content-between align-items-center">
+                <div class="card-header text-white d-flex justify-content-between align-items-center bg-primary">
                     <h5 class="mb-0">
-                        <i class="las la-balance-scale me-2"></i>
-                        مقارنة تفصيلية لعروض أسعار العملاء
+                        <i class="fas fa-balance-scale me-2"></i>
+                        {{ __('Detailed Customer Price Quotes Comparison') }}
                     </h5>
                     <div>
                         <button class="btn btn-light btn-sm" onclick="expandAll()">
-                            <i class="las la-expand"></i> توسيع الكل
+                            <i class="fas fa-expand"></i> {{ __('Expand All') }}
                         </button>
                         <button class="btn btn-light btn-sm" onclick="collapseAll()">
-                            <i class="las la-compress"></i> طي الكل
+                            <i class="fas fa-compress"></i> {{ __('Collapse All') }}
                         </button>
                     </div>
                 </div>
@@ -76,15 +80,15 @@
                                     <div class="row align-items-center">
                                         <div class="col-md-6">
                                             <h5 class="mb-0">
-                                                <i class="las la-chevron-down toggle-icon"
+                                                <i class="fas fa-chevron-down toggle-icon"
                                                     id="icon-{{ $itemId }}"></i>
-                                                <i class="las la-box me-2 text-primary"></i>
+                                                <i class="fas fa-box me-2 text-primary"></i>
                                                 <strong>{{ $itemData['item_name'] }}</strong>
                                             </h5>
                                         </div>
                                         <div class="col-md-6 text-end">
                                             <span class="badge bg-info me-2">
-                                                {{ count($itemData['quotations']) }} عرض سعر
+                                                {{ count($itemData['quotations']) }} {{ __('Quote(s)') }}
                                             </span>
                                             @php
                                                 $prices = collect($itemData['quotations'])->pluck('price');
@@ -95,11 +99,12 @@
                                                     $lowestPrice > 0 ? round(($priceDiff / $lowestPrice) * 100, 1) : 0;
                                             @endphp
                                             <span class="badge bg-success">
-                                                أعلى سعر: {{ number_format($highestPrice, 2) }}
+                                                {{ __('Highest Price') }}: {{ number_format($highestPrice, 2) }}
                                             </span>
                                             @if (count($itemData['quotations']) > 1)
                                                 <span class="badge bg-warning">
-                                                    فرق: {{ number_format($priceDiff, 2) }} ({{ $percentDiff }}%)
+                                                    {{ __('Difference') }}: {{ number_format($priceDiff, 2) }}
+                                                    ({{ $percentDiff }}%)
                                                 </span>
                                             @endif
                                         </div>
@@ -111,18 +116,17 @@
                                         <table class="table table-hover mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th class="text-center" style="width: 60px;">الترتيب</th>
-                                                    <th>رقم العرض</th>
-                                                    {{-- <th>العميل</th> --}}
-                                                    <th class="text-center">السعر</th>
-                                                    <th class="text-center">الكمية</th>
-                                                    <th class="text-center">الإجمالي</th>
-                                                    <th class="text-center">الفرق عن الأعلى</th>
-                                                    <th class="text-center">النسبة</th>
-                                                    <th>التاريخ</th>
-                                                    <th>الموظف</th>
-                                                    <th class="text-center">الحالة</th>
-                                                    <th class="text-center">العمليات</th>
+                                                    <th class="text-center" style="width: 60px;">{{ __('Rank') }}</th>
+                                                    <th>{{ __('Quote Number') }}</th>
+                                                    <th class="text-center">{{ __('Price') }}</th>
+                                                    <th class="text-center">{{ __('Quantity') }}</th>
+                                                    <th class="text-center">{{ __('Total') }}</th>
+                                                    <th class="text-center">{{ __('Diff from Highest') }}</th>
+                                                    <th class="text-center">{{ __('Percentage') }}</th>
+                                                    <th>{{ __('Date') }}</th>
+                                                    <th>{{ __('Employee') }}</th>
+                                                    <th class="text-center">{{ __('Status') }}</th>
+                                                    <th class="text-center">{{ __('Actions') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -145,13 +149,17 @@
                                                         if ($isHighest) {
                                                             $rowClass = 'table-success';
                                                             $statusBadge =
-                                                                '<span class="badge bg-success"><i class="las la-trophy"></i> أعلى سعر</span>';
+                                                                '<span class="badge bg-success"><i class="fas fa-trophy"></i> ' .
+                                                                __('Highest Price') .
+                                                                '</span>';
                                                             $rankBadge =
-                                                                '<span class="badge bg-success" style="font-size: 1.2rem;"><i class="las la-medal"></i> 1</span>';
+                                                                '<span class="badge bg-success" style="font-size: 1.2rem;"><i class="fas fa-medal"></i> 1</span>';
                                                         } elseif ($percentDiff <= 5) {
                                                             $rowClass = 'table-info';
                                                             $statusBadge =
-                                                                '<span class="badge bg-info"><i class="las la-star"></i> سعر ممتاز</span>';
+                                                                '<span class="badge bg-info"><i class="fas fa-star"></i> ' .
+                                                                __('Excellent Price') .
+                                                                '</span>';
                                                             $rankBadge =
                                                                 '<span class="badge bg-info" style="font-size: 1.2rem;">' .
                                                                 ($index + 1) .
@@ -159,7 +167,9 @@
                                                         } elseif ($percentDiff <= 10) {
                                                             $rowClass = 'table-warning';
                                                             $statusBadge =
-                                                                '<span class="badge bg-warning"><i class="las la-exclamation-triangle"></i> سعر مقبول</span>';
+                                                                '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> ' .
+                                                                __('Acceptable Price') .
+                                                                '</span>';
                                                             $rankBadge =
                                                                 '<span class="badge bg-warning" style="font-size: 1.2rem;">' .
                                                                 ($index + 1) .
@@ -167,7 +177,9 @@
                                                         } else {
                                                             $rowClass = 'table-danger';
                                                             $statusBadge =
-                                                                '<span class="badge bg-danger"><i class="las la-times-circle"></i> سعر منخفض</span>';
+                                                                '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> ' .
+                                                                __('Low Price') .
+                                                                '</span>';
                                                             $rankBadge =
                                                                 '<span class="badge bg-danger" style="font-size: 1.2rem;">' .
                                                                 ($index + 1) .
@@ -177,12 +189,6 @@
                                                     <tr class="{{ $rowClass }}">
                                                         <td class="text-center">{!! $rankBadge !!}</td>
                                                         <td><strong>{{ $quotation['invoice_number'] }}</strong></td>
-                                                        {{-- <td>
-                                                            @if ($isHighest)
-                                                                <i class="las la-star text-warning"></i>
-                                                            @endif
-                                                            <strong>{{ $quotation['partner_name'] }}</strong>
-                                                        </td> --}}
                                                         <td class="text-center">
                                                             <strong
                                                                 class="{{ $isHighest ? 'text-success' : 'text-warning' }}"
@@ -196,7 +202,7 @@
                                                             <strong>{{ number_format($quotation['total'], 2) }}</strong>
                                                         </td>
                                                         <td
-                                                            class="text-center {{ $priceDiff > 0 ? 'text-danger' : 'text-success' }}">
+                                                            class="text-center {{ $priceDiff > 0 ? 'text-success' : 'text-danger' }}">
                                                             @if ($isHighest)
                                                                 <span class="badge bg-success">-</span>
                                                             @else
@@ -204,7 +210,7 @@
                                                             @endif
                                                         </td>
                                                         <td
-                                                            class="text-center {{ $percentDiff > 0 ? 'text-danger' : 'text-success' }}">
+                                                            class="text-center {{ $percentDiff > 0 ? 'text-success' : 'text-danger' }}">
                                                             @if ($isHighest)
                                                                 <span class="badge bg-success">0%</span>
                                                             @else
@@ -217,14 +223,15 @@
                                                         <td class="text-center">
                                                             <div class="btn-group btn-group-sm">
                                                                 <a href="{{ route('invoices.edit', $quotation['invoice_id']) }}"
-                                                                    class="btn btn-primary btn-sm" title="عرض">
-                                                                    <i class="las la-eye"></i>
+                                                                    class="btn btn-primary btn-sm"
+                                                                    title="{{ __('View') }}">
+                                                                    <i class="fas fa-eye"></i>
                                                                 </a>
                                                                 @if ($isHighest)
                                                                     <a href="{{ route('invoices.convert-to-sales', $quotation['invoice_id']) }}"
                                                                         class="btn btn-success btn-sm"
-                                                                        title="تحويل لفاتورة مبيعات">
-                                                                        <i class="las la-shopping-cart"></i>
+                                                                        title="{{ __('Convert to Sales Invoice') }}">
+                                                                        <i class="fas fa-shopping-cart"></i>
                                                                     </a>
                                                                 @endif
                                                             </div>
@@ -240,8 +247,8 @@
                     @else
                         <div class="text-center py-5">
                             <div class="alert alert-info">
-                                <i class="las la-info-circle me-2"></i>
-                                لا توجد عروض أسعار مسجلة للعملاء حتى الآن
+                                <i class="fas fa-info-circle me-2"></i>
+                                {{ __('No customer price quotes registered yet') }}
                             </div>
                         </div>
                     @endif

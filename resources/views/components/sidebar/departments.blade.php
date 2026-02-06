@@ -115,16 +115,16 @@
                     </a>
                 </li>
             @endcan
-             <!-- تسجيل الدخول لبصمه الموبايل -->
-              @can('view Mobile-fingerprint')
-             <li class="nav-item">
-                <a class="nav-link" href="{{ route('mobile.employee-login') }}">
-                    <i class="ti-control-record"></i>{{ __('navigation.mobile_fingerprint_login') }}
-                </a>
-            </li>
+            {{-- Mobile Fingerprint Login --}}
+            @can('view Mobile-fingerprint')
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('mobile.employee-login') }}">
+                        <i class="ti-control-record"></i>{{ __('navigation.mobile_fingerprint_login') }}
+                    </a>
+                </li>
             @endcan
         </ul>
-       
+
     </li>
 @endcanany
 
@@ -135,18 +135,18 @@
         <span class="menu-arrow"><i class="mdi mdi-chevron-right"></i></span>
     </a>
     <ul class="sub-menu mm-collapse">
-            @can('view Attendance Processing')
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('hr.attendance.processing') }}">
-                        <i class="ti-control-record"></i>{{ __('navigation.attendance_processing') }}
-                    </a>
-                </li>
-            @endcan
+        @can('view Attendance Processing')
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('hr.flexible-salary.processing.index') }}">
-                    <i class="ti-control-record"></i>{{ __('navigation.flexible_salary_processing') }}
+                <a class="nav-link" href="{{ route('hr.attendance.processing') }}">
+                    <i class="ti-control-record"></i>{{ __('navigation.attendance_processing') }}
                 </a>
             </li>
+        @endcan
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('hr.flexible-salary.processing.index') }}">
+                <i class="ti-control-record"></i>{{ __('navigation.flexible_salary_processing') }}
+            </a>
+        </li>
         <li class="nav-item">
             <a class="nav-link" href="{{ route('hr.employee-advances.index') }}">
                 <i class="ti-control-record"></i>{{ __('navigation.employee_advances') }}
@@ -157,11 +157,12 @@
                 <i class="ti-control-record"></i>{{ __('navigation.employee_deductions_rewards') }}
             </a>
         </li>
-        </ul>
-    </li>
+    </ul>
+</li>
 
 {{-- قسم إدارة الإجازات --}}
-@canany(['view Leave Types', 'view Leave Balances', 'view Leave Requests', 'create Leave Balances', 'edit Leave Balances', 'create Leave Requests', 'edit Leave Requests'])
+@canany(['view Leave Types', 'view Leave Balances', 'view Leave Requests', 'create Leave Balances', 'edit Leave
+    Balances', 'create Leave Requests', 'edit Leave Requests'])
     <li class="nav-item has-submenu">
         <a class="nav-link" href="javascript: void(0);">
             <i class="ti-control-record"></i>{{ __('navigation.leave_management') }}
@@ -176,19 +177,19 @@
                 </li>
             @endcan
             <!-- @can('view Leave Balances')
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('hr.leaves.balances.index') }}">
-                        <i class="ti-control-record"></i>{{ __('navigation.leave_balances') }}
-                    </a>
-                </li>
-            @endcan -->
+        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('hr.leaves.balances.index') }}">
+                                <i class="ti-control-record"></i>{{ __('navigation.leave_balances') }}
+                            </a>
+                        </li>
+    @endcan -->
             <!-- @can('create Leave Balances')
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('hr.leaves.balances.create') }}">
-                        <i class="ti-control-record"></i>{{ __('navigation.create_leave_balance') }}
-                    </a>
-                </li>
-            @endcan -->
+        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('hr.leaves.balances.create') }}">
+                                <i class="ti-control-record"></i>{{ __('navigation.create_leave_balance') }}
+                            </a>
+                        </li>
+    @endcan -->
             @can('view Leave Requests')
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('hr.leaves.requests.index') }}">
@@ -208,7 +209,8 @@
 @endcanany
 
 {{-- قسم إدارة التوظيف --}}
-@canany(['view Contract Types', 'view CVs', 'view Contracts', 'view Job Postings', 'view Interviews', 'view Onboardings', 'view Terminations'])
+@canany(['view Contract Types', 'view CVs', 'view Contracts', 'view Job Postings', 'view Interviews', 'view
+    Onboardings', 'view Terminations'])
     <li class="nav-item has-submenu">
         <a class="nav-link" href="javascript: void(0);">
             <i class="ti-control-record"></i>{{ __('recruitment.recruitment_management') }}
@@ -282,29 +284,29 @@
 
 {{-- قسم إدارة العهد --}}
 @can('view Covenants')
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('covenants.index') }}">
-        <i class="ti-control-record"></i>{{ __('navigation.covenants') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('covenants.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.covenants') }}
+        </a>
+    </li>
 @endcan
 
 {{-- قسم إدارة مأموريات العمل --}}
 @can('view Errands')
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('errands.index') }}">
-        <i class="ti-control-record"></i>{{ __('navigation.errands') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('errands.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.errands') }}
+        </a>
+    </li>
 @endcan
 
 {{-- قسم إدارة أذونات العمل --}}
 @can('view Work Permissions')
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('work-permissions.index') }}">
-        <i class="ti-control-record"></i>{{ __('navigation.work_permissions') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('work-permissions.index') }}">
+            <i class="ti-control-record"></i>{{ __('navigation.work_permissions') }}
+        </a>
+    </li>
 @endcan
 
 {{-- قسم إعدادات الموارد البشرية --}}
@@ -333,4 +335,3 @@
         <i class="ti-control-record"></i>{{ __('hr.project_attendance_report') }}
     </a>
 </li>
-    

@@ -60,10 +60,12 @@ class Client extends Model
         return $this->hasMany(Lead::class, 'client_id');
     }
 
+    /*
     public function projectsAsClient()
     {
-        return $this->hasMany(Inquiry::class, 'client_id');
+        return $this->hasMany(\Modules\Inquiries\Models\Inquiry::class, 'client_id');
     }
+    */
 
     public function projectsAsMainContractor()
     {
@@ -93,5 +95,19 @@ class Client extends Model
     public function operations()
     {
         return $this->hasMany(OperHead::class, 'acc2');
+    }
+    public function tasks()
+    {
+        return $this->hasMany(\Modules\CRM\Models\Task::class);
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(\Modules\CRM\Models\Activity::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(\Modules\CRM\Models\Ticket::class);
     }
 }

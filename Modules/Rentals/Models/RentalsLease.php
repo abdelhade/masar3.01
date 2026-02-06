@@ -5,6 +5,7 @@ namespace Modules\Rentals\Models;
 use App\Models\Client;
 use Modules\Accounts\Models\AccHead;
 use Modules\Branches\Models\Branch;
+use Modules\Rentals\Enums\LeaseStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class RentalsLease extends Model
@@ -16,6 +17,7 @@ class RentalsLease extends Model
         'start_date',
         'end_date',
         'rent_amount',
+        'rent_type',
         'payment_method',
         'status',
         'notes',
@@ -26,6 +28,7 @@ class RentalsLease extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date'   => 'date',
+        'status'     => LeaseStatus::class,
     ];
 
     // protected static function booted()

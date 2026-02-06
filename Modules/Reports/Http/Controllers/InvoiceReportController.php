@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Reports;
+namespace Modules\Reports\Http\Controllers;
 
 use App\Models\OperHead;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ class InvoiceReportController extends Controller
             ->orderByDesc('pro_date')
             ->paginate(50);
 
-        return view('reports.invoices.purchase-invoice', compact('invoices'));
+        return view('reports::invoices.purchase-invoice', compact('invoices'));
     }
 
     public function salesInvoices(Request $request)
@@ -25,8 +25,7 @@ class InvoiceReportController extends Controller
             ->with(['acc1Head', 'acc2Head', 'employee', 'user'])
             ->orderByDesc('pro_date')
             ->paginate(50);
-
-        return view('reports.invoices.sales-invoice', compact('invoices'));
+        return view('reports::invoices.sales-invoice', compact('invoices'));
     }
 
     public function salesOrdersReport()
@@ -36,7 +35,7 @@ class InvoiceReportController extends Controller
             ->orderByDesc('pro_date')
             ->paginate(50);
 
-        return view('reports.invoices.sales-orders', compact('invoices'));
+        return view('reports::invoices.sales-orders', compact('invoices'));
     }
 
     public function purchaseQuotationsReport()
@@ -87,14 +86,14 @@ class InvoiceReportController extends Controller
             });
         }
 
-        return view('reports.invoices.purchase-quotations', compact('itemsComparison'));
+        return view('reports::invoices.purchase-quotations', compact('itemsComparison'));
     }
 
     public function supplierQuotationsComparisonReport()
     {
         $itemsComparison = $this->getQuotationsComparison(17);
 
-        return view('reports.supplier-quotations-comparison', [
+        return view('reports::supplier-quotations-comparison', [
             'itemsComparison' => $itemsComparison
         ]);
     }
@@ -103,7 +102,7 @@ class InvoiceReportController extends Controller
     {
         $itemsComparison = $this->getQuotationsComparison(14);
 
-        return view('reports.customer-quotations-comparison', [
+        return view('reports::customer-quotations-comparison', [
             'itemsComparison' => $itemsComparison
         ]);
     }
@@ -211,7 +210,7 @@ class InvoiceReportController extends Controller
             });
         }
 
-        return view('reports.invoices.supplier-rfqs', compact('itemsComparison'));
+        return view('reports::invoices.supplier-rfqs', compact('itemsComparison'));
     }
 
     private function getBestPricesForAllItems()
@@ -487,16 +486,16 @@ class InvoiceReportController extends Controller
             ->orderByDesc('pro_date')
             ->paginate(50);
 
-        return view('reports.invoices.manufacturing-report', compact('invoices'));
+        return view('reports::invoices.manufacturing-report', compact('invoices'));
     }
 
     public function editPurchasePriceInvoice($id)
     {
-        return view('reports.invoices.edit-purchase-price-invoice-report', compact('id'));
+        return view('reports::invoices.edit-purchase-price-invoice-report', compact('id'));
     }
 
     public function invoicesBarcodeReport($id)
     {
-        return view('reports.invoices.invoices-barcode-report', compact('id'));
+        return view('reports::invoices.invoices-barcode-report', compact('id'));
     }
 }

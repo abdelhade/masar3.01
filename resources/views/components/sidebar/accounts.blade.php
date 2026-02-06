@@ -24,13 +24,13 @@
 <li class="menu-title mt-2">{{ __('Accounts Module') }}</li>
 
 @can('view basicData-statistics')
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('accounts.basic-data-statistics') ? 'active' : '' }}" 
-       href="{{ route('accounts.basic-data-statistics') }}"
-       style="{{ request()->routeIs('accounts.basic-data-statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
-        <i class="las la-chart-bar font-18"></i>{{ __('إحصائيات البيانات الأساسية') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('accounts.basic-data-statistics') ? 'active' : '' }}" 
+           href="{{ route('accounts.basic-data-statistics') }}"
+           style="{{ request()->routeIs('accounts.basic-data-statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
+            <i class="las la-chart-bar font-18"></i>{{ __('إحصائيات البيانات الأساسية') }}
+        </a>
+    </li>
 @endcan
 
 @foreach ($accountTypes as $type => $data)
@@ -44,6 +44,3 @@
         </li>
     @endcan
 @endforeach
-
-
-

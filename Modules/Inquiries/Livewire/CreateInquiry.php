@@ -4,9 +4,12 @@ namespace Modules\Inquiries\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
-use App\Models\{City, Town};
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\{DB, Auth};
+use Modules\HR\Models\City;
+use Modules\HR\Models\Country;
+use Modules\HR\Models\State;
+use Modules\HR\Models\Town;
 use Modules\Progress\Models\ProjectProgress;
 use Modules\Inquiries\Services\DistanceCalculatorService;
 use Modules\Inquiries\Enums\{KonTitle, StatusForKon, InquiryStatus, KonPriorityEnum, ClientPriorityEnum};
@@ -816,19 +819,19 @@ class CreateInquiry extends Component
         ];
 
         if ($this->inquiryId) {
-             $inquiry = Inquiry::findOrFail($this->inquiryId);
-             $inquiry->update($inquiryData);
-             // Detach relationships to avoid duplication or stale data, then re-attach below
-             $inquiry->contacts()->detach();
-             $inquiry->submittalChecklists()->detach();
-             $inquiry->workConditions()->detach();
-             $inquiry->projectDocuments()->detach();
-             $inquiry->quotationUnits()->detach();
-             $inquiry->workTypes()->detach();
-             // Assigned engineers logic might need care, but for now we re-sync
+            $inquiry = Inquiry::findOrFail($this->inquiryId);
+            $inquiry->update($inquiryData);
+            // Detach relationships to avoid duplication or stale data, then re-attach below
+            $inquiry->contacts()->detach();
+            $inquiry->submittalChecklists()->detach();
+            $inquiry->workConditions()->detach();
+            $inquiry->projectDocuments()->detach();
+            $inquiry->quotationUnits()->detach();
+            $inquiry->workTypes()->detach();
+            // Assigned engineers logic might need care, but for now we re-sync
         } else {
-             $inquiryData['created_by'] = Auth::id();
-             $inquiry = Inquiry::create($inquiryData);
+            $inquiryData['created_by'] = Auth::id();
+            $inquiry = Inquiry::create($inquiryData);
         }
 
         // حفظ Contacts مع أدوارهم
@@ -1009,11 +1012,11 @@ class CreateInquiry extends Component
 
         try {
             $emirate = $this->extractEmirateFromAddress($this->toLocation) ?: 'Abu Dhabi';
-            $country = \App\Models\Country::firstOrCreate(
+            $country = Country::firstOrCreate(
                 ['title' => 'United Arab Emirates'],
                 ['title' => 'United Arab Emirates']
             );
-            $state = \App\Models\State::firstOrCreate(
+            $state = State::firstOrCreate(
                 ['title' => 'United Arab Emirates', 'country_id' => $country->id],
                 ['title' => 'United Arab Emirates', 'country_id' => $country->id]
             );

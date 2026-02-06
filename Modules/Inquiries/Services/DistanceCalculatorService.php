@@ -5,10 +5,10 @@ namespace Modules\Inquiries\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use App\Models\Country;
-use App\Models\State;
-use App\Models\City;
-use App\Models\Town;
+use Modules\HR\Models\City;
+use Modules\HR\Models\Town;
+use Modules\HR\Models\State;
+use Modules\HR\Models\Country;
 
 class DistanceCalculatorService
 {

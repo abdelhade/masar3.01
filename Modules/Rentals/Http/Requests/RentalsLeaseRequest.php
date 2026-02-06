@@ -57,6 +57,7 @@ class RentalsLeaseRequest extends FormRequest
             'start_date'     => ['required', 'date'],
             'end_date'       => ['required', 'date', 'after:start_date'],
             'rent_amount'    => ['required', 'numeric', 'min:0'],
+            'rent_type'      => ['required', 'string', 'in:daily,monthly,yearly'],
             'acc_id'         => ['required', 'exists:acc_head,id'],
             'status'         => ['required', 'in:' . implode(',', array_column(LeaseStatus::cases(), 'value'))],
             'notes'          => ['nullable', 'string'],

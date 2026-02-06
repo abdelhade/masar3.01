@@ -14,6 +14,7 @@ class TaskRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
         return [
             'client_id'      => ['required', 'exists:clients,id'],
             'user_id'        => ['required', 'exists:users,id'],
@@ -22,11 +23,11 @@ class TaskRequest extends FormRequest
             'status'         => ['required', new Enum(TaskStatusEnum::class)],
             'priority'       => ['required', new Enum(TaskPriorityEnum::class)],
             'start_date'     => ['required', 'date'],
-            'delivery_date'  => ['required', 'date', 'after_or_equal:start_date'],
+            'due_date'  => ['required', 'date', 'after_or_equal:start_date'],
             'client_comment' => ['nullable', 'string'],
             'user_comment'   => ['nullable', 'string'],
             'attachment'     => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf,doc,docx'],
-            'branch_id'      => 'required|exists:branches,id',
+            'branch_id' => $isUpdate ? 'nullable|exists:branches,id' : 'required|exists:branches,id',
         ];
     }
 

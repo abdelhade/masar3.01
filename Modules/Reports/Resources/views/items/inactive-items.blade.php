@@ -6,48 +6,54 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تقرير الأصناف غير المفعلة'),
+        'title' => __('Inactive Items Report'),
         'items' => [
-            ['label' => __('الرئيسية'), 'url' => route('admin.dashboard')],
-            ['label' => __('تقرير الأصناف غير المفعلة')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Reports'), 'url' => route('reports.index')],
+            ['label' => __('Inactive Items Report')],
         ],
     ])
 
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <x-table-export-actions table-id="inactive-items-table" filename="inactive-items" excel-label="تصدير Excel"
-                    pdf-label="تصدير PDF" print-label="طباعة" />
+                <x-table-export-actions table-id="inactive-items-table" filename="inactive-items"
+                    excel-label="{{ __('Export Excel') }}" pdf-label="{{ __('Export PDF') }}"
+                    print-label="{{ __('Print') }}" />
 
                 <table id="inactive-items-table" class="table table-striped table-bordered text-center">
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
-                            <th>الكود</th>
-                            <th>الاسم</th>
-                            <th>الوصف</th>
-                            <th>الفرع</th>
-                            <th>الحد الأدنى للطلب</th>
-                            <th>الحد الأقصى للطلب</th>
-                            <th>متوسط التكلفة</th>
+                            <th>{{ __('Code') }}</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Description') }}</th>
+                            <th>{{ __('Branch') }}</th>
+                            <th class="text-end">{{ __('Min Order Quantity') }}</th>
+                            <th class="text-end">{{ __('Max Order Quantity') }}</th>
+                            <th class="text-end">{{ __('Average Cost') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($items as $item)
-                            <tr>
+                            <tr class="table-warning">
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->code }}</td>
                                 <td>{{ $item->name }}</td>
                                 <td>{{ $item->info }}</td>
                                 <td>{{ $item->branch }}</td>
-                                <td>{{ $item->min_order_quantity }}</td>
-                                <td>{{ $item->max_order_quantity }}</td>
-                                <td>{{ number_format($item->average_cost, 2) }}</td>
+                                <td class="text-end">{{ $item->min_order_quantity ?? 0 }}</td>
+                                <td class="text-end">{{ $item->max_order_quantity ?? 0 }}</td>
+                                <td class="text-end">
+                                    <span class="fw-bold text-primary">
+                                        {{ number_format($item->average_cost ?? 0, 2) }}
+                                    </span>
+                                </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="8" class="text-center">
-                                    <div class="alert alert-info mb-0">لا توجد أصناف غير مفعلة</div>
+                                    <div class="alert alert-info mb-0">{{ __('No Inactive Items') }}</div>
                                 </td>
                             </tr>
                         @endforelse

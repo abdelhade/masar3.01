@@ -55,7 +55,8 @@ new class extends Component {
             return collect();
         }
 
-        return AccHead::where('is_basic',0)->where('aname', 'like', '%' . $this->searchTerm . '%')
+        return AccHead::where('is_basic', 0)
+            ->where('aname', 'like', '%' . $this->searchTerm . '%')
             ->select('id', 'aname')
             ->limit(7)
             ->get();
@@ -159,19 +160,23 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title font-hold fw-bold">تقرير حركة حساب</h4>
+                <h4 class="page-title font-hold fw-bold">{{ __('Account Movement Report') }}</h4>
             </div>
         </div>
     </div>
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="font-hold fw-bold">تقرير حركة حساب</h4>
+            <h4 class="font-hold fw-bold">{{ __('Account Movement Report') }}</h4>
             @if ($accountId)
                 <div class="d-flex align-items-center">
-                    <span class="font-hold fw-bold me-2">الرصيد الحالي للحساب {{ $accountName }}:</span>
+                    <span class="font-hold fw-bold me-2">
+                        {{ __('Current Balance for Account') }} {{ $accountName }}:
+                    </span>
                     <span
-                        class="font-hold fw-bold font-16 @if ($this->runningBalance < 0) bg-soft-danger @else bg-soft-primary @endif">{{ number_format($this->runningBalance, 2) }}</span>
+                        class="font-hold fw-bold font-16 @if ($this->runningBalance < 0) bg-soft-danger @else bg-soft-primary @endif">
+                        {{ number_format($this->runningBalance, 2) }}
+                    </span>
                 </div>
             @endif
         </div>
@@ -179,11 +184,12 @@ new class extends Component {
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="account" class="form-label font-hold fw-bold">الحساب</label>
+                        <label for="account" class="form-label font-hold fw-bold">{{ __('Account') }}</label>
                         <div class="dropdown" wire:click.outside="hideDropdown">
                             <input type="text" class="form-control font-hold fw-bold"
-                                placeholder="ابحث عن حساب..." wire:model.live.debounce.300ms="searchTerm"
-                                wire:keydown.arrow-down.prevent="arrowDown" wire:keydown.arrow-up.prevent="arrowUp"
+                                placeholder="{{ __('Search for an account...') }}"
+                                wire:model.live.debounce.300ms="searchTerm" wire:keydown.arrow-down.prevent="arrowDown"
+                                wire:keydown.arrow-up.prevent="arrowUp"
                                 wire:keydown.enter.prevent="selectHighlightedItem" wire:focus="showResults"
                                 onclick="this.select()">
                             @if ($showDropdown && $this->searchResults->isNotEmpty())
@@ -200,8 +206,11 @@ new class extends Component {
                                 </ul>
                             @elseif($showDropdown && strlen($searchTerm) >= 2 && $searchTerm !== $accountName)
                                 <ul class="dropdown-menu show" style="width: 100%;">
-                                    <li><span class="dropdown-item-text font-hold fw-bold text-danger">لا يوجد
-                                            نتائج لهذا البحث</span></li>
+                                    <li>
+                                        <span class="dropdown-item-text font-hold fw-bold text-danger">
+                                            {{ __('No results found for this search') }}
+                                        </span>
+                                    </li>
                                 </ul>
                             @endif
                         </div>
@@ -209,14 +218,14 @@ new class extends Component {
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="fromDate" class="form-label font-hold fw-bold">من تاريخ</label>
+                        <label for="fromDate" class="form-label font-hold fw-bold">{{ __('From Date') }}</label>
                         <input type="date" wire:model.live="fromDate" id="fromDate"
                             class="form-control font-hold fw-bold">
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        <label for="toDate" class="form-label font-hold fw-bold">إلى تاريخ</label>
+                        <label for="toDate" class="form-label font-hold fw-bold">{{ __('To Date') }}</label>
                         <input type="date" wire:model.live="toDate" id="toDate"
                             class="form-control font-hold fw-bold">
                     </div>
@@ -232,14 +241,14 @@ new class extends Component {
                     <table class="table table-striped table-centered mb-0">
                         <thead>
                             <tr>
-                                <th class="font-hold fw-bold">التاريخ</th>
-                                <th class="font-hold fw-bold">مصدر العملية</th>
-                                <th class="font-hold fw-bold">نوع الحركة</th>
-                                <th class="font-hold fw-bold">الرصيد قبل الحركة</th>
-                                <th class="font-hold fw-bold">مدين</th>
-                                <th class="font-hold fw-bold">دائن</th>
-                                <th class="font-hold fw-bold">الرصيد بعد الحركة</th>
-                                <th class="font-hold fw-bold">الإجراءات</th>
+                                <th class="font-hold fw-bold">{{ __('Date') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Operation Source') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Movement Type') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Balance Before') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Debit') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Credit') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Balance After') }}</th>
+                                <th class="font-hold fw-bold">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -255,15 +264,15 @@ new class extends Component {
                             @endphp
                             @forelse($movements as $movement)
                                 <tr>
-                                    <td class="font-hold fw-bold">{{ $movement->crtime }}</td>
+                                    <td class="font-hold fw-bold">{{ $movement->crtime->format('Y-m-d') }}</td>
                                     <td class="font-hold fw-bold">
                                         {{ $movement->op_id }}#_{{ $this->getArabicReferenceName(OperHead::find($movement->op_id)->pro_type) }}
                                     </td>
                                     <td class="font-hold fw-bold">
                                         @if ($movement->debit > 0)
-                                            <span class="badge bg-primary">مدين</span>
+                                            <span class="badge bg-primary">{{ __('Debit') }}</span>
                                         @else
-                                            <span class="badge bg-danger">دائن</span>
+                                            <span class="badge bg-danger">{{ __('Credit') }}</span>
                                         @endif
                                     </td>
                                     <td class="font-hold fw-bold">{{ number_format($balanceBefore, 2) }}</td>
@@ -282,15 +291,19 @@ new class extends Component {
                                     @php
                                         $balanceAfter = $balanceBefore + $movement->debit - $movement->credit;
                                     @endphp
-                                    <td class="font-hold fw-bold">{{ number_format($balanceAfter, 2) }}</td>
+                                    <td
+                                        class="font-hold fw-bold {{ $balanceAfter < 0 ? 'text-danger' : 'text-success' }}">
+                                        {{ number_format($balanceAfter, 2) }}
+                                    </td>
                                     <td class="font-hold fw-bold">
                                         @php
                                             $operation = OperHead::find($movement->op_id);
                                         @endphp
                                         @if ($operation && in_array($operation->pro_type, [10, 11, 12, 13]))
                                             <a href="{{ route('invoice.view', $movement->op_id) }}"
-                                                class="btn btn-xs btn-info" target="_blank">
-                                                <i class="fas fa-eye"></i> {{ __('عرض') }}
+                                                class="btn btn-sm btn-info" target="_blank"
+                                                title="{{ __('View Invoice') }}">
+                                                <i class="fas fa-eye"></i> {{ __('View') }}
                                             </a>
                                         @endif
                                     </td>
@@ -300,8 +313,9 @@ new class extends Component {
                                 @endphp
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center font-hold fw-bold">لا يوجد حركات
-                                        للمعايير المحددة.</td>
+                                    <td colspan="8" class="text-center font-hold fw-bold">
+                                        {{ __('No movements found for the selected criteria.') }}
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -327,10 +341,9 @@ new class extends Component {
 
                     modalElement.addEventListener('hidden.bs.modal', () => {
                         @this.call('closeModal');
-                    })
+                    });
                 }
             });
         </script>
     @endpush
 </div>
-

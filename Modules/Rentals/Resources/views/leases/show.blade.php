@@ -44,12 +44,30 @@
                                         <i class="fas fa-building me-2"></i>{{ __('Unit Information') }}
                                     </h6>
                                     <div class="mb-2">
-                                        <strong>{{ __('Unit') }}:</strong>
+                                        <strong>{{ __('Unit Type') }}:</strong>
                                         <span class="ms-2">
-                                            {{ optional($lease->unit)->name ?? __('N/A') }}
+                                            {{ ($lease->unit->unit_type ?? 'building') === 'item' ? __('Rental Item') : __('Residential Unit') }}
                                         </span>
                                     </div>
-                                    @if ($lease->unit && $lease->unit->building)
+                                    <div class="mb-2">
+                                        <strong>{{ ($lease->unit->unit_type ?? 'building') === 'item' ? __('Item') : __('Unit') }}:</strong>
+                                        <span class="ms-2">
+                                            @if(($lease->unit->unit_type ?? 'building') === 'item' && $lease->unit->item)
+                                                {{ $lease->unit->item->name }}
+                                            @else
+                                                {{ optional($lease->unit)->name ?? __('N/A') }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    @if ($lease->unit && $lease->unit->unit_type === 'item' && $lease->unit->item)
+                                        <div class="mb-2">
+                                            <strong>{{ __('Reference Item') }}:</strong>
+                                            <span class="ms-2">
+                                                {{ $lease->unit->item->name }} ({{ $lease->unit->item->code }})
+                                            </span>
+                                        </div>
+                                    @endif
+                                    @if ($lease->unit && ($lease->unit->unit_type ?? 'building') === 'building' && $lease->unit->building)
                                         <div class="mb-2">
                                             <strong>{{ __('Building') }}:</strong>
                                             <span class="ms-2">
@@ -99,8 +117,14 @@
                             <div class="col-md-6 mb-4">
                                 <div class="border rounded p-3 h-100">
                                     <h6 class="text-primary mb-3">
-                                        <i class="fas fa-calendar-alt me-2"></i>{{ __('Lease Period') }}
+                                        <i class="fas fa-calendar-alt me-2"></i>{{ __('Lease Period & Type') }}
                                     </h6>
+                                    <div class="mb-2">
+                                        <strong>{{ __('Rent Type') }}:</strong>
+                                        <span class="ms-2">
+                                            {{ ucfirst(__($lease->rent_type ?? 'monthly')) }}
+                                        </span>
+                                    </div>
                                     <div class="mb-2">
                                         <strong>{{ __('Start Date') }}:</strong>
                                         <span class="ms-2">
@@ -161,34 +185,15 @@
                                         <i class="fas fa-toggle-on me-2"></i>{{ __('Status') }}
                                     </h6>
                                     <div class="mb-2">
-                                        @switch($lease->status)
-                                            @case(\Modules\Rentals\Enums\LeaseStatus::PENDING->value)
-                                                <span class="badge bg-warning fs-6">
-                                                    {{ \Modules\Rentals\Enums\LeaseStatus::PENDING->label() }}
-                                                </span>
-                                            @break
-
-                                            @case(\Modules\Rentals\Enums\LeaseStatus::ACTIVE->value)
-                                                <span class="badge bg-success fs-6">
-                                                    {{ \Modules\Rentals\Enums\LeaseStatus::ACTIVE->label() }}
-                                                </span>
-                                            @break
-
-                                            @case(\Modules\Rentals\Enums\LeaseStatus::EXPIRED->value)
-                                                <span class="badge bg-secondary fs-6">
-                                                    {{ \Modules\Rentals\Enums\LeaseStatus::EXPIRED->label() }}
-                                                </span>
-                                            @break
-
-                                            @case(\Modules\Rentals\Enums\LeaseStatus::TERMINATED->value)
-                                                <span class="badge bg-danger fs-6">
-                                                    {{ \Modules\Rentals\Enums\LeaseStatus::TERMINATED->label() }}
-                                                </span>
-                                            @break
-
-                                            @default
-                                                <span class="badge bg-secondary fs-6">{{ __('Unknown') }}</span>
-                                        @endswitch
+                                        <span class="badge {{ match($lease->status) {
+                                            \Modules\Rentals\Enums\LeaseStatus::PENDING => 'bg-warning',
+                                            \Modules\Rentals\Enums\LeaseStatus::ACTIVE => 'bg-success',
+                                            \Modules\Rentals\Enums\LeaseStatus::EXPIRED => 'bg-secondary',
+                                            \Modules\Rentals\Enums\LeaseStatus::TERMINATED => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        } }} fs-6">
+                                            {{ $lease->status->label() }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

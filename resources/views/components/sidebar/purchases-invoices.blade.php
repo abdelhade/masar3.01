@@ -12,13 +12,15 @@
 
 <li class="menu-title mt-2">{{ __('Purchases Module') }}</li>
 
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('discounts.general-statistics') ? 'active' : '' }}" 
-       href="{{ route('discounts.general-statistics') }}"
-       style="{{ request()->routeIs('discounts.general-statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
-        <i class="las la-percentage font-18"></i>{{ __('Discounts Statistics') }}
-    </a>
-</li>
+@can('view Discounts')
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('discounts.general-statistics') ? 'active' : '' }}" 
+           href="{{ route('discounts.general-statistics') }}"
+           style="{{ request()->routeIs('discounts.general-statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
+            <i class="las la-percentage font-18"></i>{{ __('Discounts Statistics') }}
+        </a>
+    </li>
+@endcan
 
 @can('view Earned Discounts')
     <li class="nav-item">

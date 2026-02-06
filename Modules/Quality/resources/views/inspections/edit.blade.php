@@ -8,12 +8,12 @@
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
-            <h2><i class="fas fa-edit me-2"></i>تعديل الفحص: {{ $inspection->inspection_number }}</h2>
+            <h2><i class="fas fa-edit me-2"></i>{{ __("Edit") }} الفحص: {{ $inspection->inspection_number }}</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('quality.dashboard') }}">الجودة</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('quality.dashboard') }}">{{ __("Quality") }}</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('quality.inspections.index') }}">الفحوصات</a></li>
-                    <li class="breadcrumb-item active">تعديل</li>
+                    <li class="breadcrumb-item active">{{ __("Edit") }}</li>
                 </ol>
             </nav>
         </div>
@@ -32,9 +32,9 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label required">الصنف</label>
+                                <label class="form-label required">{{ __("Item") }}</label>
                                 <select name="item_id" class="form-select @error('item_id') is-invalid @enderror" required>
-                                    <option value="">اختر الصنف</option>
+                                    <option value="">اختر {{ __("Item") }}</option>
                                     @foreach($items as $item)
                                         <option value="{{ $item->id }}" {{ old('item_id', $inspection->item_id) == $item->id ? 'selected' : '' }}>{{ $item->name }}</option>
                                     @endforeach
@@ -45,7 +45,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label required">نوع الفحص</label>
                                 <select name="inspection_type" class="form-select @error('inspection_type') is-invalid @enderror" required>
-                                    <option value="">اختر النوع</option>
+                                    <option value="">اختر {{ __("Type") }}</option>
                                     <option value="receiving" {{ old('inspection_type', $inspection->inspection_type) == 'receiving' ? 'selected' : '' }}>فحص استلام مواد خام</option>
                                     <option value="in_process" {{ old('inspection_type', $inspection->inspection_type) == 'in_process' ? 'selected' : '' }}>فحص أثناء الإنتاج</option>
                                     <option value="final" {{ old('inspection_type', $inspection->inspection_type) == 'final' ? 'selected' : '' }}>فحص نهائي</option>
@@ -74,7 +74,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label required">الكمية المفحوصة</label>
+                                <label class="form-label required">{{ __("Quantity") }} المفحوصة</label>
                                 <input type="number" step="0.001" name="quantity_inspected" 
                                        class="form-control @error('quantity_inspected') is-invalid @enderror" 
                                        value="{{ old('quantity_inspected', $inspection->quantity_inspected) }}" required>
@@ -82,7 +82,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label required">الكمية الناجحة</label>
+                                <label class="form-label required">{{ __("Quantity") }} الناجحة</label>
                                 <input type="number" step="0.001" name="pass_quantity" 
                                        class="form-control @error('pass_quantity') is-invalid @enderror" 
                                        value="{{ old('pass_quantity', $inspection->pass_quantity) }}" required>
@@ -90,7 +90,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label required">الكمية الفاشلة</label>
+                                <label class="form-label required">{{ __("Quantity") }} الفاشلة</label>
                                 <input type="number" step="0.001" name="fail_quantity" 
                                        class="form-control @error('fail_quantity') is-invalid @enderror" 
                                        value="{{ old('fail_quantity', $inspection->fail_quantity) }}" required>
@@ -116,7 +116,7 @@
             <div class="col-lg-4">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">النتيجة والإجراء</h5>
+                        <h5 class="mb-0">{{ __("Result") }} والإجراء</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
@@ -160,7 +160,7 @@
                         <i class="fas fa-save me-2"></i>تحديث الفحص
                     </button>
                     <a href="{{ route('quality.inspections.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-times me-2"></i>إلغاء
+                        <i class="fas fa-times me-2"></i>{{ __("Cancel") }}
                     </a>
                 </div>
             </div>

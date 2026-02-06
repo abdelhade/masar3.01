@@ -60,8 +60,105 @@ class ClientController extends Controller
 
     public function show($id)
     {
-        $client = Client::findOrFail($id);
-        return view('clients.show', compact('client'));
+        $client = Client::with([
+            'clientType', 
+            'category', 
+            'invoices' => function($q) { $q->latest('pro_date')->take(20); }, 
+            'tasks' => function($q) { $q->latest()->take(20); }, 
+            'activities' => function($q) { $q->latest('activity_date')->take(20); }, 
+            'tickets' => function($q) { $q->latest()->take(20); }, 
+            'leads' => function($q) { $q->latest()->take(20); },
+            // 'projectsAsClient' removed because inquiries doesn't have client_id
+        ])->findOrFail($id);
+
+        // Prepare Timeline Data
+        $timeline = collect();
+
+        // One-to-Many Relationships
+        foreach ($client->invoices as $invoice) {
+            $timeline->push((object)[
+                'type' => 'invoice',
+                'date' => \Carbon\Carbon::parse($invoice->pro_date),
+                'icon' => 'las la-file-invoice',
+                'color' => 'primary',
+                'title' => __('Invoice') . ' #' . $invoice->id,
+                'description' => __('Value') . ': ' . number_format($invoice->pro_value, 2),
+                'link' => route('invoices.show', $invoice->id)
+            ]);
+        }
+
+        foreach ($client->tasks as $task) {
+            $timeline->push((object)[
+                'type' => 'task',
+                'date' => $task->created_at,
+                'icon' => 'las la-tasks',
+                'color' => 'warning',
+                'title' => __('Task') . ': ' . $task->title,
+                'description' => $task->status,
+                'link' => route('tasks.edit', $task->id)
+            ]);
+        }
+
+        foreach ($client->activities as $activity) {
+            $timeline->push((object)[
+                'type' => 'activity',
+                'date' => $activity->activity_date,
+                'icon' => 'las la-calendar-check',
+                'color' => 'success',
+                'title' => $activity->title,
+                'description' => $activity->description,
+                'link' => route('activities.edit', $activity->id)
+            ]);
+        }
+
+        foreach ($client->tickets as $ticket) {
+            $timeline->push((object)[
+                'type' => 'ticket',
+                'date' => $ticket->created_at,
+                'icon' => 'las la-ticket-alt',
+                'color' => 'danger',
+                'title' => __('Ticket') . ': ' . $ticket->subject,
+                'description' => $ticket->status,
+                'link' => route('tickets.edit', $ticket->id)
+            ]);
+        }
+
+        foreach ($client->leads as $lead) {
+            $timeline->push((object)[
+                'type' => 'lead',
+                'date' => $lead->created_at,
+                'icon' => 'las la-funnel-dollar',
+                'color' => 'info',
+                'title' => __('Lead') . ': ' . $lead->title,
+                'description' => __('Status') . ': ' . $lead->status_id,
+                'link' => '#'
+            ]);
+        }
+
+        // Fetch Inquiries (Projects) via Email matching if independent
+        // Using full namespace for Inquiry to be safe, or import it.
+        // Assuming Client email is unique identifier for Contact in Inquiry module.
+        if ($client->email) {
+            $inquiries = \Modules\Inquiries\Models\Inquiry::whereHas('contacts', function($q) use ($client) {
+                $q->where('email', $client->email);
+            })->latest()->take(20)->get();
+
+            foreach ($inquiries as $project) {
+                 $timeline->push((object)[
+                    'type' => 'project',
+                    'date' => $project->created_at,
+                    'icon' => 'las la-project-diagram',
+                    'color' => 'secondary',
+                    'title' => __('Inquiry') . ': ' . ($project->project_name ?? $project->id), 
+                    'description' => $project->status?->label() ?? '',
+                    'link' => route('inquiries.edit', $project->id) // Assuming edit route is main
+                ]);
+            }
+        }
+
+        $timeline = $timeline->sortByDesc('date');
+
+        return view('clients.show', compact('client', 'timeline'));
     }
 
     public function edit($id)

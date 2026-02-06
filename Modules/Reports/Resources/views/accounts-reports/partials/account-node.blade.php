@@ -11,7 +11,7 @@
             <span class="account-name">{{ $account->aname }}</span>
 
             @if ($account->is_basic == 1)
-                <span class="basic-badge">حساب أساسي</span>
+                <span class="basic-badge">{{ __('Basic Account') }}</span>
             @endif
 
             @if ($account->is_basic == 1 && ($account->children?->count() ?? 0))

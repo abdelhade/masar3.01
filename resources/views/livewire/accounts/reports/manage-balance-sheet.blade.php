@@ -8,7 +8,7 @@ use App\Models\JournalDetail;
 use Carbon\Carbon;
 use Modules\Settings\Models\PublicSetting;
 
-new class extends Component { 
+new class extends Component {
     public $balanceSheetDate;
     public $companyName = '';
     public $totalAssets = 0;
@@ -31,7 +31,7 @@ new class extends Component {
 
     public function mount()
     {
-        $this->balanceSheetDate =  PublicSetting::where('key', 'start_date')->value('value') ?? now()->toDateString();
+        $this->balanceSheetDate = PublicSetting::where('key', 'start_date')->value('value') ?? now()->toDateString();
         $this->loadBalanceSheetData();
     }
 
@@ -292,7 +292,7 @@ new class extends Component {
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
-                <h4 class="page-title fw-bold">الميزانية العمومية</h4>
+                <h4 class="page-title fw-bold">{{ __('General Ledger Balance Sheet') }}</h4>
             </div>
         </div>
     </div>
@@ -305,25 +305,19 @@ new class extends Component {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="fw-bold">اسم الشركة:</label>
+                                <label class="fw-bold">{{ __('Company Name') }}:</label>
                                 <input type="text" wire:model="companyName" class="form-control"
-                                    placeholder="أدخل اسم الشركة">
+                                    placeholder="{{ __('Enter company name') }}">
                             </div>
                         </div>
-                        {{-- <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="fw-bold">تاريخ الميزانية العمومية:</label>
-                                <input type="date" wire:model="balanceSheetDate" class="form-control">
-                            </div>
-                        </div> --}}
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <button wire:click="refreshBalanceSheet" class="btn btn-main">
-                                <i class="fas fa-sync-alt"></i> تحديث الميزانية
+                            <button wire:click="refreshBalanceSheet" class="btn btn-primary">
+                                <i class="fas fa-sync-alt"></i> {{ __('Refresh Balance Sheet') }}
                             </button>
                             <button wire:click="exportBalanceSheet" class="btn btn-success ms-2">
-                                <i class="fas fa-download"></i> تصدير الميزانية
+                                <i class="fas fa-download"></i> {{ __('Export Balance Sheet') }}
                             </button>
                         </div>
                     </div>
@@ -337,176 +331,206 @@ new class extends Component {
         <div class="col-9 mx-auto">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title fw-bold">الميزانية العمومية -
-                        {{ $companyName ?: 'اسم الشركة' }}</h5>
-                    <p class="text-muted">تاريخ الميزانية:
-                        {{ \Carbon\Carbon::parse($balanceSheetDate)->format('Y-m-d') }}</p>
-                    <p class="text-muted font-family-cairo">(جميع المبالغ بالعملة المحلية)</p>
+                    <h5 class="card-title fw-bold">
+                        {{ __('General Ledger Balance Sheet') }} - {{ $companyName ?: __('Company Name') }}
+                    </h5>
+                    <p class="text-muted">
+                        {{ __('Balance Sheet Date') }}: {{ \Carbon\Carbon::parse($balanceSheetDate)->format('Y-m-d') }}
+                    </p>
+                    <p class="text-muted font-cairo">
+                        ({{ __('All amounts in local currency') }})
+                    </p>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
                             <thead class="table-dark">
                                 <tr>
-                                    <th class="fw-bold text-center text-white" style="width: 60%">البند</th>
-                                    <th class="fw-bold text-center text-white" style="width: 40%">المبلغ</th>
+                                    <th class="fw-bold text-center text-white" style="width: 60%">
+                                        {{ __('Account Item') }}
+                                    </th>
+                                    <th class="fw-bold text-center text-white" style="width: 40%">
+                                        {{ __('Amount') }}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- الأصول (Assets) -->
+                                <!-- Assets -->
                                 <tr class="table-primary">
-                                    <td colspan="2" class="fw-bold fs-5">الأصول (Assets)</td>
+                                    <td colspan="2" class="fw-bold fs-5">{{ __('Assets') }}</td>
                                 </tr>
-                                
-                                <!-- الأصول المتداولة -->
+
+                                <!-- Current Assets -->
                                 <tr class="table-info">
-                                    <td class="fw-bold">الأصول المتداولة (Current Assets)</td>
+                                    <td class="fw-bold">{{ __('Current Assets') }}</td>
                                     <td></td>
                                 </tr>
-                                
+
                                 @foreach ($currentAssets as $asset)
                                     <tr>
-                                        <td class="font-hold fw-bold" style="padding-right: 30px;">{{ $asset['name'] }}
+                                        <td class="font-cairo fw-bold" style="padding-right: 30px;">
+                                            {{ $asset['name'] }}
                                         </td>
-                                        <td class="text-end font-hold fw-bold">{{ number_format($asset['balance'], 2) }}
+                                        <td class="text-end font-cairo fw-bold">
+                                            {{ number_format($asset['balance'], 2) }}
                                         </td>
                                     </tr>
                                 @endforeach
-                                
+
                                 <tr class="table-warning">
-                                    <td class="fw-bold">إجمالي الأصول المتداولة</td>
-                                    <td class="text-end font-family-cairo fw-bold">
-                                        {{ number_format($currentAssetsTotal, 2) }}</td>
+                                    <td class="fw-bold">{{ __('Total Current Assets') }}</td>
+                                    <td class="text-end font-cairo fw-bold">
+                                        {{ number_format($currentAssetsTotal, 2) }}
+                                    </td>
                                 </tr>
-                                
-                                <!-- الأصول غير المتداولة -->
+
+                                <!-- Non-Current Assets -->
                                 <tr class="table-info">
-                                    <td class="fw-bold">الأصول غير المتداولة (Non-Current Assets)</td>
+                                    <td class="fw-bold">{{ __('Non-Current Assets') }}</td>
                                     <td></td>
                                 </tr>
-                                
+
                                 @foreach ($nonCurrentAssets as $asset)
                                     <tr>
-                                        <td class="font-hold" style="padding-right: 30px;">{{ $asset['name'] }}
+                                        <td class="font-cairo fw-bold" style="padding-right: 30px;">
+                                            {{ $asset['name'] }}
                                         </td>
-                                        <td class="text-end font-hold">{{ number_format($asset['balance'], 2) }}
+                                        <td class="text-end font-cairo fw-bold">
+                                            {{ number_format($asset['balance'], 2) }}
                                         </td>
                                     </tr>
                                 @endforeach
-                                
+
                                 <tr class="table-warning">
-                                    <td class="font-bold">إجمالي الأصول غير المتداولة</td>
-                                    <td class="text-end font-family-cairo fw-bold">
-                                        {{ number_format($nonCurrentAssetsTotal, 2) }}</td>
+                                    <td class="fw-bold">{{ __('Total Non-Current Assets') }}</td>
+                                    <td class="text-end font-cairo fw-bold">
+                                        {{ number_format($nonCurrentAssetsTotal, 2) }}
+                                    </td>
                                 </tr>
-                                
+
                                 <tr class="table-success">
-                                    <td class="fw-bold fs-5">إجمالي الأصول</td>
+                                    <td class="fw-bold fs-5">{{ __('Total Assets') }}</td>
                                     <td class="text-end fw-bold fs-5">
-                                        {{ number_format($totalAssets, 2) }}</td>
+                                        {{ number_format($totalAssets, 2) }}
+                                    </td>
                                 </tr>
-                                
-                                <!-- الخصوم وحقوق الملكية -->
+
+                                <!-- Liabilities & Equity -->
                                 <tr class="table-primary">
-                                    <td colspan="2" class="fw-bold fs-5">الخصوم وحقوق الملكية
-                                        (Liabilities & Equity)</td>
+                                    <td colspan="2" class="fw-bold fs-5">
+                                        {{ __('Liabilities & Equity') }}
+                                    </td>
                                 </tr>
-                                
-                                <!-- الخصوم المتداولة -->
+
+                                <!-- Current Liabilities -->
                                 <tr class="table-info">
-                                    <td class="fw-bold">الخصوم المتداولة (Current Liabilities)</td>
+                                    <td class="fw-bold">{{ __('Current Liabilities') }}</td>
                                     <td></td>
                                 </tr>
-                                
+
                                 @foreach ($currentLiabilities as $liability)
                                     <tr>
-                                        <td class="font-hold fw-bold" style="padding-right: 30px;">
-                                            {{ $liability['name'] }}</td>
-                                        <td class="text-end font-hold fw-bold">
-                                            {{ number_format($liability['balance'], 2) }}</td>
+                                        <td class="font-cairo fw-bold" style="padding-right: 30px;">
+                                            {{ $liability['name'] }}
+                                        </td>
+                                        <td class="text-end font-cairo fw-bold">
+                                            {{ number_format($liability['balance'], 2) }}
+                                        </td>
                                     </tr>
                                 @endforeach
-                                
+
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">إجمالي الخصوم المتداولة</td>
-                                    <td class="text-end font-family-cairo fw-bold">
-                                        {{ number_format($currentLiabilitiesTotal, 2) }}</td>
-                                </tr>
-                                
-                                <!-- الخصوم غير المتداولة -->
-                                <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">الخصوم غير المتداولة (Non-Current Liabilities)
+                                    <td class="fw-bold">{{ __('Total Current Liabilities') }}</td>
+                                    <td class="text-end font-cairo fw-bold">
+                                        {{ number_format($currentLiabilitiesTotal, 2) }}
                                     </td>
+                                </tr>
+
+                                <!-- Non-Current Liabilities -->
+                                <tr class="table-info">
+                                    <td class="fw-bold">{{ __('Non-Current Liabilities') }}</td>
                                     <td></td>
                                 </tr>
-                                
+
                                 @foreach ($nonCurrentLiabilities as $liability)
                                     <tr>
-                                        <td class="font-hold fw-bold" style="padding-right: 30px;">
-                                            {{ $liability['name'] }}</td>
-                                        <td class="text-end font-hold fw-bold">
-                                            {{ number_format($liability['balance'], 2) }}</td>
+                                        <td class="font-cairo fw-bold" style="padding-right: 30px;">
+                                            {{ $liability['name'] }}
+                                        </td>
+                                        <td class="text-end font-cairo fw-bold">
+                                            {{ number_format($liability['balance'], 2) }}
+                                        </td>
                                     </tr>
                                 @endforeach
-                                
+
                                 <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">إجمالي الخصوم غير المتداولة</td>
-                                    <td class="text-end font-family-cairo fw-bold">
-                                        {{ number_format($nonCurrentLiabilitiesTotal, 2) }}</td>
-                                </tr>
-                                
-                                <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">إجمالي الخصوم</td>
-                                    <td class="text-end font-family-cairo fw-bold">
-                                        {{ number_format($totalLiabilities, 2) }}</td>
-                                </tr>
-                                
-                                <!-- حقوق الملكية -->
-                                <tr class="table-info">
-                                    <td class="font-family-cairo fw-bold">حقوق الملكية (Equity)</td>
-                                    <td></td>
-                                </tr>
-                                
-                                @foreach ($equity as $equityItem)
-                                    <tr>
-                                        <td class="font-hold fw-bold" style="padding-right: 30px;">
-                                            {{ $equityItem['name'] }}</td>
-                                        <td class="text-end font-hold fw-bold">
-                                            {{ number_format($equityItem['balance'], 2) }}</td>
-                                    </tr>
-                                @endforeach
-                                
-                                <tr class="table-warning">
-                                    <td class="font-family-cairo fw-bold">إجمالي حقوق الملكية</td>
-                                    <td class="text-end font-family-cairo fw-bold">{{ number_format($totalEquity, 2) }}
+                                    <td class="fw-bold">{{ __('Total Non-Current Liabilities') }}</td>
+                                    <td class="text-end font-cairo fw-bold">
+                                        {{ number_format($nonCurrentLiabilitiesTotal, 2) }}
                                     </td>
                                 </tr>
-                                
+
+                                <tr class="table-warning">
+                                    <td class="fw-bold">{{ __('Total Liabilities') }}</td>
+                                    <td class="text-end font-cairo fw-bold">
+                                        {{ number_format($totalLiabilities, 2) }}
+                                    </td>
+                                </tr>
+
+                                <!-- Equity -->
+                                <tr class="table-info">
+                                    <td class="fw-bold">{{ __('Equity') }}</td>
+                                    <td></td>
+                                </tr>
+
+                                @foreach ($equity as $equityItem)
+                                    <tr>
+                                        <td class="font-cairo fw-bold" style="padding-right: 30px;">
+                                            {{ $equityItem['name'] }}
+                                        </td>
+                                        <td class="text-end font-cairo fw-bold">
+                                            {{ number_format($equityItem['balance'], 2) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                <tr class="table-warning">
+                                    <td class="fw-bold">{{ __('Total Equity') }}</td>
+                                    <td class="text-end font-cairo fw-bold">
+                                        {{ number_format($totalEquity, 2) }}
+                                    </td>
+                                </tr>
+
                                 <tr class="table-success">
-                                    <td class="font-family-cairo fw-bold fs-5">إجمالي الخصوم وحقوق الملكية</td>
-                                    <td class="text-end font-family-cairo fw-bold fs-5">
-                                        {{ number_format($totalLiabilities + $totalEquity, 2) }}</td>
+                                    <td class="fw-bold fs-5">{{ __('Total Liabilities & Equity') }}</td>
+                                    <td class="text-end font-cairo fw-bold fs-5">
+                                        {{ number_format($totalLiabilities + $totalEquity, 2) }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Balance Sheet Equation Check -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div
                                 class="alert {{ $totalAssets == $totalLiabilities + $totalEquity ? 'alert-success' : 'alert-danger' }}">
-                                <h6 class="font-family-cairo fw-bold">
-                                    معادلة الميزانية العمومية:
-                                    إجمالي الأصول ({{ number_format($totalAssets, 2) }})
+                                <h6 class="font-cairo fw-bold">
+                                    {{ __('Balance Sheet Equation') }}:
+                                    {{ __('Total Assets') }} ({{ number_format($totalAssets, 2) }})
                                     {{ $totalAssets == $totalLiabilities + $totalEquity ? '=' : '≠' }}
-                                    إجمالي الخصوم + حقوق الملكية
+                                    {{ __('Total Liabilities + Equity') }}
                                     ({{ number_format($totalLiabilities + $totalEquity, 2) }})
                                 </h6>
                                 @if ($totalAssets != $totalLiabilities + $totalEquity)
-                                    <p class="font-family-cairo text-danger">
-                                        تحذير: الميزانية غير متوازنة. الفرق:
+                                    <p class="font-cairo text-danger">
+                                        {{ __('Warning: Balance sheet is unbalanced. Difference') }}:
                                         {{ number_format($totalAssets - ($totalLiabilities + $totalEquity), 2) }}
+                                    </p>
+                                @else
+                                    <p class="font-cairo text-success">
+                                        ✅ {{ __('Balance sheet is balanced correctly.') }}
                                     </p>
                                 @endif
                             </div>
@@ -518,40 +542,40 @@ new class extends Component {
     </div>
 
     <style>
-    .font-hold {
-        font-family: 'Cairo', sans-serif;
-    }
+        .font-cairo {
+            font-family: 'Cairo', sans-serif;
+        }
 
-    .table th,
-    .table td {
-        vertical-align: middle;
-    }
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
 
-    .text-end {
-        text-align: end !important;
-    }
+        .text-end {
+            text-align: end !important;
+        }
 
-    .table-responsive {
-        direction: rtl;
-    }
+        .table-responsive {
+            direction: rtl;
+        }
 
-    .table {
-        direction: rtl;
-    }
+        .table {
+            direction: rtl;
+        }
 
-    .table th,
-    .table td {
-        text-align: right;
-    }
+        .table th,
+        .table td {
+            text-align: right;
+        }
 
-    .table th.text-center,
-    .table td.text-center {
-        text-align: center !important;
-    }
+        .table th.text-center,
+        .table td.text-center {
+            text-align: center !important;
+        }
 
-    .table th.text-end,
-    .table td.text-end {
-        text-align: left !important;
-    }
+        .table th.text-end,
+        .table td.text-end {
+            text-align: left !important;
+        }
     </style>
 </div>

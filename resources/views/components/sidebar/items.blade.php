@@ -1,13 +1,13 @@
 <li class="menu-title mt-2">{{ __('Items Module') }}</li>
 
 @can('view item-statistics')
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('items.statistics') ? 'active' : '' }}" 
-       href="{{ route('items.statistics') }}"
-       style="{{ request()->routeIs('items.statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
-        <i class="las la-chart-pie font-18"></i>{{ __('Items Statistics') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('items.statistics') ? 'active' : '' }}" 
+           href="{{ route('items.statistics') }}"
+           style="{{ request()->routeIs('items.statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
+            <i class="las la-chart-pie font-18"></i>{{ __('Items Statistics') }}
+        </a>
+    </li>
 @endcan
 
 @can('view units')
@@ -51,4 +51,3 @@
     </li>
     <livewire:item-management.varibals.varibalslinks />
 @endcan
-

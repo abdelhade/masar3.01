@@ -1,13 +1,13 @@
 <li class="menu-title mt-2">{{ __('Vouchers Module') }}</li>
 
 @can('view vouchers-statistics')
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('vouchers.statistics') ? 'active' : '' }}" 
-       href="{{ route('vouchers.statistics') }}"
-       style="{{ request()->routeIs('vouchers.statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
-        <i class="las la-chart-bar font-18"></i>{{ __('Vouchers Statistics') }}
-    </a>
-</li>
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-2 font-hold fw-bold transition-base {{ request()->routeIs('vouchers.statistics') ? 'active' : '' }}" 
+           href="{{ route('vouchers.statistics') }}"
+           style="{{ request()->routeIs('vouchers.statistics') ? 'background-color: rgba(52, 211, 163, 0.1); color: #34d3a3;' : '' }}">
+            <i class="las la-chart-bar font-18"></i>{{ __('Vouchers Statistics') }}
+        </a>
+    </li>
 @endcan
 
 @can('view recipt')

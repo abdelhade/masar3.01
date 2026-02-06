@@ -11,49 +11,50 @@
             <div class="mb-3">
                 <div class="row g-2 align-items-end">
                     <div class="col-sm-2">
-                        <label class="form-label">من تاريخ</label>
+                        <label class="form-label">{{ __('From Date') }}</label>
                         <input type="date" id="filterDateFrom" class="form-control" value="{{ date('Y-m-d') }}">
                     </div>
                     <div class="col-sm-2">
-                        <label class="form-label">إلى تاريخ</label>
+                        <label class="form-label">{{ __('To Date') }}</label>
                         <input type="date" id="filterDateTo" class="form-control" value="{{ date('Y-m-d') }}">
                     </div>
                     <div class="col-sm-2">
-                        <label class="form-label">رقم القيد</label>
-                        <input type="text" id="filterJournalId" class="form-control" placeholder="مثال: 1024">
+                        <label class="form-label">{{ __('Entry Number') }}</label>
+                        <input type="text" id="filterJournalId" class="form-control" placeholder="{{ __('e.g. 1024') }}">
                     </div>
                     <div class="col-sm-3">
-                        <label class="form-label">اسم الحساب</label>
-                        <input type="text" id="filterAccount" class="form-control" placeholder="ابحث باسم الحساب">
+                        <label class="form-label">{{ __('Account Name') }}</label>
+                        <input type="text" id="filterAccount" class="form-control"
+                            placeholder="{{ __('Search by account name') }}">
                     </div>
                     <div class="col-sm-2">
-                        <label class="form-label">نوع العملية</label>
-                        <input type="text" id="filterType" class="form-control" placeholder="ابحث بنوع العملية">
+                        <label class="form-label">{{ __('Operation Type') }}</label>
+                        <input type="text" id="filterType" class="form-control"
+                            placeholder="{{ __('Search by operation type') }}">
                     </div>
                     <div class="col-sm-1">
-                        <label class="form-label">الحركة</label>
+                        <label class="form-label">{{ __('Movement') }}</label>
                         <select id="filterDC" class="form-select">
-                            <option value="">الكل</option>
-                            <option value="debit">مدين>0</option>
-                            <option value="credit">دائن>0</option>
+                            <option value="">{{ __('All') }}</option>
+                            <option value="debit">{{ __('Debit > 0') }}</option>
+                            <option value="credit">{{ __('Credit > 0') }}</option>
                         </select>
                     </div>
                 </div>
             </div>
+
             <div class="table-responsive" style="overflow-x: auto;">
-                <table class="table table-bordered table-hover table-sm  mb-0" style="min-width: 1200px;">
+                <table class="table table-bordered table-hover table-sm mb-0" style="min-width: 1200px;">
                     <thead class="table-light text-center align-middle">
-
                         <tr class="journal_tr text-center">
-                            <th>م</th>
-                            <th>رقم القيد</th>
-                            <th>مدين</th>
-                            <th>دائن</th>
-                            <th>اسم الحساب</th>
-                            <th>بيان</th>
-                            <th>نوع العملية</th>
-                            <th>التاريخ</th>
-
+                            <th>#</th>
+                            <th>{{ __('Entry Number') }}</th>
+                            <th>{{ __('Debit') }}</th>
+                            <th>{{ __('Credit') }}</th>
+                            <th>{{ __('Account Name') }}</th>
+                            <th>{{ __('Description') }}</th>
+                            <th>{{ __('Operation Type') }}</th>
+                            <th>{{ __('Date') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,20 +64,25 @@
                                     data-type="{{ $head->oper?->type?->ptext ?? '' }}" data-date="{{ $head->date }}"
                                     data-accname="{{ $detail->accHead->aname ?? '' }}"
                                     data-debit="{{ (float) $detail->debit }}" data-credit="{{ (float) $detail->credit }}">
-                                    @if ($j == 0)
+
+                                    @if ($j === 0)
                                         <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $i + 1 }}</td>
                                         <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $head->journal_id }}</td>
                                     @endif
 
-                                    <td class="font-hold fw-bold font-14 text-center">{{ $detail->debit }}</td>
-                                    <td class="font-hold fw-bold font-14 text-center">{{ $detail->credit }}</td>
                                     <td class="font-hold fw-bold font-14 text-center">
-                                        {{ $detail->accHead->aname ?? '-' }}</td>
-                                    @if ($j == 0)
+                                        {{ number_format($detail->debit, 2) }}</td>
+                                    <td class="font-hold fw-bold font-14 text-center">
+                                        {{ number_format($detail->credit, 2) }}</td>
+                                    <td class="font-hold fw-bold font-14 text-center">
+                                        {{ $detail->accHead->aname ?? '-' }}
+                                    </td>
+
+                                    @if ($j === 0)
                                         <td class="font-hold fw-bold font-14 text-center"
-                                            rowspan="{{ $head->dets->count() }}">{{ $head->details }}</td>
+                                            rowspan="{{ $head->dets->count() }}">{{ $head->details ?? '-' }}</td>
                                         <td class="font-hold fw-bold font-14 text-center"
                                             rowspan="{{ $head->dets->count() }}">{{ $head->oper?->type?->ptext ?? '-' }}
                                         </td>
@@ -85,28 +91,26 @@
                                     @endif
                                 </tr>
                             @endforeach
-
                         @empty
                             <tr>
                                 <td colspan="8" class="text-center">
                                     <div class="alert alert-info py-3 mb-0" style="font-size: 1.2rem; font-weight: 500;">
                                         <i class="las la-info-circle me-2"></i>
-                                        لا توجد بيانات
+                                        {{ __('No data available') }}
                                     </div>
                                 </td>
                             </tr>
                         @endforelse
-
                     </tbody>
-
                 </table>
             </div>
+
             <div class="mt-2 small text-muted" id="rowsCount"></div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             const rows = () => Array.from(document.querySelectorAll('.journal-row'));
             const els = {
                 from: document.getElementById('filterDateFrom'),
@@ -118,32 +122,28 @@
                 cnt: document.getElementById('rowsCount')
             };
 
-            // التحقق من وجود العناصر
-            if (!els.from || !els.to || !els.jid || !els.acc || !els.type || !els.dc) {
-                console.error('بعض عناصر الفلترة غير موجودة في DOM');
+            // التحقق من وجود جميع العناصر
+            if (Object.values(els).some(el => !el)) {
+                console.error('بعض عناصر الفلترة غير موجودة في الصفحة');
                 return;
             }
 
-            // تعيين تاريخ اليوم إذا كانت الحقول فارغة
+            // تعيين التاريخ الافتراضي إذا لم يكن موجود
             const today = new Date().toISOString().split('T')[0];
-            if (!els.from.value) {
-                els.from.value = today;
-            }
-            if (!els.to.value) {
-                els.to.value = today;
-            }
+            els.from.value = els.from.value || today;
+            els.to.value = els.to.value || today;
 
             function inRange(dateStr, fromStr, toStr) {
                 if (!dateStr) return false;
                 const d = new Date(dateStr);
                 if (fromStr) {
                     const f = new Date(fromStr);
-                    f.setHours(0, 0, 0, 0); // بداية اليوم
+                    f.setHours(0, 0, 0, 0);
                     if (d < f) return false;
                 }
                 if (toStr) {
                     const t = new Date(toStr);
-                    t.setHours(23, 59, 59, 999); // نهاية اليوم
+                    t.setHours(23, 59, 59, 999);
                     if (d > t) return false;
                 }
                 return true;
@@ -156,24 +156,24 @@
                 const fAcc = els.acc.value.trim().toLowerCase();
                 const fType = els.type.value.trim().toLowerCase();
                 const fDC = els.dc.value;
+
                 let visible = 0;
-                
+
                 rows().forEach(tr => {
-                    const jid = String(tr.getAttribute('data-journal-id') || '').toLowerCase();
-                    const acc = String(tr.getAttribute('data-accname') || '').toLowerCase();
-                    const typ = String(tr.getAttribute('data-type') || '').toLowerCase();
-                    const dat = tr.getAttribute('data-date') || '';
-                    const debit = parseFloat(tr.getAttribute('data-debit') || '0');
-                    const credit = parseFloat(tr.getAttribute('data-credit') || '0');
+                    const jid = (tr.dataset.journalId || '').toLowerCase();
+                    const acc = (tr.dataset.accname || '').toLowerCase();
+                    const typ = (tr.dataset.type || '').toLowerCase();
+                    const dat = tr.dataset.date || '';
+                    const debit = parseFloat(tr.dataset.debit || '0');
+                    const credit = parseFloat(tr.dataset.credit || '0');
 
                     let ok = true;
-                    // تطبيق فلترة التاريخ (إلزامي إذا كان هناك قيمة)
+
                     if (fFrom || fTo) {
                         ok = ok && inRange(dat, fFrom, fTo);
                     }
                     if (fJid) ok = ok && jid.includes(fJid);
                     if (fAcc) ok = ok && acc.includes(fAcc);
-                    // فلترة نوع العملية - بحث جزئي
                     if (fType) ok = ok && typ.includes(fType);
                     if (fDC === 'debit') ok = ok && debit > 0;
                     if (fDC === 'credit') ok = ok && credit > 0;
@@ -181,34 +181,21 @@
                     tr.style.display = ok ? '' : 'none';
                     if (ok) visible++;
                 });
-                
-                if (els.cnt) {
-                    els.cnt.textContent = `عدد الأسطر الظاهرة: ${visible}`;
-                }
+
+                els.cnt.textContent = `عدد الأسطر الظاهرة: ${visible}`;
             }
 
-            // جعل الدالة متاحة عالمياً للزر
-            window.applyFilters = applyFilters;
+            // ربط الأحداث
+            ['jid', 'acc', 'type'].forEach(key => {
+                els[key].addEventListener('input', applyFilters);
+                els[key].addEventListener('keyup', applyFilters);
+            });
 
-            // إضافة مستمعي الأحداث
-            // للحقول النصية: keyup و input
-            ['keyup', 'input'].forEach(ev => {
-                ['jid', 'acc', 'type'].forEach(k => {
-                    if (els[k]) {
-                        els[k].addEventListener(ev, applyFilters);
-                    }
-                });
+            ['from', 'to', 'dc'].forEach(key => {
+                els[key].addEventListener('change', applyFilters);
             });
-            // للحقول التاريخية والـ select: change فقط
-            ['change'].forEach(ev => {
-                ['from', 'to', 'dc'].forEach(k => {
-                    if (els[k]) {
-                        els[k].addEventListener(ev, applyFilters);
-                    }
-                });
-            });
-            
-            // تطبيق الفلاتر عند التحميل لعرض نتائج اليوم
+
+            // تطبيق الفلاتر مباشرة عند التحميل
             applyFilters();
         });
     </script>

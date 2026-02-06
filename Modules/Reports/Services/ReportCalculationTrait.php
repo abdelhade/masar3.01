@@ -21,7 +21,7 @@ trait ReportCalculationTrait
             ->where('isdeleted', 0)
             ->selectRaw('SUM(qty_in) - SUM(qty_out) as balance')
             ->value('balance');
-        
+
         return (float) ($balance ?? 0.0);
     }
 
@@ -35,7 +35,7 @@ trait ReportCalculationTrait
             ->where('isdeleted', 0)
             ->selectRaw('SUM(qty_in) - SUM(qty_out) as balance')
             ->value('balance');
-        
+
         return (float) ($balance ?? 0.0);
     }
 
@@ -143,7 +143,7 @@ trait ReportCalculationTrait
      */
     protected function calculateCostCenterBalance(int $costCenterId, ?string $asOfDate = null): float
     {
-        $query = JournalDetail::where('cost_center', $costCenterId)
+        $query = JournalDetail::where('account_id', $costCenterId)
             ->where('isdeleted', 0);
 
         if ($asOfDate) {
@@ -161,7 +161,7 @@ trait ReportCalculationTrait
      */
     protected function calculateCostCenterExpenses(int $costCenterId, ?string $asOfDate = null): float
     {
-        $query = JournalDetail::where('cost_center', $costCenterId)
+        $query = JournalDetail::where('account_id', $costCenterId)
             ->where('isdeleted', 0);
 
         if ($asOfDate) {
@@ -176,7 +176,7 @@ trait ReportCalculationTrait
      */
     protected function calculateCostCenterRevenues(int $costCenterId, ?string $asOfDate = null): float
     {
-        $query = JournalDetail::where('cost_center', $costCenterId)
+        $query = JournalDetail::where('account_id', $costCenterId)
             ->where('isdeleted', 0);
 
         if ($asOfDate) {

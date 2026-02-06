@@ -6,10 +6,10 @@
 
 @section('content')
     @include('components.breadcrumb', [
-        'title' => __('تقرير فواتير التصنيع'),
+        'title' => __('Manufacturing Invoices Report'),
         'items' => [
-            ['label' => __('الرئيسيه'), 'url' => route('admin.dashboard')],
-            ['label' => __('فواتير التصنيع')],
+            ['label' => __('Home'), 'url' => route('admin.dashboard')],
+            ['label' => __('Manufacturing Invoices')],
         ],
     ])
 
@@ -19,25 +19,24 @@
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive" style="overflow-x: auto;">
-
                         <x-table-export-actions table-id="manufacturing-invoice-report-table"
-                            filename="manufacturing-invoice-report-table" excel-label="تصدير Excel" pdf-label="تصدير PDF"
-                            print-label="طباعة" />
+                            filename="manufacturing-invoice-report-table" excel-label="{{ __('Export Excel') }}"
+                            pdf-label="{{ __('Export PDF') }}" print-label="{{ __('Print') }}" />
 
                         <table id="manufacturing-invoice-report-table"
                             class="table table-bordered table-striped text-center" style="min-width: 1200px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>رقم الفاتورة</th>
-                                    <th>النوع</th>
-                                    <th>القيمة</th>
-                                    <th>تاريخ الفاتورة</th>
-                                    <th>الحساب الدائن</th>
-                                    <th>الحساب المدين</th>
-                                    <th>الموظف</th>
-                                    <th>المستخدم</th>
-                                    <th>العمليات</th>
+                                    <th>{{ __('Invoice Number') }}</th>
+                                    <th>{{ __('Type') }}</th>
+                                    <th>{{ __('Value') }}</th>
+                                    <th>{{ __('Invoice Date') }}</th>
+                                    <th>{{ __('Credit Account') }}</th>
+                                    <th>{{ __('Debit Account') }}</th>
+                                    <th>{{ __('Employee') }}</th>
+                                    <th>{{ __('User') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -47,7 +46,7 @@
                                         <td>{{ $invoice->pro_id }}</td>
                                         <td>
                                             @if ($invoice->pro_type == 59)
-                                                <span class="badge bg-primary">تصنيع</span>
+                                                <span class="badge bg-primary">{{ __('Manufacturing') }}</span>
                                             @endif
                                         </td>
                                         <td>{{ number_format($invoice->pro_value, 2) }}</td>
@@ -60,17 +59,16 @@
                                             <div class="d-flex flex-wrap gap-1">
                                                 <a class="btn btn-primary px-3 py-2 fs-6"
                                                     href="{{ route('manufacturing.edit', $invoice->id) }}">
-                                                    تعديل الفاتورة
+                                                    {{ __('Edit Invoice') }}
                                                 </a>
-
 
                                                 <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST"
                                                     style="display:inline-block;"
-                                                    onsubmit="return confirm('هل أنت متأكد من حذف هذا التخصص؟');">
+                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this record?') }}');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger px-3 py-2 fs-6">
-                                                        <i class="las la-trash"></i>
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             </div>
@@ -78,11 +76,11 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="13" class="text-center">
+                                        <td colspan="10" class="text-center">
                                             <div class="alert alert-info py-3 mb-0"
                                                 style="font-size: 1.2rem; font-weight: 500;">
-                                                <i class="las la-info-circle me-2"></i>
-                                                لا توجد بيانات مضافة حتى الآن
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                {{ __('No data available yet') }}
                                             </div>
                                         </td>
                                     </tr>

@@ -10,12 +10,12 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-0"><i class="fas fa-certificate me-2"></i>الشهادات والامتثال</h2>
+                        <h2 class="mb-0"><i class="fas fa-certificate me-2"></i>{{ __("Certificates") }}</h2>
                     </div>
                     <div>
                         @can('create certificates')
                             <a href="{{ route('quality.certificates.create') }}" class="btn btn-primary">
-                                <i class="fas fa-plus-circle me-2"></i>شهادة جديدة
+                                <i class="fas fa-plus-circle me-2"></i>{{ __("New Certificate") }}
                             </a>
                         @endcan
                     </div>
@@ -27,7 +27,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div class="card-body">
-                        <h6 class="text-muted">شهادات نشطة</h6>
+                        <h6 class="text-muted">{{ __("Active Certificates") }}</h6>
                         <h3 class="text-success">{{ $stats['active'] }}</h3>
                     </div>
                 </div>
@@ -35,7 +35,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div class="card-body">
-                        <h6 class="text-muted">تنتهي قريباً</h6>
+                        <h6 class="text-muted">{{ __("Expiring Soon") }}</h6>
                         <h3 class="text-warning">{{ $stats['expiring_soon'] }}</h3>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div class="card-body">
-                        <h6 class="text-muted">منتهية</h6>
+                        <h6 class="text-muted">{{ __("Expired") }}</h6>
                         <h3 class="text-danger">{{ $stats['expired'] }}</h3>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
             <div class="col-md-3">
                 <div class="card">
                     <div class="card-body">
-                        <h6 class="text-muted">إجمالي</h6>
+                        <h6 class="text-muted">{{ __("Total") }}</h6>
                         <h3>{{ $stats['total'] }}</h3>
                     </div>
                 </div>
@@ -64,16 +64,16 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>رقم الشهادة</th>
-                                <th>اسم الشهادة</th>
-                                <th>النوع</th>
-                                <th>جهة الإصدار</th>
-                                <th>تاريخ الإصدار</th>
-                                <th>تاريخ الانتهاء</th>
-                                <th>الأيام المتبقية</th>
-                                <th>الحالة</th>
+                                <th>{{ __("Certificate Number") }}</th>
+                                <th>{{ __("Certificate Name") }}</th>
+                                <th>{{ __("Type") }}</th>
+                                <th>{{ __("Issuing Authority") }}</th>
+                                <th>{{ __("Issue Date") }}</th>
+                                <th>{{ __("Valid Until") }}</th>
+                                <th>{{ __("Days Remaining") }}</th>
+                                <th>{{ __("Status") }}</th>
                                 @canany(['edit certificates', 'delete certificates', 'view certificates'])
-                                    <th>الإجراءات</th>
+                                    <th>{{ __("Actions") }}</th>
                                 @endcanany
                             </tr>
                         </thead>
@@ -97,7 +97,7 @@
                                         @endphp
                                         <span
                                             class="badge bg-{{ $daysLeft < 0 ? 'danger' : ($daysLeft < 30 ? 'warning' : 'success') }}">
-                                            {{ abs($daysLeft) }} {{ $daysLeft < 0 ? 'منتهي' : 'يوم' }}
+                                            {{ abs($daysLeft) }} {{ $daysLeft < 0 ? __("Expired") : __("Days") }}
                                         </span>
                                     </td>
                                     <td>
@@ -116,19 +116,19 @@
                                             <div class="btn-group" role="group">
                                                 @can('view certificates')
                                                     <a href="{{ route('quality.certificates.show', $certificate) }}"
-                                                        class="btn btn-sm btn-info" title="عرض">
+                                                        class="btn btn-sm btn-info" title="{{ __("View") }}">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 @endcan
                                                 @can('edit certificates')
                                                     <a href="{{ route('quality.certificates.edit', $certificate) }}"
-                                                        class="btn btn-sm btn-warning" title="تعديل">
+                                                        class="btn btn-sm btn-warning" title="{{ __("Edit") }}">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endcan
                                                 @can('delete certificates')
                                                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteModal{{ $certificate->id }}" title="حذف">
+                                                        data-bs-target="#deleteModal{{ $certificate->id }}" title="{{ __("Delete") }}">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 @endcan
@@ -139,22 +139,22 @@
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title">تأكيد الحذف</h5>
+                                                            <h5 class="modal-title">{{ __("Confirm Delete") }}</h5>
                                                             <button type="button" class="btn-close"
                                                                 data-bs-dismiss="modal"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            هل أنت متأكد من حذف الشهادة "{{ $certificate->certificate_name }}"?
+                                                            {{ __("Are you sure you want to delete certificate") }} "{{ $certificate->certificate_name }}"?
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">إلغاء</button>
+                                                                data-bs-dismiss="modal">{{ __("Cancel") }}</button>
                                                             <form
                                                                 action="{{ route('quality.certificates.destroy', $certificate) }}"
                                                                 method="POST" class="d-inline">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">حذف</button>
+                                                                <button type="submit" class="btn btn-danger">{{ __("Delete") }}</button>
                                                             </form>
                                                         </div>
                                                     </div>
@@ -165,7 +165,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center py-4">لا توجد شهادات</td>
+                                    <td colspan="9" class="text-center py-4">{{ __("No certificates") }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
