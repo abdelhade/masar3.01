@@ -1347,3 +1347,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+</script>
+
+<script src="{{ asset('js/project-items.js') }}"></script>

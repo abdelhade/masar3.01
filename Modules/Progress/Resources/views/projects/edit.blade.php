@@ -317,3 +317,7 @@
     }
 </style>
 @endpush
+
+@push('scripts')
+    <script src="{{ asset('js/template-predecessor-fix.js') }}"></script>
+@endpush
