@@ -36,7 +36,7 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <h6 class="text-muted">{{ __('general.client') }}</h6>
-                                <h5>{{ $project->client->name }}</h5>
+                                <h5>{{ $project->client->cname }}</h5>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,483 @@
+/* ========================================
+   Gantt Chart - Sharp & Minimal Design
+   ======================================== */
+
+/* Container */
+.gantt-container {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin: 2rem 0;
+}
+
+.gantt-header {
+    background: #3b82f6;
+    color: #fff;
+    padding: 1.5rem 2rem;
+    border-bottom: 3px solid #2563eb;
+}
+
+.gantt-chart {
+    overflow: auto;
+    background: #fafafa;
+    max-height: calc(100vh - 280px);
+}
+
+/* Timeline */
+.timeline-header {
+    background: #e5e7eb;
+    border-bottom: 2px solid #9ca3af;
+    padding: 0.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.timeline-dates {
+    display: flex;
+    min-width: 100%;
+}
+
+.date-column {
+    min-width: 60px;
+    max-width: 80px;
+    flex: 1;
+    padding: 0.5rem 0.25rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    border-right: 1px solid #d1d5db;
+}
+
+.date-column.weekend {
+    background: #fee;
+}
+
+.date-column.today {
+    background: #dbeafe;
+    border-left: 2px solid #3b82f6;
+    border-right: 2px solid #3b82f6;
+}
+
+/* Rows */
+.gantt-row {
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.2s;
+}
+
+.gantt-row:hover {
+    background: #f3f4f6;
+}
+
+/* Task Info */
+.task-info {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    padding: 0.75rem;
+    background: #fff;
+    border-right: 2px solid #d1d5db;
+    position: sticky;
+    left: 0;
+    z-index: 50;
+    overflow: hidden;
+}
+
+.task-name {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-details {
+    font-size: 0.7rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.task-details-compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.task-detail-item {
+    white-space: nowrap;
+    font-size: 0.7rem;
+}
+
+.task-detail-item strong {
+    color: #374151;
+}
+
+.task-details .badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+    font-weight: 600;
+}
+
+/* Timeline Content */
+.timeline-content {
+    display: flex;
+    position: relative;
+    flex: 1;
+    min-height: 50px;
+}
+
+/* Task Bars - Sharp Design */
+.task-bar {
+    height: 32px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 30px;
+    border: 2px solid rgba(0,0,0,0.1);
+}
+
+.task-bar:hover {
+    filter: brightness(1.1);
+    border-color: rgba(0,0,0,0.3);
+}
+
+.task-bar.pending {
+    background: #f59e0b;
+}
+
+.task-bar.active,
+.task-bar.in_progress {
+    background: #3b82f6;
+}
+
+.task-bar.completed {
+    background: #10b981;
+}
+
+.task-bar.critical {
+    background: #ef4444;
+}
+
+.task-bar.delayed {
+    background: #f97316;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Progress */
+.progress-overlay {
+    height: 100%;
+    background: rgba(16,185,129,0.85);
+    transition: width 0.4s;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    z-index: 10;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Today Line */
+.today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ef4444;
+    z-index: 75;
+}
+
+.today-marker {
+    position: absolute;
+    top: -8px;
+    left: -6px;
+    width: 14px;
+    height: 14px;
+    background: #ef4444;
+    border: 2px solid #fff;
+}
+
+/* Stats */
+.stats-card {
+    background: #fff;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-left: 4px solid #e5e7eb;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.stats-card:hover {
+    border-left-color: #3b82f6;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stats-label {
+    color: #6b7280;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Buttons */
+.btn-modern {
+    padding: 0.65rem 1.25rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-primary-modern {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.btn-primary-modern:hover {
+    background: #2563eb;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.legend-color {
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+/* Controls */
+.gantt-controls {
+    background: #f9fafb;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.view-controls,
+.zoom-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.view-btn,
+.zoom-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.85rem;
+}
+
+.view-btn:hover,
+.zoom-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.view-btn.active,
+.zoom-btn.active {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+}
+
+/* Filters */
+.filter-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box input {
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 1px solid #d1d5db;
+    width: 200px;
+    font-size: 0.85rem;
+}
+
+.search-box i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+/* Dependencies */
+.dependency-line {
+    position: absolute;
+    height: 2px;
+    background: #6b7280;
+    pointer-events: none;
+    z-index: 40;
+}
+
+.dependency-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #6b7280;
+}
+
+/* Tooltip */
+.advanced-tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    z-index: 200;
+    pointer-events: none;
+    max-width: 280px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Export */
+.export-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.export-menu {
+    display: none;
+    position: absolute;
+    background: #fff;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.export-dropdown:hover .export-menu {
+    display: block;
+}
+
+.export-item {
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+    font-size: 0.85rem;
+}
+
+.export-item:last-child {
+    border-bottom: none;
+}
+
+.export-item:hover {
+    background: #f9fafb;
+}
+
+/* Dragging */
+.task-dragging {
+    opacity: 0.7;
+    transform: scale(1.02);
+    z-index: 100;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 1200px) {
+    .task-info {
+        width: 240px;
+        min-width: 240px;
+        max-width: 240px;
+    }
+    .date-column {
+        min-width: 50px;
+        max-width: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .task-info {
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
+        padding: 0.5rem;
+    }
+    .task-name {
+        font-size: 0.8rem;
+    }
+    .date-column {
+        min-width: 40px;
+        max-width: 60px;
+        font-size: 0.65rem;
+    }
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+    .gantt-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-controls {
+        justify-content: center;
+    }
+}

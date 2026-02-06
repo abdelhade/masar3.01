@@ -67,7 +67,7 @@ $isComponentVisible = function($component, $visibleComponents) {
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h1 class="h3 mb-2">{{ __('general.project_dashboard') }}</h1>
-                <p class="mb-0">{{ $project->name }}@if($project->client) - {{ $project->client->name }}@endif</p>
+                <p class="mb-0">{{ $project->name }}@if($project->client) - {{ $project->client->cname }}@endif</p>
             </div>
             <div class="col-md-4 text-md-end">
                 <span class="badge bg-{{ $projectStatus['color'] }}">
@@ -376,7 +376,7 @@ $isComponentVisible = function($component, $visibleComponents) {
             <div class="stat-card">
                 <h5 class="fw-bold mb-3"><i class="fas fa-building me-2"></i>{{ __('general.client_information') }}</h5>
                 @if($project->client)
-                    <p class="mb-2"><strong>{{ __('general.client_name') }}:</strong> {{ $project->client->name }}</p>
+                    <p class="mb-2"><strong>{{ __('general.client_name') }}:</strong> {{ $project->client->cname }}</p>
                     @if($project->client->contact_person)
                         <p class="mb-2"><strong>{{ __('general.contact_person') }}:</strong> {{ $project->client->contact_person }}</p>
                     @endif
@@ -504,7 +504,7 @@ $isComponentVisible = function($component, $visibleComponents) {
                     <div class="row">
                         <div class="col-md-6 mb-2">
                             <small class="text-muted">{{ __('general.client') }}:</small>
-                            <div class="fw-medium">{{ $project->client->name ?? __('general.not_specified') }}</div>
+                            <div class="fw-medium">{{ $project->client->cname ?? __('general.not_specified') }}</div>
                         </div>
                         <div class="col-md-6 mb-2">
                             <small class="text-muted">{{ __('general.working_zone') }}:</small>

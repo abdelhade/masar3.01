@@ -1311,7 +1311,7 @@ class ProjectProgressController extends Controller
             'status' => $project->status,
              // localized status label could be handled here or frontend
             'type_name' => $project->type->name ?? 'N/A',
-            'client_name' => $project->client->name ?? 'N/A',
+            'client_name' => $project->client->cname ?? 'N/A',
             'start_date' => $project->start_date, // Format if needed
             'end_date' => $project->end_date,
             'working_zone' => $project->working_zone ?? 'N/A',

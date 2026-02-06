@@ -37,7 +37,7 @@
             <div class="row">
                 <div class="col-6 mb-2">
                     <small class="text-muted">{{ __('general.client') }}:</small>
-                    <div class="fw-medium">{{ $project->client->name ?? __('general.not_specified') }}</div>
+                    <div class="fw-medium">{{ $project->client->cname ?? __('general.not_specified') }}</div>
                 </div>
                 <div class="col-6 mb-2">
                     <small class="text-muted">{{ __('general.working_zone') }}:</small>

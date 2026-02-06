@@ -92,7 +92,7 @@
 <div class="container">
     <div class="main-card card">
         <div class="card-header text-white">
-            <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i> {{ __('general.edit_client') }}: {{ $client->name }}</h5>
+            <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i> {{ __('general.edit_client') }}: {{ $client->cname }}</h5>
         </div>
         <div class="card-body">
             <form action="{{ route('progress.clients.update', $client) }}" method="POST">
@@ -104,7 +104,7 @@
                         <label class="form-label">{{ __('general.client_name') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-building"></i></span>
-                            <input type="text" name="name" class="form-control" value="{{ $client->name }}" required>
+                            <input type="text" name="name" class="form-control" value="{{ $client->cname }}" required>
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">

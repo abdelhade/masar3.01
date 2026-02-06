@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحة الصيانة - قريباً سنعود</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-black: rgba(0, 0, 0, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-gray-400: rgba(119, 124, 124, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-400: rgba(45, 166, 178, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-teal-800: rgba(41, 150, 161, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-red-500: rgba(192, 21, 47, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+            --color-orange-500: rgba(168, 75, 47, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-slate-500-rgb: 98, 108, 113;
+            --color-red-500-rgb: 192, 21, 47;
+            --color-red-400-rgb: 255, 84, 89;
+            --color-orange-500-rgb: 168, 75, 47;
+            --color-orange-400-rgb: 230, 129, 97;
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-btn-primary-text: var(--color-cream-50);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-error: var(--color-red-500);
+            --color-success: var(--color-teal-500);
+            --color-warning: var(--color-orange-500);
+            --color-info: var(--color-slate-500);
+            --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+            --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-size-base: 16px;
+            --font-size-sm: 14px;
+            --font-size-lg: 18px;
+            --font-size-xl: 22px;
+            --font-size-2xl: 28px;
+            --font-size-3xl: 36px;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 550;
+            --font-weight-bold: 600;
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --radius-base: 8px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --duration-fast: 150ms;
+            --duration-normal: 250ms;
+            --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-gray-200-rgb: 245, 245, 245;
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-primary-hover: var(--color-teal-400);
+                --color-primary-active: var(--color-teal-800);
+                --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+                --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-btn-primary-text: var(--color-slate-900);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+                --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-20);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .maintenance-icon {
+            font-size: 80px;
+            margin-bottom: var(--space-16);
+            display: inline-block;
+        }
+
+        .factory-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-24);
+            margin-bottom: var(--space-32);
+            flex-wrap: wrap;
+            position: relative;
+            min-height: 180px;
+        }
+
+        .conveyor-belt {
+            width: 100%;
+            max-width: 600px;
+            height: 60px;
+            background: linear-gradient(90deg, #34495e 0%, #2c3e50 50%, #34495e 100%);
+            border-radius: var(--radius-base);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .conveyor-lines {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 30px,
+                rgba(255,255,255,0.1) 30px,
+                rgba(255,255,255,0.1) 32px
+            );
+            animation: conveyorMove 2s linear infinite;
+        }
+
+        @keyframes conveyorMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .box {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--color-warning);
+            border: 2px solid var(--color-orange-500);
+            border-radius: 4px;
+            top: 10px;
+            animation: boxMove 3s linear infinite;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .box::before,
+        .box::after {
+            content: '';
+            position: absolute;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .box::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .box::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .box:nth-child(2) { animation-delay: -1s; }
+        .box:nth-child(3) { animation-delay: -2s; }
+
+        @keyframes boxMove {
+            from { left: -50px; }
+            to { left: 110%; }
+        }
+
+        .robot-arm {
+            width: 100px;
+            height: 120px;
+            position: relative;
+            animation: robotWork 3s ease-in-out infinite;
+        }
+
+        .robot-base {
+            width: 60px;
+            height: 20px;
+            background: var(--color-primary);
+            border-radius: var(--radius-base);
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .robot-joint {
+            width: 15px;
+            height: 15px;
+            background: var(--color-teal-700);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px var(--color-primary);
+        }
+
+        .robot-arm-part {
+            width: 8px;
+            height: 60px;
+            background: var(--color-primary);
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform-origin: bottom center;
+            animation: armRotate 3s ease-in-out infinite;
+            border-radius: 4px;
+        }
+
+        .robot-claw {
+            width: 25px;
+            height: 15px;
+            background: var(--color-teal-700);
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 4px 4px 0 0;
+        }
+
+        @keyframes robotWork {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes armRotate {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(15deg); }
+        }
+
+        .warning-lights {
+            display: flex;
+            gap: var(--space-12);
+            justify-content: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .warning-light {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        .warning-light:nth-child(1) {
+            background: var(--color-error);
+            animation-delay: 0s;
+        }
+
+        .warning-light:nth-child(2) {
+            background: var(--color-warning);
+            animation-delay: 0.3s;
+        }
+
+        .warning-light:nth-child(3) {
+            background: var(--color-error);
+            animation-delay: 0.6s;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 20px currentColor; }
+            50% { opacity: 0.3; box-shadow: none; }
+        }
+
+        .steam {
+            position: absolute;
+            width: 8px;
+            height: 30px;
+            background: linear-gradient(to top, rgba(255,255,255,0.6), transparent);
+            border-radius: 50%;
+            animation: steamRise 2s ease-out infinite;
+            filter: blur(3px);
+        }
+
+        .steam:nth-child(1) { left: 20%; animation-delay: 0s; }
+        .steam:nth-child(2) { left: 50%; animation-delay: 0.7s; }
+        .steam:nth-child(3) { left: 80%; animation-delay: 1.4s; }
+
+        @keyframes steamRise {
+            from { 
+                bottom: 60px; 
+                opacity: 0.8;
+                transform: translateY(0) scale(1);
+            }
+            to { 
+                bottom: 150px; 
+                opacity: 0;
+                transform: translateY(-20px) scale(1.5);
+            }
+        }
+
+        h1 {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-16);
+            animation: fadeIn 1s ease-in;
+        }
+
+        .subtitle {
+            font-size: var(--font-size-xl);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-32);
+            animation: fadeIn 1.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 400px;
+            height: 8px;
+            background: var(--color-secondary);
+            border-radius: 999px;
+            margin: var(--space-32) auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-teal-300));
+            border-radius: 999px;
+            animation: progress 3s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        .game-section {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            padding: var(--space-32);
+            margin-top: var(--space-32);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+        }
+
+        .game-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-24);
+            color: var(--color-primary);
+        }
+
+        .game-canvas {
+            background: var(--color-background);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-base);
+            display: block;
+            margin: 0 auto var(--space-16);
+            max-width: 100%;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: var(--space-12);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--space-16);
+        }
+
+        .btn {
+            padding: var(--space-12) var(--space-24);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-standard);
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-secondary-hover);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-32);
+            margin-top: var(--space-16);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+        }
+
+        .score-label {
+            color: var(--color-text-secondary);
+        }
+
+        .score-value {
+            color: var(--color-primary);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .instructions {
+            margin-top: var(--space-20);
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        .emoji {
+            display: inline-block;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: var(--font-size-2xl); }
+            .subtitle { font-size: var(--font-size-lg); }
+            .gear { width: 60px; height: 60px; }
+            .game-section { padding: var(--space-20); }
+            .game-canvas { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-lights">
+            <div class="warning-light"></div>
+            <div class="warning-light"></div>
+            <div class="warning-light"></div>
+        </div>
+
+        <div class="maintenance-icon">🏭</div>
+
+        <h1>جاري صيانة المصنع</h1>
+        <p class="subtitle">نقوم بتطوير خطوط الإنتاج — استمتع باللعبة ريثما ننتهي <span class="emoji">⚙️</span></p>
+
+        <div class="factory-container">
+            <div class="robot-arm">
+                <div class="robot-base"></div>
+                <div class="robot-joint"></div>
+                <div class="robot-arm-part">
+                    <div class="robot-claw"></div>
+                </div>
+            </div>
+            
+            <div class="conveyor-belt">
+                <div class="conveyor-lines"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="steam"></div>
+                <div class="steam"></div>
+                <div class="steam"></div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="game-section">
+            <h2 class="game-title">🎮 لعبة مصنع الصناديق - اجمع المنتجات!</h2>
+            
+            <canvas id="gameCanvas" class="game-canvas" width="400" height="400"></canvas>
+
+            <div class="game-controls">
+                <button class="btn btn-primary" id="startBtn">ابدأ اللعبة</button>
+                <button class="btn btn-secondary" id="pauseBtn">إيقاف مؤقت</button>
+                <button class="btn btn-secondary" id="restartBtn">إعادة تشغيل</button>
+            </div>
+
+            <div class="score-board">
+                <div class="score-item">
+                    <span class="score-label">النقاط:</span>
+                    <span class="score-value" id="score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">أعلى نقاط:</span>
+                    <span class="score-value" id="highScore">0</span>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <strong>التحكم:</strong> استخدم الأسهم (← →) أو اللمس للتحرك يميناً ويساراً<br>
+                <strong>الهدف:</strong> حرّك العربة لجمع الصناديق البرتقالية الساقطة من خط الإنتاج!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        let cart = { x: 160, y: 360, w: 60, h: 20, vx: 0 };
+        let boxes = [];
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('factoryHighScore')) || 0;
+        let gameRunning = false;
+        let gamePaused = false;
+        let gameLoop;
+        let frameCount = 0;
+        let touchStartX = 0;
+
+        highScoreEl.textContent = highScore;
+
+        function drawGame() {
+            if (!gameRunning || gamePaused) return;
+
+            frameCount++;
+            if (frameCount % 60 === 0) {
+                spawnBox();
+            }
+
+            clearCanvas();
+            updateCart();
+            updateBoxes();
+            drawConveyor();
+            drawCart();
+            drawBoxes();
+            checkCollisions();
+            updateScore();
+        }
+
+        function clearCanvas() {
+            const bgColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-background').trim();
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawConveyor() {
+            const gradient = ctx.createLinearGradient(0, 380, 0, 400);
+            gradient.addColorStop(0, '#34495e');
+            gradient.addColorStop(0.5, '#2c3e50');
+            gradient.addColorStop(1, '#34495e');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 380, canvas.width, 20);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 15; i++) {
+                const offset = (frameCount * 2) % 30;
+                ctx.beginPath();
+                ctx.moveTo(i * 30 - offset, 382);
+                ctx.lineTo(i * 30 - offset, 398);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-border').trim();
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 380, canvas.width, 20);
+        }
+
+        function drawCart() {
+            const primaryColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-primary').trim();
+            
+            ctx.fillStyle = '#f4d03f';
+            ctx.fillRect(cart.x, cart.y, cart.w, cart.h);
+            
+            ctx.fillStyle = primaryColor;
+            ctx.fillRect(cart.x + 5, cart.y - 8, cart.w - 10, 8);
+            
+            ctx.fillStyle = '#7f8c8d';
+            ctx.beginPath();
+            ctx.arc(cart.x + 15, cart.y + cart.h + 3, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cart.x + cart.w - 15, cart.y + cart.h + 3, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-text').trim();
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cart.x, cart.y, cart.w, cart.h);
+        }
+
+        function drawBoxes() {
+            const warningColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-warning').trim();
+            const orangeColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-orange-500').trim();
+
+            boxes.forEach(box => {
+                ctx.fillStyle = warningColor;
+                ctx.fillRect(box.x, box.y, box.w, box.h);
+                
+                ctx.strokeStyle = orangeColor;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(box.x, box.y, box.w, box.h);
+
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(box.x + box.w / 2, box.y);
+                ctx.lineTo(box.x + box.w / 2, box.y + box.h);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(box.x, box.y + box.h / 2);
+                ctx.lineTo(box.x + box.w, box.y + box.h / 2);
+                ctx.stroke();
+            });
+        }
+
+        function spawnBox() {
+            boxes.push({
+                x: Math.random() * (canvas.width - 30) + 10,
+                y: -30,
+                w: 30,
+                h: 30,
+                vy: 2 + Math.random() * 2
+            });
+        }
+
+        function updateCart() {
+            cart.x += cart.vx;
+            cart.x = Math.max(0, Math.min(canvas.width - cart.w, cart.x));
+        }
+
+        function updateBoxes() {
+            boxes.forEach(box => {
+                box.y += box.vy;
+            });
+
+            boxes = boxes.filter(box => box.y < canvas.height);
+        }
+
+        function checkCollisions() {
+            for (let i = boxes.length - 1; i >= 0; i--) {
+                const box = boxes[i];
+                if (box.y + box.h >= cart.y && 
+                    box.y <= cart.y + cart.h &&
+                    box.x + box.w >= cart.x && 
+                    box.x <= cart.x + cart.w) {
+                    score += 10;
+                    boxes.splice(i, 1);
+                }
+            }
+        }
+
+        function updateScore() {
+            scoreEl.textContent = score;
+            if (score > highScore) {
+                highScore = score;
+                highScoreEl.textContent = highScore;
+                localStorage.setItem('factoryHighScore', highScore);
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameLoop);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-text').trim();
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('انتهت اللعبة!', canvas.width / 2, canvas.height / 2 - 20);
+            ctx.font = '20px Arial';
+            ctx.fillText(`النقاط: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText('اضغط "إعادة تشغيل" للعب مرة أخرى', canvas.width / 2, canvas.height / 2 + 50);
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+
+            cart = { x: 160, y: 360, w: 60, h: 20, vx: 0 };
+            boxes = [];
+            score = 0;
+            frameCount = 0;
+            gameRunning = true;
+            gamePaused = false;
+
+            clearInterval(gameLoop);
+            gameLoop = setInterval(drawGame, 1000 / 60);
+
+            startBtn.textContent = 'جارية...';
+            pauseBtn.textContent = 'إيقاف مؤقت';
+        }
+
+        function pauseGame() {
+            if (!gameRunning) return;
+
+            gamePaused = !gamePaused;
+            pauseBtn.textContent = gamePaused ? 'استئناف' : 'إيقاف مؤقت';
+
+            if (!gamePaused) {
+                clearInterval(gameLoop);
+                gameLoop = setInterval(drawGame, 1000 / 60);
+            }
+        }
+
+        function restartGame() {
+            gameRunning = false;
+            gamePaused = false;
+            clearInterval(gameLoop);
+            startBtn.textContent = 'ابدأ اللعبة';
+            startGame();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning || gamePaused) return;
+
+            if (e.key === 'ArrowLeft') {
+                cart.vx = -5;
+            } else if (e.key === 'ArrowRight') {
+                cart.vx = 5;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                cart.vx = 0;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameRunning || gamePaused) return;
+            touchStartX = e.touches[0].clientX;
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            
+            if (touchX < cart.x + cart.w / 2) {
+                cart.vx = -5;
+            } else {
+                cart.vx = 5;
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            cart.vx = 0;
+        });
+
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', pauseGame);
+        restartBtn.addEventListener('click', restartGame);
+
+        clearCanvas();
+        ctx.fillStyle = getComputedStyle(document.documentElement)
+            .getPropertyValue('--color-text-secondary').trim();
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('اضغط "ابدأ اللعبة" للبدء', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

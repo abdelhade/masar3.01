@@ -17,12 +17,10 @@ class WorkItem extends Model
         'unit',
         'description',
         'category_id',
-        'total_quantity',
-        'expected_quantity_per_day',
-        'duration',
-        'predecessor_id',
-        'lag',
+        'estimated_daily_qty',
         'shift',
+        'order',
+        'item_status_id',
     ];
 
     public function category()
@@ -30,25 +28,26 @@ class WorkItem extends Model
         return $this->belongsTo(WorkItemCategory::class, 'category_id');
     }
 
-    // العلاقة مع البند السابق
     public function predecessorItem()
     {
         return $this->belongsTo(WorkItem::class, 'predecessor_id', 'id');
     }
 
-    // العلاقة مع البنود التالية
     public function successorItems()
     {
         return $this->hasMany(WorkItem::class, 'predecessor_id', 'id');
     }
 
-    // العلاقة مع ProjectItem (بنود المشروع فقط - ليس template items)
+    public function status()
+    {
+        return $this->belongsTo(ItemStatus::class, 'item_status_id');
+    }
+
     public function projectItems(): HasMany
     {
         return $this->hasMany(ProjectItem::class)->whereNotNull('project_id');
     }
 
-    // العلاقة مع TemplateItem (بنود التيمبليت)
     public function templateItems(): HasMany
     {
         return $this->hasMany(TemplateItem::class);
