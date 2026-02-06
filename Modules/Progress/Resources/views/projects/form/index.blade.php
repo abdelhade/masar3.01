@@ -1028,4 +1028,116 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Work Items Search Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('work-item-search');
+    const searchResults = document.getElementById('search-results');
+    const searchResultsList = document.getElementById('search-results-list');
+    const resultsCount = document.getElementById('results-count');
+    const closeSearchBtn = document.getElementById('close-search');
+    const searchLoading = document.getElementById('search-loading');
+    
+    let searchTimeout;
+    const workItems = @json($workItems ?? []);
+    
+    if (searchInput && searchResults) {
+        // Search on input
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            searchLoading.style.display = 'inline-block';
+            
+            searchTimeout = setTimeout(() => {
+                // Filter work items
+                const filtered = workItems.filter(item => 
+                    item.name.toLowerCase().includes(query) ||
+                    (item.unit && item.unit.toLowerCase().includes(query)) ||
+                    (item.description && item.description.toLowerCase().includes(query))
+                ).slice(0, 50);
+                
+                // Display results
+                searchResultsList.innerHTML = '';
+                resultsCount.textContent = `${filtered.length} {{ __('general.results') }}`;
+                
+                if (filtered.length === 0) {
+                    searchResultsList.innerHTML = `
+                        <div class="list-group-item text-center text-muted">
+                            <i class="fas fa-inbox me-2"></i>
+                            {{ __('general.no_results_found') }}
+                        </div>
+                    `;
+                } else {
+                    filtered.forEach(item => {
+                        const resultItem = document.createElement('button');
+                        resultItem.type = 'button';
+                        resultItem.className = 'list-group-item list-group-item-action';
+                        resultItem.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${item.name}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-ruler me-1"></i>${item.unit || '-'}
+                                        ${item.category ? `<i class="fas fa-folder ms-2 me-1"></i>${item.category.name}` : ''}
+                                    </small>
+                                </div>
+                                <i class="fas fa-plus-circle text-primary"></i>
+                            </div>
+                        `;
+                        
+                        resultItem.addEventListener('click', function() {
+                            // Trigger Alpine.js addItem method if available
+                            // Or dispatch custom event
+                            const event = new CustomEvent('add-work-item', { 
+                                detail: { item: item } 
+                            });
+                            document.dispatchEvent(event);
+                            
+                            // Clear search
+                            searchInput.value = '';
+                            searchResults.style.display = 'none';
+                            searchLoading.style.display = 'none';
+                        });
+                        
+                        searchResultsList.appendChild(resultItem);
+                    });
+                }
+                
+                searchResults.style.display = 'block';
+                searchLoading.style.display = 'none';
+            }, 300);
+        });
+        
+        // Close search results
+        if (closeSearchBtn) {
+            closeSearchBtn.addEventListener('click', function() {
+                searchResults.style.display = 'none';
+                searchInput.value = '';
+            });
+        }
+        
+        // Close on click outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        // Close on Escape key
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                searchResults.style.display = 'none';
+                this.value = '';
+            }
+        });
+    }
+});
 </script>
